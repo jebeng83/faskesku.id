@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PatientController;
+use App\Http\Controllers\RawatJalanController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -19,4 +20,8 @@ Route::middleware('auth')->group(function () {
 
     // Patient routes
     Route::resource('patients', PatientController::class);
+    
+    // Rawat Jalan routes
+    Route::resource('rawat-jalan', RawatJalanController::class);
+    Route::get('rawat-jalan-statistics', [RawatJalanController::class, 'getStatistics'])->name('rawat-jalan.statistics');
 });
