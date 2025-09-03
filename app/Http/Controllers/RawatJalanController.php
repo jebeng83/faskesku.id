@@ -16,7 +16,15 @@ class RawatJalanController extends Controller
      */
     public function index(Request $request)
     {
-        $query = RawatJalan::with('patient');
+        $query = RawatJalan::query()
+            ->with('patient')
+            ->leftJoin('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
+            ->leftJoin('penjab', 'reg_periksa.kd_pj', '=', 'penjab.kd_pj')
+            ->select([
+                'reg_periksa.*',
+                DB::raw('dokter.nm_dokter as nm_dokter'),
+                DB::raw('penjab.png_jawab as nm_penjamin'),
+            ]);
 
         // Default tanggal ke hari ini jika parameter tidak ada
         $appliedDate = $request->has('tanggal')
@@ -25,17 +33,17 @@ class RawatJalanController extends Controller
 
         // Filter berdasarkan tanggal (gunakan default jika tidak ada)
         if (!empty($appliedDate)) {
-            $query->where('tgl_registrasi', $appliedDate);
+            $query->where('reg_periksa.tgl_registrasi', $appliedDate);
         }
 
         // Filter berdasarkan status
         if ($request->filled('status')) {
-            $query->where('stts', $request->status);
+            $query->where('reg_periksa.stts', $request->status);
         }
 
         // Filter berdasarkan status bayar
         if ($request->filled('status_bayar')) {
-            $query->where('status_bayar', $request->status_bayar);
+            $query->where('reg_periksa.status_bayar', $request->status_bayar);
         }
 
         // Filter berdasarkan nama pasien
@@ -45,8 +53,8 @@ class RawatJalanController extends Controller
             });
         }
 
-        $rawatJalan = $query->orderBy('tgl_registrasi', 'desc')
-                           ->orderBy('jam_reg', 'desc')
+        $rawatJalan = $query->orderBy('reg_periksa.tgl_registrasi', 'desc')
+                           ->orderBy('reg_periksa.jam_reg', 'desc')
                            ->paginate(15);
 
         $statusOptions = [
@@ -220,6 +228,165 @@ class RawatJalanController extends Controller
     }
 
     /**
+     * Daftar pemeriksaan_ralan untuk no_rawat tertentu (JSON)
+     */
+    public function pemeriksaanRalan(Request $request)
+    {
+        $token = $request->query('t');
+        $noRawat = $request->query('no_rawat');
+        if ($token) {
+            $padded = str_replace(['-', '_'], ['+', '/'], $token);
+            $paddingNeeded = 4 - (strlen($padded) % 4);
+            if ($paddingNeeded < 4) {
+                $padded .= str_repeat('=', $paddingNeeded);
+            }
+            $decoded = json_decode(base64_decode($padded), true);
+            $noRawat = $decoded['no_rawat'] ?? $noRawat;
+        }
+
+        if (!$noRawat) {
+            return response()->json(['data' => []]);
+        }
+
+        $rows = DB::table('pemeriksaan_ralan')
+            ->where('no_rawat', $noRawat)
+            ->orderByDesc('tgl_perawatan')
+            ->orderByDesc('jam_rawat')
+            ->get([
+                'no_rawat','tgl_perawatan','jam_rawat','suhu_tubuh','tensi','nadi','respirasi','tinggi','berat','spo2','gcs','kesadaran','keluhan','pemeriksaan','alergi','lingkar_perut','rtl','penilaian','instruksi','evaluasi','nip'
+            ]);
+
+        return response()->json(['data' => $rows]);
+    }
+
+    /**
+     * Simpan pemeriksaan_ralan
+     */
+    public function storePemeriksaanRalan(Request $request)
+    {
+        $validated = $request->validate([
+            'no_rawat' => 'required|string|max:17',
+            'tgl_perawatan' => 'required|date',
+            'jam_rawat' => 'required|date_format:H:i',
+            'suhu_tubuh' => 'nullable|string|max:5',
+            'tensi' => 'required|string|max:8',
+            'nadi' => 'nullable|string|max:3',
+            'respirasi' => 'nullable|string|max:3',
+            'tinggi' => 'nullable|string|max:5',
+            'berat' => 'nullable|string|max:5',
+            'spo2' => 'required|string|max:3',
+            'gcs' => 'nullable|string|max:10',
+            'kesadaran' => 'required|in:Compos Mentis,Somnolence,Sopor,Coma,Alert,Confusion,Voice,Pain,Unresponsive,Apatis,Delirium',
+            'keluhan' => 'nullable|string|max:2000',
+            'pemeriksaan' => 'nullable|string|max:2000',
+            'alergi' => 'nullable|string|max:80',
+            'lingkar_perut' => 'nullable|string|max:5',
+            'rtl' => 'required|string|max:2000',
+            'penilaian' => 'required|string|max:2000',
+            'instruksi' => 'required|string|max:2000',
+            'evaluasi' => 'required|string|max:2000',
+            'nip' => 'required|string|max:20',
+        ]);
+
+        // Pastikan format jam menjadi H:i:s
+        $validated['jam_rawat'] = sprintf('%s:00', $validated['jam_rawat']);
+
+        DB::table('pemeriksaan_ralan')->insert($validated);
+
+        return response()->json(['message' => 'Pemeriksaan tersimpan']);
+    }
+
+    /**
+     * Hapus pemeriksaan_ralan berdasarkan kunci komposit
+     */
+    public function deletePemeriksaanRalan(Request $request)
+    {
+        $validated = $request->validate([
+            'no_rawat' => 'required|string|max:17',
+            'tgl_perawatan' => 'required|date',
+            'jam_rawat' => 'required|date_format:H:i:s',
+        ]);
+
+        $deleted = DB::table('pemeriksaan_ralan')
+            ->where('no_rawat', $validated['no_rawat'])
+            ->where('tgl_perawatan', $validated['tgl_perawatan'])
+            ->where('jam_rawat', $validated['jam_rawat'])
+            ->delete();
+
+        if ($deleted === 0) {
+            return response()->json(['message' => 'Data tidak ditemukan'], 404);
+        }
+
+        return response()->json(['message' => 'Pemeriksaan dihapus']);
+    }
+
+    /**
+     * Update pemeriksaan_ralan berdasarkan kunci komposit
+     */
+    public function updatePemeriksaanRalan(Request $request)
+    {
+        $validated = $request->validate([
+            'key.no_rawat' => 'required|string|max:17',
+            'key.tgl_perawatan' => 'required|date',
+            'key.jam_rawat' => 'required|date_format:H:i:s',
+            // Updatable fields
+            'suhu_tubuh' => 'nullable|string|max:5',
+            'tensi' => 'required|string|max:8',
+            'nadi' => 'nullable|string|max:3',
+            'respirasi' => 'nullable|string|max:3',
+            'tinggi' => 'nullable|string|max:5',
+            'berat' => 'nullable|string|max:5',
+            'spo2' => 'required|string|max:3',
+            'gcs' => 'nullable|string|max:10',
+            'kesadaran' => 'required|in:Compos Mentis,Somnolence,Sopor,Coma,Alert,Confusion,Voice,Pain,Unresponsive,Apatis,Delirium',
+            'keluhan' => 'nullable|string|max:2000',
+            'pemeriksaan' => 'nullable|string|max:2000',
+            'alergi' => 'nullable|string|max:80',
+            'lingkar_perut' => 'nullable|string|max:5',
+            'rtl' => 'required|string|max:2000',
+            'penilaian' => 'required|string|max:2000',
+            'instruksi' => 'required|string|max:2000',
+            'evaluasi' => 'required|string|max:2000',
+            'nip' => 'required|string|max:20',
+        ]);
+
+        $key = $validated['key'];
+        $data = $request->only(['suhu_tubuh','tensi','nadi','respirasi','tinggi','berat','spo2','gcs','kesadaran','keluhan','pemeriksaan','alergi','lingkar_perut','rtl','penilaian','instruksi','evaluasi','nip']);
+
+        $updated = DB::table('pemeriksaan_ralan')
+            ->where('no_rawat', $key['no_rawat'])
+            ->where('tgl_perawatan', $key['tgl_perawatan'])
+            ->where('jam_rawat', $key['jam_rawat'])
+            ->update($data);
+
+        if ($updated === 0) {
+            return response()->json(['message' => 'Data tidak ditemukan atau tidak berubah'], 404);
+        }
+
+        return response()->json(['message' => 'Pemeriksaan diperbarui']);
+    }
+
+    /**
+     * Pencarian pegawai (petugas) untuk dropdown: q by nama/nik
+     */
+    public function searchPegawai(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+        $rows = DB::table('pegawai')
+            ->when($q !== '', function($query) use ($q) {
+                $query->where(function($sub) use ($q) {
+                    $sub->where('nama', 'like', "%{$q}%")
+                        ->orWhere('nik', 'like', "%{$q}%");
+                });
+            })
+            ->orderBy('nama')
+            ->limit(20)
+            ->get(['nik','nama']);
+
+        return response()->json(['data' => $rows]);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -241,8 +408,7 @@ class RawatJalanController extends Controller
             'umurdaftar' => 'nullable|integer|min:0',
             'sttsumur' => 'nullable|in:Th,Bl,Hr',
             'status_bayar' => 'required|in:Sudah Bayar,Belum Bayar',
-            'status_poli' => 'required|in:Lama,Baru',
-            'keputusan' => 'nullable|in:-,RUJUKAN,PRIORITAS,HIJAU,KUNING,MERAH,HITAM,MJKN,CHECK-IN'
+            'status_poli' => 'required|in:Lama,Baru'
         ]);
 
         // Generate no_rawat
@@ -314,17 +480,6 @@ class RawatJalanController extends Controller
             'Hr' => 'Hari'
         ];
 
-        $keputusanOptions = [
-            '-' => '-',
-            'RUJUKAN' => 'RUJUKAN',
-            'PRIORITAS' => 'PRIORITAS',
-            'HIJAU' => 'HIJAU',
-            'KUNING' => 'KUNING',
-            'MERAH' => 'MERAH',
-            'HITAM' => 'HITAM',
-            'MJKN' => 'MJKN',
-            'CHECK-IN' => 'CHECK-IN'
-        ];
 
         return Inertia::render('RawatJalan/Edit', [
             'rawatJalan' => $rawatJalan,
