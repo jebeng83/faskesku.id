@@ -145,6 +145,81 @@ class RawatJalanController extends Controller
     }
 
     /**
+     * Halaman lanjutan rawat jalan (placeholder awal)
+     */
+    public function lanjutan(Request $request)
+    {
+        // Mendukung skema terenkripsi sederhana via token base64-url (param 't')
+        $token = $request->query('t');
+        if ($token) {
+            $padded = str_replace(['-', '_'], ['+', '/'], $token);
+            $paddingNeeded = 4 - (strlen($padded) % 4);
+            if ($paddingNeeded < 4) {
+                $padded .= str_repeat('=', $paddingNeeded);
+            }
+            $decoded = json_decode(base64_decode($padded), true);
+            $noRawat = $decoded['no_rawat'] ?? null;
+            $noRkmMedis = $decoded['no_rkm_medis'] ?? null;
+        } else {
+            $noRawat = $request->query('no_rawat');
+            $noRkmMedis = $request->query('no_rkm_medis');
+        }
+        // Cari data bila parameter ada; jangan 404-kan agar tidak memutus navigasi
+        $rawat = null;
+        if ($noRawat) {
+            $rawat = RawatJalan::with('patient')
+                ->when($noRkmMedis, fn($q) => $q->where('no_rkm_medis', $noRkmMedis))
+                ->where('no_rawat', $noRawat)
+                ->first();
+        } elseif ($noRkmMedis) {
+            $rawat = RawatJalan::with('patient')
+                ->where('no_rkm_medis', $noRkmMedis)
+                ->orderByDesc('tgl_registrasi')
+                ->orderByDesc('jam_reg')
+                ->first();
+        }
+
+        return Inertia::render('RawatJalan/Lanjutan', [
+            'rawatJalan' => $rawat,
+            'params' => [
+                'no_rawat' => $noRawat,
+                'no_rkm_medis' => $noRkmMedis,
+            ],
+        ]);
+    }
+
+    /**
+     * Endpoint data riwayat rawat jalan pasien (AJAX-Inertia partial load)
+     */
+    public function riwayat(Request $request)
+    {
+        $token = $request->query('t');
+        $noRkmMedis = $request->query('no_rkm_medis');
+        if ($token) {
+            $padded = str_replace(['-', '_'], ['+', '/'], $token);
+            $paddingNeeded = 4 - (strlen($padded) % 4);
+            if ($paddingNeeded < 4) {
+                $padded .= str_repeat('=', $paddingNeeded);
+            }
+            $decoded = json_decode(base64_decode($padded), true);
+            $noRkmMedis = $decoded['no_rkm_medis'] ?? $noRkmMedis;
+        }
+
+        $riwayat = [];
+        if ($noRkmMedis) {
+            $riwayat = RawatJalan::where('no_rkm_medis', $noRkmMedis)
+                ->orderByDesc('tgl_registrasi')
+                ->orderByDesc('jam_reg')
+                ->limit(25)
+                ->get(['no_rawat','tgl_registrasi','jam_reg','kd_dokter','kd_poli','stts','status_bayar']);
+        }
+
+        return response()->json([
+            'data' => $riwayat,
+        ]);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)

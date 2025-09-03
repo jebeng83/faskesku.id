@@ -202,6 +202,9 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                         No. Rawat
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        No. RM
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Nama Pasien
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -230,8 +233,24 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                             {item.no_rawat}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                            {item.patient?.nm_pasien || '-'}
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                            {item.no_rkm_medis}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                            {item.patient?.nm_pasien ? (
+                                                <Link
+                                                    href={`/rawat-jalan/lanjutan?t=${btoa(JSON.stringify({ no_rawat: item.no_rawat, no_rkm_medis: item.no_rkm_medis || '' }))
+                                                        .replace(/=+$/, '')
+                                                        .replace(/\+/g, '-')
+                                                        .replace(/\//g, '_')}`}
+                                                    className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 underline-offset-2 hover:underline"
+                                                    title="Lihat lanjutan pasien"
+                                                >
+                                                    {item.patient.nm_pasien}
+                                                </Link>
+                                            ) : (
+                                                <span className="text-gray-900 dark:text-white">-</span>
+                                            )}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             {formatDate(item.tgl_registrasi)}
