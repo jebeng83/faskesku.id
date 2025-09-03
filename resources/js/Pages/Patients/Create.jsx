@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
+import { toast } from '@/tools/toast';
 
 export default function Create() {
     const { data, setData, post, processing, errors } = useForm({
@@ -33,7 +34,10 @@ export default function Create() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post(route('patients.store'));
+        post(route('patients.store'), {
+            onSuccess: () => toast('Pasien berhasil disimpan', 'success'),
+            onError: () => toast('Gagal menyimpan data pasien', 'error')
+        });
     };
 
     return (
