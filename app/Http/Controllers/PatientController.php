@@ -23,8 +23,8 @@ class PatientController extends Controller
 
         // Pagination
         $patients = $query->orderBy('no_rkm_medis', 'desc')
-                         ->paginate(10)
-                         ->withQueryString();
+            ->paginate(10)
+            ->withQueryString();
 
         return Inertia::render('Patients/Index', [
             'patients' => $patients,
@@ -79,12 +79,12 @@ class PatientController extends Controller
         }
 
         $data = $validator->validated();
-        
+
         // Generate nomor RM otomatis
         $data['no_rkm_medis'] = Patient::generateNoRM();
         $data['tgl_daftar'] = now()->toDateString();
         $data['umur'] = \Carbon\Carbon::parse($data['tgl_lahir'])->age . ' Th';
-        
+
         // Set default values for required fields
         $data['kd_kel'] = $data['kd_kel'] ?? 1;
         $data['kd_kec'] = $data['kd_kec'] ?? 1;
@@ -161,7 +161,7 @@ class PatientController extends Controller
         }
 
         $data = $validator->validated();
-        
+
         // Update umur
         $data['umur'] = \Carbon\Carbon::parse($data['tgl_lahir'])->age . ' Th';
 
