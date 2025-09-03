@@ -8,16 +8,17 @@ import Resep from './components/Resep';
 import Diagnosa from './components/Diagnosa';
 import PermintaanLab from './components/PermintaanLab';
 import PermintaanRadiologi from './components/PermintaanRadiologi';
+import RiwayatPemeriksaan from './components/RiwayatPemeriksaan';
 
 export default function Lanjutan({ rawatJalan, params }) {
     // Semua accordion tertutup secara default
-    const [openAcc, setOpenAcc] = useState({ pasien: false, registrasi: false });
+    const [openAcc, setOpenAcc] = useState({ pasien: false, registrasi: false, pemeriksaan: false });
     const [openRight, setOpenRight] = useState({ cppt: false, resep: false, diagnosa: false, lab: false, radiologi: false });
     // Membuka salah satu akan menutup yang lain; klik ulang menutup semuanya
     const toggle = (key) =>
         setOpenAcc((prev) => {
             const isOpening = !prev[key];
-            return isOpening ? { pasien: false, registrasi: false, [key]: true } : { pasien: false, registrasi: false };
+            return isOpening ? { pasien: false, registrasi: false, pemeriksaan: false, [key]: true } : { pasien: false, registrasi: false, pemeriksaan: false };
         });
     return (
         <AppLayout>
@@ -129,10 +130,25 @@ export default function Lanjutan({ rawatJalan, params }) {
                             )}
                         </div>
 
-                        {/* Riwayat Pemeriksaan (dipindah dari kanan) */}
-                        <div className="block bg-white dark:bg-gray-800 shadow-sm rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Riwayat Pemeriksaan</h3>
+                        {/* Riwayat Kunjungan */}
+                        {/* <div className="block bg-white dark:bg-gray-800 shadow-sm rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Riwayat Kunjungan</h3>
                             <RiwayatKunjungan token={typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('t') : ''} noRkmMedis={params?.no_rkm_medis || rawatJalan?.patient?.no_rkm_medis} />
+                        </div> */}
+
+                        {/* Riwayat Pemeriksaan (dengan tab di dalam) */}
+                        <div className="block bg-white dark:bg-gray-800 shadow-sm rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                            <button onClick={() => toggle('pemeriksaan')} className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-gray-50 dark:hover:bg-gray-700/40">
+                                <span className="font-semibold text-gray-900 dark:text-white">Riwayat Perawatan</span>
+                                <svg className={`w-5 h-5 text-gray-500 transition-transform ${openAcc.pemeriksaan ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.188l3.71-3.96a.75.75 0 111.08 1.04l-4.24 4.53a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clipRule="evenodd"/></svg>
+                            </button>
+                            {openAcc.pemeriksaan && (
+                        <RiwayatPemeriksaan
+                            token={typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('t') : ''}
+                            noRawat={params?.no_rawat || rawatJalan?.no_rawat}
+                            noRkmMedis={params?.no_rkm_medis || rawatJalan?.patient?.no_rkm_medis}
+                        />
+                        )}
                         </div>
                     </div>
 
