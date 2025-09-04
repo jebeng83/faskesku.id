@@ -3,21 +3,51 @@ import { Head, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
 import axios from 'axios';
+import { toast } from '@/tools/toast';
 
 export default function DataObat({ dataBarang, filters }) {
+    // Fungsi untuk menghitung tanggal kadaluarsa default (hari ini + 3 tahun)
+    const getDefaultExpiryDate = () => {
+        const today = new Date();
+        const expiryDate = new Date(today);
+        expiryDate.setFullYear(today.getFullYear() + 3);
+        return expiryDate.toISOString().split('T')[0]; // Format YYYY-MM-DD
+    };
+
     const [search, setSearch] = useState(filters.search || '');
     const [showModal, setShowModal] = useState(false);
     const [modalType, setModalType] = useState('create'); // 'create' or 'edit'
     const [selectedItem, setSelectedItem] = useState(null);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
+    const [dropdownData, setDropdownData] = useState({
+        kodesatuan: [],
+        jenis: [],
+        industrifarmasi: [],
+        kategori_barang: [],
+        golongan_barang: []
+    });
+    
+    const [percentageData, setPercentageData] = useState({
+        ralan: 0,
+        kelas1: 0,
+        kelas2: 0,
+        kelas3: 0,
+        utama: 0,
+        vip: 0,
+        vvip: 0,
+        beliluar: 0,
+        jualbebas: 0,
+        karyawan: 0
+    });
+    
     const [formData, setFormData] = useState({
         kode_brng: '',
         nama_brng: '',
         kode_sat: '',
         kode_satbesar: '',
-        letak_barang: '',
-        dasar: '',
+        letak_barang: 'Apotek',
+        dasar: '0',
         h_beli: '',
         ralan: '',
         kelas1: '',
@@ -29,20 +59,15 @@ export default function DataObat({ dataBarang, filters }) {
         beliluar: '',
         jualbebas: '',
         karyawan: '',
-        stokminimal: '',
+        stokminimal: '100',
         kdjns: '',
-        kapasitas: '',
-        expire: '',
+        isi: '1',
+        kapasitas: '1',
+        expire: getDefaultExpiryDate(),
         status: '1',
         kode_industri: '',
         kode_kategori: '',
-        kode_golongan: '',
-        kemasan: '',
-        bahan: '',
-        officetarif: '',
-        tipesarana: '',
-        kode_ralan: '',
-        bpjs: '',
+        kode_golongan: ''
     });
 
     const handleSearch = (e) => {
@@ -53,16 +78,33 @@ export default function DataObat({ dataBarang, filters }) {
         });
     };
 
-    const openCreateModal = () => {
+    const openCreateModal = async () => {
         setModalType('create');
         setSelectedItem(null);
+        
+        // Generate auto code first
+        let autoCode = '';
+        try {
+            const codeResponse = await axios.get('/data-barang-last-code');
+            if (codeResponse.data.success) {
+                autoCode = codeResponse.data.new_code;
+            }
+        } catch (error) {
+            console.error('Error generating item code:', error);
+        }
+        
         setFormData({
-            kode_brng: '',
+            kode_brng: autoCode,
+            kode_industri: '',
             nama_brng: '',
-            kode_sat: '',
             kode_satbesar: '',
-            letak_barang: '',
-            dasar: '',
+            isi: '1',
+            kode_sat: '',
+            kapasitas: '1',
+            kdjns: '',
+            kode_kategori: '',
+            kode_golongan: '',
+            dasar: '0',
             h_beli: '',
             ralan: '',
             kelas1: '',
@@ -74,20 +116,10 @@ export default function DataObat({ dataBarang, filters }) {
             beliluar: '',
             jualbebas: '',
             karyawan: '',
-            stokminimal: '',
-            kdjns: '',
-            kapasitas: '',
-            expire: '',
+            stokminimal: '100',
+            expire: getDefaultExpiryDate(),
             status: '1',
-            kode_industri: '',
-            kode_kategori: '',
-            kode_golongan: '',
-            kemasan: '',
-            bahan: '',
-            officetarif: '',
-            tipesarana: '',
-            kode_ralan: '',
-            bpjs: '',
+            letak_barang: 'Apotek'
         });
         setErrors({});
         setShowModal(true);
@@ -98,10 +130,15 @@ export default function DataObat({ dataBarang, filters }) {
         setSelectedItem(item);
         setFormData({
             kode_brng: item.kode_brng,
+            kode_industri: item.kode_industri || '',
             nama_brng: item.nama_brng,
-            kode_sat: item.kode_sat,
             kode_satbesar: item.kode_satbesar || '',
-            letak_barang: item.letak_barang || '',
+            isi: item.isi || '',
+            kode_sat: item.kode_sat,
+            kapasitas: item.kapasitas || '',
+            kdjns: item.kdjns || '',
+            kode_kategori: item.kode_kategori || '',
+            kode_golongan: item.kode_golongan || '',
             dasar: item.dasar || '',
             h_beli: item.h_beli || '',
             ralan: item.ralan || '',
@@ -115,19 +152,9 @@ export default function DataObat({ dataBarang, filters }) {
             jualbebas: item.jualbebas || '',
             karyawan: item.karyawan || '',
             stokminimal: item.stokminimal || '',
-            kdjns: item.kdjns || '',
-            kapasitas: item.kapasitas || '',
             expire: item.expire || '',
             status: item.status || '1',
-            kode_industri: item.kode_industri || '',
-            kode_kategori: item.kode_kategori || '',
-            kode_golongan: item.kode_golongan || '',
-            kemasan: item.kemasan || '',
-            bahan: item.bahan || '',
-            officetarif: item.officetarif || '',
-            tipesarana: item.tipesarana || '',
-            kode_ralan: item.kode_ralan || '',
-            bpjs: item.bpjs || '',
+            letak_barang: item.letak_barang || ''
         });
         setErrors({});
         setShowModal(true);
@@ -139,12 +166,40 @@ export default function DataObat({ dataBarang, filters }) {
         setErrors({});
     };
 
+    const calculatePrices = (hargaBeli) => {
+        const harga = parseFloat(hargaBeli) || 0;
+        return {
+            ralan: Math.round(harga + (harga * percentageData.ralan / 100)),
+            kelas1: Math.round(harga + (harga * percentageData.kelas1 / 100)),
+            kelas2: Math.round(harga + (harga * percentageData.kelas2 / 100)),
+            kelas3: Math.round(harga + (harga * percentageData.kelas3 / 100)),
+            utama: Math.round(harga + (harga * percentageData.utama / 100)),
+            vip: Math.round(harga + (harga * percentageData.vip / 100)),
+            vvip: Math.round(harga + (harga * percentageData.vvip / 100)),
+            beliluar: Math.round(harga + (harga * percentageData.beliluar / 100)),
+            jualbebas: Math.round(harga + (harga * percentageData.jualbebas / 100)),
+            karyawan: Math.round(harga + (harga * percentageData.karyawan / 100))
+        };
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        
+        // If changing h_beli, calculate all prices automatically
+        if (name === 'h_beli' && value) {
+            const calculatedPrices = calculatePrices(value);
+            setFormData(prev => ({
+                ...prev,
+                [name]: value,
+                ...calculatedPrices
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        }
+        
         // Clear error when user starts typing
         if (errors[name]) {
             setErrors(prev => ({
@@ -153,6 +208,43 @@ export default function DataObat({ dataBarang, filters }) {
             }));
         }
     };
+    
+    // Fetch dropdown data and generate item code when modal opens
+    useEffect(() => {
+        if (showModal) {
+            const fetchData = async () => {
+                try {
+                    // Fetch dropdown data
+                    const dropdownResponse = await axios.get('/data-barang-dropdown');
+                    setDropdownData(dropdownResponse.data);
+                    
+                    // Fetch percentage data from setpenjualanumum
+                    const percentageResponse = await axios.get('/api/set-harga-obat');
+                    if (percentageResponse.data.success && percentageResponse.data.data) {
+                        const data = percentageResponse.data.data;
+                        setPercentageData({
+                            ralan: parseFloat(data.ralan) || 0,
+                            kelas1: parseFloat(data.kelas1) || 0,
+                            kelas2: parseFloat(data.kelas2) || 0,
+                            kelas3: parseFloat(data.kelas3) || 0,
+                            utama: parseFloat(data.utama) || 0,
+                            vip: parseFloat(data.vip) || 0,
+                            vvip: parseFloat(data.vvip) || 0,
+                            beliluar: parseFloat(data.beliluar) || 0,
+                            jualbebas: parseFloat(data.jualbebas) || 0,
+                            karyawan: parseFloat(data.karyawan) || 0
+                        });
+                    }
+                    
+                    // Auto code generation is now handled in openCreateModal
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                }
+            };
+            
+            fetchData();
+        }
+    }, [showModal, modalType]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -168,12 +260,21 @@ export default function DataObat({ dataBarang, filters }) {
             }
 
             if (response.data.success) {
+                toast(
+                    modalType === 'create' 
+                        ? 'Data obat berhasil ditambahkan!' 
+                        : 'Data obat berhasil diperbarui!', 
+                    'success'
+                );
                 closeModal();
                 router.reload();
             }
         } catch (error) {
             if (error.response?.data?.errors) {
                 setErrors(error.response.data.errors);
+                toast('Terjadi kesalahan saat menyimpan data. Periksa form kembali.', 'error');
+            } else {
+                toast('Terjadi kesalahan yang tidak terduga.', 'error');
             }
         } finally {
             setLoading(false);
@@ -184,9 +285,11 @@ export default function DataObat({ dataBarang, filters }) {
         if (confirm('Apakah Anda yakin ingin menghapus data obat ini?')) {
             try {
                 await axios.delete(route('data-barang.destroy', item.kode_brng));
+                toast('Data obat berhasil dihapus!', 'success');
                 router.reload();
             } catch (error) {
                 console.error('Error deleting item:', error);
+                toast('Gagal menghapus data obat.', 'error');
             }
         }
     };
@@ -199,6 +302,24 @@ export default function DataObat({ dataBarang, filters }) {
             minimumFractionDigits: 0,
             maximumFractionDigits: 0,
         }).format(value);
+    };
+    
+    // Function to generate item code automatically
+    const generateItemCode = async () => {
+        try {
+            const response = await axios.get('/data-barang-last-code');
+            if (response.data.success) {
+                setFormData(prev => ({
+                    ...prev,
+                    kode_brng: response.data.new_code
+                }));
+                return response.data.new_code;
+            }
+            return null;
+        } catch (error) {
+            console.error('Error generating item code:', error);
+            return null;
+        }
     };
 
     return (
@@ -378,7 +499,7 @@ export default function DataObat({ dataBarang, filters }) {
             {/* Modal */}
             {showModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto">
                         <div className="p-6">
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -395,28 +516,61 @@ export default function DataObat({ dataBarang, filters }) {
                             </div>
 
                             <form onSubmit={handleSubmit} className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {/* Kode Barang */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    {/* 1. Kode Barang */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                             Kode Barang *
                                         </label>
-                                        <input
-                                            type="text"
-                                            name="kode_brng"
-                                            value={formData.kode_brng}
-                                            onChange={handleInputChange}
-                                            disabled={modalType === 'edit'}
-                                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
-                                                errors.kode_brng ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                                            }`}
-                                        />
+                                        <div className="flex">
+                                            <input
+                                                type="text"
+                                                name="kode_brng"
+                                                value={formData.kode_brng}
+                                                onChange={handleInputChange}
+                                                disabled={modalType === 'edit'}
+                                                className={`w-full px-3 py-2 border rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
+                                                    errors.kode_brng ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                                                }`}
+                                            />
+                                            {modalType === 'create' && (
+                                                <button
+                                                    type="button"
+                                                    onClick={generateItemCode}
+                                                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-r-lg transition-colors duration-300"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                                                    </svg>
+                                                </button>
+                                            )}
+                                        </div>
                                         {errors.kode_brng && (
                                             <p className="mt-1 text-sm text-red-600">{errors.kode_brng[0]}</p>
                                         )}
                                     </div>
 
-                                    {/* Nama Barang */}
+                                    {/* 2. Industri Farmasi */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Industri Farmasi
+                                        </label>
+                                        <select
+                                            name="kode_industri"
+                                            value={formData.kode_industri}
+                                            onChange={handleInputChange}
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                        >
+                                            <option value="">Pilih Industri</option>
+                                            {dropdownData.industrifarmasi && dropdownData.industrifarmasi.map((item) => (
+                                                <option key={item.kode_industri} value={item.kode_industri}>
+                                                    {item.nama_industri}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* 3. Nama Barang */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                             Nama Barang *
@@ -435,62 +589,148 @@ export default function DataObat({ dataBarang, filters }) {
                                         )}
                                     </div>
 
-                                    {/* Kode Satuan */}
+                                    {/* 4. Satuan Besar */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Kode Satuan *
+                                            Satuan Besar
+                                        </label>
+                                        <select
+                                            name="kode_satbesar"
+                                            value={formData.kode_satbesar}
+                                            onChange={handleInputChange}
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                        >
+                                            <option value="">Pilih Satuan Besar</option>
+                                            {dropdownData.kodesatuan && dropdownData.kodesatuan.map((item) => (
+                                                <option key={item.kode_sat} value={item.kode_sat}>
+                                                    {item.satuan}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* 6. Isi */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Isi
                                         </label>
                                         <input
-                                            type="text"
+                                            type="number"
+                                            name="isi"
+                                            value={formData.isi}
+                                            onChange={handleInputChange}
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            step="0.01"
+                                        />
+                                    </div>
+
+                                    {/* 7. Satuan Kecil */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Satuan Kecil *
+                                        </label>
+                                        <select
                                             name="kode_sat"
                                             value={formData.kode_sat}
                                             onChange={handleInputChange}
                                             className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
                                                 errors.kode_sat ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                                             }`}
-                                        />
+                                        >
+                                            <option value="">Pilih Satuan</option>
+                                            {dropdownData.kodesatuan && dropdownData.kodesatuan.map((item) => (
+                                                <option key={item.kode_sat} value={item.kode_sat}>
+                                                    {item.satuan}
+                                                </option>
+                                            ))}
+                                        </select>
                                         {errors.kode_sat && (
                                             <p className="mt-1 text-sm text-red-600">{errors.kode_sat[0]}</p>
                                         )}
                                     </div>
-
-                                    {/* Harga Beli */}
+                                    
+                                    {/* 8. Kapasitas */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Harga Beli
+                                            Kapasitas
                                         </label>
                                         <input
                                             type="number"
-                                            name="h_beli"
-                                            value={formData.h_beli}
+                                            name="kapasitas"
+                                            value={formData.kapasitas}
                                             onChange={handleInputChange}
-                                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
-                                                errors.h_beli ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                                            }`}
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            step="0.01"
                                         />
-                                        {errors.h_beli && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.h_beli[0]}</p>
-                                        )}
                                     </div>
 
-                                    {/* Harga Ralan */}
+                                    {/* 9. Jenis */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Harga Ralan
+                                            Jenis
                                         </label>
-                                        <input
-                                            type="number"
-                                            name="ralan"
-                                            value={formData.ralan}
+                                        <select
+                                            name="kdjns"
+                                            value={formData.kdjns}
                                             onChange={handleInputChange}
-                                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
-                                                errors.ralan ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                                            }`}
-                                        />
-                                        {errors.ralan && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.ralan[0]}</p>
-                                        )}
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                        >
+                                            <option value="">Pilih Jenis</option>
+                                            {dropdownData.jenis && dropdownData.jenis.map((item) => (
+                                                <option key={item.kdjns} value={item.kdjns}>
+                                                    {item.nama}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
+
+                                    {/* 10. Kategori */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Kategori Barang
+                                        </label>
+                                        <select
+                                            name="kode_kategori"
+                                            value={formData.kode_kategori}
+                                            onChange={handleInputChange}
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                        >
+                                            <option value="">Pilih Kategori</option>
+                                            {dropdownData.kategori_barang && dropdownData.kategori_barang.map((item) => (
+                                                <option key={item.kode} value={item.kode}>
+                                                    {item.nama}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* 11. Golongan */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Golongan Barang
+                                        </label>
+                                        <select
+                                            name="kode_golongan"
+                                            value={formData.kode_golongan}
+                                            onChange={handleInputChange}
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                        >
+                                            <option value="">Pilih Golongan</option>
+                                            {dropdownData.golongan_barang && dropdownData.golongan_barang.map((item) => (
+                                                <option key={item.kode} value={item.kode}>
+                                                    {item.nama}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+
+
+
+
+
+
+
 
                                     {/* Status */}
                                     <div>
@@ -507,6 +747,9 @@ export default function DataObat({ dataBarang, filters }) {
                                             <option value="0">Non-Aktif</option>
                                         </select>
                                     </div>
+                                    
+
+
 
                                     {/* Letak Barang */}
                                     <div>
@@ -519,7 +762,241 @@ export default function DataObat({ dataBarang, filters }) {
                                             value={formData.letak_barang}
                                             onChange={handleInputChange}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            maxLength={100}
                                         />
+                                    </div>
+
+                                    {/* Harga Dasar */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Harga Dasar
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
+                                            </div>
+                                            <input
+                                                type="number"
+                                                name="dasar"
+                                                value={formData.dasar}
+                                                onChange={handleInputChange}
+                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            />
+                                        </div>
+                                    </div>
+
+
+
+                                    {/* Harga Beli */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Harga Beli
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
+                                            </div>
+                                            <input
+                                                type="number"
+                                                name="h_beli"
+                                                value={formData.h_beli}
+                                                onChange={handleInputChange}
+                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            />
+                                            {errors.h_beli && (
+                                                <p className="mt-1 text-sm text-red-600">{errors.h_beli[0]}</p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Harga Ralan */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Harga Ralan
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
+                                            </div>
+                                            <input
+                                                type="number"
+                                                name="ralan"
+                                                value={formData.ralan}
+                                                onChange={handleInputChange}
+                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Harga Ranap Kelas 1 */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Harga Ranap Kelas 1
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
+                                            </div>
+                                            <input
+                                                type="number"
+                                                name="kelas1"
+                                                value={formData.kelas1}
+                                                onChange={handleInputChange}
+                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Harga Ranap Kelas 2 */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Harga Ranap Kelas 2
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
+                                            </div>
+                                            <input
+                                                type="number"
+                                                name="kelas2"
+                                                value={formData.kelas2}
+                                                onChange={handleInputChange}
+                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Harga Ranap Kelas 3 */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Harga Ranap Kelas 3
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
+                                            </div>
+                                            <input
+                                                type="number"
+                                                name="kelas3"
+                                                value={formData.kelas3}
+                                                onChange={handleInputChange}
+                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Harga Ranap Utama/BPJS */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Harga Ranap Utama/BPJS
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
+                                            </div>
+                                            <input
+                                                type="number"
+                                                name="utama"
+                                                value={formData.utama}
+                                                onChange={handleInputChange}
+                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Harga Ranap Kelas VIP */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Harga Ranap Kelas VIP
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
+                                            </div>
+                                            <input
+                                                type="number"
+                                                name="vip"
+                                                value={formData.vip}
+                                                onChange={handleInputChange}
+                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Harga Ranap Kelas VVIP */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Harga Ranap Kelas VVIP
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
+                                            </div>
+                                            <input
+                                                type="number"
+                                                name="vvip"
+                                                value={formData.vvip}
+                                                onChange={handleInputChange}
+                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Harga Apotek Luar */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Harga Apotek Luar
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
+                                            </div>
+                                            <input
+                                                type="number"
+                                                name="beliluar"
+                                                value={formData.beliluar}
+                                                onChange={handleInputChange}
+                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Harga Jual Obat Bebas */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Harga Jual Obat Bebas
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
+                                            </div>
+                                            <input
+                                                type="number"
+                                                name="jualbebas"
+                                                value={formData.jualbebas}
+                                                onChange={handleInputChange}
+                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Harga Karyawan */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Harga Karyawan
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
+                                            </div>
+                                            <input
+                                                type="number"
+                                                name="karyawan"
+                                                value={formData.karyawan}
+                                                onChange={handleInputChange}
+                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* Stok Minimal */}
@@ -535,6 +1012,21 @@ export default function DataObat({ dataBarang, filters }) {
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                         />
                                     </div>
+
+                                    {/* Tanggal Kadaluarsa */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Tanggal Kadaluarsa
+                                        </label>
+                                        <input
+                                            type="date"
+                                            name="expire"
+                                            value={formData.expire}
+                                            onChange={handleInputChange}
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                        />
+                                    </div>
+
                                 </div>
 
                                 {/* Action Buttons */}

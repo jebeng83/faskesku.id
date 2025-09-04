@@ -1,11 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\DataBarangController;
+use App\Http\Controllers\SetHargaObatController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -34,7 +36,7 @@ Route::delete('debug-delete/{id}', function($id) {
 // Simple setting test without parameter
 Route::get('setting-simple', function() {
     try {
-        $count = \DB::select('SELECT COUNT(*) as count FROM setting')[0]->count;
+        $count = DB::select('SELECT COUNT(*) as count FROM setting')[0]->count;
         return response()->json(['message' => 'Database connection works', 'count' => $count]);
     } catch (\Exception $e) {
         return response()->json(['error' => $e->getMessage()], 500);
@@ -46,7 +48,7 @@ Route::get('setting-simple', function() {
 // Test database tables
 Route::get('debug-tables', function() {
     try {
-        $tables = \DB::select('SHOW TABLES');
+        $tables = DB::select('SHOW TABLES');
         return response()->json(['message' => 'Database connected', 'tables' => $tables]);
     } catch (\Exception $e) {
         return response()->json(['error' => $e->getMessage()], 500);
@@ -56,7 +58,7 @@ Route::get('debug-tables', function() {
 // Test database connection without model
 Route::delete('debug-setting/{nama_instansi}', function($nama_instansi) {
     try {
-        $result = \DB::select('SELECT COUNT(*) as count FROM setting WHERE nama_instansi = ?', [$nama_instansi]);
+        $result = DB::select('SELECT COUNT(*) as count FROM setting WHERE nama_instansi = ?', [$nama_instansi]);
         return response()->json(['message' => 'Database query works', 'nama_instansi' => $nama_instansi, 'count' => $result[0]->count]);
     } catch (\Exception $e) {
         return response()->json(['error' => $e->getMessage()], 500);
@@ -102,6 +104,8 @@ Route::get('test-param/{param}', function($param) {
     return response()->json(['message' => 'Route with param works', 'param' => $param]);
 });
 
+
+
 Route::middleware('auth')->group(function () {
     Route::get('/', function () {
         return redirect()->route('dashboard');
@@ -114,6 +118,8 @@ Route::middleware('auth')->group(function () {
     // Patient routes
     Route::resource('patients', PatientController::class);
 Route::resource('data-barang', DataBarangController::class);
+Route::get('data-barang-dropdown', [DataBarangController::class, 'getDropdownData'])->name('data-barang.dropdown')->withoutMiddleware(['auth']);
+Route::get('data-barang-last-code', [DataBarangController::class, 'getLastItemCode'])->name('data-barang.last-code')->withoutMiddleware(['auth']);
 
 // Farmasi routes
 Route::prefix('farmasi')->name('farmasi.')->group(function () {
@@ -141,7 +147,7 @@ Route::prefix('farmasi')->name('farmasi.')->group(function () {
 // Test route for fufufafa database connection
 Route::get('test-fufufafa', function() {
     try {
-        $count = \DB::connection('fufufafa')->table('databarang')->count();
+        $count = DB::connection('fufufafa')->table('databarang')->count();
         return response()->json([
             'success' => true,
             'message' => 'Fufufafa database connection successful',
@@ -154,6 +160,8 @@ Route::get('test-fufufafa', function() {
         ], 500);
     }
 });
+
+
     
     // Setting routes
     Route::delete('settings/{nama_instansi}', [SettingController::class, 'destroy'])
@@ -161,4 +169,11 @@ Route::get('test-fufufafa', function() {
         ->name('settings.destroy');
     Route::resource('settings', SettingController::class)->except(['destroy']);
     Route::post('settings/{setting}/activate', [SettingController::class, 'activate'])->name('settings.activate');
+    
+    // Pengaturan Harga Obat
+    Route::get('set-harga-obat', [\App\Http\Controllers\SetHargaObatController::class, 'index'])->name('set-harga-obat.index');
+    Route::post('set-harga-obat', [\App\Http\Controllers\SetHargaObatController::class, 'update'])->name('set-harga-obat.update');
+    
+    // API route for getting percentage data
+    Route::get('/api/set-harga-obat', [SetHargaObatController::class, 'getPercentageData'])->name('api.set-harga-obat');
 });

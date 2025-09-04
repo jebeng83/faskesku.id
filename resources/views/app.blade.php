@@ -12,7 +12,21 @@
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
     @routes
     @inertiaHead
-</head>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/serviceworker.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('ServiceWorker registration failed: ', error);
+                    });
+            });
+        }
+    </script>
 
 <body class="font-sans antialiased">
     @inertia

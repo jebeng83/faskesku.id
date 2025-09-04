@@ -22,6 +22,7 @@
         "@inertiajs/react": "^2.1.3",
         "react": "19.1.1",
         "react-dom": "19.1.1",
+        "react-toastify": "^11.0.5",
         "ziggy-js": "^2.5.3"
     }
 }

@@ -6,9 +6,12 @@ use App\Models\DataBarang;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class DataBarangController extends Controller
 {
+
+
     /**
      * Display a listing of the resource.
      */
@@ -63,12 +66,7 @@ class DataBarangController extends Controller
             'kode_industri' => 'nullable|string|max:5',
             'kode_kategori' => 'nullable|string|max:4',
             'kode_golongan' => 'nullable|string|max:4',
-            'kemasan' => 'nullable|string|max:50',
-            'bahan' => 'nullable|string|max:100',
-            'officetarif' => 'nullable|numeric|min:0',
-            'tipesarana' => 'nullable|string|max:2',
-            'kode_ralan' => 'nullable|string|max:4',
-            'bpjs' => 'nullable|string|max:15',
+            'isi' => 'nullable|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
@@ -138,12 +136,7 @@ class DataBarangController extends Controller
             'kode_industri' => 'nullable|string|max:5',
             'kode_kategori' => 'nullable|string|max:4',
             'kode_golongan' => 'nullable|string|max:4',
-            'kemasan' => 'nullable|string|max:50',
-            'bahan' => 'nullable|string|max:100',
-            'officetarif' => 'nullable|numeric|min:0',
-            'tipesarana' => 'nullable|string|max:2',
-            'kode_ralan' => 'nullable|string|max:4',
-            'bpjs' => 'nullable|string|max:15',
+            'isi' => 'nullable|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
@@ -180,5 +173,109 @@ class DataBarangController extends Controller
             'success' => true,
             'message' => 'Data obat berhasil dihapus'
         ]);
+    }
+    
+    /**
+     * Get dropdown data for form selects
+     */
+    public function getDropdownData()
+    {
+        try {
+            // Ambil data kodesatuan dari database
+            $kodesatuan = DB::connection('fufufafa')
+                ->table('kodesatuan')
+                ->select('kode_sat', 'satuan')
+                ->get()
+                ->toArray();
+            
+            // Ambil data jenis langsung dari database tanpa join
+            $jenis = DB::connection('fufufafa')
+                ->table('jenis')
+                ->select('jenis.kdjns', 'jenis.nama')
+                ->distinct()
+                ->get()
+                ->toArray();
+            
+            // Ambil data industrifarmasi dari database
+            $industrifarmasi = DB::connection('fufufafa')
+                ->table('industrifarmasi')
+                ->select('kode_industri', 'nama_industri')
+                ->get()
+                ->toArray();
+            
+            // Ambil data kategori_barang dari database
+            $kategori_barang = DB::connection('fufufafa')
+                ->table('kategori_barang')
+                ->select('kode', 'nama')
+                ->get()
+                ->toArray();
+            
+            // Ambil data golongan_barang dari database
+            $golongan_barang = DB::connection('fufufafa')
+                ->table('golongan_barang')
+                ->select('kode', 'nama')
+                ->get()
+                ->toArray();
+            
+            return response()->json([
+                'kodesatuan' => $kodesatuan,
+                'jenis' => $jenis,
+                'industrifarmasi' => $industrifarmasi,
+                'kategori_barang' => $kategori_barang,
+                'golongan_barang' => $golongan_barang
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    /**
+     * Get the last item code and generate a new one
+     * Mengambil kode barang terakhir dari tabel databarang dan menambahkan 1
+     * Format kode: BXXXXXXXX (8 digit angka)
+     */
+    public function getLastItemCode()
+    {
+        try {
+            // Mengambil semua kode barang yang dimulai dengan 'B' dan diikuti angka
+            $items = DataBarang::where('kode_brng', 'LIKE', 'B%')
+                ->where('kode_brng', 'REGEXP', '^B[0-9]+$')
+                ->get();
+            
+            $maxNumber = 0;
+            
+            // Cari nomor terbesar dari semua kode yang ada
+            foreach ($items as $item) {
+                if (preg_match('/^B(\d+)$/', $item->kode_brng, $matches)) {
+                    $number = (int)$matches[1];
+                    if ($number > $maxNumber) {
+                        $maxNumber = $number;
+                    }
+                }
+            }
+            
+            // Generate kode baru dengan increment
+            $newNumber = $maxNumber + 1;
+            $newCode = 'B' . str_pad($newNumber, 8, '0', STR_PAD_LEFT);
+            
+            // Pastikan kode baru belum ada di database
+            while (DataBarang::where('kode_brng', $newCode)->exists()) {
+                $newNumber++;
+                $newCode = 'B' . str_pad($newNumber, 8, '0', STR_PAD_LEFT);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'last_code' => $maxNumber > 0 ? 'B' . str_pad($maxNumber, 8, '0', STR_PAD_LEFT) : null,
+                'new_code' => $newCode
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

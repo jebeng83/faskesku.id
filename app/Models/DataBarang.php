@@ -14,6 +14,7 @@ class DataBarang extends Model
     protected $primaryKey = 'kode_brng';
     public $incrementing = false;
     protected $keyType = 'string';
+    public $timestamps = false;
 
     protected $fillable = [
         'kode_brng',
@@ -35,18 +36,13 @@ class DataBarang extends Model
         'karyawan',
         'stokminimal',
         'kdjns',
+        'isi',
         'kapasitas',
         'expire',
         'status',
         'kode_industri',
         'kode_kategori',
         'kode_golongan',
-        'kemasan',
-        'bahan',
-        'officetarif',
-        'tipesarana',
-        'kode_ralan',
-        'bpjs',
     ];
 
     protected $casts = [
@@ -63,8 +59,8 @@ class DataBarang extends Model
         'jualbebas' => 'decimal:2',
         'karyawan' => 'decimal:2',
         'stokminimal' => 'integer',
+        'isi' => 'integer',
         'kapasitas' => 'integer',
-        'officetarif' => 'decimal:2',
     ];
 
     // Search scope

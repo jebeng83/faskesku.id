@@ -2,6 +2,8 @@ import React from 'react';
 import './bootstrap';
 import { createInertiaApp } from '@inertiajs/react';
 import { createRoot } from 'react-dom/client';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
 
 createInertiaApp({
     resolve: (name) => {
@@ -19,7 +21,12 @@ createInertiaApp({
         return pages[path];
     },
     setup({ el, App, props }) {
-        createRoot(el).render(<App {...props} />);
+        createRoot(el).render(
+            <>
+                <App {...props} />
+                <ToastContainer position="top-right" autoClose={3000} />
+            </>
+        );
     },
 });
 
