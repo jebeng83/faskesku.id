@@ -9,7 +9,14 @@ export default function AppLayout({ title = 'Faskesku', children, variant = 'def
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isDark, setIsDark] = useState(false);
-    const [collapsedGroups, setCollapsedGroups] = useState({});
+    const [collapsedGroups, setCollapsedGroups] = useState({
+        'Navigation': false,
+        'Rekam Medis': false,
+        'Farmasi': false,
+        'Authentication': false,
+        'Pengaturan': false,
+        'Support': false,
+    });
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
     useEffect(() => {
@@ -183,15 +190,22 @@ export default function AppLayout({ title = 'Faskesku', children, variant = 'def
                         {!isSidebarCollapsed ? (
                             <>
                                 <NavGroup title="Navigation" onToggle={toggleGroup} isCollapsed={collapsedGroups['Navigation']}>
-                                    <NavItem icon="home" label="Dashboard" active />
+                                    <NavItem icon="home" label="Dashboard" href={route('dashboard')} active />
                                 </NavGroup>
                                 
                                 <NavGroup title="Rekam Medis" onToggle={toggleGroup} isCollapsed={collapsedGroups['Rekam Medis']}>
                                     <NavItem icon="users" label="Data Pasien" href={route('patients.index')} />
                                     <NavItem icon="user-md" label="Data Dokter" />
-                                    <NavItem icon="pills" label="Data Obat" />
                                     <NavItem icon="walking" label="Data Rawat Jalan" />
                                     <NavItem icon="bed" label="Data Rawat Inap" />
+                                </NavGroup>
+                                
+                                <NavGroup title="Farmasi" onToggle={toggleGroup} isCollapsed={collapsedGroups['Farmasi']}>
+                                    <NavItem icon="pills" label="Data Obat" href={route('data-barang.index')} />
+                                    <NavItem icon="shopping-cart" label="Stok Obat" href={route('farmasi.stok-obat')} />
+                                    <NavItem icon="clipboard" label="Resep Obat" href={route('farmasi.resep-obat')} />
+                                    <NavItem icon="truck" label="Pembelian Obat" href={route('farmasi.pembelian-obat')} />
+                                    <NavItem icon="dollar-sign" label="Penjualan Obat" href={route('farmasi.penjualan-obat')} />
                                 </NavGroup>
                                 
                                 <NavGroup title="Authentication" onToggle={toggleGroup} isCollapsed={collapsedGroups['Authentication']}>
@@ -211,8 +225,9 @@ export default function AppLayout({ title = 'Faskesku', children, variant = 'def
                             </>
                         ) : (
                             <div className="space-y-2">
-                                <NavItemCollapsed icon="home" active />
-                                <NavItemCollapsed icon="box" />
+                                <NavItemCollapsed icon="home" href={route('dashboard')} active />
+                                <NavItemCollapsed icon="users" />
+                                <NavItemCollapsed icon="pills" />
                                 <NavItemCollapsed icon="lock" />
                                 <NavItemCollapsed icon="log-in" />
                                 <NavItemCollapsed icon="unlock" />
@@ -312,10 +327,10 @@ function NavItem({ icon, label, active = false, hasSubmenu = false, href = "#" }
     );
 }
 
-function NavItemCollapsed({ icon, active = false }) {
+function NavItemCollapsed({ icon, active = false, href = "#" }) {
     return (
         <a 
-            href="#" 
+            href={href} 
             className={`flex items-center justify-center p-3 rounded-lg transition-colors ${
                 active 
                     ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' 

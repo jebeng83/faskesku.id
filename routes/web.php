@@ -5,6 +5,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\DataBarangController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -12,6 +13,9 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+
+// Route untuk mengambil gambar (harus bisa diakses tanpa auth untuk login page)
+Route::get('settings/{setting}/image/{type}', [SettingController::class, 'getImage'])->name('settings.image');
 
 // Working API routes for settings
 // UTF-8 encoding issue has been resolved
@@ -100,11 +104,56 @@ Route::get('test-param/{param}', function($param) {
 
 Route::middleware('auth')->group(function () {
     Route::get('/', function () {
+        return redirect()->route('dashboard');
+    });
+    
+    Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
     // Patient routes
     Route::resource('patients', PatientController::class);
+Route::resource('data-barang', DataBarangController::class);
+
+// Farmasi routes
+Route::prefix('farmasi')->name('farmasi.')->group(function () {
+    Route::get('/', function () {
+        return Inertia::render('Farmasi/Dashboard');
+    })->name('dashboard');
+    
+    Route::get('/stok-obat', function () {
+        return Inertia::render('Farmasi/StokObat');
+    })->name('stok-obat');
+    
+    Route::get('/resep-obat', function () {
+        return Inertia::render('Farmasi/ResepObat');
+    })->name('resep-obat');
+    
+    Route::get('/pembelian-obat', function () {
+        return Inertia::render('Farmasi/PembelianObat');
+    })->name('pembelian-obat');
+    
+    Route::get('/penjualan-obat', function () {
+        return Inertia::render('Farmasi/PenjualanObat');
+    })->name('penjualan-obat');
+});
+
+// Test route for fufufafa database connection
+Route::get('test-fufufafa', function() {
+    try {
+        $count = \DB::connection('fufufafa')->table('databarang')->count();
+        return response()->json([
+            'success' => true,
+            'message' => 'Fufufafa database connection successful',
+            'count' => $count
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
     
     // Setting routes
     Route::delete('settings/{nama_instansi}', [SettingController::class, 'destroy'])
@@ -112,5 +161,4 @@ Route::middleware('auth')->group(function () {
         ->name('settings.destroy');
     Route::resource('settings', SettingController::class)->except(['destroy']);
     Route::post('settings/{setting}/activate', [SettingController::class, 'activate'])->name('settings.activate');
-    Route::get('settings/{setting}/image/{type}', [SettingController::class, 'getImage'])->name('settings.image');
 });
