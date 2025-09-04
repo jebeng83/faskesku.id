@@ -2,6 +2,7 @@ import React from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
+import { toast } from '@/tools/toast';
 
 export default function Edit({ patient }) {
     const { data, setData, put, processing, errors } = useForm({
@@ -33,7 +34,10 @@ export default function Edit({ patient }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        put(route('patients.update', patient.no_rkm_medis));
+        put(route('patients.update', patient.no_rkm_medis), {
+            onSuccess: () => toast('Perubahan pasien tersimpan', 'success'),
+            onError: () => toast('Gagal menyimpan perubahan pasien', 'error')
+        });
     };
 
     return (

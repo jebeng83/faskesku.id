@@ -5,12 +5,24 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use App\Models\Setting;
 
 class AuthController extends Controller
 {
     public function showLogin()
     {
-        return Inertia::render('Auth/Login');
+        // Ambil setting aktif untuk wallpaper
+        $setting = Setting::where('aktifkan', 'Yes')->first();
+        $wallpaper = null;
+        
+        if ($setting && $setting->wallpaper) {
+            $wallpaper = route('settings.image', ['setting' => $setting->nama_instansi, 'type' => 'wallpaper']);
+        }
+        
+        return Inertia::render('Auth/Login', [
+            'wallpaper' => $wallpaper,
+            'setting' => $setting ? $setting->makeHidden(['wallpaper', 'logo'])->toArray() : null
+        ]);
     }
 
     public function login(Request $request)
@@ -22,7 +34,7 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended('/');
+            return redirect()->intended('/dashboard');
         }
 
         return back()->withErrors([
