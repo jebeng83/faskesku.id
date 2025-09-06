@@ -301,6 +301,48 @@ class SettingController extends Controller
         return response()->json(['error' => 'Image not found'], 404);
     }
 
+    /**
+     * Get active setting for AppLayout
+     */
+    public function getActiveSetting()
+    {
+        try {
+            $setting = Setting::getActiveSetting();
+            
+            if (!$setting) {
+                // Return default values if no active setting found
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'nama_instansi' => 'Faskesku',
+                        'has_logo' => false,
+                        'logo_url' => null
+                    ]
+                ]);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'nama_instansi' => $setting->nama_instansi,
+                    'has_logo' => $setting->has_logo,
+                    'logo_url' => $setting->has_logo ? route('settings.image', ['setting' => $setting->nama_instansi, 'type' => 'logo']) : null
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                'data' => [
+                    'nama_instansi' => 'Faskesku',
+                    'has_logo' => false,
+                    'logo_url' => null
+                ]
+            ], 500);
+        }
+    }
+
     private function transformSetting(Setting $setting): array
     {
         // Konversi data binary ke base64 untuk tampilan

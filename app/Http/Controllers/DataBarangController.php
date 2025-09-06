@@ -17,7 +17,12 @@ class DataBarangController extends Controller
      */
     public function index(Request $request)
     {
-        $query = DataBarang::query();
+        $query = DataBarang::query()
+            ->leftJoin('detailbeli as db', function($join) {
+                $join->on('databarang.kode_brng', '=', 'db.kode_brng')
+                     ->whereRaw('db.created_at = (SELECT MAX(created_at) FROM detailbeli WHERE detailbeli.kode_brng = databarang.kode_brng)');
+            })
+            ->select('databarang.*', 'db.created_at');
 
         // Search functionality
         if ($request->has('search') && $request->search) {
@@ -25,7 +30,7 @@ class DataBarangController extends Controller
         }
 
         // Pagination
-        $dataBarang = $query->orderBy('kode_brng', 'desc')
+        $dataBarang = $query->orderBy('databarang.kode_brng', 'desc')
                            ->paginate(10)
                            ->withQueryString();
 
@@ -83,7 +88,8 @@ class DataBarangController extends Controller
         $data['stokminimal'] = $data['stokminimal'] ?? 0;
         $data['kapasitas'] = $data['kapasitas'] ?? 0;
 
-        DataBarang::create($data);
+        // Gunakan DB::table untuk menghindari masalah timestamps
+        DB::table('databarang')->insert($data);
 
         return response()->json([
             'success' => true,
@@ -153,7 +159,8 @@ class DataBarangController extends Controller
         $data['stokminimal'] = $data['stokminimal'] ?? 0;
         $data['kapasitas'] = $data['kapasitas'] ?? 0;
 
-        $dataBarang->update($data);
+        // Gunakan DB::table untuk menghindari masalah timestamps
+        DB::table('databarang')->where('kode_brng', $kode_brng)->update($data);
 
         return response()->json([
             'success' => true,
@@ -231,6 +238,129 @@ class DataBarangController extends Controller
         }
     }
     
+    /**
+     * Update harga databarang dari pembelian
+     * Update harga dasar dan harga beli terbaru
+     */
+    public function updateHarga(Request $request, $kode_brng)
+    {
+        try {
+            // Validasi input
+            $validated = $request->validate([
+                'kode_brng' => 'required|string',
+                'dasar' => 'required|numeric|min:0',
+                'h_beli' => 'required|numeric|min:0'
+            ]);
+
+            // Update databarang
+            $updated = DB::connection('fufufafa')
+                ->table('databarang')
+                ->where('kode_brng', $kode_brng)
+                ->update([
+                    'dasar' => $validated['dasar'],
+                    'h_beli' => $validated['h_beli']
+                ]);
+
+            // Update created_at di detailbeli untuk tracking perubahan h_beli terbaru
+            DB::connection('fufufafa')
+                ->table('detailbeli')
+                ->where('kode_brng', $kode_brng)
+                ->where('h_beli', $validated['h_beli'])
+                ->update([
+                    'created_at' => now()
+                ]);
+
+            if ($updated) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Harga databarang berhasil diupdate'
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data barang tidak ditemukan atau tidak ada perubahan'
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengupdate harga: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateHargaJual(Request $request, $kode_brng)
+    {
+        try {
+            // Validasi input
+            $validated = $request->validate([
+                'kode_brng' => 'required|string',
+                'h_beli' => 'required|numeric|min:0',
+                'ralan' => 'required|numeric|min:0',
+                'kelas1' => 'required|numeric|min:0',
+                'kelas2' => 'required|numeric|min:0',
+                'kelas3' => 'required|numeric|min:0',
+                'utama' => 'required|numeric|min:0',
+                'vip' => 'required|numeric|min:0',
+                'vvip' => 'required|numeric|min:0',
+                'beliluar' => 'required|numeric|min:0',
+                'jualbebas' => 'required|numeric|min:0',
+                'karyawan' => 'required|numeric|min:0'
+            ]);
+
+            // Update harga beli dan semua harga jual
+            $updated = DB::connection('fufufafa')
+                ->table('databarang')
+                ->where('kode_brng', $kode_brng)
+                ->update([
+                    'h_beli' => $validated['h_beli'],
+                    'ralan' => $validated['ralan'],
+                    'kelas1' => $validated['kelas1'],
+                    'kelas2' => $validated['kelas2'],
+                    'kelas3' => $validated['kelas3'],
+                    'utama' => $validated['utama'],
+                    'vip' => $validated['vip'],
+                    'vvip' => $validated['vvip'],
+                    'beliluar' => $validated['beliluar'],
+                    'jualbebas' => $validated['jualbebas'],
+                    'karyawan' => $validated['karyawan']
+                ]);
+
+            if ($updated) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Harga jual berhasil diupdate berdasarkan harga beli terbaru',
+                    'data' => [
+                        'kode_brng' => $kode_brng,
+                        'h_beli' => $validated['h_beli'],
+                        'harga_jual' => [
+                            'ralan' => $validated['ralan'],
+                            'kelas1' => $validated['kelas1'],
+                            'kelas2' => $validated['kelas2'],
+                            'kelas3' => $validated['kelas3'],
+                            'utama' => $validated['utama'],
+                            'vip' => $validated['vip'],
+                            'vvip' => $validated['vvip'],
+                            'beliluar' => $validated['beliluar'],
+                            'jualbebas' => $validated['jualbebas'],
+                            'karyawan' => $validated['karyawan']
+                        ]
+                    ]
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data barang tidak ditemukan atau tidak ada perubahan'
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengupdate harga jual: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     /**
      * Get the last item code and generate a new one
      * Mengambil kode barang terakhir dari tabel databarang dan menambahkan 1

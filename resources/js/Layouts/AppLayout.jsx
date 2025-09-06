@@ -3,12 +3,18 @@ import { router, Link, usePage } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import ToastContainer from '@/tools/ToastContainer';
 import { toast } from '@/tools/toast';
+import axios from 'axios';
 
-export default function AppLayout({ title = 'Faskesku', children, variant = 'default' }) {
+export default function AppLayout({ title, children, variant = 'default' }) {
     const { props } = usePage();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isDark, setIsDark] = useState(false);
+    const [appSetting, setAppSetting] = useState({
+        nama_instansi: title || 'Faskesku',
+        has_logo: false,
+        logo_url: null
+    });
     const [collapsedGroups, setCollapsedGroups] = useState({
         'Navigation': false,
         'Rekam Medis': false,
@@ -27,6 +33,23 @@ export default function AppLayout({ title = 'Faskesku', children, variant = 'def
             root.classList.remove('dark');
         }
     }, [isDark]);
+
+    // Fetch active setting data
+    useEffect(() => {
+        const fetchActiveSetting = async () => {
+            try {
+                const response = await axios.get('/api/active-setting');
+                if (response.data.success) {
+                    setAppSetting(response.data.data);
+                }
+            } catch (error) {
+                console.error('Error fetching active setting:', error);
+                // Keep default values if API fails
+            }
+        };
+
+        fetchActiveSetting();
+    }, []);
 
     // Bridge flash -> toast
     useEffect(() => {
@@ -62,8 +85,18 @@ export default function AppLayout({ title = 'Faskesku', children, variant = 'def
             <div className="min-h-screen relative bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-950 dark:to-black">
                 <header className="h-14 flex items-center justify-between px-4 max-w-6xl mx-auto">
                     <div className="flex items-center gap-2">
-                        <div className="h-7 w-7 rounded-md bg-blue-600 shadow-sm" />
-                        <span className="font-semibold tracking-tight text-gray-900 dark:text-white">{title}</span>
+                        {appSetting.has_logo ? (
+                            <img 
+                                src={appSetting.logo_url} 
+                                alt="Logo" 
+                                className="h-7 w-7 rounded-md object-cover shadow-sm"
+                            />
+                        ) : (
+                            <div className="h-7 w-7 rounded-md bg-blue-600 shadow-sm flex items-center justify-center">
+                                <span className="text-white font-bold text-xs">{appSetting.nama_instansi.charAt(0)}</span>
+                            </div>
+                        )}
+                        <span className="font-semibold tracking-tight text-gray-900 dark:text-white">{appSetting.nama_instansi}</span>
                         <span className="hidden sm:inline text-xs text-gray-500 dark:text-gray-400">SIMRS</span>
                     </div>
                     <button onClick={() => setIsDark(v => !v)} className="p-2 rounded-md hover:bg-white/50 dark:hover:bg-white/5" aria-label="Toggle theme">
@@ -125,11 +158,19 @@ export default function AppLayout({ title = 'Faskesku', children, variant = 'def
                         
                         {/* Logo */}
                         <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                                <span className="text-white font-bold text-sm">F</span>
-                            </div>
+                            {appSetting.has_logo ? (
+                                <img 
+                                    src={appSetting.logo_url} 
+                                    alt="Logo" 
+                                    className="h-8 w-8 rounded-lg object-cover"
+                                />
+                            ) : (
+                                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                                    <span className="text-white font-bold text-sm">{appSetting.nama_instansi.charAt(0)}</span>
+                                </div>
+                            )}
                             <div className="flex flex-col">
-                                <span className="font-bold text-gray-900 dark:text-white text-sm">{title}</span>
+                                <span className="font-bold text-gray-900 dark:text-white text-sm">{appSetting.nama_instansi}</span>
                                 <span className="text-xs text-gray-500 dark:text-gray-400 -mt-1">Elektronik Rekam Medis</span>
                             </div>
                         </div>
@@ -242,10 +283,18 @@ export default function AppLayout({ title = 'Faskesku', children, variant = 'def
                     {!isSidebarCollapsed && (
                         <div className="p-4 border-t border-gray-200 dark:border-gray-800">
                             <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg p-4 text-center">
-                                <div className="w-12 h-12 mx-auto mb-3 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                                    <span className="text-white font-bold text-lg">F</span>
-                                </div>
-                                <h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">Faskesku.id</h4>
+                                {appSetting.has_logo ? (
+                                    <img 
+                                        src={appSetting.logo_url} 
+                                        alt="Logo" 
+                                        className="w-12 h-12 mx-auto mb-3 rounded-lg object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-12 h-12 mx-auto mb-3 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                                        <span className="text-white font-bold text-lg">{appSetting.nama_instansi.charAt(0)}</span>
+                                    </div>
+                                )}
+                                <h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">{appSetting.nama_instansi}</h4>
                                 <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">Sistem Informasi Free & open Source </p>
                                 <button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 px-3 rounded-md transition-colors">
                                     Panduan Aplikasi

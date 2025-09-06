@@ -17,7 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'simple-test',
             'debug-delete/*',
             'debug-setting/*',
-            'simple-setting/*'
+            'simple-setting/*',
+            'api/pembelian/*',
+            'api/databarang/*'
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -20,90 +20,14 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 // Route untuk mengambil gambar (harus bisa diakses tanpa auth untuk login page)
 Route::get('settings/{setting}/image/{type}', [SettingController::class, 'getImage'])->name('settings.image');
 
+// API route untuk mengambil setting aktif (tanpa auth untuk AppLayout)
+Route::get('/api/active-setting', [SettingController::class, 'getActiveSetting'])->name('api.active-setting');
+
 // Working API routes for settings
 // UTF-8 encoding issue has been resolved
 // Binary data (logo, wallpaper) is now properly excluded from JSON responses
 
-// Temporary test route without auth
-Route::delete('test-settings/{nama_instansi}', [SettingController::class, 'destroy'])
-    ->where('nama_instansi', '.*')
-    ->name('test.settings.destroy');
 
-// Simple test route for debugging
-Route::delete('debug-delete/{id}', function($id) {
-    return response()->json(['message' => 'Delete works', 'id' => $id]);
-});
-
-// Simple setting test without parameter
-Route::get('setting-simple', function() {
-    try {
-        $count = DB::select('SELECT COUNT(*) as count FROM setting')[0]->count;
-        return response()->json(['message' => 'Database connection works', 'count' => $count]);
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage()], 500);
-    }
-});
-
-
-
-// Test database tables
-Route::get('debug-tables', function() {
-    try {
-        $tables = DB::select('SHOW TABLES');
-        return response()->json(['message' => 'Database connected', 'tables' => $tables]);
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage()], 500);
-    }
-});
-
-// Test database connection without model
-Route::delete('debug-setting/{nama_instansi}', function($nama_instansi) {
-    try {
-        $result = DB::select('SELECT COUNT(*) as count FROM setting WHERE nama_instansi = ?', [$nama_instansi]);
-        return response()->json(['message' => 'Database query works', 'nama_instansi' => $nama_instansi, 'count' => $result[0]->count]);
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage()], 500);
-    }
-});
-
-
-
-// Simple test route
-Route::any('simple-test', function() {
-    return response()->json(['message' => 'Test route works', 'method' => request()->method()]);
-});
-
-// Very simple route without parameter
-Route::get('test-simple', function() {
-    return response()->json(['message' => 'Very simple route works']);
-});
-
-// Test UTF-8 encoding fix
-Route::get('/test-utf8-fix', function () {
-    try {
-        $setting = \App\Models\Setting::create([
-            'nama_instansi' => 'Test Hospital Recovery',
-            'alamat_instansi' => 'Jl. Recovery dengan karakter spesial: àáâãäåæçèéêë',
-            'aktifkan' => 'Yes'
-        ]);
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Setting berhasil dibuat setelah recovery',
-            'data' => $setting->makeHidden(['wallpaper', 'logo'])->toArray()
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'error' => $e->getMessage()
-        ], 500);
-    }
-});
-
-// Simple route with parameter
-Route::get('test-param/{param}', function($param) {
-    return response()->json(['message' => 'Route with param works', 'param' => $param]);
-});
 
 
 
@@ -139,7 +63,7 @@ Route::middleware('auth')->group(function () {
         })->name('resep-obat');
         
         Route::get('/pembelian-obat', function () {
-            return Inertia::render('Farmasi/PembelianObat');
+            return Inertia::render('farmasi/PembelianObat');
         })->name('pembelian-obat');
         
         Route::get('/penjualan-obat', function () {
@@ -188,4 +112,21 @@ Route::middleware('auth')->group(function () {
     Route::get('pegawai/search', [RawatJalanController::class, 'searchPegawai'])->name('pegawai.search');
     Route::get('rawat-jalan-statistics', [RawatJalanController::class, 'getStatistics'])->name('rawat-jalan.statistics');
     Route::resource('rawat-jalan', RawatJalanController::class);
+    
+    // API routes for pembelian dropdown data
+    Route::get('/api/pembelian/akun-bayar', [\App\Http\Controllers\PembelianController::class, 'getAkunBayar'])->name('api.pembelian.akun-bayar')->withoutMiddleware(['auth']);
+    Route::get('/api/pembelian/supplier', [\App\Http\Controllers\PembelianController::class, 'getSupplier'])->name('api.pembelian.supplier')->withoutMiddleware(['auth']);
+    Route::get('/api/pembelian/petugas', [\App\Http\Controllers\PembelianController::class, 'getPetugas'])->name('api.pembelian.petugas')->withoutMiddleware(['auth']);
+    Route::get('/api/pembelian/lokasi', [\App\Http\Controllers\PembelianController::class, 'getLokasi'])->name('api.pembelian.lokasi')->withoutMiddleware(['auth']);
+    Route::get('/api/pembelian/generate-no-faktur', [\App\Http\Controllers\PembelianController::class, 'generateNoFaktur'])->name('api.pembelian.generate-no-faktur')->withoutMiddleware(['auth']);
+    Route::post('/api/pembelian/store', [\App\Http\Controllers\PembelianController::class, 'store'])->name('api.pembelian.store')->withoutMiddleware(['auth']);
+    
+    // API routes untuk pencarian barang
+    Route::get('/api/barang/search', [App\Http\Controllers\BarangController::class, 'search']);
+    
+    // API route untuk update harga databarang dari pembelian
+    Route::put('/api/databarang/update-harga/{kode_brng}', [DataBarangController::class, 'updateHarga'])->name('api.databarang.update-harga')->withoutMiddleware(['auth', 'csrf']);
+    
+    // API route untuk update harga jual berdasarkan harga beli terbaru
+    Route::put('/api/databarang/update-harga-jual/{kode_brng}', [DataBarangController::class, 'updateHargaJual'])->name('api.databarang.update-harga-jual')->withoutMiddleware(['auth', 'csrf']);
 });

@@ -41,6 +41,8 @@ export default function DataObat({ dataBarang, filters }) {
         karyawan: 0
     });
     
+    const [includePPN, setIncludePPN] = useState(false);
+    
     const [formData, setFormData] = useState({
         kode_brng: '',
         nama_brng: '',
@@ -121,6 +123,7 @@ export default function DataObat({ dataBarang, filters }) {
             status: '1',
             letak_barang: 'Apotek'
         });
+        setIncludePPN(false);
         setErrors({});
         setShowModal(true);
     };
@@ -156,6 +159,7 @@ export default function DataObat({ dataBarang, filters }) {
             status: item.status || '1',
             letak_barang: item.letak_barang || ''
         });
+        setIncludePPN(false);
         setErrors({});
         setShowModal(true);
     };
@@ -166,19 +170,28 @@ export default function DataObat({ dataBarang, filters }) {
         setErrors({});
     };
 
-    const calculatePrices = (hargaBeli) => {
+    // Fungsi untuk menghitung PPN 11%
+    const calculatePPN = (hargaBeli) => {
         const harga = parseFloat(hargaBeli) || 0;
+        return Math.round(harga * 0.11); // PPN 11%
+    };
+
+    const calculatePrices = (hargaBeli, usePPN = null) => {
+        const harga = parseFloat(hargaBeli) || 0;
+        const shouldIncludePPN = usePPN !== null ? usePPN : includePPN;
+        const ppn = shouldIncludePPN ? calculatePPN(harga) : 0;
+        
         return {
-            ralan: Math.round(harga + (harga * percentageData.ralan / 100)),
-            kelas1: Math.round(harga + (harga * percentageData.kelas1 / 100)),
-            kelas2: Math.round(harga + (harga * percentageData.kelas2 / 100)),
-            kelas3: Math.round(harga + (harga * percentageData.kelas3 / 100)),
-            utama: Math.round(harga + (harga * percentageData.utama / 100)),
-            vip: Math.round(harga + (harga * percentageData.vip / 100)),
-            vvip: Math.round(harga + (harga * percentageData.vvip / 100)),
-            beliluar: Math.round(harga + (harga * percentageData.beliluar / 100)),
-            jualbebas: Math.round(harga + (harga * percentageData.jualbebas / 100)),
-            karyawan: Math.round(harga + (harga * percentageData.karyawan / 100))
+            ralan: Math.round(harga + (harga * percentageData.ralan / 100) + ppn),
+            kelas1: Math.round(harga + (harga * percentageData.kelas1 / 100) + ppn),
+            kelas2: Math.round(harga + (harga * percentageData.kelas2 / 100) + ppn),
+            kelas3: Math.round(harga + (harga * percentageData.kelas3 / 100) + ppn),
+            utama: Math.round(harga + (harga * percentageData.utama / 100) + ppn),
+            vip: Math.round(harga + (harga * percentageData.vip / 100) + ppn),
+            vvip: Math.round(harga + (harga * percentageData.vvip / 100) + ppn),
+            beliluar: Math.round(harga + (harga * percentageData.beliluar / 100) + ppn),
+            jualbebas: Math.round(harga + (harga * percentageData.jualbebas / 100) + ppn),
+            karyawan: Math.round(harga + (harga * percentageData.karyawan / 100) + ppn)
         };
     };
 
@@ -205,6 +218,21 @@ export default function DataObat({ dataBarang, filters }) {
             setErrors(prev => ({
                 ...prev,
                 [name]: null
+            }));
+        }
+    };
+    
+    // Handle PPN checkbox change
+    const handlePPNChange = (e) => {
+        const checked = e.target.checked;
+        setIncludePPN(checked);
+        
+        // Recalculate prices if h_beli exists
+        if (formData.h_beli) {
+            const calculatedPrices = calculatePrices(formData.h_beli, checked);
+            setFormData(prev => ({
+                ...prev,
+                ...calculatedPrices
             }));
         }
     };
@@ -322,6 +350,54 @@ export default function DataObat({ dataBarang, filters }) {
         }
     };
 
+    // Fungsi untuk update harga jual berdasarkan harga beli terbaru dari pembelian
+    const updateHargaJual = async (kodeBarang, hargaBeliBaru) => {
+        try {
+            // Fetch percentage data untuk perhitungan
+            const percentageResponse = await axios.get('/api/set-harga-obat');
+            if (!percentageResponse.data.success) {
+                throw new Error('Gagal mengambil data persentase');
+            }
+
+            const percentages = percentageResponse.data.data;
+            const harga = parseFloat(hargaBeliBaru) || 0;
+
+            // Hitung harga jual berdasarkan persentase keuntungan
+            const hargaJualBaru = {
+                ralan: Math.round(harga + (harga * parseFloat(percentages.ralan || 0) / 100)),
+                kelas1: Math.round(harga + (harga * parseFloat(percentages.kelas1 || 0) / 100)),
+                kelas2: Math.round(harga + (harga * parseFloat(percentages.kelas2 || 0) / 100)),
+                kelas3: Math.round(harga + (harga * parseFloat(percentages.kelas3 || 0) / 100)),
+                utama: Math.round(harga + (harga * parseFloat(percentages.utama || 0) / 100)),
+                vip: Math.round(harga + (harga * parseFloat(percentages.vip || 0) / 100)),
+                vvip: Math.round(harga + (harga * parseFloat(percentages.vvip || 0) / 100)),
+                beliluar: Math.round(harga + (harga * parseFloat(percentages.beliluar || 0) / 100)),
+                jualbebas: Math.round(harga + (harga * parseFloat(percentages.jualbebas || 0) / 100)),
+                karyawan: Math.round(harga + (harga * parseFloat(percentages.karyawan || 0) / 100))
+            };
+
+            // Update harga jual melalui API
+            const updateData = {
+                kode_brng: kodeBarang,
+                h_beli: harga,
+                ...hargaJualBaru
+            };
+
+            const response = await axios.put(`/api/databarang/update-harga-jual/${kodeBarang}`, updateData);
+            
+            if (response.data.success) {
+                console.log(`Harga jual berhasil diupdate untuk ${kodeBarang}:`, hargaJualBaru);
+                return true;
+            } else {
+                console.error(`Gagal update harga jual untuk ${kodeBarang}:`, response.data.message);
+                return false;
+            }
+        } catch (error) {
+            console.error('Error updating harga jual:', error);
+            return false;
+        }
+    };
+
     return (
         <AppLayout>
             <Head title="Data Obat" />
@@ -409,6 +485,9 @@ export default function DataObat({ dataBarang, filters }) {
                                         Harga Ralan
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Update Terakhir
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Status
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -433,6 +512,9 @@ export default function DataObat({ dataBarang, filters }) {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                             {formatCurrency(item.ralan)}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                            {item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -1027,6 +1109,27 @@ export default function DataObat({ dataBarang, filters }) {
                                         />
                                     </div>
 
+                                </div>
+
+                                {/* PPN Checkbox */}
+                                <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                                    <div className="flex items-center space-x-3">
+                                        <input
+                                            type="checkbox"
+                                            id="includePPN"
+                                            checked={includePPN}
+                                            onChange={handlePPNChange}
+                                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                        />
+                                        <label htmlFor="includePPN" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                            Sertakan PPN 11% dalam perhitungan harga jual
+                                        </label>
+                                    </div>
+                                    {includePPN && (
+                                        <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                                            <span className="font-medium">Catatan:</span> Harga jual akan dihitung sebagai: Harga Beli + Keuntungan + PPN 11%
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Action Buttons */}

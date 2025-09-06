@@ -67,10 +67,10 @@ class DataBarang extends Model
     public function scopeSearch($query, $search)
     {
         return $query->where(function ($q) use ($search) {
-            $q->where('kode_brng', 'like', "%{$search}%")
-              ->orWhere('nama_brng', 'like', "%{$search}%")
-              ->orWhere('kode_sat', 'like', "%{$search}%")
-              ->orWhere('letak_barang', 'like', "%{$search}%");
+            $q->where('databarang.kode_brng', 'like', "%{$search}%")
+              ->orWhere('databarang.nama_brng', 'like', "%{$search}%")
+              ->orWhere('databarang.kode_sat', 'like', "%{$search}%")
+              ->orWhere('databarang.letak_barang', 'like', "%{$search}%");
         });
     }
 
@@ -93,5 +93,17 @@ class DataBarang extends Model
     public function getExpireFormattedAttribute()
     {
         return $this->expire ? $this->expire->format('d/m/Y') : '-';
+    }
+
+    // Relasi ke detailbeli untuk mendapatkan created_at terbaru
+    public function detailBeli()
+    {
+        return $this->hasMany(DetailBeli::class, 'kode_brng', 'kode_brng');
+    }
+
+    public function latestDetailBeli()
+    {
+        return $this->hasOne(DetailBeli::class, 'kode_brng', 'kode_brng')
+                    ->latest('created_at');
     }
 }

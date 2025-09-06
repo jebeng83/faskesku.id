@@ -37,16 +37,19 @@ self.addEventListener('fetch', event => {
             return response;
           }
           
-          // Clone the response because it's a one-time use stream
-          const responseToCache = response.clone();
-          
-          caches.open(CACHE_NAME)
-            .then(cache => {
-              cache.put(event.request, responseToCache);
-            })
-            .catch(err => {
-              console.warn('Failed to cache response:', err);
-            });
+          // Only cache GET requests
+          if (event.request.method === 'GET') {
+            // Clone the response because it's a one-time use stream
+            const responseToCache = response.clone();
+            
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                cache.put(event.request, responseToCache);
+              })
+              .catch(err => {
+                console.warn('Failed to cache response:', err);
+              });
+          }
             
           return response;
         }).catch(error => {
