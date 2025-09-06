@@ -9,6 +9,7 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\DataBarangController;
 use App\Http\Controllers\SetHargaObatController;
 use App\Http\Controllers\RawatJalanController;
+use App\Http\Controllers\GudangBarangController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -120,13 +121,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/pembelian/lokasi', [\App\Http\Controllers\PembelianController::class, 'getLokasi'])->name('api.pembelian.lokasi')->withoutMiddleware(['auth']);
     Route::get('/api/pembelian/generate-no-faktur', [\App\Http\Controllers\PembelianController::class, 'generateNoFaktur'])->name('api.pembelian.generate-no-faktur')->withoutMiddleware(['auth']);
     Route::post('/api/pembelian/store', [\App\Http\Controllers\PembelianController::class, 'store'])->name('api.pembelian.store')->withoutMiddleware(['auth']);
+    Route::post('/api/gudangbarang/update-stok', [\App\Http\Controllers\GudangBarangController::class, 'updateStok'])->name('api.gudangbarang.update-stok')->withoutMiddleware(['auth']);
     
     // API routes untuk pencarian barang
     Route::get('/api/barang/search', [App\Http\Controllers\BarangController::class, 'search']);
-    
-    // API route untuk update harga databarang dari pembelian
-    Route::put('/api/databarang/update-harga/{kode_brng}', [DataBarangController::class, 'updateHarga'])->name('api.databarang.update-harga')->withoutMiddleware(['auth', 'csrf']);
-    
-    // API route untuk update harga jual berdasarkan harga beli terbaru
-    Route::put('/api/databarang/update-harga-jual/{kode_brng}', [DataBarangController::class, 'updateHargaJual'])->name('api.databarang.update-harga-jual')->withoutMiddleware(['auth', 'csrf']);
 });
+
+// API routes tanpa middleware auth dan csrf
+Route::put('/api/databarang/update-harga/{kode_brng}', [DataBarangController::class, 'updateHarga'])->name('api.databarang.update-harga');
+Route::put('/api/databarang/update-harga-jual/{kode_brng}', [DataBarangController::class, 'updateHargaJual'])->name('api.databarang.update-harga-jual');
+Route::get('/api/gudangbarang/total-stok', [GudangBarangController::class, 'getTotalStok'])->name('api.gudangbarang.total-stok');
+Route::get('/api/gudangbarang/stok-detail', [GudangBarangController::class, 'getStokDetail'])->name('api.gudangbarang.stok-detail');

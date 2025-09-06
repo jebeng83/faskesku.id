@@ -124,9 +124,9 @@ class PembelianController extends Controller
             
             DB::beginTransaction();
 
-            // Validate request
+            // Validate request (no_faktur tidak wajib karena akan di-generate)
             $validated = $request->validate([
-                'no_faktur' => 'required|string|max:50',
+                'no_faktur' => 'nullable|string|max:50',
                 'tgl_beli' => 'required|date',
                 'kd_rek' => 'required|string',
                 'kode_suplier' => 'required|string',
@@ -150,9 +150,37 @@ class PembelianController extends Controller
                 'items.*.total' => 'required|numeric|min:0'
             ]);
 
-            // Insert to pembelian table
+            // Generate nomor faktur baru di dalam transaksi untuk menghindari duplicate
+            $todayFormatted = now()->format('Ymd');
+            $prefix = 'PB-' . $todayFormatted . '-';
+            
+            // Cari nomor faktur terakhir untuk hari ini dengan locking
+            $lastFaktur = DB::table('pembelian')
+                ->where('no_faktur', 'LIKE', $prefix . '%')
+                ->orderBy('no_faktur', 'desc')
+                ->lockForUpdate()
+                ->first();
+            
+            $nextNumber = 1;
+            
+            if ($lastFaktur) {
+                // Extract nomor urut dari no_faktur terakhir
+                $lastNumber = (int) substr($lastFaktur->no_faktur, -3);
+                $nextNumber = $lastNumber + 1;
+            }
+            
+            // Format nomor faktur: PB-YYYYMMDD-XXX
+            $noFaktur = $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+            
+            // Double check untuk memastikan nomor belum ada
+            while (DB::table('pembelian')->where('no_faktur', $noFaktur)->exists()) {
+                $nextNumber++;
+                $noFaktur = $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+            }
+
+            // Insert to pembelian table dengan nomor faktur yang baru di-generate
             $pembelianId = DB::table('pembelian')->insertGetId([
-                'no_faktur' => $validated['no_faktur'],
+                'no_faktur' => $noFaktur,
                 'tgl_beli' => $validated['tgl_beli'],
                 'kd_rek' => $validated['kd_rek'],
                 'kode_suplier' => $validated['kode_suplier'],
@@ -168,7 +196,7 @@ class PembelianController extends Controller
             // Insert items to detailbeli table
             foreach ($validated['items'] as $item) {
                 DB::table('detailbeli')->insert([
-                    'no_faktur' => $validated['no_faktur'],
+                    'no_faktur' => $noFaktur,
                     'kode_brng' => $item['kode_brng'],
                     'kode_sat' => $item['kode_sat'] ?? 'TAB',
                     'jumlah' => $item['jumlah'],
@@ -189,7 +217,10 @@ class PembelianController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Data pembelian berhasil disimpan',
-                'data' => ['id' => $pembelianId]
+                'data' => [
+                    'id' => $pembelianId,
+                    'no_faktur' => $noFaktur
+                ]
             ]);
 
         } catch (\Exception $e) {

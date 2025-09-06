@@ -252,8 +252,21 @@ class DataBarangController extends Controller
                 'h_beli' => 'required|numeric|min:0'
             ]);
 
+            // Cek apakah data barang ada
+            $dataBarang = DB::connection('fufufafa')
+                ->table('databarang')
+                ->where('kode_brng', $kode_brng)
+                ->first();
+
+            if (!$dataBarang) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data barang tidak ditemukan'
+                ], 404);
+            }
+
             // Update databarang
-            $updated = DB::connection('fufufafa')
+            DB::connection('fufufafa')
                 ->table('databarang')
                 ->where('kode_brng', $kode_brng)
                 ->update([
@@ -270,17 +283,15 @@ class DataBarangController extends Controller
                     'created_at' => now()
                 ]);
 
-            if ($updated) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Harga databarang berhasil diupdate'
-                ]);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Data barang tidak ditemukan atau tidak ada perubahan'
-                ], 404);
-            }
+            return response()->json([
+                'success' => true,
+                'message' => 'Harga databarang berhasil diupdate',
+                'data' => [
+                    'kode_brng' => $kode_brng,
+                    'dasar' => $validated['dasar'],
+                    'h_beli' => $validated['h_beli']
+                ]
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -308,8 +319,21 @@ class DataBarangController extends Controller
                 'karyawan' => 'required|numeric|min:0'
             ]);
 
+            // Cek apakah data barang ada
+            $dataBarang = DB::connection('fufufafa')
+                ->table('databarang')
+                ->where('kode_brng', $kode_brng)
+                ->first();
+
+            if (!$dataBarang) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data barang tidak ditemukan'
+                ], 404);
+            }
+
             // Update harga beli dan semua harga jual
-            $updated = DB::connection('fufufafa')
+            DB::connection('fufufafa')
                 ->table('databarang')
                 ->where('kode_brng', $kode_brng)
                 ->update([
@@ -326,33 +350,26 @@ class DataBarangController extends Controller
                     'karyawan' => $validated['karyawan']
                 ]);
 
-            if ($updated) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Harga jual berhasil diupdate berdasarkan harga beli terbaru',
-                    'data' => [
-                        'kode_brng' => $kode_brng,
-                        'h_beli' => $validated['h_beli'],
-                        'harga_jual' => [
-                            'ralan' => $validated['ralan'],
-                            'kelas1' => $validated['kelas1'],
-                            'kelas2' => $validated['kelas2'],
-                            'kelas3' => $validated['kelas3'],
-                            'utama' => $validated['utama'],
-                            'vip' => $validated['vip'],
-                            'vvip' => $validated['vvip'],
-                            'beliluar' => $validated['beliluar'],
-                            'jualbebas' => $validated['jualbebas'],
-                            'karyawan' => $validated['karyawan']
-                        ]
+            return response()->json([
+                'success' => true,
+                'message' => 'Harga jual berhasil diupdate berdasarkan harga beli terbaru',
+                'data' => [
+                    'kode_brng' => $kode_brng,
+                    'h_beli' => $validated['h_beli'],
+                    'harga_jual' => [
+                        'ralan' => $validated['ralan'],
+                        'kelas1' => $validated['kelas1'],
+                        'kelas2' => $validated['kelas2'],
+                        'kelas3' => $validated['kelas3'],
+                        'utama' => $validated['utama'],
+                        'vip' => $validated['vip'],
+                        'vvip' => $validated['vvip'],
+                        'beliluar' => $validated['beliluar'],
+                        'jualbebas' => $validated['jualbebas'],
+                        'karyawan' => $validated['karyawan']
                     ]
-                ]);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Data barang tidak ditemukan atau tidak ada perubahan'
-                ], 404);
-            }
+                ]
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

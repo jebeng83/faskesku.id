@@ -304,8 +304,7 @@ export default function PembelianObat() {
                 const response = await fetch(`/api/databarang/update-harga/${item.kode_brng}`, {
                     method: 'PUT',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(updateData)
                 });
@@ -371,8 +370,7 @@ export default function PembelianObat() {
             const response = await fetch(`/api/databarang/update-harga-jual/${kodeBarang}`, {
                 method: 'PUT',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(updateData)
             });
@@ -386,6 +384,49 @@ export default function PembelianObat() {
             }
         } catch (error) {
             console.error('Error updating harga jual:', error);
+            return false;
+        }
+    };
+
+    // Fungsi untuk update stok gudang barang
+    const updateGudangBarangStock = async (purchaseItems, kdBangsal, noFaktur) => {
+        try {
+            let updateSuccess = true;
+            
+            for (const item of purchaseItems) {
+                const updateData = {
+                    kode_brng: item.kode_brng,
+                    kd_bangsal: kdBangsal,
+                    stok: parseFloat(item.jumlah) || 0,
+                    no_batch: item.no_batch || 'BATCH001',
+                    no_faktur: noFaktur
+                };
+                
+                // Update stok gudang barang melalui API
+                const response = await fetch('/api/gudangbarang/update-stok', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+                
+                if (!response.ok) {
+                    console.error(`Failed to update stock for ${item.kode_brng}:`, response.statusText);
+                    updateSuccess = false;
+                }
+            }
+            
+            if (updateSuccess) {
+                toast('Stok gudang barang berhasil diupdate!', 'success');
+            } else {
+                toast('Beberapa stok gudang gagal diupdate, silakan periksa kembali', 'warning');
+            }
+            
+            return updateSuccess;
+        } catch (error) {
+            console.error('Error updating gudang barang stock:', error);
+            toast('Gagal mengupdate stok gudang barang', 'error');
             return false;
         }
     };
@@ -458,8 +499,7 @@ export default function PembelianObat() {
             const response = await fetch('/api/pembelian/store', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(pembelianData)
             });
@@ -477,6 +517,9 @@ export default function PembelianObat() {
                 
                 // Update harga databarang setelah pembelian berhasil
                 await updateDataBarangPrices(itemsForUpdate);
+                
+                // Update stok gudang barang setelah pembelian berhasil
+                await updateGudangBarangStock(items, formData.kd_bangsal, formData.no_faktur);
                 
                 // Tunggu sebentar untuk menampilkan toast
                 setTimeout(async () => {

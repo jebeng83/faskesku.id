@@ -1,0 +1,27 @@
+{
+  "no_faktur": "PB-TEST-003",
+  "tgl_beli": "2025-09-06",
+  "kd_rek": "1230",
+  "kode_suplier": "S0001",
+  "nip": "123124",
+  "kd_bangsal": "AP",
+  "total1": 120000,
+  "potongan": 0,
+  "total2": 120000,
+  "ppn": 0,
+  "tagihan": 120000,
+  "items": [
+    {
+      "kode_brng": "A000000006",
+      "kode_sat": "TAB",
+      "no_batch": "BATCH001",
+      "kadaluarsa": "2028-09-06",
+      "jumlah": 10,
+      "harga": 12000,
+      "subtotal": 120000,
+      "dis": 0,
+      "besardis": 0,
+      "total": 120000
+    }
+  ]
+}
