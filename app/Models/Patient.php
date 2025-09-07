@@ -14,6 +14,7 @@ class Patient extends Model
     protected $primaryKey = 'no_rkm_medis';
     public $incrementing = false;
     protected $keyType = 'string';
+    public $timestamps = false;
 
     protected $fillable = [
         'no_rkm_medis',
@@ -134,11 +135,11 @@ class Patient extends Model
     {
         return $query->where(function ($q) use ($search) {
             $q->where('no_rkm_medis', 'like', "%{$search}%")
-              ->orWhere('nm_pasien', 'like', "%{$search}%")
-              ->orWhere('no_ktp', 'like', "%{$search}%")
-              ->orWhere('no_tlp', 'like', "%{$search}%")
-              ->orWhere('email', 'like', "%{$search}%")
-              ->orWhere('no_peserta', 'like', "%{$search}%");
+                ->orWhere('nm_pasien', 'like', "%{$search}%")
+                ->orWhere('no_ktp', 'like', "%{$search}%")
+                ->orWhere('no_tlp', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%")
+                ->orWhere('no_peserta', 'like', "%{$search}%");
         });
     }
 
