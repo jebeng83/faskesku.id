@@ -20,7 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'simple-setting/*',
             'api/pembelian/*',
             'api/databarang/*',
-            'api/gudangbarang/*'
+            'api/gudangbarang/*',
+            'api/opname/*'
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

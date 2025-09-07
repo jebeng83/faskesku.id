@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
+use App\Models\RiwayatTransaksiGudangBarang;
 
 class GudangBarang extends Model
 {
@@ -98,17 +99,45 @@ class GudangBarang extends Model
 
             if ($gudangBarang) {
                 // Jika sudah ada, tambahkan stok
+                $stokSebelum = $gudangBarang->stok;
                 $gudangBarang->stok += $jumlah;
+                $stokSesudah = $gudangBarang->stok;
                 $gudangBarang->save();
+                
+                // Catat audit trail untuk update
+                RiwayatTransaksiGudangBarang::catatUpdate(
+                    $kodeBarang,
+                    $kdBangsal,
+                    $noBatch,
+                    $noFaktur,
+                    $stokSebelum,
+                    $stokSesudah,
+                    'pembelian',
+                    'Pembelian obat dengan faktur: ' . $noFaktur . ', jumlah: ' . $jumlah,
+                    ['stok' => $stokSebelum, 'kode_brng' => $kodeBarang, 'kd_bangsal' => $kdBangsal, 'no_batch' => $noBatch, 'no_faktur' => $noFaktur],
+                    ['stok' => $stokSesudah, 'kode_brng' => $kodeBarang, 'kd_bangsal' => $kdBangsal, 'no_batch' => $noBatch, 'no_faktur' => $noFaktur]
+                );
             } else {
                 // Jika belum ada, buat record baru
-                self::create([
+                $gudangBarangBaru = self::create([
                     'kode_brng' => $kodeBarang,
                     'kd_bangsal' => $kdBangsal,
                     'stok' => $jumlah,
                     'no_batch' => $noBatch,
                     'no_faktur' => $noFaktur
                 ]);
+                
+                // Catat audit trail untuk insert
+                RiwayatTransaksiGudangBarang::catatInsert(
+                    $kodeBarang,
+                    $kdBangsal,
+                    $noBatch,
+                    $noFaktur,
+                    $jumlah,
+                    'pembelian',
+                    'Pembelian obat dengan faktur: ' . $noFaktur . ', jumlah: ' . $jumlah,
+                    $gudangBarangBaru->toArray()
+                );
             }
 
             return true;

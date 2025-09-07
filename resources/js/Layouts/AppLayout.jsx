@@ -248,6 +248,8 @@ export default function AppLayout({ title, children, variant = 'default' }) {
                                     <NavItem icon="clipboard" label="Resep Obat" href={route('farmasi.resep-obat')} />
                                     <NavItem icon="truck" label="Pembelian Obat" href={route('farmasi.pembelian-obat')} />
                                     <NavItem icon="dollar-sign" label="Penjualan Obat" href={route('farmasi.penjualan-obat')} />
+                                    <NavItem icon="clipboard-check" label="Stok Opname" href={route('farmasi.stok-opname')} />
+                                    <NavItem icon="history" label="Riwayat Transaksi" href={route('farmasi.riwayat-transaksi-gudang')} />
                                 </NavGroup>
                                 
                                 <NavGroup title="Authentication" onToggle={toggleGroup} isCollapsed={collapsedGroups['Authentication']}>

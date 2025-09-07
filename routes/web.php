@@ -10,6 +10,8 @@ use App\Http\Controllers\DataBarangController;
 use App\Http\Controllers\SetHargaObatController;
 use App\Http\Controllers\RawatJalanController;
 use App\Http\Controllers\GudangBarangController;
+use App\Http\Controllers\OpnameController;
+use App\Http\Controllers\RiwayatTransaksiGudangBarangController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -52,15 +54,15 @@ Route::middleware('auth')->group(function () {
     // Farmasi routes
     Route::prefix('farmasi')->name('farmasi.')->group(function () {
         Route::get('/', function () {
-            return Inertia::render('Farmasi/Dashboard');
+            return Inertia::render('farmasi/Dashboard');
         })->name('dashboard');
         
         Route::get('/stok-obat', function () {
-            return Inertia::render('Farmasi/StokObat');
+            return Inertia::render('farmasi/StokObat');
         })->name('stok-obat');
         
         Route::get('/resep-obat', function () {
-            return Inertia::render('Farmasi/ResepObat');
+            return Inertia::render('farmasi/ResepObat');
         })->name('resep-obat');
         
         Route::get('/pembelian-obat', function () {
@@ -68,8 +70,16 @@ Route::middleware('auth')->group(function () {
         })->name('pembelian-obat');
         
         Route::get('/penjualan-obat', function () {
-            return Inertia::render('Farmasi/PenjualanObat');
+            return Inertia::render('farmasi/PenjualanObat');
         })->name('penjualan-obat');
+        
+        Route::get('/stok-opname', function () {
+            return Inertia::render('farmasi/StokOpname');
+        })->name('stok-opname');
+        
+        Route::get('/riwayat-transaksi-gudang', function () {
+            return Inertia::render('farmasi/RiwayatTransaksiGudang');
+        })->name('riwayat-transaksi-gudang');
     });
 
     // Test route for fufufafa database connection
@@ -122,6 +132,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/pembelian/generate-no-faktur', [\App\Http\Controllers\PembelianController::class, 'generateNoFaktur'])->name('api.pembelian.generate-no-faktur')->withoutMiddleware(['auth']);
     Route::post('/api/pembelian/store', [\App\Http\Controllers\PembelianController::class, 'store'])->name('api.pembelian.store')->withoutMiddleware(['auth']);
     Route::post('/api/gudangbarang/update-stok', [\App\Http\Controllers\GudangBarangController::class, 'updateStok'])->name('api.gudangbarang.update-stok')->withoutMiddleware(['auth']);
+
+    // API routes untuk stok opname
+    Route::get('/api/opname/lokasi', [OpnameController::class, 'getLokasi'])->name('api.opname.lokasi')->withoutMiddleware(['auth']);
+    Route::get('/api/opname/data-barang', [OpnameController::class, 'getDataBarang'])->name('api.opname.data-barang')->withoutMiddleware(['auth']);
+    Route::post('/api/opname/store', [OpnameController::class, 'store'])->name('api.opname.store')->withoutMiddleware(['auth', 'csrf']);
+    Route::get('/api/opname/data', [OpnameController::class, 'getOpnameData'])->name('api.opname.data')->withoutMiddleware(['auth']);
+    Route::get('/api/opname/search', [OpnameController::class, 'searchOpnameData'])->name('api.opname.search')->withoutMiddleware(['auth']);
+
+    // API routes untuk riwayat transaksi gudang barang
+    Route::get('/api/riwayat-transaksi-gudang', [RiwayatTransaksiGudangBarangController::class, 'api'])->name('api.riwayat-transaksi-gudang')->withoutMiddleware(['auth']);
+    Route::get('/api/riwayat-transaksi-gudang/bangsal', [RiwayatTransaksiGudangBarangController::class, 'getBangsal'])->name('api.riwayat-transaksi-gudang.bangsal')->withoutMiddleware(['auth']);
+    Route::get('/api/riwayat-transaksi-gudang/{id}', [RiwayatTransaksiGudangBarangController::class, 'detail'])->name('api.riwayat-transaksi-gudang.detail')->withoutMiddleware(['auth']);
+    Route::get('/api/riwayat-transaksi-gudang/export', [RiwayatTransaksiGudangBarangController::class, 'export'])->name('api.riwayat-transaksi-gudang.export')->withoutMiddleware(['auth']);
     
     // API routes untuk pencarian barang
     Route::get('/api/barang/search', [App\Http\Controllers\BarangController::class, 'search']);
@@ -132,3 +155,6 @@ Route::put('/api/databarang/update-harga/{kode_brng}', [DataBarangController::cl
 Route::put('/api/databarang/update-harga-jual/{kode_brng}', [DataBarangController::class, 'updateHargaJual'])->name('api.databarang.update-harga-jual');
 Route::get('/api/gudangbarang/total-stok', [GudangBarangController::class, 'getTotalStok'])->name('api.gudangbarang.total-stok');
 Route::get('/api/gudangbarang/stok-detail', [GudangBarangController::class, 'getStokDetail'])->name('api.gudangbarang.stok-detail');
+
+// API routes untuk opname tanpa CSRF
+Route::post('/api/opname/store-nocsr', [OpnameController::class, 'store'])->name('api.opname.store-nocsr');

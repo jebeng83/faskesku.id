@@ -23,28 +23,28 @@ function Login({ wallpaper, setting }) {
                 backgroundRepeat: 'no-repeat'
             }}
         >
-            <div className="max-w-md w-full bg-white/95 backdrop-blur-sm rounded-lg shadow-xl p-8">
+            <div className="max-w-md w-full p-8">
                 <div className="text-center mb-8">
                     {setting && setting.nama_instansi && (
-                        <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                        <h2 className="text-xl font-semibold text-white mb-2">
                             {setting.nama_instansi}
                         </h2>
                     )}
-                    <h1 className="text-3xl font-bold text-gray-900">Login</h1>
-                    <p className="text-gray-600 mt-2">Masuk ke sistem SIMRS</p>
+                    <h1 className="text-3xl font-bold text-white">Login</h1>
+                    <div className="w-16 h-1 bg-cyan-400 mx-auto mt-2"></div>
                 </div>
                 
                 <form onSubmit={handleSubmit}>
                     <div className="mb-6">
-                        <label className="block text-gray-700 text-sm font-bold mb-2">
+                        <label className="block text-white text-sm font-bold mb-2">
                             Email
                         </label>
                         <input
                             type="email"
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
-                            className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                                errors.email ? 'border-red-500' : 'border-gray-300'
+                            className={`w-full px-0 py-3 bg-transparent border-0 border-b-2 border-white/50 rounded-none focus:outline-none focus:ring-0 focus:border-cyan-400 transition-colors text-white placeholder-white/70 ${
+                                errors.email ? 'border-red-500' : 'border-white/50'
                             }`}
                             placeholder="Masukkan email Anda"
                         />
@@ -54,15 +54,15 @@ function Login({ wallpaper, setting }) {
                     </div>
                     
                     <div className="mb-6">
-                        <label className="block text-gray-700 text-sm font-bold mb-2">
+                        <label className="block text-white text-sm font-bold mb-2">
                             Password
                         </label>
                         <input
                             type="password"
                             value={data.password}
                             onChange={(e) => setData('password', e.target.value)}
-                            className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                                errors.password ? 'border-red-500' : 'border-gray-300'
+                            className={`w-full px-0 py-3 bg-transparent border-0 border-b-2 border-white/50 rounded-none focus:outline-none focus:ring-0 focus:border-cyan-400 transition-colors text-white placeholder-white/70 ${
+                                errors.password ? 'border-red-500' : 'border-white/50'
                             }`}
                             placeholder="Masukkan password Anda"
                         />
@@ -71,30 +71,31 @@ function Login({ wallpaper, setting }) {
                         )}
                     </div>
                     
-                    <div className="mb-6">
-                        <label className="flex items-center">
-                            <input
-                                type="checkbox"
-                                checked={data.remember}
-                                onChange={(e) => setData('remember', e.target.checked)}
-                                className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                            />
-                            <span className="ml-2 text-sm text-gray-600">Ingat saya</span>
+                    <div className="flex items-center mb-6">
+                        <input
+                            id="remember"
+                            type="checkbox"
+                            checked={data.remember}
+                            onChange={(e) => setData('remember', e.target.checked)}
+                            className="h-4 w-4 text-cyan-400 focus:ring-cyan-400 border-white/50 rounded bg-transparent"
+                        />
+                        <label htmlFor="remember" className="ml-2 block text-sm text-white">
+                            Ingat saya
                         </label>
                     </div>
                     
                     <button
                         type="submit"
                         disabled={processing}
-                        className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-3 px-4 rounded-lg font-semibold transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                        className="w-full bg-blue-600 hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-150 py-3 text-lg font-semibold text-white rounded-lg"
                     >
                         {processing ? 'Memproses...' : 'Masuk'}
                     </button>
                 </form>
                 
                 {setting && (
-                    <div className="mt-8 pt-6 border-t border-gray-200 text-center">
-                        <p className="text-sm text-gray-600">
+                    <div className="mt-8 pt-6 border-t border-white/20 text-center">
+                        <p className="text-sm text-white/80">
                             {setting.alamat_instansi && (
                                 <span className="block">{setting.alamat_instansi}</span>
                             )}
