@@ -46,5 +46,12 @@ class DatabaseSeeder extends Seeder
                 'kode_ppkkemenkes' => 'KEM001',
             ]);
         }
+
+        // Run seeders
+        $this->call([
+            RoleSeeder::class,
+            PatientSeeder::class,
+            RawatJalanSeeder::class,
+        ]);
     }
 }

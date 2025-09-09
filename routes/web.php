@@ -8,6 +8,7 @@ use App\Http\Controllers\PatientController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\DataBarangController;
 use App\Http\Controllers\SetHargaObatController;
+use App\Http\Controllers\RawatJalanController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -117,51 +118,51 @@ Route::middleware('auth')->group(function () {
 
     // Patient routes
     Route::resource('patients', PatientController::class);
-Route::resource('data-barang', DataBarangController::class);
-Route::get('data-barang-dropdown', [DataBarangController::class, 'getDropdownData'])->name('data-barang.dropdown')->withoutMiddleware(['auth']);
-Route::get('data-barang-last-code', [DataBarangController::class, 'getLastItemCode'])->name('data-barang.last-code')->withoutMiddleware(['auth']);
-
-// Farmasi routes
-Route::prefix('farmasi')->name('farmasi.')->group(function () {
-    Route::get('/', function () {
-        return Inertia::render('Farmasi/Dashboard');
-    })->name('dashboard');
     
-    Route::get('/stok-obat', function () {
-        return Inertia::render('Farmasi/StokObat');
-    })->name('stok-obat');
-    
-    Route::get('/resep-obat', function () {
-        return Inertia::render('Farmasi/ResepObat');
-    })->name('resep-obat');
-    
-    Route::get('/pembelian-obat', function () {
-        return Inertia::render('Farmasi/PembelianObat');
-    })->name('pembelian-obat');
-    
-    Route::get('/penjualan-obat', function () {
-        return Inertia::render('Farmasi/PenjualanObat');
-    })->name('penjualan-obat');
-});
+    // Data Barang routes
+    Route::resource('data-barang', DataBarangController::class);
+    Route::get('data-barang-dropdown', [DataBarangController::class, 'getDropdownData'])->name('data-barang.dropdown')->withoutMiddleware(['auth']);
+    Route::get('data-barang-last-code', [DataBarangController::class, 'getLastItemCode'])->name('data-barang.last-code')->withoutMiddleware(['auth']);
 
-// Test route for fufufafa database connection
-Route::get('test-fufufafa', function() {
-    try {
-        $count = DB::connection('fufufafa')->table('databarang')->count();
-        return response()->json([
-            'success' => true,
-            'message' => 'Fufufafa database connection successful',
-            'count' => $count
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'error' => $e->getMessage()
-        ], 500);
-    }
-});
+    // Farmasi routes
+    Route::prefix('farmasi')->name('farmasi.')->group(function () {
+        Route::get('/', function () {
+            return Inertia::render('Farmasi/Dashboard');
+        })->name('dashboard');
+        
+        Route::get('/stok-obat', function () {
+            return Inertia::render('Farmasi/StokObat');
+        })->name('stok-obat');
+        
+        Route::get('/resep-obat', function () {
+            return Inertia::render('Farmasi/ResepObat');
+        })->name('resep-obat');
+        
+        Route::get('/pembelian-obat', function () {
+            return Inertia::render('Farmasi/PembelianObat');
+        })->name('pembelian-obat');
+        
+        Route::get('/penjualan-obat', function () {
+            return Inertia::render('Farmasi/PenjualanObat');
+        })->name('penjualan-obat');
+    });
 
-
+    // Test route for fufufafa database connection
+    Route::get('test-fufufafa', function() {
+        try {
+            $count = DB::connection('fufufafa')->table('databarang')->count();
+            return response()->json([
+                'success' => true,
+                'message' => 'Fufufafa database connection successful',
+                'count' => $count
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    });
     
     // Setting routes
     Route::delete('settings/{nama_instansi}', [SettingController::class, 'destroy'])
@@ -176,4 +177,15 @@ Route::get('test-fufufafa', function() {
     
     // API route for getting percentage data
     Route::get('/api/set-harga-obat', [SetHargaObatController::class, 'getPercentageData'])->name('api.set-harga-obat');
+    
+    // Rawat Jalan routes (pastikan rute spesifik didefinisikan sebelum resource agar tidak tertangkap oleh {rawat_jalan})
+    Route::get('rawat-jalan/lanjutan', [RawatJalanController::class, 'lanjutan'])->name('rawat-jalan.lanjutan');
+    Route::get('rawat-jalan/riwayat', [RawatJalanController::class, 'riwayat'])->name('rawat-jalan.riwayat');
+    Route::get('rawat-jalan/pemeriksaan-ralan', [RawatJalanController::class, 'pemeriksaanRalan'])->name('rawat-jalan.pemeriksaan-ralan');
+    Route::post('rawat-jalan/pemeriksaan-ralan', [RawatJalanController::class, 'storePemeriksaanRalan'])->name('rawat-jalan.pemeriksaan-ralan.store');
+    Route::delete('rawat-jalan/pemeriksaan-ralan', [RawatJalanController::class, 'deletePemeriksaanRalan'])->name('rawat-jalan.pemeriksaan-ralan.delete');
+    Route::put('rawat-jalan/pemeriksaan-ralan', [RawatJalanController::class, 'updatePemeriksaanRalan'])->name('rawat-jalan.pemeriksaan-ralan.update');
+    Route::get('pegawai/search', [RawatJalanController::class, 'searchPegawai'])->name('pegawai.search');
+    Route::get('rawat-jalan-statistics', [RawatJalanController::class, 'getStatistics'])->name('rawat-jalan.statistics');
+    Route::resource('rawat-jalan', RawatJalanController::class);
 });
