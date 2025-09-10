@@ -16,18 +16,22 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
+            'username' => ['required', 'string'],
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+        // Find user by username
+        $user = \App\Models\User::where('username', $credentials['username'])->first();
+
+        if ($user && \Illuminate\Support\Facades\Hash::check($credentials['password'], $user->password)) {
+            Auth::login($user, $request->boolean('remember'));
             $request->session()->regenerate();
             return redirect()->intended('/');
         }
 
         return back()->withErrors([
-            'email' => 'Kredensial tidak valid.',
-        ])->onlyInput('email');
+            'username' => 'Kredensial tidak valid.',
+        ])->onlyInput('username');
     }
 
     public function logout(Request $request)

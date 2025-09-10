@@ -23,6 +23,12 @@ class DatabaseSeeder extends Seeder
         // Run seeders
         $this->call([
             RoleSeeder::class,
+            PermissionSeeder::class,
+            DokterSeeder::class,
+            PoliklinikSeeder::class,
+            PenjabSeeder::class,
+            RegPeriksaSeeder::class,
+            UserEmployeeSeeder::class,
             PatientSeeder::class,
             RawatJalanSeeder::class,
         ]);
