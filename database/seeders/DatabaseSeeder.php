@@ -29,6 +29,8 @@ class DatabaseSeeder extends Seeder
             PenjabSeeder::class,
             RegPeriksaSeeder::class,
             UserEmployeeSeeder::class,
+            PatientSeeder::class,
+            RawatJalanSeeder::class,
         ]);
     }
 }
