@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { router } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import { SettingsIcon } from "@/Components/IconSettings";
+import SidebarMenu from "@/Components/SidebarMenu";
 
 export default function AppLayout({
 	title = "Faskesku",
@@ -236,75 +237,20 @@ export default function AppLayout({
 				)}
 
 				<div className="h-full flex flex-col">
-					{/* Navigation */}
-					<nav className="flex-1 p-4 space-y-1">
-						{!isSidebarCollapsed ? (
-							<>
-								<NavGroup
-									title="Navigation"
-									onToggle={toggleGroup}
-									isCollapsed={collapsedGroups["Navigation"]}
-								>
-									<NavItem icon="home" label="Dashboard" active />
-								</NavGroup>
-
-								<NavGroup
-									title="Rekam Medis"
-									onToggle={toggleGroup}
-									isCollapsed={collapsedGroups["Rekam Medis"]}
-								>
-									<NavItem
-										icon="users"
-										label="Data Pasien"
-										href={route("patients.index")}
-									/>
-									<NavItem icon="user-md" label="Data Dokter" />
-									<NavItem icon="pills" label="Data Obat" />
-									<NavItem icon="walking" label="Data Rawat Jalan" />
-									<NavItem icon="bed" label="Data Rawat Inap" />
-								</NavGroup>
-
-								<NavGroup
-									title="Authentication"
-									onToggle={toggleGroup}
-									isCollapsed={collapsedGroups["Authentication"]}
-								>
-									<NavItem
-										icon="users"
-										label="Manajemen User"
-										href={route("users.index")}
-									/>
-									<NavItem
-										icon="shield"
-										label="Permissions"
-										href={route("permissions.index")}
-									/>
-									<NavItem icon="lock" label="Login" />
-									<NavItem icon="log-in" label="Register" />
-									<NavItem icon="unlock" label="Reset Password" />
-								</NavGroup>
-
-								<NavGroup
-									title="Support"
-									onToggle={toggleGroup}
-									isCollapsed={collapsedGroups["Support"]}
-								>
-									<NavItem icon="sidebar" label="Sample Page" />
-									<NavItem icon="help-circle" label="Documentation" />
-								</NavGroup>
-							</>
-						) : (
+					{/* Dynamic Navigation */}
+					{!isSidebarCollapsed ? (
+						<SidebarMenu />
+					) : (
+						<nav className="flex-1 p-4 space-y-2">
 							<div className="space-y-2">
 								<NavItemCollapsed icon="home" active />
 								<NavItemCollapsed icon="box" />
+								<NavItemCollapsed icon="users" />
 								<NavItemCollapsed icon="lock" />
-								<NavItemCollapsed icon="log-in" />
-								<NavItemCollapsed icon="unlock" />
-								<NavItemCollapsed icon="sidebar" />
-								<NavItemCollapsed icon="help-circle" />
+								<NavItemCollapsed icon="file-text" />
 							</div>
-						)}
-					</nav>
+						</nav>
+					)}
 
 					{/* Bottom Card - Gradient Pro */}
 					{!isSidebarCollapsed && (

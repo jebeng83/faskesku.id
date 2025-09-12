@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
+use App\Models\Menu;
 
 class HandleInertiaRequests
 {
@@ -21,6 +22,13 @@ class HandleInertiaRequests
                 'success' => fn() => $request->session()->get('success'),
                 'error' => fn() => $request->session()->get('error'),
             ],
+            'errors' => fn() => $request->session()->get('errors') ? $request->session()->get('errors')->getBag('default')->getMessages() : (object) [],
+            'auth' => [
+                'user' => fn() => $request->user() ? $request->user()->only('id', 'name', 'email') : null,
+                'permissions' => fn() => $request->user() ? $request->user()->getAllPermissions()->pluck('name') : [],
+            ],
+            'menu_hierarchy' => fn() => $request->user() ? Menu::getMenuHierarchy($request->user()->id) : [],
+            'current_menu' => fn() => $request->attributes->get('current_menu'),
         ]);
 
         return $next($request);

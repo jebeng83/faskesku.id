@@ -155,4 +155,17 @@ class Patient extends Model
         }
         return str_pad($newNumber, 6, '0', STR_PAD_LEFT);
     }
+
+    public static function calculateAge($tgl_lahir)
+    {
+        $birthDate = Carbon::parse($tgl_lahir);
+        $today = Carbon::now();
+        $age = $birthDate->diffInYears($today);
+        $month = $birthDate->diffInMonths($today) % 12;
+        $day = $birthDate->diffInDays($today) % 30;
+        // $age = $birthDate->age;
+        // $month = $birthDate->month;
+        // $day = $birthDate->day;
+        return $age . ' Th ' . $month . ' Bl ' . $day . ' Hr';
+    }
 }
