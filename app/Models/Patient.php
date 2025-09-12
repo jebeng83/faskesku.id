@@ -156,6 +156,29 @@ class Patient extends Model
                     ->orderBy('jam_reg', 'desc');
     }
 
+    // Method untuk menghitung umur otomatis dari tgl_lahir
+    public function calculateAge()
+    {
+        if (!$this->tgl_lahir) {
+            return null;
+        }
+        
+        $birthDate = Carbon::parse($this->tgl_lahir);
+        $today = Carbon::now();
+        
+        $years = $today->diffInYears($birthDate);
+        $months = $today->copy()->subYears($years)->diffInMonths($birthDate);
+        $days = $today->copy()->subYears($years)->subMonths($months)->diffInDays($birthDate);
+        
+        if ($years > 0) {
+            return $years . ' Th';
+        } elseif ($months > 0) {
+            return $months . ' Bl';
+        } else {
+            return $days . ' Hr';
+        }
+    }
+
     // Generate nomor RM otomatis
     public static function generateNoRM()
     {
