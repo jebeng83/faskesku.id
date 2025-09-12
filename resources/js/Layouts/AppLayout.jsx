@@ -235,6 +235,46 @@ export default function AppLayout({
 						onClick={() => setIsSidebarOpen(false)}
 					/>
 				)}
+        
+                <div className="h-full flex flex-col">
+                    {/* Navigation */}
+                    <nav className="flex-1 p-4 space-y-1">
+                        {!isSidebarCollapsed ? (
+                            <>
+                                <NavGroup title="Navigation" onToggle={toggleGroup} isCollapsed={collapsedGroups['Navigation']}>
+                                    <NavItem icon="home" label="Dashboard" href={route('dashboard')} active />
+                                </NavGroup>
+                                
+                                <NavGroup title="Rekam Medis" onToggle={toggleGroup} isCollapsed={collapsedGroups['Rekam Medis']}>
+                                    <NavItem icon="users" label="Data Pasien" href={route('patients.index')} />
+                                    <NavItem icon="user-md" label="Data Dokter" />
+                                    <NavItem icon="pills" label="Data Obat" />
+                                    <NavItem icon="walking" label="Data Rawat Jalan" href={route('rawat-jalan.index')} />
+                                    <NavItem icon="bed" label="Data Rawat Inap" />
+                                </NavGroup>
+                                
+                                <NavGroup title="Authentication" onToggle={toggleGroup} isCollapsed={collapsedGroups['Authentication']}>
+                                    <NavItem icon="lock" label="Login" />
+                                    <NavItem icon="log-in" label="Register" />
+                                    <NavItem icon="unlock" label="Reset Password" />
+                                </NavGroup>
+                                
+                                <NavGroup title="Support" onToggle={toggleGroup} isCollapsed={collapsedGroups['Support']}>
+                                    <NavItem icon="sidebar" label="Sample Page" />
+                                    <NavItem icon="help-circle" label="Documentation" />
+                                </NavGroup>
+                            </>
+                        ) : (
+                            <div className="space-y-2">
+                                <NavItemCollapsed icon="home" active href={route('dashboard')} />
+                                <NavItemCollapsed icon="users" href={route('patients.index')} />
+                                <NavItemCollapsed icon="walking" href={route('rawat-jalan.index')} />
+                                <NavItemCollapsed icon="user-md" />
+                                <NavItemCollapsed icon="pills" />
+                                <NavItemCollapsed icon="bed" />
+                            </div>
+                        )}
+                    </nav>
 
 				<div className="h-full flex flex-col">
 					{/* Dynamic Navigation */}
@@ -285,6 +325,7 @@ export default function AppLayout({
 		</div>
 	);
 }
+
 
 function NavGroup({ title, children, onToggle, isCollapsed = false }) {
 	return (
@@ -522,7 +563,6 @@ function UserProfileDropdown({ isOpen, onToggle }) {
 							</svg>
 							Profile
 						</a>
-
 						<a
 							href="#"
 							className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
