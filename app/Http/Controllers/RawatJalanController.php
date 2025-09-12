@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\RawatJalan;
 use App\Models\Patient;
+use App\Models\Poliklinik;
+use App\Models\RawatJalan;
+use App\Models\Dokter;
+use App\Models\Penjab;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use Inertia\Inertia;
 
 class RawatJalanController extends Controller
 {
@@ -90,6 +93,10 @@ class RawatJalanController extends Controller
     public function create()
     {
         $patients = Patient::orderBy('nm_pasien')->get();
+        $polikliniks = Poliklinik::aktif()->orderBy('nm_poli')->get();
+        $dokters = Dokter::aktif()->orderBy('nm_dokter')->get();
+        $penjaabs = Penjab::aktif()->orderBy('png_jawab')->get();
+        
         $statusOptions = [
             'Belum' => 'Belum',
             'Sudah' => 'Sudah',
@@ -142,6 +149,9 @@ class RawatJalanController extends Controller
 
         return Inertia::render('RawatJalan/Create', [
             'patients' => $patients,
+            'polikliniks' => $polikliniks,
+            'dokters' => $dokters,
+            'penjaabs' => $penjaabs,
             'statusOptions' => $statusOptions,
             'statusDaftarOptions' => $statusDaftarOptions,
             'statusLanjutOptions' => $statusLanjutOptions,
@@ -400,22 +410,51 @@ class RawatJalanController extends Controller
             'p_jawab' => 'nullable|string|max:100',
             'almt_pj' => 'nullable|string|max:200',
             'hubunganpj' => 'nullable|string|max:20',
-            'biaya_reg' => 'nullable|numeric|min:0',
             'stts' => 'required|in:Belum,Sudah,Batal,Berkas Diterima,Dirujuk,Meninggal,Dirawat,Pulang Paksa',
             'stts_daftar' => 'required|in:-,Lama,Baru',
             'status_lanjut' => 'required|in:Ralan,Ranap',
             'kd_pj' => 'required|string|max:3',
-            'umurdaftar' => 'nullable|integer|min:0',
-            'sttsumur' => 'nullable|in:Th,Bl,Hr',
-            'status_bayar' => 'required|in:Sudah Bayar,Belum Bayar',
-            'status_poli' => 'required|in:Lama,Baru'
+            'status_bayar' => 'required|in:Sudah Bayar,Belum Bayar'
         ]);
 
-        // Generate no_rawat
-        $no_rawat = $this->generateNoRawat($request->tgl_registrasi);
+        // Generate no_reg dan no_rawat
+        $no_reg = RawatJalan::generateNoReg($request->tgl_registrasi, $request->kd_dokter);
+        $no_rawat = RawatJalan::generateNoRawat($request->tgl_registrasi);
+
+        // Ambil data pasien untuk menghitung umur
+        $patient = Patient::find($request->no_rkm_medis);
+        $umur = $patient->calculateAge();
+        
+        // Tentukan status_poli otomatis berdasarkan riwayat kunjungan
+        $status_poli = RawatJalan::checkPatientStatus($request->no_rkm_medis);
+        
+        // Ambil biaya_reg dari tabel poliklinik
+        $poliklinik = Poliklinik::find($request->kd_poli);
+        $biaya_reg = $status_poli === 'Baru' ? $poliklinik->registrasi : $poliklinik->registrasilama;
+        
+        // Parse umur untuk mendapatkan nilai dan satuan
+        $umurdaftar = null;
+        $sttsumur = null;
+        if ($umur) {
+            if (strpos($umur, 'Th') !== false) {
+                $umurdaftar = (int) str_replace(' Th', '', $umur);
+                $sttsumur = 'Th';
+            } elseif (strpos($umur, 'Bl') !== false) {
+                $umurdaftar = (int) str_replace(' Bl', '', $umur);
+                $sttsumur = 'Bl';
+            } elseif (strpos($umur, 'Hr') !== false) {
+                $umurdaftar = (int) str_replace(' Hr', '', $umur);
+                $sttsumur = 'Hr';
+            }
+        }
 
         $data = $request->all();
+        $data['no_reg'] = $no_reg;
         $data['no_rawat'] = $no_rawat;
+        $data['biaya_reg'] = $biaya_reg;
+        $data['status_poli'] = $status_poli;
+        $data['umurdaftar'] = $umurdaftar;
+        $data['sttsumur'] = $sttsumur;
         $data['tgl_registrasi'] = Carbon::parse($request->tgl_registrasi)->format('Y-m-d');
         $data['jam_reg'] = Carbon::parse($request->jam_reg)->format('H:i:s');
 
@@ -442,6 +481,10 @@ class RawatJalanController extends Controller
     public function edit(RawatJalan $rawatJalan)
     {
         $patients = Patient::orderBy('nm_pasien')->get();
+        $polikliniks = Poliklinik::aktif()->orderBy('nm_poli')->get();
+        $dokters = Dokter::aktif()->orderBy('nm_dokter')->get();
+        $penjaabs = Penjab::aktif()->orderBy('png_jawab')->get();
+        
         $statusOptions = [
             'Belum' => 'Belum',
             'Sudah' => 'Sudah',
@@ -480,10 +523,24 @@ class RawatJalanController extends Controller
             'Hr' => 'Hari'
         ];
 
+        $keputusanOptions = [
+            '-' => '-',
+            'RUJUKAN' => 'RUJUKAN',
+            'PRIORITAS' => 'PRIORITAS',
+            'HIJAU' => 'HIJAU',
+            'KUNING' => 'KUNING',
+            'MERAH' => 'MERAH',
+            'HITAM' => 'HITAM',
+            'MJKN' => 'MJKN',
+            'CHECK-IN' => 'CHECK-IN'
+        ];
 
         return Inertia::render('RawatJalan/Edit', [
             'rawatJalan' => $rawatJalan,
             'patients' => $patients,
+            'polikliniks' => $polikliniks,
+            'dokters' => $dokters,
+            'penjaabs' => $penjaabs,
             'statusOptions' => $statusOptions,
             'statusDaftarOptions' => $statusDaftarOptions,
             'statusLanjutOptions' => $statusLanjutOptions,
@@ -541,28 +598,7 @@ class RawatJalanController extends Controller
                         ->with('success', 'Data rawat jalan berhasil dihapus.');
     }
 
-    /**
-     * Generate nomor rawat
-     */
-    private function generateNoRawat($tanggal)
-    {
-        $tgl = Carbon::parse($tanggal)->format('Y-m-d');
-        $tglFormatted = str_replace('-', '', $tgl);
-        
-        // Cari nomor urut terakhir untuk tanggal tersebut
-        $lastRecord = RawatJalan::where('tgl_registrasi', $tgl)
-                               ->orderBy('no_rawat', 'desc')
-                               ->first();
-        
-        if ($lastRecord) {
-            $lastNo = substr($lastRecord->no_rawat, 8);
-            $nextNo = str_pad((int)$lastNo + 1, 4, '0', STR_PAD_LEFT);
-        } else {
-            $nextNo = '0001';
-        }
-        
-        return $tglFormatted . $nextNo;
-    }
+
 
     /**
      * Get statistics for dashboard
