@@ -13,6 +13,7 @@ class RawatJalan extends Model
     protected $primaryKey = 'no_rawat';
     public $incrementing = false; // kunci utama bertipe string (bukan auto-increment)
     protected $keyType = 'string';
+    public $timestamps = false; // Nonaktifkan created_at dan updated_at
 
     protected $fillable = [
         'no_reg',
