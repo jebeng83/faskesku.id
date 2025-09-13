@@ -22,6 +22,7 @@ class RoleSeeder extends Seeder
         if (!User::where('email', 'admin@example.com')->exists()) {
             $admin = User::create([
                 'name' => 'Super Admin',
+                'username' => 'admin',
                 'email' => 'admin@example.com',
                 'password' => Hash::make('password'),
             ]);
