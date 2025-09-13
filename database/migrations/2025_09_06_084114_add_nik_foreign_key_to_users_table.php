@@ -11,15 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            // Add nik column if it doesn't exist
-            if (!Schema::hasColumn('users', 'nik')) {
-                $table->string('nik', 20)->nullable()->after('email');
-            }
+        if (Schema::hasTable('users')) {
+            Schema::table('users', function (Blueprint $table) {
+                // Add nik column if it doesn't exist
+                if (!Schema::hasColumn('users', 'nik')) {
+                    $table->string('nik', 20)->nullable()->after('email');
+                }
 
-            // Add foreign key constraint
-            // $table->foreign('nik')->references('nik')->on('pegawai')->onDelete('set null')->onUpdate('cascade');
-        });
+                // Add foreign key constraint
+                // $table->foreign('nik')->references('nik')->on('pegawai')->onDelete('set null')->onUpdate('cascade');
+            });
+        }
     }
 
     /**
@@ -27,12 +29,14 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            // Drop foreign key constraint
-            $table->dropForeign(['nik']);
-
-            // Drop nik column
-            $table->dropColumn('nik');
-        });
+        if (Schema::hasTable('users')) {
+            Schema::table('users', function (Blueprint $table) {
+                // Drop foreign key constraint
+                if (Schema::hasColumn('users', 'nik')) {
+                    // $table->dropForeign(['nik']);
+                    $table->dropColumn('nik');
+                }
+            });
+        }
     }
 };

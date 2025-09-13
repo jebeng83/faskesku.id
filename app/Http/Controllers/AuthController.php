@@ -20,8 +20,10 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        // Find user by username
-        $user = \App\Models\User::where('username', $credentials['username'])->first();
+        // Coba cari user berdasarkan username atau email
+        $user = \App\Models\User::where('username', $credentials['username'])
+                                ->orWhere('email', $credentials['username'])
+                                ->first();
 
         if ($user && \Illuminate\Support\Facades\Hash::check($credentials['password'], $user->password)) {
             Auth::login($user, $request->boolean('remember'));
