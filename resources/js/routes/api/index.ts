@@ -6,12 +6,12 @@ import regPeriksa from './reg-periksa'
 import users from './users'
 
 const api = {
-    employees,
-    penjab,
-    wilayah,
-    permissions,
-    regPeriksa,
-    users,
+    employees: Object.assign(employees, employees),
+    penjab: Object.assign(penjab, penjab),
+    wilayah: Object.assign(wilayah, wilayah),
+    permissions: Object.assign(permissions, permissions),
+    regPeriksa: Object.assign(regPeriksa, regPeriksa),
+    users: Object.assign(users, users),
 }
 
 export default api
