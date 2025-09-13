@@ -594,18 +594,18 @@ validateLicense.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =>
 })
 
 const premiumModules = {
-    index,
-    create,
-    store,
-    show,
-    edit,
-    update,
-    destroy,
-    generateLicense,
-    activate,
-    deactivate,
-    status,
-    validateLicense,
+    index: Object.assign(index, index),
+    create: Object.assign(create, create),
+    store: Object.assign(store, store),
+    show: Object.assign(show, show),
+    edit: Object.assign(edit, edit),
+    update: Object.assign(update, update),
+    destroy: Object.assign(destroy, destroy),
+    generateLicense: Object.assign(generateLicense, generateLicense),
+    activate: Object.assign(activate, activate),
+    deactivate: Object.assign(deactivate, deactivate),
+    status: Object.assign(status, status),
+    validateLicense: Object.assign(validateLicense, validateLicense),
 }
 
 export default premiumModules

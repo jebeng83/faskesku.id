@@ -230,10 +230,10 @@ villages.head = (args: { districtCode: string | number } | [districtCode: string
 })
 
 const wilayah = {
-    provinces,
-    regencies,
-    districts,
-    villages,
+    provinces: Object.assign(provinces, provinces),
+    regencies: Object.assign(regencies, regencies),
+    districts: Object.assign(districts, districts),
+    villages: Object.assign(villages, villages),
 }
 
 export default wilayah

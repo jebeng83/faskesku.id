@@ -78,8 +78,8 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 const penjab = {
-    index,
-    store,
+    index: Object.assign(index, index),
+    store: Object.assign(store, store),
 }
 
 export default penjab

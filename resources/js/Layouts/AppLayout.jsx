@@ -275,77 +275,6 @@ export default function AppLayout({
                         )}
                     </nav>
 
-				<div className="h-full flex flex-col">
-					{/* Navigation */}
-					<nav className="flex-1 p-4 space-y-1">
-						{!isSidebarCollapsed ? (
-							<>
-								<NavGroup
-									title="Navigation"
-									onToggle={toggleGroup}
-									isCollapsed={collapsedGroups["Navigation"]}
-								>
-									<NavItem icon="home" label="Dashboard" active />
-								</NavGroup>
-
-								<NavGroup
-									title="Rekam Medis"
-									onToggle={toggleGroup}
-									isCollapsed={collapsedGroups["Rekam Medis"]}
-								>
-									<NavItem
-										icon="users"
-										label="Data Pasien"
-										href={route("patients.index")}
-									/>
-									<NavItem icon="user-md" label="Data Dokter" />
-									<NavItem icon="pills" label="Data Obat" />
-									<NavItem icon="walking" label="Data Rawat Jalan" />
-									<NavItem icon="bed" label="Data Rawat Inap" />
-								</NavGroup>
-
-								<NavGroup
-									title="Authentication"
-									onToggle={toggleGroup}
-									isCollapsed={collapsedGroups["Authentication"]}
-								>
-									<NavItem
-										icon="users"
-										label="Manajemen User"
-										href={route("users.index")}
-									/>
-									<NavItem
-										icon="shield"
-										label="Permissions"
-										href={route("permissions.index")}
-									/>
-									<NavItem icon="lock" label="Login" />
-									<NavItem icon="log-in" label="Register" />
-									<NavItem icon="unlock" label="Reset Password" />
-								</NavGroup>
-
-								<NavGroup
-									title="Support"
-									onToggle={toggleGroup}
-									isCollapsed={collapsedGroups["Support"]}
-								>
-									<NavItem icon="sidebar" label="Sample Page" />
-									<NavItem icon="help-circle" label="Documentation" />
-								</NavGroup>
-							</>
-						) : (
-							<div className="space-y-2">
-								<NavItemCollapsed icon="home" active />
-								<NavItemCollapsed icon="box" />
-								<NavItemCollapsed icon="lock" />
-								<NavItemCollapsed icon="log-in" />
-								<NavItemCollapsed icon="unlock" />
-								<NavItemCollapsed icon="sidebar" />
-								<NavItemCollapsed icon="help-circle" />
-							</div>
-						)}
-					</nav>
-
 					{/* Bottom Card - Gradient Pro */}
 					{!isSidebarCollapsed && (
 						<div className="p-4 border-t border-gray-200 dark:border-gray-800">
@@ -432,7 +361,7 @@ function NavItem({
 					<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
 				)}
 				{icon === "users" && (
-					<path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.5 1.5 0 0 0 18.54 8H17c-.8 0-1.54.37-2.01.99L14 10.5c-.47-.62-1.21-.99-2.01-.99H9.46c-.8 0-1.54.37-2.01.99L6 10.5c-.47-.62-1.21-.99-2.01-.99H2.46c-.8 0-1.54.37-2.01.99L0 10.5v9.5h2v6h2v-6h2v6h2v-6h2v6h2v-6h2v6h2v-6h2v6h2z" />
+					<path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.5 1.5 0 0 0 18.54 8H17c-.8 0-1.54.37-2.01.99L14 10.5c-.47-.62-1.21-.99-2.01-.99H9.46c-.8 0-1.54.37-2.01.99L6 10.5c-.47-.62-1.21-.99-2.01-.99H2.46c-.8 0-1.54.37-2.01.99L0 10.5v9.5h2v6h2v-6h2v6h2v-6h2v6h2v-6h2v6h2v-6h2v6h2v-6h2v6h2z" />
 				)}
 				{icon === "user-md" && (
 					<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
