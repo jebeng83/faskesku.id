@@ -217,6 +217,14 @@ export default function AppLayout({
 				</div>
 			</header>
 
+			{/* Mobile backdrop - dipindahkan keluar dari sidebar */}
+			{isSidebarOpen && (
+				<div
+					className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+					onClick={() => setIsSidebarOpen(false)}
+				/>
+			)}
+
 			{/* Sidebar - Gradient Able Style */}
 			<aside
 				className={`fixed lg:sticky top-14 left-0 z-40 h-[calc(100vh-56px)] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-all duration-300 ${
@@ -227,17 +235,9 @@ export default function AppLayout({
 						: "lg:translate-x-0 lg:w-64 -translate-x-full"
 				}`}
 			>
-				{/* Mobile backdrop */}
-				{isSidebarOpen && (
-					<div
-						className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-						onClick={() => setIsSidebarOpen(false)}
-					/>
-				)}
-        
-                <div className="h-full flex flex-col">
-                    {/* Navigation */}
-                    <nav className="flex-1 p-4 space-y-1">
+				<div className="h-full flex flex-col">
+					{/* Navigation */}
+					<nav className="flex-1 p-4 space-y-1">
                         {!isSidebarCollapsed ? (
                             <>
                                 <NavGroup title="Navigation" onToggle={toggleGroup} isCollapsed={collapsedGroups['Navigation']}>
@@ -429,7 +429,7 @@ function NavItemCollapsed({ icon, active = false }) {
 					<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
 				)}
 				{icon === "users" && (
-					<path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.5 1.5 0 0 0 18.54 8H17c-.8 0-1.54.37-2.01.99L14 10.5c-.47-.62-1.21-.99-2.01-.99H9.46c-.8 0-1.54.37-2.01.99L6 10.5c-.47-.62-1.21-.99-2.01-.99H2.46c-.8 0-1.54.37-2.01.99L0 10.5v9.5h2v6h2v-6h2v6h2v-6h2v6h2v-6h2v6h2v-6h2v6h2z" />
+					<path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.5 1.5 0 0 0 18.54 8H17c-.8 0-1.54.37-2.01.99L14 10.5c-.47-.62-1.21-.99-2.01-.99H9.46c-.8 0-1.54.37-2.01.99L6 10.5c-.47-.62-1.21-.99-2.01-.99H2.46c-.8 0-1.54.37-2.01.99L0 10.5v9.5h2v6h2v-6h2v6h2v-6h2v6h2v-6h2v6h2v-6h2v6h2v-6h2v6h2z" />
 				)}
 				{icon === "user-md" && (
 					<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
