@@ -6,14 +6,33 @@ export default function Login() {
 	const [password, setPassword] = useState("");
 	const [remember, setRemember] = useState(false);
 	const [errors, setErrors] = useState({});
+	const [processing, setProcessing] = useState(false);
 
 	function submit(e) {
 		e.preventDefault();
+		
+		// Debug log
+		console.log('Form submitted:', { username, password, remember });
+		
+		setProcessing(true);
+		setErrors({});
+		
 		router.post(
 			"/login",
 			{ username, password, remember },
 			{
-				onError: (e) => setErrors(e),
+				onError: (e) => {
+					console.error('Login error:', e);
+					setErrors(e);
+					setProcessing(false);
+				},
+				onSuccess: () => {
+					console.log('Login successful');
+					setProcessing(false);
+				},
+				onFinish: () => {
+					setProcessing(false);
+				}
 			}
 		);
 	}
@@ -96,9 +115,14 @@ export default function Login() {
 
 						<button
 							type="submit"
-							className="mt-2 inline-flex w-full items-center justify-center rounded-md border border-white/70 bg-white/10 px-4 py-2.5 font-medium hover:bg-white/20"
+							disabled={processing}
+							className={`mt-2 inline-flex w-full items-center justify-center rounded-md border border-white/70 px-4 py-2.5 font-medium transition-colors ${
+								processing 
+									? 'bg-white/5 cursor-not-allowed opacity-50' 
+									: 'bg-white/10 hover:bg-white/20'
+							}`}
 						>
-							Sign In
+							{processing ? 'Signing In...' : 'Sign In'}
 						</button>
 					</form>
 				</div>

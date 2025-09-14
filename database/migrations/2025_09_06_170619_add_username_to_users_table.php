@@ -11,10 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('username')->unique()->after('name');
-            $table->string('email')->nullable()->change();
-        });
+        if (Schema::hasTable('users')) {
+            Schema::table('users', function (Blueprint $table) {
+                if (!Schema::hasColumn('users', 'username')) {
+                    $table->string('username')->unique()->after('name');
+                }
+                $table->string('email')->nullable()->change();
+            });
+        }
     }
 
     /**
@@ -22,9 +26,13 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('username');
-            $table->string('email')->nullable(false)->change();
-        });
+        if (Schema::hasTable('users')) {
+            Schema::table('users', function (Blueprint $table) {
+                if (Schema::hasColumn('users', 'username')) {
+                    $table->dropColumn('username');
+                }
+                $table->string('email')->nullable(false)->change();
+            });
+        }
     }
 };
