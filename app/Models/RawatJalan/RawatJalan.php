@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\RawatJalan;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Patient;
 
 class RawatJalan extends Model
 {
