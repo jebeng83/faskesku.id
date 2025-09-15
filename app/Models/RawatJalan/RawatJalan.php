@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\RawatJalan;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Patient;
 
 class RawatJalan extends Model
 {
@@ -13,6 +14,7 @@ class RawatJalan extends Model
     protected $primaryKey = 'no_rawat';
     public $incrementing = false; // kunci utama bertipe string (bukan auto-increment)
     protected $keyType = 'string';
+    public $timestamps = false; // Nonaktifkan created_at dan updated_at
 
     protected $fillable = [
         'no_reg',
@@ -95,5 +97,64 @@ class RawatJalan extends Model
 
         $class = $badges[$this->stts] ?? 'badge-secondary';
         return "<span class='badge {$class}'>{$this->stts}</span>";
+    }
+
+    /**
+     * Generate nomor registrasi dengan format NN berdasarkan kode dokter
+     */
+    public static function generateNoReg($tanggal, $kd_dokter)
+    {
+        // Cari nomor urut terakhir untuk tanggal dan dokter tersebut
+        $lastRecord = self::where('tgl_registrasi', \Carbon\Carbon::parse($tanggal)->format('Y-m-d'))
+                         ->where('kd_dokter', $kd_dokter)
+                         ->orderBy('no_reg', 'desc')
+                         ->first();
+        
+        if ($lastRecord && $lastRecord->no_reg) {
+            // Ambil 2 digit terakhir dari no_reg
+            $lastNo = substr($lastRecord->no_reg, -2);
+            $nextNo = str_pad((int)$lastNo + 1, 2, '0', STR_PAD_LEFT);
+        } else {
+            $nextNo = '01';
+        }
+        
+        return $nextNo;
+    }
+
+    /**
+     * Generate nomor rawat dengan format YYYY/MM/DD/NNNNN
+     */
+    public static function generateNoRawat($tanggal)
+    {
+        $tgl = \Carbon\Carbon::parse($tanggal);
+        $tglFormatted = $tgl->format('Y/m/d');
+        
+        // Cari nomor urut terakhir untuk tanggal tersebut
+        $lastRecord = self::where('tgl_registrasi', $tgl->format('Y-m-d'))
+                         ->orderBy('no_rawat', 'desc')
+                         ->first();
+        
+        if ($lastRecord && $lastRecord->no_rawat) {
+            // Ambil 5 digit terakhir dari no_rawat
+            $lastNo = substr($lastRecord->no_rawat, -5);
+            $nextNo = str_pad((int)$lastNo + 1, 5, '0', STR_PAD_LEFT);
+        } else {
+            $nextNo = '00001';
+        }
+        
+        return $tglFormatted . '/' . $nextNo;
+    }
+
+    /**
+     * Method untuk menentukan status_poli berdasarkan riwayat kunjungan pasien
+     */
+    public static function checkPatientStatus($no_rkm_medis)
+    {
+        // Cek apakah pasien sudah pernah berobat sebelumnya
+        $existingRecord = self::where('no_rkm_medis', $no_rkm_medis)
+                             ->where('tgl_registrasi', '<', \Carbon\Carbon::now()->format('Y-m-d'))
+                             ->first();
+        
+        return $existingRecord ? 'Lama' : 'Baru';
     }
 }

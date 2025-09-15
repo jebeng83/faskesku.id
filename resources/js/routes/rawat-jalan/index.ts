@@ -1,10 +1,19 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
+<<<<<<< HEAD
 import pemeriksaanRalanC19e15 from './pemeriksaan-ralan'
 /**
 * @see \App\Http\Controllers\RawatJalanController::lanjutan
 * @see app/Http/Controllers/RawatJalanController.php:158
 * @route '/rawat-jalan/lanjutan'
 */
+=======
+import pemeriksaanRalan from './pemeriksaan-ralan'
+/**
+* @see \App\Http\Controllers\RawatJalanController::lanjutan
+ * @see app/Http/Controllers/RawatJalanController.php:158
+ * @route '/rawat-jalan/lanjutan'
+ */
+>>>>>>> kohsun
 export const lanjutan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: lanjutan.url(options),
     method: 'get',
@@ -17,28 +26,48 @@ lanjutan.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::lanjutan
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:158
 * @route '/rawat-jalan/lanjutan'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:158
+ * @route '/rawat-jalan/lanjutan'
+ */
+>>>>>>> kohsun
 lanjutan.url = (options?: RouteQueryOptions) => {
     return lanjutan.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::lanjutan
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:158
 * @route '/rawat-jalan/lanjutan'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:158
+ * @route '/rawat-jalan/lanjutan'
+ */
+>>>>>>> kohsun
 lanjutan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: lanjutan.url(options),
     method: 'get',
 })
+<<<<<<< HEAD
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::lanjutan
 * @see app/Http/Controllers/RawatJalanController.php:158
 * @route '/rawat-jalan/lanjutan'
 */
+=======
+/**
+* @see \App\Http\Controllers\RawatJalanController::lanjutan
+ * @see app/Http/Controllers/RawatJalanController.php:158
+ * @route '/rawat-jalan/lanjutan'
+ */
+>>>>>>> kohsun
 lanjutan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: lanjutan.url(options),
     method: 'head',
@@ -46,9 +75,15 @@ lanjutan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::riwayat
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:202
 * @route '/rawat-jalan/riwayat'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:202
+ * @route '/rawat-jalan/riwayat'
+ */
+>>>>>>> kohsun
 export const riwayat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: riwayat.url(options),
     method: 'get',
@@ -61,28 +96,48 @@ riwayat.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::riwayat
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:202
 * @route '/rawat-jalan/riwayat'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:202
+ * @route '/rawat-jalan/riwayat'
+ */
+>>>>>>> kohsun
 riwayat.url = (options?: RouteQueryOptions) => {
     return riwayat.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::riwayat
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:202
 * @route '/rawat-jalan/riwayat'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:202
+ * @route '/rawat-jalan/riwayat'
+ */
+>>>>>>> kohsun
 riwayat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: riwayat.url(options),
     method: 'get',
 })
+<<<<<<< HEAD
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::riwayat
 * @see app/Http/Controllers/RawatJalanController.php:202
 * @route '/rawat-jalan/riwayat'
 */
+=======
+/**
+* @see \App\Http\Controllers\RawatJalanController::riwayat
+ * @see app/Http/Controllers/RawatJalanController.php:202
+ * @route '/rawat-jalan/riwayat'
+ */
+>>>>>>> kohsun
 riwayat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: riwayat.url(options),
     method: 'head',
@@ -90,9 +145,15 @@ riwayat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::pemeriksaanRalan
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:233
 * @route '/rawat-jalan/pemeriksaan-ralan'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:233
+ * @route '/rawat-jalan/pemeriksaan-ralan'
+ */
+>>>>>>> kohsun
 export const pemeriksaanRalan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: pemeriksaanRalan.url(options),
     method: 'get',
@@ -105,28 +166,48 @@ pemeriksaanRalan.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::pemeriksaanRalan
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:233
 * @route '/rawat-jalan/pemeriksaan-ralan'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:233
+ * @route '/rawat-jalan/pemeriksaan-ralan'
+ */
+>>>>>>> kohsun
 pemeriksaanRalan.url = (options?: RouteQueryOptions) => {
     return pemeriksaanRalan.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::pemeriksaanRalan
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:233
 * @route '/rawat-jalan/pemeriksaan-ralan'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:233
+ * @route '/rawat-jalan/pemeriksaan-ralan'
+ */
+>>>>>>> kohsun
 pemeriksaanRalan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: pemeriksaanRalan.url(options),
     method: 'get',
 })
+<<<<<<< HEAD
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::pemeriksaanRalan
 * @see app/Http/Controllers/RawatJalanController.php:233
 * @route '/rawat-jalan/pemeriksaan-ralan'
 */
+=======
+/**
+* @see \App\Http\Controllers\RawatJalanController::pemeriksaanRalan
+ * @see app/Http/Controllers/RawatJalanController.php:233
+ * @route '/rawat-jalan/pemeriksaan-ralan'
+ */
+>>>>>>> kohsun
 pemeriksaanRalan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: pemeriksaanRalan.url(options),
     method: 'head',
@@ -134,9 +215,15 @@ pemeriksaanRalan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::statistics
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:570
 * @route '/rawat-jalan-statistics'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:570
+ * @route '/rawat-jalan-statistics'
+ */
+>>>>>>> kohsun
 export const statistics = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: statistics.url(options),
     method: 'get',
@@ -149,28 +236,48 @@ statistics.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::statistics
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:570
 * @route '/rawat-jalan-statistics'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:570
+ * @route '/rawat-jalan-statistics'
+ */
+>>>>>>> kohsun
 statistics.url = (options?: RouteQueryOptions) => {
     return statistics.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::statistics
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:570
 * @route '/rawat-jalan-statistics'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:570
+ * @route '/rawat-jalan-statistics'
+ */
+>>>>>>> kohsun
 statistics.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: statistics.url(options),
     method: 'get',
 })
+<<<<<<< HEAD
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::statistics
 * @see app/Http/Controllers/RawatJalanController.php:570
 * @route '/rawat-jalan-statistics'
 */
+=======
+/**
+* @see \App\Http\Controllers\RawatJalanController::statistics
+ * @see app/Http/Controllers/RawatJalanController.php:570
+ * @route '/rawat-jalan-statistics'
+ */
+>>>>>>> kohsun
 statistics.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: statistics.url(options),
     method: 'head',
@@ -178,9 +285,15 @@ statistics.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::index
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:17
 * @route '/rawat-jalan'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:17
+ * @route '/rawat-jalan'
+ */
+>>>>>>> kohsun
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
@@ -193,28 +306,48 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::index
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:17
 * @route '/rawat-jalan'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:17
+ * @route '/rawat-jalan'
+ */
+>>>>>>> kohsun
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::index
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:17
 * @route '/rawat-jalan'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:17
+ * @route '/rawat-jalan'
+ */
+>>>>>>> kohsun
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
+<<<<<<< HEAD
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::index
 * @see app/Http/Controllers/RawatJalanController.php:17
 * @route '/rawat-jalan'
 */
+=======
+/**
+* @see \App\Http\Controllers\RawatJalanController::index
+ * @see app/Http/Controllers/RawatJalanController.php:17
+ * @route '/rawat-jalan'
+ */
+>>>>>>> kohsun
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
@@ -222,9 +355,15 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::create
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:90
 * @route '/rawat-jalan/create'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:90
+ * @route '/rawat-jalan/create'
+ */
+>>>>>>> kohsun
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: create.url(options),
     method: 'get',
@@ -237,28 +376,48 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::create
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:90
 * @route '/rawat-jalan/create'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:90
+ * @route '/rawat-jalan/create'
+ */
+>>>>>>> kohsun
 create.url = (options?: RouteQueryOptions) => {
     return create.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::create
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:90
 * @route '/rawat-jalan/create'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:90
+ * @route '/rawat-jalan/create'
+ */
+>>>>>>> kohsun
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: create.url(options),
     method: 'get',
 })
+<<<<<<< HEAD
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::create
 * @see app/Http/Controllers/RawatJalanController.php:90
 * @route '/rawat-jalan/create'
 */
+=======
+/**
+* @see \App\Http\Controllers\RawatJalanController::create
+ * @see app/Http/Controllers/RawatJalanController.php:90
+ * @route '/rawat-jalan/create'
+ */
+>>>>>>> kohsun
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: create.url(options),
     method: 'head',
@@ -266,9 +425,15 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::store
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:392
 * @route '/rawat-jalan'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:392
+ * @route '/rawat-jalan'
+ */
+>>>>>>> kohsun
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -281,18 +446,30 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::store
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:392
 * @route '/rawat-jalan'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:392
+ * @route '/rawat-jalan'
+ */
+>>>>>>> kohsun
 store.url = (options?: RouteQueryOptions) => {
     return store.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::store
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:392
 * @route '/rawat-jalan'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:392
+ * @route '/rawat-jalan'
+ */
+>>>>>>> kohsun
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -300,9 +477,15 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::show
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:431
 * @route '/rawat-jalan/{rawat_jalan}'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:431
+ * @route '/rawat-jalan/{rawat_jalan}'
+ */
+>>>>>>> kohsun
 export const show = (args: { rawat_jalan: string | number } | [rawat_jalan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
@@ -315,25 +498,44 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::show
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:431
 * @route '/rawat-jalan/{rawat_jalan}'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:431
+ * @route '/rawat-jalan/{rawat_jalan}'
+ */
+>>>>>>> kohsun
 show.url = (args: { rawat_jalan: string | number } | [rawat_jalan: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { rawat_jalan: args }
     }
 
+<<<<<<< HEAD
     if (Array.isArray(args)) {
         args = {
             rawat_jalan: args[0],
         }
+=======
+    
+    if (Array.isArray(args)) {
+        args = {
+                    rawat_jalan: args[0],
+                }
+>>>>>>> kohsun
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
+<<<<<<< HEAD
         rawat_jalan: args.rawat_jalan,
     }
+=======
+                        rawat_jalan: args.rawat_jalan,
+                }
+>>>>>>> kohsun
 
     return show.definition.url
             .replace('{rawat_jalan}', parsedArgs.rawat_jalan.toString())
@@ -342,19 +544,33 @@ show.url = (args: { rawat_jalan: string | number } | [rawat_jalan: string | numb
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::show
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:431
 * @route '/rawat-jalan/{rawat_jalan}'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:431
+ * @route '/rawat-jalan/{rawat_jalan}'
+ */
+>>>>>>> kohsun
 show.get = (args: { rawat_jalan: string | number } | [rawat_jalan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
+<<<<<<< HEAD
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::show
 * @see app/Http/Controllers/RawatJalanController.php:431
 * @route '/rawat-jalan/{rawat_jalan}'
 */
+=======
+/**
+* @see \App\Http\Controllers\RawatJalanController::show
+ * @see app/Http/Controllers/RawatJalanController.php:431
+ * @route '/rawat-jalan/{rawat_jalan}'
+ */
+>>>>>>> kohsun
 show.head = (args: { rawat_jalan: string | number } | [rawat_jalan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
@@ -362,9 +578,15 @@ show.head = (args: { rawat_jalan: string | number } | [rawat_jalan: string | num
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::edit
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:442
 * @route '/rawat-jalan/{rawat_jalan}/edit'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:442
+ * @route '/rawat-jalan/{rawat_jalan}/edit'
+ */
+>>>>>>> kohsun
 export const edit = (args: { rawat_jalan: string | number } | [rawat_jalan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
@@ -377,25 +599,44 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::edit
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:442
 * @route '/rawat-jalan/{rawat_jalan}/edit'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:442
+ * @route '/rawat-jalan/{rawat_jalan}/edit'
+ */
+>>>>>>> kohsun
 edit.url = (args: { rawat_jalan: string | number } | [rawat_jalan: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { rawat_jalan: args }
     }
 
+<<<<<<< HEAD
     if (Array.isArray(args)) {
         args = {
             rawat_jalan: args[0],
         }
+=======
+    
+    if (Array.isArray(args)) {
+        args = {
+                    rawat_jalan: args[0],
+                }
+>>>>>>> kohsun
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
+<<<<<<< HEAD
         rawat_jalan: args.rawat_jalan,
     }
+=======
+                        rawat_jalan: args.rawat_jalan,
+                }
+>>>>>>> kohsun
 
     return edit.definition.url
             .replace('{rawat_jalan}', parsedArgs.rawat_jalan.toString())
@@ -404,19 +645,33 @@ edit.url = (args: { rawat_jalan: string | number } | [rawat_jalan: string | numb
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::edit
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:442
 * @route '/rawat-jalan/{rawat_jalan}/edit'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:442
+ * @route '/rawat-jalan/{rawat_jalan}/edit'
+ */
+>>>>>>> kohsun
 edit.get = (args: { rawat_jalan: string | number } | [rawat_jalan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
+<<<<<<< HEAD
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::edit
 * @see app/Http/Controllers/RawatJalanController.php:442
 * @route '/rawat-jalan/{rawat_jalan}/edit'
 */
+=======
+/**
+* @see \App\Http\Controllers\RawatJalanController::edit
+ * @see app/Http/Controllers/RawatJalanController.php:442
+ * @route '/rawat-jalan/{rawat_jalan}/edit'
+ */
+>>>>>>> kohsun
 edit.head = (args: { rawat_jalan: string | number } | [rawat_jalan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: edit.url(args, options),
     method: 'head',
@@ -424,9 +679,15 @@ edit.head = (args: { rawat_jalan: string | number } | [rawat_jalan: string | num
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::update
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:500
 * @route '/rawat-jalan/{rawat_jalan}'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:500
+ * @route '/rawat-jalan/{rawat_jalan}'
+ */
+>>>>>>> kohsun
 export const update = (args: { rawat_jalan: string | number } | [rawat_jalan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
@@ -439,25 +700,44 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::update
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:500
 * @route '/rawat-jalan/{rawat_jalan}'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:500
+ * @route '/rawat-jalan/{rawat_jalan}'
+ */
+>>>>>>> kohsun
 update.url = (args: { rawat_jalan: string | number } | [rawat_jalan: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { rawat_jalan: args }
     }
 
+<<<<<<< HEAD
     if (Array.isArray(args)) {
         args = {
             rawat_jalan: args[0],
         }
+=======
+    
+    if (Array.isArray(args)) {
+        args = {
+                    rawat_jalan: args[0],
+                }
+>>>>>>> kohsun
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
+<<<<<<< HEAD
         rawat_jalan: args.rawat_jalan,
     }
+=======
+                        rawat_jalan: args.rawat_jalan,
+                }
+>>>>>>> kohsun
 
     return update.definition.url
             .replace('{rawat_jalan}', parsedArgs.rawat_jalan.toString())
@@ -466,19 +746,33 @@ update.url = (args: { rawat_jalan: string | number } | [rawat_jalan: string | nu
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::update
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:500
 * @route '/rawat-jalan/{rawat_jalan}'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:500
+ * @route '/rawat-jalan/{rawat_jalan}'
+ */
+>>>>>>> kohsun
 update.put = (args: { rawat_jalan: string | number } | [rawat_jalan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
+<<<<<<< HEAD
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::update
 * @see app/Http/Controllers/RawatJalanController.php:500
 * @route '/rawat-jalan/{rawat_jalan}'
 */
+=======
+/**
+* @see \App\Http\Controllers\RawatJalanController::update
+ * @see app/Http/Controllers/RawatJalanController.php:500
+ * @route '/rawat-jalan/{rawat_jalan}'
+ */
+>>>>>>> kohsun
 update.patch = (args: { rawat_jalan: string | number } | [rawat_jalan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
@@ -486,9 +780,15 @@ update.patch = (args: { rawat_jalan: string | number } | [rawat_jalan: string | 
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::destroy
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:536
 * @route '/rawat-jalan/{rawat_jalan}'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:536
+ * @route '/rawat-jalan/{rawat_jalan}'
+ */
+>>>>>>> kohsun
 export const destroy = (args: { rawat_jalan: string | number } | [rawat_jalan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
@@ -501,25 +801,44 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::destroy
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:536
 * @route '/rawat-jalan/{rawat_jalan}'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:536
+ * @route '/rawat-jalan/{rawat_jalan}'
+ */
+>>>>>>> kohsun
 destroy.url = (args: { rawat_jalan: string | number } | [rawat_jalan: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { rawat_jalan: args }
     }
 
+<<<<<<< HEAD
     if (Array.isArray(args)) {
         args = {
             rawat_jalan: args[0],
         }
+=======
+    
+    if (Array.isArray(args)) {
+        args = {
+                    rawat_jalan: args[0],
+                }
+>>>>>>> kohsun
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
+<<<<<<< HEAD
         rawat_jalan: args.rawat_jalan,
     }
+=======
+                        rawat_jalan: args.rawat_jalan,
+                }
+>>>>>>> kohsun
 
     return destroy.definition.url
             .replace('{rawat_jalan}', parsedArgs.rawat_jalan.toString())
@@ -528,13 +847,20 @@ destroy.url = (args: { rawat_jalan: string | number } | [rawat_jalan: string | n
 
 /**
 * @see \App\Http\Controllers\RawatJalanController::destroy
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalanController.php:536
 * @route '/rawat-jalan/{rawat_jalan}'
 */
+=======
+ * @see app/Http/Controllers/RawatJalanController.php:536
+ * @route '/rawat-jalan/{rawat_jalan}'
+ */
+>>>>>>> kohsun
 destroy.delete = (args: { rawat_jalan: string | number } | [rawat_jalan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
+<<<<<<< HEAD
 
 const rawatJalan = {
     lanjutan: Object.assign(lanjutan, lanjutan),
@@ -548,6 +874,20 @@ const rawatJalan = {
     edit: Object.assign(edit, edit),
     update: Object.assign(update, update),
     destroy: Object.assign(destroy, destroy),
+=======
+const rawatJalan = {
+    lanjutan,
+riwayat,
+pemeriksaanRalan,
+statistics,
+index,
+create,
+store,
+show,
+edit,
+update,
+destroy,
+>>>>>>> kohsun
 }
 
 export default rawatJalan

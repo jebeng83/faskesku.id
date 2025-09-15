@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\RawatJalan;
+use App\Models\RawatJalan\RawatJalan;
 use App\Models\Patient;
 use Carbon\Carbon;
 
