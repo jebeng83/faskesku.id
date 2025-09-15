@@ -4,10 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-<<<<<<< HEAD
-=======
 use App\Models\RawatJalan\RawatJalan;
->>>>>>> kohsun
 
 class Poliklinik extends Model
 {
@@ -16,21 +13,12 @@ class Poliklinik extends Model
     protected $table = 'poliklinik';
     protected $primaryKey = 'kd_poli';
     public $incrementing = false;
-<<<<<<< HEAD
-=======
     protected $keyType = 'string';
->>>>>>> kohsun
     public $timestamps = false;
 
     protected $fillable = [
         'kd_poli',
         'nm_poli',
-<<<<<<< HEAD
-        'lantai',
-        'status'
-    ];
-}
-=======
         'registrasi',
         'registrasilama',
         'status'
@@ -54,4 +42,3 @@ class Poliklinik extends Model
         return $this->hasMany(RawatJalan::class, 'kd_poli', 'kd_poli');
     }
 }
->>>>>>> kohsun

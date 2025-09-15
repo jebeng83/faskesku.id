@@ -1,9 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\LaboratoriumController::index
-* @see app/Http/Controllers/LaboratoriumController.php:13
-* @route '/laboratorium'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:13
+ * @route '/laboratorium'
+ */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
@@ -16,28 +16,27 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::index
-* @see app/Http/Controllers/LaboratoriumController.php:13
-* @route '/laboratorium'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:13
+ * @route '/laboratorium'
+ */
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::index
-* @see app/Http/Controllers/LaboratoriumController.php:13
-* @route '/laboratorium'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:13
+ * @route '/laboratorium'
+ */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\LaboratoriumController::index
-* @see app/Http/Controllers/LaboratoriumController.php:13
-* @route '/laboratorium'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:13
+ * @route '/laboratorium'
+ */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
@@ -45,9 +44,9 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::create
-* @see app/Http/Controllers/LaboratoriumController.php:23
-* @route '/laboratorium/create'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:23
+ * @route '/laboratorium/create'
+ */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: create.url(options),
     method: 'get',
@@ -60,28 +59,27 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::create
-* @see app/Http/Controllers/LaboratoriumController.php:23
-* @route '/laboratorium/create'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:23
+ * @route '/laboratorium/create'
+ */
 create.url = (options?: RouteQueryOptions) => {
     return create.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::create
-* @see app/Http/Controllers/LaboratoriumController.php:23
-* @route '/laboratorium/create'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:23
+ * @route '/laboratorium/create'
+ */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: create.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\LaboratoriumController::create
-* @see app/Http/Controllers/LaboratoriumController.php:23
-* @route '/laboratorium/create'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:23
+ * @route '/laboratorium/create'
+ */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: create.url(options),
     method: 'head',
@@ -89,9 +87,9 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::store
-* @see app/Http/Controllers/LaboratoriumController.php:33
-* @route '/laboratorium'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:33
+ * @route '/laboratorium'
+ */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -104,18 +102,18 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::store
-* @see app/Http/Controllers/LaboratoriumController.php:33
-* @route '/laboratorium'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:33
+ * @route '/laboratorium'
+ */
 store.url = (options?: RouteQueryOptions) => {
     return store.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::store
-* @see app/Http/Controllers/LaboratoriumController.php:33
-* @route '/laboratorium'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:33
+ * @route '/laboratorium'
+ */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -123,9 +121,9 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::show
-* @see app/Http/Controllers/LaboratoriumController.php:43
-* @route '/laboratorium/{laboratorium}'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:43
+ * @route '/laboratorium/{laboratorium}'
+ */
 export const show = (args: { laboratorium: string | number } | [laboratorium: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
@@ -138,25 +136,26 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::show
-* @see app/Http/Controllers/LaboratoriumController.php:43
-* @route '/laboratorium/{laboratorium}'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:43
+ * @route '/laboratorium/{laboratorium}'
+ */
 show.url = (args: { laboratorium: string | number } | [laboratorium: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { laboratorium: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            laboratorium: args[0],
-        }
+                    laboratorium: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        laboratorium: args.laboratorium,
-    }
+                        laboratorium: args.laboratorium,
+                }
 
     return show.definition.url
             .replace('{laboratorium}', parsedArgs.laboratorium.toString())
@@ -165,19 +164,18 @@ show.url = (args: { laboratorium: string | number } | [laboratorium: string | nu
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::show
-* @see app/Http/Controllers/LaboratoriumController.php:43
-* @route '/laboratorium/{laboratorium}'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:43
+ * @route '/laboratorium/{laboratorium}'
+ */
 show.get = (args: { laboratorium: string | number } | [laboratorium: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\LaboratoriumController::show
-* @see app/Http/Controllers/LaboratoriumController.php:43
-* @route '/laboratorium/{laboratorium}'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:43
+ * @route '/laboratorium/{laboratorium}'
+ */
 show.head = (args: { laboratorium: string | number } | [laboratorium: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
@@ -185,9 +183,9 @@ show.head = (args: { laboratorium: string | number } | [laboratorium: string | n
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::edit
-* @see app/Http/Controllers/LaboratoriumController.php:53
-* @route '/laboratorium/{laboratorium}/edit'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:53
+ * @route '/laboratorium/{laboratorium}/edit'
+ */
 export const edit = (args: { laboratorium: string | number } | [laboratorium: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
@@ -200,25 +198,26 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::edit
-* @see app/Http/Controllers/LaboratoriumController.php:53
-* @route '/laboratorium/{laboratorium}/edit'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:53
+ * @route '/laboratorium/{laboratorium}/edit'
+ */
 edit.url = (args: { laboratorium: string | number } | [laboratorium: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { laboratorium: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            laboratorium: args[0],
-        }
+                    laboratorium: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        laboratorium: args.laboratorium,
-    }
+                        laboratorium: args.laboratorium,
+                }
 
     return edit.definition.url
             .replace('{laboratorium}', parsedArgs.laboratorium.toString())
@@ -227,19 +226,18 @@ edit.url = (args: { laboratorium: string | number } | [laboratorium: string | nu
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::edit
-* @see app/Http/Controllers/LaboratoriumController.php:53
-* @route '/laboratorium/{laboratorium}/edit'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:53
+ * @route '/laboratorium/{laboratorium}/edit'
+ */
 edit.get = (args: { laboratorium: string | number } | [laboratorium: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\LaboratoriumController::edit
-* @see app/Http/Controllers/LaboratoriumController.php:53
-* @route '/laboratorium/{laboratorium}/edit'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:53
+ * @route '/laboratorium/{laboratorium}/edit'
+ */
 edit.head = (args: { laboratorium: string | number } | [laboratorium: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: edit.url(args, options),
     method: 'head',
@@ -247,9 +245,9 @@ edit.head = (args: { laboratorium: string | number } | [laboratorium: string | n
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::update
-* @see app/Http/Controllers/LaboratoriumController.php:63
-* @route '/laboratorium/{laboratorium}'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:63
+ * @route '/laboratorium/{laboratorium}'
+ */
 export const update = (args: { laboratorium: string | number } | [laboratorium: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
@@ -262,25 +260,26 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::update
-* @see app/Http/Controllers/LaboratoriumController.php:63
-* @route '/laboratorium/{laboratorium}'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:63
+ * @route '/laboratorium/{laboratorium}'
+ */
 update.url = (args: { laboratorium: string | number } | [laboratorium: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { laboratorium: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            laboratorium: args[0],
-        }
+                    laboratorium: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        laboratorium: args.laboratorium,
-    }
+                        laboratorium: args.laboratorium,
+                }
 
     return update.definition.url
             .replace('{laboratorium}', parsedArgs.laboratorium.toString())
@@ -289,19 +288,18 @@ update.url = (args: { laboratorium: string | number } | [laboratorium: string | 
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::update
-* @see app/Http/Controllers/LaboratoriumController.php:63
-* @route '/laboratorium/{laboratorium}'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:63
+ * @route '/laboratorium/{laboratorium}'
+ */
 update.put = (args: { laboratorium: string | number } | [laboratorium: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
-
 /**
 * @see \App\Http\Controllers\LaboratoriumController::update
-* @see app/Http/Controllers/LaboratoriumController.php:63
-* @route '/laboratorium/{laboratorium}'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:63
+ * @route '/laboratorium/{laboratorium}'
+ */
 update.patch = (args: { laboratorium: string | number } | [laboratorium: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
@@ -309,9 +307,9 @@ update.patch = (args: { laboratorium: string | number } | [laboratorium: string 
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::destroy
-* @see app/Http/Controllers/LaboratoriumController.php:73
-* @route '/laboratorium/{laboratorium}'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:73
+ * @route '/laboratorium/{laboratorium}'
+ */
 export const destroy = (args: { laboratorium: string | number } | [laboratorium: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
@@ -324,25 +322,26 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::destroy
-* @see app/Http/Controllers/LaboratoriumController.php:73
-* @route '/laboratorium/{laboratorium}'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:73
+ * @route '/laboratorium/{laboratorium}'
+ */
 destroy.url = (args: { laboratorium: string | number } | [laboratorium: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { laboratorium: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            laboratorium: args[0],
-        }
+                    laboratorium: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        laboratorium: args.laboratorium,
-    }
+                        laboratorium: args.laboratorium,
+                }
 
     return destroy.definition.url
             .replace('{laboratorium}', parsedArgs.laboratorium.toString())
@@ -351,22 +350,21 @@ destroy.url = (args: { laboratorium: string | number } | [laboratorium: string |
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::destroy
-* @see app/Http/Controllers/LaboratoriumController.php:73
-* @route '/laboratorium/{laboratorium}'
-*/
+ * @see app/Http/Controllers/LaboratoriumController.php:73
+ * @route '/laboratorium/{laboratorium}'
+ */
 destroy.delete = (args: { laboratorium: string | number } | [laboratorium: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
-
 const laboratorium = {
     index: Object.assign(index, index),
-    create: Object.assign(create, create),
-    store: Object.assign(store, store),
-    show: Object.assign(show, show),
-    edit: Object.assign(edit, edit),
-    update: Object.assign(update, update),
-    destroy: Object.assign(destroy, destroy),
+create: Object.assign(create, create),
+store: Object.assign(store, store),
+show: Object.assign(show, show),
+edit: Object.assign(edit, edit),
+update: Object.assign(update, update),
+destroy: Object.assign(destroy, destroy),
 }
 
 export default laboratorium

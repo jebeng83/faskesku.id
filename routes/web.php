@@ -4,10 +4,11 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PatientController;
-<<<<<<< HEAD
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\RegPeriksaController;
-use App\Http\Controllers\RawatJalanController;
+use App\Http\Controllers\RawatJalan\RawatJalanController;
+use App\Http\Controllers\RawatJalan\ObatController;
+use App\Http\Controllers\RawatJalan\ResepController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RawatInapController;
@@ -16,11 +17,6 @@ use App\Http\Controllers\KamarOperasiController;
 use App\Http\Controllers\LaboratoriumController;
 use App\Http\Controllers\RadiologiController;
 use App\Http\Controllers\RehabilitasiMedikController;
-=======
-use App\Http\Controllers\RawatJalan\RawatJalanController;
-use App\Http\Controllers\RawatJalan\ObatController;
-use App\Http\Controllers\RawatJalan\ResepController;
->>>>>>> kohsun
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
