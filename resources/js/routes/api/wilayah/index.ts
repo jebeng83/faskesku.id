@@ -384,6 +384,9 @@ const wilayah = {
     regencies,
     districts,
     villages,
+    allVillages,
+    search,
+    show,
 }
 
 export default wilayah
