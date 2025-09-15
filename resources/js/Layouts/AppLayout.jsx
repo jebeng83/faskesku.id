@@ -220,17 +220,17 @@ export default function AppLayout({
 				</div>
 			</header>
 
-			{/* Mobile backdrop - dipindahkan keluar dari sidebar */}
+			{/* Mobile backdrop */}
 			{isSidebarOpen && (
 				<div
-					className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+					className="fixed inset-0 bg-black/50 z-40 lg:hidden"
 					onClick={() => setIsSidebarOpen(false)}
 				/>
 			)}
 
 			{/* Sidebar - Gradient Able Style */}
 			<aside
-				className={`fixed lg:sticky top-14 left-0 z-40 h-[calc(100vh-56px)] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-all duration-300 ${
+				className={`fixed lg:sticky top-14 left-0 z-50 h-[calc(100vh-56px)] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-all duration-300 ${
 					isSidebarOpen
 						? "translate-x-0 w-64"
 						: isSidebarCollapsed
@@ -238,13 +238,6 @@ export default function AppLayout({
 						: "lg:translate-x-0 lg:w-64 -translate-x-full"
 				}`}
 			>
-				{/* Mobile backdrop */}
-				{isSidebarOpen && (
-					<div
-						className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-						onClick={() => setIsSidebarOpen(false)}
-					/>
-				)}
 
 				<div className="h-full flex flex-col">
 					{/* Dynamic Navigation */}
@@ -288,7 +281,7 @@ export default function AppLayout({
 
 			{/* Main Content */}
 			<main
-				className={`absolute top-14 p-4 left-0 right-0 bottom-0 transition-all duration-300 ${
+				className={`absolute top-14 p-4 left-0 right-0 bottom-0 z-10 transition-all duration-300 ${
 					isSidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
 				}`}
 			>
