@@ -88,8 +88,8 @@ icons.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 const menus = {
-    hierarchy,
-    icons,
+    hierarchy: Object.assign(hierarchy, hierarchy),
+    icons: Object.assign(icons, icons),
 }
 
 export default menus
