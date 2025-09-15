@@ -7,6 +7,8 @@ use App\Http\Controllers\PatientController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\RegPeriksaController;
 use App\Http\Controllers\RawatJalanController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RawatInapController;
 use App\Http\Controllers\IGDController;
 use App\Http\Controllers\KamarOperasiController;
@@ -50,14 +52,14 @@ Route::middleware('auth')->group(function () {
     })->name('users.index');
 
     // Premium Module routes
-    Route::resource('premium-modules', PremiumModuleController::class);
-    Route::post('/premium-modules/{premiumModule}/generate-license', [PremiumModuleController::class, 'generateLicense'])->name('premium-modules.generate-license');
-    Route::post('/premium-modules/activate', [PremiumModuleController::class, 'activate'])->name('premium-modules.activate');
-    Route::post('/premium-modules/{premiumModule}/deactivate', [PremiumModuleController::class, 'deactivate'])->name('premium-modules.deactivate');
-    Route::get('/premium-modules/{premiumModule}/status', [PremiumModuleController::class, 'status'])->name('premium-modules.status');
-    Route::post('/premium-modules/validate-license', [PremiumModuleController::class, 'validateLicense'])->name('premium-modules.validate-license');
-    
-    // Rawat Jalan routes (pastikan rute spesifik didefinisikan sebelum resource agar tidak tertangkap oleh {rawat_jalan})
+    // Route::resource('premium-modules', PremiumModuleController::class);
+    // Route::post('/premium-modules/{premiumModule}/generate-license', [PremiumModuleController::class, 'generateLicense'])->name('premium-modules.generate-license');
+    // Route::post('/premium-modules/activate', [PremiumModuleController::class, 'activate'])->name('premium-modules.activate');
+    // Route::post('/premium-modules/{premiumModule}/deactivate', [PremiumModuleController::class, 'deactivate'])->name('premium-modules.deactivate');
+    // Route::get('/premium-modules/{premiumModule}/status', [PremiumModuleController::class, 'status'])->name('premium-modules.status');
+    // Route::post('/premium-modules/validate-license', [PremiumModuleController::class, 'validateLicense'])->name('premium-modules.validate-license');
+
+
     Route::get('rawat-jalan/lanjutan', [RawatJalanController::class, 'lanjutan'])->name('rawat-jalan.lanjutan');
     Route::get('rawat-jalan/riwayat', [RawatJalanController::class, 'riwayat'])->name('rawat-jalan.riwayat');
     Route::get('rawat-jalan/pemeriksaan-ralan', [RawatJalanController::class, 'pemeriksaanRalan'])->name('rawat-jalan.pemeriksaan-ralan');
@@ -67,12 +69,21 @@ Route::middleware('auth')->group(function () {
     Route::get('pegawai/search', [RawatJalanController::class, 'searchPegawai'])->name('pegawai.search');
     Route::get('rawat-jalan-statistics', [RawatJalanController::class, 'getStatistics'])->name('rawat-jalan.statistics');
     Route::resource('rawat-jalan', RawatJalanController::class);
-    
+
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    // Menu Management routes
+    Route::resource('menus', MenuController::class);
+    Route::post('/menus/{menu}/toggle-status', [MenuController::class, 'toggleStatus'])->name('menus.toggle-status');
+    Route::post('/menus/reorder', [MenuController::class, 'reorder'])->name('menus.reorder');
+
     // Pelayanan Medis routes
     Route::resource('rawat-inap', RawatInapController::class);
     Route::resource('igd', IGDController::class);
     Route::resource('kamar-operasi', KamarOperasiController::class);
-    
+
     // Penunjang Medis routes
     Route::resource('laboratorium', LaboratoriumController::class);
     Route::resource('radiologi', RadiologiController::class);

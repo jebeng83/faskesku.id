@@ -44,7 +44,7 @@ search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 const pegawai = {
-    search: Object.assign(search, search),
+    search,
 }
 
 export default pegawai
