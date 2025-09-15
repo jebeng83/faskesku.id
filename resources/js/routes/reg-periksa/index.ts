@@ -438,15 +438,15 @@ statistik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 const regPeriksa = {
-    index,
-    create,
-    store,
-    show,
-    edit,
-    update,
-    destroy,
-    hitungUmur,
-    statistik,
+    index: Object.assign(index, index),
+    create: Object.assign(create, create),
+    store: Object.assign(store, store),
+    show: Object.assign(show, show),
+    edit: Object.assign(edit, edit),
+    update: Object.assign(update, update),
+    destroy: Object.assign(destroy, destroy),
+    hitungUmur: Object.assign(hitungUmur, hitungUmur),
+    statistik: Object.assign(statistik, statistik),
 }
 
 export default regPeriksa

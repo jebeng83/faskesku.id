@@ -130,9 +130,9 @@ previewFile.head = (args: { filename: string | number } | [filename: string | nu
 })
 
 const livewire = {
-    update,
-    uploadFile,
-    previewFile,
+    update: Object.assign(update, update),
+    uploadFile: Object.assign(uploadFile, uploadFile),
+    previewFile: Object.assign(previewFile, previewFile),
 }
 
 export default livewire

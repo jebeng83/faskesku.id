@@ -40,7 +40,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 const users = {
-    index,
+    index: Object.assign(index, index),
 }
 
 export default users
