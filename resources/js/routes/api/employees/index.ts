@@ -92,8 +92,8 @@ destroy.delete = (args: { employee: number | { id: number } } | [employee: numbe
 })
 
 const employees = {
-    store,
-    destroy,
+    store: Object.assign(store, store),
+    destroy: Object.assign(destroy, destroy),
 }
 
 export default employees
