@@ -7,10 +7,12 @@ use App\Models\RegPeriksa;
 use App\Models\Dokter;
 use App\Models\Poliklinik;
 use App\Models\Penjab;
+use App\Models\Wilayah;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class PatientController extends Controller
 {
@@ -57,38 +59,7 @@ class PatientController extends Controller
      */
     public function store(Request $request)
     {
-        // $validator = Validator::make($request->all(), [
-        //     'nm_pasien' => 'required|string|max:40',
-        //     'no_ktp' => 'nullable|string|max:20|unique:pasien,no_ktp',
-        //     'jk' => 'required|in:L,P',
-        //     'tmp_lahir' => 'required|string|max:15',
-        //     'tgl_lahir' => 'required|date',
-        //     'nm_ibu' => 'required|string|max:40',
-        //     'alamat' => 'required|string|max:200',
-        //     'gol_darah' => 'nullable|in:A,B,O,AB,-',
-        //     'pekerjaan' => 'nullable|string|max:60',
-        //     'stts_nikah' => 'nullable|in:BELUM MENIKAH,MENIKAH,JANDA,DUDHA,JOMBLO',
-        //     'agama' => 'nullable|string|max:12',
-        //     'no_tlp' => 'nullable|string|max:40',
-        //     'pnd' => 'required|in:TS,TK,SD,SMP,SMA,SLTA/SEDERAJAT,D1,D2,D3,D4,S1,S2,S3,-',
-        //     'keluarga' => 'nullable|in:AYAH,IBU,ISTRI,SUAMI,SAUDARA,ANAK,DIRI SENDIRI,LAIN-LAIN',
-        //     'namakeluarga' => 'required|string|max:50',
-        //     'kd_pj' => 'required|string|max:3',
-        //     'no_peserta' => 'nullable|string|max:25',
-        //     'pekerjaanpj' => 'required|string|max:35',
-        //     'alamatpj' => 'required|string|max:100',
-        //     'kelurahanpj' => 'required|string|max:60',
-        //     'kecamatanpj' => 'required|string|max:60',
-        //     'kabupatenpj' => 'required|string|max:60',
-        //     'propinsipj' => 'required|string|max:30',
-        //     'email' => 'nullable|email|max:50',
-        // ]);
-
-        // if ($validator->fails()) {
-        //     return back()->withErrors($validator)->withInput();
-        // }
-
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'nm_pasien' => 'required|string|max:40',
             'no_ktp' => 'nullable|string|max:20|unique:pasien,no_ktp',
             'jk' => 'required|in:L,P',
@@ -96,25 +67,78 @@ class PatientController extends Controller
             'tgl_lahir' => 'required|date',
             'nm_ibu' => 'required|string|max:40',
             'alamat' => 'required|string|max:200',
+            'gol_darah' => 'nullable|in:A,B,O,AB,-',
+            'pekerjaan' => 'nullable|string|max:60',
+            'stts_nikah' => 'nullable|in:BELUM MENIKAH,MENIKAH,JANDA,DUDHA,JOMBLO',
+            'agama' => 'nullable|string|max:12',
+            'no_tlp' => 'nullable|string|max:40',
+            'pnd' => 'required|in:TS,TK,SD,SMP,SMA,SLTA/SEDERAJAT,D1,D2,D3,D4,S1,S2,S3,-',
+            'keluarga' => 'nullable|in:AYAH,IBU,ISTRI,SUAMI,SAUDARA,ANAK,DIRI SENDIRI,LAIN-LAIN',
+            'namakeluarga' => 'required|string|max:50',
+            'kd_pj' => 'required|string|max:3',
+            'no_peserta' => 'nullable|string|max:25',
+            'pekerjaanpj' => 'required|string|max:35',
+            'alamatpj' => 'required|string|max:100',
+            'kode_wilayah' => 'required|string|max:13|exists:wilayah,kode',
+        ], [
+            'nm_pasien.required' => 'Nama Pasien harus diisi',
+            'nm_pasien.max' => 'Nama Pasien maksimal 40 karakter',
+            'no_ktp.required' => 'Nomor KTP harus diisi',
+            'no_ktp.max' => 'Nomor KTP maksimal 20 karakter',
+            'no_ktp.unique' => 'Nomor KTP sudah ada',
+            'jk.required' => 'Jenis Kelamin harus diisi',
+            'jk.in' => 'Jenis Kelamin harus Laki-laki atau Perempuan',
+            'tmp_lahir.required' => 'Tempat Lahir harus diisi',
+            'tmp_lahir.max' => 'Tempat Lahir maksimal 15 karakter',
+            'tgl_lahir.required' => 'Tanggal Lahir harus diisi',
+            'tgl_lahir.date' => 'Tanggal Lahir harus berupa tanggal',
+            'nm_ibu.required' => 'Nama Ibu harus diisi',
+            'nm_ibu.max' => 'Nama Ibu maksimal 40 karakter',
+            'alamat.required' => 'Alamat harus diisi',
+            'alamat.max' => 'Alamat maksimal 200 karakter',
+            'kd_pj.required' => 'Penjab harus diisi',
+            'kd_pj.max' => 'Penjab maksimal 3 karakter',
+            'pekerjaanpj.required' => 'Pekerjaan Penanggung Jawab harus diisi',
+            'pekerjaanpj.max' => 'Pekerjaan Penanggung Jawab maksimal 35 karakter',
+            'alamatpj.required' => 'Alamat Penanggung Jawab harus diisi',
+            'alamatpj.max' => 'Alamat Penanggung Jawab maksimal 100 karakter',
+            'kode_wilayah.required' => 'Kode Wilayah harus diisi',
+            'kode_wilayah.max' => 'Kode Wilayah maksimal 13 karakter',
+            'kode_wilayah.exists' => 'Kode Wilayah tidak ditemukan',
         ]);
 
-        $data = $request->all();
+        if ($validator->fails()) {
+            return back()->withErrors($validator->errors())->withInput();
+        }
+
+        $data = $validator->validated();
+
+        // Get wilayah details and set address fields
+        $wilayah = Wilayah::find($data['kode_wilayah']);
+        if ($wilayah) {
+            $wilayahDetails = $wilayah->getFullAddressDetails();
+            $data['kelurahanpj'] = $wilayahDetails['village'];
+            $data['kecamatanpj'] = $wilayahDetails['district'];
+            $data['kabupatenpj'] = $wilayahDetails['regency'];
+            $data['propinsipj'] = $wilayahDetails['province'];
+        }
 
         // Generate nomor RM otomatis
         $data['no_rkm_medis'] = Patient::generateNoRM();
         $data['tgl_daftar'] = now()->toDateString();
-        $data['umur'] = \Carbon\Carbon::parse($data['tgl_lahir'])->age . ' Th';
+        $data['umur'] = Patient::calculateAge($data['tgl_lahir']);
 
         // Set default values for required fields
         $data['kd_kel'] = $data['kd_kel'] ?? 1;
         $data['kd_kec'] = $data['kd_kec'] ?? 1;
         $data['kd_kab'] = $data['kd_kab'] ?? 1;
-        $data['perusahaan_pasien'] = $data['perusahaan_pasien'] ?? '00000000';
-        $data['suku_bangsa'] = $data['suku_bangsa'] ?? 1;
-        $data['bahasa_pasien'] = $data['bahasa_pasien'] ?? 1;
-        $data['cacat_fisik'] = $data['cacat_fisik'] ?? 0;
+        $data['perusahaan_pasien'] = $data['perusahaan_pasien'] ?? '-';
+        $data['suku_bangsa'] = $data['suku_bangsa'] ?? '1';
+        $data['bahasa_pasien'] = $data['bahasa_pasien'] ?? '1';
+        $data['cacat_fisik'] = $data['cacat_fisik'] ?? '1';
         $data['nip'] = $data['nip'] ?? '';
         $data['kd_prop'] = $data['kd_prop'] ?? 1;
+        $data['email'] = $data['email'] ?? '';
 
         Patient::create($data);
 
@@ -167,18 +191,25 @@ class PatientController extends Controller
             'no_peserta' => 'nullable|string|max:25',
             'pekerjaanpj' => 'required|string|max:35',
             'alamatpj' => 'required|string|max:100',
-            'kelurahanpj' => 'required|string|max:60',
-            'kecamatanpj' => 'required|string|max:60',
-            'kabupatenpj' => 'required|string|max:60',
-            'propinsipj' => 'required|string|max:30',
+            'kode_wilayah' => 'required|string|max:13|exists:wilayah,kode',
             'email' => 'nullable|email|max:50',
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            return back()->withErrors($validator->errors())->withInput();
         }
 
         $data = $validator->validated();
+
+        // Get wilayah details and set address fields
+        $wilayah = Wilayah::find($data['kode_wilayah']);
+        if ($wilayah) {
+            $wilayahDetails = $wilayah->getFullAddressDetails();
+            $data['kelurahanpj'] = $wilayahDetails['village'];
+            $data['kecamatanpj'] = $wilayahDetails['district'];
+            $data['kabupatenpj'] = $wilayahDetails['regency'];
+            $data['propinsipj'] = $wilayahDetails['province'];
+        }
 
         // Update umur
         $data['umur'] = \Carbon\Carbon::parse($data['tgl_lahir'])->age . ' Th';
@@ -211,7 +242,8 @@ class PatientController extends Controller
             'kd_pj' => 'required|exists:penjab,kd_pj',
             'p_jawab' => 'required|string|max:100',
             'almt_pj' => 'required|string|max:200',
-            'hubunganpj' => 'required|string|max:20'
+            'hubunganpj' => 'required|string|max:20',
+            'kode_wilayah' => 'required|string|max:13|exists:wilayah,kode'
         ]);
 
         // Check if patient has ever registered in this polyclinic
@@ -259,6 +291,7 @@ class PatientController extends Controller
             'sttsumur' => $sttsUmur,
             'status_bayar' => $status_bayar,
             'status_poli' => $status_poli,
+            'kode_wilayah' => $request->kode_wilayah,
         ]);
 
         return redirect()->route('patients.index')

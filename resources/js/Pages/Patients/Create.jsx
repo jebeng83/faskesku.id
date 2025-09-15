@@ -5,20 +5,16 @@ import AppLayout from "@/Layouts/AppLayout";
 import SelectWithAdd from "@/Components/SelectWithAdd";
 import PenjabCreateModal from "@/Components/PenjabCreateModal";
 import SearchableSelect from "@/Components/SearchableSelect";
+import WilayahSearchableSelect from "@/Components/WilayahSearchableSelect";
+import AddressDisplay from "@/Components/AddressDisplay";
 
 export default function Create() {
 	const [penjabOptions, setPenjabOptions] = useState([]);
 	const [isPenjabModalOpen, setIsPenjabModalOpen] = useState(false);
+	const [selectedWilayah, setSelectedWilayah] = useState(null);
+	const [loadingWilayah, setLoadingWilayah] = useState(false);
 
-	// Address states
-	const [provinces, setProvinces] = useState([]);
-	const [regencies, setRegencies] = useState([]);
-	const [districts, setDistricts] = useState([]);
-	const [villages, setVillages] = useState([]);
-	const [loadingProvinces, setLoadingProvinces] = useState(false);
-	const [loadingRegencies, setLoadingRegencies] = useState(false);
-	const [loadingDistricts, setLoadingDistricts] = useState(false);
-	const [loadingVillages, setLoadingVillages] = useState(false);
+	// Address states - now handled by WilayahSearchableSelect components
 
 	const { data, setData, post, processing, errors } = useForm({
 		nm_pasien: "",
@@ -40,10 +36,7 @@ export default function Create() {
 		no_peserta: "",
 		pekerjaanpj: "",
 		alamatpj: "",
-		kelurahanpj: "",
-		kecamatanpj: "",
-		kabupatenpj: "",
-		propinsipj: "",
+		kode_wilayah: "",
 		email: "",
 	});
 
@@ -68,29 +61,65 @@ export default function Create() {
 		loadPenjabOptions();
 	}, []);
 
-	// Load provinces on component mount
+	// Load wilayah details when kode_wilayah is set (for editing)
 	useEffect(() => {
-		const loadProvinces = async () => {
-			setLoadingProvinces(true);
-			try {
-				const response = await fetch("/api/wilayah/provinces");
-				if (response.ok) {
-					const result = await response.json();
-					const options = result.data.map((province) => ({
-						value: province.code,
-						label: province.name,
-					}));
-					setProvinces(options);
+		if (data.kode_wilayah && !selectedWilayah) {
+			const loadWilayahDetails = async () => {
+				setLoadingWilayah(true);
+				try {
+					const response = await fetch(`/api/wilayah/${data.kode_wilayah}`);
+					if (response.ok) {
+						const result = await response.json();
+						if (result.success) {
+							setSelectedWilayah(parseFullAddress(result.data.full_address));
+						}
+					}
+				} catch (error) {
+					console.error("Error fetching wilayah details:", error);
+				} finally {
+					setLoadingWilayah(false);
 				}
-			} catch (error) {
-				console.error("Error loading provinces:", error);
-			} finally {
-				setLoadingProvinces(false);
-			}
-		};
+			};
 
-		loadProvinces();
-	}, []);
+			loadWilayahDetails();
+		}
+	}, [data.kode_wilayah, selectedWilayah]);
+
+	// Parse full address string into object
+	const parseFullAddress = (fullAddress) => {
+		if (!fullAddress) return null;
+
+		const parts = fullAddress.split(", ").map((part) => part.trim());
+		return {
+			village: parts[0] || "",
+			district: parts[1] || "",
+			regency: parts[2] || "",
+			province: parts[3] || "",
+		};
+	};
+
+	// Helper function to get error message
+	const getErrorMessage = (fieldName) => {
+		if (!errors[fieldName]) return null;
+		return Array.isArray(errors[fieldName])
+			? errors[fieldName][0]
+			: errors[fieldName];
+	};
+
+	// Debug: Log errors to console
+	React.useEffect(() => {
+		console.log("Current errors:", errors);
+		if (Object.keys(errors).length > 0) {
+			console.log("Form errors detected:", errors);
+		}
+	}, [errors]);
+
+	// Debug: Log form data
+	React.useEffect(() => {
+		console.log("Form data:", data);
+	}, [data]);
+
+	// Address loading is now handled by WilayahSearchableSelect components
 
 	// Form submission is now handled by the Form component
 
@@ -119,109 +148,33 @@ export default function Create() {
 		loadPenjabOptions();
 	};
 
-	// Handle province change
-	const handleProvinceChange = async (e) => {
-		const provinceCode = e.target.value;
-		setData("propinsipj", provinceCode);
+	// Handle wilayah change - automatically set all address fields
+	const handleWilayahChange = async (event) => {
+		const value = event.target.value;
+		setData("kode_wilayah", value);
 
-		// Reset dependent fields
-		setData("kabupatenpj", "");
-		setData("kecamatanpj", "");
-		setData("kelurahanpj", "");
-		setRegencies([]);
-		setDistricts([]);
-		setVillages([]);
-
-		if (provinceCode) {
-			setLoadingRegencies(true);
+		// If we have full address data from the selection, use it
+		if (event.fullAddress) {
+			setSelectedWilayah(parseFullAddress(event.fullAddress));
+		} else if (value) {
+			// Otherwise, fetch the full address data
+			setLoadingWilayah(true);
 			try {
-				const response = await fetch(`/api/wilayah/regencies/${provinceCode}`);
+				const response = await fetch(`/api/wilayah/${value}`);
 				if (response.ok) {
 					const result = await response.json();
-					const options = result.data.map((regency) => ({
-						value: regency.code,
-						label: regency.name,
-					}));
-					setRegencies(options);
+					if (result.success) {
+						setSelectedWilayah(parseFullAddress(result.data.full_address));
+					}
 				}
 			} catch (error) {
-				console.error("Error loading regencies:", error);
+				console.error("Error fetching wilayah details:", error);
 			} finally {
-				setLoadingRegencies(false);
+				setLoadingWilayah(false);
 			}
+		} else {
+			setSelectedWilayah(null);
 		}
-	};
-
-	// Handle province search (optional - for future enhancement)
-	const handleProvinceSearch = (searchTerm) => {
-		// Search is handled internally by SearchableSelect
-		// This function can be used for additional search logic if needed
-		console.log("Searching provinces for:", searchTerm);
-	};
-
-	// Handle regency change
-	const handleRegencyChange = async (e) => {
-		const regencyCode = e.target.value;
-		setData("kabupatenpj", regencyCode);
-
-		// Reset dependent fields
-		setData("kecamatanpj", "");
-		setData("kelurahanpj", "");
-		setDistricts([]);
-		setVillages([]);
-
-		if (regencyCode) {
-			setLoadingDistricts(true);
-			try {
-				const response = await fetch(`/api/wilayah/districts/${regencyCode}`);
-				if (response.ok) {
-					const result = await response.json();
-					const options = result.data.map((district) => ({
-						value: district.code,
-						label: district.name,
-					}));
-					setDistricts(options);
-				}
-			} catch (error) {
-				console.error("Error loading districts:", error);
-			} finally {
-				setLoadingDistricts(false);
-			}
-		}
-	};
-
-	// Handle district change
-	const handleDistrictChange = async (e) => {
-		const districtCode = e.target.value;
-		setData("kecamatanpj", districtCode);
-
-		// Reset dependent fields
-		setData("kelurahanpj", "");
-		setVillages([]);
-
-		if (districtCode) {
-			setLoadingVillages(true);
-			try {
-				const response = await fetch(`/api/wilayah/villages/${districtCode}`);
-				if (response.ok) {
-					const result = await response.json();
-					const options = result.data.map((village) => ({
-						value: village.code,
-						label: village.name,
-					}));
-					setVillages(options);
-				}
-			} catch (error) {
-				console.error("Error loading villages:", error);
-			} finally {
-				setLoadingVillages(false);
-			}
-		}
-	};
-
-	// Handle village change
-	const handleVillageChange = (e) => {
-		setData("kelurahanpj", e.target.value);
 	};
 
 	return (
@@ -265,14 +218,12 @@ export default function Create() {
 					</div>
 
 					{/* Form */}
-					<Form
-						action={route("patients.store")}
-						method="post"
-						className="space-y-6"
-						data={data}
-						onSuccess={() => {
-							console.log("Patient created successfully");
+					<form
+						onSubmit={(e) => {
+							e.preventDefault();
+							post(route("patients.store"));
 						}}
+						className="space-y-6"
 					>
 						{/* Basic Information */}
 						<div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
@@ -293,9 +244,9 @@ export default function Create() {
 											className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
 											placeholder="Masukkan nama lengkap"
 										/>
-										{errors.nm_pasien && (
+										{getErrorMessage("nm_pasien") && (
 											<p className="mt-1 text-sm text-red-600">
-												{errors.nm_pasien}
+												{getErrorMessage("nm_pasien")}
 											</p>
 										)}
 									</div>
@@ -304,19 +255,73 @@ export default function Create() {
 										<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
 											NIK
 										</label>
-										<input
-											type="text"
-											name="no_ktp"
-											value={data.no_ktp}
-											onChange={(e) => setData("no_ktp", e.target.value)}
-											className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-											placeholder="Masukkan NIK"
-										/>
-										{errors.no_ktp && (
-											<p className="mt-1 text-sm text-red-600">
-												{errors.no_ktp}
-											</p>
-										)}
+										<div className="relative">
+											<input
+												type="text"
+												name="no_ktp"
+												value={data.no_ktp}
+												onChange={(e) => {
+													// Only allow numbers and limit to 16 characters
+													const value = e.target.value
+														.replace(/[^0-9]/g, "")
+														.slice(0, 16);
+													setData("no_ktp", value);
+												}}
+												className="w-full px-3 py-2 pr-16 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan NIK (16 digit)"
+												maxLength="16"
+											/>
+											<div
+												className={`absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-medium ${
+													data.no_ktp.length === 16
+														? "text-green-600 dark:text-green-400"
+														: data.no_ktp.length > 0
+														? "text-yellow-600 dark:text-yellow-400"
+														: "text-gray-400 dark:text-gray-500"
+												}`}
+											>
+												{data.no_ktp.length}/16
+											</div>
+										</div>
+										<div className="mt-1 flex items-center justify-between">
+											<div>
+												{getErrorMessage("no_ktp") && (
+													<p className="text-sm text-red-600">
+														{getErrorMessage("no_ktp")}
+													</p>
+												)}
+											</div>
+											<div
+												className={`text-xs ${
+													data.no_ktp.length === 16
+														? "text-green-600 dark:text-green-400"
+														: data.no_ktp.length > 0
+														? "text-yellow-600 dark:text-yellow-400"
+														: "text-gray-400 dark:text-gray-500"
+												}`}
+											>
+												{data.no_ktp.length === 16 ? (
+													<div className="flex items-center gap-1">
+														<svg
+															className="w-3 h-3"
+															fill="currentColor"
+															viewBox="0 0 20 20"
+														>
+															<path
+																fillRule="evenodd"
+																d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+																clipRule="evenodd"
+															/>
+														</svg>
+														NIK lengkap
+													</div>
+												) : data.no_ktp.length > 0 ? (
+													<span>Kurang {16 - data.no_ktp.length} digit</span>
+												) : (
+													<span>NIK harus 16 digit</span>
+												)}
+											</div>
+										</div>
 									</div>
 
 									<div>
@@ -332,8 +337,10 @@ export default function Create() {
 											<option value="L">Laki-laki</option>
 											<option value="P">Perempuan</option>
 										</select>
-										{errors.jk && (
-											<p className="mt-1 text-sm text-red-600">{errors.jk}</p>
+										{getErrorMessage("jk") && (
+											<p className="mt-1 text-sm text-red-600">
+												{getErrorMessage("jk")}
+											</p>
 										)}
 									</div>
 
@@ -349,9 +356,9 @@ export default function Create() {
 											className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
 											placeholder="Masukkan tempat lahir"
 										/>
-										{errors.tmp_lahir && (
+										{getErrorMessage("tmp_lahir") && (
 											<p className="mt-1 text-sm text-red-600">
-												{errors.tmp_lahir}
+												{getErrorMessage("tmp_lahir")}
 											</p>
 										)}
 									</div>
@@ -367,9 +374,9 @@ export default function Create() {
 											onChange={(e) => setData("tgl_lahir", e.target.value)}
 											className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
 										/>
-										{errors.tgl_lahir && (
+										{getErrorMessage("tgl_lahir") && (
 											<p className="mt-1 text-sm text-red-600">
-												{errors.tgl_lahir}
+												{getErrorMessage("tgl_lahir")}
 											</p>
 										)}
 									</div>
@@ -386,9 +393,9 @@ export default function Create() {
 											className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
 											placeholder="Masukkan nama ibu"
 										/>
-										{errors.nm_ibu && (
+										{getErrorMessage("nm_ibu") && (
 											<p className="mt-1 text-sm text-red-600">
-												{errors.nm_ibu}
+												{getErrorMessage("nm_ibu")}
 											</p>
 										)}
 									</div>
@@ -415,9 +422,9 @@ export default function Create() {
 											className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
 											placeholder="Masukkan alamat lengkap"
 										/>
-										{errors.alamat && (
+										{getErrorMessage("alamat") && (
 											<p className="mt-1 text-sm text-red-600">
-												{errors.alamat}
+												{getErrorMessage("alamat")}
 											</p>
 										)}
 									</div>
@@ -434,9 +441,9 @@ export default function Create() {
 											className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
 											placeholder="Masukkan nomor telepon"
 										/>
-										{errors.no_tlp && (
+										{getErrorMessage("no_tlp") && (
 											<p className="mt-1 text-sm text-red-600">
-												{errors.no_tlp}
+												{getErrorMessage("no_tlp")}
 											</p>
 										)}
 									</div>
@@ -453,9 +460,9 @@ export default function Create() {
 											className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
 											placeholder="Masukkan email"
 										/>
-										{errors.email && (
+										{getErrorMessage("email") && (
 											<p className="mt-1 text-sm text-red-600">
-												{errors.email}
+												{getErrorMessage("email")}
 											</p>
 										)}
 									</div>
@@ -487,9 +494,9 @@ export default function Create() {
 											<option value="AB">AB</option>
 											<option value="-">Tidak Diketahui</option>
 										</select>
-										{errors.gol_darah && (
+										{getErrorMessage("gol_darah") && (
 											<p className="mt-1 text-sm text-red-600">
-												{errors.gol_darah}
+												{getErrorMessage("gol_darah")}
 											</p>
 										)}
 									</div>
@@ -510,9 +517,9 @@ export default function Create() {
 											<option value="DUDHA">Duda</option>
 											<option value="JOMBLO">Jomblo</option>
 										</select>
-										{errors.stts_nikah && (
+										{getErrorMessage("stts_nikah") && (
 											<p className="mt-1 text-sm text-red-600">
-												{errors.stts_nikah}
+												{getErrorMessage("stts_nikah")}
 											</p>
 										)}
 									</div>
@@ -529,9 +536,9 @@ export default function Create() {
 											className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
 											placeholder="Masukkan agama"
 										/>
-										{errors.agama && (
+										{getErrorMessage("agama") && (
 											<p className="mt-1 text-sm text-red-600">
-												{errors.agama}
+												{getErrorMessage("agama")}
 											</p>
 										)}
 									</div>
@@ -548,9 +555,9 @@ export default function Create() {
 											className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
 											placeholder="Masukkan pekerjaan"
 										/>
-										{errors.pekerjaan && (
+										{getErrorMessage("pekerjaan") && (
 											<p className="mt-1 text-sm text-red-600">
-												{errors.pekerjaan}
+												{getErrorMessage("pekerjaan")}
 											</p>
 										)}
 									</div>
@@ -580,8 +587,10 @@ export default function Create() {
 											<option value="S3">Doktor</option>
 											<option value="-">Tidak Diketahui</option>
 										</select>
-										{errors.pnd && (
-											<p className="mt-1 text-sm text-red-600">{errors.pnd}</p>
+										{getErrorMessage("pnd") && (
+											<p className="mt-1 text-sm text-red-600">
+												{getErrorMessage("pnd")}
+											</p>
 										)}
 									</div>
 								</div>
@@ -617,9 +626,9 @@ export default function Create() {
 											<option value="DIRI SENDIRI">Diri Sendiri</option>
 											<option value="LAIN-LAIN">Lain-lain</option>
 										</select>
-										{errors.keluarga && (
+										{getErrorMessage("keluarga") && (
 											<p className="mt-1 text-sm text-red-600">
-												{errors.keluarga}
+												{getErrorMessage("keluarga")}
 											</p>
 										)}
 									</div>
@@ -636,9 +645,9 @@ export default function Create() {
 											className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
 											placeholder="Masukkan nama keluarga"
 										/>
-										{errors.namakeluarga && (
+										{getErrorMessage("namakeluarga") && (
 											<p className="mt-1 text-sm text-red-600">
-												{errors.namakeluarga}
+												{getErrorMessage("namakeluarga")}
 											</p>
 										)}
 									</div>
@@ -655,9 +664,9 @@ export default function Create() {
 											className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
 											placeholder="Masukkan pekerjaan keluarga"
 										/>
-										{errors.pekerjaanpj && (
+										{getErrorMessage("pekerjaanpj") && (
 											<p className="mt-1 text-sm text-red-600">
-												{errors.pekerjaanpj}
+												{getErrorMessage("pekerjaanpj")}
 											</p>
 										)}
 									</div>
@@ -669,7 +678,7 @@ export default function Create() {
 										onChange={(e) => setData("kd_pj", e.target.value)}
 										options={penjabOptions}
 										placeholder="Pilih penanggung jawab"
-										error={errors.kd_pj}
+										error={getErrorMessage("kd_pj")}
 										required={true}
 										onAdd={handleAddPenjab}
 										addButtonText="Tambah Penjab"
@@ -687,75 +696,32 @@ export default function Create() {
 											className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
 											placeholder="Masukkan alamat keluarga"
 										/>
-										{errors.alamatpj && (
+										{getErrorMessage("alamatpj") && (
 											<p className="mt-1 text-sm text-red-600">
-												{errors.alamatpj}
+												{getErrorMessage("alamatpj")}
 											</p>
 										)}
 									</div>
 
-									<SearchableSelect
-										label="Provinsi"
-										name="propinsipj"
-										value={data.propinsipj}
-										onChange={handleProvinceChange}
-										onSearch={handleProvinceSearch}
-										options={provinces}
-										placeholder="Pilih provinsi"
-										error={errors.propinsipj}
+									<WilayahSearchableSelect
+										label="Pilih Kelurahan/Desa"
+										name="kode_wilayah"
+										value={data.kode_wilayah}
+										onChange={handleWilayahChange}
+										level="village"
+										placeholder="Pilih atau cari kelurahan/desa"
+										error={getErrorMessage("kode_wilayah")}
 										required={true}
-										loading={loadingProvinces}
-										searchPlaceholder="Cari provinsi..."
-										noOptionsText="Tidak ada provinsi"
-										loadingText="Memuat provinsi..."
+										searchPlaceholder="Ketik nama kelurahan/desa..."
+										noOptionsText="Tidak ada kelurahan/desa ditemukan"
+										loadingText="Memuat data kelurahan/desa..."
 									/>
 
-									<SearchableSelect
-										label="Kabupaten/Kota"
-										name="kabupatenpj"
-										value={data.kabupatenpj}
-										onChange={handleRegencyChange}
-										options={regencies}
-										placeholder="Pilih kabupaten/kota"
-										error={errors.kabupatenpj}
-										required={true}
-										disabled={!data.propinsipj}
-										loading={loadingRegencies}
-										searchPlaceholder="Cari kabupaten/kota..."
-										noOptionsText="Pilih provinsi terlebih dahulu"
-										loadingText="Memuat kabupaten/kota..."
-									/>
-
-									<SearchableSelect
-										label="Kecamatan"
-										name="kecamatanpj"
-										value={data.kecamatanpj}
-										onChange={handleDistrictChange}
-										options={districts}
-										placeholder="Pilih kecamatan"
-										error={errors.kecamatanpj}
-										required={true}
-										disabled={!data.kabupatenpj}
-										loading={loadingDistricts}
-										searchPlaceholder="Cari kecamatan..."
-										noOptionsText="Pilih kabupaten/kota terlebih dahulu"
-										loadingText="Memuat kecamatan..."
-									/>
-
-									<SearchableSelect
-										label="Kelurahan/Desa"
-										name="kelurahanpj"
-										value={data.kelurahanpj}
-										onChange={handleVillageChange}
-										options={villages}
-										placeholder="Pilih kelurahan/desa"
-										error={errors.kelurahanpj}
-										required={true}
-										disabled={!data.kecamatanpj}
-										loading={loadingVillages}
-										searchPlaceholder="Cari kelurahan/desa..."
-										noOptionsText="Pilih kecamatan terlebih dahulu"
-										loadingText="Memuat kelurahan/desa..."
+									{/* Address Display */}
+									<AddressDisplay
+										selectedWilayah={selectedWilayah}
+										loading={loadingWilayah}
+										className="mt-2"
 									/>
 								</div>
 							</div>
@@ -780,7 +746,7 @@ export default function Create() {
 								</div>
 							</div>
 						</div>
-					</Form>
+					</form>
 
 					{/* Penjab Create Modal */}
 					<PenjabCreateModal

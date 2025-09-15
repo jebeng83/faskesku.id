@@ -7,6 +7,7 @@ use App\Http\Controllers\API\WilayahController;
 use App\Http\Controllers\API\PermissionController;
 use App\Http\Controllers\API\RegPeriksaController;
 use App\Http\Controllers\API\UserController;
+use App\Http\Controllers\MenuController;
 
 Route::post('/employees', [EmployeeController::class, 'store'])->name('api.employees.store');
 Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('api.employees.destroy');
@@ -14,11 +15,14 @@ Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->
 Route::get('/penjab', [PenjabController::class, 'index'])->name('api.penjab.index');
 Route::post('/penjab', [PenjabController::class, 'store'])->name('api.penjab.store');
 
-// Wilayah proxy routes
+// Wilayah routes
 Route::get('/wilayah/provinces', [WilayahController::class, 'provinces'])->name('api.wilayah.provinces');
 Route::get('/wilayah/regencies/{provinceCode}', [WilayahController::class, 'regencies'])->name('api.wilayah.regencies');
 Route::get('/wilayah/districts/{regencyCode}', [WilayahController::class, 'districts'])->name('api.wilayah.districts');
 Route::get('/wilayah/villages/{districtCode}', [WilayahController::class, 'villages'])->name('api.wilayah.villages');
+Route::get('/wilayah/all-villages', [WilayahController::class, 'allVillages'])->name('api.wilayah.all-villages');
+Route::get('/wilayah/search', [WilayahController::class, 'search'])->name('api.wilayah.search');
+Route::get('/wilayah/{code}', [WilayahController::class, 'show'])->name('api.wilayah.show');
 
 // Permission Management Routes
 Route::prefix('permissions')->group(function () {
@@ -61,4 +65,10 @@ Route::prefix('users')->group(function () {
     Route::put('/{user}', [UserController::class, 'update'])->name('api.users.update');
     Route::delete('/{user}', [UserController::class, 'destroy'])->name('api.users.destroy');
     Route::put('/{user}/password', [UserController::class, 'updatePassword'])->name('api.users.password');
+});
+
+// Menu Management API Routes
+Route::prefix('menus')->middleware('auth')->group(function () {
+    Route::get('/hierarchy', [MenuController::class, 'getMenuHierarchy'])->name('api.menus.hierarchy');
+    Route::get('/icons', [MenuController::class, 'getIcons'])->name('api.menus.icons');
 });

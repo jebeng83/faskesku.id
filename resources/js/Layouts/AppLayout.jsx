@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { router } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import { SettingsIcon } from "@/Components/IconSettings";
+import SidebarMenu from "@/Components/SidebarMenu";
 
 export default function AppLayout({
 	title = "Faskesku",
@@ -151,7 +152,9 @@ export default function AppLayout({
 						{/* Logo */}
 						<div className="flex items-center gap-2">
 							<div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg border border-blue-400/20">
-								<span className="text-white font-bold text-sm drop-shadow-sm">F</span>
+								<span className="text-white font-bold text-sm drop-shadow-sm">
+									F
+								</span>
 							</div>
 							<div className="flex flex-col">
 								<span className="font-bold text-gray-900 dark:text-white text-sm">
@@ -235,63 +238,38 @@ export default function AppLayout({
 						: "lg:translate-x-0 lg:w-64 -translate-x-full"
 				}`}
 			>
+				{/* Mobile backdrop */}
+				{isSidebarOpen && (
+					<div
+						className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+						onClick={() => setIsSidebarOpen(false)}
+					/>
+				)}
+
 				<div className="h-full flex flex-col">
-					{/* Navigation */}
-					<nav className="flex-1 p-4 space-y-1">
-                        {!isSidebarCollapsed ? (
-                            <>
-                                <NavGroup title="Navigation" onToggle={toggleGroup} isCollapsed={collapsedGroups['Navigation']}>
-                                    <NavItem icon="home" label="Dashboard" href={route('dashboard')} active />
-                                </NavGroup>
-                                
-                                <NavGroup title="REGISTRASI & RM" onToggle={toggleGroup} isCollapsed={collapsedGroups['REGISTRASI & RM']}>
-                                    <NavItem icon="users" label="Data Pasien" href={route('patients.index')} />
-                                    <NavItem icon="walking" label="Data Rawat Jalan" href={route('rawat-jalan.index')} />
-                                    <NavItem icon="bed" label="Data Rawat Inap" />
-                                </NavGroup>
-                                
-                                <NavGroup title="PELAYANAN MEDIS" onToggle={toggleGroup} isCollapsed={collapsedGroups['PELAYANAN MEDIS']}>
-                                    <NavItem icon="stethoscope" label="Rawat Jalan" href={route('rawat-jalan.index')} />
-                                    <NavItem icon="bed-double" label="Rawat Inap" href={route('rawat-inap.index')} />
-                                    <NavItem icon="ambulance" label="IGD" href={route('igd.index')} />
-                                    <NavItem icon="surgery" label="Kamar Operasi" href={route('kamar-operasi.index')} />
-                                    
-                                    <NavGroup title="Penunjang Medis" onToggle={toggleGroup} isCollapsed={collapsedGroups['Penunjang Medis']} isSubGroup={true}>
-                                        <NavItem icon="flask" label="Laboratorium" href={route('laboratorium.index')} />
-                                        <NavItem icon="x-ray" label="Radiologi" href={route('radiologi.index')} />
-                                        <NavItem icon="therapy" label="Rehabilitasi Medik" href={route('rehabilitasi-medik.index')} />
-                                    </NavGroup>
-                                </NavGroup>
-                                
-                                <NavGroup title="Authentication" onToggle={toggleGroup} isCollapsed={collapsedGroups['Authentication']}>
-                                    <NavItem icon="lock" label="Login" />
-                                    <NavItem icon="log-in" label="Register" />
-                                    <NavItem icon="unlock" label="Reset Password" />
-                                </NavGroup>
-                                
-                                <NavGroup title="Support" onToggle={toggleGroup} isCollapsed={collapsedGroups['Support']}>
-                                    <NavItem icon="sidebar" label="Sample Page" />
-                                    <NavItem icon="help-circle" label="Documentation" />
-                                </NavGroup>
-                            </>
-                        ) : (
-                            <div className="space-y-2">
-                                <NavItemCollapsed icon="home" active href={route('dashboard')} />
-                                <NavItemCollapsed icon="users" href={route('patients.index')} />
-                                <NavItemCollapsed icon="walking" href={route('rawat-jalan.index')} />
-                                <NavItemCollapsed icon="user-md" />
-                                <NavItemCollapsed icon="pills" />
-                                <NavItemCollapsed icon="bed" />
-                            </div>
-                        )}
-                    </nav>
+					{/* Dynamic Navigation */}
+					{!isSidebarCollapsed ? (
+						<SidebarMenu />
+					) : (
+						<nav className="flex-1 p-4 space-y-2">
+							<div className="space-y-2">
+								<NavItemCollapsed icon="home" active />
+								<NavItemCollapsed icon="box" />
+								<NavItemCollapsed icon="users" />
+								<NavItemCollapsed icon="lock" />
+								<NavItemCollapsed icon="file-text" />
+							</div>
+						</nav>
+					)}
 
 					{/* Bottom Card - Gradient Pro */}
 					{!isSidebarCollapsed && (
 						<div className="p-4 border-t border-gray-200 dark:border-gray-800">
 							<div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg p-4 text-center">
 								<div className="w-12 h-12 mx-auto mb-3 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg border border-blue-400/20">
-									<span className="text-white font-bold text-lg drop-shadow-sm">F</span>
+									<span className="text-white font-bold text-lg drop-shadow-sm">
+										F
+									</span>
 								</div>
 								<h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">
 									Faskesku.id
@@ -320,9 +298,9 @@ export default function AppLayout({
 	);
 }
 
-function NavGroup({ title, children, onToggle, isCollapsed = false, isSubGroup = false }) {
+function NavGroup({ title, children, onToggle, isCollapsed = false }) {
 	return (
-		<div className={`mb-6 ${isSubGroup ? 'ml-4' : ''}`}>
+		<div className={`mb-6 ${isSubGroup ? "ml-4" : ""}`}>
 			<button
 				onClick={() => onToggle && onToggle(title)}
 				className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-300 transition-colors"

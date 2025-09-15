@@ -3,121 +3,276 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Wilayah;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Http;
 
 class WilayahController extends Controller
 {
-    private $baseUrl = 'https://wilayah.id/api';
-
+    /**
+     * Get all provinces
+     */
     public function provinces(): JsonResponse
     {
         try {
-            $response = Http::timeout(10)->get($this->baseUrl . '/provinces.json');
+            $provinces = Wilayah::getProvinces();
 
-            if ($response->successful()) {
-                return response()->json($response->json());
-            }
+            $data = $provinces->map(function ($province) {
+                return [
+                    'code' => $province->kode,
+                    'name' => $province->nama,
+                ];
+            });
 
             return response()->json([
-                'error' => 'Failed to fetch provinces',
-                'message' => 'Unable to retrieve province data'
-            ], 500);
+                'success' => true,
+                'data' => $data
+            ]);
         } catch (\Exception $e) {
             return response()->json([
-                'error' => 'Network error',
-                'message' => 'Failed to connect to wilayah.id API'
+                'success' => false,
+                'message' => 'Failed to fetch provinces',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
 
+    /**
+     * Get regencies by province code
+     */
     public function regencies(Request $request): JsonResponse
     {
         $provinceCode = $request->route('provinceCode');
 
         if (!$provinceCode) {
             return response()->json([
-                'error' => 'Invalid request',
+                'success' => false,
                 'message' => 'Province code is required'
             ], 400);
         }
 
         try {
-            $response = Http::timeout(10)->get($this->baseUrl . "/regencies/{$provinceCode}.json");
+            $regencies = Wilayah::getRegencies($provinceCode);
 
-            if ($response->successful()) {
-                return response()->json($response->json());
-            }
+            $data = $regencies->map(function ($regency) {
+                return [
+                    'code' => $regency->kode,
+                    'name' => $regency->nama,
+                ];
+            });
 
             return response()->json([
-                'error' => 'Failed to fetch regencies',
-                'message' => 'Unable to retrieve regency data for province: ' . $provinceCode
-            ], 500);
+                'success' => true,
+                'data' => $data
+            ]);
         } catch (\Exception $e) {
             return response()->json([
-                'error' => 'Network error',
-                'message' => 'Failed to connect to wilayah.id API'
+                'success' => false,
+                'message' => 'Failed to fetch regencies',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
 
+    /**
+     * Get districts by regency code
+     */
     public function districts(Request $request): JsonResponse
     {
         $regencyCode = $request->route('regencyCode');
 
         if (!$regencyCode) {
             return response()->json([
-                'error' => 'Invalid request',
+                'success' => false,
                 'message' => 'Regency code is required'
             ], 400);
         }
 
         try {
-            $response = Http::timeout(10)->get($this->baseUrl . "/districts/{$regencyCode}.json");
+            $districts = Wilayah::getDistricts($regencyCode);
 
-            if ($response->successful()) {
-                return response()->json($response->json());
-            }
+            $data = $districts->map(function ($district) {
+                return [
+                    'code' => $district->kode,
+                    'name' => $district->nama,
+                ];
+            });
 
             return response()->json([
-                'error' => 'Failed to fetch districts',
-                'message' => 'Unable to retrieve district data for regency: ' . $regencyCode
-            ], 500);
+                'success' => true,
+                'data' => $data
+            ]);
         } catch (\Exception $e) {
             return response()->json([
-                'error' => 'Network error',
-                'message' => 'Failed to connect to wilayah.id API'
+                'success' => false,
+                'message' => 'Failed to fetch districts',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
 
+    /**
+     * Get villages by district code
+     */
     public function villages(Request $request): JsonResponse
     {
         $districtCode = $request->route('districtCode');
 
         if (!$districtCode) {
             return response()->json([
-                'error' => 'Invalid request',
+                'success' => false,
                 'message' => 'District code is required'
             ], 400);
         }
 
         try {
-            $response = Http::timeout(10)->get($this->baseUrl . "/villages/{$districtCode}.json");
+            $villages = Wilayah::getVillages($districtCode);
 
-            if ($response->successful()) {
-                return response()->json($response->json());
-            }
+            $data = $villages->map(function ($village) {
+                return [
+                    'code' => $village->kode,
+                    'name' => $village->nama,
+                ];
+            });
 
             return response()->json([
-                'error' => 'Failed to fetch villages',
-                'message' => 'Unable to retrieve village data for district: ' . $districtCode
-            ], 500);
+                'success' => true,
+                'data' => $data
+            ]);
         } catch (\Exception $e) {
             return response()->json([
-                'error' => 'Network error',
-                'message' => 'Failed to connect to wilayah.id API'
+                'success' => false,
+                'message' => 'Failed to fetch villages',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all villages with optional filter
+     */
+    public function allVillages(Request $request): JsonResponse
+    {
+        $filter = $request->get('filter');
+        $limit = $request->get('limit', 100);
+
+        try {
+            $villages = Wilayah::getAllVillages($filter, $limit);
+
+            $data = $villages->map(function ($village) {
+                return [
+                    'code' => $village->kode,
+                    'name' => $village->nama,
+                    'full_address' => $village->getFullAddress(),
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $data
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch villages',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Search wilayah by name
+     */
+    public function search(Request $request): JsonResponse
+    {
+        $query = $request->get('q');
+        $level = $request->get('level'); // province, regency, district, village
+
+        // Allow empty query for village level to get all villages
+        if (!$query && $level !== 'village') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Search query is required'
+            ], 400);
+        }
+
+        try {
+            $results = Wilayah::searchByName($query, $level);
+
+            $data = $results->map(function ($wilayah) {
+                return [
+                    'code' => $wilayah->kode,
+                    'name' => $wilayah->nama,
+                    'level' => $wilayah->getLevelName(),
+                    'full_address' => $wilayah->getFullAddress(),
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $data
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to search wilayah',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get wilayah by code
+     */
+    public function show(Request $request): JsonResponse
+    {
+        $code = $request->route('code');
+
+        if (!$code) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Wilayah code is required'
+            ], 400);
+        }
+
+        try {
+            $wilayah = Wilayah::getByCode($code);
+
+            if (!$wilayah) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Wilayah not found'
+                ], 404);
+            }
+
+            $data = [
+                'code' => $wilayah->kode,
+                'name' => $wilayah->nama,
+                'level' => $wilayah->getLevelName(),
+                'full_address' => $wilayah->getFullAddress(),
+                'parent' => $wilayah->getParent() ? [
+                    'code' => $wilayah->getParent()->kode,
+                    'name' => $wilayah->getParent()->nama,
+                    'level' => $wilayah->getParent()->getLevelName(),
+                ] : null,
+                'children' => $wilayah->getChildren()->map(function ($child) {
+                    return [
+                        'code' => $child->kode,
+                        'name' => $child->nama,
+                        'level' => $child->getLevelName(),
+                    ];
+                }),
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => $data
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch wilayah',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
