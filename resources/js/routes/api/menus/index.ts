@@ -44,7 +44,7 @@ hierarchy.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\MenuController::icons
- * @see app/Http/Controllers/MenuController.php:311
+ * @see app/Http/Controllers/MenuController.php:310
  * @route '/api/menus/icons'
  */
 export const icons = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -59,7 +59,7 @@ icons.definition = {
 
 /**
 * @see \App\Http\Controllers\MenuController::icons
- * @see app/Http/Controllers/MenuController.php:311
+ * @see app/Http/Controllers/MenuController.php:310
  * @route '/api/menus/icons'
  */
 icons.url = (options?: RouteQueryOptions) => {
@@ -68,7 +68,7 @@ icons.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\MenuController::icons
- * @see app/Http/Controllers/MenuController.php:311
+ * @see app/Http/Controllers/MenuController.php:310
  * @route '/api/menus/icons'
  */
 icons.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -77,7 +77,7 @@ icons.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\MenuController::icons
- * @see app/Http/Controllers/MenuController.php:311
+ * @see app/Http/Controllers/MenuController.php:310
  * @route '/api/menus/icons'
  */
 icons.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
