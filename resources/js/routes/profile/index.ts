@@ -78,8 +78,8 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 })
 
 const profile = {
-    show,
-    update,
+    show: Object.assign(show, show),
+    update: Object.assign(update, update),
 }
 
 export default profile

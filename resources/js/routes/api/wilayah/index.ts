@@ -380,10 +380,13 @@ show.head = (args: { code: string | number } | [code: string | number ] | string
 })
 
 const wilayah = {
-    provinces,
-    regencies,
-    districts,
-    villages,
+    provinces: Object.assign(provinces, provinces),
+    regencies: Object.assign(regencies, regencies),
+    districts: Object.assign(districts, districts),
+    villages: Object.assign(villages, villages),
+    allVillages: Object.assign(allVillages, allVillages),
+    search: Object.assign(search, search),
+    show: Object.assign(show, show),
 }
 
 export default wilayah
