@@ -1,5 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
-import pemeriksaanRalanC19e15 from './pemeriksaan-ralan'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::lanjutan
  * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:169
@@ -130,45 +129,190 @@ pemeriksaanRalan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =
 })
 
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::statistics
- * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:0
- * @route '/rawat-jalan-statistics'
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::storePemeriksaanRalan
+ * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:276
+ * @route '/rawat-jalan/pemeriksaan-ralan'
  */
-export const statistics = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: statistics.url(options),
+export const storePemeriksaanRalan = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storePemeriksaanRalan.url(options),
+    method: 'post',
+})
+
+storePemeriksaanRalan.definition = {
+    methods: ["post"],
+    url: '/rawat-jalan/pemeriksaan-ralan',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::storePemeriksaanRalan
+ * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:276
+ * @route '/rawat-jalan/pemeriksaan-ralan'
+ */
+storePemeriksaanRalan.url = (options?: RouteQueryOptions) => {
+    return storePemeriksaanRalan.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::storePemeriksaanRalan
+ * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:276
+ * @route '/rawat-jalan/pemeriksaan-ralan'
+ */
+storePemeriksaanRalan.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storePemeriksaanRalan.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::deletePemeriksaanRalan
+ * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:313
+ * @route '/rawat-jalan/pemeriksaan-ralan'
+ */
+export const deletePemeriksaanRalan = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+    url: deletePemeriksaanRalan.url(options),
+    method: 'delete',
+})
+
+deletePemeriksaanRalan.definition = {
+    methods: ["delete"],
+    url: '/rawat-jalan/pemeriksaan-ralan',
+} satisfies RouteDefinition<["delete"]>
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::deletePemeriksaanRalan
+ * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:313
+ * @route '/rawat-jalan/pemeriksaan-ralan'
+ */
+deletePemeriksaanRalan.url = (options?: RouteQueryOptions) => {
+    return deletePemeriksaanRalan.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::deletePemeriksaanRalan
+ * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:313
+ * @route '/rawat-jalan/pemeriksaan-ralan'
+ */
+deletePemeriksaanRalan.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+    url: deletePemeriksaanRalan.url(options),
+    method: 'delete',
+})
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::updatePemeriksaanRalan
+ * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:337
+ * @route '/rawat-jalan/pemeriksaan-ralan'
+ */
+export const updatePemeriksaanRalan = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+    url: updatePemeriksaanRalan.url(options),
+    method: 'put',
+})
+
+updatePemeriksaanRalan.definition = {
+    methods: ["put"],
+    url: '/rawat-jalan/pemeriksaan-ralan',
+} satisfies RouteDefinition<["put"]>
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::updatePemeriksaanRalan
+ * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:337
+ * @route '/rawat-jalan/pemeriksaan-ralan'
+ */
+updatePemeriksaanRalan.url = (options?: RouteQueryOptions) => {
+    return updatePemeriksaanRalan.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::updatePemeriksaanRalan
+ * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:337
+ * @route '/rawat-jalan/pemeriksaan-ralan'
+ */
+updatePemeriksaanRalan.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+    url: updatePemeriksaanRalan.url(options),
+    method: 'put',
+})
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::searchPegawai
+ * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:383
+ * @route '/pegawai/search'
+ */
+export const searchPegawai = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: searchPegawai.url(options),
     method: 'get',
 })
 
-statistics.definition = {
+searchPegawai.definition = {
+    methods: ["get","head"],
+    url: '/pegawai/search',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::searchPegawai
+ * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:383
+ * @route '/pegawai/search'
+ */
+searchPegawai.url = (options?: RouteQueryOptions) => {
+    return searchPegawai.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::searchPegawai
+ * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:383
+ * @route '/pegawai/search'
+ */
+searchPegawai.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: searchPegawai.url(options),
+    method: 'get',
+})
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::searchPegawai
+ * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:383
+ * @route '/pegawai/search'
+ */
+searchPegawai.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: searchPegawai.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::getStatistics
+ * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:0
+ * @route '/rawat-jalan-statistics'
+ */
+export const getStatistics = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getStatistics.url(options),
+    method: 'get',
+})
+
+getStatistics.definition = {
     methods: ["get","head"],
     url: '/rawat-jalan-statistics',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::statistics
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::getStatistics
  * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:0
  * @route '/rawat-jalan-statistics'
  */
-statistics.url = (options?: RouteQueryOptions) => {
-    return statistics.definition.url + queryParams(options)
+getStatistics.url = (options?: RouteQueryOptions) => {
+    return getStatistics.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::statistics
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::getStatistics
  * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:0
  * @route '/rawat-jalan-statistics'
  */
-statistics.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: statistics.url(options),
+getStatistics.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getStatistics.url(options),
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::statistics
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::getStatistics
  * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:0
  * @route '/rawat-jalan-statistics'
  */
-statistics.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: statistics.url(options),
+getStatistics.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getStatistics.url(options),
     method: 'head',
 })
 
@@ -530,18 +674,6 @@ destroy.delete = (args: { rawat_jalan: string | number } | [rawat_jalan: string 
     url: destroy.url(args, options),
     method: 'delete',
 })
-const rawatJalan = {
-    lanjutan: Object.assign(lanjutan, lanjutan),
-riwayat: Object.assign(riwayat, riwayat),
-pemeriksaanRalan: Object.assign(pemeriksaanRalan, pemeriksaanRalanC19e15),
-statistics: Object.assign(statistics, statistics),
-index: Object.assign(index, index),
-create: Object.assign(create, create),
-store: Object.assign(store, store),
-show: Object.assign(show, show),
-edit: Object.assign(edit, edit),
-update: Object.assign(update, update),
-destroy: Object.assign(destroy, destroy),
-}
+const RawatJalanController = { lanjutan, riwayat, pemeriksaanRalan, storePemeriksaanRalan, deletePemeriksaanRalan, updatePemeriksaanRalan, searchPegawai, getStatistics, index, create, store, show, edit, update, destroy }
 
-export default rawatJalan
+export default RawatJalanController

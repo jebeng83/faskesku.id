@@ -1,15 +1,8 @@
 import FileUploadController from './FileUploadController'
 import FilePreviewController from './FilePreviewController'
-<<<<<<< HEAD
-
 const SupportFileUploads = {
     FileUploadController: Object.assign(FileUploadController, FileUploadController),
-    FilePreviewController: Object.assign(FilePreviewController, FilePreviewController),
-=======
-const SupportFileUploads = {
-    FileUploadController,
-FilePreviewController,
->>>>>>> kohsun
+FilePreviewController: Object.assign(FilePreviewController, FilePreviewController),
 }
 
 export default SupportFileUploads
