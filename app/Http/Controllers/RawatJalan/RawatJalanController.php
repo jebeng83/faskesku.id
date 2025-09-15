@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\RawatJalan;
 
+use App\Http\Controllers\Controller;
 use App\Models\Patient;
 use App\Models\Poliklinik;
-use App\Models\RawatJalan;
+use App\Models\RawatJalan\RawatJalan;
 use App\Models\Dokter;
 use App\Models\Penjab;
 use Illuminate\Http\Request;
@@ -573,8 +574,7 @@ class RawatJalanController extends Controller
             'umurdaftar' => 'nullable|integer|min:0',
             'sttsumur' => 'nullable|in:Th,Bl,Hr',
             'status_bayar' => 'required|in:Sudah Bayar,Belum Bayar',
-            'status_poli' => 'required|in:Lama,Baru',
-            'keputusan' => 'nullable|in:-,RUJUKAN,PRIORITAS,HIJAU,KUNING,MERAH,HITAM,MJKN,CHECK-IN'
+            'status_poli' => 'required|in:Lama,Baru'
         ]);
 
         $data = $request->all();
@@ -596,30 +596,5 @@ class RawatJalanController extends Controller
 
         return redirect()->route('rawat-jalan.index')
                         ->with('success', 'Data rawat jalan berhasil dihapus.');
-    }
-
-
-
-    /**
-     * Get statistics for dashboard
-     */
-    public function getStatistics()
-    {
-        $today = Carbon::today();
-        
-        $stats = [
-            'total_hari_ini' => RawatJalan::where('tgl_registrasi', $today)->count(),
-            'belum_bayar' => RawatJalan::where('tgl_registrasi', $today)
-                                      ->where('status_bayar', 'Belum Bayar')
-                                      ->count(),
-            'sudah_bayar' => RawatJalan::where('tgl_registrasi', $today)
-                                      ->where('status_bayar', 'Sudah Bayar')
-                                      ->count(),
-            'total_bulan_ini' => RawatJalan::whereMonth('tgl_registrasi', $today->month)
-                                          ->whereYear('tgl_registrasi', $today->year)
-                                          ->count()
-        ];
-
-        return response()->json($stats);
     }
 }

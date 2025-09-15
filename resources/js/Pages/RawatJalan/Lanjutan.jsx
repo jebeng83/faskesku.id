@@ -12,13 +12,13 @@ import RiwayatPemeriksaan from './components/RiwayatPemeriksaan';
 
 export default function Lanjutan({ rawatJalan, params }) {
     // Semua accordion tertutup secara default
-    const [openAcc, setOpenAcc] = useState({ pasien: false, registrasi: false, pemeriksaan: false });
+    const [openAcc, setOpenAcc] = useState({ pemeriksaan: false });
     const [openRight, setOpenRight] = useState({ cppt: false, resep: false, diagnosa: false, lab: false, radiologi: false });
     // Membuka salah satu akan menutup yang lain; klik ulang menutup semuanya
     const toggle = (key) =>
         setOpenAcc((prev) => {
             const isOpening = !prev[key];
-            return isOpening ? { pasien: false, registrasi: false, pemeriksaan: false, [key]: true } : { pasien: false, registrasi: false, pemeriksaan: false };
+            return isOpening ? { pemeriksaan: false, [key]: true } : { pemeriksaan: false };
         });
     return (
         <AppLayout>
@@ -47,88 +47,9 @@ export default function Lanjutan({ rawatJalan, params }) {
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                     {/* Kolom kiri: Accordion Detail Pasien + Riwayat Pemeriksaan */}
                     <div className="lg:col-span-2 space-y-4">
-                        {/* Accordion: Data Pasien */}
-                        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                            <button onClick={() => toggle('pasien')} className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-gray-50 dark:hover:bg-gray-700/40">
-                                <span className="font-semibold text-gray-900 dark:text-white">Detail Pasien</span>
-                                <svg className={`w-5 h-5 text-gray-500 transition-transform ${openAcc.pasien ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.188l3.71-3.96a.75.75 0 111.08 1.04l-4.24 4.53a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clipRule="evenodd"/></svg>
-                            </button>
-                            {openAcc.pasien && (
-                                <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700 text-sm">
-                                    {rawatJalan?.patient ? (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
-                                            <div>
-                                                <div className="text-gray-500 dark:text-gray-400">No. RM</div>
-                                                <div className="text-gray-900 dark:text-white">{rawatJalan.patient.no_rkm_medis}</div>
-                                            </div>
-                                            <div>
-                                                <div className="text-gray-500 dark:text-gray-400">Nama Pasien</div>
-                                                <div className="text-gray-900 dark:text-white">{rawatJalan.patient.nm_pasien}</div>
-                                            </div>
-                                            <div>
-                                                <div className="text-gray-500 dark:text-gray-400">NIK</div>
-                                                <div className="text-gray-900 dark:text-white">{rawatJalan.patient.no_ktp || '-'}</div>
-                                            </div>
-                                            <div>
-                                                <div className="text-gray-500 dark:text-gray-400">Jenis Kelamin</div>
-                                                <div className="text-gray-900 dark:text-white">{rawatJalan.patient.jk === 'L' ? 'Laki-laki' : 'Perempuan'}</div>
-                                            </div>
-                                            <div>
-                                                <div className="text-gray-500 dark:text-gray-400">Tanggal Lahir</div>
-                                                <div className="text-gray-900 dark:text-white">{rawatJalan.patient.tgl_lahir ? new Date(rawatJalan.patient.tgl_lahir).toLocaleDateString('id-ID') : '-'}</div>
-                                            </div>
-                                            <div>
-                                                <div className="text-gray-500 dark:text-gray-400">Alamat</div>
-                                                <div className="text-gray-900 dark:text-white">{rawatJalan.patient.alamat || '-'}</div>
-                                            </div>
-                                            <div>
-                                                <div className="text-gray-500 dark:text-gray-400">No. Telepon</div>
-                                                <div className="text-gray-900 dark:text-white">{rawatJalan.patient.no_tlp || '-'}</div>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="text-gray-500 dark:text-gray-400">Data pasien belum tersedia dari parameter yang dikirim.</div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
+                       
 
-                        {/* Accordion: Data Registrasi */
-                        }
-                        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                            <button onClick={() => toggle('registrasi')} className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-gray-50 dark:hover:bg-gray-700/40">
-                                <span className="font-semibold text-gray-900 dark:text-white">Detail Registrasi</span>
-                                <svg className={`w-5 h-5 text-gray-500 transition-transform ${openAcc.registrasi ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.188l3.71-3.96a.75.75 0 111.08 1.04l-4.24 4.53a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clipRule="evenodd"/></svg>
-                            </button>
-                            {openAcc.registrasi && (
-                                <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700 text-sm grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
-                                    <div>
-                                        <div className="text-gray-500 dark:text-gray-400">Tanggal</div>
-                                        <div className="text-gray-900 dark:text-white">{rawatJalan?.tgl_registrasi ? new Date(rawatJalan.tgl_registrasi).toLocaleDateString('id-ID') : '-'}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-gray-500 dark:text-gray-400">Jam</div>
-                                        <div className="text-gray-900 dark:text-white">{rawatJalan?.jam_reg ? String(rawatJalan.jam_reg).substring(0,5) : '-'}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-gray-500 dark:text-gray-400">Dokter</div>
-                                        <div className="text-gray-900 dark:text-white">{rawatJalan?.kd_dokter || '-'}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-gray-500 dark:text-gray-400">Poli</div>
-                                        <div className="text-gray-900 dark:text-white">{rawatJalan?.kd_poli || '-'}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-gray-500 dark:text-gray-400">Status</div>
-                                        <div className="text-gray-900 dark:text-white">{rawatJalan?.stts || '-'}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-gray-500 dark:text-gray-400">Status Bayar</div>
-                                        <div className="text-gray-900 dark:text-white">{rawatJalan?.status_bayar || '-'}</div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+
 
                         {/* Riwayat Kunjungan */}
                         {/* <div className="block bg-white dark:bg-gray-800 shadow-sm rounded-lg p-4 border border-gray-200 dark:border-gray-700">
@@ -194,6 +115,7 @@ export default function Lanjutan({ rawatJalan, params }) {
                                         token={typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('t') : ''}
                                         noRkmMedis={params?.no_rkm_medis || rawatJalan?.patient?.no_rkm_medis}
                                         noRawat={params?.no_rawat || rawatJalan?.no_rawat}
+                                        kdPoli={rawatJalan?.kd_poli || params?.kd_poli || ''}
                                     />
                                 </div>
                             )}
