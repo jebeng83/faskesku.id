@@ -438,6 +438,10 @@ function NavItemCollapsed({ icon, active = false, href = "#" }) {
 }
 
 function UserProfileDropdown({ isOpen, onToggle }) {
+	const handleLogout = () => {
+		router.post(route('logout'));
+	};
+
 	return (
 		<div className="relative profile-dropdown">
 			<button
@@ -480,15 +484,15 @@ function UserProfileDropdown({ isOpen, onToggle }) {
 						Settings
 					</a>
 					<hr className="my-1 border-gray-200 dark:border-gray-600" />
-					<a
-						href="#"
-						className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+					<button
+						onClick={handleLogout}
+						className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left"
 					>
 						<svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
 							<path d="M16 17v-3H9v-4h7V7l5 5-5 5M14 2a2 2 0 0 1 2 2v2h-2V4H4v16h10v-2h2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10Z" />
 						</svg>
 						Logout
-					</a>
+					</button>
 				</div>
 			)}
 		</div>
