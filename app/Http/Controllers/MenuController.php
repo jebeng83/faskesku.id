@@ -270,9 +270,8 @@ class MenuController extends Controller
             ]);
         }
 
-        return response()->json([
-            'message' => 'Urutan menu berhasil diperbarui.'
-        ]);
+        return to_route('menus.index', [], 303)
+            ->with('success', 'Urutan menu berhasil diperbarui.');
     }
 
     /**
