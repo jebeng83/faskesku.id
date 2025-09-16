@@ -17,6 +17,7 @@ use App\Http\Controllers\KamarOperasiController;
 use App\Http\Controllers\LaboratoriumController;
 use App\Http\Controllers\RadiologiController;
 use App\Http\Controllers\RehabilitasiMedikController;
+use App\Http\Controllers\JenisPerawatanController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -42,6 +43,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('reg-periksa', RegPeriksaController::class);
     Route::post('/reg-periksa/hitung-umur', [RegPeriksaController::class, 'hitungUmur'])->name('reg-periksa.hitung-umur');
     Route::get('/reg-periksa-statistik', [RegPeriksaController::class, 'getStatistik'])->name('reg-periksa.statistik');
+
+    // Tarif/Jenis Perawatan routes
+    Route::resource('tarif', JenisPerawatanController::class);
+    Route::post('/tarif/{jenisPerawatan}/toggle-status', [JenisPerawatanController::class, 'toggleStatus'])->name('tarif.toggle-status');
 
     // Permission routes
     Route::get('/permissions', function () {
