@@ -33,7 +33,13 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
         kd_pj: '',
         kd_poli: '',
         status: '1',
-        category: category
+        category: category,
+        total_dr: 0,
+        total_pr: 0,
+        total_drpr: 0,
+        show_total_dokter: false,
+        show_total_perawat: false,
+        show_total_dokter_perawat: false
     });
 
     // Function to generate auto code when kategori changes
@@ -86,8 +92,61 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
         e.preventDefault();
         post(route('daftar-tarif.store'), {
             onSuccess: () => {
+                // Show success notification
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 animate-pulse';
+                notification.innerHTML = `
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <div>
+                        <div class="font-semibold">Data Berhasil Disimpan!</div>
+                        <div class="text-sm opacity-90">Tarif ${data.nm_perawatan || 'baru'} telah ditambahkan ke sistem</div>
+                    </div>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // Auto remove notification after 4 seconds
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(100%)';
+                    notification.style.opacity = '0';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }, 4000);
+                
                 reset();
                 onClose();
+            },
+            onError: (errors) => {
+                // Show error notification
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-4 right-4 z-50 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3';
+                notification.innerHTML = `
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    <div>
+                        <div class="font-semibold">Gagal Menyimpan Data!</div>
+                        <div class="text-sm opacity-90">Periksa kembali data yang diinput</div>
+                    </div>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // Auto remove notification after 5 seconds
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(100%)';
+                    notification.style.opacity = '0';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }, 5000);
             }
         });
     };
@@ -209,7 +268,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Material
+                                Klinik/RS
                             </label>
                             <input
                                 type="text"
@@ -374,21 +433,125 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                         </div>
                     </div>
 
-                    {/* Total Calculation Display */}
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                        <h4 className="font-medium text-gray-700 mb-2">Perhitungan Total Tarif:</h4>
-                        <div className="grid grid-cols-3 gap-4 text-sm">
-                            <div>
-                                <span className="text-gray-600">Total Dokter:</span>
-                                <p className="font-medium">Rp {totalDr.toLocaleString('id-ID')}</p>
+                    {/* Total Calculation Display - Improved Layout */}
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 p-6 rounded-xl shadow-sm">
+                        <div className="flex items-center justify-between mb-4">
+                            <h4 className="text-lg font-semibold text-gray-800 flex items-center">
+                                <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                </svg>
+                                Perhitungan Total Tarif
+                            </h4>
+                            <div className="text-xs text-gray-500 bg-white px-3 py-1 rounded-full border">
+                                Pilih total yang ingin ditampilkan
                             </div>
-                            <div>
-                                <span className="text-gray-600">Total Perawat:</span>
-                                <p className="font-medium">Rp {totalPr.toLocaleString('id-ID')}</p>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {/* Total Dokter */}
+                            <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                                <div className="flex items-start justify-between mb-3">
+                                    <div className="flex-1">
+                                        <div className="flex items-center mb-2">
+                                            <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                                            <span className="text-sm font-medium text-gray-700">Total Dokter</span>
+                                        </div>
+                                        <div className="text-2xl font-bold text-gray-900">
+                                            Rp {data.show_total_dokter ? totalDr.toLocaleString('id-ID') : '0'}
+                                        </div>
+                                        <div className="text-xs text-gray-500 mt-1">
+                                            Material + BHP + Tarif Dokter + KSO + Menejemen
+                                        </div>
+                                    </div>
+                                    <div className="ml-3">
+                                        <label className="flex items-center cursor-pointer group">
+                                            <input
+                                                type="checkbox"
+                                                checked={data.show_total_dokter || false}
+                                                onChange={(e) => {
+                                                    setData('show_total_dokter', e.target.checked);
+                                                }}
+                                                className="w-5 h-5 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 focus:ring-2"
+                                            />
+                                            <span className="ml-2 text-xs text-gray-600 group-hover:text-green-600 transition-colors">
+                                                Aktif
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <span className="text-gray-600">Total Dokter + Perawat:</span>
-                                <p className="font-medium">Rp {totalDrPr.toLocaleString('id-ID')}</p>
+
+                            {/* Total Perawat */}
+                            <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                                <div className="flex items-start justify-between mb-3">
+                                    <div className="flex-1">
+                                        <div className="flex items-center mb-2">
+                                            <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                                            <span className="text-sm font-medium text-gray-700">Total Perawat</span>
+                                        </div>
+                                        <div className="text-2xl font-bold text-gray-900">
+                                            Rp {data.show_total_perawat ? totalPr.toLocaleString('id-ID') : '0'}
+                                        </div>
+                                        <div className="text-xs text-gray-500 mt-1">
+                                            Material + BHP + Tarif Perawat + KSO + Menejemen
+                                        </div>
+                                    </div>
+                                    <div className="ml-3">
+                                        <label className="flex items-center cursor-pointer group">
+                                            <input
+                                                type="checkbox"
+                                                checked={data.show_total_perawat || false}
+                                                onChange={(e) => {
+                                                    setData('show_total_perawat', e.target.checked);
+                                                }}
+                                                className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                                            />
+                                            <span className="ml-2 text-xs text-gray-600 group-hover:text-blue-600 transition-colors">
+                                                Aktif
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Total Dokter + Perawat */}
+                            <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                                <div className="flex items-start justify-between mb-3">
+                                    <div className="flex-1">
+                                        <div className="flex items-center mb-2">
+                                            <div className="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
+                                            <span className="text-sm font-medium text-gray-700">Total Dokter + Perawat</span>
+                                        </div>
+                                        <div className="text-2xl font-bold text-gray-900">
+                                            Rp {data.show_total_dokter_perawat ? totalDrPr.toLocaleString('id-ID') : '0'}
+                                        </div>
+                                        <div className="text-xs text-gray-500 mt-1">
+                                            Material + BHP + Kedua Tarif + KSO + Menejemen
+                                        </div>
+                                    </div>
+                                    <div className="ml-3">
+                                        <label className="flex items-center cursor-pointer group">
+                                            <input
+                                                type="checkbox"
+                                                checked={data.show_total_dokter_perawat || false}
+                                                onChange={(e) => {
+                                                    setData('show_total_dokter_perawat', e.target.checked);
+                                                }}
+                                                className="w-5 h-5 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
+                                            />
+                                            <span className="ml-2 text-xs text-gray-600 group-hover:text-purple-600 transition-colors">
+                                                Aktif
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Status Info */}
+                        <div className="mt-4 flex items-center justify-center">
+                            <div className="text-xs text-gray-500 bg-white px-4 py-2 rounded-full border border-gray-200">
+                                💡 Tip: Anda dapat mengaktifkan beberapa total sekaligus untuk perbandingan
                             </div>
                         </div>
                     </div>
