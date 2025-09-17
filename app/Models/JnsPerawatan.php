@@ -87,4 +87,32 @@ class JnsPerawatan extends Model
     {
         return $this->belongsTo(Penjab::class, 'kd_pj', 'kd_pj');
     }
+
+    // Relasi dengan kategori perawatan
+    public function kategoriPerawatan()
+    {
+        return $this->belongsTo(KategoriPerawatan::class, 'kd_kategori', 'kd_kategori');
+    }
+
+    // Method untuk generate kode otomatis
+    public static function generateKodeJenisPerawatan($kdKategori)
+    {
+        // Ambil nomor urut terakhir untuk kategori ini
+        $lastCode = self::where('kd_kategori', $kdKategori)
+            ->where('kd_jenis_prw', 'like', "0{$kdKategori}%")
+            ->orderBy('kd_jenis_prw', 'desc')
+            ->first();
+
+        if ($lastCode) {
+            // Ambil 3 digit terakhir dan tambah 1
+            $lastNumber = (int) substr($lastCode->kd_jenis_prw, -3);
+            $newNumber = $lastNumber + 1;
+        } else {
+            // Jika belum ada, mulai dari 1
+            $newNumber = 1;
+        }
+
+        // Format: 0 + kd_kategori + nomor urut (3 digit)
+        return '0' . $kdKategori . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+    }
 }

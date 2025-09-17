@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
 
@@ -18,9 +18,341 @@ const Badge = ({ children, variant = 'default' }) => {
     );
 };
 
-export default function Index({ title, data, category, search, filters }) {
+// Modal Component for Add Tarif
+const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs = [], kategoris = [] }) => {
+    const { data, setData, post, processing, errors, reset } = useForm({
+        kd_jenis_prw: '',
+        nm_perawatan: '',
+        kd_kategori: '',
+        material: 0,
+        bhp: 0,
+        tarif_tindakandr: 0,
+        tarif_tindakanpr: 0,
+        kso: 0,
+        menejemen: 0,
+        kd_pj: '',
+        kd_poli: '',
+        status: '1',
+        category: category
+    });
+
+    // Function to generate auto code when kategori changes
+    const generateAutoCode = async (kdKategori) => {
+        if (!kdKategori) return;
+        
+        try {
+            const response = await fetch(route('daftar-tarif.generate-kode') + `?kd_kategori=${kdKategori}&category=${category}`);
+            const result = await response.json();
+            if (result.success) {
+                setData('kd_jenis_prw', result.kode);
+            }
+        } catch (error) {
+            console.error('Error generating code:', error);
+        }
+    };
+
+    // Handle kategori change
+    const handleKategoriChange = (e) => {
+        const kdKategori = e.target.value;
+        setData('kd_kategori', kdKategori);
+        
+        // Auto generate code when kategori is selected
+        if (kdKategori) {
+            generateAutoCode(kdKategori);
+        } else {
+            setData('kd_jenis_prw', '');
+        }
+    };
+
+    // Calculate total tarif
+    const calculateTotal = () => {
+        const material = data.material || 0;
+        const bhp = data.bhp || 0;
+        const tarif_tindakandr = data.tarif_tindakandr || 0;
+        const tarif_tindakanpr = data.tarif_tindakanpr || 0;
+        const kso = data.kso || 0;
+        const menejemen = data.menejemen || 0;
+
+        const totalDr = material + bhp + tarif_tindakandr + kso + menejemen;
+        const totalPr = material + bhp + tarif_tindakanpr + kso + menejemen;
+        const totalDrPr = material + bhp + tarif_tindakandr + tarif_tindakanpr + kso + menejemen;
+
+        return { totalDr, totalPr, totalDrPr };
+    };
+
+    const { totalDr, totalPr, totalDrPr } = calculateTotal();
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        post(route('daftar-tarif.store'), {
+            onSuccess: () => {
+                reset();
+                onClose();
+            }
+        });
+    };
+
+    const handleClose = () => {
+        reset();
+        onClose();
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold">Tambah Tarif {category === 'rawat-jalan' ? 'Rawat Jalan' : category}</h3>
+                    <button
+                        onClick={handleClose}
+                        className="text-gray-400 hover:text-gray-600"
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Kategori Field - Move to top for better UX */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Kategori Perawatan *
+                            </label>
+                            <select
+                                value={data.kd_kategori}
+                                onChange={handleKategoriChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                required
+                            >
+                                <option value="">Pilih Kategori</option>
+                                {kategoris.map((kategori) => (
+                                    <option key={kategori.kd_kategori} value={kategori.kd_kategori}>
+                                        {kategori.nm_kategori}
+                                    </option>
+                                ))}
+                            </select>
+                            {errors.kd_kategori && <p className="text-red-500 text-xs mt-1">{errors.kd_kategori}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Kode Jenis Perawatan *
+                            </label>
+                            <input
+                                type="text"
+                                value={data.kd_jenis_prw}
+                                onChange={(e) => setData('kd_jenis_prw', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+                                required
+                                readOnly
+                                placeholder="Otomatis terisi saat kategori dipilih"
+                            />
+                            {errors.kd_jenis_prw && <p className="text-red-500 text-xs mt-1">{errors.kd_jenis_prw}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Nama Perawatan *
+                            </label>
+                            <input
+                                type="text"
+                                value={data.nm_perawatan}
+                                onChange={(e) => setData('nm_perawatan', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                required
+                            />
+                            {errors.nm_perawatan && <p className="text-red-500 text-xs mt-1">{errors.nm_perawatan}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Poliklinik *
+                            </label>
+                            <select
+                                value={data.kd_poli}
+                                onChange={(e) => setData('kd_poli', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                required
+                            >
+                                <option value="">Pilih Poliklinik</option>
+                                {polikliniks.map((poli) => (
+                                    <option key={poli.kd_poli} value={poli.kd_poli}>
+                                        {poli.nm_poli}
+                                    </option>
+                                ))}
+                            </select>
+                            {errors.kd_poli && <p className="text-red-500 text-xs mt-1">{errors.kd_poli}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Penjab *
+                            </label>
+                            <select
+                                value={data.kd_pj}
+                                onChange={(e) => setData('kd_pj', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                required
+                            >
+                                <option value="">Pilih Penjab</option>
+                                {penjaabs.map((penjab) => (
+                                    <option key={penjab.kd_pj} value={penjab.kd_pj}>
+                                        {penjab.png_jawab}
+                                    </option>
+                                ))}
+                            </select>
+                            {errors.kd_pj && <p className="text-red-500 text-xs mt-1">{errors.kd_pj}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Material
+                            </label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                value={data.material}
+                                onChange={(e) => setData('material', parseFloat(e.target.value) || 0)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            {errors.material && <p className="text-red-500 text-xs mt-1">{errors.material}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                BHP
+                            </label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                value={data.bhp}
+                                onChange={(e) => setData('bhp', parseFloat(e.target.value) || 0)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            {errors.bhp && <p className="text-red-500 text-xs mt-1">{errors.bhp}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Tarif Tindakan Dokter
+                            </label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                value={data.tarif_tindakandr}
+                                onChange={(e) => setData('tarif_tindakandr', parseFloat(e.target.value) || 0)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            {errors.tarif_tindakandr && <p className="text-red-500 text-xs mt-1">{errors.tarif_tindakandr}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Tarif Tindakan Perawat
+                            </label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                value={data.tarif_tindakanpr}
+                                onChange={(e) => setData('tarif_tindakanpr', parseFloat(e.target.value) || 0)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            {errors.tarif_tindakanpr && <p className="text-red-500 text-xs mt-1">{errors.tarif_tindakanpr}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                KSO
+                            </label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                value={data.kso}
+                                onChange={(e) => setData('kso', parseFloat(e.target.value) || 0)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            {errors.kso && <p className="text-red-500 text-xs mt-1">{errors.kso}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Menejemen
+                            </label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                value={data.menejemen}
+                                onChange={(e) => setData('menejemen', parseFloat(e.target.value) || 0)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            {errors.menejemen && <p className="text-red-500 text-xs mt-1">{errors.menejemen}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Status
+                            </label>
+                            <select
+                                value={data.status}
+                                onChange={(e) => setData('status', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="1">Aktif</option>
+                                <option value="0">Non-Aktif</option>
+                            </select>
+                            {errors.status && <p className="text-red-500 text-xs mt-1">{errors.status}</p>}
+                        </div>
+                    </div>
+
+                    {/* Total Calculation Display */}
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                        <h4 className="font-medium text-gray-700 mb-2">Perhitungan Total Tarif:</h4>
+                        <div className="grid grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <span className="text-gray-600">Total Dokter:</span>
+                                <p className="font-medium">Rp {totalDr.toLocaleString('id-ID')}</p>
+                            </div>
+                            <div>
+                                <span className="text-gray-600">Total Perawat:</span>
+                                <p className="font-medium">Rp {totalPr.toLocaleString('id-ID')}</p>
+                            </div>
+                            <div>
+                                <span className="text-gray-600">Total Dokter + Perawat:</span>
+                                <p className="font-medium">Rp {totalDrPr.toLocaleString('id-ID')}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end space-x-2 pt-4">
+                        <button
+                            type="button"
+                            onClick={handleClose}
+                            className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={processing}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                        >
+                            {processing ? 'Menyimpan...' : 'Simpan'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+export default function Index({ title, data, category, search, filters, polikliniks = [], penjaabs = [], kategoris = [] }) {
     const [searchTerm, setSearchTerm] = useState(search || '');
     const [activeTab, setActiveTab] = useState(category || 'rawat-jalan');
+    const [selectedFilter, setSelectedFilter] = useState('semua');
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -39,6 +371,26 @@ export default function Index({ title, data, category, search, filters }) {
         router.get(route('daftar-tarif.index'), {
             search: searchTerm,
             category: newTab,
+            per_page: filters?.per_page || 10
+        }, {
+            preserveState: true,
+            replace: true
+        });
+    };
+
+    // Handler untuk button + Tarif
+    const handleAddTarif = () => {
+        setIsModalOpen(true);
+    };
+
+    // Handler untuk filter
+    const handleFilterChange = (filterValue) => {
+        setSelectedFilter(filterValue);
+        // Implementasi filter logic di sini
+        router.get(route('daftar-tarif.index'), {
+            search: searchTerm,
+            category: activeTab,
+            filter: filterValue,
             per_page: filters?.per_page || 10
         }, {
             preserveState: true,
@@ -447,7 +799,7 @@ export default function Index({ title, data, category, search, filters }) {
                         </form>
                     </div>
 
-                    {/* Tabs */}
+                    {/* Tabs Navigation */}
                     <div className="border-b border-gray-200">
                         <nav className="-mb-px flex space-x-8 px-6">
                             {tabs.map((tab) => (
@@ -466,6 +818,89 @@ export default function Index({ title, data, category, search, filters }) {
                         </nav>
                     </div>
 
+                    {/* Filter dan Button Section - di bawah tabs */}
+                    <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                        <div className="flex justify-between items-center">
+                            {/* Filter Section */}
+                            <div className="flex items-center space-x-4">
+                                <span className="text-sm font-medium text-gray-700">Filter:</span>
+                                <select
+                                    value={selectedFilter}
+                                    onChange={(e) => handleFilterChange(e.target.value)}
+                                    className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                >
+                                    <option value="semua">Semua</option>
+                                    <option value="aktif">Aktif</option>
+                                    <option value="nonaktif">Non-Aktif</option>
+                                    {activeTab === 'rawat-jalan' && (
+                                        <>
+                                            <option value="poli-umum">Poli Umum</option>
+                                            <option value="poli-spesialis">Poli Spesialis</option>
+                                        </>
+                                    )}
+                                </select>
+                                
+                                {/* Quick Filter Buttons */}
+                                <div className="flex space-x-2">
+                                    <button
+                                        onClick={() => handleFilterChange('tarif-tinggi')}
+                                        className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
+                                            selectedFilter === 'tarif-tinggi'
+                                                ? 'bg-blue-100 text-blue-700 border-blue-300'
+                                                : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        Tarif Tinggi
+                                    </button>
+                                    <button
+                                        onClick={() => handleFilterChange('tarif-rendah')}
+                                        className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
+                                            selectedFilter === 'tarif-rendah'
+                                                ? 'bg-blue-100 text-blue-700 border-blue-300'
+                                                : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        Tarif Rendah
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex items-center space-x-3">
+                                {/* Export Button */}
+                                <button className="inline-flex items-center px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                    <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    Export
+                                </button>
+
+                                {/* Button + Tarif - hanya tampil di tab Rawat Jalan */}
+                                {activeTab === 'rawat-jalan' && (
+                                    <button
+                                        onClick={handleAddTarif}
+                                        className="inline-flex items-center px-4 py-1.5 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+                                    >
+                                        <svg 
+                                            className="w-4 h-4 mr-1.5" 
+                                            fill="none" 
+                                            stroke="currentColor" 
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path 
+                                                strokeLinecap="round" 
+                                                strokeLinejoin="round" 
+                                                strokeWidth={2} 
+                                                d="M12 4v16m8-8H4" 
+                                            />
+                                        </svg>
+                                        Tambah Tarif
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Tab Content */}
                     <div className="p-6">
                         {tabs.find(tab => tab.id === activeTab)?.render()}
@@ -475,6 +910,16 @@ export default function Index({ title, data, category, search, filters }) {
                     {renderPagination()}
                 </div>
             </div>
+
+            {/* Add Tarif Modal */}
+            <AddTarifModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                category={activeTab}
+                polikliniks={polikliniks}
+                penjaabs={penjaabs}
+                kategoris={kategoris}
+            />
         </AppLayout>
     );
 }
