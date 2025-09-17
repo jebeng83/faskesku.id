@@ -1,5 +1,49 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
+* @see \App\Http\Controllers\DaftarTarifController::generateKode
+* @see app/Http/Controllers/DaftarTarifController.php:331
+* @route '/daftar-tarif/generate-kode'
+*/
+export const generateKode = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: generateKode.url(options),
+    method: 'get',
+})
+
+generateKode.definition = {
+    methods: ["get","head"],
+    url: '/daftar-tarif/generate-kode',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\DaftarTarifController::generateKode
+* @see app/Http/Controllers/DaftarTarifController.php:331
+* @route '/daftar-tarif/generate-kode'
+*/
+generateKode.url = (options?: RouteQueryOptions) => {
+    return generateKode.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\DaftarTarifController::generateKode
+* @see app/Http/Controllers/DaftarTarifController.php:331
+* @route '/daftar-tarif/generate-kode'
+*/
+generateKode.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: generateKode.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\DaftarTarifController::generateKode
+* @see app/Http/Controllers/DaftarTarifController.php:331
+* @route '/daftar-tarif/generate-kode'
+*/
+generateKode.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: generateKode.url(options),
+    method: 'head',
+})
+
+/**
 * @see \App\Http\Controllers\DaftarTarifController::index
 * @see app/Http/Controllers/DaftarTarifController.php:18
 * @route '/daftar-tarif'
@@ -360,6 +404,7 @@ destroy.delete = (args: { daftar_tarif: string | number } | [daftar_tarif: strin
 })
 
 const daftarTarif = {
+    generateKode: Object.assign(generateKode, generateKode),
     index: Object.assign(index, index),
     create: Object.assign(create, create),
     store: Object.assign(store, store),

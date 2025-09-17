@@ -212,11 +212,23 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                                 Material
                             </label>
                             <input
-                                type="number"
-                                step="0.01"
-                                value={data.material}
-                                onChange={(e) => setData('material', parseFloat(e.target.value) || 0)}
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*\.?[0-9]*"
+                                placeholder="0"
+                                value={data.material || ''}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    // Hanya izinkan angka dan titik desimal
+                                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                        setData('material', value === '' ? 0 : parseFloat(value) || 0);
+                                    }
+                                }}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                style={{ 
+                                    MozAppearance: 'textfield',
+                                    WebkitAppearance: 'none'
+                                }}
                             />
                             {errors.material && <p className="text-red-500 text-xs mt-1">{errors.material}</p>}
                         </div>
@@ -226,11 +238,22 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                                 BHP
                             </label>
                             <input
-                                type="number"
-                                step="0.01"
-                                value={data.bhp}
-                                onChange={(e) => setData('bhp', parseFloat(e.target.value) || 0)}
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*\.?[0-9]*"
+                                placeholder="0"
+                                value={data.bhp || ''}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                        setData('bhp', value === '' ? 0 : parseFloat(value) || 0);
+                                    }
+                                }}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                style={{ 
+                                    MozAppearance: 'textfield',
+                                    WebkitAppearance: 'none'
+                                }}
                             />
                             {errors.bhp && <p className="text-red-500 text-xs mt-1">{errors.bhp}</p>}
                         </div>
@@ -240,11 +263,22 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                                 Tarif Tindakan Dokter
                             </label>
                             <input
-                                type="number"
-                                step="0.01"
-                                value={data.tarif_tindakandr}
-                                onChange={(e) => setData('tarif_tindakandr', parseFloat(e.target.value) || 0)}
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*\.?[0-9]*"
+                                placeholder="0"
+                                value={data.tarif_tindakandr || ''}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                        setData('tarif_tindakandr', value === '' ? 0 : parseFloat(value) || 0);
+                                    }
+                                }}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                style={{ 
+                                    MozAppearance: 'textfield',
+                                    WebkitAppearance: 'none'
+                                }}
                             />
                             {errors.tarif_tindakandr && <p className="text-red-500 text-xs mt-1">{errors.tarif_tindakandr}</p>}
                         </div>
@@ -254,11 +288,22 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                                 Tarif Tindakan Perawat
                             </label>
                             <input
-                                type="number"
-                                step="0.01"
-                                value={data.tarif_tindakanpr}
-                                onChange={(e) => setData('tarif_tindakanpr', parseFloat(e.target.value) || 0)}
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*\.?[0-9]*"
+                                placeholder="0"
+                                value={data.tarif_tindakanpr || ''}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                        setData('tarif_tindakanpr', value === '' ? 0 : parseFloat(value) || 0);
+                                    }
+                                }}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                style={{ 
+                                    MozAppearance: 'textfield',
+                                    WebkitAppearance: 'none'
+                                }}
                             />
                             {errors.tarif_tindakanpr && <p className="text-red-500 text-xs mt-1">{errors.tarif_tindakanpr}</p>}
                         </div>
@@ -268,11 +313,22 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                                 KSO
                             </label>
                             <input
-                                type="number"
-                                step="0.01"
-                                value={data.kso}
-                                onChange={(e) => setData('kso', parseFloat(e.target.value) || 0)}
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*\.?[0-9]*"
+                                placeholder="0"
+                                value={data.kso || ''}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                        setData('kso', value === '' ? 0 : parseFloat(value) || 0);
+                                    }
+                                }}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                style={{ 
+                                    MozAppearance: 'textfield',
+                                    WebkitAppearance: 'none'
+                                }}
                             />
                             {errors.kso && <p className="text-red-500 text-xs mt-1">{errors.kso}</p>}
                         </div>
@@ -282,11 +338,22 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                                 Menejemen
                             </label>
                             <input
-                                type="number"
-                                step="0.01"
-                                value={data.menejemen}
-                                onChange={(e) => setData('menejemen', parseFloat(e.target.value) || 0)}
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*\.?[0-9]*"
+                                placeholder="0"
+                                value={data.menejemen || ''}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                        setData('menejemen', value === '' ? 0 : parseFloat(value) || 0);
+                                    }
+                                }}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                style={{ 
+                                    MozAppearance: 'textfield',
+                                    WebkitAppearance: 'none'
+                                }}
                             />
                             {errors.menejemen && <p className="text-red-500 text-xs mt-1">{errors.menejemen}</p>}
                         </div>
