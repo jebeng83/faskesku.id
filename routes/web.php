@@ -104,5 +104,5 @@ Route::middleware('auth')->group(function () {
     Route::resource('rehabilitasi-medik', RehabilitasiMedikController::class);
 
     // Daftar Tarif routes
-    Route::get('daftar-tarif', [DaftarTarifController::class, 'index'])->name('daftar-tarif.index');
+    Route::resource('daftar-tarif', DaftarTarifController::class);
 });
