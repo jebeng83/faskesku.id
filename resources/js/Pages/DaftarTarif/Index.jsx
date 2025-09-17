@@ -306,7 +306,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Kategori Field - Move to top for better UX */}
-                        <div>
+                        <div className="space-y-2">
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Kategori Perawatan *
                             </label>
@@ -729,19 +729,28 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
 export default function Index({ title, data, category, search, filters, polikliniks = [], penjaabs = [], kategoris = [] }) {
     const [searchTerm, setSearchTerm] = useState(search || '');
     const [activeTab, setActiveTab] = useState(category || 'rawat-jalan');
-    const [selectedFilter, setSelectedFilter] = useState('semua');
+    const [selectedFilter, setSelectedFilter] = useState(filters?.status || 'all');
+    const [selectedPoliklinik, setSelectedPoliklinik] = useState(filters?.poliklinik || 'all');
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const handleSearch = (e) => {
-        e.preventDefault();
-        router.get(route('daftar-tarif.index'), {
-            search: searchTerm,
-            category: activeTab,
-            per_page: filters?.per_page || 10
-        }, {
-            preserveState: true,
-            replace: true
-        });
+    // Update search functionality to work without submit button
+    const handleSearchChange = (e) => {
+        const value = e.target.value;
+        setSearchTerm(value);
+        
+        // Auto search with debounce
+        clearTimeout(window.searchTimeout);
+        window.searchTimeout = setTimeout(() => {
+            router.get(route('daftar-tarif.index'), {
+                search: value,
+                category: activeTab,
+                status: selectedFilter !== 'all' ? selectedFilter : undefined,
+                poliklinik: selectedPoliklinik !== 'all' ? selectedPoliklinik : undefined,
+            }, {
+                preserveState: true,
+                preserveScroll: true,
+            });
+        }, 500);
     };
 
     const handleTabChange = (newTab) => {
@@ -749,10 +758,26 @@ export default function Index({ title, data, category, search, filters, poliklin
         router.get(route('daftar-tarif.index'), {
             search: searchTerm,
             category: newTab,
-            per_page: filters?.per_page || 10
+            status: selectedFilter !== 'all' ? selectedFilter : undefined,
+            poliklinik: selectedPoliklinik !== 'all' ? selectedPoliklinik : undefined,
         }, {
             preserveState: true,
             replace: true
+        });
+    };
+
+    const handlePoliklinikChange = (e) => {
+        const value = e.target.value;
+        setSelectedPoliklinik(value);
+        
+        router.get(route('daftar-tarif.index'), {
+            search: searchTerm,
+            category: activeTab,
+            status: selectedFilter !== 'all' ? selectedFilter : undefined,
+            poliklinik: value !== 'all' ? value : undefined,
+        }, {
+            preserveState: true,
+            preserveScroll: true,
         });
     };
 
@@ -762,18 +787,24 @@ export default function Index({ title, data, category, search, filters, poliklin
     };
 
     // Handler untuk filter
-    const handleFilterChange = (filterValue) => {
-        setSelectedFilter(filterValue);
-        // Implementasi filter logic di sini
+    const handleFilterChange = (e) => {
+        const value = e.target.value;
+        setSelectedFilter(value);
+        
         router.get(route('daftar-tarif.index'), {
             search: searchTerm,
             category: activeTab,
-            filter: filterValue,
-            per_page: filters?.per_page || 10
+            status: value !== 'all' ? value : undefined,
+            poliklinik: selectedPoliklinik !== 'all' ? selectedPoliklinik : undefined,
         }, {
             preserveState: true,
-            replace: true
+            preserveScroll: true,
         });
+    };
+
+    const handleExport = () => {
+        // Export functionality
+        console.log('Export data');
     };
 
     const formatCurrency = (amount) => {
@@ -1139,11 +1170,11 @@ export default function Index({ title, data, category, search, filters, poliklin
     };
 
     const tabs = [
-        { id: 'rawat-jalan', label: 'Rawat Jalan', render: renderRawatJalanTable },
-        { id: 'rawat-inap', label: 'Rawat Inap', render: renderRawatInapTable },
-        { id: 'laboratorium', label: 'Laboratorium', render: renderLaboratoriumTable },
-        { id: 'radiologi', label: 'Radiologi', render: renderRadiologiTable },
-        { id: 'kamar', label: 'Kamar', render: renderKamarTable }
+        { id: 'rawat-jalan', name: 'Rawat Jalan', render: renderRawatJalanTable },
+        { id: 'rawat-inap', name: 'Rawat Inap', render: renderRawatInapTable },
+        { id: 'laboratorium', name: 'Laboratorium', render: renderLaboratoriumTable },
+        { id: 'radiologi', name: 'Radiologi', render: renderRadiologiTable },
+        { id: 'kamar', name: 'Kamar', render: renderKamarTable }
     ];
 
     return (
@@ -1152,140 +1183,146 @@ export default function Index({ title, data, category, search, filters, poliklin
             
             <div className="space-y-6 -mt-6 -mx-6 p-6">
                 <div className="bg-white rounded-lg shadow">
-                    <div className="px-6 py-4 border-b border-gray-200">
-                        <h2 className="text-2xl font-bold text-gray-900">
+                    <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
                             {title}
                         </h2>
-                        
-                        {/* Search Form */}
-                        <form onSubmit={handleSearch} className="mt-4">
-                            <div className="flex gap-4">
+                    </div>
+
+                    {/* Tabs Navigation - Responsive */}
+                    <div className="border-b border-gray-200">
+                        {/* Mobile Dropdown for Tabs */}
+                        <div className="block sm:hidden px-4 py-3">
+                            <select
+                                value={activeTab}
+                                onChange={(e) => handleTabChange(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                                {tabs.map((tab) => (
+                                    <option key={tab.id} value={tab.id}>
+                                        {tab.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Desktop Tabs Navigation */}
+                        <div className="hidden sm:block">
+                            <nav className="-mb-px flex space-x-4 lg:space-x-8 px-4 sm:px-6 overflow-x-auto scrollbar-hide">
+                                {tabs.map((tab) => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => handleTabChange(tab.id)}
+                                        className={`py-4 px-2 lg:px-1 border-b-2 font-medium text-sm whitespace-nowrap flex-shrink-0 transition-colors duration-200 ${
+                                            activeTab === tab.id
+                                                ? 'border-blue-500 text-blue-600'
+                                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                        }`}
+                                    >
+                                        {tab.name}
+                                    </button>
+                                ))}
+                            </nav>
+                        </div>
+                    </div>
+
+                    {/* Filter Section - Enhanced Responsiveness */}
+                    <div className="px-4 sm:px-6 py-4 bg-gray-50 border-b border-gray-200">
+                        <div className="space-y-4 lg:space-y-0 lg:flex lg:items-center lg:justify-between">
+                            {/* Search Input */}
+                            <div className="w-full lg:flex-1 lg:max-w-md">
                                 <input
                                     type="text"
                                     value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onChange={handleSearchChange}
                                     placeholder="Cari berdasarkan kode atau nama..."
-                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                 />
-                                <button
-                                    type="submit"
-                                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                                >
-                                    Cari
-                                </button>
                             </div>
-                        </form>
-                    </div>
 
-                    {/* Tabs Navigation */}
-                    <div className="border-b border-gray-200">
-                        <nav className="-mb-px flex space-x-8 px-6">
-                            {tabs.map((tab) => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => handleTabChange(tab.id)}
-                                    className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                                        activeTab === tab.id
-                                            ? 'border-blue-500 text-blue-600'
-                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                    }`}
-                                >
-                                    {tab.label}
-                                </button>
-                            ))}
-                        </nav>
-                    </div>
+                            {/* Filters and Actions Container */}
+                            <div className="flex flex-col sm:flex-row gap-3 lg:gap-4">
+                                {/* Filters */}
+                                <div className="flex flex-col xs:flex-row gap-2 sm:gap-3">
+                                    {/* Status Filter */}
+                                    <select
+                                        value={selectedFilter}
+                                        onChange={handleFilterChange}
+                                        className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-0 flex-1 xs:flex-none xs:w-auto"
+                                    >
+                                        <option value="all">Semua Status</option>
+                                        <option value="1">Aktif</option>
+                                        <option value="0">Tidak Aktif</option>
+                                    </select>
 
-                    {/* Filter dan Button Section - di bawah tabs */}
-                    <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                        <div className="flex justify-between items-center">
-                            {/* Filter Section */}
-                            <div className="flex items-center space-x-4">
-                                <span className="text-sm font-medium text-gray-700">Filter:</span>
-                                <select
-                                    value={selectedFilter}
-                                    onChange={(e) => handleFilterChange(e.target.value)}
-                                    className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                >
-                                    <option value="semua">Semua</option>
-                                    <option value="aktif">Aktif</option>
-                                    <option value="nonaktif">Non-Aktif</option>
-                                    {activeTab === 'rawat-jalan' && (
-                                        <>
-                                            <option value="poli-umum">Poli Umum</option>
-                                            <option value="poli-spesialis">Poli Spesialis</option>
-                                        </>
-                                    )}
-                                </select>
-                                
-                                {/* Quick Filter Buttons */}
-                                <div className="flex space-x-2">
-                                    <button
-                                        onClick={() => handleFilterChange('tarif-tinggi')}
-                                        className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
-                                            selectedFilter === 'tarif-tinggi'
-                                                ? 'bg-blue-100 text-blue-700 border-blue-300'
-                                                : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
-                                        }`}
+                                    {/* Poliklinik Filter */}
+                                    <select
+                                        value={selectedPoliklinik}
+                                        onChange={handlePoliklinikChange}
+                                        className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-0 flex-1 xs:flex-none xs:w-auto"
                                     >
-                                        Tarif Tinggi
-                                    </button>
-                                    <button
-                                        onClick={() => handleFilterChange('tarif-rendah')}
-                                        className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
-                                            selectedFilter === 'tarif-rendah'
-                                                ? 'bg-blue-100 text-blue-700 border-blue-300'
-                                                : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
-                                        }`}
-                                    >
-                                        Tarif Rendah
-                                    </button>
+                                        <option value="all">Semua Poliklinik</option>
+                                        {polikliniks.map((poli) => (
+                                            <option key={poli.kd_poli} value={poli.kd_poli}>
+                                                {poli.nm_poli}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
-                            </div>
 
-                            {/* Action Buttons */}
-                            <div className="flex items-center space-x-3">
-                                {/* Export Button */}
-                                <button className="inline-flex items-center px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                                    <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                    Export
-                                </button>
-
-                                {/* Button + Tarif - hanya tampil di tab Rawat Jalan */}
-                                {activeTab === 'rawat-jalan' && (
+                                {/* Action Buttons */}
+                                <div className="flex flex-col xs:flex-row gap-2">
+                                    {/* Export Button */}
                                     <button
-                                        onClick={handleAddTarif}
-                                        className="inline-flex items-center px-4 py-1.5 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+                                        onClick={handleExport}
+                                        className="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200 whitespace-nowrap"
                                     >
-                                        <svg 
-                                            className="w-4 h-4 mr-1.5" 
-                                            fill="none" 
-                                            stroke="currentColor" 
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path 
-                                                strokeLinecap="round" 
-                                                strokeLinejoin="round" 
-                                                strokeWidth={2} 
-                                                d="M12 4v16m8-8H4" 
-                                            />
+                                        <svg className="w-4 h-4 mr-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>
-                                        Tambah Tarif
+                                        <span className="hidden xs:inline">Export</span>
+                                        <span className="xs:hidden">Export</span>
                                     </button>
-                                )}
+
+                                    {/* Button + Tarif - hanya tampil di tab Rawat Jalan */}
+                                    {activeTab === 'rawat-jalan' && (
+                                        <button
+                                            onClick={handleAddTarif}
+                                            className="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200 whitespace-nowrap"
+                                        >
+                                            <svg 
+                                                className="w-4 h-4 mr-1.5 flex-shrink-0" 
+                                                fill="none" 
+                                                stroke="currentColor" 
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path 
+                                                    strokeLinecap="round" 
+                                                    strokeLinejoin="round" 
+                                                    strokeWidth={2} 
+                                                    d="M12 4v16m8-8H4" 
+                                                />
+                                            </svg>
+                                            <span className="hidden sm:inline">Tambah Tarif</span>
+                                            <span className="sm:hidden">Tambah</span>
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Tab Content */}
-                    <div className="p-6">
-                        {tabs.find(tab => tab.id === activeTab)?.render()}
+                    {/* Tab Content - Responsive */}
+                    <div className="p-4 sm:p-6">
+                        <div className="overflow-x-auto">
+                            {tabs.find(tab => tab.id === activeTab)?.render()}
+                        </div>
                     </div>
 
-                    {/* Pagination */}
-                    {renderPagination()}
+                    {/* Pagination - Responsive */}
+                    <div className="px-4 sm:px-6">
+                        {renderPagination()}
+                    </div>
                 </div>
             </div>
 
