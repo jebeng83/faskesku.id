@@ -20,9 +20,10 @@ class DaftarTarifController extends Controller
         $search = $request->get('search', '');
         $category = $request->get('category', 'rawat-jalan');
         $perPage = $request->get('per_page', 10);
-
+        $poliklinikFilter = $request->get('poliklinik'); // Add poliklinik filter parameter
+    
         $data = [];
-
+    
         switch ($category) {
             case 'rawat-jalan':
                 $query = JnsPerawatan::with(['poliklinik', 'penjab'])
@@ -32,9 +33,14 @@ class DaftarTarifController extends Controller
                     $query->search($search);
                 }
                 
+                // Add poliklinik filter for rawat-jalan
+                if ($poliklinikFilter) {
+                    $query->where('kd_poli', $poliklinikFilter);
+                }
+                
                 $data = $query->paginate($perPage);
                 break;
-
+    
             case 'rawat-inap':
                 $query = JnsPerawatanInap::with(['bangsal', 'penjab'])
                     ->aktif();
@@ -45,7 +51,7 @@ class DaftarTarifController extends Controller
                 
                 $data = $query->paginate($perPage);
                 break;
-
+    
             case 'laboratorium':
                 $query = JnsPerawatanLab::with('penjab')
                     ->aktif();
@@ -56,7 +62,7 @@ class DaftarTarifController extends Controller
                 
                 $data = $query->paginate($perPage);
                 break;
-
+    
             case 'radiologi':
                 $query = JnsPerawatanRadiologi::with('penjab')
                     ->aktif();
@@ -67,7 +73,7 @@ class DaftarTarifController extends Controller
                 
                 $data = $query->paginate($perPage);
                 break;
-
+    
             case 'kamar':
                 // Untuk kamar, kita bisa menggunakan data dari poliklinik atau bangsal
                 $query = Poliklinik::aktif();
@@ -79,15 +85,20 @@ class DaftarTarifController extends Controller
                     });
                 }
                 
+                // Add poliklinik filter for kamar
+                if ($poliklinikFilter) {
+                    $query->where('kd_poli', $poliklinikFilter);
+                }
+                
                 $data = $query->paginate($perPage);
                 break;
         }
-
+    
         // Get data untuk modal form
         $polikliniks = Poliklinik::where('status', '1')->get();
         $penjaabs = Penjab::where('status', '1')->get();
         $kategoris = KategoriPerawatan::all();
-
+    
         return Inertia::render('DaftarTarif/Index', [
             'title' => 'Daftar Tarif',
             'data' => $data,
@@ -96,7 +107,8 @@ class DaftarTarifController extends Controller
             'filters' => [
                 'search' => $search,
                 'category' => $category,
-                'per_page' => $perPage
+                'per_page' => $perPage,
+                'poliklinik' => $poliklinikFilter // Pass poliklinik filter back to frontend
             ],
             'polikliniks' => $polikliniks,
             'penjaabs' => $penjaabs,
