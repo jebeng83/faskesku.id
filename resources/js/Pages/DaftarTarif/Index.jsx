@@ -88,9 +88,109 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
 
     const { totalDr, totalPr, totalDrPr } = calculateTotal();
 
+    // Function to validate form before submission
+    const validateForm = () => {
+        const requiredFields = {
+            'kd_jenis_prw': 'Kode Jenis Perawatan',
+            'nm_perawatan': 'Nama Perawatan',
+            'kd_pj': 'Asuransi / Penanggung Jawab',
+            'kd_poli': 'Klinik/RS',
+            'status': 'Status'
+        };
+        
+        const errors = {};
+        
+        Object.entries(requiredFields).forEach(([field, label]) => {
+            if (!data[field] || data[field].toString().trim() === '') {
+                errors[field] = `${label} harus diisi`;
+            }
+        });
+        
+        // Validate kd_jenis_prw format (should be alphanumeric, max 15 chars)
+        if (data.kd_jenis_prw && data.kd_jenis_prw.length > 15) {
+            errors.kd_jenis_prw = 'Kode Jenis Perawatan maksimal 15 karakter';
+        }
+        
+        // Validate nm_perawatan length (max 80 chars)
+        if (data.nm_perawatan && data.nm_perawatan.length > 80) {
+            errors.nm_perawatan = 'Nama Perawatan maksimal 80 karakter';
+        }
+        
+        // Validate numeric fields (should be >= 0)
+        const numericFields = ['material', 'bhp', 'tarif_tindakandr', 'tarif_tindakanpr', 'kso', 'menejemen'];
+        numericFields.forEach(field => {
+            const value = parseFloat(data[field]) || 0;
+            if (value < 0) {
+                errors[field] = `${field} tidak boleh negatif`;
+            }
+        });
+        
+        return errors;
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
+        
+        // Client-side validation
+        const validationErrors = validateForm();
+        if (Object.keys(validationErrors).length > 0) {
+            // Show validation error notification
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 z-50 bg-orange-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 max-w-md';
+            
+            const errorList = Object.entries(validationErrors).map(([field, message]) => {
+                return `<li>${message}</li>`;
+            }).join('');
+            
+            notification.innerHTML = `
+                <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+                <div class="flex-1">
+                    <div class="font-semibold">Periksa Data Input!</div>
+                    <div class="text-sm opacity-90 mt-1">
+                        <ul class="list-disc list-inside space-y-1">
+                            ${errorList}
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 6000);
+            
+            return; // Stop submission
+        }
+        
+        // Debug: Log data yang akan dikirim
+        console.log('Data yang akan dikirim:', data);
+        console.log('Errors saat ini:', errors);
+        
+        // Ensure numeric fields are properly formatted
+        const formData = {
+            ...data,
+            material: parseFloat(data.material) || 0,
+            bhp: parseFloat(data.bhp) || 0,
+            tarif_tindakandr: parseFloat(data.tarif_tindakandr) || 0,
+            tarif_tindakanpr: parseFloat(data.tarif_tindakanpr) || 0,
+            kso: parseFloat(data.kso) || 0,
+            menejemen: parseFloat(data.menejemen) || 0,
+            category: category || 'rawat-jalan'
+        };
+        
+        console.log('Formatted data:', formData);
+        
         post(route('daftar-tarif.store'), {
+            data: formData,
             onSuccess: () => {
                 // Show success notification
                 const notification = document.createElement('div');
@@ -122,22 +222,52 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                 onClose();
             },
             onError: (errors) => {
-                // Show error notification
+                // Debug: Log errors yang diterima
+                console.log('Validation errors:', errors);
+                
+                // Show error notification with specific error details
                 const notification = document.createElement('div');
-                notification.className = 'fixed top-4 right-4 z-50 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3';
+                notification.className = 'fixed top-4 right-4 z-50 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 max-w-md';
+                
+                // Create error list
+                const errorList = Object.entries(errors).map(([field, messages]) => {
+                    const fieldNames = {
+                        'kd_jenis_prw': 'Kode Jenis Perawatan',
+                        'nm_perawatan': 'Nama Perawatan',
+                        'kd_kategori': 'Kategori',
+                        'kd_pj': 'Asuransi / Penanggung Jawab',
+                        'kd_poli': 'Klinik/RS',
+                        'material': 'Klinik/RS',
+                        'bhp': 'BHP',
+                        'tarif_tindakandr': 'Didapat Dokter',
+                        'tarif_tindakanpr': 'Didapat Petugas/Perawat',
+                        'kso': 'KSO',
+                        'menejemen': 'Menejemen',
+                        'status': 'Status'
+                    };
+                    
+                    const fieldName = fieldNames[field] || field;
+                    const messageArray = Array.isArray(messages) ? messages : [messages];
+                    return `<li><strong>${fieldName}:</strong> ${messageArray.join(', ')}</li>`;
+                }).join('');
+                
                 notification.innerHTML = `
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
-                    <div>
+                    <div class="flex-1">
                         <div class="font-semibold">Gagal Menyimpan Data!</div>
-                        <div class="text-sm opacity-90">Periksa kembali data yang diinput</div>
+                        <div class="text-sm opacity-90 mt-1">
+                            <ul class="list-disc list-inside space-y-1">
+                                ${errorList}
+                            </ul>
+                        </div>
                     </div>
                 `;
                 
                 document.body.appendChild(notification);
                 
-                // Auto remove notification after 5 seconds
+                // Auto remove notification after 8 seconds (longer for error details)
                 setTimeout(() => {
                     notification.style.transform = 'translateX(100%)';
                     notification.style.opacity = '0';
@@ -146,7 +276,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                             notification.parentNode.removeChild(notification);
                         }
                     }, 300);
-                }, 5000);
+                }, 8000);
             }
         });
     };
@@ -196,47 +326,58 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                             {errors.kd_kategori && <p className="text-red-500 text-xs mt-1">{errors.kd_kategori}</p>}
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Kode Jenis Perawatan *
+                        {/* Kode Jenis Perawatan - REQUIRED */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                                Kode Jenis Perawatan <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
                                 value={data.kd_jenis_prw}
-                                onChange={(e) => setData('kd_jenis_prw', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+                                onChange={(e) => setData('kd_jenis_prw', e.target.value.toUpperCase())}
+                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                                    errors.kd_jenis_prw ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                                }`}
+                                placeholder="Masukkan kode jenis perawatan"
+                                maxLength="15"
                                 required
-                                readOnly
-                                placeholder="Otomatis terisi saat kategori dipilih"
                             />
                             {errors.kd_jenis_prw && <p className="text-red-500 text-xs mt-1">{errors.kd_jenis_prw}</p>}
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Nama Perawatan *
+                        {/* Nama Perawatan - REQUIRED */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                                Nama Perawatan <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
                                 value={data.nm_perawatan}
                                 onChange={(e) => setData('nm_perawatan', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                                    errors.nm_perawatan ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                                }`}
+                                placeholder="Masukkan nama perawatan"
+                                maxLength="80"
                                 required
                             />
                             {errors.nm_perawatan && <p className="text-red-500 text-xs mt-1">{errors.nm_perawatan}</p>}
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Poliklinik *
+                        {/* Klinik/RS - REQUIRED */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                                Klinik/RS <span className="text-red-500">*</span>
                             </label>
                             <select
                                 value={data.kd_poli}
                                 onChange={(e) => setData('kd_poli', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                                    errors.kd_poli ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                                }`}
                                 required
                             >
-                                <option value="">Pilih Poliklinik</option>
+                                <option value="">Pilih Klinik/RS</option>
                                 {polikliniks.map((poli) => (
                                     <option key={poli.kd_poli} value={poli.kd_poli}>
                                         {poli.nm_poli}
@@ -246,17 +387,20 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                             {errors.kd_poli && <p className="text-red-500 text-xs mt-1">{errors.kd_poli}</p>}
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Penjab *
+                        {/* Asuransi / Penanggung Jawab - REQUIRED */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                                Asuransi / Penanggung Jawab <span className="text-red-500">*</span>
                             </label>
                             <select
                                 value={data.kd_pj}
                                 onChange={(e) => setData('kd_pj', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                                    errors.kd_pj ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                                }`}
                                 required
                             >
-                                <option value="">Pilih Penjab</option>
+                                <option value="">Pilih Asuransi / Penanggung Jawab</option>
                                 {penjaabs.map((penjab) => (
                                     <option key={penjab.kd_pj} value={penjab.kd_pj}>
                                         {penjab.png_jawab}
@@ -319,7 +463,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Tarif Tindakan Dokter
+                                Didapat Dokter
                             </label>
                             <input
                                 type="text"
@@ -344,7 +488,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Tarif Tindakan Perawat
+                                Didapat Perawat / Petugas
                             </label>
                             <input
                                 type="text"
@@ -417,17 +561,21 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                             {errors.menejemen && <p className="text-red-500 text-xs mt-1">{errors.menejemen}</p>}
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Status
+                        {/* Status - REQUIRED */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                                Status <span className="text-red-500">*</span>
                             </label>
                             <select
                                 value={data.status}
                                 onChange={(e) => setData('status', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                                    errors.status ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                                }`}
+                                required
                             >
                                 <option value="1">Aktif</option>
-                                <option value="0">Non-Aktif</option>
+                                <option value="0">Tidak Aktif</option>
                             </select>
                             {errors.status && <p className="text-red-500 text-xs mt-1">{errors.status}</p>}
                         </div>
@@ -460,7 +608,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                                             Rp {data.show_total_dokter ? totalDr.toLocaleString('id-ID') : '0'}
                                         </div>
                                         <div className="text-xs text-gray-500 mt-1">
-                                            Material + BHP + Tarif Dokter + KSO + Menejemen
+                                            Klinik/RS + BHP + Tarif Tindakan Dokter + KSO + Menejemen
                                         </div>
                                     </div>
                                     <div className="ml-3">
@@ -526,7 +674,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                                             Rp {data.show_total_dokter_perawat ? totalDrPr.toLocaleString('id-ID') : '0'}
                                         </div>
                                         <div className="text-xs text-gray-500 mt-1">
-                                            Material + BHP + Kedua Tarif + KSO + Menejemen
+                                            Klinik/RS + BHP + Kedua Didapat + KSO + Menejemen
                                         </div>
                                     </div>
                                     <div className="ml-3">
