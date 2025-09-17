@@ -69,16 +69,31 @@ export default function Index({ title, data, category, search, filters }) {
                             Poliklinik
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Tarif Dokter
+                            Material
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Tarif Perawat
+                            BHP
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Total Tarif
+                            Tarif Tindakan Dr
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
+                            Tarif Tindakan Pr
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            KSO
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Menejemen
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Total Byrdr
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Total Byrpr
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Total Byrdrpr
                         </th>
                     </tr>
                 </thead>
@@ -95,6 +110,24 @@ export default function Index({ title, data, category, search, filters }) {
                                 {item.poliklinik?.nm_poli || '-'}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {formatCurrency(item.material)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {formatCurrency(item.bhp)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {formatCurrency(item.tarif_tindakandr)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {formatCurrency(item.tarif_tindakanpr)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {formatCurrency(item.kso)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {formatCurrency(item.menejemen)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {formatCurrency(item.total_byrdr)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -102,11 +135,6 @@ export default function Index({ title, data, category, search, filters }) {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                                 {formatCurrency(item.total_byrdrpr)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                                <Badge variant={item.status === '1' ? 'default' : 'secondary'}>
-                                    {item.status === '1' ? 'Aktif' : 'Tidak Aktif'}
-                                </Badge>
                             </td>
                         </tr>
                     ))}
