@@ -94,7 +94,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
             'kd_jenis_prw': 'Kode Jenis Perawatan',
             'nm_perawatan': 'Nama Perawatan',
             'kd_pj': 'Asuransi / Penanggung Jawab',
-            'kd_poli': 'Klinik/RS',
+            'kd_poli': 'Poli Klinik',
             'status': 'Status'
         };
         
@@ -236,8 +236,8 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                         'nm_perawatan': 'Nama Perawatan',
                         'kd_kategori': 'Kategori',
                         'kd_pj': 'Asuransi / Penanggung Jawab',
-                        'kd_poli': 'Klinik/RS',
-                        'material': 'Klinik/RS',
+                        'kd_poli': 'Poli Klinik',
+                        'material': 'Material',
                         'bhp': 'BHP',
                         'tarif_tindakandr': 'Didapat Dokter',
                         'tarif_tindakanpr': 'Didapat Petugas/Perawat',
@@ -303,285 +303,287 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Kategori Field - Move to top for better UX */}
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Kategori Perawatan *
-                            </label>
-                            <select
-                                value={data.kd_kategori}
-                                onChange={handleKategoriChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required
-                            >
-                                <option value="">Pilih Kategori</option>
-                                {kategoris.map((kategori) => (
-                                    <option key={kategori.kd_kategori} value={kategori.kd_kategori}>
-                                        {kategori.nm_kategori}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.kd_kategori && <p className="text-red-500 text-xs mt-1">{errors.kd_kategori}</p>}
-                        </div>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* BAGIAN ISIAN - Data Input Fields */}
+                    <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                            Data Perawatan
+                        </h3>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Kategori Field */}
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Kategori Perawatan *
+                                </label>
+                                <select
+                                    value={data.kd_kategori}
+                                    onChange={handleKategoriChange}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    required
+                                >
+                                    <option value="">Pilih Kategori</option>
+                                    {kategoris.map((kategori) => (
+                                        <option key={kategori.kd_kategori} value={kategori.kd_kategori}>
+                                            {kategori.nm_kategori}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.kd_kategori && <p className="text-red-500 text-xs mt-1">{errors.kd_kategori}</p>}
+                            </div>
 
-                        {/* Kode Jenis Perawatan - REQUIRED */}
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
-                                Kode Jenis Perawatan <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                value={data.kd_jenis_prw}
-                                onChange={(e) => setData('kd_jenis_prw', e.target.value.toUpperCase())}
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                                    errors.kd_jenis_prw ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                                }`}
-                                placeholder="Masukkan kode jenis perawatan"
-                                maxLength="15"
-                                required
-                            />
-                            {errors.kd_jenis_prw && <p className="text-red-500 text-xs mt-1">{errors.kd_jenis_prw}</p>}
-                        </div>
+                            {/* Kode Jenis Perawatan */}
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Kode Jenis Perawatan <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={data.kd_jenis_prw}
+                                    onChange={(e) => setData('kd_jenis_prw', e.target.value.toUpperCase())}
+                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                                        errors.kd_jenis_prw ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                                    }`}
+                                    placeholder="Masukkan kode jenis perawatan"
+                                    maxLength="15"
+                                    required
+                                />
+                                {errors.kd_jenis_prw && <p className="text-red-500 text-xs mt-1">{errors.kd_jenis_prw}</p>}
+                            </div>
 
-                        {/* Nama Perawatan - REQUIRED */}
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
-                                Nama Perawatan <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                value={data.nm_perawatan}
-                                onChange={(e) => setData('nm_perawatan', e.target.value)}
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                                    errors.nm_perawatan ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                                }`}
-                                placeholder="Masukkan nama perawatan"
-                                maxLength="80"
-                                required
-                            />
-                            {errors.nm_perawatan && <p className="text-red-500 text-xs mt-1">{errors.nm_perawatan}</p>}
-                        </div>
+                            {/* Nama Perawatan */}
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Nama Perawatan <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={data.nm_perawatan}
+                                    onChange={(e) => setData('nm_perawatan', e.target.value)}
+                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                                        errors.nm_perawatan ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                                    }`}
+                                    placeholder="Masukkan nama perawatan"
+                                    maxLength="80"
+                                    required
+                                />
+                                {errors.nm_perawatan && <p className="text-red-500 text-xs mt-1">{errors.nm_perawatan}</p>}
+                            </div>
 
-                        {/* Klinik/RS - REQUIRED */}
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
-                                Klinik/RS <span className="text-red-500">*</span>
-                            </label>
-                            <select
-                                value={data.kd_poli}
-                                onChange={(e) => setData('kd_poli', e.target.value)}
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                                    errors.kd_poli ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                                }`}
-                                required
-                            >
-                                <option value="">Pilih Klinik/RS</option>
-                                {polikliniks.map((poli) => (
-                                    <option key={poli.kd_poli} value={poli.kd_poli}>
-                                        {poli.nm_poli}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.kd_poli && <p className="text-red-500 text-xs mt-1">{errors.kd_poli}</p>}
-                        </div>
+                            {/* Poli Klinik */}
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Poli Klinik <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    value={data.kd_poli}
+                                    onChange={(e) => setData('kd_poli', e.target.value)}
+                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                                        errors.kd_poli ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                                    }`}
+                                    required
+                                >
+                                    <option value="">Pilih Poli</option>
+                                    {polikliniks.map((poli) => (
+                                        <option key={poli.kd_poli} value={poli.kd_poli}>
+                                            {poli.nm_poli}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.kd_poli && <p className="text-red-500 text-xs mt-1">{errors.kd_poli}</p>}
+                            </div>
 
-                        {/* Asuransi / Penanggung Jawab - REQUIRED */}
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
-                                Asuransi / Penanggung Jawab <span className="text-red-500">*</span>
-                            </label>
-                            <select
-                                value={data.kd_pj}
-                                onChange={(e) => setData('kd_pj', e.target.value)}
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                                    errors.kd_pj ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                                }`}
-                                required
-                            >
-                                <option value="">Pilih Asuransi / Penanggung Jawab</option>
-                                {penjaabs.map((penjab) => (
-                                    <option key={penjab.kd_pj} value={penjab.kd_pj}>
-                                        {penjab.png_jawab}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.kd_pj && <p className="text-red-500 text-xs mt-1">{errors.kd_pj}</p>}
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Klinik/RS
-                            </label>
-                            <input
-                                type="text"
-                                inputMode="numeric"
-                                pattern="[0-9]*\.?[0-9]*"
-                                placeholder="0"
-                                value={data.material || ''}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    // Hanya izinkan angka dan titik desimal
-                                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                        setData('material', value === '' ? 0 : parseFloat(value) || 0);
-                                    }
-                                }}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                style={{ 
-                                    MozAppearance: 'textfield',
-                                    WebkitAppearance: 'none'
-                                }}
-                            />
-                            {errors.material && <p className="text-red-500 text-xs mt-1">{errors.material}</p>}
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                BHP
-                            </label>
-                            <input
-                                type="text"
-                                inputMode="numeric"
-                                pattern="[0-9]*\.?[0-9]*"
-                                placeholder="0"
-                                value={data.bhp || ''}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                        setData('bhp', value === '' ? 0 : parseFloat(value) || 0);
-                                    }
-                                }}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                style={{ 
-                                    MozAppearance: 'textfield',
-                                    WebkitAppearance: 'none'
-                                }}
-                            />
-                            {errors.bhp && <p className="text-red-500 text-xs mt-1">{errors.bhp}</p>}
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Didapat Dokter
-                            </label>
-                            <input
-                                type="text"
-                                inputMode="numeric"
-                                pattern="[0-9]*\.?[0-9]*"
-                                placeholder="0"
-                                value={data.tarif_tindakandr || ''}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                        setData('tarif_tindakandr', value === '' ? 0 : parseFloat(value) || 0);
-                                    }
-                                }}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                style={{ 
-                                    MozAppearance: 'textfield',
-                                    WebkitAppearance: 'none'
-                                }}
-                            />
-                            {errors.tarif_tindakandr && <p className="text-red-500 text-xs mt-1">{errors.tarif_tindakandr}</p>}
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Didapat Perawat / Petugas
-                            </label>
-                            <input
-                                type="text"
-                                inputMode="numeric"
-                                pattern="[0-9]*\.?[0-9]*"
-                                placeholder="0"
-                                value={data.tarif_tindakanpr || ''}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                        setData('tarif_tindakanpr', value === '' ? 0 : parseFloat(value) || 0);
-                                    }
-                                }}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                style={{ 
-                                    MozAppearance: 'textfield',
-                                    WebkitAppearance: 'none'
-                                }}
-                            />
-                            {errors.tarif_tindakanpr && <p className="text-red-500 text-xs mt-1">{errors.tarif_tindakanpr}</p>}
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                KSO
-                            </label>
-                            <input
-                                type="text"
-                                inputMode="numeric"
-                                pattern="[0-9]*\.?[0-9]*"
-                                placeholder="0"
-                                value={data.kso || ''}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                        setData('kso', value === '' ? 0 : parseFloat(value) || 0);
-                                    }
-                                }}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                style={{ 
-                                    MozAppearance: 'textfield',
-                                    WebkitAppearance: 'none'
-                                }}
-                            />
-                            {errors.kso && <p className="text-red-500 text-xs mt-1">{errors.kso}</p>}
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Menejemen
-                            </label>
-                            <input
-                                type="text"
-                                inputMode="numeric"
-                                pattern="[0-9]*\.?[0-9]*"
-                                placeholder="0"
-                                value={data.menejemen || ''}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                        setData('menejemen', value === '' ? 0 : parseFloat(value) || 0);
-                                    }
-                                }}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                style={{ 
-                                    MozAppearance: 'textfield',
-                                    WebkitAppearance: 'none'
-                                }}
-                            />
-                            {errors.menejemen && <p className="text-red-500 text-xs mt-1">{errors.menejemen}</p>}
-                        </div>
-
-                        {/* Status - REQUIRED */}
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">
-                                Status <span className="text-red-500">*</span>
-                            </label>
-                            <select
-                                value={data.status}
-                                onChange={(e) => setData('status', e.target.value)}
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                                    errors.status ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                                }`}
-                                required
-                            >
-                                <option value="1">Aktif</option>
-                                <option value="0">Tidak Aktif</option>
-                            </select>
-                            {errors.status && <p className="text-red-500 text-xs mt-1">{errors.status}</p>}
+                            {/* Asuransi / Penanggung Jawab */}
+                            <div className="space-y-2 md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Asuransi / Penanggung Jawab <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    value={data.kd_pj}
+                                    onChange={(e) => setData('kd_pj', e.target.value)}
+                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                                        errors.kd_pj ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                                    }`}
+                                    required
+                                >
+                                    <option value="">Pilih Asuransi / Penanggung Jawab</option>
+                                    {penjaabs.map((penjab) => (
+                                        <option key={penjab.kd_pj} value={penjab.kd_pj}>
+                                            {penjab.png_jawab}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.kd_pj && <p className="text-red-500 text-xs mt-1">{errors.kd_pj}</p>}
+                            </div>
                         </div>
                     </div>
 
-                    {/* Total Calculation Display - Improved Layout */}
+                    {/* BAGIAN ISIAN - Tarif Input Fields */}
+                    <div className="bg-white p-6 rounded-lg border border-gray-200">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <svg className="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                            </svg>
+                            Komponen Tarif
+                        </h3>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Bagian RS/Klinik
+                                </label>
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*\.?[0-9]*"
+                                    placeholder="0"
+                                    value={data.material || ''}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                            setData('material', value === '' ? 0 : parseFloat(value) || 0);
+                                        }
+                                    }}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    style={{ 
+                                        MozAppearance: 'textfield',
+                                        WebkitAppearance: 'none'
+                                    }}
+                                />
+                                {errors.material && <p className="text-red-500 text-xs mt-1">{errors.material}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    BHP
+                                </label>
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*\.?[0-9]*"
+                                    placeholder="0"
+                                    value={data.bhp || ''}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                            setData('bhp', value === '' ? 0 : parseFloat(value) || 0);
+                                        }
+                                    }}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    style={{ 
+                                        MozAppearance: 'textfield',
+                                        WebkitAppearance: 'none'
+                                    }}
+                                />
+                                {errors.bhp && <p className="text-red-500 text-xs mt-1">{errors.bhp}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Bagian Dokter
+                                </label>
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*\.?[0-9]*"
+                                    placeholder="0"
+                                    value={data.tarif_tindakandr || ''}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                            setData('tarif_tindakandr', value === '' ? 0 : parseFloat(value) || 0);
+                                        }
+                                    }}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    style={{ 
+                                        MozAppearance: 'textfield',
+                                        WebkitAppearance: 'none'
+                                    }}
+                                />
+                                {errors.tarif_tindakandr && <p className="text-red-500 text-xs mt-1">{errors.tarif_tindakandr}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Bagian Perawat / Petugas
+                                </label>
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*\.?[0-9]*"
+                                    placeholder="0"
+                                    value={data.tarif_tindakanpr || ''}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                            setData('tarif_tindakanpr', value === '' ? 0 : parseFloat(value) || 0);
+                                        }
+                                    }}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    style={{ 
+                                        MozAppearance: 'textfield',
+                                        WebkitAppearance: 'none'
+                                    }}
+                                />
+                                {errors.tarif_tindakanpr && <p className="text-red-500 text-xs mt-1">{errors.tarif_tindakanpr}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    KSO
+                                </label>
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*\.?[0-9]*"
+                                    placeholder="0"
+                                    value={data.kso || ''}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                            setData('kso', value === '' ? 0 : parseFloat(value) || 0);
+                                        }
+                                    }}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    style={{ 
+                                        MozAppearance: 'textfield',
+                                        WebkitAppearance: 'none'
+                                    }}
+                                />
+                                {errors.kso && <p className="text-red-500 text-xs mt-1">{errors.kso}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Menejemen
+                                </label>
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*\.?[0-9]*"
+                                    placeholder="0"
+                                    value={data.menejemen || ''}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                            setData('menejemen', value === '' ? 0 : parseFloat(value) || 0);
+                                        }
+                                    }}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    style={{ 
+                                        MozAppearance: 'textfield',
+                                        WebkitAppearance: 'none'
+                                    }}
+                                />
+                                {errors.menejemen && <p className="text-red-500 text-xs mt-1">{errors.menejemen}</p>}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* BAGIAN NOMINAL - Total Calculation Display */}
                     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 p-6 rounded-xl shadow-sm">
                         <div className="flex items-center justify-between mb-4">
                             <h4 className="text-lg font-semibold text-gray-800 flex items-center">
@@ -606,9 +608,6 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                                         </div>
                                         <div className="text-2xl font-bold text-gray-900">
                                             Rp {data.show_total_dokter ? totalDr.toLocaleString('id-ID') : '0'}
-                                        </div>
-                                        <div className="text-xs text-gray-500 mt-1">
-                                            Klinik/RS + BHP + Tarif Tindakan Dokter + KSO + Menejemen
                                         </div>
                                     </div>
                                     <div className="ml-3">
@@ -640,9 +639,6 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                                         <div className="text-2xl font-bold text-gray-900">
                                             Rp {data.show_total_perawat ? totalPr.toLocaleString('id-ID') : '0'}
                                         </div>
-                                        <div className="text-xs text-gray-500 mt-1">
-                                            Material + BHP + Tarif Perawat + KSO + Menejemen
-                                        </div>
                                     </div>
                                     <div className="ml-3">
                                         <label className="flex items-center cursor-pointer group">
@@ -673,9 +669,6 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                                         <div className="text-2xl font-bold text-gray-900">
                                             Rp {data.show_total_dokter_perawat ? totalDrPr.toLocaleString('id-ID') : '0'}
                                         </div>
-                                        <div className="text-xs text-gray-500 mt-1">
-                                            Klinik/RS + BHP + Kedua Didapat + KSO + Menejemen
-                                        </div>
                                     </div>
                                     <div className="ml-3">
                                         <label className="flex items-center cursor-pointer group">
@@ -696,12 +689,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                             </div>
                         </div>
 
-                        {/* Status Info */}
-                        <div className="mt-4 flex items-center justify-center">
-                            <div className="text-xs text-gray-500 bg-white px-4 py-2 rounded-full border border-gray-200">
-                                💡 Tip: Anda dapat mengaktifkan beberapa total sekaligus untuk perbandingan
-                            </div>
-                        </div>
+
                     </div>
 
                     <div className="flex justify-end space-x-2 pt-4">
