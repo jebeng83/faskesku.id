@@ -10,3 +10,36 @@
         "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
         "Noto Color Emoji";
 }
+
+/* Custom scrollbar untuk horizontal scroll */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+/* Custom breakpoint untuk extra small devices */
+@media (min-width: 475px) {
+    .xs\:flex-row {
+        flex-direction: row;
+    }
+    
+    .xs\:flex-none {
+        flex: none;
+    }
+    
+    .xs\:w-auto {
+        width: auto;
+    }
+    
+    .xs\:inline {
+        display: inline;
+    }
+    
+    .xs\:hidden {
+        display: none;
+    }
+}

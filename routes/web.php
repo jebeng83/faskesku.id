@@ -17,6 +17,7 @@ use App\Http\Controllers\KamarOperasiController;
 use App\Http\Controllers\LaboratoriumController;
 use App\Http\Controllers\RadiologiController;
 use App\Http\Controllers\RehabilitasiMedikController;
+use App\Http\Controllers\DaftarTarifController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -101,4 +102,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('laboratorium', LaboratoriumController::class);
     Route::resource('radiologi', RadiologiController::class);
     Route::resource('rehabilitasi-medik', RehabilitasiMedikController::class);
+
+    // Daftar Tarif routes
+    Route::get('daftar-tarif/generate-kode', [DaftarTarifController::class, 'generateKode'])->name('daftar-tarif.generate-kode');
+    Route::resource('daftar-tarif', DaftarTarifController::class);
 });
