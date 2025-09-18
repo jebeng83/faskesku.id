@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\DaftarTarifController::generateKode
-* @see app/Http/Controllers/DaftarTarifController.php:343
+* @see app/Http/Controllers/DaftarTarifController.php:348
 * @route '/daftar-tarif/generate-kode'
 */
 export const generateKode = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ generateKode.definition = {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::generateKode
-* @see app/Http/Controllers/DaftarTarifController.php:343
+* @see app/Http/Controllers/DaftarTarifController.php:348
 * @route '/daftar-tarif/generate-kode'
 */
 generateKode.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ generateKode.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::generateKode
-* @see app/Http/Controllers/DaftarTarifController.php:343
+* @see app/Http/Controllers/DaftarTarifController.php:348
 * @route '/daftar-tarif/generate-kode'
 */
 generateKode.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ generateKode.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::generateKode
-* @see app/Http/Controllers/DaftarTarifController.php:343
+* @see app/Http/Controllers/DaftarTarifController.php:348
 * @route '/daftar-tarif/generate-kode'
 */
 generateKode.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
