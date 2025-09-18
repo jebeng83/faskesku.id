@@ -314,27 +314,32 @@ class DaftarTarifController extends Controller
     {
         $category = $request->get('category', 'rawat-jalan');
         
-        switch ($category) {
-            case 'rawat-jalan':
-                $tarif = JnsPerawatan::findOrFail($id);
-                break;
-            case 'rawat-inap':
-                $tarif = JnsPerawatanInap::findOrFail($id);
-                break;
-            case 'laboratorium':
-                $tarif = JnsPerawatanLab::findOrFail($id);
-                break;
-            case 'radiologi':
-                $tarif = JnsPerawatanRadiologi::findOrFail($id);
-                break;
-            default:
-                return redirect()->back()->with('error', 'Kategori tidak valid');
+        try {
+            switch ($category) {
+                case 'rawat-jalan':
+                    $tarif = JnsPerawatan::findOrFail($id);
+                    break;
+                case 'rawat-inap':
+                    $tarif = JnsPerawatanInap::findOrFail($id);
+                    break;
+                case 'laboratorium':
+                    $tarif = JnsPerawatanLab::findOrFail($id);
+                    break;
+                case 'radiologi':
+                    $tarif = JnsPerawatanRadiologi::findOrFail($id);
+                    break;
+                default:
+                    return response()->json(['error' => 'Kategori tidak valid'], 400);
+            }
+            
+            // Soft delete: set status = 0
+            $tarif->update(['status' => '0']);
+            
+            return response()->json(['success' => 'Tarif berhasil dihapus']);
+            
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Gagal menghapus tarif'], 500);
         }
-        
-        $tarif->delete();
-        
-        return redirect()->route('daftar-tarif.index', ['category' => $category])
-            ->with('success', 'Tarif berhasil dihapus');
     }
 
     /**

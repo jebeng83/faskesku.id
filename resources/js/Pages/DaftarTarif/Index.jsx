@@ -19,8 +19,8 @@ const Badge = ({ children, variant = 'default' }) => {
 };
 
 // Modal Component for Add Tarif
-const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs = [], kategoris = [] }) => {
-    const { data, setData, post, processing, errors, reset } = useForm({
+const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs = [], kategoris = [], editData = null }) => {
+    const { data, setData, post, put, processing, errors, reset } = useForm({
         kd_jenis_prw: '',
         nm_perawatan: '',
         kd_kategori: '',
@@ -42,9 +42,53 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
         show_total_dokter_perawat: false
     });
 
-    // Function to generate auto code when kategori changes
+    const isEditMode = !!editData;
+
+    // Fungsi helper untuk format angka tanpa currency symbol
+    const formatNumber = (amount) => {
+        if (!amount || amount === 0) return '0';
+        
+        // Convert to number and round to remove decimals
+        const numValue = Math.round(parseFloat(amount));
+        
+        return new Intl.NumberFormat('id-ID', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(numValue);
+    };
+
+    // Effect to populate form when editing
+    useEffect(() => {
+        if (editData) {
+            setData({
+                kd_jenis_prw: editData.kd_jenis_prw || '',
+                nm_perawatan: editData.nm_perawatan || '',
+                kd_kategori: editData.kd_kategori || '',
+                material: editData.material || 0,
+                bhp: editData.bhp || 0,
+                tarif_tindakandr: editData.tarif_tindakandr || 0,
+                tarif_tindakanpr: editData.tarif_tindakanpr || 0,
+                kso: editData.kso || 0,
+                menejemen: editData.menejemen || 0,
+                kd_pj: editData.kd_pj || '',
+                kd_poli: editData.kd_poli || '',
+                status: editData.status || '1',
+                category: category,
+                total_dr: 0,
+                total_pr: 0,
+                total_drpr: 0,
+                show_total_dokter: false,
+                show_total_perawat: false,
+                show_total_dokter_perawat: false
+            });
+        } else {
+            reset();
+        }
+    }, [editData, category]);
+
+    // Function to generate auto code when kategori changes (only for new records)
     const generateAutoCode = async (kdKategori) => {
-        if (!kdKategori) return;
+        if (!kdKategori || isEditMode) return;
         
         try {
             const response = await fetch(route('daftar-tarif.generate-kode') + `?kd_kategori=${kdKategori}&category=${category}`);
@@ -62,10 +106,10 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
         const kdKategori = e.target.value;
         setData('kd_kategori', kdKategori);
         
-        // Auto generate code when kategori is selected
-        if (kdKategori) {
+        // Auto generate code when kategori is selected (only for new records)
+        if (kdKategori && !isEditMode) {
             generateAutoCode(kdKategori);
-        } else {
+        } else if (!kdKategori && !isEditMode) {
             setData('kd_jenis_prw', '');
         }
     };
@@ -189,7 +233,12 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
         
         console.log('Formatted data:', formData);
         
-        post(route('daftar-tarif.store'), {
+        const submitMethod = isEditMode ? put : post;
+        const submitRoute = isEditMode 
+            ? route('daftar-tarif.update', editData.kd_jenis_prw)
+            : route('daftar-tarif.store');
+        
+        submitMethod(submitRoute, {
             data: formData,
             onSuccess: () => {
                 // Show success notification
@@ -199,15 +248,11 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                     </svg>
-                    <div>
-                        <div class="font-semibold">Data Berhasil Disimpan!</div>
-                        <div class="text-sm opacity-90">Tarif ${data.nm_perawatan || 'baru'} telah ditambahkan ke sistem</div>
-                    </div>
+                    <span class="font-medium">${isEditMode ? 'Data berhasil diperbarui!' : 'Data berhasil disimpan!'}</span>
                 `;
                 
                 document.body.appendChild(notification);
                 
-                // Auto remove notification after 4 seconds
                 setTimeout(() => {
                     notification.style.transform = 'translateX(100%)';
                     notification.style.opacity = '0';
@@ -216,67 +261,12 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                             notification.parentNode.removeChild(notification);
                         }
                     }, 300);
-                }, 4000);
+                }, 3000);
                 
-                reset();
-                onClose();
+                handleClose();
             },
             onError: (errors) => {
-                // Debug: Log errors yang diterima
-                console.log('Validation errors:', errors);
-                
-                // Show error notification with specific error details
-                const notification = document.createElement('div');
-                notification.className = 'fixed top-4 right-4 z-50 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 max-w-md';
-                
-                // Create error list
-                const errorList = Object.entries(errors).map(([field, messages]) => {
-                    const fieldNames = {
-                        'kd_jenis_prw': 'Kode Jenis Perawatan',
-                        'nm_perawatan': 'Nama Perawatan',
-                        'kd_kategori': 'Kategori',
-                        'kd_pj': 'Asuransi / Penanggung Jawab',
-                        'kd_poli': 'Poli Klinik',
-                        'material': 'Material',
-                        'bhp': 'BHP',
-                        'tarif_tindakandr': 'Didapat Dokter',
-                        'tarif_tindakanpr': 'Didapat Petugas/Perawat',
-                        'kso': 'KSO',
-                        'menejemen': 'Menejemen',
-                        'status': 'Status'
-                    };
-                    
-                    const fieldName = fieldNames[field] || field;
-                    const messageArray = Array.isArray(messages) ? messages : [messages];
-                    return `<li><strong>${fieldName}:</strong> ${messageArray.join(', ')}</li>`;
-                }).join('');
-                
-                notification.innerHTML = `
-                    <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                    <div class="flex-1">
-                        <div class="font-semibold">Gagal Menyimpan Data!</div>
-                        <div class="text-sm opacity-90 mt-1">
-                            <ul class="list-disc list-inside space-y-1">
-                                ${errorList}
-                            </ul>
-                        </div>
-                    </div>
-                `;
-                
-                document.body.appendChild(notification);
-                
-                // Auto remove notification after 8 seconds (longer for error details)
-                setTimeout(() => {
-                    notification.style.transform = 'translateX(100%)';
-                    notification.style.opacity = '0';
-                    setTimeout(() => {
-                        if (notification.parentNode) {
-                            notification.parentNode.removeChild(notification);
-                        }
-                    }, 300);
-                }, 8000);
+                console.error('Submission errors:', errors);
             }
         });
     };
@@ -292,7 +282,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold">Tambah Tarif {category === 'rawat-jalan' ? 'Rawat Jalan' : category}</h3>
+                    <h3 className="text-lg font-semibold">{isEditMode ? 'Edit Tarif' : 'Tambah Tarif'} {category === 'rawat-jalan' ? 'Rawat Jalan' : category}</h3>
                     <button
                         onClick={handleClose}
                         className="text-gray-400 hover:text-gray-600"
@@ -349,6 +339,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                                     }`}
                                     placeholder="Masukkan kode jenis perawatan"
                                     maxLength="15"
+                                    disabled={isEditMode}
                                     required
                                 />
                                 {errors.kd_jenis_prw && <p className="text-red-500 text-xs mt-1">{errors.kd_jenis_prw}</p>}
@@ -607,7 +598,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                                             <span className="text-sm font-medium text-gray-700">Total Dokter</span>
                                         </div>
                                         <div className="text-2xl font-bold text-gray-900">
-                                            Rp {data.show_total_dokter ? totalDr.toLocaleString('id-ID') : '0'}
+                                            Rp {data.show_total_dokter ? formatNumber(totalDr) : '0'}
                                         </div>
                                     </div>
                                     <div className="ml-3">
@@ -637,7 +628,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                                             <span className="text-sm font-medium text-gray-700">Total Perawat</span>
                                         </div>
                                         <div className="text-2xl font-bold text-gray-900">
-                                            Rp {data.show_total_perawat ? totalPr.toLocaleString('id-ID') : '0'}
+                                            Rp {data.show_total_perawat ? formatNumber(totalPr) : '0'}
                                         </div>
                                     </div>
                                     <div className="ml-3">
@@ -667,7 +658,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                                             <span className="text-sm font-medium text-gray-700">Total Dokter + Perawat</span>
                                         </div>
                                         <div className="text-2xl font-bold text-gray-900">
-                                            Rp {data.show_total_dokter_perawat ? totalDrPr.toLocaleString('id-ID') : '0'}
+                                            Rp {data.show_total_dokter_perawat ? formatNumber(totalDrPr) : '0'}
                                         </div>
                                     </div>
                                     <div className="ml-3">
@@ -705,7 +696,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                             disabled={processing}
                             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                         >
-                            {processing ? 'Menyimpan...' : 'Simpan'}
+                            {processing ? (isEditMode ? 'Memperbarui...' : 'Menyimpan...') : (isEditMode ? 'Perbarui' : 'Simpan')}
                         </button>
                     </div>
                 </form>
@@ -720,6 +711,8 @@ export default function Index({ title, data, category, search, filters, poliklin
     const [selectedFilter, setSelectedFilter] = useState(filters?.status || 'all');
     const [selectedPoliklinik, setSelectedPoliklinik] = useState(filters?.poliklinik || 'all');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingItem, setEditingItem] = useState(null);
 
     // Update search functionality to work without submit button
     const handleSearchChange = (e) => {
@@ -774,6 +767,29 @@ export default function Index({ title, data, category, search, filters, poliklin
         setIsModalOpen(true);
     };
 
+    // Handler untuk edit
+    const handleEdit = (item) => {
+        setEditingItem(item);
+        setIsEditModalOpen(true);
+    };
+
+    // Handler untuk delete dengan konfirmasi
+    const handleDelete = (item) => {
+        if (window.confirm(`Apakah Anda yakin ingin menghapus tarif "${item.nm_perawatan}"?`)) {
+            router.delete(route('daftar-tarif.destroy', item.kd_jenis_prw), {
+                data: { category: activeTab },
+                onSuccess: () => {
+                    // Refresh data setelah delete berhasil
+                    router.reload({ only: ['data'] });
+                },
+                onError: (errors) => {
+                    console.error('Error deleting tarif:', errors);
+                    alert('Gagal menghapus tarif. Silakan coba lagi.');
+                }
+            });
+        }
+    };
+
     // Handler untuk filter
     const handleFilterChange = (e) => {
         const value = e.target.value;
@@ -796,10 +812,13 @@ export default function Index({ title, data, category, search, filters, poliklin
     };
 
     const formatCurrency = (amount) => {
+        if (!amount || amount === 0) return 'Rp 0';
+        
         return new Intl.NumberFormat('id-ID', {
             style: 'currency',
             currency: 'IDR',
-            minimumFractionDigits: 0
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
         }).format(amount);
     };
 
@@ -844,6 +863,9 @@ export default function Index({ title, data, category, search, filters, poliklin
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Total Byrdrpr
                         </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Aksi
+                        </th>
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -885,6 +907,22 @@ export default function Index({ title, data, category, search, filters, poliklin
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                                 {formatCurrency(item.total_byrdrpr)}
                             </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <div className="flex space-x-2">
+                                    <button
+                                        onClick={() => handleEdit(item)}
+                                        className="text-indigo-600 hover:text-indigo-900 font-medium"
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(item)}
+                                        className="text-red-600 hover:text-red-900 font-medium"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
                     ))}
                 </tbody>
@@ -918,6 +956,9 @@ export default function Index({ title, data, category, search, filters, poliklin
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Status
                         </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Aksi
+                        </th>
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -945,6 +986,22 @@ export default function Index({ title, data, category, search, filters, poliklin
                                 <Badge variant={item.status === '1' ? 'default' : 'secondary'}>
                                     {item.status === '1' ? 'Aktif' : 'Tidak Aktif'}
                                 </Badge>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <div className="flex space-x-2">
+                                    <button
+                                        onClick={() => handleEdit(item)}
+                                        className="text-indigo-600 hover:text-indigo-900 font-medium"
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(item)}
+                                        className="text-red-600 hover:text-red-900 font-medium"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     ))}
@@ -979,6 +1036,9 @@ export default function Index({ title, data, category, search, filters, poliklin
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Status
                         </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Aksi
+                        </th>
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -1006,6 +1066,28 @@ export default function Index({ title, data, category, search, filters, poliklin
                                 <Badge variant={item.status === '1' ? 'default' : 'secondary'}>
                                     {item.status === '1' ? 'Aktif' : 'Tidak Aktif'}
                                 </Badge>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <div className="flex space-x-2">
+                                    <button
+                                        onClick={() => handleEdit(item)}
+                                        className="text-indigo-600 hover:text-indigo-900 font-medium"
+                                        title="Edit"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(item)}
+                                        className="text-red-600 hover:text-red-900 font-medium"
+                                        title="Hapus"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     ))}
@@ -1040,6 +1122,9 @@ export default function Index({ title, data, category, search, filters, poliklin
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Status
                         </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Aksi
+                        </th>
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -1068,6 +1153,28 @@ export default function Index({ title, data, category, search, filters, poliklin
                                     {item.status === '1' ? 'Aktif' : 'Tidak Aktif'}
                                 </Badge>
                             </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <div className="flex space-x-2">
+                                    <button
+                                        onClick={() => handleEdit(item)}
+                                        className="text-indigo-600 hover:text-indigo-900 font-medium"
+                                        title="Edit"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(item)}
+                                        className="text-red-600 hover:text-red-900 font-medium"
+                                        title="Hapus"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
                     ))}
                 </tbody>
@@ -1095,6 +1202,9 @@ export default function Index({ title, data, category, search, filters, poliklin
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Status
                         </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Aksi
+                        </th>
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -1116,6 +1226,28 @@ export default function Index({ title, data, category, search, filters, poliklin
                                 <Badge variant={item.status === '1' ? 'default' : 'secondary'}>
                                     {item.status === '1' ? 'Aktif' : 'Tidak Aktif'}
                                 </Badge>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <div className="flex space-x-2">
+                                    <button
+                                        onClick={() => handleEdit(item)}
+                                        className="text-indigo-600 hover:text-indigo-900 font-medium"
+                                        title="Edit"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(item)}
+                                        className="text-red-600 hover:text-red-900 font-medium"
+                                        title="Hapus"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     ))}
@@ -1322,6 +1454,20 @@ export default function Index({ title, data, category, search, filters, poliklin
                 polikliniks={polikliniks}
                 penjaabs={penjaabs}
                 kategoris={kategoris}
+            />
+
+            {/* Modal untuk edit tarif */}
+            <AddTarifModal
+                isOpen={isEditModalOpen}
+                onClose={() => {
+                    setIsEditModalOpen(false);
+                    setEditingItem(null);
+                }}
+                category={activeTab}
+                polikliniks={polikliniks}
+                penjaabs={penjaabs}
+                kategoris={kategoris}
+                editData={editingItem}
             />
         </AppLayout>
     );
