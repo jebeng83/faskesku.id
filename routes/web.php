@@ -99,7 +99,17 @@ Route::middleware('auth')->group(function () {
     Route::resource('kamar-operasi', KamarOperasiController::class);
 
     // Penunjang Medis routes
-    Route::resource('laboratorium', LaboratoriumController::class);
+    Route::prefix('laboratorium')->name('laboratorium.')->group(function () {
+        Route::get('/', [LaboratoriumController::class, 'index'])->name('index');
+        Route::get('/dashboard', [LaboratoriumController::class, 'dashboard'])->name('dashboard');
+        Route::get('/create', [LaboratoriumController::class, 'create'])->name('create');
+        Route::post('/', [LaboratoriumController::class, 'store'])->name('store');
+        Route::get('/{noRawat}', [LaboratoriumController::class, 'show'])->name('show');
+        Route::get('/{noRawat}/edit', [LaboratoriumController::class, 'edit'])->name('edit');
+        Route::put('/{noRawat}', [LaboratoriumController::class, 'update'])->name('update');
+        Route::delete('/{noRawat}', [LaboratoriumController::class, 'destroy'])->name('destroy');
+        Route::put('/{noRawat}/hasil', [LaboratoriumController::class, 'updateHasil'])->name('update-hasil');
+    });
     Route::resource('radiologi', RadiologiController::class);
     Route::resource('rehabilitasi-medik', RehabilitasiMedikController::class);
 
