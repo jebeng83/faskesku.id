@@ -1,5 +1,4 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
-import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \Livewire\Mechanisms\FrontendAssets\FrontendAssets::returnJavaScriptAsFile
 * @see vendor/livewire/livewire/src/Mechanisms/FrontendAssets/FrontendAssets.php:78
