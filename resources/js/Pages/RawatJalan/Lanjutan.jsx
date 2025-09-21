@@ -367,7 +367,7 @@ export default function Lanjutan({ rawatJalan, params }) {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6">
                     {/* Kolom Kiri - Riwayat Pemeriksaan */}
-                    <div className="lg:col-span-1 space-y-3 md:space-y-4">
+                    <div className="lg:col-span-1 space-y-3 md:space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
 
                         {/* Riwayat Pemeriksaan */}
                         <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
