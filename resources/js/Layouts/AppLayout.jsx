@@ -122,8 +122,8 @@ export default function AppLayout({
 
 	return (
 		<div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 flex flex-col">
-			{/* Top Navigation Bar - Gradient Able Style */}
-			<header className="h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50 flex-shrink-0">
+			{/* Top Navigation Bar - Fixed Header */}
+			<header className="fixed top-0 left-0 right-0 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50 flex-shrink-0">
 				<div className="h-full flex items-center justify-between px-4">
 					{/* Left side - Toggle + Logo */}
 					<div className="flex items-center gap-3">
@@ -228,9 +228,9 @@ export default function AppLayout({
 				/>
 			)}
 
-			{/* Main Layout Container */}
-			<div className="flex flex-1 overflow-hidden">
-				{/* Sidebar - Gradient Able Style */}
+			{/* Main Layout Container - Adjusted for Fixed Header */}
+			<div className="flex flex-1 pt-14 overflow-hidden">
+				{/* Sidebar - Fixed with Independent Scroll */}
 				<aside
 					className={`bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-all duration-300 flex-shrink-0 ${
 						isSidebarOpen
@@ -238,7 +238,7 @@ export default function AppLayout({
 							: isSidebarCollapsed
 							? "lg:translate-x-0 lg:w-16 -translate-x-full lg:translate-x-0"
 							: "lg:translate-x-0 lg:w-64 -translate-x-full lg:translate-x-0"
-					} lg:relative fixed z-50 h-full lg:h-auto`}
+					} lg:relative fixed z-40 h-[calc(100vh-3.5rem)] lg:h-full`}
 				>
 					<div className="h-full flex flex-col overflow-hidden">
 						{/* Dynamic Navigation */}
@@ -282,8 +282,8 @@ export default function AppLayout({
 					</div>
 				</aside>
 
-				{/* Main Content */}
-				<main className="flex-1 overflow-y-auto p-4">
+				{/* Main Content - Independent Scroll */}
+				<main className="flex-1 overflow-y-auto h-[calc(100vh-3.5rem)] p-4">
 					{children}
 				</main>
 			</div>
