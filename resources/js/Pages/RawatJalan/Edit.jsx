@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
+import SearchableSelect from '@/Components/SearchableSelect';
+// Removed react-select import - using native HTML select instead
 
 export default function Edit({ 
-    rawatJalan,
+    rawatJalan, 
     patients, 
+    polikliniks,
+    dokters,
+    penjaabs,
     statusOptions, 
     statusDaftarOptions, 
     statusLanjutOptions, 
@@ -23,13 +28,13 @@ export default function Edit({
         p_jawab: rawatJalan.p_jawab || '',
         almt_pj: rawatJalan.almt_pj || '',
         hubunganpj: rawatJalan.hubunganpj || '',
-        biaya_reg: rawatJalan.biaya_reg || '',
-        stts: rawatJalan.stts || '',
+        biaya_reg: rawatJalan.biaya_reg || '0',
+        stts: rawatJalan.stts || 'Belum',
         stts_daftar: rawatJalan.stts_daftar || '-',
         status_lanjut: rawatJalan.status_lanjut || 'Ralan',
         kd_pj: rawatJalan.kd_pj || '',
-        umurdaftar: rawatJalan.umurdaftar || '',
-        sttsumur: rawatJalan.sttsumur || '',
+        umurdaftar: rawatJalan.umurdaftar || '0',
+        sttsumur: rawatJalan.sttsumur || 'Th',
         status_bayar: rawatJalan.status_bayar || 'Belum Bayar',
         status_poli: rawatJalan.status_poli || 'Baru',
         keputusan: rawatJalan.keputusan || '-'
@@ -79,23 +84,19 @@ export default function Edit({
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Pasien <span className="text-red-500">*</span>
                                 </label>
-                                <select
+                                <SearchableSelect
+                                    options={patients.map(patient => ({
+                                        value: patient.no_rkm_medis,
+                                        label: `${patient.no_rkm_medis} - ${patient.nm_pasien}`
+                                    }))}
                                     value={data.no_rkm_medis}
-                                    onChange={(e) => setData('no_rkm_medis', e.target.value)}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
-                                        errors.no_rkm_medis 
-                                            ? 'border-red-500 dark:border-red-500' 
-                                            : 'border-gray-300 dark:border-gray-600'
-                                    }`}
-                                    required
-                                >
-                                    <option value="">Pilih Pasien</option>
-                                    {patients.map((patient) => (
-                                        <option key={patient.no_rkm_medis} value={patient.no_rkm_medis}>
-                                            {patient.no_rkm_medis} - {patient.nm_pasien}
-                                        </option>
-                                    ))}
-                                </select>
+                                    onChange={(value) => setData('no_rkm_medis', value)}
+                                    placeholder="Pilih Pasien"
+                                    searchPlaceholder="Cari pasien..."
+                                    error={!!errors.no_rkm_medis}
+                                    displayKey="label"
+                                    valueKey="value"
+                                />
                                 {errors.no_rkm_medis && (
                                     <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.no_rkm_medis}</p>
                                 )}
@@ -138,29 +139,44 @@ export default function Edit({
                             {/* Dokter */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Kode Dokter
+                                    Dokter <span className="text-red-500">*</span>
                                 </label>
-                                <input
-                                    type="text"
+                                <SearchableSelect
+                                    options={dokters}
                                     value={data.kd_dokter}
-                                    onChange={(e) => setData('kd_dokter', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                    placeholder="Masukkan kode dokter"
+                                    onChange={(value) => setData('kd_dokter', value)}
+                                    placeholder="Pilih dokter"
+                                    searchPlaceholder="Cari dokter..."
+                                    error={errors.kd_dokter}
+                                    displayKey="nm_dokter"
+                                    valueKey="kd_dokter"
                                 />
+                                {errors.kd_dokter && (
+                                    <p className="text-red-500 text-sm mt-1">{errors.kd_dokter}</p>
+                                )}
                             </div>
 
                             {/* Poli */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Kode Poli
+                                    Poliklinik <span className="text-red-500">*</span>
                                 </label>
-                                <input
-                                    type="text"
+                                <SearchableSelect
+                                    options={polikliniks.map(poliklinik => ({
+                                        value: poliklinik.kd_poli,
+                                        label: `${poliklinik.kd_poli} - ${poliklinik.nm_poli}`
+                                    }))}
                                     value={data.kd_poli}
-                                    onChange={(e) => setData('kd_poli', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                    placeholder="Masukkan kode poli"
+                                    onChange={(value) => setData('kd_poli', value)}
+                                    placeholder="Pilih Poliklinik"
+                                    searchPlaceholder="Cari poliklinik..."
+                                    error={!!errors.kd_poli}
+                                    displayKey="label"
+                                    valueKey="value"
                                 />
+                                {errors.kd_poli && (
+                                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.kd_poli}</p>
+                                )}
                             </div>
 
                             {/* Penanggung Jawab */}
@@ -221,8 +237,8 @@ export default function Edit({
                                 />
                             </div>
 
-                            {/* Status */}
-                            <div>
+                            {/* Status - Hidden */}
+                            <div className="hidden">
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Status
                                 </label>
@@ -253,8 +269,8 @@ export default function Edit({
                                 </select>
                             </div>
 
-                            {/* Status Lanjut */}
-                            <div>
+                            {/* Status Lanjut - Hidden */}
+                            <div className="hidden">
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Status Lanjut
                                 </label>
@@ -269,18 +285,24 @@ export default function Edit({
                                 </select>
                             </div>
 
-                            {/* Kode Penjamin */}
+                            {/* Penanggung Jawab */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Kode Penjamin
+                                    Penanggung Jawab
                                 </label>
-                                <input
-                                    type="text"
+                                <SearchableSelect
+                                    options={penjaabs}
                                     value={data.kd_pj}
-                                    onChange={(e) => setData('kd_pj', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                    placeholder="Masukkan kode penjamin"
+                                    onChange={(value) => setData('kd_pj', value)}
+                                    placeholder="Pilih penanggung jawab"
+                                    searchPlaceholder="Cari penanggung jawab..."
+                                    error={errors.kd_pj}
+                                    displayKey="png_jawab"
+                                    valueKey="kd_pj"
                                 />
+                                {errors.kd_pj && (
+                                    <p className="text-red-500 text-sm mt-1">{errors.kd_pj}</p>
+                                )}
                             </div>
 
                             {/* Umur Daftar */}
@@ -298,8 +320,8 @@ export default function Edit({
                                 />
                             </div>
 
-                            {/* Status Umur */}
-                            <div>
+                            {/* Status Umur - Hidden */}
+                            <div className="hidden">
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Status Umur
                                 </label>
@@ -314,8 +336,8 @@ export default function Edit({
                                 </select>
                             </div>
 
-                            {/* Status Bayar */}
-                            <div>
+                            {/* Status Bayar - Hidden */}
+                            <div className="hidden">
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Status Bayar
                                 </label>
@@ -330,8 +352,8 @@ export default function Edit({
                                 </select>
                             </div>
 
-                            {/* Status Poli */}
-                            <div>
+                            {/* Status Poli - Hidden */}
+                            <div className="hidden">
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Status Poli
                                 </label>
@@ -346,8 +368,8 @@ export default function Edit({
                                 </select>
                             </div>
 
-                            {/* Keputusan */}
-                            <div>
+                            {/* Keputusan - Hidden */}
+                            <div className="hidden">
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Keputusan
                                 </label>

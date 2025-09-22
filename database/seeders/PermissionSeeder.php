@@ -81,6 +81,14 @@ class PermissionSeeder extends Seeder
             'create-permissions',
             'edit-permissions',
             'delete-permissions',
+
+            // Menu specific permissions
+            'patient.view',
+            'employee.view',
+            'reg-periksa.view',
+            'user.view',
+            'permission.view',
+            'menu.view',
         ];
 
         foreach ($permissions as $permission) {

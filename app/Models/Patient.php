@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use App\Models\RawatJalan\RawatJalan;
 
 class Patient extends Model
 {
@@ -157,6 +158,29 @@ class Patient extends Model
                     ->orderBy('jam_reg', 'desc');
     }
 
+    // Method untuk menghitung umur otomatis dari tgl_lahir
+    public function calculateAge()
+    {
+        if (!$this->tgl_lahir) {
+            return null;
+        }
+        
+        $birthDate = Carbon::parse($this->tgl_lahir);
+        $today = Carbon::now();
+        
+        $years = $today->diffInYears($birthDate);
+        $months = $today->copy()->subYears($years)->diffInMonths($birthDate);
+        $days = $today->copy()->subYears($years)->subMonths($months)->diffInDays($birthDate);
+        
+        if ($years > 0) {
+            return $years . ' Th';
+        } elseif ($months > 0) {
+            return $months . ' Bl';
+        } else {
+            return $days . ' Hr';
+        }
+    }
+
     // Generate nomor RM otomatis
     public static function generateNoRM()
     {
@@ -170,16 +194,26 @@ class Patient extends Model
         return str_pad($newNumber, 6, '0', STR_PAD_LEFT);
     }
 
-    public static function calculateAge($tgl_lahir)
+    // Static method untuk menghitung umur dari tanggal lahir
+    public static function calculateAgeFromDate($tgl_lahir)
     {
+        if (!$tgl_lahir) {
+            return null;
+        }
+        
         $birthDate = Carbon::parse($tgl_lahir);
         $today = Carbon::now();
-        $age = $birthDate->diffInYears($today);
-        $month = $birthDate->diffInMonths($today) % 12;
-        $day = $birthDate->diffInDays($today) % 30;
-        // $age = $birthDate->age;
-        // $month = $birthDate->month;
-        // $day = $birthDate->day;
-        return $age . ' Th ' . $month . ' Bl ' . $day . ' Hr';
+        
+        $years = $today->diffInYears($birthDate);
+        $months = $today->copy()->subYears($years)->diffInMonths($birthDate);
+        $days = $today->copy()->subYears($years)->subMonths($months)->diffInDays($birthDate);
+        
+        if ($years > 0) {
+            return $years . ' Th';
+        } elseif ($months > 0) {
+            return $months . ' Bl';
+        } else {
+            return $days . ' Hr';
+        }
     }
 }

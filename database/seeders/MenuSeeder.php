@@ -61,11 +61,20 @@ class MenuSeeder extends Seeder
             'description' => 'Modul registrasi pasien dan pemeriksaan'
         ]);
 
+        $rawatJalan = Menu::create([
+            'name' => 'Rawat Jalan',
+            'slug' => 'rawat-jalan',
+            'icon' => 'fas fa-hospital',
+            'sort_order' => 4,
+            'is_active' => true,
+            'description' => 'Modul pelayanan rawat jalan'
+        ]);
+
         $reports = Menu::create([
             'name' => 'Laporan',
             'slug' => 'laporan',
             'icon' => 'fas fa-chart-bar',
-            'sort_order' => 4,
+            'sort_order' => 5,
             'is_active' => true,
             'description' => 'Laporan dan statistik sistem'
         ]);
@@ -74,7 +83,7 @@ class MenuSeeder extends Seeder
             'name' => 'Administrasi',
             'slug' => 'administrasi',
             'icon' => 'fas fa-cogs',
-            'sort_order' => 5,
+            'sort_order' => 6,
             'is_active' => true,
             'description' => 'Pengaturan sistem dan administrasi'
         ]);

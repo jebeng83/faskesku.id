@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Head, Link, router, usePage } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
 import {
@@ -9,7 +9,22 @@ import {
 	TrashIcon,
 	EyeIcon,
 	PowerIcon,
+	Bars3Icon,
 } from "@heroicons/react/24/outline";
+import {
+	DndContext,
+	closestCenter,
+	PointerSensor,
+	useSensor,
+	useSensors,
+} from "@dnd-kit/core";
+import {
+	arrayMove,
+	SortableContext,
+	verticalListSortingStrategy,
+	useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 export default function Index({ menus, parentOptions, permissions, filters }) {
 	const { flash } = usePage().props;
@@ -19,6 +34,53 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [menuToDelete, setMenuToDelete] = useState(null);
 	const [expandedMenus, setExpandedMenus] = useState(new Set());
+	const [successNotification, setSuccessNotification] = useState(null);
+	const [showSuccessToast, setShowSuccessToast] = useState(false);
+
+	// Auto-dismiss success toast after 4 seconds
+	useEffect(() => {
+		if (showSuccessToast) {
+			const timer = setTimeout(() => {
+				setShowSuccessToast(false);
+				setSuccessNotification(null);
+			}, 4000);
+			return () => clearTimeout(timer);
+		}
+	}, [showSuccessToast]);
+
+	// Build hierarchical menu structure
+	const buildMenuHierarchy = (menuList) => {
+		const menuMap = {};
+		const rootMenus = [];
+
+		// Create a map of all menus
+		menuList.forEach(menu => {
+			menuMap[menu.id] = { ...menu, children: [] };
+		});
+
+		// Build the hierarchy
+		menuList.forEach(menu => {
+			if (menu.parent_id && menuMap[menu.parent_id]) {
+				menuMap[menu.parent_id].children.push(menuMap[menu.id]);
+			} else {
+				rootMenus.push(menuMap[menu.id]);
+			}
+		});
+
+		return rootMenus;
+	};
+
+	// Initialize menuItems state with hierarchical structure
+	const [menuItems, setMenuItems] = useState(buildMenuHierarchy(menus.data || []));
+	const [isDragging, setIsDragging] = useState(false);
+
+	const sensors = useSensors(
+		useSensor(PointerSensor, {
+			activationConstraint: {
+				distance: 8,
+			},
+		})
+	);
 
 	const handleSearch = (e) => {
 		e.preventDefault();
@@ -56,6 +118,170 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 		}
 	};
 
+	const handleDragStart = () => {
+		setIsDragging(true);
+	};
+
+	// Flatten hierarchical menu structure for backend
+	const flattenMenus = (menuList, parentId = null) => {
+		let result = [];
+		menuList.forEach((menu, index) => {
+			const flatMenu = {
+				id: menu.id,
+				name: menu.name,
+				slug: menu.slug,
+				route: menu.route,
+				url: menu.url,
+				icon: menu.icon,
+				permission_name: menu.permission_name,
+				is_active: menu.is_active,
+				parent_id: parentId,
+				sort_order: index + 1
+			};
+			result.push(flatMenu);
+			if (menu.children && menu.children.length > 0) {
+				result = result.concat(flattenMenus(menu.children, menu.id));
+			}
+		});
+		return result;
+	};
+
+	// Find menu item in hierarchical structure
+	const findMenuItem = (menuList, id) => {
+		for (const menu of menuList) {
+			if (menu.id === id) {
+				return menu;
+			}
+			if (menu.children && menu.children.length > 0) {
+				const found = findMenuItem(menu.children, id);
+				if (found) return found;
+			}
+		}
+		return null;
+	};
+
+	// Remove menu item from hierarchical structure
+	const removeMenuItem = (menuList, id) => {
+		return menuList.map(menu => {
+			if (menu.id === id) {
+				return null;
+			}
+			if (menu.children && menu.children.length > 0) {
+				return {
+					...menu,
+					children: removeMenuItem(menu.children, id)
+				};
+			}
+			return menu;
+		}).filter(Boolean);
+	};
+
+	const handleDragEnd = (event) => {
+		setIsDragging(false);
+		const { active, over, delta } = event;
+
+		if (!over || active.id === over.id) {
+			return;
+		}
+
+		const activeItem = findMenuItem(menuItems, active.id);
+		const overItem = findMenuItem(menuItems, over.id);
+
+		if (!activeItem || !overItem) {
+			return;
+		}
+
+		// Check if dragged to the right (horizontal offset > 50px) to make it a submenu
+		const horizontalOffset = delta?.x || 0;
+		const shouldMakeSubmenu = horizontalOffset > 50;
+
+		let newMenuItems = [...menuItems];
+
+		// Remove the active item from its current position
+		newMenuItems = removeMenuItem(newMenuItems, active.id);
+
+		if (shouldMakeSubmenu && !overItem.parent_id) {
+			// Add as child to the target item
+			const updatedActiveItem = {
+				...activeItem,
+				parent_id: overItem.id,
+				children: []
+			};
+
+			// Find and update the target item
+			newMenuItems = newMenuItems.map(menu => {
+				if (menu.id === overItem.id) {
+					return {
+						...menu,
+						children: [...(menu.children || []), updatedActiveItem]
+					};
+				}
+				return menu;
+			});
+		} else {
+			// Normal reordering - add at the same level as target
+			const updatedActiveItem = {
+				...activeItem,
+				parent_id: overItem.parent_id,
+				children: []
+			};
+
+			if (!overItem.parent_id) {
+				// Add to root level
+				const overIndex = newMenuItems.findIndex(menu => menu.id === overItem.id);
+				newMenuItems.splice(overIndex + 1, 0, updatedActiveItem);
+			} else {
+				// Add to parent's children
+				newMenuItems = newMenuItems.map(menu => {
+					if (menu.id === overItem.parent_id) {
+						const overChildIndex = menu.children.findIndex(child => child.id === overItem.id);
+						const newChildren = [...menu.children];
+						newChildren.splice(overChildIndex + 1, 0, updatedActiveItem);
+						return {
+							...menu,
+							children: newChildren
+						};
+					}
+					return menu;
+				});
+			}
+		}
+
+		setMenuItems(newMenuItems);
+
+		// Flatten and send to backend
+		const flatMenus = flattenMenus(newMenuItems);
+		const reorderData = flatMenus.map(item => ({
+			id: item.id,
+			sort_order: item.sort_order,
+			parent_id: item.parent_id,
+		}));
+
+		// Send to backend
+		router.post(
+			route("menus.reorder"),
+			{ items: reorderData },
+			{
+				preserveState: true,
+				preserveScroll: true,
+				onSuccess: () => {
+						// Determine success message based on operation type
+						const successMessage = shouldMakeSubmenu 
+							? `📁 Menu "${activeItem.name}" berhasil dijadikan submenu dari "${overItem.name}"`
+							: `🔄 Urutan menu "${activeItem.name}" berhasil diperbarui`;
+						
+						// Show success toast
+						setSuccessNotification(successMessage);
+						setShowSuccessToast(true);
+					},
+				onError: () => {
+					// Revert on error
+					setMenuItems(buildMenuHierarchy(menus.data));
+				},
+			}
+		);
+	};
+
 	const toggleStatus = (menu) => {
 		router.post(
 			route("menus.toggle-status", menu.id),
@@ -88,36 +314,107 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 		);
 	};
 
-	const renderMenuRow = (menu, level = 0) => {
+	// Sortable Menu Item Component
+	const SortableMenuItem = ({ menu, level = 0 }) => {
+		const {
+			attributes,
+			listeners,
+			setNodeRef,
+			transform,
+			transition,
+			isDragging: itemIsDragging,
+			over,
+			active,
+		} = useSortable({ id: menu.id });
+
+		const style = {
+			transform: CSS.Transform.toString(transform),
+			transition,
+			opacity: itemIsDragging ? 0.5 : 1,
+		};
+
 		const hasChildren = menu.children && menu.children.length > 0;
 		const isExpanded = expandedMenus.has(menu.id);
-		const paddingLeft = level * 2; // rem
+		
+		// Check if this item is being hovered over during drag for submenu creation
+		const isDropTarget = over?.id === menu.id && isDragging && !menu.parent_id;
+		const isActiveItem = active?.id === menu.id;
+		const isBeingDraggedOver = over?.id === menu.id && active && active.id !== menu.id;
+		const canBecomeSubmenu = isBeingDraggedOver && !menu.parent_id;
+		const willReorder = isBeingDraggedOver && menu.parent_id;
 
 		return (
-			<React.Fragment key={menu.id}>
-				<tr className="bg-white border-b hover:bg-gray-50">
-					<td
-						className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
-						style={{ paddingLeft: `${1.5 + paddingLeft}rem` }}
+				<React.Fragment>
+					<tr
+						ref={setNodeRef}
+						style={style}
+						className={`${
+							itemIsDragging ? "bg-yellow-100 border-2 border-yellow-400 shadow-lg opacity-80" : "hover:bg-gray-50"
+						} ${
+							canBecomeSubmenu ? "bg-green-50 border-l-4 border-green-400" : ""
+						} ${
+							willReorder ? "bg-blue-50 border-l-4 border-blue-400" : ""
+						} transition-all duration-200`}
 					>
-						<div className="flex items-center">
-							{hasChildren && (
-								<button
-									onClick={() => toggleExpanded(menu.id)}
-									className="mr-2 p-1 hover:bg-gray-200 rounded"
-								>
-									{isExpanded ? (
-										<ChevronDownIcon className="h-4 w-4" />
-									) : (
-										<ChevronRightIcon className="h-4 w-4" />
-									)}
-								</button>
-							)}
-							{!hasChildren && <div className="w-6" />}
-							{menu.icon && (
-								<i className={`${menu.icon} mr-2 text-gray-600`}></i>
-							)}
-							{menu.name}
+					<td className="px-6 py-4 whitespace-nowrap">
+						<div className="flex items-center space-x-2">
+							{/* Drag Handle */}
+							<button
+								{...attributes}
+								{...listeners}
+								className="text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing"
+								title="Drag untuk mengubah urutan"
+							>
+								<Bars3Icon className="h-4 w-4" />
+							</button>
+
+							{/* Indentation for sub-menus */}
+							<div style={{ marginLeft: `${level * 20}px` }} className="flex items-center space-x-2">
+								{/* Expand/Collapse Button */}
+								{hasChildren && (
+									<button
+										onClick={() => toggleExpanded(menu.id)}
+										className="text-gray-400 hover:text-gray-600"
+									>
+										{isExpanded ? (
+											<ChevronDownIcon className="h-4 w-4" />
+										) : (
+											<ChevronRightIcon className="h-4 w-4" />
+										)}
+									</button>
+								)}
+
+								{/* Menu Icon */}
+								{menu.icon && (
+									<i className={`${menu.icon} text-gray-500`}></i>
+								)}
+
+								{/* Menu Name */}
+								<span className={`text-sm font-medium ${
+									isActiveItem ? "text-yellow-800" : "text-gray-900"
+								}`}>
+									{isActiveItem && "🔄 "}{menu.name}
+								</span>
+								
+								{/* Drag Status Indicator */}
+								{isActiveItem && (
+									<span className="ml-2 text-xs text-yellow-700 font-medium bg-yellow-200 px-2 py-1 rounded animate-pulse">
+										✋ Sedang di-drag
+									</span>
+								)}
+								
+								{/* Drop Target Indicators */}
+								{canBecomeSubmenu && (
+									<span className="ml-2 text-xs text-green-600 font-medium bg-green-100 px-2 py-1 rounded">
+										📁 Akan menjadi submenu
+									</span>
+								)}
+								{willReorder && (
+									<span className="ml-2 text-xs text-blue-600 font-medium bg-blue-100 px-2 py-1 rounded">
+										🔄 Akan diurutkan ulang
+									</span>
+								)}
+							</div>
 						</div>
 					</td>
 					<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -136,17 +433,17 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 						{getStatusBadge(menu.is_active)}
 					</td>
 					<td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-						<div className="flex items-center space-x-2">
+						<div className="flex items-center justify-end space-x-2">
 							<Link
 								href={route("menus.show", menu.id)}
 								className="text-indigo-600 hover:text-indigo-900"
-								title="Lihat Detail"
+								title="Lihat"
 							>
 								<EyeIcon className="h-4 w-4" />
 							</Link>
 							<Link
 								href={route("menus.edit", menu.id)}
-								className="text-yellow-600 hover:text-yellow-900"
+								className="text-indigo-600 hover:text-indigo-900"
 								title="Edit"
 							>
 								<PencilIcon className="h-4 w-4" />
@@ -174,7 +471,9 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 				</tr>
 				{hasChildren &&
 					isExpanded &&
-					menu.children.map((child) => renderMenuRow(child, level + 1))}
+					menu.children.map((child) => (
+						<SortableMenuItem key={child.id} menu={child} level={level + 1} />
+					))}
 			</React.Fragment>
 		);
 	};
@@ -187,8 +486,22 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 				<div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
 					{/* Flash Messages */}
 					{flash.success && (
-						<div className="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-							{flash.success}
+						<div className="mb-4 bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-400 p-4 rounded-lg shadow-md">
+							<div className="flex items-center">
+								<div className="flex-shrink-0">
+									<svg className="h-6 w-6 text-green-400 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+									</svg>
+								</div>
+								<div className="ml-3">
+									<h3 className="text-sm font-medium text-green-800">
+										✅ Berhasil!
+									</h3>
+									<div className="mt-1 text-sm text-green-700">
+										{flash.success}
+									</div>
+								</div>
+							</div>
 						</div>
 					)}
 					{flash.error && (
@@ -196,6 +509,19 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 							{flash.error}
 						</div>
 					)}
+
+					{/* Drag Drop Instructions */}
+					<div className="mb-4 bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded">
+						<div className="flex items-center space-x-2">
+							<Bars3Icon className="h-5 w-5" />
+							<span className="font-medium">Petunjuk Drag & Drop:</span>
+						</div>
+						<div className="mt-2 text-sm space-y-1">
+							<div>• <span className="font-medium text-yellow-700">🔄 Sedang di-drag:</span> Item yang sedang dipindahkan</div>
+							<div>• <span className="font-medium text-green-700">📁 Akan menjadi submenu:</span> Geser ke menu utama untuk membuat submenu</div>
+							<div>• <span className="font-medium text-blue-700">🔄 Akan diurutkan ulang:</span> Mengubah urutan menu</div>
+						</div>
+					</div>
 
 					<div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
 						<div className="p-6 bg-white border-b border-gray-200">
@@ -287,67 +613,81 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 
 							{/* Table */}
 							<div className="overflow-x-auto">
-								<table className="min-w-full divide-y divide-gray-200">
-									<thead className="bg-gray-50">
-										<tr>
-											<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-												Nama Menu
-											</th>
-											<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-												Slug
-											</th>
-											<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-												Route/URL
-											</th>
-											<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-												Permission
-											</th>
-											<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-												Urutan
-											</th>
-											<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-												Status
-											</th>
-											<th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-												Aksi
-											</th>
-										</tr>
-									</thead>
-									<tbody className="bg-white divide-y divide-gray-200">
-										{menus.data.length === 0 ? (
+								<DndContext
+									collisionDetection={closestCenter}
+									sensors={sensors}
+									onDragStart={handleDragStart}
+									onDragEnd={handleDragEnd}
+								>
+									<table className="min-w-full divide-y divide-gray-200">
+										<thead className="bg-gray-50">
 											<tr>
-												<td
-													colSpan="7"
-													className="px-6 py-12 text-center text-gray-500"
-												>
-													<div className="flex flex-col items-center">
-														<svg
-															className="h-12 w-12 text-gray-400 mb-4"
-															fill="none"
-															viewBox="0 0 24 24"
-															stroke="currentColor"
-														>
-															<path
-																strokeLinecap="round"
-																strokeLinejoin="round"
-																strokeWidth={2}
-																d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-															/>
-														</svg>
-														<p className="text-lg font-medium">
-															Tidak ada menu ditemukan
-														</p>
-														<p className="text-sm">
-															Mulai dengan membuat menu baru
-														</p>
-													</div>
-												</td>
+												<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+													Nama Menu
+												</th>
+												<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+													Slug
+												</th>
+												<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+													Route/URL
+												</th>
+												<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+													Permission
+												</th>
+												<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+													Urutan
+												</th>
+												<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+													Status
+												</th>
+												<th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+													Aksi
+												</th>
 											</tr>
-										) : (
-											menus.data.map((menu) => renderMenuRow(menu))
-										)}
-									</tbody>
-								</table>
+										</thead>
+										<tbody className="bg-white divide-y divide-gray-200">
+											{menuItems.length === 0 ? (
+												<tr>
+													<td
+														colSpan="7"
+														className="px-6 py-12 text-center text-gray-500"
+													>
+														<div className="flex flex-col items-center">
+															<svg
+																className="h-12 w-12 text-gray-400 mb-4"
+																fill="none"
+																viewBox="0 0 24 24"
+																stroke="currentColor"
+															>
+																<path
+																	strokeLinecap="round"
+																	strokeLinejoin="round"
+																	strokeWidth={2}
+																	d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+																/>
+															</svg>
+															<p className="text-lg font-medium">
+																Tidak ada menu ditemukan
+															</p>
+															<p className="text-sm">
+																Mulai dengan membuat menu baru
+															</p>
+														</div>
+													</td>
+												</tr>
+											) : (
+												<SortableContext
+													items={flattenMenus(menuItems).map((menu) => menu.id)}
+													strategy={verticalListSortingStrategy}
+												>
+													{menuItems.map((menu) => (
+														<SortableMenuItem key={menu.id} menu={menu} level={0} />
+													))}
+												</SortableContext>
+											)}
+										</tbody>
+									</table>
+								</DndContext>
 							</div>
 
 							{/* Pagination */}
@@ -412,6 +752,42 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 									Hapus
 								</button>
 							</div>
+						</div>
+					</div>
+				</div>
+			)}
+
+			{/* Success Toast Notification */}
+			{showSuccessToast && successNotification && (
+				<div className="fixed bottom-4 right-4 z-50 transform transition-all duration-500 ease-in-out animate-bounce">
+					<div className="bg-white rounded-lg shadow-2xl border-l-4 border-green-500 p-4 max-w-md">
+						<div className="flex items-start">
+							<div className="flex-shrink-0">
+								<div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+									<svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+										<path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+									</svg>
+								</div>
+							</div>
+							<div className="ml-3 flex-1">
+								<h3 className="text-sm font-semibold text-gray-900 mb-1">
+									Operasi Berhasil!
+								</h3>
+								<p className="text-sm text-gray-600">
+									{successNotification}
+								</p>
+							</div>
+							<button
+								onClick={() => {
+									setShowSuccessToast(false);
+									setSuccessNotification(null);
+								}}
+								className="ml-3 flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
+							>
+								<svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+									<path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+								</svg>
+							</button>
 						</div>
 					</div>
 				</div>

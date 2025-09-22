@@ -126,7 +126,7 @@ class PatientController extends Controller
         // Generate nomor RM otomatis
         $data['no_rkm_medis'] = Patient::generateNoRM();
         $data['tgl_daftar'] = now()->toDateString();
-        $data['umur'] = Patient::calculateAge($data['tgl_lahir']);
+        $data['umur'] = Patient::calculateAgeFromDate($data['tgl_lahir']);
 
         // Set default values for required fields
         $data['kd_kel'] = $data['kd_kel'] ?? 1;

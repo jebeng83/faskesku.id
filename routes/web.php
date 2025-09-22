@@ -6,7 +6,9 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\RegPeriksaController;
-use App\Http\Controllers\RawatJalanController;
+use App\Http\Controllers\RawatJalan\RawatJalanController;
+use App\Http\Controllers\RawatJalan\ObatController;
+use App\Http\Controllers\RawatJalan\ResepController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RawatInapController;
@@ -17,6 +19,7 @@ use App\Http\Controllers\RadiologiController;
 use App\Http\Controllers\RehabilitasiMedikController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\SpesialisController;
+use App\Http\Controllers\DaftarTarifController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -76,6 +79,17 @@ Route::middleware('auth')->group(function () {
     Route::put('rawat-jalan/pemeriksaan-ralan', [RawatJalanController::class, 'updatePemeriksaanRalan'])->name('rawat-jalan.pemeriksaan-ralan.update');
     Route::get('pegawai/search', [RawatJalanController::class, 'searchPegawai'])->name('pegawai.search');
     Route::get('rawat-jalan-statistics', [RawatJalanController::class, 'getStatistics'])->name('rawat-jalan.statistics');
+    
+    // API routes untuk obat
+    Route::get('api/obat', [ObatController::class, 'getObatByPoli'])->name('api.obat.index');
+    Route::get('api/obat/{kode_barang}', [ObatController::class, 'getDetailObat'])->name('api.obat.detail');
+    Route::post('api/obat/cek-stok', [ObatController::class, 'cekStokObat'])->name('api.obat.cek-stok');
+    
+    // API routes untuk resep
+    Route::post('api/resep', [ResepController::class, 'store'])->name('api.resep.store');
+    Route::get('api/resep/{no_resep}', [ResepController::class, 'getResep'])->name('api.resep.get');
+    Route::get('api/resep/rawat/{no_rawat}', [ResepController::class, 'getByNoRawat'])->name('api.resep.by-rawat');
+    
     Route::resource('rawat-jalan', RawatJalanController::class);
 
     // Profile
@@ -93,7 +107,21 @@ Route::middleware('auth')->group(function () {
     Route::resource('kamar-operasi', KamarOperasiController::class);
 
     // Penunjang Medis routes
-    Route::resource('laboratorium', LaboratoriumController::class);
+    Route::prefix('laboratorium')->name('laboratorium.')->group(function () {
+        Route::get('/', [LaboratoriumController::class, 'index'])->name('index');
+        Route::get('/dashboard', [LaboratoriumController::class, 'dashboard'])->name('dashboard');
+        Route::get('/create', [LaboratoriumController::class, 'create'])->name('create');
+        Route::post('/', [LaboratoriumController::class, 'store'])->name('store');
+        Route::get('/{noRawat}', [LaboratoriumController::class, 'show'])->name('show');
+        Route::get('/{noRawat}/edit', [LaboratoriumController::class, 'edit'])->name('edit');
+        Route::put('/{noRawat}', [LaboratoriumController::class, 'update'])->name('update');
+        Route::delete('/{noRawat}', [LaboratoriumController::class, 'destroy'])->name('destroy');
+        Route::put('/{noRawat}/hasil', [LaboratoriumController::class, 'updateHasil'])->name('update-hasil');
+    });
     Route::resource('radiologi', RadiologiController::class);
     Route::resource('rehabilitasi-medik', RehabilitasiMedikController::class);
+
+    // Daftar Tarif routes
+    Route::get('daftar-tarif/generate-kode', [DaftarTarifController::class, 'generateKode'])->name('daftar-tarif.generate-kode');
+    Route::resource('daftar-tarif', DaftarTarifController::class);
 });
