@@ -15,6 +15,8 @@ use App\Http\Controllers\KamarOperasiController;
 use App\Http\Controllers\LaboratoriumController;
 use App\Http\Controllers\RadiologiController;
 use App\Http\Controllers\RehabilitasiMedikController;
+use App\Http\Controllers\DoctorController;
+use App\Http\Controllers\SpesialisController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -35,6 +37,12 @@ Route::middleware('auth')->group(function () {
 
     // Employee routes
     Route::resource('employees', EmployeeController::class);
+
+    // Doctor routes
+    Route::resource('doctors', DoctorController::class);
+
+    // Spesialis routes
+    Route::resource('spesialis', SpesialisController::class);
 
     // Registrasi Periksa routes
     Route::resource('reg-periksa', RegPeriksaController::class);

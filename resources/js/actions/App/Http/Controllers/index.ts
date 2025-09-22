@@ -3,6 +3,8 @@ import MenuController from './MenuController'
 import AuthController from './AuthController'
 import PatientController from './PatientController'
 import EmployeeController from './EmployeeController'
+import DoctorController from './DoctorController'
+import SpesialisController from './SpesialisController'
 import RegPeriksaController from './RegPeriksaController'
 import RawatJalanController from './RawatJalanController'
 import ProfileController from './ProfileController'
@@ -19,6 +21,8 @@ const Controllers = {
     AuthController,
     PatientController,
     EmployeeController,
+    DoctorController,
+    SpesialisController,
     RegPeriksaController,
     RawatJalanController,
     ProfileController,
