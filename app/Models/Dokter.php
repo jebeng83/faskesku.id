@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Dokter extends Model
 {
@@ -13,6 +12,7 @@ class Dokter extends Model
     protected $table = 'dokter';
     protected $primaryKey = 'kd_dokter';
     public $incrementing = false;
+    protected $keyType = 'string';
     public $timestamps = false;
 
     protected $fillable = [
@@ -25,10 +25,32 @@ class Dokter extends Model
         'agama',
         'almt_tgl',
         'no_telp',
+        'email',
         'stts_nikah',
         'kd_sps',
         'alumni',
         'no_ijn_praktek',
         'status'
     ];
+
+    protected $casts = [
+        'tgl_lahir' => 'date',
+        'status' => 'string'
+    ];
+
+    /**
+     * Scope untuk dokter aktif
+     */
+    public function scopeAktif($query)
+    {
+        return $query->where('status', '1');
+    }
+
+    /**
+     * Accessor untuk nama lengkap dokter
+     */
+    public function getNamaLengkapAttribute()
+    {
+        return $this->kd_dokter . ' - ' . $this->nm_dokter;
+    }
 }

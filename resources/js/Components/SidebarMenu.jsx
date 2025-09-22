@@ -1,10 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, usePage } from "@inertiajs/react";
 import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
 export default function SidebarMenu() {
 	const { menu_hierarchy, current_menu } = usePage().props;
 	const [expandedMenus, setExpandedMenus] = useState(new Set());
+
+	// Debug: Log menu data
+	console.log('SidebarMenu - menu_hierarchy:', menu_hierarchy);
+	console.log('SidebarMenu - current_menu:', current_menu);
+
+	// Auto-expand menus that have active children
+	useEffect(() => {
+		if (!menu_hierarchy || !current_menu) return;
+
+		const findParentMenus = (menus, targetMenuId, parentIds = []) => {
+			for (const menu of menus) {
+				if (menu.id === targetMenuId) {
+					return parentIds;
+				}
+				const children = menu.active_children_recursive || menu.children || [];
+				if (children.length > 0) {
+					const result = findParentMenus(children, targetMenuId, [...parentIds, menu.id]);
+					if (result.length > 0) {
+						return result;
+					}
+				}
+			}
+			return [];
+		};
+
+		const parentIds = findParentMenus(menu_hierarchy, current_menu.id);
+		if (parentIds.length > 0) {
+			setExpandedMenus(new Set(parentIds));
+			console.log('Auto-expanding parent menus:', parentIds);
+		}
+	}, [menu_hierarchy, current_menu]);
 
 	const toggleExpanded = (menuId) => {
 		const newExpanded = new Set(expandedMenus);
@@ -53,6 +84,12 @@ export default function SidebarMenu() {
 		const isExpanded = expandedMenus.has(menu.id);
 		const isActive = isMenuActive(menu);
 		const menuUrl = getMenuUrl(menu);
+
+		// Debug: Log menu item details
+		console.log(`Menu: ${menu.name}, hasChildren: ${hasChildren}, children:`, children);
+		if (hasChildren) {
+			console.log(`Menu ${menu.name} - isExpanded: ${isExpanded}, expandedMenus:`, expandedMenus);
+		}
 
 		return (
 			<React.Fragment key={menu.id}>

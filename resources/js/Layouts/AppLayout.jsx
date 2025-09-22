@@ -220,17 +220,17 @@ export default function AppLayout({
 				</div>
 			</header>
 
-			{/* Mobile backdrop - dipindahkan keluar dari sidebar */}
+			{/* Mobile backdrop */}
 			{isSidebarOpen && (
 				<div
-					className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+					className="fixed inset-0 bg-black/50 z-40 lg:hidden"
 					onClick={() => setIsSidebarOpen(false)}
 				/>
 			)}
 
 			{/* Sidebar - Gradient Able Style */}
 			<aside
-				className={`fixed lg:sticky top-14 left-0 z-40 h-[calc(100vh-56px)] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-all duration-300 ${
+				className={`fixed lg:sticky top-14 left-0 z-50 h-[calc(100vh-56px)] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-all duration-300 ${
 					isSidebarOpen
 						? "translate-x-0 w-64"
 						: isSidebarCollapsed
@@ -238,13 +238,6 @@ export default function AppLayout({
 						: "lg:translate-x-0 lg:w-64 -translate-x-full"
 				}`}
 			>
-				{/* Mobile backdrop */}
-				{isSidebarOpen && (
-					<div
-						className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-						onClick={() => setIsSidebarOpen(false)}
-					/>
-				)}
 
 				<div className="h-full flex flex-col">
 					{/* Dynamic Navigation */}
@@ -288,7 +281,7 @@ export default function AppLayout({
 
 			{/* Main Content */}
 			<main
-				className={`absolute top-14 p-4 left-0 right-0 bottom-0 transition-all duration-300 ${
+				className={`absolute top-14 p-4 left-0 right-0 bottom-0 z-10 transition-all duration-300 ${
 					isSidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
 				}`}
 			>
@@ -438,6 +431,10 @@ function NavItemCollapsed({ icon, active = false, href = "#" }) {
 }
 
 function UserProfileDropdown({ isOpen, onToggle }) {
+	const handleLogout = () => {
+		router.post(route('logout'));
+	};
+
 	return (
 		<div className="relative profile-dropdown">
 			<button
@@ -480,15 +477,15 @@ function UserProfileDropdown({ isOpen, onToggle }) {
 						Settings
 					</a>
 					<hr className="my-1 border-gray-200 dark:border-gray-600" />
-					<a
-						href="#"
-						className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+					<button
+						onClick={handleLogout}
+						className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left"
 					>
 						<svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
 							<path d="M16 17v-3H9v-4h7V7l5 5-5 5M14 2a2 2 0 0 1 2 2v2h-2V4H4v16h10v-2h2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10Z" />
 						</svg>
 						Logout
-					</a>
+					</button>
 				</div>
 			)}
 		</div>
