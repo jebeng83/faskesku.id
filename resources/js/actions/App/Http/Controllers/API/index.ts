@@ -6,12 +6,12 @@ import RegPeriksaController from './RegPeriksaController'
 import UserController from './UserController'
 
 const API = {
-    EmployeeController: Object.assign(EmployeeController, EmployeeController),
-    PenjabController: Object.assign(PenjabController, PenjabController),
-    WilayahController: Object.assign(WilayahController, WilayahController),
-    PermissionController: Object.assign(PermissionController, PermissionController),
-    RegPeriksaController: Object.assign(RegPeriksaController, RegPeriksaController),
-    UserController: Object.assign(UserController, UserController),
+    EmployeeController,
+    PenjabController,
+    WilayahController,
+    PermissionController,
+    RegPeriksaController,
+    UserController,
 }
 
 export default API
