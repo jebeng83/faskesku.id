@@ -3,6 +3,10 @@ import MenuController from './MenuController'
 import AuthController from './AuthController'
 import PatientController from './PatientController'
 import EmployeeController from './EmployeeController'
+import DoctorController from './DoctorController'
+import SpesialisController from './SpesialisController'
+import RegPeriksaController from './RegPeriksaController'
+import RawatJalanController from './RawatJalanController'
 import RegPeriksaController from './RegPeriksaController'
 import RawatJalan from './RawatJalan'
 import ProfileController from './ProfileController'
@@ -30,6 +34,8 @@ const Controllers = {
     RadiologiController: Object.assign(RadiologiController, RadiologiController),
     RehabilitasiMedikController: Object.assign(RehabilitasiMedikController, RehabilitasiMedikController),
     DaftarTarifController: Object.assign(DaftarTarifController, DaftarTarifController),
+    DoctorController: Object.assign(DoctorController, DoctorController),
+    SpesialisController: Object.assign(SpesialisController, SpesialisController),
 }
 
 export default Controllers

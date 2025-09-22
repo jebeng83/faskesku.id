@@ -40,7 +40,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 const permissions = {
-    index: Object.assign(index, index),
+    index,
 }
 
 export default permissions

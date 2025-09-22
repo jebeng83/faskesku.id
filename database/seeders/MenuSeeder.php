@@ -113,6 +113,30 @@ class MenuSeeder extends Seeder
             'description' => 'Pengelolaan data pegawai'
         ]);
 
+        Menu::create([
+            'name' => 'Data Dokter',
+            'slug' => 'data-dokter',
+            'icon' => 'fas fa-user-md',
+            'route' => 'doctors.index',
+            'parent_id' => $masterData->id,
+            'sort_order' => 3,
+            'is_active' => true,
+            'permission_name' => 'view-doctors',
+            'description' => 'Pengelolaan data dokter'
+        ]);
+
+        Menu::create([
+            'name' => 'Data Spesialis',
+            'slug' => 'data-spesialis',
+            'icon' => 'fas fa-stethoscope',
+            'route' => 'spesialis.index',
+            'parent_id' => $masterData->id,
+            'sort_order' => 4,
+            'is_active' => true,
+            'permission_name' => 'view-spesialis',
+            'description' => 'Pengelolaan data spesialis medis'
+        ]);
+
         // Registration sub-menus
         Menu::create([
             'name' => 'Registrasi Periksa',
