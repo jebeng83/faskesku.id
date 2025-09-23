@@ -104,6 +104,14 @@ Route::middleware('auth')->group(function () {
     Route::resource('rehabilitasi-medik', RehabilitasiMedikController::class);
 
     // Daftar Tarif routes
-    Route::get('daftar-tarif/generate-kode', [DaftarTarifController::class, 'generateKode'])->name('daftar-tarif.generate-kode');
-    Route::resource('daftar-tarif', DaftarTarifController::class);
+    Route::prefix('daftar-tarif')->name('daftar-tarif.')->group(function () {
+        Route::get('/', [DaftarTarifController::class, 'index'])->name('index');
+        Route::get('/create', [DaftarTarifController::class, 'create'])->name('create');
+        Route::post('/', [DaftarTarifController::class, 'store'])->name('store');
+        Route::get('/generate-kode', [DaftarTarifController::class, 'generateKode'])->name('generate-kode');
+        Route::get('/{id}', [DaftarTarifController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [DaftarTarifController::class, 'edit'])->name('edit');
+        Route::post('/{id}/update', [DaftarTarifController::class, 'update'])->name('update');
+        Route::delete('/{id}', [DaftarTarifController::class, 'destroy'])->name('destroy');
+    });
 });
