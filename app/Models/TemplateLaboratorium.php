@@ -10,20 +10,38 @@ class TemplateLaboratorium extends Model
     use HasFactory;
 
     protected $table = 'template_laboratorium';
-    protected $primaryKey = 'id';
+    protected $primaryKey = 'id_template';
+    public $timestamps = false;
 
     protected $fillable = [
         'kd_jenis_prw',
-        'item_pemeriksaan',
-        'nilai_rujukan_pria',
-        'nilai_rujukan_wanita',
+        'Pemeriksaan',
         'satuan',
-        'urutan',
-        'status'
+        'nilai_rujukan_ld',
+        'nilai_rujukan_la',
+        'nilai_rujukan_pd',
+        'nilai_rujukan_pa',
+        'bagian_rs',
+        'bhp',
+        'bagian_perujuk',
+        'bagian_dokter',
+        'bagian_laborat',
+        'kso',
+        'menejemen',
+        'biaya_item',
+        'urut'
     ];
 
     protected $casts = [
-        'urutan' => 'integer'
+        'bagian_rs' => 'decimal:2',
+        'bhp' => 'decimal:2',
+        'bagian_perujuk' => 'decimal:2',
+        'bagian_dokter' => 'decimal:2',
+        'bagian_laborat' => 'decimal:2',
+        'kso' => 'decimal:2',
+        'menejemen' => 'decimal:2',
+        'biaya_item' => 'decimal:2',
+        'urut' => 'integer'
     ];
 
     // Relasi dengan JnsPerawatanLab
@@ -32,17 +50,10 @@ class TemplateLaboratorium extends Model
         return $this->belongsTo(JnsPerawatanLab::class, 'kd_jenis_prw', 'kd_jenis_prw');
     }
 
-    // Relasi dengan DetailPeriksaLab
-    public function detailPemeriksaan()
+    // Relasi dengan permintaan detail
+    public function permintaanDetailPermintaanLab()
     {
-        return $this->hasMany(DetailPeriksaLab::class, 'item_pemeriksaan', 'item_pemeriksaan')
-                    ->where('kd_jenis_prw', $this->kd_jenis_prw);
-    }
-
-    // Scope untuk status aktif
-    public function scopeAktif($query)
-    {
-        return $query->where('status', 'Aktif');
+        return $this->hasMany(PermintaanDetailPermintaanLab::class, 'id_template', 'id_template');
     }
 
     // Scope untuk filter berdasarkan jenis pemeriksaan
@@ -55,7 +66,7 @@ class TemplateLaboratorium extends Model
     public function scopeSearch($query, $search)
     {
         return $query->where(function ($q) use ($search) {
-            $q->where('item_pemeriksaan', 'like', "%{$search}%")
+            $q->where('Pemeriksaan', 'like', "%{$search}%")
                 ->orWhereHas('jenisPerawatan', function ($jenisQuery) use ($search) {
                     $jenisQuery->where('nm_perawatan', 'like', "%{$search}%");
                 });
@@ -65,51 +76,60 @@ class TemplateLaboratorium extends Model
     // Scope untuk urutan
     public function scopeOrdered($query)
     {
-        return $query->orderBy('urutan', 'asc');
+        return $query->orderBy('urut', 'asc');
     }
 
-    // Method untuk mendapatkan nilai rujukan berdasarkan jenis kelamin
-    public function getNilaiRujukan($jenisKelamin = null)
+    // Method untuk mendapatkan nilai rujukan berdasarkan jenis kelamin dan usia
+    public function getNilaiRujukan($jenisKelamin = null, $usia = null)
     {
-        if ($jenisKelamin === 'L' && !empty($this->nilai_rujukan_pria)) {
-            return $this->nilai_rujukan_pria;
-        } elseif ($jenisKelamin === 'P' && !empty($this->nilai_rujukan_wanita)) {
-            return $this->nilai_rujukan_wanita;
+        // ld = laki dewasa, la = laki anak, pd = perempuan dewasa, pa = perempuan anak
+        if ($jenisKelamin === 'L') {
+            if ($usia && $usia < 18 && !empty($this->nilai_rujukan_la)) {
+                return $this->nilai_rujukan_la;
+            } elseif (!empty($this->nilai_rujukan_ld)) {
+                return $this->nilai_rujukan_ld;
+            }
+        } elseif ($jenisKelamin === 'P') {
+            if ($usia && $usia < 18 && !empty($this->nilai_rujukan_pa)) {
+                return $this->nilai_rujukan_pa;
+            } elseif (!empty($this->nilai_rujukan_pd)) {
+                return $this->nilai_rujukan_pd;
+            }
         }
 
-        // Jika tidak ada nilai rujukan spesifik, gunakan yang pria sebagai default
-        return $this->nilai_rujukan_pria ?: $this->nilai_rujukan_wanita;
+        // Default fallback
+        return $this->nilai_rujukan_ld ?: $this->nilai_rujukan_pd ?: $this->nilai_rujukan_la ?: $this->nilai_rujukan_pa;
     }
 
     // Accessor untuk format nilai rujukan
     public function getNilaiRujukanFormattedAttribute()
     {
-        $pria = $this->nilai_rujukan_pria;
-        $wanita = $this->nilai_rujukan_wanita;
+        $ld = $this->nilai_rujukan_ld;
+        $la = $this->nilai_rujukan_la;
+        $pd = $this->nilai_rujukan_pd;
+        $pa = $this->nilai_rujukan_pa;
         $satuan = $this->satuan ? ' ' . $this->satuan : '';
 
-        if ($pria && $wanita && $pria !== $wanita) {
-            return "Pria: {$pria}{$satuan}, Wanita: {$wanita}{$satuan}";
-        } elseif ($pria) {
-            return $pria . $satuan;
-        } elseif ($wanita) {
-            return $wanita . $satuan;
-        }
+        $rujukan = [];
+        if ($ld) $rujukan[] = "Pria Dewasa: {$ld}{$satuan}";
+        if ($la) $rujukan[] = "Pria Anak: {$la}{$satuan}";
+        if ($pd) $rujukan[] = "Wanita Dewasa: {$pd}{$satuan}";
+        if ($pa) $rujukan[] = "Wanita Anak: {$pa}{$satuan}";
 
-        return '-';
+        return !empty($rujukan) ? implode(', ', $rujukan) : '-';
     }
 
-    // Method untuk mengecek apakah template aktif
-    public function isAktif()
+    // Accessor untuk format biaya
+    public function getBiayaItemFormattedAttribute()
     {
-        return $this->status === 'Aktif';
+        return 'Rp ' . number_format($this->biaya_item, 0, ',', '.');
     }
 
-    // Method untuk mengecek apakah ada perbedaan nilai rujukan berdasarkan gender
-    public function hasGenderSpecificValues()
+    // Method untuk mendapatkan total biaya
+    public function getTotalBiaya()
     {
-        return !empty($this->nilai_rujukan_pria) && 
-               !empty($this->nilai_rujukan_wanita) && 
-               $this->nilai_rujukan_pria !== $this->nilai_rujukan_wanita;
+        return $this->bagian_rs + $this->bhp + $this->bagian_perujuk + 
+               $this->bagian_dokter + $this->bagian_laborat + 
+               ($this->kso ?? 0) + ($this->menejemen ?? 0);
     }
 }

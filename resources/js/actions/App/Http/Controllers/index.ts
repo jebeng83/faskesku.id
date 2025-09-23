@@ -1,4 +1,5 @@
 import API from './API'
+import PermintaanLabController from './PermintaanLabController'
 import MenuController from './MenuController'
 import RawatJalan from './RawatJalan'
 import AuthController from './AuthController'
@@ -17,6 +18,7 @@ import TarifTindakanController from './TarifTindakanController'
 
 const Controllers = {
     API: Object.assign(API, API),
+    PermintaanLabController: Object.assign(PermintaanLabController, PermintaanLabController),
     MenuController: Object.assign(MenuController, MenuController),
     RawatJalan: Object.assign(RawatJalan, RawatJalan),
     AuthController: Object.assign(AuthController, AuthController),
