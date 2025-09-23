@@ -224,3 +224,235 @@
         display: none;
     }
 }
+
+/* Professional Modal Styles */
+.modal-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4;
+    z-index: 9999 !important; /* Pastikan z-index tinggi */
+    animation: fadeIn 0.3s ease-out;
+}
+
+.modal-container {
+    @apply bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-hidden;
+    animation: slideUp 0.3s ease-out;
+}
+
+.modal-header {
+    @apply flex items-center justify-between p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200;
+}
+
+.modal-title-section {
+    @apply flex items-center space-x-4;
+}
+
+.modal-icon {
+    @apply w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600;
+}
+
+.modal-title {
+    @apply text-xl font-bold text-gray-900;
+}
+
+.modal-subtitle {
+    @apply text-sm text-gray-600 mt-1;
+}
+
+.modal-close-btn {
+    @apply p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors;
+}
+
+.modal-body {
+    @apply p-6 overflow-y-auto max-h-[calc(95vh-140px)];
+}
+
+.form-section {
+    @apply bg-white border border-gray-200 rounded-xl p-6 shadow-sm;
+}
+
+.section-header {
+    @apply flex items-center space-x-3 mb-6;
+}
+
+.section-icon {
+    @apply w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white;
+}
+
+.section-title {
+    @apply text-lg font-semibold text-gray-900;
+}
+
+.form-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+}
+
+.input-group {
+    @apply space-y-2;
+}
+
+.input-group.col-span-2 {
+    @apply md:col-span-2;
+}
+
+.input-label {
+    @apply block text-sm font-medium text-gray-700;
+}
+
+.form-input {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white;
+}
+
+.form-input.error {
+    @apply border-red-500 bg-red-50 focus:ring-red-500 focus:border-red-500;
+}
+
+.form-select {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white;
+}
+
+.form-select.error {
+    @apply border-red-500 bg-red-50 focus:ring-red-500 focus:border-red-500;
+}
+
+.error-text {
+    @apply text-red-500 text-xs mt-1;
+}
+
+.calculation-card {
+    @apply bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 shadow-sm;
+}
+
+.calculation-header {
+    @apply flex items-center justify-between mb-6;
+}
+
+.calculation-icon {
+    @apply w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white;
+}
+
+.calculation-title {
+    @apply text-lg font-semibold text-gray-900 flex items-center space-x-3;
+}
+
+.calculation-badge {
+    @apply text-xs text-gray-600 bg-white px-3 py-1 rounded-full border border-gray-200;
+}
+
+.total-grid {
+    @apply grid grid-cols-1 md:grid-cols-3 gap-6;
+}
+
+.total-card {
+    @apply bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200;
+}
+
+.total-content {
+    @apply flex-1;
+}
+
+.total-header {
+    @apply flex items-center space-x-2 mb-3;
+}
+
+.total-indicator {
+    @apply w-3 h-3 rounded-full;
+}
+
+.total-indicator.green {
+    @apply bg-green-500;
+}
+
+.total-indicator.blue {
+    @apply bg-blue-500;
+}
+
+.total-indicator.purple {
+    @apply bg-purple-500;
+}
+
+.total-label {
+    @apply text-sm font-medium text-gray-700;
+}
+
+.total-amount {
+    @apply text-2xl font-bold text-gray-900 mb-3;
+}
+
+.total-checkbox {
+    @apply flex justify-end;
+}
+
+.checkbox-label {
+    @apply flex items-center cursor-pointer group;
+}
+
+.checkbox-input {
+    @apply w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2;
+}
+
+.checkbox-text {
+    @apply ml-2 text-xs text-gray-600 group-hover:text-blue-600 transition-colors;
+}
+
+.modal-footer {
+    @apply flex justify-end space-x-3 p-6 bg-gray-50 border-t border-gray-200;
+}
+
+.btn-secondary {
+    @apply px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 transition-all duration-200 font-medium;
+}
+
+.btn-primary {
+    @apply px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .modal-container {
+        @apply mx-2 max-w-none;
+    }
+    
+    .modal-body {
+        @apply px-4 py-6;
+    }
+    
+    .modal-header {
+        @apply px-4 py-4;
+    }
+    
+    .modal-footer {
+        @apply px-4 py-4;
+    }
+    
+    .form-section {
+        @apply p-4;
+    }
+    
+    .form-grid {
+        @apply grid-cols-1;
+    }
+    
+    .total-grid {
+        @apply grid-cols-1;
+    }
+}

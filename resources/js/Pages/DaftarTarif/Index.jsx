@@ -276,430 +276,386 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
         onClose();
     };
 
-    if (!isOpen) return null;
+    if (!isOpen) {
+        return null;
+    }
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold">{isEditMode ? 'Edit Tarif' : 'Tambah Tarif'} {category === 'rawat-jalan' ? 'Rawat Jalan' : category}</h3>
-                    <button
-                        onClick={handleClose}
-                        className="text-gray-400 hover:text-gray-600"
-                    >
+        <div className="modal-overlay">
+            <div className="modal-container">
+                {/* Modal Header */}
+                <div className="modal-header">
+                    <div className="modal-title-section">
+                        <div className="modal-icon">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 className="modal-title">
+                                {isEditMode ? 'Edit Tarif' : 'Tambah Tarif'}
+                            </h3>
+                            <p className="modal-subtitle">
+                                {category === 'rawat-jalan' ? 'Rawat Jalan' : category}
+                            </p>
+                        </div>
+                    </div>
+                    <button onClick={handleClose} className="modal-close-btn">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* BAGIAN ISIAN - Data Input Fields */}
-                    <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                            <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                            </svg>
-                            Data Perawatan
-                        </h3>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Kategori Field */}
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Kategori Perawatan *
-                                </label>
-                                <select
-                                    value={data.kd_kategori}
-                                    onChange={handleKategoriChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    required
-                                >
-                                    <option value="">Pilih Kategori</option>
-                                    {kategoris.map((kategori) => (
-                                        <option key={kategori.kd_kategori} value={kategori.kd_kategori}>
-                                            {kategori.nm_kategori}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.kd_kategori && <p className="text-red-500 text-xs mt-1">{errors.kd_kategori}</p>}
+                {/* Modal Body */}
+                <div className="modal-body">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Data Perawatan Section */}
+                        <div className="form-section">
+                            <div className="section-header">
+                                <div className="section-icon">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </div>
+                                <h4 className="section-title">Data Perawatan</h4>
                             </div>
+                            
+                            <div className="form-grid">
+                                {/* Kategori Field */}
+                                <div className="input-group">
+                                    <label className="input-label">
+                                        Kategori Perawatan *
+                                    </label>
+                                    <select
+                                        value={data.kd_kategori}
+                                        onChange={handleKategoriChange}
+                                        className="form-select"
+                                        required
+                                    >
+                                        <option value="">Pilih Kategori</option>
+                                        {kategoris.map((kategori) => (
+                                            <option key={kategori.kd_kategori} value={kategori.kd_kategori}>
+                                                {kategori.nm_kategori}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.kd_kategori && <p className="error-text">{errors.kd_kategori}</p>}
+                                </div>
 
-                            {/* Kode Jenis Perawatan */}
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Kode Jenis Perawatan <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={data.kd_jenis_prw}
-                                    onChange={(e) => setData('kd_jenis_prw', e.target.value.toUpperCase())}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                                        errors.kd_jenis_prw ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                                    }`}
-                                    placeholder="Masukkan kode jenis perawatan"
-                                    maxLength="15"
-                                    disabled={isEditMode}
-                                    required
-                                />
-                                {errors.kd_jenis_prw && <p className="text-red-500 text-xs mt-1">{errors.kd_jenis_prw}</p>}
-                            </div>
+                                {/* Kode Jenis Perawatan */}
+                                <div className="input-group">
+                                    <label className="input-label">
+                                        Kode Jenis Perawatan *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={data.kd_jenis_prw}
+                                        onChange={(e) => setData('kd_jenis_prw', e.target.value.toUpperCase())}
+                                        className={`form-input ${errors.kd_jenis_prw ? 'error' : ''}`}
+                                        placeholder="Masukkan kode jenis perawatan"
+                                        maxLength="15"
+                                        disabled={isEditMode}
+                                        required
+                                    />
+                                    {errors.kd_jenis_prw && <p className="error-text">{errors.kd_jenis_prw}</p>}
+                                </div>
 
-                            {/* Nama Perawatan */}
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Nama Perawatan <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={data.nm_perawatan}
-                                    onChange={(e) => setData('nm_perawatan', e.target.value)}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                                        errors.nm_perawatan ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                                    }`}
-                                    placeholder="Masukkan nama perawatan"
-                                    maxLength="80"
-                                    required
-                                />
-                                {errors.nm_perawatan && <p className="text-red-500 text-xs mt-1">{errors.nm_perawatan}</p>}
-                            </div>
+                                {/* Nama Perawatan */}
+                                <div className="input-group">
+                                    <label className="input-label">
+                                        Nama Perawatan *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={data.nm_perawatan}
+                                        onChange={(e) => setData('nm_perawatan', e.target.value)}
+                                        className={`form-input ${errors.nm_perawatan ? 'error' : ''}`}
+                                        placeholder="Masukkan nama perawatan"
+                                        maxLength="80"
+                                        required
+                                    />
+                                    {errors.nm_perawatan && <p className="error-text">{errors.nm_perawatan}</p>}
+                                </div>
 
-                            {/* Poli Klinik */}
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Poli Klinik <span className="text-red-500">*</span>
-                                </label>
-                                <select
-                                    value={data.kd_poli}
-                                    onChange={(e) => setData('kd_poli', e.target.value)}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                                        errors.kd_poli ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                                    }`}
-                                    required
-                                >
-                                    <option value="">Pilih Poli</option>
-                                    {polikliniks.map((poli) => (
-                                        <option key={poli.kd_poli} value={poli.kd_poli}>
-                                            {poli.nm_poli}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.kd_poli && <p className="text-red-500 text-xs mt-1">{errors.kd_poli}</p>}
-                            </div>
+                                {/* Poli Klinik */}
+                                <div className="input-group">
+                                    <label className="input-label">
+                                        Poli Klinik *
+                                    </label>
+                                    <select
+                                        value={data.kd_poli}
+                                        onChange={(e) => setData('kd_poli', e.target.value)}
+                                        className={`form-select ${errors.kd_poli ? 'error' : ''}`}
+                                        required
+                                    >
+                                        <option value="">Pilih Poli</option>
+                                        {polikliniks.map((poli) => (
+                                            <option key={poli.kd_poli} value={poli.kd_poli}>
+                                                {poli.nm_poli}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.kd_poli && <p className="error-text">{errors.kd_poli}</p>}
+                                </div>
 
-                            {/* Asuransi / Penanggung Jawab */}
-                            <div className="space-y-2 md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Asuransi / Penanggung Jawab <span className="text-red-500">*</span>
-                                </label>
-                                <select
-                                    value={data.kd_pj}
-                                    onChange={(e) => setData('kd_pj', e.target.value)}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                                        errors.kd_pj ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                                    }`}
-                                    required
-                                >
-                                    <option value="">Pilih Asuransi / Penanggung Jawab</option>
-                                    {penjaabs.map((penjab) => (
-                                        <option key={penjab.kd_pj} value={penjab.kd_pj}>
-                                            {penjab.png_jawab}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.kd_pj && <p className="text-red-500 text-xs mt-1">{errors.kd_pj}</p>}
+                                {/* Asuransi / Penanggung Jawab */}
+                                <div className="input-group col-span-2">
+                                    <label className="input-label">
+                                        Asuransi / Penanggung Jawab *
+                                    </label>
+                                    <select
+                                        value={data.kd_pj}
+                                        onChange={(e) => setData('kd_pj', e.target.value)}
+                                        className={`form-select ${errors.kd_pj ? 'error' : ''}`}
+                                        required
+                                    >
+                                        <option value="">Pilih Asuransi / Penanggung Jawab</option>
+                                        {penjaabs.map((penjab) => (
+                                            <option key={penjab.kd_pj} value={penjab.kd_pj}>
+                                                {penjab.png_jawab}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.kd_pj && <p className="error-text">{errors.kd_pj}</p>}
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* BAGIAN ISIAN - Tarif Input Fields */}
-                    <div className="bg-white p-6 rounded-lg border border-gray-200">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                            <svg className="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                            </svg>
-                            Komponen Tarif
-                        </h3>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Bagian RS/Klinik
-                                </label>
-                                <input
-                                    type="text"
-                                    inputMode="numeric"
-                                    pattern="[0-9]*\.?[0-9]*"
-                                    placeholder="0"
-                                    value={data.material || ''}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                            setData('material', value === '' ? 0 : parseFloat(value) || 0);
-                                        }
-                                    }}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    style={{ 
-                                        MozAppearance: 'textfield',
-                                        WebkitAppearance: 'none'
-                                    }}
-                                />
-                                {errors.material && <p className="text-red-500 text-xs mt-1">{errors.material}</p>}
+                        {/* Komponen Tarif Section */}
+                        <div className="form-section">
+                            <div className="section-header">
+                                <div className="section-icon">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                    </svg>
+                                </div>
+                                <h4 className="section-title">Komponen Tarif</h4>
                             </div>
+                            
+                            <div className="form-grid">
+                                <div className="input-group">
+                                    <label className="input-label">Bagian RS/Klinik</label>
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*\.?[0-9]*"
+                                        placeholder="0"
+                                        value={data.material || ''}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                                setData('material', value === '' ? 0 : parseFloat(value) || 0);
+                                            }
+                                        }}
+                                        className="form-input"
+                                    />
+                                    {errors.material && <p className="error-text">{errors.material}</p>}
+                                </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    BHP
-                                </label>
-                                <input
-                                    type="text"
-                                    inputMode="numeric"
-                                    pattern="[0-9]*\.?[0-9]*"
-                                    placeholder="0"
-                                    value={data.bhp || ''}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                            setData('bhp', value === '' ? 0 : parseFloat(value) || 0);
-                                        }
-                                    }}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    style={{ 
-                                        MozAppearance: 'textfield',
-                                        WebkitAppearance: 'none'
-                                    }}
-                                />
-                                {errors.bhp && <p className="text-red-500 text-xs mt-1">{errors.bhp}</p>}
-                            </div>
+                                <div className="input-group">
+                                    <label className="input-label">BHP</label>
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*\.?[0-9]*"
+                                        placeholder="0"
+                                        value={data.bhp || ''}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                                setData('bhp', value === '' ? 0 : parseFloat(value) || 0);
+                                            }
+                                        }}
+                                        className="form-input"
+                                    />
+                                    {errors.bhp && <p className="error-text">{errors.bhp}</p>}
+                                </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Bagian Dokter
-                                </label>
-                                <input
-                                    type="text"
-                                    inputMode="numeric"
-                                    pattern="[0-9]*\.?[0-9]*"
-                                    placeholder="0"
-                                    value={data.tarif_tindakandr || ''}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                            setData('tarif_tindakandr', value === '' ? 0 : parseFloat(value) || 0);
-                                        }
-                                    }}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    style={{ 
-                                        MozAppearance: 'textfield',
-                                        WebkitAppearance: 'none'
-                                    }}
-                                />
-                                {errors.tarif_tindakandr && <p className="text-red-500 text-xs mt-1">{errors.tarif_tindakandr}</p>}
-                            </div>
+                                <div className="input-group">
+                                    <label className="input-label">Bagian Dokter</label>
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*\.?[0-9]*"
+                                        placeholder="0"
+                                        value={data.tarif_tindakandr || ''}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                                setData('tarif_tindakandr', value === '' ? 0 : parseFloat(value) || 0);
+                                            }
+                                        }}
+                                        className="form-input"
+                                    />
+                                    {errors.tarif_tindakandr && <p className="error-text">{errors.tarif_tindakandr}</p>}
+                                </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Bagian Perawat / Petugas
-                                </label>
-                                <input
-                                    type="text"
-                                    inputMode="numeric"
-                                    pattern="[0-9]*\.?[0-9]*"
-                                    placeholder="0"
-                                    value={data.tarif_tindakanpr || ''}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                            setData('tarif_tindakanpr', value === '' ? 0 : parseFloat(value) || 0);
-                                        }
-                                    }}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    style={{ 
-                                        MozAppearance: 'textfield',
-                                        WebkitAppearance: 'none'
-                                    }}
-                                />
-                                {errors.tarif_tindakanpr && <p className="text-red-500 text-xs mt-1">{errors.tarif_tindakanpr}</p>}
-                            </div>
+                                <div className="input-group">
+                                    <label className="input-label">Bagian Perawat / Petugas</label>
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*\.?[0-9]*"
+                                        placeholder="0"
+                                        value={data.tarif_tindakanpr || ''}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                                setData('tarif_tindakanpr', value === '' ? 0 : parseFloat(value) || 0);
+                                            }
+                                        }}
+                                        className="form-input"
+                                    />
+                                    {errors.tarif_tindakanpr && <p className="error-text">{errors.tarif_tindakanpr}</p>}
+                                </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    KSO
-                                </label>
-                                <input
-                                    type="text"
-                                    inputMode="numeric"
-                                    pattern="[0-9]*\.?[0-9]*"
-                                    placeholder="0"
-                                    value={data.kso || ''}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                            setData('kso', value === '' ? 0 : parseFloat(value) || 0);
-                                        }
-                                    }}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    style={{ 
-                                        MozAppearance: 'textfield',
-                                        WebkitAppearance: 'none'
-                                    }}
-                                />
-                                {errors.kso && <p className="text-red-500 text-xs mt-1">{errors.kso}</p>}
-                            </div>
+                                <div className="input-group">
+                                    <label className="input-label">KSO</label>
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*\.?[0-9]*"
+                                        placeholder="0"
+                                        value={data.kso || ''}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                                setData('kso', value === '' ? 0 : parseFloat(value) || 0);
+                                            }
+                                        }}
+                                        className="form-input"
+                                    />
+                                    {errors.kso && <p className="error-text">{errors.kso}</p>}
+                                </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Menejemen
-                                </label>
-                                <input
-                                    type="text"
-                                    inputMode="numeric"
-                                    pattern="[0-9]*\.?[0-9]*"
-                                    placeholder="0"
-                                    value={data.menejemen || ''}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                            setData('menejemen', value === '' ? 0 : parseFloat(value) || 0);
-                                        }
-                                    }}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    style={{ 
-                                        MozAppearance: 'textfield',
-                                        WebkitAppearance: 'none'
-                                    }}
-                                />
-                                {errors.menejemen && <p className="text-red-500 text-xs mt-1">{errors.menejemen}</p>}
+                                <div className="input-group">
+                                    <label className="input-label">Menejemen</label>
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*\.?[0-9]*"
+                                        placeholder="0"
+                                        value={data.menejemen || ''}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                                setData('menejemen', value === '' ? 0 : parseFloat(value) || 0);
+                                            }
+                                        }}
+                                        className="form-input"
+                                    />
+                                    {errors.menejemen && <p className="error-text">{errors.menejemen}</p>}
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* BAGIAN NOMINAL - Total Calculation Display */}
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 p-6 rounded-xl shadow-sm">
-                        <div className="flex items-center justify-between mb-4">
-                            <h4 className="text-lg font-semibold text-gray-800 flex items-center">
-                                <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                                </svg>
-                                Perhitungan Total Tarif
-                            </h4>
-                            <div className="text-xs text-gray-500 bg-white px-3 py-1 rounded-full border">
-                                Pilih total yang ingin ditampilkan
+                        {/* Perhitungan Total Section */}
+                        <div className="calculation-card">
+                            <div className="calculation-header">
+                                <div className="calculation-icon">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <h4 className="calculation-title">Perhitungan Total Tarif</h4>
+                                <span className="calculation-badge">Pilih total yang ingin ditampilkan</span>
                             </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {/* Total Dokter */}
-                            <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                                <div className="flex items-start justify-between mb-3">
-                                    <div className="flex-1">
-                                        <div className="flex items-center mb-2">
-                                            <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                                            <span className="text-sm font-medium text-gray-700">Total Dokter</span>
+                            
+                            <div className="total-grid">
+                                {/* Total Dokter */}
+                                <div className="total-card">
+                                    <div className="total-content">
+                                        <div className="total-header">
+                                            <div className="total-indicator green"></div>
+                                            <span className="total-label">Total Dokter</span>
                                         </div>
-                                        <div className="text-2xl font-bold text-gray-900">
+                                        <div className="total-amount">
                                             Rp {data.show_total_dokter ? formatNumber(totalDr) : '0'}
                                         </div>
                                     </div>
-                                    <div className="ml-3">
-                                        <label className="flex items-center cursor-pointer group">
+                                    <div className="total-checkbox">
+                                        <label className="checkbox-label">
                                             <input
                                                 type="checkbox"
                                                 checked={data.show_total_dokter || false}
-                                                onChange={(e) => {
-                                                    setData('show_total_dokter', e.target.checked);
-                                                }}
-                                                className="w-5 h-5 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 focus:ring-2"
+                                                onChange={(e) => setData('show_total_dokter', e.target.checked)}
+                                                className="checkbox-input"
                                             />
-                                            <span className="ml-2 text-xs text-gray-600 group-hover:text-green-600 transition-colors">
-                                                Aktif
-                                            </span>
+                                            <span className="checkbox-text">Aktif</span>
                                         </label>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* Total Perawat */}
-                            <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                                <div className="flex items-start justify-between mb-3">
-                                    <div className="flex-1">
-                                        <div className="flex items-center mb-2">
-                                            <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                                            <span className="text-sm font-medium text-gray-700">Total Perawat</span>
+                                {/* Total Perawat */}
+                                <div className="total-card">
+                                    <div className="total-content">
+                                        <div className="total-header">
+                                            <div className="total-indicator blue"></div>
+                                            <span className="total-label">Total Perawat</span>
                                         </div>
-                                        <div className="text-2xl font-bold text-gray-900">
+                                        <div className="total-amount">
                                             Rp {data.show_total_perawat ? formatNumber(totalPr) : '0'}
                                         </div>
                                     </div>
-                                    <div className="ml-3">
-                                        <label className="flex items-center cursor-pointer group">
+                                    <div className="total-checkbox">
+                                        <label className="checkbox-label">
                                             <input
                                                 type="checkbox"
                                                 checked={data.show_total_perawat || false}
-                                                onChange={(e) => {
-                                                    setData('show_total_perawat', e.target.checked);
-                                                }}
-                                                className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                                                onChange={(e) => setData('show_total_perawat', e.target.checked)}
+                                                className="checkbox-input"
                                             />
-                                            <span className="ml-2 text-xs text-gray-600 group-hover:text-blue-600 transition-colors">
-                                                Aktif
-                                            </span>
+                                            <span className="checkbox-text">Aktif</span>
                                         </label>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* Total Dokter + Perawat */}
-                            <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                                <div className="flex items-start justify-between mb-3">
-                                    <div className="flex-1">
-                                        <div className="flex items-center mb-2">
-                                            <div className="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
-                                            <span className="text-sm font-medium text-gray-700">Total Dokter + Perawat</span>
+                                {/* Total Dokter + Perawat */}
+                                <div className="total-card">
+                                    <div className="total-content">
+                                        <div className="total-header">
+                                            <div className="total-indicator purple"></div>
+                                            <span className="total-label">Total Dokter + Prwt</span>
                                         </div>
-                                        <div className="text-2xl font-bold text-gray-900">
+                                        <div className="total-amount">
                                             Rp {data.show_total_dokter_perawat ? formatNumber(totalDrPr) : '0'}
                                         </div>
                                     </div>
-                                    <div className="ml-3">
-                                        <label className="flex items-center cursor-pointer group">
+                                    <div className="total-checkbox">
+                                        <label className="checkbox-label">
                                             <input
                                                 type="checkbox"
                                                 checked={data.show_total_dokter_perawat || false}
-                                                onChange={(e) => {
-                                                    setData('show_total_dokter_perawat', e.target.checked);
-                                                }}
-                                                className="w-5 h-5 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
+                                                onChange={(e) => setData('show_total_dokter_perawat', e.target.checked)}
+                                                className="checkbox-input"
                                             />
-                                            <span className="ml-2 text-xs text-gray-600 group-hover:text-purple-600 transition-colors">
-                                                Aktif
-                                            </span>
+                                            <span className="checkbox-text">Aktif</span>
                                         </label>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-
-                    </div>
-
-                    <div className="flex justify-end space-x-2 pt-4">
-                        <button
-                            type="button"
-                            onClick={handleClose}
-                            className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
-                        >
-                            Batal
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={processing}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                        >
-                            {processing ? (isEditMode ? 'Memperbarui...' : 'Menyimpan...') : (isEditMode ? 'Perbarui' : 'Simpan')}
-                        </button>
-                    </div>
-                </form>
+                        {/* Modal Footer */}
+                        <div className="modal-footer">
+                            <button
+                                type="button"
+                                onClick={handleClose}
+                                className="btn-secondary"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={processing}
+                                className="btn-primary"
+                            >
+                                {processing ? (isEditMode ? 'Memperbarui...' : 'Menyimpan...') : (isEditMode ? 'Perbarui' : 'Simpan')}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     );
@@ -881,11 +837,11 @@ export default function Index({ title, data, category, search, filters, poliklin
                                     <div className="total-section-title">Total Perhitungan</div>
                                     <div className="total-grid">
                                         <div className="total-item total-dr">
-                                            <span>Bagian Dokter</span>
+                                            <span>Total Dokter</span>
                                             <span>{formatCurrency(item.total_byrdr)}</span>
                                         </div>
                                         <div className="total-item total-pr">
-                                            <span>Bagian Perawat</span>
+                                            <span>Total Perawat</span>
                                             <span>{formatCurrency(item.total_byrpr)}</span>
                                         </div>
                                         <div className="total-item total-gabungan">
