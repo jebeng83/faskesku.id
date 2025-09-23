@@ -19,6 +19,7 @@ use App\Http\Controllers\RadiologiController;
 use App\Http\Controllers\RehabilitasiMedikController;
 use App\Http\Controllers\DaftarTarifController;
 use App\Http\Controllers\TarifTindakanController;
+use App\Http\Controllers\PermintaanLabController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -28,6 +29,9 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
 // Note: API routes telah dipindahkan ke routes/api.php
+
+// API routes that don't require authentication
+Route::get('/api/lab-tests', [PermintaanLabController::class, 'getLabTests'])->name('api.lab-tests');
 
 Route::middleware('auth')->group(function () {
     Route::get('/', function () {
@@ -105,6 +109,10 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{noRawat}', [LaboratoriumController::class, 'destroy'])->name('destroy');
         Route::put('/{noRawat}/hasil', [LaboratoriumController::class, 'updateHasil'])->name('update-hasil');
     });
+    
+    // Permintaan Laboratorium routes
+    Route::resource('permintaan-lab', PermintaanLabController::class);
+    Route::get('/api/reg-periksa', [PermintaanLabController::class, 'getRegPeriksa'])->name('api.reg-periksa');
     Route::resource('radiologi', RadiologiController::class);
     Route::resource('rehabilitasi-medik', RehabilitasiMedikController::class);
 

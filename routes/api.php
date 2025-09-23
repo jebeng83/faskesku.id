@@ -11,6 +11,7 @@ use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RawatJalan\ObatController;
 use App\Http\Controllers\RawatJalan\ResepController;
 use App\Http\Controllers\API\DokterController;
+use App\Http\Controllers\PermintaanLabController;
 
 Route::post('/employees', [EmployeeController::class, 'store'])->name('api.employees.store');
 Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('api.employees.destroy');
@@ -93,3 +94,10 @@ Route::delete('/resep/{no_resep}', [ResepController::class, 'destroy'])->where('
 // API routes untuk dokter
 Route::get('/dokter', [DokterController::class, 'index'])->name('api.dokter.index');
 Route::get('/dokter/{kd_dokter}', [DokterController::class, 'show'])->name('api.dokter.show');
+
+// API routes untuk permintaan laboratorium
+Route::get('/lab-tests', [PermintaanLabController::class, 'getLabTests'])->name('api.lab-tests.index');
+Route::post('/permintaan-lab', [PermintaanLabController::class, 'store'])->name('api.permintaan-lab.store');
+Route::get('/permintaan-lab/rawat/{no_rawat}', [PermintaanLabController::class, 'getByNoRawat'])->where('no_rawat', '.*')->name('api.permintaan-lab.by-rawat');
+Route::get('/permintaan-lab/riwayat/{no_rawat}', [PermintaanLabController::class, 'getRiwayat'])->where('no_rawat', '.*')->name('api.permintaan-lab.riwayat');
+Route::delete('/permintaan-lab/{noorder}', [PermintaanLabController::class, 'destroy'])->name('api.permintaan-lab.destroy');
