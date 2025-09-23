@@ -27,6 +27,8 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
+// Note: API routes telah dipindahkan ke routes/api.php
+
 Route::middleware('auth')->group(function () {
     Route::get('/', function () {
         return Inertia::render('Dashboard');
@@ -73,15 +75,7 @@ Route::middleware('auth')->group(function () {
     Route::get('pegawai/search', [RawatJalanController::class, 'searchPegawai'])->name('pegawai.search');
     Route::get('rawat-jalan-statistics', [RawatJalanController::class, 'getStatistics'])->name('rawat-jalan.statistics');
     
-    // API routes untuk obat
-    Route::get('api/obat', [ObatController::class, 'getObatByPoli'])->name('api.obat.index');
-    Route::get('api/obat/{kode_barang}', [ObatController::class, 'getDetailObat'])->name('api.obat.detail');
-    Route::post('api/obat/cek-stok', [ObatController::class, 'cekStokObat'])->name('api.obat.cek-stok');
-    
-    // API routes untuk resep
-    Route::post('api/resep', [ResepController::class, 'store'])->name('api.resep.store');
-    Route::get('api/resep/{no_resep}', [ResepController::class, 'getResep'])->name('api.resep.get');
-    Route::get('api/resep/rawat/{no_rawat}', [ResepController::class, 'getByNoRawat'])->name('api.resep.by-rawat');
+
     
     Route::resource('rawat-jalan', RawatJalanController::class);
 
