@@ -2,6 +2,7 @@ import API from './API'
 import PermintaanLabController from './PermintaanLabController'
 import MenuController from './MenuController'
 import RawatJalan from './RawatJalan'
+import PermintaanRadiologiController from './PermintaanRadiologiController'
 import AuthController from './AuthController'
 import PatientController from './PatientController'
 import EmployeeController from './EmployeeController'
@@ -21,6 +22,7 @@ const Controllers = {
     PermintaanLabController: Object.assign(PermintaanLabController, PermintaanLabController),
     MenuController: Object.assign(MenuController, MenuController),
     RawatJalan: Object.assign(RawatJalan, RawatJalan),
+    PermintaanRadiologiController: Object.assign(PermintaanRadiologiController, PermintaanRadiologiController),
     AuthController: Object.assign(AuthController, AuthController),
     PatientController: Object.assign(PatientController, PatientController),
     EmployeeController: Object.assign(EmployeeController, EmployeeController),

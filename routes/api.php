@@ -12,6 +12,7 @@ use App\Http\Controllers\RawatJalan\ObatController;
 use App\Http\Controllers\RawatJalan\ResepController;
 use App\Http\Controllers\API\DokterController;
 use App\Http\Controllers\PermintaanLabController;
+use App\Http\Controllers\PermintaanRadiologiController;
 
 Route::post('/employees', [EmployeeController::class, 'store'])->name('api.employees.store');
 Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('api.employees.destroy');
@@ -101,3 +102,10 @@ Route::post('/permintaan-lab', [PermintaanLabController::class, 'store'])->name(
 Route::get('/permintaan-lab/rawat/{no_rawat}', [PermintaanLabController::class, 'getByNoRawat'])->where('no_rawat', '.*')->name('api.permintaan-lab.by-rawat');
 Route::get('/permintaan-lab/riwayat/{no_rawat}', [PermintaanLabController::class, 'getRiwayat'])->where('no_rawat', '.*')->name('api.permintaan-lab.riwayat');
 Route::delete('/permintaan-lab/{noorder}', [PermintaanLabController::class, 'destroy'])->name('api.permintaan-lab.destroy');
+
+// API routes untuk permintaan radiologi
+Route::get('/radiologi-tests', [PermintaanRadiologiController::class, 'getJenisPerawatan'])->name('api.radiologi-tests.index');
+Route::post('/permintaan-radiologi', [PermintaanRadiologiController::class, 'store'])->name('api.permintaan-radiologi.store');
+Route::get('/permintaan-radiologi/rawat/{no_rawat}', [PermintaanRadiologiController::class, 'getByNoRawat'])->where('no_rawat', '.*')->name('api.permintaan-radiologi.by-rawat');
+Route::get('/permintaan-radiologi/riwayat/{no_rawat}', [PermintaanRadiologiController::class, 'getRiwayat'])->where('no_rawat', '.*')->name('api.permintaan-radiologi.riwayat');
+Route::delete('/permintaan-radiologi/{noorder}', [PermintaanRadiologiController::class, 'destroy'])->name('api.permintaan-radiologi.destroy');
