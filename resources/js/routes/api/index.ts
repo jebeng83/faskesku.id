@@ -7,6 +7,7 @@ import users from './users'
 import menus from './menus'
 import obat from './obat'
 import resep from './resep'
+import tarifTindakan from './tarif-tindakan'
 
 const api = {
     employees: Object.assign(employees, employees),
@@ -18,6 +19,7 @@ const api = {
     menus: Object.assign(menus, menus),
     obat: Object.assign(obat, obat),
     resep: Object.assign(resep, resep),
+    tarifTindakan: Object.assign(tarifTindakan, tarifTindakan),
 }
 
 export default api

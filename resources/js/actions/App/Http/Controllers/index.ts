@@ -13,6 +13,7 @@ import LaboratoriumController from './LaboratoriumController'
 import RadiologiController from './RadiologiController'
 import RehabilitasiMedikController from './RehabilitasiMedikController'
 import DaftarTarifController from './DaftarTarifController'
+import TarifTindakanController from './TarifTindakanController'
 
 const Controllers = {
     API: Object.assign(API, API),
@@ -30,6 +31,7 @@ const Controllers = {
     RadiologiController: Object.assign(RadiologiController, RadiologiController),
     RehabilitasiMedikController: Object.assign(RehabilitasiMedikController, RehabilitasiMedikController),
     DaftarTarifController: Object.assign(DaftarTarifController, DaftarTarifController),
+    TarifTindakanController: Object.assign(TarifTindakanController, TarifTindakanController),
 }
 
 export default Controllers
