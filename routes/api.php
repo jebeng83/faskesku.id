@@ -8,6 +8,9 @@ use App\Http\Controllers\API\PermissionController;
 use App\Http\Controllers\API\RegPeriksaController;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\RawatJalan\ObatController;
+use App\Http\Controllers\RawatJalan\ResepController;
+use App\Http\Controllers\API\DokterController;
 
 Route::post('/employees', [EmployeeController::class, 'store'])->name('api.employees.store');
 Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('api.employees.destroy');
@@ -72,3 +75,21 @@ Route::prefix('menus')->middleware('auth')->group(function () {
     Route::get('/hierarchy', [MenuController::class, 'getMenuHierarchy'])->name('api.menus.hierarchy');
     Route::get('/icons', [MenuController::class, 'getIcons'])->name('api.menus.icons');
 });
+
+// Rawat Jalan API Routes
+// API routes untuk obat
+Route::get('/obat', [ObatController::class, 'getObatByPoli'])->name('api.obat.index');
+Route::get('/obat/{kode_barang}', [ObatController::class, 'getDetailObat'])->name('api.obat.detail');
+Route::post('/obat/cek-stok', [ObatController::class, 'cekStokObat'])->name('api.obat.cek-stok');
+
+// API routes untuk resep
+Route::post('/resep', [ResepController::class, 'store'])->name('api.resep.store');
+Route::get('/resep/stok-info', [ResepController::class, 'getStokInfo'])->name('api.resep.stok-info');
+Route::get('/resep/rawat/{no_rawat}', [ResepController::class, 'getByNoRawat'])->where('no_rawat', '.*')->name('api.resep.by-rawat');
+Route::get('/resep/pasien/{no_rkm_medis}', [ResepController::class, 'getByNoRkmMedis'])->where('no_rkm_medis', '.*')->name('api.resep.by-pasien');
+Route::get('/resep/{no_resep}', [ResepController::class, 'getResep'])->name('api.resep.get');
+Route::delete('/resep/{no_resep}', [ResepController::class, 'destroy'])->where('no_resep', '.*')->name('api.resep.delete');
+
+// API routes untuk dokter
+Route::get('/dokter', [DokterController::class, 'index'])->name('api.dokter.index');
+Route::get('/dokter/{kd_dokter}', [DokterController::class, 'show'])->name('api.dokter.show');
