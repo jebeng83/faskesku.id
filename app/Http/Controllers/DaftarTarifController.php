@@ -126,12 +126,14 @@ class DaftarTarifController extends Controller
         // Get data untuk dropdown
         $polikliniks = Poliklinik::where('status', '1')->get();
         $penjaabs = Penjab::where('status', '1')->get();
+        $kategoris = KategoriPerawatan::all();
         
         return Inertia::render('DaftarTarif/Create', [
             'title' => 'Tambah Tarif',
             'category' => $category,
             'polikliniks' => $polikliniks,
-            'penjaabs' => $penjaabs
+            'penjaabs' => $penjaabs,
+            'kategoris' => $kategoris
         ]);
     }
 

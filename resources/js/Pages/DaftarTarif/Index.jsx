@@ -720,7 +720,7 @@ export default function Index({ title, data, category, search, filters, poliklin
 
     // Handler untuk button + Tarif
     const handleAddTarif = () => {
-        setIsModalOpen(true);
+        router.visit(route('daftar-tarif.create', { category: activeTab }));
     };
 
     // Handler untuk edit
