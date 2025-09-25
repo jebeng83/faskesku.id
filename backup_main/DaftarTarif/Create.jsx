@@ -3,20 +3,20 @@ import { Head, Link, useForm, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
 
-export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris }) {
-    const { data, setData, put, processing, errors, reset } = useForm({
-        kd_jenis_prw: jnsPerawatan?.kd_jenis_prw || '',
-        nm_perawatan: jnsPerawatan?.nm_perawatan || '',
-        kd_kategori: jnsPerawatan?.kd_kategori || '',
-        kd_poli: jnsPerawatan?.kd_poli || '',
-        kd_pj: jnsPerawatan?.kd_pj || '',
-        status: jnsPerawatan?.status || '1',
-        material: jnsPerawatan?.material || '0',
-        bhp: jnsPerawatan?.bhp || '0',
-        tarif_tindakandr: jnsPerawatan?.tarif_tindakandr || '0',
-        tarif_tindakanpr: jnsPerawatan?.tarif_tindakanpr || '0',
-        kso: jnsPerawatan?.kso || '0',
-        menejemen: jnsPerawatan?.menejemen || '0',
+export default function Create({ polikliniks, penjaabs, kategoris }) {
+    const { data, setData, post, processing, errors, reset } = useForm({
+        kd_jenis_prw: '',
+        nm_perawatan: '',
+        kd_kategori: '',
+        kd_poli: '',
+        kd_pj: '',
+        status: '1',
+        material: '0',
+        bhp: '0',
+        tarif_tindakandr: '0',
+        tarif_tindakanpr: '0',
+        kso: '0',
+        menejemen: '0',
         show_total_dokter: true,
         show_total_perawat: true,
         show_total_dokter_perawat: true,
@@ -48,10 +48,7 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
     // Handle kategori change
     const handleKategoriChange = (value) => {
         setData('kd_kategori', value);
-        // Only generate new code if user wants to change it
-        if (confirm('Apakah Anda ingin menggenerate kode baru berdasarkan kategori yang dipilih?')) {
-            generateAutoCode(value);
-        }
+        generateAutoCode(value);
     };
 
     // Handle numeric input with proper zero handling
@@ -118,23 +115,14 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
     const handleSubmit = (e) => {
         e.preventDefault();
         
-        // Use POST with method spoofing to avoid PUT method error
-        const formData = {
-            ...data,
-            _method: 'PUT'
-        };
-        
-        router.post(route('daftar-tarif.update', jnsPerawatan.kd_jenis_prw), formData, {
+        post(route('daftar-tarif.store'), {
             onSuccess: () => {
-                // Success handled by redirect
+                reset();
             },
             onError: (errors) => {
-                // Silent error handling - only reload on CSRF issues
                 if (errors.csrf) {
                     router.reload();
                 }
-                // Don't show other errors to user since data is still being saved
-                console.log('Update completed despite method error');
             },
         });
     };
@@ -183,14 +171,14 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
 
     return (
         <AppLayout
-            title="Edit Tarif"
+            title="Tambah Tarif"
             renderHeader={() => (
                 <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                    Edit Tarif Perawatan
+                    Tambah Tarif Perawatan
                 </h2>
             )}
         >
-            <Head title="Edit Tarif" />
+            <Head title="Tambah Tarif" />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
@@ -200,10 +188,10 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
                             <div className="flex justify-between items-center">
                                 <div>
                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                        Edit Tarif Perawatan
+                                        Tambah Tarif Perawatan Baru
                                     </h3>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                        Ubah informasi tarif perawatan
+                                        Isi form di bawah untuk menambahkan tarif perawatan baru
                                     </p>
                                 </div>
                                 <Link
@@ -245,6 +233,18 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
                                                     </option>
                                                 ))}
                                             </select>
+                                            <button
+                                                type="button"
+                                                className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg transition-colors flex items-center justify-center"
+                                                title="Tambah Kategori"
+                                                onClick={() => {
+                                    window.open(route('kategori-perawatan.index'), '_blank');
+                                }}
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                                </svg>
+                                            </button>
                                         </div>
                                         {errors.kd_kategori && (
                                             <p className="mt-1 text-sm text-red-600">{errors.kd_kategori}</p>
@@ -576,7 +576,7 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
                                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                             </svg>
                                         )}
-                                        {processing ? 'Menyimpan...' : 'Update Tarif'}
+                                        {processing ? 'Menyimpan...' : 'Simpan Tarif'}
                                     </button>
                                 </div>
                             </div>

@@ -131,7 +131,7 @@ export default function ConfirmationAlert({
 			<div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
 				{/* Overlay */}
 				<div
-					className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+					className="fixed inset-0 bg-gray-500/75 transition-opacity"
 					onClick={handleCancel}
 				></div>
 
