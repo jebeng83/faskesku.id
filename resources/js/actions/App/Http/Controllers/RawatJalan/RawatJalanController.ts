@@ -683,6 +683,4 @@ destroy.delete = (args: { rawat_jalan: string | number } | [rawat_jalan: string 
 
 const RawatJalanController = { lanjutan, riwayat, pemeriksaanRalan, storePemeriksaanRalan, deletePemeriksaanRalan, updatePemeriksaanRalan, searchPegawai, getStatistics, index, create, store, show, edit, update, destroy }
 
-export default RawatJalanControllern, searchPegawai, getStatistics, index, create, store, show, edit, update, destroy }
-
 export default RawatJalanController

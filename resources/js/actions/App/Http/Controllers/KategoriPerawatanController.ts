@@ -1,8 +1,8 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
-* @see \App\Http\Controllers\DaftarTarifController::index
-* @see app/Http/Controllers/DaftarTarifController.php:18
-* @route '/daftar-tarif'
+* @see \App\Http\Controllers\KategoriPerawatanController::index
+* @see [unknown]:0
+* @route '/kategori-perawatan'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
@@ -11,22 +11,22 @@ export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 index.definition = {
     methods: ["get","head"],
-    url: '/daftar-tarif',
+    url: '/kategori-perawatan',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::index
-* @see app/Http/Controllers/DaftarTarifController.php:18
-* @route '/daftar-tarif'
+* @see \App\Http\Controllers\KategoriPerawatanController::index
+* @see [unknown]:0
+* @route '/kategori-perawatan'
 */
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::index
-* @see app/Http/Controllers/DaftarTarifController.php:18
-* @route '/daftar-tarif'
+* @see \App\Http\Controllers\KategoriPerawatanController::index
+* @see [unknown]:0
+* @route '/kategori-perawatan'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
@@ -34,9 +34,9 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::index
-* @see app/Http/Controllers/DaftarTarifController.php:18
-* @route '/daftar-tarif'
+* @see \App\Http\Controllers\KategoriPerawatanController::index
+* @see [unknown]:0
+* @route '/kategori-perawatan'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
@@ -44,9 +44,9 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::create
-* @see app/Http/Controllers/DaftarTarifController.php:122
-* @route '/daftar-tarif/create'
+* @see \App\Http\Controllers\KategoriPerawatanController::create
+* @see [unknown]:0
+* @route '/kategori-perawatan/create'
 */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: create.url(options),
@@ -55,22 +55,22 @@ export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 
 create.definition = {
     methods: ["get","head"],
-    url: '/daftar-tarif/create',
+    url: '/kategori-perawatan/create',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::create
-* @see app/Http/Controllers/DaftarTarifController.php:122
-* @route '/daftar-tarif/create'
+* @see \App\Http\Controllers\KategoriPerawatanController::create
+* @see [unknown]:0
+* @route '/kategori-perawatan/create'
 */
 create.url = (options?: RouteQueryOptions) => {
     return create.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::create
-* @see app/Http/Controllers/DaftarTarifController.php:122
-* @route '/daftar-tarif/create'
+* @see \App\Http\Controllers\KategoriPerawatanController::create
+* @see [unknown]:0
+* @route '/kategori-perawatan/create'
 */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: create.url(options),
@@ -78,9 +78,9 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::create
-* @see app/Http/Controllers/DaftarTarifController.php:122
-* @route '/daftar-tarif/create'
+* @see \App\Http\Controllers\KategoriPerawatanController::create
+* @see [unknown]:0
+* @route '/kategori-perawatan/create'
 */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: create.url(options),
@@ -88,9 +88,9 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::store
-* @see app/Http/Controllers/DaftarTarifController.php:141
-* @route '/daftar-tarif'
+* @see \App\Http\Controllers\KategoriPerawatanController::store
+* @see [unknown]:0
+* @route '/kategori-perawatan'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
@@ -99,22 +99,22 @@ export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
 store.definition = {
     methods: ["post"],
-    url: '/daftar-tarif',
+    url: '/kategori-perawatan',
 } satisfies RouteDefinition<["post"]>
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::store
-* @see app/Http/Controllers/DaftarTarifController.php:141
-* @route '/daftar-tarif'
+* @see \App\Http\Controllers\KategoriPerawatanController::store
+* @see [unknown]:0
+* @route '/kategori-perawatan'
 */
 store.url = (options?: RouteQueryOptions) => {
     return store.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::store
-* @see app/Http/Controllers/DaftarTarifController.php:141
-* @route '/daftar-tarif'
+* @see \App\Http\Controllers\KategoriPerawatanController::store
+* @see [unknown]:0
+* @route '/kategori-perawatan'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
@@ -122,9 +122,9 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::generateKode
-* @see app/Http/Controllers/DaftarTarifController.php:379
-* @route '/daftar-tarif/generate-kode'
+* @see \App\Http\Controllers\KategoriPerawatanController::generateKode
+* @see [unknown]:0
+* @route '/kategori-perawatan/generate-kode'
 */
 export const generateKode = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: generateKode.url(options),
@@ -133,22 +133,22 @@ export const generateKode = (options?: RouteQueryOptions): RouteDefinition<'get'
 
 generateKode.definition = {
     methods: ["get","head"],
-    url: '/daftar-tarif/generate-kode',
+    url: '/kategori-perawatan/generate-kode',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::generateKode
-* @see app/Http/Controllers/DaftarTarifController.php:379
-* @route '/daftar-tarif/generate-kode'
+* @see \App\Http\Controllers\KategoriPerawatanController::generateKode
+* @see [unknown]:0
+* @route '/kategori-perawatan/generate-kode'
 */
 generateKode.url = (options?: RouteQueryOptions) => {
     return generateKode.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::generateKode
-* @see app/Http/Controllers/DaftarTarifController.php:379
-* @route '/daftar-tarif/generate-kode'
+* @see \App\Http\Controllers\KategoriPerawatanController::generateKode
+* @see [unknown]:0
+* @route '/kategori-perawatan/generate-kode'
 */
 generateKode.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: generateKode.url(options),
@@ -156,9 +156,9 @@ generateKode.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::generateKode
-* @see app/Http/Controllers/DaftarTarifController.php:379
-* @route '/daftar-tarif/generate-kode'
+* @see \App\Http\Controllers\KategoriPerawatanController::generateKode
+* @see [unknown]:0
+* @route '/kategori-perawatan/generate-kode'
 */
 generateKode.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: generateKode.url(options),
@@ -166,9 +166,9 @@ generateKode.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::show
-* @see app/Http/Controllers/DaftarTarifController.php:208
-* @route '/daftar-tarif/{id}'
+* @see \App\Http\Controllers\KategoriPerawatanController::show
+* @see [unknown]:0
+* @route '/kategori-perawatan/{id}'
 */
 export const show = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
@@ -177,13 +177,13 @@ export const show = (args: { id: string | number } | [id: string | number ] | st
 
 show.definition = {
     methods: ["get","head"],
-    url: '/daftar-tarif/{id}',
+    url: '/kategori-perawatan/{id}',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::show
-* @see app/Http/Controllers/DaftarTarifController.php:208
-* @route '/daftar-tarif/{id}'
+* @see \App\Http\Controllers\KategoriPerawatanController::show
+* @see [unknown]:0
+* @route '/kategori-perawatan/{id}'
 */
 show.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
@@ -208,9 +208,9 @@ show.url = (args: { id: string | number } | [id: string | number ] | string | nu
 }
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::show
-* @see app/Http/Controllers/DaftarTarifController.php:208
-* @route '/daftar-tarif/{id}'
+* @see \App\Http\Controllers\KategoriPerawatanController::show
+* @see [unknown]:0
+* @route '/kategori-perawatan/{id}'
 */
 show.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
@@ -218,9 +218,9 @@ show.get = (args: { id: string | number } | [id: string | number ] | string | nu
 })
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::show
-* @see app/Http/Controllers/DaftarTarifController.php:208
-* @route '/daftar-tarif/{id}'
+* @see \App\Http\Controllers\KategoriPerawatanController::show
+* @see [unknown]:0
+* @route '/kategori-perawatan/{id}'
 */
 show.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
@@ -228,9 +228,9 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
 })
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::edit
-* @see app/Http/Controllers/DaftarTarifController.php:239
-* @route '/daftar-tarif/{id}/edit'
+* @see \App\Http\Controllers\KategoriPerawatanController::edit
+* @see [unknown]:0
+* @route '/kategori-perawatan/{id}/edit'
 */
 export const edit = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
@@ -239,13 +239,13 @@ export const edit = (args: { id: string | number } | [id: string | number ] | st
 
 edit.definition = {
     methods: ["get","head"],
-    url: '/daftar-tarif/{id}/edit',
+    url: '/kategori-perawatan/{id}/edit',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::edit
-* @see app/Http/Controllers/DaftarTarifController.php:239
-* @route '/daftar-tarif/{id}/edit'
+* @see \App\Http\Controllers\KategoriPerawatanController::edit
+* @see [unknown]:0
+* @route '/kategori-perawatan/{id}/edit'
 */
 edit.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
@@ -270,9 +270,9 @@ edit.url = (args: { id: string | number } | [id: string | number ] | string | nu
 }
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::edit
-* @see app/Http/Controllers/DaftarTarifController.php:239
-* @route '/daftar-tarif/{id}/edit'
+* @see \App\Http\Controllers\KategoriPerawatanController::edit
+* @see [unknown]:0
+* @route '/kategori-perawatan/{id}/edit'
 */
 edit.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
@@ -280,9 +280,9 @@ edit.get = (args: { id: string | number } | [id: string | number ] | string | nu
 })
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::edit
-* @see app/Http/Controllers/DaftarTarifController.php:239
-* @route '/daftar-tarif/{id}/edit'
+* @see \App\Http\Controllers\KategoriPerawatanController::edit
+* @see [unknown]:0
+* @route '/kategori-perawatan/{id}/edit'
 */
 edit.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: edit.url(args, options),
@@ -290,9 +290,9 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
 })
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::update
-* @see app/Http/Controllers/DaftarTarifController.php:275
-* @route '/daftar-tarif/{id}'
+* @see \App\Http\Controllers\KategoriPerawatanController::update
+* @see [unknown]:0
+* @route '/kategori-perawatan/{id}'
 */
 export const update = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
@@ -301,13 +301,13 @@ export const update = (args: { id: string | number } | [id: string | number ] | 
 
 update.definition = {
     methods: ["put"],
-    url: '/daftar-tarif/{id}',
+    url: '/kategori-perawatan/{id}',
 } satisfies RouteDefinition<["put"]>
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::update
-* @see app/Http/Controllers/DaftarTarifController.php:275
-* @route '/daftar-tarif/{id}'
+* @see \App\Http\Controllers\KategoriPerawatanController::update
+* @see [unknown]:0
+* @route '/kategori-perawatan/{id}'
 */
 update.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
@@ -332,9 +332,9 @@ update.url = (args: { id: string | number } | [id: string | number ] | string | 
 }
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::update
-* @see app/Http/Controllers/DaftarTarifController.php:275
-* @route '/daftar-tarif/{id}'
+* @see \App\Http\Controllers\KategoriPerawatanController::update
+* @see [unknown]:0
+* @route '/kategori-perawatan/{id}'
 */
 update.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
@@ -342,9 +342,9 @@ update.put = (args: { id: string | number } | [id: string | number ] | string | 
 })
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::destroy
-* @see app/Http/Controllers/DaftarTarifController.php:344
-* @route '/daftar-tarif/{id}'
+* @see \App\Http\Controllers\KategoriPerawatanController::destroy
+* @see [unknown]:0
+* @route '/kategori-perawatan/{id}'
 */
 export const destroy = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
@@ -353,13 +353,13 @@ export const destroy = (args: { id: string | number } | [id: string | number ] |
 
 destroy.definition = {
     methods: ["delete"],
-    url: '/daftar-tarif/{id}',
+    url: '/kategori-perawatan/{id}',
 } satisfies RouteDefinition<["delete"]>
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::destroy
-* @see app/Http/Controllers/DaftarTarifController.php:344
-* @route '/daftar-tarif/{id}'
+* @see \App\Http\Controllers\KategoriPerawatanController::destroy
+* @see [unknown]:0
+* @route '/kategori-perawatan/{id}'
 */
 destroy.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
@@ -384,15 +384,15 @@ destroy.url = (args: { id: string | number } | [id: string | number ] | string |
 }
 
 /**
-* @see \App\Http\Controllers\DaftarTarifController::destroy
-* @see app/Http/Controllers/DaftarTarifController.php:344
-* @route '/daftar-tarif/{id}'
+* @see \App\Http\Controllers\KategoriPerawatanController::destroy
+* @see [unknown]:0
+* @route '/kategori-perawatan/{id}'
 */
 destroy.delete = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
 
-const DaftarTarifController = { index, create, store, generateKode, show, edit, update, destroy }
+const KategoriPerawatanController = { index, create, store, generateKode, show, edit, update, destroy }
 
-export default DaftarTarifController
+export default KategoriPerawatanController
