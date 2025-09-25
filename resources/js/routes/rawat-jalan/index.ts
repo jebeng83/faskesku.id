@@ -1,5 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
-import pemeriksaanRalan from './pemeriksaan-ralan'
+import pemeriksaanRalanC19e15 from './pemeriksaan-ralan'
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::lanjutan
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:169
@@ -537,17 +537,17 @@ destroy.delete = (args: { rawat_jalan: string | number } | [rawat_jalan: string 
 })
 
 const rawatJalan = {
-    lanjutan,
-    riwayat,
-    pemeriksaanRalan,
-    statistics,
-    index,
-    create,
-    store,
-    show,
-    edit,
-    update,
-    destroy,
+    lanjutan: Object.assign(lanjutan, lanjutan),
+    riwayat: Object.assign(riwayat, riwayat),
+    pemeriksaanRalan: Object.assign(pemeriksaanRalan, pemeriksaanRalanC19e15),
+    statistics: Object.assign(statistics, statistics),
+    index: Object.assign(index, index),
+    create: Object.assign(create, create),
+    store: Object.assign(store, store),
+    show: Object.assign(show, show),
+    edit: Object.assign(edit, edit),
+    update: Object.assign(update, update),
+    destroy: Object.assign(destroy, destroy),
 }
 
 export default rawatJalan
