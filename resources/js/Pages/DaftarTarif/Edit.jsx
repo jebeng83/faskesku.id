@@ -139,6 +139,39 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
         });
     };
 
+    // Handle Enter key press to move to next input field
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            
+            // Find all focusable elements in the form
+            const form = e.target.closest('form');
+            const focusableElements = form.querySelectorAll(
+                'input[type="text"], input[type="number"], select, textarea, button[type="submit"]'
+            );
+            
+            // Convert NodeList to Array
+            const focusableArray = Array.from(focusableElements);
+            
+            // Find current element index
+            const currentIndex = focusableArray.indexOf(e.target);
+            
+            // Move to next element, or submit if at the end
+            if (currentIndex >= 0 && currentIndex < focusableArray.length - 1) {
+                const nextElement = focusableArray[currentIndex + 1];
+                nextElement.focus();
+                
+                // If next element is a select, open it
+                if (nextElement.tagName === 'SELECT') {
+                    nextElement.click();
+                }
+            } else if (currentIndex === focusableArray.length - 1) {
+                // If we're at the last element (submit button), trigger form submission
+                handleSubmit(e);
+            }
+        }
+    };
+
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('id-ID', {
             style: 'currency',
@@ -238,6 +271,7 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
                                             type="text"
                                             value={data.kd_jenis_prw}
                                             onChange={(e) => setData('kd_jenis_prw', e.target.value)}
+                                            onKeyDown={handleKeyDown}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                             placeholder="Masukkan kode jenis perawatan"
                                             required
@@ -255,6 +289,7 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
                                             type="text"
                                             value={data.nm_perawatan}
                                             onChange={(e) => setData('nm_perawatan', e.target.value)}
+                                            onKeyDown={handleKeyDown}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                             placeholder="Masukkan nama perawatan"
                                             required
@@ -342,6 +377,7 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
                                             onChange={(e) => handleNumericInput('material', e.target.value)}
                                             onFocus={() => onFocus('material')}
                                             onBlur={() => onBlur('material')}
+                                            onKeyDown={handleKeyDown}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                             placeholder="0"
                                             required
@@ -361,6 +397,7 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
                                             onChange={(e) => handleNumericInput('bhp', e.target.value)}
                                             onFocus={() => onFocus('bhp')}
                                             onBlur={() => onBlur('bhp')}
+                                            onKeyDown={handleKeyDown}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                             placeholder="0"
                                             required
@@ -380,6 +417,7 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
                                             onChange={(e) => handleNumericInput('tarif_tindakandr', e.target.value)}
                                             onFocus={() => onFocus('tarif_tindakandr')}
                                             onBlur={() => onBlur('tarif_tindakandr')}
+                                            onKeyDown={handleKeyDown}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                             placeholder="0"
                                             required
@@ -399,6 +437,7 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
                                             onChange={(e) => handleNumericInput('tarif_tindakanpr', e.target.value)}
                                             onFocus={() => onFocus('tarif_tindakanpr')}
                                             onBlur={() => onBlur('tarif_tindakanpr')}
+                                            onKeyDown={handleKeyDown}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                             placeholder="0"
                                             required
@@ -418,6 +457,7 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
                                             onChange={(e) => handleNumericInput('kso', e.target.value)}
                                             onFocus={() => onFocus('kso')}
                                             onBlur={() => onBlur('kso')}
+                                            onKeyDown={handleKeyDown}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                             placeholder="0"
                                             required
@@ -437,6 +477,7 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
                                             onChange={(e) => handleNumericInput('menejemen', e.target.value)}
                                             onFocus={() => onFocus('menejemen')}
                                             onBlur={() => onBlur('menejemen')}
+                                            onKeyDown={handleKeyDown}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                             placeholder="0"
                                             required
