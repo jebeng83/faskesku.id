@@ -29,12 +29,12 @@ class ResepObat extends Model
     ];
 
     protected $casts = [
-        'tgl_perawatan' => 'date',
-        'tgl_peresepan' => 'date',
-        'tgl_penyerahan' => 'date',
-        'jam' => 'datetime:H:i:s',
-        'jam_peresepan' => 'datetime:H:i:s',
-        'jam_penyerahan' => 'datetime:H:i:s'
+        'tgl_perawatan' => 'string',
+        'jam' => 'string',
+        'tgl_peresepan' => 'string',
+        'jam_peresepan' => 'string',
+        'tgl_penyerahan' => 'string',
+        'jam_penyerahan' => 'string',
     ];
 
     // Relasi ke resep_dokter
@@ -47,6 +47,12 @@ class ResepObat extends Model
     public function rawatJalan()
     {
         return $this->belongsTo(RawatJalan::class, 'no_rawat', 'no_rawat');
+    }
+
+    // Relasi ke dokter
+    public function dokter()
+    {
+        return $this->belongsTo(\App\Models\Dokter::class, 'kd_dokter', 'kd_dokter');
     }
 
     // Method untuk generate nomor resep otomatis

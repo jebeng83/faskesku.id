@@ -121,9 +121,9 @@ export default function AppLayout({
 	}
 
 	return (
-		<div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
-			{/* Top Navigation Bar - Gradient Able Style */}
-			<header className="fixed top-0 left-0 right-0 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50">
+		<div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 flex flex-col">
+			{/* Top Navigation Bar - Fixed Header */}
+			<header className="fixed top-0 left-0 right-0 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50 flex-shrink-0">
 				<div className="h-full flex items-center justify-between px-4">
 					{/* Left side - Toggle + Logo */}
 					<div className="flex items-center gap-3">
@@ -228,65 +228,65 @@ export default function AppLayout({
 				/>
 			)}
 
-			{/* Sidebar - Gradient Able Style */}
-			<aside
-				className={`fixed lg:sticky top-14 left-0 z-50 h-[calc(100vh-56px)] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-all duration-300 ${
-					isSidebarOpen
-						? "translate-x-0 w-64"
-						: isSidebarCollapsed
-						? "lg:translate-x-0 lg:w-16 -translate-x-full"
-						: "lg:translate-x-0 lg:w-64 -translate-x-full"
-				}`}
-			>
-
-				<div className="h-full flex flex-col">
-					{/* Dynamic Navigation */}
-					{!isSidebarCollapsed ? (
-						<SidebarMenu />
-					) : (
-						<nav className="flex-1 p-4 space-y-2">
-							<div className="space-y-2">
-								<NavItemCollapsed icon="home" active />
-								<NavItemCollapsed icon="box" />
-								<NavItemCollapsed icon="users" />
-								<NavItemCollapsed icon="lock" />
-								<NavItemCollapsed icon="file-text" />
+			{/* Main Layout Container - Adjusted for Fixed Header */}
+			<div className="flex flex-1 pt-14 overflow-hidden">
+				{/* Sidebar - Fixed with Independent Scroll */}
+				<aside
+					className={`bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-all duration-300 flex-shrink-0 ${
+						isSidebarOpen
+							? "translate-x-0 w-64"
+							: isSidebarCollapsed
+							? "lg:translate-x-0 lg:w-16 -translate-x-full lg:translate-x-0"
+							: "lg:translate-x-0 lg:w-64 -translate-x-full lg:translate-x-0"
+					} lg:relative fixed z-40 h-[calc(100vh-3.5rem)] lg:h-full`}
+				>
+					<div className="h-full flex flex-col overflow-hidden">
+						{/* Dynamic Navigation */}
+						{!isSidebarCollapsed ? (
+							<div className="flex-1 overflow-y-auto">
+								<SidebarMenu />
 							</div>
-						</nav>
-					)}
-
-					{/* Bottom Card - Gradient Pro */}
-					{!isSidebarCollapsed && (
-						<div className="p-4 border-t border-gray-200 dark:border-gray-800">
-							<div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg p-4 text-center">
-								<div className="w-12 h-12 mx-auto mb-3 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg border border-blue-400/20">
-									<span className="text-white font-bold text-lg drop-shadow-sm">
-										F
-									</span>
+						) : (
+							<nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+								<div className="space-y-2">
+									<NavItemCollapsed icon="home" active />
+									<NavItemCollapsed icon="box" />
+									<NavItemCollapsed icon="users" />
+									<NavItemCollapsed icon="lock" />
+									<NavItemCollapsed icon="file-text" />
 								</div>
-								<h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">
-									Faskesku.id
-								</h4>
-								<p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-									Sistem Informasi Free & open Source{" "}
-								</p>
-								<button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 px-3 rounded-md transition-colors">
-									Panduan Aplikasi
-								</button>
-							</div>
-						</div>
-					)}
-				</div>
-			</aside>
+							</nav>
+						)}
 
-			{/* Main Content */}
-			<main
-				className={`absolute top-14 p-4 left-0 right-0 bottom-0 z-10 transition-all duration-300 ${
-					isSidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
-				}`}
-			>
-				{children}
-			</main>
+						{/* Bottom Card - Gradient Pro */}
+						{!isSidebarCollapsed && (
+							<div className="p-4 border-t border-gray-200 dark:border-gray-800 flex-shrink-0">
+								<div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg p-4 text-center">
+									<div className="w-12 h-12 mx-auto mb-3 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg border border-blue-400/20">
+										<span className="text-white font-bold text-lg drop-shadow-sm">
+											F
+										</span>
+									</div>
+									<h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">
+										Faskesku.id
+									</h4>
+									<p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+										Sistem Informasi Free & open Source{" "}
+									</p>
+									<button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 px-3 rounded-md transition-colors">
+										Panduan Aplikasi
+									</button>
+								</div>
+							</div>
+						)}
+					</div>
+				</aside>
+
+				{/* Main Content - Independent Scroll */}
+				<main className="flex-1 overflow-y-auto h-[calc(100vh-3.5rem)] p-4">
+					{children}
+				</main>
+			</div>
 		</div>
 	);
 }
