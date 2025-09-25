@@ -227,7 +227,7 @@
 
 /* Professional Modal Styles */
 .modal-overlay {
-    @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4;
+    @apply fixed inset-0 bg-black/50 flex items-center justify-center p-4;
     z-index: 9999 !important; /* Pastikan z-index tinggi */
     animation: fadeIn 0.3s ease-out;
 }
@@ -382,7 +382,7 @@
 }
 
 .checkbox-label {
-    @apply flex items-center cursor-pointer group;
+    @apply flex items-center cursor-pointer;
 }
 
 .checkbox-input {
@@ -390,7 +390,11 @@
 }
 
 .checkbox-text {
-    @apply ml-2 text-xs text-gray-600 group-hover:text-blue-600 transition-colors;
+    @apply ml-2 text-xs text-gray-600 transition-colors;
+}
+
+.checkbox-label:hover .checkbox-text {
+    @apply text-blue-600;
 }
 
 .modal-footer {
