@@ -203,6 +203,37 @@ class DaftarTarifController extends Controller
     }
 
     /**
+     * Display the specified tarif.
+     */
+    public function show(Request $request, $id)
+    {
+        $category = $request->get('category', 'rawat-jalan');
+        
+        switch ($category) {
+            case 'rawat-jalan':
+                $tarif = JnsPerawatan::findOrFail($id);
+                break;
+            case 'rawat-inap':
+                $tarif = JnsPerawatanInap::findOrFail($id);
+                break;
+            case 'laboratorium':
+                $tarif = JnsPerawatanLab::findOrFail($id);
+                break;
+            case 'radiologi':
+                $tarif = JnsPerawatanRadiologi::findOrFail($id);
+                break;
+            default:
+                return redirect()->back()->with('error', 'Kategori tidak valid');
+        }
+        
+        return Inertia::render('DaftarTarif/Show', [
+            'title' => 'Detail Tarif',
+            'tarif' => $tarif,
+            'category' => $category
+        ]);
+    }
+
+    /**
      * Show the form for editing the specified tarif.
      */
     public function edit(Request $request, $id)
@@ -382,11 +413,34 @@ class DaftarTarifController extends Controller
         }
     }
 
-    // Placeholder methods for other categories
-    private function storeRawatInap(Request $request) { /* Implementation for rawat inap */ }
-    private function storeLaboratorium(Request $request) { /* Implementation for laboratorium */ }
-    private function storeRadiologi(Request $request) { /* Implementation for radiologi */ }
-    private function updateRawatInap(Request $request, $id) { /* Implementation for rawat inap */ }
-    private function updateLaboratorium(Request $request, $id) { /* Implementation for laboratorium */ }
-    private function updateRadiologi(Request $request, $id) { /* Implementation for radiologi */ }
+    // Implementation methods for other categories
+    private function storeRawatInap(Request $request) {
+        return redirect()->route('daftar-tarif.index', ['category' => 'rawat-inap'])
+            ->with('info', 'Fitur rawat inap belum tersedia');
+    }
+    
+    private function storeLaboratorium(Request $request) {
+        return redirect()->route('daftar-tarif.index', ['category' => 'laboratorium'])
+            ->with('info', 'Fitur laboratorium belum tersedia');
+    }
+    
+    private function storeRadiologi(Request $request) {
+        return redirect()->route('daftar-tarif.index', ['category' => 'radiologi'])
+            ->with('info', 'Fitur radiologi belum tersedia');
+    }
+    
+    private function updateRawatInap(Request $request, $id) {
+        return redirect()->route('daftar-tarif.index', ['category' => 'rawat-inap'])
+            ->with('info', 'Fitur rawat inap belum tersedia');
+    }
+    
+    private function updateLaboratorium(Request $request, $id) {
+        return redirect()->route('daftar-tarif.index', ['category' => 'laboratorium'])
+            ->with('info', 'Fitur laboratorium belum tersedia');
+    }
+    
+    private function updateRadiologi(Request $request, $id) {
+        return redirect()->route('daftar-tarif.index', ['category' => 'radiologi'])
+            ->with('info', 'Fitur radiologi belum tersedia');
+    }
 }

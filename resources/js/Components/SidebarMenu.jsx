@@ -6,9 +6,7 @@ export default function SidebarMenu() {
 	const { menu_hierarchy, current_menu } = usePage().props;
 	const [expandedMenus, setExpandedMenus] = useState(new Set());
 
-	// Debug: Log menu data
-	console.log('SidebarMenu - menu_hierarchy:', menu_hierarchy);
-	console.log('SidebarMenu - current_menu:', current_menu);
+
 
 	// Auto-expand menus that have active children
 	useEffect(() => {
@@ -33,7 +31,6 @@ export default function SidebarMenu() {
 		const parentIds = findParentMenus(menu_hierarchy, current_menu.id);
 		if (parentIds.length > 0) {
 			setExpandedMenus(new Set(parentIds));
-			console.log('Auto-expanding parent menus:', parentIds);
 		}
 	}, [menu_hierarchy, current_menu]);
 
@@ -85,11 +82,7 @@ export default function SidebarMenu() {
 		const isActive = isMenuActive(menu);
 		const menuUrl = getMenuUrl(menu);
 
-		// Debug: Log menu item details
-		console.log(`Menu: ${menu.name}, hasChildren: ${hasChildren}, children:`, children);
-		if (hasChildren) {
-			console.log(`Menu ${menu.name} - isExpanded: ${isExpanded}, expandedMenus:`, expandedMenus);
-		}
+
 
 		return (
 			<React.Fragment key={menu.id}>
@@ -152,7 +145,7 @@ export default function SidebarMenu() {
 	}
 
 	return (
-		<nav className="flex-1 px-4 pb-4 space-y-1">
+		<nav className="px-4 pb-4 space-y-1">
 			<ul className="space-y-1">
 				{menu_hierarchy.map((menu) => renderMenuItem(menu))}
 			</ul>

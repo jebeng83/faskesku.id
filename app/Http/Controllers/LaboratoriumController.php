@@ -83,7 +83,7 @@ class LaboratoriumController extends Controller
     {
         $request->validate([
             'no_rawat' => 'required|exists:reg_periksa,no_rawat',
-            'nip' => 'required|exists:employees,nip',
+            'nip' => 'required|exists:pegawai,nik',
             'kd_jenis_prw' => 'required|exists:jns_perawatan_lab,kd_jenis_prw',
             'tgl_periksa' => 'required|date',
             'jam' => 'required',
@@ -177,7 +177,7 @@ class LaboratoriumController extends Controller
         $periksaLab = PeriksaLab::findOrFail($noRawat);
 
         $request->validate([
-            'nip' => 'required|exists:employees,nip',
+            'nip' => 'required|exists:pegawai,nik',
             'kd_jenis_prw' => 'required|exists:jns_perawatan_lab,kd_jenis_prw',
             'tgl_periksa' => 'required|date',
             'jam' => 'required',
