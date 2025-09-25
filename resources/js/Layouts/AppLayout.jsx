@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { router, usePage } from "@inertiajs/react";
+import { router } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import { SettingsIcon } from "@/Components/IconSettings";
 import SidebarMenu from "@/Components/SidebarMenu";
@@ -9,13 +9,11 @@ export default function AppLayout({
 	children,
 	variant = "default",
 }) {
-	const { flash } = usePage().props;
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 	const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 	const [isDark, setIsDark] = useState(false);
 	const [collapsedGroups, setCollapsedGroups] = useState({});
 	const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
-	const [showFlash, setShowFlash] = useState(false);
 
 	useEffect(() => {
 		const root = document.documentElement;
@@ -46,17 +44,6 @@ export default function AppLayout({
 			[groupTitle]: !prev[groupTitle],
 		}));
 	};
-
-	// Show flash message
-	useEffect(() => {
-		if (flash && (flash.success || flash.error)) {
-			setShowFlash(true);
-			const timer = setTimeout(() => {
-				setShowFlash(false);
-			}, 5000);
-			return () => clearTimeout(timer);
-		}
-	}, [flash]);
 
 	if (variant === "auth") {
 		return (
@@ -134,9 +121,9 @@ export default function AppLayout({
 	}
 
 	return (
-		<div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-			{/* Header */}
-			<header className="fixed top-0 left-0 right-0 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50">
+		<div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 flex flex-col">
+			{/* Top Navigation Bar - Fixed Header */}
+			<header className="fixed top-0 left-0 right-0 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50 flex-shrink-0">
 				<div className="h-full flex items-center justify-between px-4">
 					{/* Left side - Toggle + Logo */}
 					<div className="flex items-center gap-3">
@@ -241,107 +228,65 @@ export default function AppLayout({
 				/>
 			)}
 
-			{/* Sidebar - Gradient Able Style */}
-			<aside
-				className={`fixed lg:sticky top-14 left-0 z-50 h-[calc(100vh-56px)] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-all duration-300 ${
-					isSidebarOpen
-						? "translate-x-0 w-64"
-						: isSidebarCollapsed
-						? "lg:translate-x-0 lg:w-16 -translate-x-full"
-						: "lg:translate-x-0 lg:w-64 -translate-x-full"
-				}`}
-			>
-
-				<div className="h-full flex flex-col">
-					{/* Dynamic Navigation */}
-					{!isSidebarCollapsed ? (
-						<SidebarMenu />
-					) : (
-						<nav className="flex-1 p-4 space-y-2">
-							<div className="space-y-2">
-								<NavItemCollapsed icon="home" active />
-								<NavItemCollapsed icon="box" />
-								<NavItemCollapsed icon="users" />
-								<NavItemCollapsed icon="lock" />
-								<NavItemCollapsed icon="file-text" />
+			{/* Main Layout Container - Adjusted for Fixed Header */}
+			<div className="flex flex-1 pt-14 overflow-hidden">
+				{/* Sidebar - Fixed with Independent Scroll */}
+				<aside
+					className={`bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-all duration-300 flex-shrink-0 ${
+						isSidebarOpen
+							? "translate-x-0 w-64"
+							: isSidebarCollapsed
+							? "lg:translate-x-0 lg:w-16 -translate-x-full lg:translate-x-0"
+							: "lg:translate-x-0 lg:w-64 -translate-x-full lg:translate-x-0"
+					} lg:relative fixed z-40 h-[calc(100vh-3.5rem)] lg:h-full`}
+				>
+					<div className="h-full flex flex-col overflow-hidden">
+						{/* Dynamic Navigation */}
+						{!isSidebarCollapsed ? (
+							<div className="flex-1 overflow-y-auto">
+								<SidebarMenu />
 							</div>
-						</nav>
-					)}
-
-					{/* Bottom Card - Gradient Pro */}
-					{!isSidebarCollapsed && (
-						<div className="p-4 border-t border-gray-200 dark:border-gray-800">
-							<div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg p-4 text-center">
-								<div className="w-12 h-12 mx-auto mb-3 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg border border-blue-400/20">
-									<span className="text-white font-bold text-lg drop-shadow-sm">
-										F
-									</span>
+						) : (
+							<nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+								<div className="space-y-2">
+									<NavItemCollapsed icon="home" active />
+									<NavItemCollapsed icon="box" />
+									<NavItemCollapsed icon="users" />
+									<NavItemCollapsed icon="lock" />
+									<NavItemCollapsed icon="file-text" />
 								</div>
-								<h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">
-									Faskesku.id
-								</h4>
-								<p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-									Sistem Informasi Free & open Source{" "}
-								</p>
-								<button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 px-3 rounded-md transition-colors">
-									Panduan Aplikasi
-								</button>
-							</div>
-						</div>
-					)}
-				</div>
-			</aside>
+							</nav>
+						)}
 
-			{/* Flash Messages */}
-			{flash && showFlash && (
-				<div className="fixed top-16 right-4 z-50 max-w-sm">
-					{flash.success && (
-						<div className="bg-green-50 border border-green-200 rounded-lg p-4 shadow-lg">
-							<div className="flex items-center">
-								<svg className="w-5 h-5 text-green-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-									<path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-								</svg>
-								<p className="text-sm font-medium text-green-800">{flash.success}</p>
-								<button
-									onClick={() => setShowFlash(false)}
-									className="ml-auto text-green-400 hover:text-green-600"
-								>
-									<svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-										<path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-									</svg>
-								</button>
+						{/* Bottom Card - Gradient Pro */}
+						{!isSidebarCollapsed && (
+							<div className="p-4 border-t border-gray-200 dark:border-gray-800 flex-shrink-0">
+								<div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg p-4 text-center">
+									<div className="w-12 h-12 mx-auto mb-3 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg border border-blue-400/20">
+										<span className="text-white font-bold text-lg drop-shadow-sm">
+											F
+										</span>
+									</div>
+									<h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">
+										Faskesku.id
+									</h4>
+									<p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+										Sistem Informasi Free & open Source{" "}
+									</p>
+									<button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 px-3 rounded-md transition-colors">
+										Panduan Aplikasi
+									</button>
+								</div>
 							</div>
-						</div>
-					)}
-					{flash.error && (
-						<div className="bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg">
-							<div className="flex items-center">
-								<svg className="w-5 h-5 text-red-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-									<path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-								</svg>
-								<p className="text-sm font-medium text-red-800">{flash.error}</p>
-								<button
-									onClick={() => setShowFlash(false)}
-									className="ml-auto text-red-400 hover:text-red-600"
-								>
-									<svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-										<path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-									</svg>
-								</button>
-							</div>
-						</div>
-					)}
-				</div>
-			)}
+						)}
+					</div>
+				</aside>
 
-			{/* Main Content */}
-			<main
-				className={`absolute top-14 p-4 left-0 right-0 bottom-0 z-10 transition-all duration-300 ${
-					isSidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
-				}`}
-			>
-				{children}
-			</main>
+				{/* Main Content - Independent Scroll */}
+				<main className="flex-1 overflow-y-auto h-[calc(100vh-3.5rem)] p-4">
+					{children}
+				</main>
+			</div>
 		</div>
 	);
 }

@@ -18,7 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Ensure method spoofing is enabled
         $middleware->validateCsrfTokens(except: [
-            // Add any routes that should be exempt from CSRF validation
+            //
         ]);
 
         $middleware->alias([

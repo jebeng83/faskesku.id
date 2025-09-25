@@ -67,6 +67,12 @@ class JnsPerawatan extends Model
         return $query->where('status', '1');
     }
 
+    // Alias untuk scope aktif
+    public function scopeActive($query)
+    {
+        return $this->scopeAktif($query);
+    }
+
     // Scope untuk pencarian
     public function scopeSearch($query, $search)
     {
@@ -74,6 +80,37 @@ class JnsPerawatan extends Model
             $q->where('kd_jenis_prw', 'like', "%{$search}%")
                 ->orWhere('nm_perawatan', 'like', "%{$search}%");
         });
+    }
+
+    // Scope untuk filter berdasarkan poliklinik
+    public function scopeByPoliklinik($query, $kdPoli)
+    {
+        return $query->where('kd_poli', $kdPoli);
+    }
+
+    // Scope untuk filter berdasarkan penjamin
+    public function scopeByPenjamin($query, $kdPj)
+    {
+        return $query->where('kd_pj', $kdPj);
+    }
+
+    // Scope untuk yang memiliki tarif dokter
+    public function scopeHasTarifDokter($query)
+    {
+        return $query->where('tarif_tindakandr', '>', 0);
+    }
+
+    // Scope untuk yang memiliki tarif perawat
+    public function scopeHasTarifPerawat($query)
+    {
+        return $query->where('tarif_tindakanpr', '>', 0);
+    }
+
+    // Scope untuk yang memiliki tarif dokter dan perawat
+    public function scopeHasTarifDokterPerawat($query)
+    {
+        return $query->where('tarif_tindakandr', '>', 0)
+                    ->where('tarif_tindakanpr', '>', 0);
     }
 
     // Relasi dengan poliklinik
@@ -88,10 +125,22 @@ class JnsPerawatan extends Model
         return $this->belongsTo(Penjab::class, 'kd_pj', 'kd_pj');
     }
 
+    // Alias untuk relasi penjamin
+    public function penjamin()
+    {
+        return $this->penjab();
+    }
+
     // Relasi dengan kategori perawatan
     public function kategoriPerawatan()
     {
         return $this->belongsTo(KategoriPerawatan::class, 'kd_kategori', 'kd_kategori');
+    }
+
+    // Alias untuk relasi kategori
+    public function kategori()
+    {
+        return $this->kategoriPerawatan();
     }
 
     // Method untuk generate kode otomatis
