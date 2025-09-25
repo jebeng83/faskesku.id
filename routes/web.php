@@ -18,6 +18,7 @@ use App\Http\Controllers\LaboratoriumController;
 use App\Http\Controllers\RadiologiController;
 use App\Http\Controllers\RehabilitasiMedikController;
 use App\Http\Controllers\DaftarTarifController;
+use App\Http\Controllers\KategoriPerawatanController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -113,5 +114,17 @@ Route::middleware('auth')->group(function () {
         Route::get('/{id}/edit', [DaftarTarifController::class, 'edit'])->name('edit');
         Route::post('/{id}/update', [DaftarTarifController::class, 'update'])->name('update');
         Route::delete('/{id}', [DaftarTarifController::class, 'destroy'])->name('destroy');
+    });
+
+    // Kategori Perawatan routes
+    Route::prefix('kategori-perawatan')->name('kategori-perawatan.')->group(function () {
+        Route::get('/', [KategoriPerawatanController::class, 'index'])->name('index');
+        Route::get('/create', [KategoriPerawatanController::class, 'create'])->name('create');
+        Route::post('/', [KategoriPerawatanController::class, 'store'])->name('store');
+        Route::get('/generate-kode', [KategoriPerawatanController::class, 'generateKode'])->name('generate-kode');
+        Route::get('/{id}', [KategoriPerawatanController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [KategoriPerawatanController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [KategoriPerawatanController::class, 'update'])->name('update');
+        Route::delete('/{id}', [KategoriPerawatanController::class, 'destroy'])->name('destroy');
     });
 });

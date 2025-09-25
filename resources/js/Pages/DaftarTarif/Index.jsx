@@ -43,6 +43,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
     });
 
     const isEditMode = !!editData;
+    const [focusedField, setFocusedField] = useState(null);
 
     // Fungsi helper untuk format angka tanpa currency symbol
     const formatNumber = (amount) => {
@@ -112,6 +113,30 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
         } else if (!kdKategori && !isEditMode) {
             setData('kd_jenis_prw', '');
         }
+    };
+
+    // Helper function to handle numeric input behavior
+    const handleNumericInput = (fieldName, value) => {
+        if (value === '') {
+            // If empty, set to 0
+            setData(fieldName, 0);
+        } else if (value === '0') {
+            // If user types just '0', keep it as 0
+            setData(fieldName, 0);
+        } else if (/^\d*\.?\d*$/.test(value)) {
+            // If valid number, remove leading zeros and parse
+            const cleanValue = value.replace(/^0+(?=\d)/, '');
+            const numericValue = parseFloat(cleanValue) || 0;
+            setData(fieldName, numericValue);
+        }
+    };
+
+    // Helper function to display value in input (show empty string instead of 0 when focused)
+    const getDisplayValue = (value, isFocused = false) => {
+        if (value === 0 && isFocused) {
+            return '';
+        }
+        return value || '';
     };
 
     // Calculate total tarif
@@ -327,19 +352,33 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                                     <label className="input-label">
                                         Kategori Perawatan *
                                     </label>
-                                    <select
-                                        value={data.kd_kategori}
-                                        onChange={handleKategoriChange}
-                                        className="form-select"
-                                        required
-                                    >
-                                        <option value="">Pilih Kategori</option>
-                                        {kategoris.map((kategori) => (
-                                            <option key={kategori.kd_kategori} value={kategori.kd_kategori}>
-                                                {kategori.nm_kategori}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <div className="flex gap-2">
+                                        <select
+                                            value={data.kd_kategori}
+                                            onChange={handleKategoriChange}
+                                            className="form-select flex-1"
+                                            required
+                                        >
+                                            <option value="">Pilih Kategori</option>
+                                            {kategoris.map((kategori) => (
+                                                <option key={kategori.kd_kategori} value={kategori.kd_kategori}>
+                                                    {kategori.nm_kategori}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                window.open(route('kategori-perawatan.index'), '_blank');
+                            }}
+                                            className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 flex items-center justify-center"
+                                            title="Tambah Kategori Baru"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                            </svg>
+                                        </button>
+                                    </div>
                                     {errors.kd_kategori && <p className="error-text">{errors.kd_kategori}</p>}
                                 </div>
 
@@ -435,19 +474,16 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                             
                             <div className="form-grid">
                                 <div className="input-group">
-                                    <label className="input-label">Bagian RS/Klinik</label>
+                                    <label className="input-label">Bagian RS</label>
                                     <input
                                         type="text"
                                         inputMode="numeric"
                                         pattern="[0-9]*\.?[0-9]*"
                                         placeholder="0"
-                                        value={data.material || ''}
-                                        onChange={(e) => {
-                                            const value = e.target.value;
-                                            if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                                setData('material', value === '' ? 0 : parseFloat(value) || 0);
-                                            }
-                                        }}
+                                        value={getDisplayValue(data.material, focusedField === 'material')}
+                                        onChange={(e) => handleNumericInput('material', e.target.value)}
+                                        onFocus={() => setFocusedField('material')}
+                                        onBlur={() => setFocusedField(null)}
                                         className="form-input"
                                     />
                                     {errors.material && <p className="error-text">{errors.material}</p>}
@@ -460,51 +496,42 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                                         inputMode="numeric"
                                         pattern="[0-9]*\.?[0-9]*"
                                         placeholder="0"
-                                        value={data.bhp || ''}
-                                        onChange={(e) => {
-                                            const value = e.target.value;
-                                            if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                                setData('bhp', value === '' ? 0 : parseFloat(value) || 0);
-                                            }
-                                        }}
+                                        value={getDisplayValue(data.bhp, focusedField === 'bhp')}
+                                        onChange={(e) => handleNumericInput('bhp', e.target.value)}
+                                        onFocus={() => setFocusedField('bhp')}
+                                        onBlur={() => setFocusedField(null)}
                                         className="form-input"
                                     />
                                     {errors.bhp && <p className="error-text">{errors.bhp}</p>}
                                 </div>
 
                                 <div className="input-group">
-                                    <label className="input-label">Bagian Dokter</label>
+                                    <label className="input-label">Jasa Dokter</label>
                                     <input
                                         type="text"
                                         inputMode="numeric"
                                         pattern="[0-9]*\.?[0-9]*"
                                         placeholder="0"
-                                        value={data.tarif_tindakandr || ''}
-                                        onChange={(e) => {
-                                            const value = e.target.value;
-                                            if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                                setData('tarif_tindakandr', value === '' ? 0 : parseFloat(value) || 0);
-                                            }
-                                        }}
+                                        value={getDisplayValue(data.tarif_tindakandr, focusedField === 'tarif_tindakandr')}
+                                        onChange={(e) => handleNumericInput('tarif_tindakandr', e.target.value)}
+                                        onFocus={() => setFocusedField('tarif_tindakandr')}
+                                        onBlur={() => setFocusedField(null)}
                                         className="form-input"
                                     />
                                     {errors.tarif_tindakandr && <p className="error-text">{errors.tarif_tindakandr}</p>}
                                 </div>
 
                                 <div className="input-group">
-                                    <label className="input-label">Bagian Perawat / Petugas</label>
+                                    <label className="input-label">Jasa Perawat</label>
                                     <input
                                         type="text"
                                         inputMode="numeric"
                                         pattern="[0-9]*\.?[0-9]*"
                                         placeholder="0"
-                                        value={data.tarif_tindakanpr || ''}
-                                        onChange={(e) => {
-                                            const value = e.target.value;
-                                            if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                                setData('tarif_tindakanpr', value === '' ? 0 : parseFloat(value) || 0);
-                                            }
-                                        }}
+                                        value={getDisplayValue(data.tarif_tindakanpr, focusedField === 'tarif_tindakanpr')}
+                                        onChange={(e) => handleNumericInput('tarif_tindakanpr', e.target.value)}
+                                        onFocus={() => setFocusedField('tarif_tindakanpr')}
+                                        onBlur={() => setFocusedField(null)}
                                         className="form-input"
                                     />
                                     {errors.tarif_tindakanpr && <p className="error-text">{errors.tarif_tindakanpr}</p>}
@@ -517,13 +544,10 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                                         inputMode="numeric"
                                         pattern="[0-9]*\.?[0-9]*"
                                         placeholder="0"
-                                        value={data.kso || ''}
-                                        onChange={(e) => {
-                                            const value = e.target.value;
-                                            if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                                setData('kso', value === '' ? 0 : parseFloat(value) || 0);
-                                            }
-                                        }}
+                                        value={getDisplayValue(data.kso, focusedField === 'kso')}
+                                        onChange={(e) => handleNumericInput('kso', e.target.value)}
+                                        onFocus={() => setFocusedField('kso')}
+                                        onBlur={() => setFocusedField(null)}
                                         className="form-input"
                                     />
                                     {errors.kso && <p className="error-text">{errors.kso}</p>}
@@ -536,13 +560,10 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                                         inputMode="numeric"
                                         pattern="[0-9]*\.?[0-9]*"
                                         placeholder="0"
-                                        value={data.menejemen || ''}
-                                        onChange={(e) => {
-                                            const value = e.target.value;
-                                            if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                                setData('menejemen', value === '' ? 0 : parseFloat(value) || 0);
-                                            }
-                                        }}
+                                        value={getDisplayValue(data.menejemen, focusedField === 'menejemen')}
+                                        onChange={(e) => handleNumericInput('menejemen', e.target.value)}
+                                        onFocus={() => setFocusedField('menejemen')}
+                                        onBlur={() => setFocusedField(null)}
                                         className="form-input"
                                     />
                                     {errors.menejemen && <p className="error-text">{errors.menejemen}</p>}

@@ -97,22 +97,21 @@ class JnsPerawatan extends Model
     // Method untuk generate kode otomatis
     public static function generateKodeJenisPerawatan($kdKategori)
     {
-        // Ambil nomor urut terakhir untuk kategori ini
-        $lastCode = self::where('kd_kategori', $kdKategori)
-            ->where('kd_jenis_prw', 'like', "0{$kdKategori}%")
+        // Ambil nomor urut terakhir dengan format RJ
+        $lastCode = self::where('kd_jenis_prw', 'like', 'RJ%')
             ->orderBy('kd_jenis_prw', 'desc')
             ->first();
 
         if ($lastCode) {
-            // Ambil 3 digit terakhir dan tambah 1
-            $lastNumber = (int) substr($lastCode->kd_jenis_prw, -3);
+            // Ambil 6 digit terakhir dan tambah 1
+            $lastNumber = (int) substr($lastCode->kd_jenis_prw, 2);
             $newNumber = $lastNumber + 1;
         } else {
             // Jika belum ada, mulai dari 1
             $newNumber = 1;
         }
 
-        // Format: 0 + kd_kategori + nomor urut (3 digit)
-        return '0' . $kdKategori . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+        // Format: RJ + nomor urut (6 digit)
+        return 'RJ' . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
     }
 }

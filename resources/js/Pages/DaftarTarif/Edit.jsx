@@ -3,169 +3,180 @@ import { Head, Link, useForm, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
 
-export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris }) {
-    const { data, setData, post, processing, errors, clearErrors } = useForm({
-        kd_jenis_prw: jnsPerawatan.kd_jenis_prw || '',
-        nm_perawatan: jnsPerawatan.nm_perawatan || '',
-        kd_kategori: jnsPerawatan.kd_kategori || '',
-        material: jnsPerawatan.material || 0,
-        bhp: jnsPerawatan.bhp || 0,
-        tarif_tindakandr: jnsPerawatan.tarif_tindakandr || 0,
-        tarif_tindakanpr: jnsPerawatan.tarif_tindakanpr || 0,
-        kso: jnsPerawatan.kso || 0,
-        menejemen: jnsPerawatan.menejemen || 0,
-        kd_pj: jnsPerawatan.kd_pj || '',
-        kd_poli: jnsPerawatan.kd_poli || '',
-        status: jnsPerawatan.status || '1',
-        show_total_dokter: jnsPerawatan.total_byrdr > 0,
-        show_total_perawat: jnsPerawatan.total_byrpr > 0,
-        show_total_dokter_perawat: jnsPerawatan.total_byrdrpr > 0
+export default function Edit({ tarif, polikliniks, penjaabs, kategoris }) {
+    const { data, setData, put, processing, errors, reset } = useForm({
+        kd_jenis_prw: tarif.kd_jenis_prw || '',
+        nm_perawatan: tarif.nm_perawatan || '',
+        kd_kategori: tarif.kd_kategori || '',
+        kd_poli: tarif.kd_poli || '',
+        kd_pj: tarif.kd_pj || '',
+        status: tarif.status || '1',
+        material: tarif.material || '0',
+        bhp: tarif.bhp || '0',
+        tarif_tindakandr: tarif.tarif_tindakandr || '0',
+        tarif_tindakanpr: tarif.tarif_tindakanpr || '0',
+        kso: tarif.kso || '0',
+        menejemen: tarif.menejemen || '0',
+        show_total_dokter: true,
+        show_total_perawat: true,
+        show_total_dokter_perawat: true,
     });
 
     const [totals, setTotals] = useState({
         total_dokter: 0,
         total_perawat: 0,
-        total_dokter_perawat: 0
+        total_dokter_perawat: 0,
     });
 
-    // Hitung total otomatis
-    useEffect(() => {
-        const calculateTotal = () => {
-            const material = parseFloat(data.material || 0);
-            const bhp = parseFloat(data.bhp || 0);
-            const tarif_tindakandr = parseFloat(data.tarif_tindakandr || 0);
-            const tarif_tindakanpr = parseFloat(data.tarif_tindakanpr || 0);
-            const kso = parseFloat(data.kso || 0);
-            const menejemen = parseFloat(data.menejemen || 0);
+    const [focusedField, setFocusedField] = useState(null);
 
-            // Total Dokter = Material + BHP + Tarif Tindakan Dokter + KSO + Menejemen (tanpa tarif perawat)
-            const totalDokter = material + bhp + tarif_tindakandr + kso + menejemen;
-            
-            // Total Perawat = Material + BHP + Tarif Tindakan Perawat + KSO + Menejemen (tanpa tarif dokter)
-            const totalPerawat = material + bhp + tarif_tindakanpr + kso + menejemen;
-            
-            // Total Dokter + Perawat = Material + BHP + Tarif Tindakan Dokter + Tarif Tindakan Perawat + KSO + Menejemen
-            const totalDokterPerawat = material + bhp + tarif_tindakandr + tarif_tindakanpr + kso + menejemen;
-
-            setTotals({
-                total_dokter: data.show_total_dokter ? totalDokter : 0,
-                total_perawat: data.show_total_perawat ? totalPerawat : 0,
-                total_dokter_perawat: data.show_total_dokter_perawat ? totalDokterPerawat : 0
-            });
-        };
-
-        calculateTotal();
-    }, [data.material, data.bhp, data.tarif_tindakandr, data.tarif_tindakanpr, data.kso, data.menejemen, data.show_total_dokter, data.show_total_perawat, data.show_total_dokter_perawat]);
-
-    // Refresh CSRF token setiap 30 menit
-    useEffect(() => {
-        const refreshToken = () => {
-            // Refresh CSRF token
-            fetch('/sanctum/csrf-cookie', {
-                method: 'GET',
-                credentials: 'same-origin'
-            }).then(() => {
-                // Update axios header dengan token baru
-                const token = document.head.querySelector('meta[name="csrf-token"]');
-                if (token) {
-                    window.axios.defaults.headers.common['X-CSRF-TOKEN'] = token.content;
-                }
-            });
-        };
-
-        // Refresh token setiap 30 menit (1800000 ms)
-        const interval = setInterval(refreshToken, 1800000);
+    // Auto-generate kode when kategori changes
+    const generateAutoCode = async (kdKategori) => {
+        if (!kdKategori) return;
         
+        try {
+            const response = await fetch(route('daftar-tarif.generate-kode') + `?kd_kategori=${kdKategori}&category=rawat-jalan`);
+            const result = await response.json();
+            if (result.success) {
+                setData('kd_jenis_prw', result.kode);
+            }
+        } catch (error) {
+            console.error('Error generating code:', error);
+        }
+    };
+
+    // Handle kategori change
+    const handleKategoriChange = (value) => {
+        setData('kd_kategori', value);
+        // Only generate new code if user wants to change it
+        if (confirm('Apakah Anda ingin menggenerate kode baru berdasarkan kategori yang dipilih?')) {
+            generateAutoCode(value);
+        }
+    };
+
+    // Handle numeric input with proper zero handling
+    const handleNumericInput = (field, value) => {
+        // Allow empty string or valid numbers
+        if (value === '' || (!isNaN(value) && value >= 0)) {
+            setData(field, value);
+        }
+    };
+
+    // Get display value for numeric inputs
+    const getDisplayValue = (field) => {
+        if (focusedField === field) {
+            // When focused, show actual value (empty if 0)
+            return data[field] === '0' ? '' : data[field];
+        }
+        // When not focused, show 0 if empty
+        return data[field] || '0';
+    };
+
+    // Handle focus
+    const onFocus = (field) => {
+        setFocusedField(field);
+    };
+
+    // Handle blur
+    const onBlur = (field) => {
+        setFocusedField(null);
+        // Set to '0' if empty
+        if (!data[field] || data[field] === '') {
+            setData(field, '0');
+        }
+    };
+
+    // Calculate totals automatically
+    useEffect(() => {
+        const material = parseFloat(data.material) || 0;
+        const bhp = parseFloat(data.bhp) || 0;
+        const tarif_tindakandr = parseFloat(data.tarif_tindakandr) || 0;
+        const tarif_tindakanpr = parseFloat(data.tarif_tindakanpr) || 0;
+        const kso = parseFloat(data.kso) || 0;
+        const menejemen = parseFloat(data.menejemen) || 0;
+
+        const total_dokter = material + bhp + tarif_tindakandr + kso + menejemen;
+        const total_perawat = material + bhp + tarif_tindakanpr + kso + menejemen;
+        const total_dokter_perawat = material + bhp + tarif_tindakandr + tarif_tindakanpr + kso + menejemen;
+
+        setTotals({
+            total_dokter,
+            total_perawat,
+            total_dokter_perawat,
+        });
+    }, [data.material, data.bhp, data.tarif_tindakandr, data.tarif_tindakanpr, data.kso, data.menejemen]);
+
+    // Refresh CSRF token every 30 minutes
+    useEffect(() => {
+        const interval = setInterval(() => {
+            router.reload({ only: [] });
+        }, 30 * 60 * 1000);
+
         return () => clearInterval(interval);
     }, []);
 
     const handleSubmit = (e) => {
         e.preventDefault();
         
-        post(route('daftar-tarif.update', jnsPerawatan.kd_jenis_prw), {
-            onError: (errors) => {
-                // Jika ada error 419 (CSRF token mismatch)
-                if (errors.message && (errors.message.includes('419') || errors.message.includes('PAGE EXPIRED'))) {
-                    alert('Session telah berakhir. Halaman akan di-refresh untuk memperbarui token keamanan.');
-                    window.location.reload();
-                    return;
-                }
-                
-                // Handle error lainnya
-                console.error('Form submission error:', errors);
-            },
+        put(route('daftar-tarif.update', tarif.kd_jenis_prw), {
             onSuccess: () => {
-                // Refresh tab Rawat Jalan jika ada
-                try {
-                    // Cari tab dengan URL yang mengandung 'rawat-jalan'
-                    if (window.opener) {
-                        // Jika dibuka dari window lain, refresh parent window
-                        window.opener.location.reload();
-                    } else {
-                        // Coba refresh tab lain yang mungkin terbuka
-                        const tabs = window.parent.frames;
-                        for (let i = 0; i < tabs.length; i++) {
-                            try {
-                                if (tabs[i].location.href.includes('rawat-jalan')) {
-                                    tabs[i].location.reload();
-                                }
-                            } catch (e) {
-                                // Ignore cross-origin errors
-                            }
-                        }
-                    }
-                } catch (e) {
-                    console.log('Could not refresh other tabs:', e);
+                // Success handled by redirect
+            },
+            onError: (errors) => {
+                if (errors.csrf) {
+                    router.reload();
                 }
-                
-                // Success akan di-handle oleh redirect dari controller
-            }
+            },
         });
     };
 
-    const formatCurrency = (value) => {
+    const formatCurrency = (amount) => {
         return new Intl.NumberFormat('id-ID', {
             style: 'currency',
             currency: 'IDR',
             minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        }).format(value || 0);
+            maximumFractionDigits: 0,
+        }).format(amount);
     };
 
     return (
-        <AppLayout>
-            <Head title={`Edit Tarif - ${jnsPerawatan.nm_perawatan}`} />
+        <AppLayout
+            title="Edit Tarif"
+            renderHeader={() => (
+                <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                    Edit Tarif Perawatan
+                </h2>
+            )}
+        >
+            <Head title="Edit Tarif" />
 
-            <div className="py-6">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div className="py-12">
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
                     {/* Header */}
-                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                        <div className="p-6">
+                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                             <div className="flex justify-between items-center">
                                 <div>
-                                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                                         Edit Tarif Perawatan
-                                    </h2>
-                                    <p className="text-gray-600 dark:text-gray-400 mt-1">
-                                        {jnsPerawatan.nm_perawatan} - {jnsPerawatan.kd_jenis_prw}
+                                    </h3>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                        Ubah informasi tarif perawatan
                                     </p>
                                 </div>
-                                <div className="flex gap-2">
-                                    <Link
-                                        href={route('daftar-tarif.index')}
-                                        className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                                            <path fillRule="evenodd" d="M7.72 12.53a.75.75 0 010-1.06l7.5-7.5a.75.75 0 111.06 1.06L9.31 12l6.97 6.97a.75.75 0 11-1.06 1.06l-7.5-7.5z" clipRule="evenodd" />
-                                        </svg>
-                                        Kembali
-                                    </Link>
-                                </div>
+                                <Link
+                                    href={route('daftar-tarif.index')}
+                                    className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                    </svg>
+                                    Kembali
+                                </Link>
                             </div>
                         </div>
                     </div>
 
-                    {/* Form */}
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Informasi Dasar */}
                         <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
@@ -176,14 +187,55 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Kode Jenis Perawatan
+                                            Kategori <span className="text-red-500">*</span>
+                                        </label>
+                                        <div className="flex gap-2">
+                                            <select
+                                                value={data.kd_kategori}
+                                                onChange={(e) => handleKategoriChange(e.target.value)}
+                                                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                required
+                                            >
+                                                <option value="">Pilih Kategori</option>
+                                                {kategoris.map((kategori) => (
+                                                    <option key={kategori.kd_kategori} value={kategori.kd_kategori}>
+                                                        {kategori.nm_kategori}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <button
+                                                type="button"
+                                                className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg transition-colors flex items-center justify-center"
+                                                title="Tambah Kategori"
+                                                onClick={() => {
+                                    window.open(route('kategori-perawatan.index'), '_blank');
+                                }}
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        {errors.kd_kategori && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.kd_kategori}</p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Kode Jenis Perawatan <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="text"
                                             value={data.kd_jenis_prw}
-                                            readOnly
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400"
+                                            onChange={(e) => setData('kd_jenis_prw', e.target.value)}
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            placeholder="Masukkan kode jenis perawatan"
+                                            required
                                         />
+                                        {errors.kd_jenis_prw && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.kd_jenis_prw}</p>
+                                        )}
                                     </div>
 
                                     <div>
@@ -200,28 +252,6 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
                                         />
                                         {errors.nm_perawatan && (
                                             <p className="mt-1 text-sm text-red-600">{errors.nm_perawatan}</p>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Kategori <span className="text-red-500">*</span>
-                                        </label>
-                                        <select
-                                            value={data.kd_kategori}
-                                            onChange={(e) => setData('kd_kategori', e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            required
-                                        >
-                                            <option value="">Pilih Kategori</option>
-                                            {kategoris.map((kategori) => (
-                                                <option key={kategori.kd_kategori} value={kategori.kd_kategori}>
-                                                    {kategori.nm_kategori}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {errors.kd_kategori && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.kd_kategori}</p>
                                         )}
                                     </div>
 
@@ -295,14 +325,14 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Material <span className="text-red-500">*</span>
+                                            Bagian RS <span className="text-red-500">*</span>
                                         </label>
                                         <input
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            value={data.material}
-                                            onChange={(e) => setData('material', e.target.value)}
+                                            type="text"
+                                            value={getDisplayValue('material')}
+                                            onChange={(e) => handleNumericInput('material', e.target.value)}
+                                            onFocus={() => onFocus('material')}
+                                            onBlur={() => onBlur('material')}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                             placeholder="0"
                                             required
@@ -317,11 +347,11 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
                                             BHP <span className="text-red-500">*</span>
                                         </label>
                                         <input
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            value={data.bhp}
-                                            onChange={(e) => setData('bhp', e.target.value)}
+                                            type="text"
+                                            value={getDisplayValue('bhp')}
+                                            onChange={(e) => handleNumericInput('bhp', e.target.value)}
+                                            onFocus={() => onFocus('bhp')}
+                                            onBlur={() => onBlur('bhp')}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                             placeholder="0"
                                             required
@@ -333,14 +363,14 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Tarif Tindakan Dokter <span className="text-red-500">*</span>
+                                            Jasa Dokter <span className="text-red-500">*</span>
                                         </label>
                                         <input
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            value={data.tarif_tindakandr}
-                                            onChange={(e) => setData('tarif_tindakandr', e.target.value)}
+                                            type="text"
+                                            value={getDisplayValue('tarif_tindakandr')}
+                                            onChange={(e) => handleNumericInput('tarif_tindakandr', e.target.value)}
+                                            onFocus={() => onFocus('tarif_tindakandr')}
+                                            onBlur={() => onBlur('tarif_tindakandr')}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                             placeholder="0"
                                             required
@@ -352,14 +382,14 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Tarif Tindakan Perawat <span className="text-red-500">*</span>
+                                            Jasa Perawat <span className="text-red-500">*</span>
                                         </label>
                                         <input
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            value={data.tarif_tindakanpr}
-                                            onChange={(e) => setData('tarif_tindakanpr', e.target.value)}
+                                            type="text"
+                                            value={getDisplayValue('tarif_tindakanpr')}
+                                            onChange={(e) => handleNumericInput('tarif_tindakanpr', e.target.value)}
+                                            onFocus={() => onFocus('tarif_tindakanpr')}
+                                            onBlur={() => onBlur('tarif_tindakanpr')}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                             placeholder="0"
                                             required
@@ -374,11 +404,11 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
                                             KSO <span className="text-red-500">*</span>
                                         </label>
                                         <input
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            value={data.kso}
-                                            onChange={(e) => setData('kso', e.target.value)}
+                                            type="text"
+                                            value={getDisplayValue('kso')}
+                                            onChange={(e) => handleNumericInput('kso', e.target.value)}
+                                            onFocus={() => onFocus('kso')}
+                                            onBlur={() => onBlur('kso')}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                             placeholder="0"
                                             required
@@ -393,11 +423,11 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
                                             Menejemen <span className="text-red-500">*</span>
                                         </label>
                                         <input
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            value={data.menejemen}
-                                            onChange={(e) => setData('menejemen', e.target.value)}
+                                            type="text"
+                                            value={getDisplayValue('menejemen')}
+                                            onChange={(e) => handleNumericInput('menejemen', e.target.value)}
+                                            onFocus={() => onFocus('menejemen')}
+                                            onBlur={() => onBlur('menejemen')}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                             placeholder="0"
                                             required
@@ -508,7 +538,7 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
                                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                             </svg>
                                         )}
-                                        {processing ? 'Menyimpan...' : 'Simpan Perubahan'}
+                                        {processing ? 'Menyimpan...' : 'Update Tarif'}
                                     </button>
                                 </div>
                             </div>
