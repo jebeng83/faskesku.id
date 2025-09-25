@@ -360,13 +360,13 @@ destroy.delete = (args: { kamar_operasi: string | number } | [kamar_operasi: str
 })
 
 const kamarOperasi = {
-    index: Object.assign(index, index),
-    create: Object.assign(create, create),
-    store: Object.assign(store, store),
-    show: Object.assign(show, show),
-    edit: Object.assign(edit, edit),
-    update: Object.assign(update, update),
-    destroy: Object.assign(destroy, destroy),
+    index,
+    create,
+    store,
+    show,
+    edit,
+    update,
+    destroy,
 }
 
 export default kamarOperasi

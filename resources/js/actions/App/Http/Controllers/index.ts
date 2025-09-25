@@ -6,6 +6,8 @@ import PermintaanRadiologiController from './PermintaanRadiologiController'
 import AuthController from './AuthController'
 import PatientController from './PatientController'
 import EmployeeController from './EmployeeController'
+import DoctorController from './DoctorController'
+import SpesialisController from './SpesialisController'
 import RegPeriksaController from './RegPeriksaController'
 import ProfileController from './ProfileController'
 import RawatInapController from './RawatInapController'
@@ -26,6 +28,8 @@ const Controllers = {
     AuthController: Object.assign(AuthController, AuthController),
     PatientController: Object.assign(PatientController, PatientController),
     EmployeeController: Object.assign(EmployeeController, EmployeeController),
+    DoctorController: Object.assign(DoctorController, DoctorController),
+    SpesialisController: Object.assign(SpesialisController, SpesialisController),
     RegPeriksaController: Object.assign(RegPeriksaController, RegPeriksaController),
     ProfileController: Object.assign(ProfileController, ProfileController),
     RawatInapController: Object.assign(RawatInapController, RawatInapController),

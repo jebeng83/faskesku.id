@@ -27,6 +27,18 @@ class PermissionSeeder extends Seeder
             'edit-employees',
             'delete-employees',
 
+            // Doctor Management
+            'view-doctors',
+            'create-doctors',
+            'edit-doctors',
+            'delete-doctors',
+
+            // Spesialis Management
+            'view-spesialis',
+            'create-spesialis',
+            'edit-spesialis',
+            'delete-spesialis',
+
             // Medical Records
             'view-medical-records',
             'create-medical-records',
@@ -103,6 +115,8 @@ class PermissionSeeder extends Seeder
             'view-patients',
             'create-patients',
             'edit-patients',
+            'view-doctors',
+            'view-spesialis',
             'view-medical-records',
             'create-medical-records',
             'edit-medical-records',
