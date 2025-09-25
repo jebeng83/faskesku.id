@@ -38,6 +38,7 @@ class MenuSeeder extends Seeder
             'slug' => 'dashboard',
             'icon' => 'fas fa-tachometer-alt',
             'route' => 'dashboard',
+            'url' => route('dashboard'),
             'sort_order' => 1,
             'is_active' => true,
             'description' => 'Halaman utama aplikasi'
@@ -94,6 +95,7 @@ class MenuSeeder extends Seeder
             'slug' => 'data-pasien',
             'icon' => 'fas fa-users',
             'route' => 'patients.index',
+            'url' => route('patients.index'),
             'parent_id' => $masterData->id,
             'sort_order' => 1,
             'is_active' => true,
@@ -106,11 +108,36 @@ class MenuSeeder extends Seeder
             'slug' => 'data-pegawai',
             'icon' => 'fas fa-user-tie',
             'route' => 'employees.index',
+            'url' => route('employees.index'),
             'parent_id' => $masterData->id,
             'sort_order' => 2,
             'is_active' => true,
             'permission_name' => 'employee.view',
             'description' => 'Pengelolaan data pegawai'
+        ]);
+
+        Menu::create([
+            'name' => 'Data Dokter',
+            'slug' => 'data-dokter',
+            'icon' => 'fas fa-user-md',
+            'route' => 'doctors.index',
+            'parent_id' => $masterData->id,
+            'sort_order' => 3,
+            'is_active' => true,
+            'permission_name' => 'view-doctors',
+            'description' => 'Pengelolaan data dokter'
+        ]);
+
+        Menu::create([
+            'name' => 'Data Spesialis',
+            'slug' => 'data-spesialis',
+            'icon' => 'fas fa-stethoscope',
+            'route' => 'spesialis.index',
+            'parent_id' => $masterData->id,
+            'sort_order' => 4,
+            'is_active' => true,
+            'permission_name' => 'view-spesialis',
+            'description' => 'Pengelolaan data spesialis medis'
         ]);
 
         // Registration sub-menus
@@ -156,6 +183,7 @@ class MenuSeeder extends Seeder
             'slug' => 'manajemen-menu',
             'icon' => 'fas fa-bars',
             'route' => 'menus.index',
+            'url' => route('menus.index'),
             'parent_id' => $administration->id,
             'sort_order' => 3,
             'is_active' => true,

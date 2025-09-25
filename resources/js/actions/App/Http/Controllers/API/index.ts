@@ -4,6 +4,7 @@ import WilayahController from './WilayahController'
 import PermissionController from './PermissionController'
 import RegPeriksaController from './RegPeriksaController'
 import UserController from './UserController'
+import DokterController from './DokterController'
 
 const API = {
     EmployeeController: Object.assign(EmployeeController, EmployeeController),
@@ -12,6 +13,7 @@ const API = {
     PermissionController: Object.assign(PermissionController, PermissionController),
     RegPeriksaController: Object.assign(RegPeriksaController, RegPeriksaController),
     UserController: Object.assign(UserController, UserController),
+    DokterController: Object.assign(DokterController, DokterController),
 }
 
 export default API

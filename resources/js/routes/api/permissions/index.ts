@@ -263,12 +263,12 @@ destroy.delete = (args: { permission: number | { id: number } } | [permission: n
 })
 
 const permissions = {
-    roles: Object.assign(roles, roles),
-    index: Object.assign(index, index),
-    store: Object.assign(store, store),
-    show: Object.assign(show, show),
-    update: Object.assign(update, update),
-    destroy: Object.assign(destroy, destroy),
+    roles,
+    index,
+    store,
+    show,
+    update,
+    destroy,
 }
 
 export default permissions
