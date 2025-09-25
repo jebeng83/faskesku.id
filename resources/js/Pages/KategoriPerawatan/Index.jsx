@@ -191,9 +191,18 @@ export default function Index({ title, data, search, filters }) {
                         <div className="p-6">
                             {/* Header */}
                             <div className="flex justify-between items-center mb-6">
-                                <div>
-                                    <h2 className="text-2xl font-bold text-gray-900">Kategori Perawatan</h2>
-                                    <p className="text-gray-600 mt-1">Kelola kategori perawatan rumah sakit</p>
+                                <div className="flex items-center gap-4">
+                                    <Link
+                                        href={route('daftar-tarif.index')}
+                                        className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
+                                    >
+                                        <span>←</span>
+                                        Kembali
+                                    </Link>
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-gray-900">Kategori Perawatan</h2>
+                                        <p className="text-gray-600 mt-1">Kelola kategori perawatan rumah sakit</p>
+                                    </div>
                                 </div>
                                 <button
                                     onClick={openAddModal}

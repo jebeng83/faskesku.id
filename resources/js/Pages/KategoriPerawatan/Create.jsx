@@ -48,7 +48,7 @@ export default function Create({ title }) {
                                     <p className="text-gray-600 mt-1">Isi form di bawah untuk menambahkan kategori perawatan baru</p>
                                 </div>
                                 <Link
-                                    href={route('kategori-perawatan.index')}
+                                    href={route('daftar-tarif.index')}
                                     className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
                                 >
                                     ← Kembali
@@ -105,7 +105,7 @@ export default function Create({ title }) {
 
                                 <div className="flex justify-end space-x-2 pt-6 border-t">
                                     <Link
-                                        href={route('kategori-perawatan.index')}
+                                        href={route('daftar-tarif.index')}
                                         className="px-6 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
                                     >
                                         Batal

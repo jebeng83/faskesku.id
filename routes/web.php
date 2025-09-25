@@ -112,7 +112,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/generate-kode', [DaftarTarifController::class, 'generateKode'])->name('generate-kode');
         Route::get('/{id}', [DaftarTarifController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [DaftarTarifController::class, 'edit'])->name('edit');
-        Route::post('/{id}/update', [DaftarTarifController::class, 'update'])->name('update');
+        Route::put('/{id}', [DaftarTarifController::class, 'update'])->name('update');
         Route::delete('/{id}', [DaftarTarifController::class, 'destroy'])->name('destroy');
     });
 
