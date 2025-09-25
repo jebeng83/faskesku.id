@@ -526,4 +526,8 @@ const users = {
     password: Object.assign(password, password),
 }
 
+export default users destroy: Object.assign(destroy, destroy),
+    password: Object.assign(password, password),
+}
+
 export default users
