@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use App\Models\Poliklinik;
 use App\Models\Bangsal;
 use App\Models\SetLokasi;
@@ -30,7 +31,8 @@ class SetDepoRalan extends Model
     public function getKey()
     {
         $key = [];
-        foreach ($this->getKeyName() as $keyName) {
+        $keyNames = is_array($this->getKeyName()) ? $this->getKeyName() : [$this->getKeyName()];
+        foreach ($keyNames as $keyName) {
             $key[$keyName] = $this->getAttribute($keyName);
         }
         return $key;
@@ -39,7 +41,8 @@ class SetDepoRalan extends Model
     // Override setKeysForSaveQuery untuk composite key
     protected function setKeysForSaveQuery($query)
     {
-        foreach ($this->getKeyName() as $keyName) {
+        $keyNames = is_array($this->getKeyName()) ? $this->getKeyName() : [$this->getKeyName()];
+        foreach ($keyNames as $keyName) {
             $query->where($keyName, '=', $this->getAttribute($keyName));
         }
         return $query;
@@ -63,36 +66,38 @@ class SetDepoRalan extends Model
         return $query->where('kd_poli', $kdPoli);
     }
 
-    // Method untuk mendapatkan bangsal berdasarkan poli
-    public static function getBangsalByPoli($kdPoli)
+    /**
+     * Get bangsal codes by poli code
+     * If no bangsal found in set_depo_ralan, fallback to set_lokasi
+     */
+    public static function getBangsalByPoli(string $kdPoli)
     {
-        // Cek apakah tabel set_depo_ralan memiliki data
-        $hasDepoData = static::exists();
+        $bangsalCodes = self::where('kd_poli', $kdPoli)
+            ->pluck('kd_bangsal')
+            ->toArray();
         
-        if (!$hasDepoData) {
-            // Jika tabel set_depo_ralan kosong, ambil semua kd_bangsal dari set_lokasi
-            return SetLokasi::getAllBangsal();
-        } else {
-            // Jika ada data di set_depo_ralan, ambil berdasarkan kd_poli
-            $bangsalList = static::where('kd_poli', $kdPoli)->pluck('kd_bangsal');
-            
-            // Jika kd_poli tidak ditemukan di set_depo_ralan, return empty collection
-            return $bangsalList;
+        // If no bangsal found in set_depo_ralan, fallback to set_lokasi
+        if (empty($bangsalCodes)) {
+            $bangsalCodes = SetLokasi::getAllBangsal();
         }
+        
+        return $bangsalCodes;
     }
 
-    // Method untuk mendapatkan bangsal pertama berdasarkan poli
-    public static function getFirstBangsalByPoli($kdPoli)
+    /**
+     * Get first bangsal code by poli code
+     * If no bangsal found in set_depo_ralan, fallback to set_lokasi
+     */
+    public static function getFirstBangsalByPoli(string $kdPoli)
     {
-        // Cek apakah tabel set_depo_ralan memiliki data
-        $hasDepoData = static::exists();
+        $bangsalCode = self::where('kd_poli', $kdPoli)
+            ->value('kd_bangsal');
         
-        if (!$hasDepoData) {
-            // Jika tabel set_depo_ralan kosong, ambil bangsal pertama dari set_lokasi
-            return SetLokasi::getFirstBangsal();
-        } else {
-            // Jika ada data di set_depo_ralan, ambil berdasarkan kd_poli
-            return static::where('kd_poli', $kdPoli)->value('kd_bangsal');
+        // If no bangsal found in set_depo_ralan, fallback to set_lokasi
+        if (!$bangsalCode) {
+            $bangsalCode = SetLokasi::getFirstBangsal();
         }
+        
+        return $bangsalCode;
     }
 }
