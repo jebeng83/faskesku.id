@@ -28,6 +28,61 @@ export default function Create({ polikliniks, penjaabs, kategoris }) {
         total_dokter_perawat: 0,
     });
 
+    const [focusedField, setFocusedField] = useState(null);
+
+    // Auto-generate kode when kategori changes
+    const generateAutoCode = async (kdKategori) => {
+        if (!kdKategori) return;
+        
+        try {
+            const response = await fetch(route('daftar-tarif.generate-kode') + `?kd_kategori=${kdKategori}&category=rawat-jalan`);
+            const result = await response.json();
+            if (result.success) {
+                setData('kd_jenis_prw', result.kode);
+            }
+        } catch (error) {
+            console.error('Error generating code:', error);
+        }
+    };
+
+    // Handle kategori change
+    const handleKategoriChange = (value) => {
+        setData('kd_kategori', value);
+        generateAutoCode(value);
+    };
+
+    // Handle numeric input with proper zero handling
+    const handleNumericInput = (field, value) => {
+        // Allow empty string or valid numbers
+        if (value === '' || (!isNaN(value) && value >= 0)) {
+            setData(field, value);
+        }
+    };
+
+    // Get display value for numeric inputs
+    const getDisplayValue = (field) => {
+        if (focusedField === field) {
+            // When focused, show actual value (empty if 0)
+            return data[field] === '0' ? '' : data[field];
+        }
+        // When not focused, show 0 if empty
+        return data[field] || '0';
+    };
+
+    // Handle focus
+    const onFocus = (field) => {
+        setFocusedField(field);
+    };
+
+    // Handle blur
+    const onBlur = (field) => {
+        setFocusedField(null);
+        // Set to '0' if empty
+        if (!data[field] || data[field] === '') {
+            setData(field, '0');
+        }
+    };
+
     // Calculate totals automatically
     useEffect(() => {
         const material = parseFloat(data.material) || 0;
@@ -129,6 +184,42 @@ export default function Create({ polikliniks, penjaabs, kategoris }) {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Kategori <span className="text-red-500">*</span>
+                                        </label>
+                                        <div className="flex gap-2">
+                                            <select
+                                                value={data.kd_kategori}
+                                                onChange={(e) => handleKategoriChange(e.target.value)}
+                                                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                required
+                                            >
+                                                <option value="">Pilih Kategori</option>
+                                                {kategoris.map((kategori) => (
+                                                    <option key={kategori.kd_kategori} value={kategori.kd_kategori}>
+                                                        {kategori.nm_kategori}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <button
+                                                type="button"
+                                                className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg transition-colors flex items-center justify-center"
+                                                title="Tambah Kategori"
+                                                onClick={() => {
+                                    window.open(route('kategori-perawatan.index'), '_blank');
+                                }}
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        {errors.kd_kategori && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.kd_kategori}</p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                             Kode Jenis Perawatan <span className="text-red-500">*</span>
                                         </label>
                                         <input
@@ -158,28 +249,6 @@ export default function Create({ polikliniks, penjaabs, kategoris }) {
                                         />
                                         {errors.nm_perawatan && (
                                             <p className="mt-1 text-sm text-red-600">{errors.nm_perawatan}</p>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Kategori <span className="text-red-500">*</span>
-                                        </label>
-                                        <select
-                                            value={data.kd_kategori}
-                                            onChange={(e) => setData('kd_kategori', e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            required
-                                        >
-                                            <option value="">Pilih Kategori</option>
-                                            {kategoris.map((kategori) => (
-                                                <option key={kategori.kd_kategori} value={kategori.kd_kategori}>
-                                                    {kategori.nm_kategori}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {errors.kd_kategori && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.kd_kategori}</p>
                                         )}
                                     </div>
 
@@ -253,14 +322,14 @@ export default function Create({ polikliniks, penjaabs, kategoris }) {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Material <span className="text-red-500">*</span>
+                                            Bagian RS <span className="text-red-500">*</span>
                                         </label>
                                         <input
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            value={data.material}
-                                            onChange={(e) => setData('material', e.target.value)}
+                                            type="text"
+                                            value={getDisplayValue('material')}
+                                            onChange={(e) => handleNumericInput('material', e.target.value)}
+                                            onFocus={() => onFocus('material')}
+                                            onBlur={() => onBlur('material')}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                             placeholder="0"
                                             required
@@ -275,11 +344,11 @@ export default function Create({ polikliniks, penjaabs, kategoris }) {
                                             BHP <span className="text-red-500">*</span>
                                         </label>
                                         <input
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            value={data.bhp}
-                                            onChange={(e) => setData('bhp', e.target.value)}
+                                            type="text"
+                                            value={getDisplayValue('bhp')}
+                                            onChange={(e) => handleNumericInput('bhp', e.target.value)}
+                                            onFocus={() => onFocus('bhp')}
+                                            onBlur={() => onBlur('bhp')}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                             placeholder="0"
                                             required
@@ -291,14 +360,14 @@ export default function Create({ polikliniks, penjaabs, kategoris }) {
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Tarif Tindakan Dokter <span className="text-red-500">*</span>
+                                            Jasa Dokter <span className="text-red-500">*</span>
                                         </label>
                                         <input
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            value={data.tarif_tindakandr}
-                                            onChange={(e) => setData('tarif_tindakandr', e.target.value)}
+                                            type="text"
+                                            value={getDisplayValue('tarif_tindakandr')}
+                                            onChange={(e) => handleNumericInput('tarif_tindakandr', e.target.value)}
+                                            onFocus={() => onFocus('tarif_tindakandr')}
+                                            onBlur={() => onBlur('tarif_tindakandr')}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                             placeholder="0"
                                             required
@@ -310,14 +379,14 @@ export default function Create({ polikliniks, penjaabs, kategoris }) {
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Tarif Tindakan Perawat <span className="text-red-500">*</span>
+                                            Jasa Perawat <span className="text-red-500">*</span>
                                         </label>
                                         <input
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            value={data.tarif_tindakanpr}
-                                            onChange={(e) => setData('tarif_tindakanpr', e.target.value)}
+                                            type="text"
+                                            value={getDisplayValue('tarif_tindakanpr')}
+                                            onChange={(e) => handleNumericInput('tarif_tindakanpr', e.target.value)}
+                                            onFocus={() => onFocus('tarif_tindakanpr')}
+                                            onBlur={() => onBlur('tarif_tindakanpr')}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                             placeholder="0"
                                             required
@@ -332,11 +401,11 @@ export default function Create({ polikliniks, penjaabs, kategoris }) {
                                             KSO <span className="text-red-500">*</span>
                                         </label>
                                         <input
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            value={data.kso}
-                                            onChange={(e) => setData('kso', e.target.value)}
+                                            type="text"
+                                            value={getDisplayValue('kso')}
+                                            onChange={(e) => handleNumericInput('kso', e.target.value)}
+                                            onFocus={() => onFocus('kso')}
+                                            onBlur={() => onBlur('kso')}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                             placeholder="0"
                                             required
@@ -351,11 +420,11 @@ export default function Create({ polikliniks, penjaabs, kategoris }) {
                                             Menejemen <span className="text-red-500">*</span>
                                         </label>
                                         <input
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            value={data.menejemen}
-                                            onChange={(e) => setData('menejemen', e.target.value)}
+                                            type="text"
+                                            value={getDisplayValue('menejemen')}
+                                            onChange={(e) => handleNumericInput('menejemen', e.target.value)}
+                                            onFocus={() => onFocus('menejemen')}
+                                            onBlur={() => onBlur('menejemen')}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                             placeholder="0"
                                             required
