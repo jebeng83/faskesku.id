@@ -89,7 +89,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::store
-* @see app/Http/Controllers/DaftarTarifController.php:141
+* @see app/Http/Controllers/DaftarTarifController.php:143
 * @route '/daftar-tarif'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -104,7 +104,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::store
-* @see app/Http/Controllers/DaftarTarifController.php:141
+* @see app/Http/Controllers/DaftarTarifController.php:143
 * @route '/daftar-tarif'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -113,7 +113,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::store
-* @see app/Http/Controllers/DaftarTarifController.php:141
+* @see app/Http/Controllers/DaftarTarifController.php:143
 * @route '/daftar-tarif'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -123,7 +123,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::generateKode
-* @see app/Http/Controllers/DaftarTarifController.php:379
+* @see app/Http/Controllers/DaftarTarifController.php:311
 * @route '/daftar-tarif/generate-kode'
 */
 export const generateKode = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -138,7 +138,7 @@ generateKode.definition = {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::generateKode
-* @see app/Http/Controllers/DaftarTarifController.php:379
+* @see app/Http/Controllers/DaftarTarifController.php:311
 * @route '/daftar-tarif/generate-kode'
 */
 generateKode.url = (options?: RouteQueryOptions) => {
@@ -147,7 +147,7 @@ generateKode.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::generateKode
-* @see app/Http/Controllers/DaftarTarifController.php:379
+* @see app/Http/Controllers/DaftarTarifController.php:311
 * @route '/daftar-tarif/generate-kode'
 */
 generateKode.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -157,7 +157,7 @@ generateKode.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::generateKode
-* @see app/Http/Controllers/DaftarTarifController.php:379
+* @see app/Http/Controllers/DaftarTarifController.php:311
 * @route '/daftar-tarif/generate-kode'
 */
 generateKode.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -167,7 +167,7 @@ generateKode.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::show
-* @see app/Http/Controllers/DaftarTarifController.php:208
+* @see app/Http/Controllers/DaftarTarifController.php:0
 * @route '/daftar-tarif/{id}'
 */
 export const show = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -182,7 +182,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::show
-* @see app/Http/Controllers/DaftarTarifController.php:208
+* @see app/Http/Controllers/DaftarTarifController.php:0
 * @route '/daftar-tarif/{id}'
 */
 show.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -209,7 +209,7 @@ show.url = (args: { id: string | number } | [id: string | number ] | string | nu
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::show
-* @see app/Http/Controllers/DaftarTarifController.php:208
+* @see app/Http/Controllers/DaftarTarifController.php:0
 * @route '/daftar-tarif/{id}'
 */
 show.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -219,7 +219,7 @@ show.get = (args: { id: string | number } | [id: string | number ] | string | nu
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::show
-* @see app/Http/Controllers/DaftarTarifController.php:208
+* @see app/Http/Controllers/DaftarTarifController.php:0
 * @route '/daftar-tarif/{id}'
 */
 show.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -229,7 +229,7 @@ show.head = (args: { id: string | number } | [id: string | number ] | string | n
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::edit
-* @see app/Http/Controllers/DaftarTarifController.php:239
+* @see app/Http/Controllers/DaftarTarifController.php:359
 * @route '/daftar-tarif/{id}/edit'
 */
 export const edit = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -244,7 +244,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::edit
-* @see app/Http/Controllers/DaftarTarifController.php:239
+* @see app/Http/Controllers/DaftarTarifController.php:359
 * @route '/daftar-tarif/{id}/edit'
 */
 edit.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -271,7 +271,7 @@ edit.url = (args: { id: string | number } | [id: string | number ] | string | nu
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::edit
-* @see app/Http/Controllers/DaftarTarifController.php:239
+* @see app/Http/Controllers/DaftarTarifController.php:359
 * @route '/daftar-tarif/{id}/edit'
 */
 edit.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -281,7 +281,7 @@ edit.get = (args: { id: string | number } | [id: string | number ] | string | nu
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::edit
-* @see app/Http/Controllers/DaftarTarifController.php:239
+* @see app/Http/Controllers/DaftarTarifController.php:359
 * @route '/daftar-tarif/{id}/edit'
 */
 edit.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -291,7 +291,7 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::update
-* @see app/Http/Controllers/DaftarTarifController.php:275
+* @see app/Http/Controllers/DaftarTarifController.php:384
 * @route '/daftar-tarif/{id}'
 */
 export const update = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -306,7 +306,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::update
-* @see app/Http/Controllers/DaftarTarifController.php:275
+* @see app/Http/Controllers/DaftarTarifController.php:384
 * @route '/daftar-tarif/{id}'
 */
 update.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -333,7 +333,7 @@ update.url = (args: { id: string | number } | [id: string | number ] | string | 
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::update
-* @see app/Http/Controllers/DaftarTarifController.php:275
+* @see app/Http/Controllers/DaftarTarifController.php:384
 * @route '/daftar-tarif/{id}'
 */
 update.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -343,7 +343,7 @@ update.put = (args: { id: string | number } | [id: string | number ] | string | 
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::destroy
-* @see app/Http/Controllers/DaftarTarifController.php:344
+* @see app/Http/Controllers/DaftarTarifController.php:276
 * @route '/daftar-tarif/{id}'
 */
 export const destroy = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -358,7 +358,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::destroy
-* @see app/Http/Controllers/DaftarTarifController.php:344
+* @see app/Http/Controllers/DaftarTarifController.php:276
 * @route '/daftar-tarif/{id}'
 */
 destroy.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -385,7 +385,7 @@ destroy.url = (args: { id: string | number } | [id: string | number ] | string |
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::destroy
-* @see app/Http/Controllers/DaftarTarifController.php:344
+* @see app/Http/Controllers/DaftarTarifController.php:276
 * @route '/daftar-tarif/{id}'
 */
 destroy.delete = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
