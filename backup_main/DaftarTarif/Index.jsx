@@ -800,85 +800,102 @@ export default function Index({ title, data, category, search, filters, poliklin
     };
 
     const renderRawatJalanTable = () => (
-        <div className="compact-card-container">
-            {data?.data?.length > 0 ? (
-                data.data.map((item) => (
-                    <div key={item.kd_jenis_prw} className="compact-card">
-                        {/* Header */}
-                        <div className="compact-card-header">
-                            <div className="header-info">
-                                <div className="kode-badge">
-                                    {item.kd_jenis_prw}
-                                </div>
-                                <div className="nama-text" title={item.nm_perawatan}>
-                                    {item.nm_perawatan}
-                                </div>
-                                <div className="poli-badge">
-                                    {item.poliklinik?.nm_poli || '-'}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Content */}
-                        <div className="compact-card-content">
-                            <div className="content-grid">
-                                {/* Komponen Tarif - Lebih lebar */}
-                                <div className="tarif-section">
-                                    <div className="tarif-section-title">Komponen Tarif</div>
-                                    <div className="tarif-grid">
-                                        <div className="tarif-item">
-                                            <span className="tarif-label">Bagian RS/Klinik</span>
-                                            <span className="tarif-value">{formatCurrency(item.material)}</span>
-                                        </div>
-                                        <div className="tarif-item">
-                                            <span className="tarif-label">BHP</span>
-                                            <span className="tarif-value">{formatCurrency(item.bhp)}</span>
-                                        </div>
-                                        <div className="tarif-item">
-                                            <span className="tarif-label">Bagian Dokter</span>
-                                            <span className="tarif-value">{formatCurrency(item.tarif_tindakandr)}</span>
-                                        </div>
-                                        <div className="tarif-item">
-                                            <span className="tarif-label">Bagian Perawat</span>
-                                            <span className="tarif-value">{formatCurrency(item.tarif_tindakanpr)}</span>
-                                        </div>
-                                        <div className="tarif-item">
-                                            <span className="tarif-label">KSO</span>
-                                            <span className="tarif-value">{formatCurrency(item.kso)}</span>
-                                        </div>
-                                        <div className="tarif-item">
-                                            <span className="tarif-label">Menejemen</span>
-                                            <span className="tarif-value">{formatCurrency(item.menejemen)}</span>
-                                        </div>
+        <div className="overflow-x-auto">
+            <table className="min-w-full bg-white border border-gray-200">
+                <thead className="bg-gray-50">
+                    <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                            Kode
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                            Nama Perawatan
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                            Poliklinik
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                            Bagian RS/Klinik
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                            BHP
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                            Bagian Dokter
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                            Bagian Perawat
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                            KSO
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                            Menejemen
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                            Total Dokter
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                            Total Perawat
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                            Total Dokter + Prwt
+                        </th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                            Aksi
+                        </th>
+                    </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                    {data?.data?.length > 0 ? (
+                        data.data.map((item, index) => (
+                            <tr key={item.kd_jenis_prw} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 border-b">
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {item.kd_jenis_prw}
+                                    </span>
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-900 border-b">
+                                    <div className="max-w-xs truncate" title={item.nm_perawatan}>
+                                        {item.nm_perawatan}
                                     </div>
-                                </div>
-
-                                {/* Total Perhitungan */}
-                                <div className="total-section">
-                                    <div className="total-section-title">Total Perhitungan</div>
-                                    <div className="total-grid">
-                                        <div className="total-item total-dr">
-                                            <span>Total Dokter</span>
-                                            <span>{formatCurrency(item.total_byrdr)}</span>
-                                        </div>
-                                        <div className="total-item total-pr">
-                                            <span>Total Perawat</span>
-                                            <span>{formatCurrency(item.total_byrpr)}</span>
-                                        </div>
-                                        <div className="total-item total-gabungan">
-                                            <span>Total Dokter + Prwt</span>
-                                            <span>{formatCurrency(item.total_byrdrpr)}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Aksi - Hanya icon, lebih sempit */}
-                                <div className="action-section">
-                                    <div className="action-section-title">Aksi</div>
-                                    <div className="action-buttons">
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 border-b">
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        {item.poliklinik?.nm_poli || '-'}
+                                    </span>
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 border-b">
+                                    {formatCurrency(item.material)}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 border-b">
+                                    {formatCurrency(item.bhp)}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 border-b">
+                                    {formatCurrency(item.tarif_tindakandr)}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 border-b">
+                                    {formatCurrency(item.tarif_tindakanpr)}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 border-b">
+                                    {formatCurrency(item.kso)}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 border-b">
+                                    {formatCurrency(item.menejemen)}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-blue-600 border-b">
+                                    {formatCurrency(item.total_byrdr)}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-green-600 border-b">
+                                    {formatCurrency(item.total_byrpr)}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-purple-600 border-b">
+                                    {formatCurrency(item.total_byrdrpr)}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-center text-sm font-medium border-b">
+                                    <div className="flex items-center justify-center space-x-2">
                                         <Link
                                             href={route('daftar-tarif.edit', item.kd_jenis_prw)}
-                                            className="action-btn edit-btn"
+                                            className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                                             title="Edit Tarif"
                                         >
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -887,7 +904,7 @@ export default function Index({ title, data, category, search, filters, poliklin
                                         </Link>
                                         <button
                                             onClick={() => handleDelete(item)}
-                                            className="action-btn delete-btn"
+                                            className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                                             title="Hapus Tarif"
                                         >
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -895,22 +912,18 @@ export default function Index({ title, data, category, search, filters, poliklin
                                             </svg>
                                         </button>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                ))
-            ) : (
-                <div className="empty-state">
-                    <svg className="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <h3 className="empty-state-title">Tidak ada data tarif</h3>
-                    <p className="empty-state-description">
-                        Silakan tambah tarif baru atau ubah filter pencarian untuk melihat data tarif yang tersedia.
-                    </p>
-                </div>
-            )}
+                                </td>
+                            </tr>
+                        ))
+                    ) : (
+                        <tr>
+                            <td colSpan="13" className="px-4 py-8 text-center text-gray-500">
+                                Tidak ada data tarif
+                            </td>
+                        </tr>
+                    )}
+                </tbody>
+            </table>
         </div>
     );
 

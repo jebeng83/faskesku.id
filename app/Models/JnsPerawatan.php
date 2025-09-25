@@ -146,22 +146,29 @@ class JnsPerawatan extends Model
     // Method untuk generate kode otomatis
     public static function generateKodeJenisPerawatan($kdKategori)
     {
-        // Ambil nomor urut terakhir untuk kategori ini
-        $lastCode = self::where('kd_kategori', $kdKategori)
-            ->where('kd_jenis_prw', 'like', "0{$kdKategori}%")
-            ->orderBy('kd_jenis_prw', 'desc')
-            ->first();
+        // Ambil semua kode dengan format RJ
+        $codes = self::where('kd_jenis_prw', 'like', 'RJ%')
+            ->pluck('kd_jenis_prw')
+            ->toArray();
 
-        if ($lastCode) {
-            // Ambil 3 digit terakhir dan tambah 1
-            $lastNumber = (int) substr($lastCode->kd_jenis_prw, -3);
-            $newNumber = $lastNumber + 1;
-        } else {
-            // Jika belum ada, mulai dari 1
-            $newNumber = 1;
+        $maxNumber = 0;
+        
+        // Loop through all codes to find the highest numeric value
+        foreach ($codes as $code) {
+            // Extract numeric part after 'RJ', remove any non-numeric characters
+            $numericPart = preg_replace('/[^0-9]/', '', substr($code, 2));
+            if (!empty($numericPart)) {
+                $number = (int) $numericPart;
+                if ($number > $maxNumber) {
+                    $maxNumber = $number;
+                }
+            }
         }
 
-        // Format: 0 + kd_kategori + nomor urut (3 digit)
-        return '0' . $kdKategori . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+        // Increment by 1
+        $newNumber = $maxNumber + 1;
+
+        // Format: RJ + nomor urut (6 digit)
+        return 'RJ' . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
     }
 }
