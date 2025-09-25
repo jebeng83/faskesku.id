@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             MenuSeeder::class,
             DokterSeeder::class,
+            SpesialisSeeder::class,
             PoliklinikSeeder::class,
             PenjabSeeder::class,
             RegPeriksaSeeder::class,

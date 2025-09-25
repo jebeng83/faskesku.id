@@ -27,6 +27,18 @@ class PermissionSeeder extends Seeder
             'edit-employees',
             'delete-employees',
 
+            // Doctor Management
+            'view-doctors',
+            'create-doctors',
+            'edit-doctors',
+            'delete-doctors',
+
+            // Spesialis Management
+            'view-spesialis',
+            'create-spesialis',
+            'edit-spesialis',
+            'delete-spesialis',
+
             // Medical Records
             'view-medical-records',
             'create-medical-records',
@@ -71,12 +83,23 @@ class PermissionSeeder extends Seeder
             'delete-permissions',
 
             // Menu specific permissions
+            'patient.index',
             'patient.view',
+            'patients.index',
             'employee.view',
+            'employees.index',
             'reg-periksa.view',
+            'reg-periksa.index',
             'user.view',
+            'users.index',
             'permission.view',
+            'permissions.index',
             'menu.view',
+            'menu.create',
+            'menu.edit',
+            'menu.delete',
+            'menus.index',
+            'profile.show',
         ];
 
         foreach ($permissions as $permission) {
@@ -92,6 +115,8 @@ class PermissionSeeder extends Seeder
             'view-patients',
             'create-patients',
             'edit-patients',
+            'view-doctors',
+            'view-spesialis',
             'view-medical-records',
             'create-medical-records',
             'edit-medical-records',

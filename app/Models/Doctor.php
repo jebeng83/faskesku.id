@@ -13,6 +13,7 @@ class Doctor extends Model
     protected $primaryKey = 'kd_dokter';
     public $incrementing = false;
     protected $keyType = 'string';
+    public $timestamps = false;
 
     protected $fillable = [
         'kd_dokter',
@@ -41,5 +42,26 @@ class Doctor extends Model
     public function regPeriksas()
     {
         return $this->hasMany(RegPeriksa::class, 'kd_dokter', 'kd_dokter');
+    }
+
+    public function pegawai()
+    {
+        return $this->belongsTo(Employee::class, 'kd_dokter', 'nik');
+    }
+
+    /**
+     * Relasi dengan Spesialis
+     */
+    public function spesialis()
+    {
+        return $this->belongsTo(Spesialis::class, 'kd_sps', 'kd_sps');
+    }
+
+    /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName()
+    {
+        return 'kd_dokter';
     }
 }

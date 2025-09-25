@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ObatController::detail
-* @see app/Http/Controllers/RawatJalan/ObatController.php:101
+* @see app/Http/Controllers/RawatJalan/ObatController.php:97
 * @route '/api/obat/{kode_barang}'
 */
 export const detail = (args: { kode_barang: string | number } | [kode_barang: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,7 +60,7 @@ detail.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ObatController::detail
-* @see app/Http/Controllers/RawatJalan/ObatController.php:101
+* @see app/Http/Controllers/RawatJalan/ObatController.php:97
 * @route '/api/obat/{kode_barang}'
 */
 detail.url = (args: { kode_barang: string | number } | [kode_barang: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -87,7 +87,7 @@ detail.url = (args: { kode_barang: string | number } | [kode_barang: string | nu
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ObatController::detail
-* @see app/Http/Controllers/RawatJalan/ObatController.php:101
+* @see app/Http/Controllers/RawatJalan/ObatController.php:97
 * @route '/api/obat/{kode_barang}'
 */
 detail.get = (args: { kode_barang: string | number } | [kode_barang: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -97,7 +97,7 @@ detail.get = (args: { kode_barang: string | number } | [kode_barang: string | nu
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ObatController::detail
-* @see app/Http/Controllers/RawatJalan/ObatController.php:101
+* @see app/Http/Controllers/RawatJalan/ObatController.php:97
 * @route '/api/obat/{kode_barang}'
 */
 detail.head = (args: { kode_barang: string | number } | [kode_barang: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -107,7 +107,7 @@ detail.head = (args: { kode_barang: string | number } | [kode_barang: string | n
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ObatController::cekStok
-* @see app/Http/Controllers/RawatJalan/ObatController.php:162
+* @see app/Http/Controllers/RawatJalan/ObatController.php:158
 * @route '/api/obat/cek-stok'
 */
 export const cekStok = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -122,7 +122,7 @@ cekStok.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ObatController::cekStok
-* @see app/Http/Controllers/RawatJalan/ObatController.php:162
+* @see app/Http/Controllers/RawatJalan/ObatController.php:158
 * @route '/api/obat/cek-stok'
 */
 cekStok.url = (options?: RouteQueryOptions) => {
@@ -131,7 +131,7 @@ cekStok.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ObatController::cekStok
-* @see app/Http/Controllers/RawatJalan/ObatController.php:162
+* @see app/Http/Controllers/RawatJalan/ObatController.php:158
 * @route '/api/obat/cek-stok'
 */
 cekStok.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
