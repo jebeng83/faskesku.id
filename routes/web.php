@@ -21,6 +21,7 @@ use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\SpesialisController;
 use App\Http\Controllers\DaftarTarifController;
 use App\Http\Controllers\TarifTindakanController;
+use App\Http\Controllers\KategoriPerawatanController;
 use App\Http\Controllers\PermintaanLabController;
 
 Route::middleware('guest')->group(function () {
@@ -123,6 +124,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/reg-periksa', [PermintaanLabController::class, 'getRegPeriksa'])->name('api.reg-periksa');
     Route::resource('radiologi', RadiologiController::class);
     Route::resource('rehabilitasi-medik', RehabilitasiMedikController::class);
+
+    // Kategori Perawatan routes
+    Route::get('kategori-perawatan/generate-kode', [KategoriPerawatanController::class, 'generateKode'])->name('kategori-perawatan.generate-kode');
+    Route::resource('kategori-perawatan', KategoriPerawatanController::class);
 
     // Daftar Tarif routes
     Route::get('daftar-tarif/generate-kode', [DaftarTarifController::class, 'generateKode'])->name('daftar-tarif.generate-kode');
