@@ -292,22 +292,22 @@ edit.head = (args: { id: string | number } | [id: string | number ] | string | n
 /**
 * @see \App\Http\Controllers\DaftarTarifController::update
 * @see app/Http/Controllers/DaftarTarifController.php:384
-* @route '/daftar-tarif/{id}/update'
+* @route '/daftar-tarif/{id}'
 */
-export const update = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const update = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
-    method: 'post',
+    method: 'put',
 })
 
 update.definition = {
-    methods: ["post"],
-    url: '/daftar-tarif/{id}/update',
-} satisfies RouteDefinition<["post"]>
+    methods: ["put"],
+    url: '/daftar-tarif/{id}',
+} satisfies RouteDefinition<["put"]>
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::update
 * @see app/Http/Controllers/DaftarTarifController.php:384
-* @route '/daftar-tarif/{id}/update'
+* @route '/daftar-tarif/{id}'
 */
 update.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
@@ -334,11 +334,11 @@ update.url = (args: { id: string | number } | [id: string | number ] | string | 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::update
 * @see app/Http/Controllers/DaftarTarifController.php:384
-* @route '/daftar-tarif/{id}/update'
+* @route '/daftar-tarif/{id}'
 */
-update.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+update.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
-    method: 'post',
+    method: 'put',
 })
 
 /**
