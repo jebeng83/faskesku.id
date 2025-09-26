@@ -9,6 +9,11 @@ use App\Http\Controllers\API\RegPeriksaController;
 use App\Http\Controllers\API\GenerateNoRawatController;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\RawatJalan\ObatController;
+use App\Http\Controllers\RawatJalan\ResepController;
+use App\Http\Controllers\API\DokterController;
+use App\Http\Controllers\PermintaanLabController;
+use App\Http\Controllers\PermintaanRadiologiController;
 
 Route::post('/employees', [EmployeeController::class, 'store'])->name('api.employees.store');
 Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('api.employees.destroy');
@@ -80,3 +85,35 @@ Route::prefix('menus')->middleware('auth')->group(function () {
     Route::get('/hierarchy', [MenuController::class, 'getMenuHierarchy'])->name('api.menus.hierarchy');
     Route::get('/icons', [MenuController::class, 'getIcons'])->name('api.menus.icons');
 });
+
+// Rawat Jalan API Routes
+// API routes untuk obat
+Route::get('/obat', [ObatController::class, 'getObatByPoli'])->name('api.obat.index');
+Route::get('/obat/{kode_barang}', [ObatController::class, 'getDetailObat'])->name('api.obat.detail');
+Route::post('/obat/cek-stok', [ObatController::class, 'cekStokObat'])->name('api.obat.cek-stok');
+
+// API routes untuk resep
+Route::post('/resep', [ResepController::class, 'store'])->name('api.resep.store');
+Route::get('/resep/stok-info', [ResepController::class, 'getStokInfo'])->name('api.resep.stok-info');
+Route::get('/resep/rawat/{no_rawat}', [ResepController::class, 'getByNoRawat'])->where('no_rawat', '.*')->name('api.resep.by-rawat');
+Route::get('/resep/pasien/{no_rkm_medis}', [ResepController::class, 'getByNoRkmMedis'])->where('no_rkm_medis', '.*')->name('api.resep.by-pasien');
+Route::get('/resep/{no_resep}', [ResepController::class, 'getResep'])->name('api.resep.get');
+Route::delete('/resep/{no_resep}', [ResepController::class, 'destroy'])->where('no_resep', '.*')->name('api.resep.delete');
+
+// API routes untuk dokter
+Route::get('/dokter', [DokterController::class, 'index'])->name('api.dokter.index');
+Route::get('/dokter/{kd_dokter}', [DokterController::class, 'show'])->name('api.dokter.show');
+
+// API routes untuk permintaan laboratorium
+Route::get('/lab-tests', [PermintaanLabController::class, 'getLabTests'])->name('api.lab-tests.index');
+Route::post('/permintaan-lab', [PermintaanLabController::class, 'store'])->name('api.permintaan-lab.store');
+Route::get('/permintaan-lab/rawat/{no_rawat}', [PermintaanLabController::class, 'getByNoRawat'])->where('no_rawat', '.*')->name('api.permintaan-lab.by-rawat');
+Route::get('/permintaan-lab/riwayat/{no_rawat}', [PermintaanLabController::class, 'getRiwayat'])->where('no_rawat', '.*')->name('api.permintaan-lab.riwayat');
+Route::delete('/permintaan-lab/{noorder}', [PermintaanLabController::class, 'destroy'])->name('api.permintaan-lab.destroy');
+
+// API routes untuk permintaan radiologi
+Route::get('/radiologi-tests', [PermintaanRadiologiController::class, 'getJenisPerawatan'])->name('api.radiologi-tests.index');
+Route::post('/permintaan-radiologi', [PermintaanRadiologiController::class, 'store'])->name('api.permintaan-radiologi.store');
+Route::get('/permintaan-radiologi/rawat/{no_rawat}', [PermintaanRadiologiController::class, 'getByNoRawat'])->where('no_rawat', '.*')->name('api.permintaan-radiologi.by-rawat');
+Route::get('/permintaan-radiologi/riwayat/{no_rawat}', [PermintaanRadiologiController::class, 'getRiwayat'])->where('no_rawat', '.*')->name('api.permintaan-radiologi.riwayat');
+Route::delete('/permintaan-radiologi/{noorder}', [PermintaanRadiologiController::class, 'destroy'])->name('api.permintaan-radiologi.destroy');

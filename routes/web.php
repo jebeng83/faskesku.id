@@ -22,6 +22,9 @@ use App\Http\Controllers\SpesialisController;
 use App\Http\Controllers\DaftarTarifController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\DataBarangController;
+use App\Http\Controllers\TarifTindakanController;
+use App\Http\Controllers\KategoriPerawatanController;
+use App\Http\Controllers\PermintaanLabController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -29,6 +32,11 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+
+// Note: API routes telah dipindahkan ke routes/api.php
+
+// API routes that don't require authentication
+Route::get('/api/lab-tests', [PermintaanLabController::class, 'getLabTests'])->name('api.lab-tests');
 
 Route::middleware('auth')->group(function () {
     Route::get('/', function () {
@@ -82,15 +90,7 @@ Route::middleware('auth')->group(function () {
     Route::get('pegawai/search', [RawatJalanController::class, 'searchPegawai'])->name('pegawai.search');
     Route::get('rawat-jalan-statistics', [RawatJalanController::class, 'getStatistics'])->name('rawat-jalan.statistics');
     
-    // API routes untuk obat
-    Route::get('api/obat', [ObatController::class, 'getObatByPoli'])->name('api.obat.index');
-    Route::get('api/obat/{kode_barang}', [ObatController::class, 'getDetailObat'])->name('api.obat.detail');
-    Route::post('api/obat/cek-stok', [ObatController::class, 'cekStokObat'])->name('api.obat.cek-stok');
-    
-    // API routes untuk resep
-    Route::post('api/resep', [ResepController::class, 'store'])->name('api.resep.store');
-    Route::get('api/resep/{no_resep}', [ResepController::class, 'getResep'])->name('api.resep.get');
-    Route::get('api/resep/rawat/{no_rawat}', [ResepController::class, 'getByNoRawat'])->name('api.resep.by-rawat');
+
     
     Route::resource('rawat-jalan', RawatJalanController::class);
 
@@ -120,6 +120,10 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{noRawat}', [LaboratoriumController::class, 'destroy'])->name('destroy');
         Route::put('/{noRawat}/hasil', [LaboratoriumController::class, 'updateHasil'])->name('update-hasil');
     });
+    
+    // Permintaan Laboratorium routes
+    Route::resource('permintaan-lab', PermintaanLabController::class);
+    Route::get('/api/reg-periksa', [PermintaanLabController::class, 'getRegPeriksa'])->name('api.reg-periksa');
     Route::resource('radiologi', RadiologiController::class);
     Route::resource('rehabilitasi-medik', RehabilitasiMedikController::class);
 
@@ -131,6 +135,10 @@ Route::middleware('auth')->group(function () {
         })->name('dashboard');
     });
 
+    // Kategori Perawatan routes
+    Route::get('kategori-perawatan/generate-kode', [KategoriPerawatanController::class, 'generateKode'])->name('kategori-perawatan.generate-kode');
+    Route::resource('kategori-perawatan', KategoriPerawatanController::class);
+
     // Daftar Tarif routes
     Route::get('daftar-tarif/generate-kode', [DaftarTarifController::class, 'generateKode'])->name('daftar-tarif.generate-kode');
     Route::resource('daftar-tarif', DaftarTarifController::class);
@@ -139,6 +147,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/menu', function () {
         return Inertia::render('Menu/menu');
     })->name('menu.dashboard');
+
+    // Tarif Tindakan API routes
+    Route::prefix('api/tarif-tindakan')->name('api.tarif-tindakan.')->group(function () {
+        Route::get('/', [TarifTindakanController::class, 'index'])->name('index');
+        Route::get('/dokter', [TarifTindakanController::class, 'getDokter'])->name('get-dokter');
+        Route::get('/petugas', [TarifTindakanController::class, 'getPetugas'])->name('get-petugas');
+        Route::post('/dokter', [TarifTindakanController::class, 'storeTindakanDokter'])->name('store-dokter');
+        Route::post('/perawat', [TarifTindakanController::class, 'storeTindakanPerawat'])->name('store-perawat');
+        Route::post('/dokter-perawat', [TarifTindakanController::class, 'storeTindakanDokterPerawat'])->name('store-dokter-perawat');
+        Route::get('/riwayat/{noRawat}', [TarifTindakanController::class, 'getRiwayatTindakan'])->name('riwayat')->where('noRawat', '.*');
+        Route::delete('/', [TarifTindakanController::class, 'deleteTindakan'])->name('delete');
+    });
 });
 
     // Settings routes

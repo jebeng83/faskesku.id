@@ -119,6 +119,11 @@ class RegPeriksa extends Model
         return $this->belongsTo(Patient::class, 'no_rkm_medis', 'no_rkm_medis');
     }
 
+    public function patient()
+    {
+        return $this->belongsTo(Patient::class, 'no_rkm_medis', 'no_rkm_medis');
+    }
+
     public function penjab()
     {
         return $this->belongsTo(Penjab::class, 'kd_pj', 'kd_pj');
