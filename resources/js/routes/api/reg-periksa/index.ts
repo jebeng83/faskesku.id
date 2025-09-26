@@ -1,49 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
-* @see \App\Http\Controllers\API\RegPeriksaController::index
-* @see app/Http/Controllers/API/RegPeriksaController.php:19
-* @route '/api/reg-periksa'
-*/
-export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: index.url(options),
-    method: 'get',
-})
-
-index.definition = {
-    methods: ["get","head"],
-    url: '/api/reg-periksa',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\API\RegPeriksaController::index
-* @see app/Http/Controllers/API/RegPeriksaController.php:19
-* @route '/api/reg-periksa'
-*/
-index.url = (options?: RouteQueryOptions) => {
-    return index.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\API\RegPeriksaController::index
-* @see app/Http/Controllers/API/RegPeriksaController.php:19
-* @route '/api/reg-periksa'
-*/
-index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: index.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\API\RegPeriksaController::index
-* @see app/Http/Controllers/API/RegPeriksaController.php:19
-* @route '/api/reg-periksa'
-*/
-index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: index.url(options),
-    method: 'head',
-})
-
-/**
 * @see \App\Http\Controllers\API\RegPeriksaController::store
 * @see app/Http/Controllers/API/RegPeriksaController.php:97
 * @route '/api/reg-periksa'
@@ -384,7 +340,6 @@ filterData.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 const regPeriksa = {
-    index: Object.assign(index, index),
     store: Object.assign(store, store),
     show: Object.assign(show, show),
     update: Object.assign(update, update),

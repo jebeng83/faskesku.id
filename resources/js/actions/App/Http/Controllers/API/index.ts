@@ -5,6 +5,7 @@ import PermissionController from './PermissionController'
 import RegPeriksaController from './RegPeriksaController'
 import GenerateNoRawatController from './GenerateNoRawatController'
 import UserController from './UserController'
+import DokterController from './DokterController'
 
 const API = {
     EmployeeController: Object.assign(EmployeeController, EmployeeController),
@@ -14,6 +15,7 @@ const API = {
     RegPeriksaController: Object.assign(RegPeriksaController, RegPeriksaController),
     GenerateNoRawatController: Object.assign(GenerateNoRawatController, GenerateNoRawatController),
     UserController: Object.assign(UserController, UserController),
+    DokterController: Object.assign(DokterController, DokterController),
 }
 
 export default API
