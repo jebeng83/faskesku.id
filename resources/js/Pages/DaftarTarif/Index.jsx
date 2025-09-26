@@ -915,82 +915,117 @@ export default function Index({ title, data, category, search, filters, poliklin
     );
 
     const renderRawatInapTable = () => (
-        <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                    <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Kode
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Nama Perawatan
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Bangsal
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Tarif Dokter
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Tarif Perawat
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Total Tarif
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Aksi
-                        </th>
-                    </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                    {data?.data?.map((item) => (
-                        <tr key={item.kd_jenis_prw} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {item.kd_jenis_prw}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {item.nm_perawatan}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {item.bangsal?.nm_bangsal || '-'}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {formatCurrency(item.total_byrdr)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {formatCurrency(item.total_byrpr)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                {formatCurrency(item.total_byrdrpr)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                                <Badge variant={item.status === '1' ? 'default' : 'secondary'}>
-                                    {item.status === '1' ? 'Aktif' : 'Tidak Aktif'}
-                                </Badge>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <div className="flex space-x-2">
-                                    <button
-                                        onClick={() => handleEdit(item)}
-                                        className="text-indigo-600 hover:text-indigo-900 font-medium"
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(item)}
-                                        className="text-red-600 hover:text-red-900 font-medium"
-                                    >
-                                        Delete
-                                    </button>
+        <div className="compact-card-container">
+            {data?.data?.length > 0 ? (
+                data.data.map((item) => (
+                    <div key={item.kd_jenis_prw} className="compact-card">
+                        {/* Header */}
+                        <div className="compact-card-header">
+                            <div className="header-info">
+                                <div className="kode-badge">
+                                    {item.kd_jenis_prw}
                                 </div>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+                                <div className="nama-text" title={item.nm_perawatan}>
+                                    {item.nm_perawatan}
+                                </div>
+                                <div className="poli-badge">
+                                    {item.bangsal?.nm_bangsal || '-'}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="compact-card-content">
+                            <div className="content-grid">
+                                {/* Komponen Tarif - Lebih lebar */}
+                                <div className="tarif-section">
+                                    <div className="tarif-section-title">Komponen Tarif</div>
+                                    <div className="tarif-grid">
+                                        <div className="tarif-item">
+                                            <span className="tarif-label">Material</span>
+                                            <span className="tarif-value">{formatCurrency(item.material)}</span>
+                                        </div>
+                                        <div className="tarif-item">
+                                            <span className="tarif-label">BHP</span>
+                                            <span className="tarif-value">{formatCurrency(item.bhp)}</span>
+                                        </div>
+                                        <div className="tarif-item">
+                                            <span className="tarif-label">Tarif Tindakan Dr</span>
+                                            <span className="tarif-value">{formatCurrency(item.tarif_tindakandr)}</span>
+                                        </div>
+                                        <div className="tarif-item">
+                                            <span className="tarif-label">Tarif Tindakan Pr</span>
+                                            <span className="tarif-value">{formatCurrency(item.tarif_tindakanpr)}</span>
+                                        </div>
+                                        <div className="tarif-item">
+                                            <span className="tarif-label">KSO</span>
+                                            <span className="tarif-value">{formatCurrency(item.kso)}</span>
+                                        </div>
+                                        <div className="tarif-item">
+                                            <span className="tarif-label">Menejemen</span>
+                                            <span className="tarif-value">{formatCurrency(item.menejemen)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Total Perhitungan */}
+                                <div className="total-section">
+                                    <div className="total-section-title">Total Perhitungan</div>
+                                    <div className="total-grid">
+                                        <div className="total-item total-dr">
+                                            <span>Total Dokter</span>
+                                            <span>{formatCurrency(item.total_byrdr)}</span>
+                                        </div>
+                                        <div className="total-item total-pr">
+                                            <span>Total Perawat</span>
+                                            <span>{formatCurrency(item.total_byrpr)}</span>
+                                        </div>
+                                        <div className="total-item total-gabungan">
+                                            <span>Total Dokter + Prwt</span>
+                                            <span>{formatCurrency(item.total_byrdrpr)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Aksi - Hanya icon, lebih sempit */}
+                                <div className="action-section">
+                                    <div className="action-section-title">Aksi</div>
+                                    <div className="action-buttons">
+                                        <button
+                                            onClick={() => handleEdit(item)}
+                                            className="action-btn edit-btn"
+                                            title="Edit Tarif"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                            </svg>
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(item)}
+                                            className="action-btn delete-btn"
+                                            title="Hapus Tarif"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ))
+            ) : (
+                <div className="empty-state">
+                    <svg className="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <h3 className="empty-state-title">Tidak ada data tarif rawat inap</h3>
+                    <p className="empty-state-description">
+                        Silakan tambah tarif rawat inap baru atau ubah filter pencarian untuk melihat data tarif yang tersedia.
+                    </p>
+                </div>
+            )}
         </div>
     );
 
@@ -1388,8 +1423,8 @@ export default function Index({ title, data, category, search, filters, poliklin
                                         <span className="xs:hidden">Export</span>
                                     </button>
 
-                                    {/* Button + Tarif - hanya tampil di tab Rawat Jalan */}
-                                    {activeTab === 'rawat-jalan' && (
+                                    {/* Button + Tarif - tampil di tab Rawat Jalan dan Rawat Inap */}
+                                    {(activeTab === 'rawat-jalan' || activeTab === 'rawat-inap') && (
                                         <button
                                             onClick={handleAddTarif}
                                             className="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200 whitespace-nowrap"
