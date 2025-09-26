@@ -77,7 +77,7 @@ class RawatJalanController extends Controller
             'Belum Bayar' => 'Belum Bayar'
         ];
 
-        return Inertia::render('RawatJalan/Index', [
+        return Inertia::render('RawatJalan/Create', [
             'rawatJalan' => $rawatJalan,
             'statusOptions' => $statusOptions,
             'statusBayarOptions' => $statusBayarOptions,
@@ -403,6 +403,7 @@ class RawatJalanController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'no_rawat' => 'required|string|max:17', // Validate no_rawat from frontend
             'no_rkm_medis' => 'required|exists:pasien,no_rkm_medis',
             'tgl_registrasi' => 'required|date',
             'jam_reg' => 'required',
@@ -418,51 +419,68 @@ class RawatJalanController extends Controller
             'status_bayar' => 'required|in:Sudah Bayar,Belum Bayar'
         ]);
 
-        // Generate no_reg dan no_rawat
-        $no_reg = RawatJalan::generateNoReg($request->tgl_registrasi, $request->kd_dokter);
-        $no_rawat = RawatJalan::generateNoRawat($request->tgl_registrasi);
+        try {
+            return DB::transaction(function () use ($request) {
+                // Use no_rawat from frontend (already generated)
+                $no_rawat = $request->no_rawat;
+                
+                // Generate only no_reg
+                $no_reg = RawatJalan::generateNoReg($request->tgl_registrasi, $request->kd_dokter);
 
-        // Ambil data pasien untuk menghitung umur
-        $patient = Patient::find($request->no_rkm_medis);
-        $umur = $patient->calculateAge();
-        
-        // Tentukan status_poli otomatis berdasarkan riwayat kunjungan
-        $status_poli = RawatJalan::checkPatientStatus($request->no_rkm_medis);
-        
-        // Ambil biaya_reg dari tabel poliklinik
-        $poliklinik = Poliklinik::find($request->kd_poli);
-        $biaya_reg = $status_poli === 'Baru' ? $poliklinik->registrasi : $poliklinik->registrasilama;
-        
-        // Parse umur untuk mendapatkan nilai dan satuan
-        $umurdaftar = null;
-        $sttsumur = null;
-        if ($umur) {
-            if (strpos($umur, 'Th') !== false) {
-                $umurdaftar = (int) str_replace(' Th', '', $umur);
-                $sttsumur = 'Th';
-            } elseif (strpos($umur, 'Bl') !== false) {
-                $umurdaftar = (int) str_replace(' Bl', '', $umur);
-                $sttsumur = 'Bl';
-            } elseif (strpos($umur, 'Hr') !== false) {
-                $umurdaftar = (int) str_replace(' Hr', '', $umur);
-                $sttsumur = 'Hr';
-            }
+                // Ambil data pasien untuk menghitung umur
+                $patient = Patient::find($request->no_rkm_medis);
+                $umur = $patient->calculateAge();
+                
+                // Tentukan status_poli otomatis berdasarkan riwayat kunjungan
+                $status_poli = RawatJalan::checkPatientStatus($request->no_rkm_medis);
+                
+                // Ambil biaya_reg dari tabel poliklinik
+                $poliklinik = Poliklinik::find($request->kd_poli);
+                $biaya_reg = $status_poli === 'Baru' ? $poliklinik->registrasi : $poliklinik->registrasilama;
+                
+                // Parse umur untuk mendapatkan nilai dan satuan
+                $umurdaftar = null;
+                $sttsumur = null;
+                if ($umur) {
+                    if (strpos($umur, 'Th') !== false) {
+                        $umurdaftar = (int) str_replace(' Th', '', $umur);
+                        $sttsumur = 'Th';
+                    } elseif (strpos($umur, 'Bl') !== false) {
+                        $umurdaftar = (int) str_replace(' Bl', '', $umur);
+                        $sttsumur = 'Bl';
+                    } elseif (strpos($umur, 'Hr') !== false) {
+                        $umurdaftar = (int) str_replace(' Hr', '', $umur);
+                        $sttsumur = 'Hr';
+                    }
+                }
+
+                $data = $request->all();
+                $data['no_reg'] = $no_reg;
+                $data['no_rawat'] = $no_rawat; // Use the one from frontend
+                $data['biaya_reg'] = $biaya_reg;
+                $data['status_poli'] = $status_poli;
+                $data['umurdaftar'] = $umurdaftar;
+                $data['sttsumur'] = $sttsumur;
+                $data['tgl_registrasi'] = Carbon::parse($request->tgl_registrasi)->format('Y-m-d');
+                $data['jam_reg'] = Carbon::parse($request->jam_reg)->format('H:i:s');
+
+                RawatJalan::create($data);
+
+                return redirect()->route('rawat-jalan.create')
+                                ->with('success', 'Data rawat jalan berhasil ditambahkan.');
+            });
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            // Handle duplicate entry specifically
+            \Illuminate\Support\Facades\Log::error('Duplicate entry error: ' . $e->getMessage());
+            return redirect()->back()
+                           ->withErrors(['no_rawat' => 'Nomor rawat sudah digunakan. Silakan refresh halaman dan coba lagi.'])
+                           ->withInput();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error saving registration: ' . $e->getMessage());
+            return redirect()->back()
+                           ->withErrors(['error' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.'])
+                           ->withInput();
         }
-
-        $data = $request->all();
-        $data['no_reg'] = $no_reg;
-        $data['no_rawat'] = $no_rawat;
-        $data['biaya_reg'] = $biaya_reg;
-        $data['status_poli'] = $status_poli;
-        $data['umurdaftar'] = $umurdaftar;
-        $data['sttsumur'] = $sttsumur;
-        $data['tgl_registrasi'] = Carbon::parse($request->tgl_registrasi)->format('Y-m-d');
-        $data['jam_reg'] = Carbon::parse($request->jam_reg)->format('H:i:s');
-
-        RawatJalan::create($data);
-
-        return redirect()->route('rawat-jalan.index')
-                        ->with('success', 'Data rawat jalan berhasil ditambahkan.');
     }
 
     /**
@@ -596,5 +614,31 @@ class RawatJalanController extends Controller
 
         return redirect()->route('rawat-jalan.index')
                         ->with('success', 'Data rawat jalan berhasil dihapus.');
+    }
+
+    /**
+     * Update cache counter setelah data berhasil disimpan
+     * Agar generate no_rawat selanjutnya menggunakan nomor yang benar
+     */
+    private function updateCacheAfterSave($tanggal, $no_rawat)
+    {
+        try {
+            // Extract nomor urut dari no_rawat (6 digit terakhir)
+            $parts = explode('/', $no_rawat);
+            if (count($parts) === 4) {
+                $currentNumber = (int) $parts[3];
+                
+                // Update cache counter agar lebih besar dari nomor yang baru saja disimpan
+                $cacheKey = "no_rawat_counter_{$tanggal}";
+                $nextNumber = $currentNumber + 1;
+                
+                // Set cache dengan nilai yang benar untuk generate selanjutnya
+                cache()->put($cacheKey, $nextNumber, 3600);
+                
+                \Illuminate\Support\Facades\Log::info("Cache updated for {$tanggal}: next number will be {$nextNumber}");
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error updating cache after save: ' . $e->getMessage());
+        }
     }
 }

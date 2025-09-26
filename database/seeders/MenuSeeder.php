@@ -187,6 +187,18 @@ class MenuSeeder extends Seeder
             'description' => 'Pengelolaan struktur menu sidebar'
         ]);
 
+        Menu::create([
+            'name' => 'Setting Aplikasi',
+            'slug' => 'setting-aplikasi',
+            'icon' => 'fas fa-cog',
+            'route' => 'settings.index',
+            'parent_id' => $administration->id,
+            'sort_order' => 4,
+            'is_active' => true,
+            'permission_name' => 'view-settings',
+            'description' => 'Pengelolaan pengaturan aplikasi'
+        ]);
+
         // Profile menu (separate from main navigation)
         Menu::create([
             'name' => 'Profil',

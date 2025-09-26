@@ -514,16 +514,16 @@ password.put = (args: { user: number | { id: number } } | [user: number | { id: 
 })
 
 const users = {
-    index,
-    store,
-    roles,
-    permissions,
-    employees,
-    checkByNik,
-    show,
-    update,
-    destroy,
-    password,
+    index: Object.assign(index, index),
+    store: Object.assign(store, store),
+    roles: Object.assign(roles, roles),
+    permissions: Object.assign(permissions, permissions),
+    employees: Object.assign(employees, employees),
+    checkByNik: Object.assign(checkByNik, checkByNik),
+    show: Object.assign(show, show),
+    update: Object.assign(update, update),
+    destroy: Object.assign(destroy, destroy),
+    password: Object.assign(password, password),
 }
 
 export default users

@@ -122,27 +122,55 @@ class RawatJalan extends Model
     }
 
     /**
-     * Generate nomor rawat dengan format YYYY/MM/DD/NNNNN
+     * Generate nomor rawat dengan format YYYY/MM/DD/NNNNNN
+     * Menggunakan API endpoint yang sudah diperbaiki dengan cache counter
      */
     public static function generateNoRawat($tanggal)
     {
-        $tgl = \Carbon\Carbon::parse($tanggal);
-        $tglFormatted = $tgl->format('Y/m/d');
-        
-        // Cari nomor urut terakhir untuk tanggal tersebut
-        $lastRecord = self::where('tgl_registrasi', $tgl->format('Y-m-d'))
-                         ->orderBy('no_rawat', 'desc')
-                         ->first();
-        
-        if ($lastRecord && $lastRecord->no_rawat) {
-            // Ambil 5 digit terakhir dari no_rawat
-            $lastNo = substr($lastRecord->no_rawat, -5);
-            $nextNo = str_pad((int)$lastNo + 1, 5, '0', STR_PAD_LEFT);
-        } else {
-            $nextNo = '00001';
+        try {
+            // Gunakan HTTP client untuk memanggil API endpoint yang sudah diperbaiki
+            $response = \Illuminate\Support\Facades\Http::timeout(10)->post(url('/api/generate-no-rawat/'), [
+                'tanggal' => $tanggal
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                if ($data['success']) {
+                    return $data['data']['no_rawat'];
+                }
+            }
+            
+            // Fallback jika API gagal - gunakan logika lama tapi dengan format 6 digit
+            $tgl = \Carbon\Carbon::parse($tanggal);
+            $tglFormatted = $tgl->format('Y/m/d');
+            
+            // Gunakan database lock untuk mencegah race condition
+            return \Illuminate\Support\Facades\DB::transaction(function () use ($tgl, $tglFormatted) {
+                // Cari nomor urut terakhir untuk tanggal tersebut dari reg_periksa dengan lock
+                $lastRecord = \App\Models\RegPeriksa::where('tgl_registrasi', $tgl->format('Y-m-d'))
+                                 ->lockForUpdate()
+                                 ->orderBy('no_rawat', 'desc')
+                                 ->first();
+                
+                if ($lastRecord && $lastRecord->no_rawat) {
+                    // Ambil 6 digit terakhir dari no_rawat
+                    $lastNo = (int) substr($lastRecord->no_rawat, -6);
+                    $nextNo = str_pad($lastNo + 1, 6, '0', STR_PAD_LEFT);
+                } else {
+                    $nextNo = '000001';
+                }
+                
+                return $tglFormatted . '/' . $nextNo;
+            });
+            
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error generating no_rawat: ' . $e->getMessage());
+            
+            // Fallback dengan logika sederhana
+            $tgl = \Carbon\Carbon::parse($tanggal);
+            $tglFormatted = $tgl->format('Y/m/d');
+            return $tglFormatted . '/000001';
         }
-        
-        return $tglFormatted . '/' . $nextNo;
     }
 
     /**
