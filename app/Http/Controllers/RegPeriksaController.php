@@ -57,7 +57,7 @@ class RegPeriksaController extends Controller
         ]);
 
         // Generate nomor registrasi dan rawat
-        $noReg = RegPeriksa::generateNoReg($request->kd_dokter, $request->kd_poli);
+        $noReg = RegPeriksa::generateNoReg($request->kd_dokter, $request->kd_poli, now()->toDateString(), 'dokter + poli');
         $noRawat = RegPeriksa::generateNoRawat();
 
         // Hitung umur pasien

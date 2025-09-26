@@ -26,7 +26,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-export default function Index({ menus, parentOptions, permissions, filters }) {
+export default function Index({ menus = {}, parentOptions = [], permissions = [], filters = {} }) {
 	const { flash } = usePage().props;
 	const [searchTerm, setSearchTerm] = useState(filters.search || "");
 	const [selectedParent, setSelectedParent] = useState(filters.parent_id || "");
@@ -50,6 +50,8 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 
 	// Build hierarchical menu structure
 	const buildMenuHierarchy = (menuList) => {
+		if (!Array.isArray(menuList)) return [];
+		
 		const menuMap = {};
 		const rootMenus = [];
 
@@ -71,7 +73,7 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 	};
 
 	// Initialize menuItems state with hierarchical structure
-	const [menuItems, setMenuItems] = useState(buildMenuHierarchy(menus.data || []));
+	const [menuItems, setMenuItems] = useState(buildMenuHierarchy(menus?.data || []));
 	const [isDragging, setIsDragging] = useState(false);
 
 	const sensors = useSensors(
@@ -162,6 +164,8 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 
 	// Remove menu item from hierarchical structure
 	const removeMenuItem = (menuList, id) => {
+		if (!Array.isArray(menuList)) return [];
+		
 		return menuList.map(menu => {
 			if (menu.id === id) {
 				return null;
@@ -234,8 +238,8 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 				// Add to parent's children
 				newMenuItems = newMenuItems.map(menu => {
 					if (menu.id === overItem.parent_id) {
-						const overChildIndex = menu.children.findIndex(child => child.id === overItem.id);
-						const newChildren = [...menu.children];
+						const overChildIndex = (menu.children || []).findIndex(child => child.id === overItem.id);
+						const newChildren = [...(menu.children || [])];
 						newChildren.splice(overChildIndex + 1, 0, updatedActiveItem);
 						return {
 							...menu,
@@ -276,7 +280,7 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 					},
 				onError: () => {
 					// Revert on error
-					setMenuItems(buildMenuHierarchy(menus.data));
+					setMenuItems(buildMenuHierarchy(menus?.data || []));
 				},
 			}
 		);
@@ -471,7 +475,7 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 				</tr>
 				{hasChildren &&
 					isExpanded &&
-					menu.children.map((child) => (
+					(menu.children || []).map((child) => (
 						<SortableMenuItem key={child.id} menu={child} level={level + 1} />
 					))}
 			</React.Fragment>
@@ -572,7 +576,7 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 										>
 											<option value="">Semua</option>
 											<option value="root">Root Menu</option>
-											{parentOptions.map((parent) => (
+											{(parentOptions || []).map((parent) => (
 												<option key={parent.id} value={parent.id}>
 													{parent.name}
 												</option>
@@ -691,14 +695,14 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 							</div>
 
 							{/* Pagination */}
-							{menus.links && menus.links.length > 3 && (
+							{menus?.links && menus.links.length > 3 && (
 								<div className="mt-6 flex items-center justify-between">
 									<div className="text-sm text-gray-700">
 										Menampilkan {menus.from} hingga {menus.to} dari{" "}
 										{menus.total} menu
 									</div>
 									<div className="flex space-x-1">
-										{menus.links.map((link, index) => (
+										{(menus.links || []).map((link, index) => (
 											<button
 												key={index}
 												onClick={() => link.url && router.get(link.url)}
