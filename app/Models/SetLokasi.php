@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 class SetLokasi extends Model
 {
@@ -24,13 +25,13 @@ class SetLokasi extends Model
     }
 
     // Method untuk mendapatkan semua bangsal
-    public static function getAllBangsal()
+    public static function getAllBangsal(): array
     {
-        return static::pluck('kd_bangsal');
+        return static::pluck('kd_bangsal')->toArray();
     }
 
     // Method untuk mendapatkan bangsal pertama
-    public static function getFirstBangsal()
+    public static function getFirstBangsal(): ?string
     {
         return static::value('kd_bangsal');
     }

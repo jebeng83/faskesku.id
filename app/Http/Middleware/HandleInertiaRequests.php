@@ -22,7 +22,7 @@ class HandleInertiaRequests
                 'user' => fn() => $request->user() ? $request->user()->only('id', 'name', 'email') : null,
                 'permissions' => fn() => $request->user() ? $request->user()->getAllPermissions()->pluck('name') : [],
             ],
-            'menu_hierarchy' => fn() => $request->user() ? Menu::getMenuHierarchy($request->user()->id) : [],
+            'menu_hierarchy' => fn() => $request->user() ? Menu::getMenuHierarchy($request->user()->id)->toArray() : [],
             'current_menu' => fn() => $request->attributes->get('current_menu'),
         ]);
 

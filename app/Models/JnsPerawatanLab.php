@@ -77,4 +77,16 @@ class JnsPerawatanLab extends Model
     {
         return $this->belongsTo(Penjab::class, 'kd_pj', 'kd_pj');
     }
+
+    // Relasi dengan template laboratorium
+    public function templateLaboratorium()
+    {
+        return $this->hasMany(TemplateLaboratorium::class, 'kd_jenis_prw', 'kd_jenis_prw');
+    }
+
+    // Relasi dengan permintaan detail
+    public function permintaanDetailPermintaanLab()
+    {
+        return $this->hasMany(PermintaanDetailPermintaanLab::class, 'kd_jenis_prw', 'kd_jenis_prw');
+    }
 }

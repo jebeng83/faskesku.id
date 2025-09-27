@@ -42,7 +42,7 @@ class PeriksaLab extends Model
     // Relasi dengan Employee (Petugas Lab)
     public function petugas()
     {
-        return $this->belongsTo(Employee::class, 'nip', 'nip');
+        return $this->belongsTo(Employee::class, 'nip', 'nik');
     }
 
     // Relasi dengan JnsPerawatanLab

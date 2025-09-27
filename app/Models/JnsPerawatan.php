@@ -67,6 +67,12 @@ class JnsPerawatan extends Model
         return $query->where('status', '1');
     }
 
+    // Alias untuk scope aktif
+    public function scopeActive($query)
+    {
+        return $this->scopeAktif($query);
+    }
+
     // Scope untuk pencarian
     public function scopeSearch($query, $search)
     {
@@ -74,6 +80,37 @@ class JnsPerawatan extends Model
             $q->where('kd_jenis_prw', 'like', "%{$search}%")
                 ->orWhere('nm_perawatan', 'like', "%{$search}%");
         });
+    }
+
+    // Scope untuk filter berdasarkan poliklinik
+    public function scopeByPoliklinik($query, $kdPoli)
+    {
+        return $query->where('kd_poli', $kdPoli);
+    }
+
+    // Scope untuk filter berdasarkan penjamin
+    public function scopeByPenjamin($query, $kdPj)
+    {
+        return $query->where('kd_pj', $kdPj);
+    }
+
+    // Scope untuk yang memiliki tarif dokter
+    public function scopeHasTarifDokter($query)
+    {
+        return $query->where('tarif_tindakandr', '>', 0);
+    }
+
+    // Scope untuk yang memiliki tarif perawat
+    public function scopeHasTarifPerawat($query)
+    {
+        return $query->where('tarif_tindakanpr', '>', 0);
+    }
+
+    // Scope untuk yang memiliki tarif dokter dan perawat
+    public function scopeHasTarifDokterPerawat($query)
+    {
+        return $query->where('tarif_tindakandr', '>', 0)
+                    ->where('tarif_tindakanpr', '>', 0);
     }
 
     // Relasi dengan poliklinik
@@ -88,31 +125,50 @@ class JnsPerawatan extends Model
         return $this->belongsTo(Penjab::class, 'kd_pj', 'kd_pj');
     }
 
+    // Alias untuk relasi penjamin
+    public function penjamin()
+    {
+        return $this->penjab();
+    }
+
     // Relasi dengan kategori perawatan
     public function kategoriPerawatan()
     {
         return $this->belongsTo(KategoriPerawatan::class, 'kd_kategori', 'kd_kategori');
     }
 
+    // Alias untuk relasi kategori
+    public function kategori()
+    {
+        return $this->kategoriPerawatan();
+    }
+
     // Method untuk generate kode otomatis
     public static function generateKodeJenisPerawatan($kdKategori)
     {
-        // Ambil nomor urut terakhir untuk kategori ini
-        $lastCode = self::where('kd_kategori', $kdKategori)
-            ->where('kd_jenis_prw', 'like', "0{$kdKategori}%")
-            ->orderBy('kd_jenis_prw', 'desc')
-            ->first();
+        // Ambil semua kode dengan format RJ
+        $codes = self::where('kd_jenis_prw', 'like', 'RJ%')
+            ->pluck('kd_jenis_prw')
+            ->toArray();
 
-        if ($lastCode) {
-            // Ambil 3 digit terakhir dan tambah 1
-            $lastNumber = (int) substr($lastCode->kd_jenis_prw, -3);
-            $newNumber = $lastNumber + 1;
-        } else {
-            // Jika belum ada, mulai dari 1
-            $newNumber = 1;
+        $maxNumber = 0;
+        
+        // Loop through all codes to find the highest numeric value
+        foreach ($codes as $code) {
+            // Extract numeric part after 'RJ', remove any non-numeric characters
+            $numericPart = preg_replace('/[^0-9]/', '', substr($code, 2));
+            if (!empty($numericPart)) {
+                $number = (int) $numericPart;
+                if ($number > $maxNumber) {
+                    $maxNumber = $number;
+                }
+            }
         }
 
-        // Format: 0 + kd_kategori + nomor urut (3 digit)
-        return '0' . $kdKategori . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+        // Increment by 1
+        $newNumber = $maxNumber + 1;
+
+        // Format: RJ + nomor urut (6 digit)
+        return 'RJ' . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
     }
 }
