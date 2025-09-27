@@ -92,7 +92,7 @@ dashboard.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:39
+* @see routes/web.php:33
 * @route '/'
 */
 dashboard.url = (options?: RouteQueryOptions) => {
