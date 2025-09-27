@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test RawatJalan Modal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8">Demo: RawatJalan Create Modal</h1>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">Cara Penggunaan Modal</h2>
+            
+            <div class="space-y-4">
+                <p class="text-gray-700">
+                    File <code class="bg-gray-100 px-2 py-1 rounded">Create.jsx</code> telah berhasil dikonversi menjadi komponen modal popup dengan nama <code class="bg-gray-100 px-2 py-1 rounded">RawatJalanCreateModal</code>.
+                </p>
+                
+                <h3 class="text-lg font-medium text-gray-900">Props yang Diperlukan:</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-700">
+                    <li><strong>isOpen</strong> (boolean): Mengontrol apakah modal ditampilkan atau tidak</li>
+                    <li><strong>onClose</strong> (function): Callback ketika modal ditutup</li>
+                    <li><strong>onSuccess</strong> (function): Callback ketika form berhasil disubmit</li>
+                    <li><strong>patients, polikliniks, dokters, dll.</strong>: Data yang diperlukan untuk form</li>
+                </ul>
+                
+                <h3 class="text-lg font-medium text-gray-900">Contoh Penggunaan:</h3>
+                <pre class="bg-gray-800 text-green-400 p-4 rounded-lg overflow-x-auto"><code>import RawatJalanCreateModal from '@/Pages/RawatJalan/Create';
+
+function ParentComponent() {
+    const [showModal, setShowModal] = useState(false);
+    
+    const handleSuccess = () => {
+        // Refresh data atau tampilkan notifikasi
+        console.log('Data berhasil disimpan!');
+    };
+    
+    return (
+        &lt;div&gt;
+            &lt;button 
+                onClick={() =&gt; setShowModal(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded"
+            &gt;
+                Tambah Registrasi
+            &lt;/button&gt;
+            
+            &lt;RawatJalanCreateModal
+                isOpen={showModal}
+                onClose={() =&gt; setShowModal(false)}
+                onSuccess={handleSuccess}
+                patients={patients}
+                polikliniks={polikliniks}
+                dokters={dokters}
+                // ... props lainnya
+            /&gt;
+        &lt;/div&gt;
+    );
+}</code></pre>
+                
+                <h3 class="text-lg font-medium text-gray-900">Fitur Modal:</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-700">
+                    <li>✅ Ukuran full screen dengan scroll otomatis</li>
+                    <li>✅ Tombol close (X) di header</li>
+                    <li>✅ Menutup dengan tombol Escape</li>
+                    <li>✅ Backdrop click untuk menutup</li>
+                    <li>✅ Auto close setelah form berhasil disubmit</li>
+                    <li>✅ Responsive design</li>
+                    <li>✅ Dark mode support</li>
+                </ul>
+                
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4">
+                    <div class="flex">
+                        <div class="ml-3">
+                            <p class="text-sm text-blue-700">
+                                <strong>Catatan:</strong> Modal ini menggunakan komponen Modal yang sudah ada di <code>@/Components/Modal</code> 
+                                dan mengikuti pola yang sama dengan <code>EmployeeCreateModal</code>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

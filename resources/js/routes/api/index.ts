@@ -58,6 +58,108 @@ regPeriksa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
+* @see \App\Http\Controllers\API\GenerateNoRawatController::generateNoRawat
+* @see app/Http/Controllers/API/GenerateNoRawatController.php:18
+* @route '/api/generate-no-rawat'
+*/
+export const generateNoRawat = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: generateNoRawat.url(options),
+    method: 'post',
+})
+
+generateNoRawat.definition = {
+    methods: ["post"],
+    url: '/api/generate-no-rawat',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\API\GenerateNoRawatController::generateNoRawat
+* @see app/Http/Controllers/API/GenerateNoRawatController.php:18
+* @route '/api/generate-no-rawat'
+*/
+generateNoRawat.url = (options?: RouteQueryOptions) => {
+    return generateNoRawat.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\API\GenerateNoRawatController::generateNoRawat
+* @see app/Http/Controllers/API/GenerateNoRawatController.php:18
+* @route '/api/generate-no-rawat'
+*/
+generateNoRawat.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: generateNoRawat.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\API\GenerateNoRawatController::reserveNoRawat
+* @see app/Http/Controllers/API/GenerateNoRawatController.php:152
+* @route '/api/generate-no-rawat/reserve'
+*/
+export const reserveNoRawat = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: reserveNoRawat.url(options),
+    method: 'post',
+})
+
+reserveNoRawat.definition = {
+    methods: ["post"],
+    url: '/api/generate-no-rawat/reserve',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\API\GenerateNoRawatController::reserveNoRawat
+* @see app/Http/Controllers/API/GenerateNoRawatController.php:152
+* @route '/api/generate-no-rawat/reserve'
+*/
+reserveNoRawat.url = (options?: RouteQueryOptions) => {
+    return reserveNoRawat.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\API\GenerateNoRawatController::reserveNoRawat
+* @see app/Http/Controllers/API/GenerateNoRawatController.php:152
+* @route '/api/generate-no-rawat/reserve'
+*/
+reserveNoRawat.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: reserveNoRawat.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\API\GenerateNoRawatController::releaseNoRawat
+* @see app/Http/Controllers/API/GenerateNoRawatController.php:235
+* @route '/api/generate-no-rawat/release'
+*/
+export const releaseNoRawat = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: releaseNoRawat.url(options),
+    method: 'post',
+})
+
+releaseNoRawat.definition = {
+    methods: ["post"],
+    url: '/api/generate-no-rawat/release',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\API\GenerateNoRawatController::releaseNoRawat
+* @see app/Http/Controllers/API/GenerateNoRawatController.php:235
+* @route '/api/generate-no-rawat/release'
+*/
+releaseNoRawat.url = (options?: RouteQueryOptions) => {
+    return releaseNoRawat.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\API\GenerateNoRawatController::releaseNoRawat
+* @see app/Http/Controllers/API/GenerateNoRawatController.php:235
+* @route '/api/generate-no-rawat/release'
+*/
+releaseNoRawat.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: releaseNoRawat.url(options),
+    method: 'post',
+})
+
+/**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
 * @see app/Http/Controllers/PermintaanLabController.php:380
 * @route '/api/lab-tests'
@@ -107,6 +209,9 @@ const api = {
     wilayah: Object.assign(wilayah, wilayah),
     permissions: Object.assign(permissions, permissions),
     regPeriksa: Object.assign(regPeriksa, regPeriksaD17f92),
+    generateNoRawat: Object.assign(generateNoRawat, generateNoRawat),
+    reserveNoRawat: Object.assign(reserveNoRawat, reserveNoRawat),
+    releaseNoRawat: Object.assign(releaseNoRawat, releaseNoRawat),
     users: Object.assign(users, users),
     menus: Object.assign(menus, menus),
     obat: Object.assign(obat, obat),

@@ -20,6 +20,8 @@ use App\Http\Controllers\RehabilitasiMedikController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\SpesialisController;
 use App\Http\Controllers\DaftarTarifController;
+use App\Http\Controllers\SettingController;
+use App\Http\Controllers\DataBarangController;
 use App\Http\Controllers\TarifTindakanController;
 use App\Http\Controllers\KategoriPerawatanController;
 use App\Http\Controllers\PermintaanLabController;
@@ -125,6 +127,14 @@ Route::middleware('auth')->group(function () {
     Route::resource('radiologi', RadiologiController::class);
     Route::resource('rehabilitasi-medik', RehabilitasiMedikController::class);
 
+    // Farmasi routes
+    Route::prefix('farmasi')->name('farmasi.')->group(function () {
+        Route::get('/', [DataBarangController::class, 'index'])->name('index');
+        Route::get('/dashboard', function () {
+            return Inertia::render('farmasi/Dashboard');
+        })->name('dashboard');
+    });
+
     // Kategori Perawatan routes
     Route::get('kategori-perawatan/generate-kode', [KategoriPerawatanController::class, 'generateKode'])->name('kategori-perawatan.generate-kode');
     Route::resource('kategori-perawatan', KategoriPerawatanController::class);
@@ -132,6 +142,11 @@ Route::middleware('auth')->group(function () {
     // Daftar Tarif routes
     Route::get('daftar-tarif/generate-kode', [DaftarTarifController::class, 'generateKode'])->name('daftar-tarif.generate-kode');
     Route::resource('daftar-tarif', DaftarTarifController::class);
+
+    // Menu Dashboard page (resources/js/Pages/Menu/menu.jsx)
+    Route::get('/menu', function () {
+        return Inertia::render('Menu/menu');
+    })->name('menu.dashboard');
 
     // Tarif Tindakan API routes
     Route::prefix('api/tarif-tindakan')->name('api.tarif-tindakan.')->group(function () {
@@ -145,3 +160,18 @@ Route::middleware('auth')->group(function () {
         Route::delete('/', [TarifTindakanController::class, 'deleteTindakan'])->name('delete');
     });
 });
+
+    // Settings routes
+    Route::get('/settings/active', [SettingController::class, 'getActiveSetting'])
+        ->name('settings.active');
+
+    // Pastikan rute image didefinisikan sebelum resource agar tidak tertangkap oleh show
+    Route::get('/settings/{setting}/image/{type}', [SettingController::class, 'getImage'])
+        ->name('settings.image');
+
+    Route::resource('settings', SettingController::class)
+        ->parameters(['settings' => 'nama_instansi'])
+        ->where(['nama_instansi' => '^(?!active$)[^/]+$']);
+
+    Route::post('/settings/{setting}/activate', [SettingController::class, 'activate'])
+        ->name('settings.activate');

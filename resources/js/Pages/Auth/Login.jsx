@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { router } from "@inertiajs/react";
+import { useSettings } from "@/contexts/SettingsContext";
 
 export default function Login() {
 	const [username, setUsername] = useState("");
@@ -7,6 +8,11 @@ export default function Login() {
 	const [remember, setRemember] = useState(false);
 	const [errors, setErrors] = useState({});
 	const [processing, setProcessing] = useState(false);
+	const { settings } = useSettings();
+
+	const wallpaper = settings?.has_wallpaper && settings?.wallpaper_url
+		? settings.wallpaper_url
+		: "/img/wallpaper.jpg";
 
 	function submit(e) {
 		e.preventDefault();
@@ -41,7 +47,7 @@ export default function Login() {
 		<div className="min-h-screen relative">
 			<div
 				className="absolute inset-0 bg-cover bg-center"
-				style={{ backgroundImage: "url('/img/wallpaper.jpg')" }}
+				style={{ backgroundImage: `url('${wallpaper}')` }}
 			/>
 			<div className="absolute inset-0 bg-black/55" />
 
@@ -108,7 +114,7 @@ export default function Login() {
 										checked={remember}
 										onChange={(e) => setRemember(e.target.checked)}
 										className="rounded border-gray-400 bg-transparent"
-									/>{" "}
+									/> {" "}
 									Ingat saya
 								</label>
 								<a href="#" className="text-blue-600 hover:underline">

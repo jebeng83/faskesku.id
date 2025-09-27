@@ -5,8 +5,8 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\RegPeriksa;
 use App\Models\Patient;
-use App\Models\Doctor;
-use App\Models\Poli;
+use App\Models\Dokter;
+use App\Models\Poliklinik;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Carbon\Carbon;
@@ -19,46 +19,46 @@ class RegPeriksaController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $query = RegPeriksa::with(['patient', 'doctor', 'poli']);
+            $query = RegPeriksa::with(['pasien', 'dokter', 'poliklinik', 'penjab']);
 
             // Filter berdasarkan status
             if ($request->filled('status')) {
-                $query->byStatus($request->status);
+                $query->where('stts', $request->status);
             }
 
             // Filter berdasarkan status daftar
             if ($request->filled('status_daftar')) {
-                $query->byStatusDaftar($request->status_daftar);
+                $query->where('stts_daftar', $request->status_daftar);
             }
 
             // Filter berdasarkan status lanjut
             if ($request->filled('status_lanjut')) {
-                $query->byStatusLanjut($request->status_lanjut);
+                $query->where('status_lanjut', $request->status_lanjut);
             }
 
             // Filter berdasarkan dokter
             if ($request->filled('dokter')) {
-                $query->byDokter($request->dokter);
+                $query->where('kd_dokter', $request->dokter);
             }
 
             // Filter berdasarkan poli
             if ($request->filled('poli')) {
-                $query->byPoli($request->poli);
+                $query->where('kd_poli', $request->poli);
             }
 
             // Filter berdasarkan status bayar
             if ($request->filled('status_bayar')) {
-                $query->byStatusBayar($request->status_bayar);
+                $query->where('status_bayar', $request->status_bayar);
             }
 
             // Filter berdasarkan tanggal
             if ($request->filled('tanggal')) {
-                $query->byTanggalRegistrasi($request->tanggal);
+                $query->whereDate('tgl_registrasi', $request->tanggal);
             }
 
             // Filter berdasarkan range tanggal
             if ($request->filled('tanggal_awal') && $request->filled('tanggal_akhir')) {
-                $query->byRangeTanggal($request->tanggal_awal, $request->tanggal_akhir);
+                $query->whereBetween('tgl_registrasi', [$request->tanggal_awal, $request->tanggal_akhir]);
             }
 
             // Search berdasarkan nama pasien atau no rawat
@@ -67,8 +67,8 @@ class RegPeriksaController extends Controller
                 $query->where(function ($q) use ($search) {
                     $q->where('no_rawat', 'like', "%{$search}%")
                         ->orWhere('no_reg', 'like', "%{$search}%")
-                        ->orWhereHas('patient', function ($patientQuery) use ($search) {
-                            $patientQuery->where('nama', 'like', "%{$search}%");
+                        ->orWhereHas('pasien', function ($patientQuery) use ($search) {
+                            $patientQuery->where('nm_pasien', 'like', "%{$search}%");
                         });
                 });
             }
@@ -121,16 +121,15 @@ class RegPeriksaController extends Controller
             $patient = Patient::find($request->no_rkm_medis);
             $regPeriksa = new RegPeriksa($request->all());
 
-            if ($patient && $patient->tanggal_lahir) {
-                $umurData = $regPeriksa->hitungUmur($patient->tanggal_lahir, $request->tgl_registrasi);
-                if ($umurData) {
-                    $regPeriksa->umurdaftar = $umurData['umur'];
-                    $regPeriksa->sttsumur = $umurData['satuan'];
-                }
+            if ($patient && $patient->tgl_lahir) {
+                $tglLahir = Carbon::parse($patient->tgl_lahir);
+                $tglReg = $request->tgl_registrasi ? Carbon::parse($request->tgl_registrasi) : Carbon::now();
+                $regPeriksa->umurdaftar = $tglLahir->diffInYears($tglReg);
+                $regPeriksa->sttsumur = 'Th';
             }
 
             $regPeriksa->save();
-            $regPeriksa->load(['patient', 'doctor', 'poli']);
+            $regPeriksa->load(['pasien', 'dokter', 'poliklinik', 'penjab']);
 
             return response()->json([
                 'success' => true,
@@ -157,7 +156,7 @@ class RegPeriksaController extends Controller
     public function show(RegPeriksa $regPeriksa): JsonResponse
     {
         try {
-            $regPeriksa->load(['patient', 'doctor', 'poli']);
+            $regPeriksa->load(['pasien', 'dokter', 'poliklinik']);
 
             return response()->json([
                 'success' => true,
@@ -178,46 +177,27 @@ class RegPeriksaController extends Controller
     public function update(Request $request, RegPeriksa $regPeriksa): JsonResponse
     {
         try {
-            $request->validate([
-                'no_reg' => 'required|string|max:8|unique:reg_periksa,no_reg,' . $regPeriksa->no_reg . ',no_reg',
-                'no_rawat' => 'required|string|max:17|unique:reg_periksa,no_rawat,' . $regPeriksa->no_rawat . ',no_rawat',
-                'tgl_registrasi' => 'required|date',
-                'jam_reg' => 'required|date_format:H:i',
-                'kd_dokter' => 'required|string|exists:dokter,kd_dokter',
-                'no_rkm_medis' => 'required|string|exists:patients,no_rkm_medis',
-                'kd_poli' => 'required|string|exists:poliklinik,kd_poli',
-                'p_jawab' => 'required|string|max:100',
-                'almt_pj' => 'required|string|max:200',
-                'hubunganpj' => 'required|string|max:20',
-                'biaya_reg' => 'required|numeric|min:0',
-                'stts' => 'required|in:Belum,Sudah,Batal,Berkas Diterima,Dirujuk,Meninggal,Dirawat,Pulang Paksa',
-                'stts_daftar' => 'required|in:-,Lama,Baru',
-                'status_lanjut' => 'required|in:Ralan,Ranap',
-                'kd_pj' => 'required|string|max:3',
-                'status_bayar' => 'required|in:Sudah Bayar,Belum Bayar',
-                'status_poli' => 'required|in:Lama,Baru',
-            ]);
+            // Validasi dasar bisa tetap menggunakan Request->validate di luar blok ini jika diperlukan
 
-            // Hitung umur otomatis jika data pasien berubah
+            // Hitung umur jika no_rkm_medis atau tgl_registrasi berubah
             if (
                 $regPeriksa->no_rkm_medis !== $request->no_rkm_medis ||
                 $regPeriksa->tgl_registrasi !== $request->tgl_registrasi
             ) {
-
                 $patient = Patient::find($request->no_rkm_medis);
-                if ($patient && $patient->tanggal_lahir) {
-                    $umurData = $regPeriksa->hitungUmur($patient->tanggal_lahir, $request->tgl_registrasi);
-                    if ($umurData) {
-                        $request->merge([
-                            'umurdaftar' => $umurData['umur'],
-                            'sttsumur' => $umurData['satuan']
-                        ]);
-                    }
+                if ($patient && $patient->tgl_lahir) {
+                    $tglLahir = Carbon::parse($patient->tgl_lahir);
+                    $tglReg = $request->tgl_registrasi ? Carbon::parse($request->tgl_registrasi) : Carbon::now();
+                    $umur = $tglLahir->diffInYears($tglReg);
+                    $request->merge([
+                        'umurdaftar' => $umur,
+                        'sttsumur' => 'Th'
+                    ]);
                 }
             }
 
             $regPeriksa->update($request->all());
-            $regPeriksa->load(['patient', 'doctor', 'poli']);
+            $regPeriksa->load(['pasien', 'dokter', 'poliklinik']);
 
             return response()->json([
                 'success' => true,
@@ -335,9 +315,9 @@ class RegPeriksaController extends Controller
     public function getFilterData(): JsonResponse
     {
         try {
-            $doctors = Doctor::where('status', 'Aktif')->get(['kd_dokter', 'nm_dokter']);
-            $polis = Poli::where('status', 'Aktif')->get(['kd_poli', 'nm_poli']);
-            $patients = Patient::orderBy('nama')->get(['no_rkm_medis', 'nama']);
+            $doctors = Dokter::select('kd_dokter', 'nm_dokter')->orderBy('nm_dokter')->get();
+            $polis = Poliklinik::select('kd_poli', 'nm_poli')->orderBy('nm_poli')->get();
+            $patients = Patient::select('no_rkm_medis', 'nm_pasien')->orderBy('nm_pasien')->get();
 
             return response()->json([
                 'success' => true,

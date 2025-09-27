@@ -3,6 +3,7 @@ import { router } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import { SettingsIcon } from "@/Components/IconSettings";
 import SidebarMenu from "@/Components/SidebarMenu";
+import { useSettings } from "@/contexts/SettingsContext";
 
 export default function AppLayout({
 	title = "Faskesku",
@@ -14,6 +15,8 @@ export default function AppLayout({
 	const [isDark, setIsDark] = useState(false);
 	const [collapsedGroups, setCollapsedGroups] = useState({});
 	const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+	const { settings } = useSettings();
+	const appName = settings?.nama_instansi || title || "Faskesku";
 
 	useEffect(() => {
 		const root = document.documentElement;
@@ -45,14 +48,31 @@ export default function AppLayout({
 		}));
 	};
 
+	// Logout handler for static menu bar
+	const doLogout = () => {
+		router.post(route('logout'));
+	};
+
 	if (variant === "auth") {
 		return (
-			<div className="min-h-screen relative bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-950 dark:to-black">
+			<div
+				className="min-h-screen relative bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-950 dark:to-black"
+			>
 				<header className="h-14 flex items-center justify-between px-4 max-w-6xl mx-auto">
 					<div className="flex items-center gap-2">
-						<div className="h-7 w-7 rounded-md bg-blue-600 shadow-sm" />
+						{settings?.has_logo && settings?.logo_url ? (
+							<img
+								src={settings.logo_url}
+								alt={`${appName} logo`}
+								className="h-7 w-7 rounded-md object-cover shadow-sm border border-blue-400/20"
+							/>
+						) : (
+							<div className="h-7 w-7 rounded-md bg-blue-600 shadow-sm flex items-center justify-center">
+								<span className="text-white font-bold text-sm">F</span>
+							</div>
+						)}
 						<span className="font-semibold tracking-tight text-gray-900 dark:text-white">
-							{title}
+							{appName}
 						</span>
 						<span className="hidden sm:inline text-xs text-gray-500 dark:text-gray-400">
 							SIMRS
@@ -84,31 +104,30 @@ export default function AppLayout({
 						)}
 					</button>
 				</header>
-				<div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-					<div className="absolute -top-28 -right-24 h-80 w-80 rounded-full bg-blue-400/10 blur-3xl" />
-					<div className="absolute -bottom-24 -left-24 h-80 w-80 rounded-full bg-purple-400/10 blur-3xl" />
-				</div>
+				{/* keep decorative background when no wallpaper provided */}
+				{!(settings?.has_wallpaper && settings?.wallpaper_url) && (
+					<div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+						<div className="absolute -top-28 -right-24 h-80 w-80 rounded-full bg-blue-400/10 blur-3xl" />
+						<div className="absolute -bottom-24 -left-24 h-80 w-80 rounded-full bg-purple-400/10 blur-3xl" />
+					</div>
+				)}
 				<main className="min-h-[calc(100vh-56px)] grid lg:grid-cols-2 items-stretch gap-6 max-w-6xl mx-auto px-4 pb-10">
 					<section className="hidden lg:flex flex-col justify-center">
 						<h1 className="text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">
 							Selamat datang kembali
 						</h1>
 						<p className="mt-2 text-gray-600 dark:text-gray-400">
-							Masuk untuk mengelola SIMRS Faskesku Anda. Aman, cepat, dan
-							modern.
+							Masuk untuk mengelola SIMRS {appName} Anda. Aman, cepat, dan modern.
 						</p>
 						<ul className="mt-6 space-y-3 text-sm text-gray-600 dark:text-gray-400">
 							<li className="flex items-center gap-2">
-								<span className="h-1.5 w-1.5 rounded-full bg-blue-500" /> Single
-								Sign-On dan Role-based Access
+								<span className="h-1.5 w-1.5 rounded-full bg-blue-500" /> Single Sign-On dan Role-based Access
 							</li>
 							<li className="flex items-center gap-2">
-								<span className="h-1.5 w-1.5 rounded-full bg-indigo-500" /> UI
-								responsif ala Gradient Able
+								<span className="h-1.5 w-1.5 rounded-full bg-indigo-500" /> UI responsif ala Gradient Able
 							</li>
 							<li className="flex items-center gap-2">
-								<span className="h-1.5 w-1.5 rounded-full bg-purple-500" />{" "}
-								Audit & keamanan sesuai best practice
+								<span className="h-1.5 w-1.5 rounded-full bg-purple-500" /> Audit & keamanan sesuai best practice
 							</li>
 						</ul>
 					</section>
@@ -121,20 +140,16 @@ export default function AppLayout({
 	}
 
 	return (
-		<div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 flex flex-col">
-			{/* Top Navigation Bar - Fixed Header */}
-			<header className="fixed top-0 left-0 right-0 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50 flex-shrink-0">
+		<div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
+			{/* Top Navigation Bar - Gradient Able Style */}
+			<header className="fixed top-0 left-0 right-0 h-14 bg-pink-600 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50">
 				<div className="h-full flex items-center justify-between px-4">
 					{/* Left side - Toggle + Logo */}
 					<div className="flex items-center gap-3">
 						{/* Sidebar Toggle Button */}
 						<button
 							onClick={() => {
-								if (window.innerWidth < 1024) {
-									setIsSidebarOpen(!isSidebarOpen);
-								} else {
-									setIsSidebarCollapsed(!isSidebarCollapsed);
-								}
+								setIsSidebarOpen(!isSidebarOpen);
 							}}
 							className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
 							aria-label="Toggle sidebar"
@@ -151,16 +166,22 @@ export default function AppLayout({
 
 						{/* Logo */}
 						<div className="flex items-center gap-2">
-							<div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg border border-blue-400/20">
-								<span className="text-white font-bold text-sm drop-shadow-sm">
-									F
-								</span>
-							</div>
+							{settings?.has_logo && settings?.logo_url ? (
+								<img
+									src={settings.logo_url}
+									alt={`${appName} logo`}
+									className="h-8 w-8 rounded-lg object-cover shadow-lg border border-blue-400/20"
+								/>
+							) : (
+								<div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg border border-blue-400/20">
+									<span className="text-white font-bold text-sm drop-shadow-sm">F</span>
+								</div>
+							)}
 							<div className="flex flex-col">
-								<span className="font-bold text-gray-900 dark:text-white text-sm">
-									{title}
+								<span className="font-bold text-white dark:text-white text-sm">
+									{appName}
 								</span>
-								<span className="text-xs text-gray-500 dark:text-gray-400 -mt-1">
+								<span className="text-xs text-white dark:text-gray-400 -mt-1">
 									Elektronik Rekam Medis
 								</span>
 							</div>
@@ -181,7 +202,12 @@ export default function AppLayout({
 								fill="currentColor"
 								className="w-4 h-4 text-gray-400 absolute left-3"
 							>
-								<path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5z" />
+								{/* Heroicons: Magnifying Glass */}
+								<path
+									fillRule="evenodd"
+									d="M10.5 3.75a6.75 6.75 0 015.364 10.79l4.148 4.146a.75.75 0 11-1.06 1.061L14.803 15.6a6.75 6.75 0 11-4.303-11.85zm-5.25 6.75a5.25 5.25 0 1110.5 0 5.25 5.25 0 01-10.5 0z"
+									clipRule="evenodd"
+								/>
 							</svg>
 						</div>
 
@@ -193,10 +219,14 @@ export default function AppLayout({
 								fill="currentColor"
 								className="w-5 h-5 text-gray-600 dark:text-gray-400"
 							>
-								<path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
-							</svg>
-							<span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
-						</button>
+								<path
+                                    fillRule="evenodd"
+                                    d="M5.25 8.25a6.75 6.75 0 1113.5 0v2.375c0 .601.265 1.169.72 1.547l.894.745a.75.75 0 01-.484 1.33H3.12a.75.75 0 01-.484-1.33l.894-.745a2.25 2.25 0 00.72-1.547V8.25zm6.75 11.25a3 3 0 003-3h-6a3 3 0 003 3z"
+                                    clipRule="evenodd"
+                                />
+                            </svg>
+                            <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
+                        </button>
 
 						{/* Messages */}
 						<button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 relative">
@@ -228,65 +258,135 @@ export default function AppLayout({
 				/>
 			)}
 
-			{/* Main Layout Container - Adjusted for Fixed Header */}
-			<div className="flex flex-1 pt-14 overflow-hidden">
-				{/* Sidebar - Fixed with Independent Scroll */}
-				<aside
-					className={`bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-all duration-300 flex-shrink-0 ${
-						isSidebarOpen
-							? "translate-x-0 w-64"
-							: isSidebarCollapsed
-							? "lg:translate-x-0 lg:w-16 -translate-x-full lg:translate-x-0"
-							: "lg:translate-x-0 lg:w-64 -translate-x-full lg:translate-x-0"
-					} lg:relative fixed z-40 h-[calc(100vh-3.5rem)] lg:h-full`}
-				>
-					<div className="h-full flex flex-col overflow-hidden">
-						{/* Dynamic Navigation */}
-						{!isSidebarCollapsed ? (
-							<div className="flex-1 overflow-y-auto">
-								<SidebarMenu />
-							</div>
-						) : (
-							<nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-								<div className="space-y-2">
-									<NavItemCollapsed icon="home" active />
-									<NavItemCollapsed icon="box" />
-									<NavItemCollapsed icon="users" />
-									<NavItemCollapsed icon="lock" />
-									<NavItemCollapsed icon="file-text" />
-								</div>
-							</nav>
-						)}
+			{/* Sidebar - Gradient Able Style */}
+			<aside
+				className={`fixed top-28 left-0 z-40 h-[calc(100vh-112px)] bg-pink-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-all duration-300 ${
+					isSidebarOpen ? "translate-x-0 w-64" : "-translate-x-full w-64"
+				}`}
+			>
 
-						{/* Bottom Card - Gradient Pro */}
-						{!isSidebarCollapsed && (
-							<div className="p-4 border-t border-gray-200 dark:border-gray-800 flex-shrink-0">
-								<div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg p-4 text-center">
-									<div className="w-12 h-12 mx-auto mb-3 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg border border-blue-400/20">
-										<span className="text-white font-bold text-lg drop-shadow-sm">
-											F
-										</span>
-									</div>
-									<h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">
-										Faskesku.id
-									</h4>
-									<p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-										Sistem Informasi Free & open Source{" "}
-									</p>
-									<button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 px-3 rounded-md transition-colors">
-										Panduan Aplikasi
-									</button>
-								</div>
+				<div className="h-full flex flex-col">
+					{/* Dynamic Navigation */}
+					{isSidebarOpen ? (
+						<SidebarMenu />
+					) : (
+						<nav className="flex-1 p-4 space-y-2 hidden lg:block">
+							<div className="space-y-2">
+								<NavItemCollapsed icon="home" active />
+								<NavItemCollapsed icon="box" />
+								<NavItemCollapsed icon="users" />
+								<NavItemCollapsed icon="lock" />
+								<NavItemCollapsed icon="file-text" />
 							</div>
-						)}
-					</div>
-				</aside>
+						</nav>
+					)}
 
-				{/* Main Content - Independent Scroll */}
-				<main className="flex-1 overflow-y-auto h-[calc(100vh-3.5rem)] p-4">
-					{children}
-				</main>
-			</div>
+					{/* Bottom Card - Gradient Pro (remove second image) */}
+					{isSidebarOpen && (
+						<div className="p-4 border-t border-gray-200 dark:border-gray-800">
+							<div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg p-4 text-center">
+								<h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">
+									{appName}
+								</h4>
+								<p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+									Sistem Informasi Free & open Source
+								</p>
+								<button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 px-3 rounded-md transition-colors">
+									Panduan Aplikasi
+								</button>
+							</div>
+						</div>
+					)}
+				</div>
+			</aside>
+
+			{/* Static Main Menu Bar */}
+			{/* <nav className="fixed top-14 left-0 right-0 h-14 bg-pink-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-40">
+				<div className="h-full px-4 flex items-center overflow-x-auto">
+					<ul className="flex items-center gap-2 text-sm whitespace-nowrap"> */}
+					<nav className="fixed top-14 left-0 right-0 h-[35px] bg-pink-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-40">
+    <div className="h-full px-4 flex items-center overflow-x-auto">
+        <ul className="flex items-center gap-2 text-sm whitespace-nowrap">
+							<li>
+								<button
+									type="button"
+									onClick={() => router.visit(route('menu.dashboard'))}
+									className="font-semibold text-gray-700 dark:text-gray-300 mr-2 hover:text-blue-600 dark:hover:text-blue-400"
+									aria-label="Buka Menu Dashboard"
+								>
+									Menu
+								</button>
+							</li>
+						<li>
+							<button type="button" onClick={() => router.visit(route('rawat-jalan.create'))} className="px-3 py-1.5 rounded-md hover:bg-fuchsia-300 dark:hover:bg-fuchsia-300 text-stone-700 dark:text-gray-300 flex items-center gap-2">
+							{/* <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+								<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+							</svg> */}
+							Reg Periksa
+						</button>
+						</li>
+						<li>
+							<button type="button" className="px-3 py-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 flex items-center gap-2">
+								{/* <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+									<path d="M9 2v3h6V2h2v3.5c0 .28-.11.53-.29.71L14 9v8c0 1.1-.9 2-2 2h-4c-1.1 0-2-.9-2-2V9L3.29 6.21C3.11 6.03 3 5.78 3 5.5V2h2v3h4V2h2zm1 7.5L8.5 8H15.5l-1.5 1.5V17h-4V9.5z" />
+								</svg> */}
+								Laboratorium
+							</button>
+						</li>
+						<li>
+							<button type="button" className="px-3 py-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 flex items-center gap-2">
+								{/* <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+									<path d="M11 1a5 5 0 0 0-5 5v4a5 5 0 0 0 10 0V6a5 5 0 0 0-5-5ZM8 6a3 3 0 1 1 6 0v4a3 3 0 1 1-6 0V6ZM5 15a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1Z" />
+								</svg> */}
+								Farmasi
+							</button>
+						</li>
+						<li>
+							<button type="button" className="px-3 py-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 flex items-center gap-2">
+								{/* <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+									<path d="M13 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM9.75 10.75a.75.75 0 0 0-1.5 0v1.5a.75.75 0 0 0 1.5 0v-.75h1.5v2.25a.75.75 0 0 0 1.5 0v-3a.75.75 0 0 0-.75-.75h-1.25Z" />
+								</svg> */}
+								Rawat Jalan
+							</button>
+						</li>
+						<li>
+							<button type="button" className="px-3 py-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 flex items-center gap-2">
+								{/* <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+									<path d="M3 9a2 2 0 0 1 2-2h.93a2 2 0 0 0 1.664-.89l.812-1.22A2 2 0 0 1 10.07 4h3.86a2 2 0 0 1 1.664.89l.812 1.22A2 2 0 0 0 18.07 7H19a2 2 0 0 1 2 2v9a1 1 0 1 1-2 0v-3H3v3a1 1 0 1 1-2 0V9Z" />
+								</svg> */}
+								Rawat Inap
+							</button>
+						</li>
+						<li>
+							<button type="button" className="px-3 py-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 flex items-center gap-2">
+								{/* <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+									<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+								</svg> */}
+								Kasir Ralan
+							</button>
+						</li>
+						<li>
+							<button type="button" className="px-3 py-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 flex items-center gap-2">
+								{/* <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+									<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+								</svg> */}
+								Kasir Inap
+							</button>
+						</li>
+						<li>
+							<button type="button" onClick={doLogout} className="px-3 py-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center gap-2">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+									<path d="M16 17v-3H9v-4h7V7l5 5-5 5M14 2a2 2 0 0 1 2 2v2h-2V4H4v16h10v-2h2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10Z" />
+								</svg>
+								Keluar
+							</button>
+						</li>
+					</ul>
+				</div>
+			</nav>
+            <main className={`mt-28 ${isSidebarOpen ? "ml-64" : ""} transition-[margin] duration-300 p-4`}>
+                {children}
+            </main>
 		</div>
 	);
 }

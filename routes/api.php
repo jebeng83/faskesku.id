@@ -6,6 +6,7 @@ use App\Http\Controllers\API\PenjabController;
 use App\Http\Controllers\API\WilayahController;
 use App\Http\Controllers\API\PermissionController;
 use App\Http\Controllers\API\RegPeriksaController;
+use App\Http\Controllers\API\GenerateNoRawatController;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RawatJalan\ObatController;
@@ -56,6 +57,13 @@ Route::prefix('reg-periksa')->group(function () {
     Route::post('/hitung-umur', [RegPeriksaController::class, 'hitungUmur'])->name('api.reg-periksa.hitung-umur');
     Route::get('/statistik', [RegPeriksaController::class, 'getStatistik'])->name('api.reg-periksa.statistik');
     Route::get('/filter-data', [RegPeriksaController::class, 'getFilterData'])->name('api.reg-periksa.filter-data');
+});
+
+// Generate No Rawat Routes (dengan database lock untuk multi-komputer)
+Route::prefix('generate-no-rawat')->group(function () {
+    Route::post('/', [GenerateNoRawatController::class, 'generateNoRawat'])->name('api.generate-no-rawat');
+    Route::post('/reserve', [GenerateNoRawatController::class, 'reserveNoRawat'])->name('api.reserve-no-rawat');
+    Route::post('/release', [GenerateNoRawatController::class, 'releaseNoRawat'])->name('api.release-no-rawat');
 });
 
 // User Management Routes
