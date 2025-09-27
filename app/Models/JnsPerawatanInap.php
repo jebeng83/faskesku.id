@@ -30,7 +30,7 @@ class JnsPerawatanInap extends Model
         'total_byrdrpr',
         'kd_pj',
         'kd_bangsal',
-        'status'
+        'kelas'
     ];
 
     protected $casts = [
