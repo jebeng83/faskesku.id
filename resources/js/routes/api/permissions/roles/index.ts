@@ -262,11 +262,11 @@ destroy.delete = (args: { role: number | { id: number } } | [role: number | { id
 })
 
 const roles = {
-    index,
-    store,
-    show,
-    update,
-    destroy,
+    index: Object.assign(index, index),
+    store: Object.assign(store, store),
+    show: Object.assign(show, show),
+    update: Object.assign(update, update),
+    destroy: Object.assign(destroy, destroy),
 }
 
 export default roles

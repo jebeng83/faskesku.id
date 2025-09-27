@@ -139,12 +139,24 @@ class MenuSeeder extends Seeder
 
         // Registration sub-menus
         Menu::create([
+            'name' => 'Pendaftaran Pasien',
+            'slug' => 'pendaftaran-pasien',
+            'icon' => 'fas fa-clipboard-list',
+            'route' => 'registration.index',
+            'parent_id' => $registration->id,
+            'sort_order' => 1,
+            'is_active' => true,
+            'permission_name' => 'registration.view',
+            'description' => 'Pendaftaran pasien ke poliklinik'
+        ]);
+
+        Menu::create([
             'name' => 'Registrasi Periksa',
             'slug' => 'registrasi-periksa',
             'icon' => 'fas fa-stethoscope',
             'route' => 'reg-periksa.index',
             'parent_id' => $registration->id,
-            'sort_order' => 1,
+            'sort_order' => 2,
             'is_active' => true,
             'permission_name' => 'reg-periksa.view',
             'description' => 'Registrasi pemeriksaan pasien'
