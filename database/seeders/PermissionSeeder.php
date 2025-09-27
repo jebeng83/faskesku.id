@@ -85,6 +85,7 @@ class PermissionSeeder extends Seeder
             // Menu specific permissions
             'patient.view',
             'employee.view',
+            'registration.view',
             'reg-periksa.view',
             'user.view',
             'permission.view',
@@ -117,6 +118,7 @@ class PermissionSeeder extends Seeder
             'edit-appointments',
             'view-reports',
             'generate-reports',
+            'registration.view',
         ]);
 
         $petugasRole = Role::findOrCreate('petugas');
@@ -127,6 +129,7 @@ class PermissionSeeder extends Seeder
             'view-appointments',
             'create-appointments',
             'edit-appointments',
+            'registration.view',
         ]);
     }
 }

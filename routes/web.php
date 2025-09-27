@@ -20,6 +20,7 @@ use App\Http\Controllers\RehabilitasiMedikController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\SpesialisController;
 use App\Http\Controllers\DaftarTarifController;
+use App\Http\Controllers\RegistrationController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -37,6 +38,14 @@ Route::middleware('auth')->group(function () {
     Route::resource('patients', PatientController::class);
     Route::post('/patients/{patient}/register-periksa', [PatientController::class, 'registerPeriksa'])->name('patients.register-periksa');
     Route::get('/patients/{patient}/check-poli-status', [PatientController::class, 'checkPatientPoliStatus'])->name('patients.check-poli-status');
+
+    // Registration routes
+    Route::get('/registration', [RegistrationController::class, 'index'])->name('registration.index')->middleware('menu.permission');
+    Route::get('/registration/search-patients', [RegistrationController::class, 'searchPatients'])->name('registration.search-patients');
+    Route::post('/registration/{patient}/register', [RegistrationController::class, 'registerPatient'])->name('registration.register-patient');
+    Route::get('/registration/{patient}/check-poli-status', [RegistrationController::class, 'checkPatientPoliStatus'])->name('registration.check-poli-status');
+    Route::get('/registration/get-registrations', [RegistrationController::class, 'getRegistrations'])->name('registration.get-registrations');
+    Route::post('/registration/cancel', [RegistrationController::class, 'cancelRegistration'])->name('registration.cancel');
 
     // Employee routes
     Route::resource('employees', EmployeeController::class);
@@ -79,17 +88,17 @@ Route::middleware('auth')->group(function () {
     Route::put('rawat-jalan/pemeriksaan-ralan', [RawatJalanController::class, 'updatePemeriksaanRalan'])->name('rawat-jalan.pemeriksaan-ralan.update');
     Route::get('pegawai/search', [RawatJalanController::class, 'searchPegawai'])->name('pegawai.search');
     Route::get('rawat-jalan-statistics', [RawatJalanController::class, 'getStatistics'])->name('rawat-jalan.statistics');
-    
+
     // API routes untuk obat
     Route::get('api/obat', [ObatController::class, 'getObatByPoli'])->name('api.obat.index');
     Route::get('api/obat/{kode_barang}', [ObatController::class, 'getDetailObat'])->name('api.obat.detail');
     Route::post('api/obat/cek-stok', [ObatController::class, 'cekStokObat'])->name('api.obat.cek-stok');
-    
+
     // API routes untuk resep
     Route::post('api/resep', [ResepController::class, 'store'])->name('api.resep.store');
     Route::get('api/resep/{no_resep}', [ResepController::class, 'getResep'])->name('api.resep.get');
     Route::get('api/resep/rawat/{no_rawat}', [ResepController::class, 'getByNoRawat'])->name('api.resep.by-rawat');
-    
+
     Route::resource('rawat-jalan', RawatJalanController::class);
 
     // Profile

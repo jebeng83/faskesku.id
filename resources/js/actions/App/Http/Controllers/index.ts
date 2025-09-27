@@ -2,11 +2,10 @@ import API from './API'
 import MenuController from './MenuController'
 import AuthController from './AuthController'
 import PatientController from './PatientController'
+import RegistrationController from './RegistrationController'
 import EmployeeController from './EmployeeController'
 import DoctorController from './DoctorController'
 import SpesialisController from './SpesialisController'
-import RegPeriksaController from './RegPeriksaController'
-import RawatJalanController from './RawatJalanController'
 import RegPeriksaController from './RegPeriksaController'
 import RawatJalan from './RawatJalan'
 import ProfileController from './ProfileController'
@@ -23,7 +22,10 @@ const Controllers = {
     MenuController: Object.assign(MenuController, MenuController),
     AuthController: Object.assign(AuthController, AuthController),
     PatientController: Object.assign(PatientController, PatientController),
+    RegistrationController: Object.assign(RegistrationController, RegistrationController),
     EmployeeController: Object.assign(EmployeeController, EmployeeController),
+    DoctorController: Object.assign(DoctorController, DoctorController),
+    SpesialisController: Object.assign(SpesialisController, SpesialisController),
     RegPeriksaController: Object.assign(RegPeriksaController, RegPeriksaController),
     RawatJalan: Object.assign(RawatJalan, RawatJalan),
     ProfileController: Object.assign(ProfileController, ProfileController),
@@ -34,8 +36,6 @@ const Controllers = {
     RadiologiController: Object.assign(RadiologiController, RadiologiController),
     RehabilitasiMedikController: Object.assign(RehabilitasiMedikController, RehabilitasiMedikController),
     DaftarTarifController: Object.assign(DaftarTarifController, DaftarTarifController),
-    DoctorController: Object.assign(DoctorController, DoctorController),
-    SpesialisController: Object.assign(SpesialisController, SpesialisController),
 }
 
 export default Controllers
