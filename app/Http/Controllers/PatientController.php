@@ -77,7 +77,7 @@ class PatientController extends Controller
             'namakeluarga' => 'required|string|max:50',
             'kd_pj' => 'required|string|max:3',
             'no_peserta' => 'nullable|string|max:25',
-            'pekerjaanpj' => 'required|string|max:35',
+            // 'pekerjaanpj' => 'required|string|max:35',
             'alamatpj' => 'required|string|max:100',
             'kode_wilayah' => 'required|string|max:13|exists:wilayah,kode',
         ], [
@@ -98,8 +98,8 @@ class PatientController extends Controller
             'alamat.max' => 'Alamat maksimal 200 karakter',
             'kd_pj.required' => 'Penjab harus diisi',
             'kd_pj.max' => 'Penjab maksimal 3 karakter',
-            'pekerjaanpj.required' => 'Pekerjaan Penanggung Jawab harus diisi',
-            'pekerjaanpj.max' => 'Pekerjaan Penanggung Jawab maksimal 35 karakter',
+            // 'pekerjaanpj.required' => 'Pekerjaan Penanggung Jawab harus diisi',
+            // 'pekerjaanpj.max' => 'Pekerjaan Penanggung Jawab maksimal 35 karakter',
             'alamatpj.required' => 'Alamat Penanggung Jawab harus diisi',
             'alamatpj.max' => 'Alamat Penanggung Jawab maksimal 100 karakter',
             'kode_wilayah.required' => 'Kode Wilayah harus diisi',
@@ -139,8 +139,18 @@ class PatientController extends Controller
         $data['nip'] = $data['nip'] ?? '';
         $data['kd_prop'] = $data['kd_prop'] ?? 1;
         $data['email'] = $data['email'] ?? '';
+        $data['pekerjaanpj'] = $data['pekerjaanpj'] ?? '';
 
         Patient::create($data);
+
+        // Check if request is from Inertia (modal)
+        if (request()->header('X-Inertia')) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Data pasien berhasil ditambahkan.',
+                'data' => Patient::where('no_rkm_medis', $data['no_rkm_medis'])->first()
+            ]);
+        }
 
         return redirect()->route('patients.index')
             ->with('success', 'Data pasien berhasil ditambahkan.');

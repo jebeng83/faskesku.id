@@ -340,6 +340,7 @@ filterData.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 const regPeriksa = {
+    index: Object.assign(index, index),
     store: Object.assign(store, store),
     show: Object.assign(show, show),
     update: Object.assign(update, update),

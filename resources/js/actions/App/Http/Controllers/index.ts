@@ -5,10 +5,12 @@ import RawatJalan from './RawatJalan'
 import PermintaanRadiologiController from './PermintaanRadiologiController'
 import AuthController from './AuthController'
 import PatientController from './PatientController'
+import RegistrationController from './RegistrationController'
 import EmployeeController from './EmployeeController'
 import DoctorController from './DoctorController'
 import SpesialisController from './SpesialisController'
 import RegPeriksaController from './RegPeriksaController'
+import RawatJalan from './RawatJalan'
 import ProfileController from './ProfileController'
 import RawatInapController from './RawatInapController'
 import IGDController from './IGDController'
@@ -27,6 +29,7 @@ const Controllers = {
     PermintaanRadiologiController: Object.assign(PermintaanRadiologiController, PermintaanRadiologiController),
     AuthController: Object.assign(AuthController, AuthController),
     PatientController: Object.assign(PatientController, PatientController),
+    RegistrationController: Object.assign(RegistrationController, RegistrationController),
     EmployeeController: Object.assign(EmployeeController, EmployeeController),
     DoctorController: Object.assign(DoctorController, DoctorController),
     SpesialisController: Object.assign(SpesialisController, SpesialisController),
