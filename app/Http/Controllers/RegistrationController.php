@@ -178,7 +178,12 @@ class RegistrationController extends Controller
      */
     public function getRegistrations(Request $request)
     {
-        $query = RegPeriksa::with(['pasien', 'dokter', 'poliklinik', 'penjab']);
+        $query = RegPeriksa::with([
+            'pasien:no_rkm_medis,nm_pasien,jk,umur,alamat',
+            'dokter:kd_dokter,nm_dokter',
+            'poliklinik:kd_poli,nm_poli',
+            'penjab:kd_pj,png_jawab'
+        ]);
 
         // Filter by date
         if ($request->has('date') && $request->date) {
@@ -197,8 +202,27 @@ class RegistrationController extends Controller
             $query->where('kd_dokter', $request->kd_dokter);
         }
 
+        // Filter by patient name
+        if ($request->has('search') && $request->search) {
+            $searchTerm = $request->search;
+            $query->whereHas('pasien', function ($q) use ($searchTerm) {
+                $q->where('nm_pasien', 'like', "%{$searchTerm}%")
+                    ->orWhere('no_rkm_medis', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        // Filter by status
+        if ($request->has('status') && $request->status) {
+            $query->where('stts', $request->status);
+        }
+
+        // Filter by status_poli
+        if ($request->has('status_poli') && $request->status_poli) {
+            $query->where('status_poli', $request->status_poli);
+        }
+
         $registrations = $query->orderBy('jam_reg', 'desc')
-            ->paginate(10);
+            ->paginate(15); // Increased from 10 to 15 for better UX
 
         return response()->json([
             'success' => true,
