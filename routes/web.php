@@ -161,4 +161,43 @@ Route::middleware('auth')->group(function () {
         Route::get('/riwayat/{noRawat}', [TarifTindakanController::class, 'getRiwayatTindakan'])->name('riwayat')->where('noRawat', '.*');
         Route::delete('/', [TarifTindakanController::class, 'deleteTindakan'])->name('delete');
     });
+
+    // Farmasi routes
+    Route::prefix('farmasi')->name('farmasi.')->group(function () {
+        Route::get('/', function () {
+            return Inertia::render('farmasi/Dashboard');
+        })->name('dashboard');
+        
+        Route::get('/pembelian-obat', function () {
+            return Inertia::render('farmasi/PembelianObat');
+        })->name('pembelian-obat');
+        
+        Route::get('/penjualan-obat', function () {
+            return Inertia::render('farmasi/PenjualanObat');
+        })->name('penjualan-obat');
+        
+        Route::get('/resep-obat', function () {
+            return Inertia::render('farmasi/ResepObat');
+        })->name('resep-obat');
+        
+        Route::get('/riwayat-transaksi-gudang', function () {
+            return Inertia::render('farmasi/RiwayatTransaksiGudang');
+        })->name('riwayat-transaksi-gudang');
+        
+        Route::get('/stok-obat', function () {
+            return Inertia::render('farmasi/StokObat');
+        })->name('stok-obat');
+        
+        Route::get('/stok-opname', function () {
+            return Inertia::render('farmasi/StokOpname');
+        })->name('stok-opname');
+        
+        Route::get('/data-obat', function () {
+            return Inertia::render('farmasi/dataobat');
+        })->name('data-obat');
+        
+        Route::get('/kategori-obat', function () {
+            return Inertia::render('farmasi/KategoriObat');
+        })->name('kategori-obat.index');
+    });
 });

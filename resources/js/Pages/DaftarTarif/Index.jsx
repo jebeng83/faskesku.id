@@ -33,7 +33,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
         kd_pj: '',
         kd_poli: '',
         kd_bangsal: '',
-        status: '1',
+        kelas: '',
         category: category,
         total_dr: 0,
         total_pr: 0,
@@ -75,7 +75,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                 kd_pj: editData.kd_pj || '',
                 kd_poli: editData.kd_poli || '',
                 kd_bangsal: editData.kd_bangsal || '',
-                status: editData.status || '1',
+                kelas: editData.kelas || '',
                 category: category,
                 total_dr: 0,
                 total_pr: 0,
@@ -165,15 +165,9 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
             'kd_jenis_prw': 'Kode Jenis Perawatan',
             'nm_perawatan': 'Nama Perawatan',
             'kd_pj': 'Asuransi / Penanggung Jawab',
+            'kd_poli': 'Poli Klinik',
             'status': 'Status'
         };
-
-        // Add conditional required fields based on category
-        if (category === 'rawat-inap') {
-            requiredFields['kd_bangsal'] = 'Bangsal';
-        } else {
-            requiredFields['kd_poli'] = 'Poli Klinik';
-        }
         
         const errors = {};
         
@@ -425,8 +419,28 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                     {errors.nm_perawatan && <p className="error-text">{errors.nm_perawatan}</p>}
                                 </div>
 
-                                {/* Poli Klinik - hanya untuk rawat jalan */}
-                                {category !== 'rawat-inap' && (
+                                {/* Poli Klinik untuk Rawat Jalan atau Bangsal untuk Rawat Inap */}
+                                {category === 'rawat-inap' ? (
+                                    <div className="input-group">
+                                        <label className="input-label">
+                                            Bangsal *
+                                        </label>
+                                        <select
+                                            value={data.kd_bangsal}
+                                            onChange={(e) => setData('kd_bangsal', e.target.value)}
+                                            className={`form-select ${errors.kd_bangsal ? 'error' : ''}`}
+                                            required
+                                        >
+                                            <option value="">Pilih Bangsal</option>
+                                            {bangsals.map((bangsal) => (
+                                                <option key={bangsal.kd_bangsal} value={bangsal.kd_bangsal}>
+                                                    {bangsal.nm_bangsal}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.kd_bangsal && <p className="error-text">{errors.kd_bangsal}</p>}
+                                    </div>
+                                ) : (
                                     <div className="input-group">
                                         <label className="input-label">
                                             Poli Klinik *
@@ -448,31 +462,8 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                     </div>
                                 )}
 
-                                {/* Bangsal - hanya untuk rawat inap */}
-                                {category === 'rawat-inap' && (
-                                    <div className="input-group">
-                                        <label className="input-label">
-                                            Bangsal *
-                                        </label>
-                                        <select
-                                            value={data.kd_bangsal}
-                                            onChange={(e) => setData('kd_bangsal', e.target.value)}
-                                            className={`form-select ${errors.kd_bangsal ? 'error' : ''}`}
-                                            required
-                                        >
-                                            <option value="">Pilih Bangsal</option>
-                                            {bangsals.map((bangsal) => (
-                                                <option key={bangsal.kd_bangsal} value={bangsal.kd_bangsal}>
-                                                    {bangsal.nm_bangsal}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {errors.kd_bangsal && <p className="error-text">{errors.kd_bangsal}</p>}
-                                    </div>
-                                )}
-
                                 {/* Asuransi / Penanggung Jawab */}
-                                <div className="input-group col-span-2">
+                                <div className="input-group">
                                     <label className="input-label">
                                         Asuransi / Penanggung Jawab *
                                     </label>
@@ -491,6 +482,30 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                     </select>
                                     {errors.kd_pj && <p className="error-text">{errors.kd_pj}</p>}
                                 </div>
+
+                                {/* Kelas - hanya untuk Rawat Inap */}
+                                {category === 'rawat-inap' && (
+                                    <div className="input-group">
+                                        <label className="input-label">
+                                            Kelas *
+                                        </label>
+                                        <select
+                                            value={data.kelas}
+                                            onChange={(e) => setData('kelas', e.target.value)}
+                                            className={`form-select ${errors.kelas ? 'error' : ''}`}
+                                            required
+                                        >
+                                            <option value="">Pilih Kelas</option>
+                                            <option value="Kelas 1">Kelas 1</option>
+                                            <option value="Kelas 2">Kelas 2</option>
+                                            <option value="Kelas 3">Kelas 3</option>
+                                            <option value="Kelas Utama">Kelas Utama</option>
+                                            <option value="Kelas VIP">Kelas VIP</option>
+                                            <option value="Kelas VVIP">Kelas VVIP</option>
+                                        </select>
+                                        {errors.kelas && <p className="error-text">{errors.kelas}</p>}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -983,11 +998,11 @@ export default function Index({ title, data, category, search, filters, poliklin
                                             <span className="tarif-value">{formatCurrency(item.bhp)}</span>
                                         </div>
                                         <div className="tarif-item">
-                                            <span className="tarif-label">Tarif Tindakan Dokter</span>
+                                            <span className="tarif-label">Tarif Tindakan Dr</span>
                                             <span className="tarif-value">{formatCurrency(item.tarif_tindakandr)}</span>
                                         </div>
                                         <div className="tarif-item">
-                                            <span className="tarif-label">Tarif Tindakan Perawat</span>
+                                            <span className="tarif-label">Tarif Tindakan Pr</span>
                                             <span className="tarif-value">{formatCurrency(item.tarif_tindakanpr)}</span>
                                         </div>
                                         <div className="tarif-item">
@@ -1456,8 +1471,8 @@ export default function Index({ title, data, category, search, filters, poliklin
                                         <span className="xs:hidden">Export</span>
                                     </button>
 
-                                    {/* Button + Tarif - hanya tampil di tab Rawat Jalan */}
-                                    {activeTab === 'rawat-jalan' && (
+                                    {/* Button + Tarif - tampil di tab Rawat Jalan dan Rawat Inap */}
+                                    {(activeTab === 'rawat-jalan' || activeTab === 'rawat-inap') && (
                                         <button
                                             onClick={handleAddTarif}
                                             className="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200 whitespace-nowrap"
@@ -1475,7 +1490,9 @@ export default function Index({ title, data, category, search, filters, poliklin
                                                     d="M12 4v16m8-8H4" 
                                                 />
                                             </svg>
-                                            <span className="hidden sm:inline">Tambah Tarif</span>
+                                            <span className="hidden sm:inline">
+                                                {activeTab === 'rawat-inap' ? 'Tambah Tarif Ranap' : 'Tambah Tarif'}
+                                            </span>
                                             <span className="sm:hidden">Tambah</span>
                                         </button>
                                     )}
