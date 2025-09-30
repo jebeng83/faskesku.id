@@ -19,7 +19,7 @@ const Badge = ({ children, variant = 'default' }) => {
 };
 
 // Modal Component for Add Tarif
-const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs = [], kategoris = [], editData = null }) => {
+const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals = [], penjaabs = [], kategoris = [], editData = null }) => {
     const { data, setData, post, put, processing, errors, reset } = useForm({
         kd_jenis_prw: '',
         nm_perawatan: '',
@@ -32,7 +32,8 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
         menejemen: 0,
         kd_pj: '',
         kd_poli: '',
-        status: '1',
+        kd_bangsal: '',
+        kelas: '',
         category: category,
         total_dr: 0,
         total_pr: 0,
@@ -73,7 +74,8 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                 menejemen: editData.menejemen || 0,
                 kd_pj: editData.kd_pj || '',
                 kd_poli: editData.kd_poli || '',
-                status: editData.status || '1',
+                kd_bangsal: editData.kd_bangsal || '',
+                kelas: editData.kelas || '',
                 category: category,
                 total_dr: 0,
                 total_pr: 0,
@@ -417,29 +419,51 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                                     {errors.nm_perawatan && <p className="error-text">{errors.nm_perawatan}</p>}
                                 </div>
 
-                                {/* Poli Klinik */}
-                                <div className="input-group">
-                                    <label className="input-label">
-                                        Poli Klinik *
-                                    </label>
-                                    <select
-                                        value={data.kd_poli}
-                                        onChange={(e) => setData('kd_poli', e.target.value)}
-                                        className={`form-select ${errors.kd_poli ? 'error' : ''}`}
-                                        required
-                                    >
-                                        <option value="">Pilih Poli</option>
-                                        {polikliniks.map((poli) => (
-                                            <option key={poli.kd_poli} value={poli.kd_poli}>
-                                                {poli.nm_poli}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {errors.kd_poli && <p className="error-text">{errors.kd_poli}</p>}
-                                </div>
+                                {/* Poli Klinik untuk Rawat Jalan atau Bangsal untuk Rawat Inap */}
+                                {category === 'rawat-inap' ? (
+                                    <div className="input-group">
+                                        <label className="input-label">
+                                            Bangsal *
+                                        </label>
+                                        <select
+                                            value={data.kd_bangsal}
+                                            onChange={(e) => setData('kd_bangsal', e.target.value)}
+                                            className={`form-select ${errors.kd_bangsal ? 'error' : ''}`}
+                                            required
+                                        >
+                                            <option value="">Pilih Bangsal</option>
+                                            {bangsals.map((bangsal) => (
+                                                <option key={bangsal.kd_bangsal} value={bangsal.kd_bangsal}>
+                                                    {bangsal.nm_bangsal}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.kd_bangsal && <p className="error-text">{errors.kd_bangsal}</p>}
+                                    </div>
+                                ) : (
+                                    <div className="input-group">
+                                        <label className="input-label">
+                                            Poli Klinik *
+                                        </label>
+                                        <select
+                                            value={data.kd_poli}
+                                            onChange={(e) => setData('kd_poli', e.target.value)}
+                                            className={`form-select ${errors.kd_poli ? 'error' : ''}`}
+                                            required
+                                        >
+                                            <option value="">Pilih Poli</option>
+                                            {polikliniks.map((poli) => (
+                                                <option key={poli.kd_poli} value={poli.kd_poli}>
+                                                    {poli.nm_poli}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.kd_poli && <p className="error-text">{errors.kd_poli}</p>}
+                                    </div>
+                                )}
 
                                 {/* Asuransi / Penanggung Jawab */}
-                                <div className="input-group col-span-2">
+                                <div className="input-group">
                                     <label className="input-label">
                                         Asuransi / Penanggung Jawab *
                                     </label>
@@ -458,6 +482,30 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
                                     </select>
                                     {errors.kd_pj && <p className="error-text">{errors.kd_pj}</p>}
                                 </div>
+
+                                {/* Kelas - hanya untuk Rawat Inap */}
+                                {category === 'rawat-inap' && (
+                                    <div className="input-group">
+                                        <label className="input-label">
+                                            Kelas *
+                                        </label>
+                                        <select
+                                            value={data.kelas}
+                                            onChange={(e) => setData('kelas', e.target.value)}
+                                            className={`form-select ${errors.kelas ? 'error' : ''}`}
+                                            required
+                                        >
+                                            <option value="">Pilih Kelas</option>
+                                            <option value="Kelas 1">Kelas 1</option>
+                                            <option value="Kelas 2">Kelas 2</option>
+                                            <option value="Kelas 3">Kelas 3</option>
+                                            <option value="Kelas Utama">Kelas Utama</option>
+                                            <option value="Kelas VIP">Kelas VIP</option>
+                                            <option value="Kelas VVIP">Kelas VVIP</option>
+                                        </select>
+                                        {errors.kelas && <p className="error-text">{errors.kelas}</p>}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -682,7 +730,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], penjaabs =
     );
 };
 
-export default function Index({ title, data, category, search, filters, polikliniks = [], penjaabs = [], kategoris = [] }) {
+export default function Index({ title, data, category, search, filters, polikliniks = [], bangsals = [], penjaabs = [], kategoris = [] }) {
     const [searchTerm, setSearchTerm] = useState(search || '');
     const [activeTab, setActiveTab] = useState(category || 'rawat-jalan');
     const [selectedFilter, setSelectedFilter] = useState(filters?.status || 'all');
@@ -1442,7 +1490,9 @@ export default function Index({ title, data, category, search, filters, poliklin
                                                     d="M12 4v16m8-8H4" 
                                                 />
                                             </svg>
-                                            <span className="hidden sm:inline">Tambah Tarif</span>
+                                            <span className="hidden sm:inline">
+                                                {activeTab === 'rawat-inap' ? 'Tambah Tarif Ranap' : 'Tambah Tarif'}
+                                            </span>
                                             <span className="sm:hidden">Tambah</span>
                                         </button>
                                     )}
@@ -1471,6 +1521,7 @@ export default function Index({ title, data, category, search, filters, poliklin
                 onClose={() => setIsModalOpen(false)}
                 category={activeTab}
                 polikliniks={polikliniks}
+                bangsals={bangsals}
                 penjaabs={penjaabs}
                 kategoris={kategoris}
             />
@@ -1484,6 +1535,7 @@ export default function Index({ title, data, category, search, filters, poliklin
                 }}
                 category={activeTab}
                 polikliniks={polikliniks}
+                bangsals={bangsals}
                 penjaabs={penjaabs}
                 kategoris={kategoris}
                 editData={editingItem}
