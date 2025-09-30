@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, usePage } from "@inertiajs/react";
 import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
+import { route } from "ziggy-js";
 
 export default function SidebarMenu({ collapsed = false }) {
 	const { menu_hierarchy, current_menu } = usePage().props;
