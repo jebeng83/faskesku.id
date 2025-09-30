@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\DaftarTarifController::generateKode
-* @see app/Http/Controllers/DaftarTarifController.php:314
+* @see app/Http/Controllers/DaftarTarifController.php:316
 * @route '/daftar-tarif/generate-kode'
 */
 export const generateKode = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ generateKode.definition = {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::generateKode
-* @see app/Http/Controllers/DaftarTarifController.php:314
+* @see app/Http/Controllers/DaftarTarifController.php:316
 * @route '/daftar-tarif/generate-kode'
 */
 generateKode.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ generateKode.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::generateKode
-* @see app/Http/Controllers/DaftarTarifController.php:314
+* @see app/Http/Controllers/DaftarTarifController.php:316
 * @route '/daftar-tarif/generate-kode'
 */
 generateKode.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,12 +35,46 @@ generateKode.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::generateKode
-* @see app/Http/Controllers/DaftarTarifController.php:314
+* @see app/Http/Controllers/DaftarTarifController.php:316
 * @route '/daftar-tarif/generate-kode'
 */
 generateKode.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: generateKode.url(options),
     method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\DaftarTarifController::storeRawatInap
+* @see app/Http/Controllers/DaftarTarifController.php:354
+* @route '/daftar-tarif/store-rawat-inap'
+*/
+export const storeRawatInap = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storeRawatInap.url(options),
+    method: 'post',
+})
+
+storeRawatInap.definition = {
+    methods: ["post"],
+    url: '/daftar-tarif/store-rawat-inap',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\DaftarTarifController::storeRawatInap
+* @see app/Http/Controllers/DaftarTarifController.php:354
+* @route '/daftar-tarif/store-rawat-inap'
+*/
+storeRawatInap.url = (options?: RouteQueryOptions) => {
+    return storeRawatInap.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\DaftarTarifController::storeRawatInap
+* @see app/Http/Controllers/DaftarTarifController.php:354
+* @route '/daftar-tarif/store-rawat-inap'
+*/
+storeRawatInap.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storeRawatInap.url(options),
+    method: 'post',
 })
 
 /**
@@ -133,7 +167,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::store
-* @see app/Http/Controllers/DaftarTarifController.php:146
+* @see app/Http/Controllers/DaftarTarifController.php:148
 * @route '/daftar-tarif'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -148,7 +182,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::store
-* @see app/Http/Controllers/DaftarTarifController.php:146
+* @see app/Http/Controllers/DaftarTarifController.php:148
 * @route '/daftar-tarif'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -157,7 +191,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::store
-* @see app/Http/Controllers/DaftarTarifController.php:146
+* @see app/Http/Controllers/DaftarTarifController.php:148
 * @route '/daftar-tarif'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -229,7 +263,7 @@ show.head = (args: { daftar_tarif: string | number } | [daftar_tarif: string | n
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::edit
-* @see app/Http/Controllers/DaftarTarifController.php:492
+* @see app/Http/Controllers/DaftarTarifController.php:494
 * @route '/daftar-tarif/{daftar_tarif}/edit'
 */
 export const edit = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -244,7 +278,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::edit
-* @see app/Http/Controllers/DaftarTarifController.php:492
+* @see app/Http/Controllers/DaftarTarifController.php:494
 * @route '/daftar-tarif/{daftar_tarif}/edit'
 */
 edit.url = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -271,7 +305,7 @@ edit.url = (args: { daftar_tarif: string | number } | [daftar_tarif: string | nu
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::edit
-* @see app/Http/Controllers/DaftarTarifController.php:492
+* @see app/Http/Controllers/DaftarTarifController.php:494
 * @route '/daftar-tarif/{daftar_tarif}/edit'
 */
 edit.get = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -281,7 +315,7 @@ edit.get = (args: { daftar_tarif: string | number } | [daftar_tarif: string | nu
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::edit
-* @see app/Http/Controllers/DaftarTarifController.php:492
+* @see app/Http/Controllers/DaftarTarifController.php:494
 * @route '/daftar-tarif/{daftar_tarif}/edit'
 */
 edit.head = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -291,7 +325,7 @@ edit.head = (args: { daftar_tarif: string | number } | [daftar_tarif: string | n
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::update
-* @see app/Http/Controllers/DaftarTarifController.php:517
+* @see app/Http/Controllers/DaftarTarifController.php:519
 * @route '/daftar-tarif/{daftar_tarif}'
 */
 export const update = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -306,7 +340,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::update
-* @see app/Http/Controllers/DaftarTarifController.php:517
+* @see app/Http/Controllers/DaftarTarifController.php:519
 * @route '/daftar-tarif/{daftar_tarif}'
 */
 update.url = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -333,7 +367,7 @@ update.url = (args: { daftar_tarif: string | number } | [daftar_tarif: string | 
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::update
-* @see app/Http/Controllers/DaftarTarifController.php:517
+* @see app/Http/Controllers/DaftarTarifController.php:519
 * @route '/daftar-tarif/{daftar_tarif}'
 */
 update.put = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -343,7 +377,7 @@ update.put = (args: { daftar_tarif: string | number } | [daftar_tarif: string | 
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::update
-* @see app/Http/Controllers/DaftarTarifController.php:517
+* @see app/Http/Controllers/DaftarTarifController.php:519
 * @route '/daftar-tarif/{daftar_tarif}'
 */
 update.patch = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -353,7 +387,7 @@ update.patch = (args: { daftar_tarif: string | number } | [daftar_tarif: string 
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::destroy
-* @see app/Http/Controllers/DaftarTarifController.php:279
+* @see app/Http/Controllers/DaftarTarifController.php:281
 * @route '/daftar-tarif/{daftar_tarif}'
 */
 export const destroy = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -368,7 +402,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::destroy
-* @see app/Http/Controllers/DaftarTarifController.php:279
+* @see app/Http/Controllers/DaftarTarifController.php:281
 * @route '/daftar-tarif/{daftar_tarif}'
 */
 destroy.url = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -395,7 +429,7 @@ destroy.url = (args: { daftar_tarif: string | number } | [daftar_tarif: string |
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::destroy
-* @see app/Http/Controllers/DaftarTarifController.php:279
+* @see app/Http/Controllers/DaftarTarifController.php:281
 * @route '/daftar-tarif/{daftar_tarif}'
 */
 destroy.delete = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -403,6 +437,6 @@ destroy.delete = (args: { daftar_tarif: string | number } | [daftar_tarif: strin
     method: 'delete',
 })
 
-const DaftarTarifController = { generateKode, index, create, store, show, edit, update, destroy }
+const DaftarTarifController = { generateKode, storeRawatInap, index, create, store, show, edit, update, destroy }
 
 export default DaftarTarifController

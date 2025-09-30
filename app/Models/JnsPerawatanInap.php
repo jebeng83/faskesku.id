@@ -97,8 +97,8 @@ class JnsPerawatanInap extends Model
     // Method untuk generate kode otomatis
     public static function generateKodeJenisPerawatan($kdKategori)
     {
-        // Ambil nomor urut terakhir dengan format RJ
-        $lastCode = self::where('kd_jenis_prw', 'like', 'RJ%')
+        // Ambil nomor urut terakhir dengan format RI
+        $lastCode = self::where('kd_jenis_prw', 'like', 'RI%')
             ->orderBy('kd_jenis_prw', 'desc')
             ->first();
 
@@ -111,7 +111,7 @@ class JnsPerawatanInap extends Model
             $newNumber = 1;
         }
 
-        // Format: RJ + nomor urut (6 digit)
-        return 'RJ' . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
+        // Format: RI + nomor urut (6 digit)
+        return 'RI' . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
     }
 }

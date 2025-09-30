@@ -128,6 +128,7 @@ class DaftarTarifController extends Controller
         
         // Get data untuk dropdown
         $polikliniks = Poliklinik::where('status', '1')->get();
+        $bangsals = Bangsal::where('status', '1')->get();
         $penjaabs = Penjab::where('status', '1')->get();
         $kategoris = KategoriPerawatan::orderBy('kd_kategori', 'asc')->get();
         
@@ -135,6 +136,7 @@ class DaftarTarifController extends Controller
             'title' => 'Tambah Tarif',
             'category' => $category,
             'polikliniks' => $polikliniks,
+            'bangsals' => $bangsals,
             'penjaabs' => $penjaabs,
             'kategoris' => $kategoris
         ]);
