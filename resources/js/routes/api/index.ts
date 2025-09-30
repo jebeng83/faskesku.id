@@ -15,9 +15,9 @@ import permintaanRadiologi from './permintaan-radiologi'
 import tarifTindakan from './tarif-tindakan'
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
- * @see app/Http/Controllers/PermintaanLabController.php:287
- * @route '/api/reg-periksa'
- */
+* @see app/Http/Controllers/PermintaanLabController.php:287
+* @route '/api/reg-periksa'
+*/
 export const regPeriksa = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: regPeriksa.url(options),
     method: 'get',
@@ -30,27 +30,28 @@ regPeriksa.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
- * @see app/Http/Controllers/PermintaanLabController.php:287
- * @route '/api/reg-periksa'
- */
+* @see app/Http/Controllers/PermintaanLabController.php:287
+* @route '/api/reg-periksa'
+*/
 regPeriksa.url = (options?: RouteQueryOptions) => {
     return regPeriksa.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
- * @see app/Http/Controllers/PermintaanLabController.php:287
- * @route '/api/reg-periksa'
- */
+* @see app/Http/Controllers/PermintaanLabController.php:287
+* @route '/api/reg-periksa'
+*/
 regPeriksa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: regPeriksa.url(options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
- * @see app/Http/Controllers/PermintaanLabController.php:287
- * @route '/api/reg-periksa'
- */
+* @see app/Http/Controllers/PermintaanLabController.php:287
+* @route '/api/reg-periksa'
+*/
 regPeriksa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: regPeriksa.url(options),
     method: 'head',
@@ -58,9 +59,9 @@ regPeriksa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
- * @see app/Http/Controllers/PermintaanLabController.php:380
- * @route '/api/lab-tests'
- */
+* @see app/Http/Controllers/PermintaanLabController.php:380
+* @route '/api/lab-tests'
+*/
 export const labTests = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: labTests.url(options),
     method: 'get',
@@ -73,47 +74,49 @@ labTests.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
- * @see app/Http/Controllers/PermintaanLabController.php:380
- * @route '/api/lab-tests'
- */
+* @see app/Http/Controllers/PermintaanLabController.php:380
+* @route '/api/lab-tests'
+*/
 labTests.url = (options?: RouteQueryOptions) => {
     return labTests.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
- * @see app/Http/Controllers/PermintaanLabController.php:380
- * @route '/api/lab-tests'
- */
+* @see app/Http/Controllers/PermintaanLabController.php:380
+* @route '/api/lab-tests'
+*/
 labTests.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: labTests.url(options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
- * @see app/Http/Controllers/PermintaanLabController.php:380
- * @route '/api/lab-tests'
- */
+* @see app/Http/Controllers/PermintaanLabController.php:380
+* @route '/api/lab-tests'
+*/
 labTests.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: labTests.url(options),
     method: 'head',
 })
+
 const api = {
     employees: Object.assign(employees, employees),
-penjab: Object.assign(penjab, penjab),
-wilayah: Object.assign(wilayah, wilayah),
-permissions: Object.assign(permissions, permissions),
-regPeriksa: Object.assign(regPeriksa, regPeriksaD17f92),
-users: Object.assign(users, users),
-menus: Object.assign(menus, menus),
-obat: Object.assign(obat, obat),
-resep: Object.assign(resep, resep),
-dokter: Object.assign(dokter, dokter),
-labTests: Object.assign(labTests, labTests),
-permintaanLab: Object.assign(permintaanLab, permintaanLab),
-radiologiTests: Object.assign(radiologiTests, radiologiTests),
-permintaanRadiologi: Object.assign(permintaanRadiologi, permintaanRadiologi),
-tarifTindakan: Object.assign(tarifTindakan, tarifTindakan),
+    penjab: Object.assign(penjab, penjab),
+    wilayah: Object.assign(wilayah, wilayah),
+    permissions: Object.assign(permissions, permissions),
+    regPeriksa: Object.assign(regPeriksa, regPeriksaD17f92),
+    users: Object.assign(users, users),
+    menus: Object.assign(menus, menus),
+    obat: Object.assign(obat, obat),
+    resep: Object.assign(resep, resep),
+    dokter: Object.assign(dokter, dokter),
+    labTests: Object.assign(labTests, labTests),
+    permintaanLab: Object.assign(permintaanLab, permintaanLab),
+    radiologiTests: Object.assign(radiologiTests, radiologiTests),
+    permintaanRadiologi: Object.assign(permintaanRadiologi, permintaanRadiologi),
+    tarifTindakan: Object.assign(tarifTindakan, tarifTindakan),
 }
 
 export default api
