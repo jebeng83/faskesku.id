@@ -118,6 +118,19 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
     const handleSubmit = (e) => {
         e.preventDefault();
         
+        // Validasi form sebelum submit
+        if (category === 'rawat-inap') {
+            if (!data.kd_jenis_prw || !data.nm_perawatan || !data.kd_bangsal || !data.kelas || !data.kd_pj) {
+                alert('Mohon lengkapi semua field yang wajib diisi (bertanda *)');
+                return;
+            }
+        } else {
+            if (!data.kd_jenis_prw || !data.nm_perawatan || !data.kd_poli || !data.kd_pj) {
+                alert('Mohon lengkapi semua field yang wajib diisi (bertanda *)');
+                return;
+            }
+        }
+        
         // Tentukan endpoint berdasarkan kategori
         const endpoint = category === 'rawat-inap' 
             ? route('daftar-tarif.store-rawat-inap')
@@ -126,10 +139,18 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
         post(endpoint, {
             onSuccess: () => {
                 reset();
+                alert('✅ Data tarif berhasil disimpan!');
+                // Redirect ke halaman index setelah berhasil
+                router.visit(route('daftar-tarif.index'));
             },
             onError: (errors) => {
-                if (errors.csrf) {
+                // Handle validation errors
+                if (errors.kd_jenis_prw && errors.kd_jenis_prw.includes('already been taken')) {
+                    alert('❌ Kode jenis perawatan sudah digunakan. Silakan generate kode baru.');
+                } else if (errors.csrf) {
                     router.reload();
+                } else {
+                    alert('❌ Terjadi kesalahan saat menyimpan data. Silakan periksa kembali form Anda.');
                 }
             },
         });
@@ -250,323 +271,354 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                         </div>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Informasi Dasar */}
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        {/* Form Fields */}
                         <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                            <div className="p-6">
+                            <div className="p-4">
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                    Informasi Dasar
+                                    📝 Informasi Dasar
                                 </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Kategori <span className="text-red-500">*</span>
-                                        </label>
-                                        <div className="flex gap-2">
-                                            <select
-                                                value={data.kd_kategori}
-                                                onChange={(e) => handleKategoriChange(e.target.value)}
-                                                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                required
-                                            >
-                                                <option value="">Pilih Kategori</option>
-                                                {kategoris.map((kategori) => (
-                                                    <option key={kategori.kd_kategori} value={kategori.kd_kategori}>
-                                                        {kategori.nm_kategori}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            <button
-                                                type="button"
-                                                className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg transition-colors flex items-center justify-center"
-                                                title="Tambah Kategori"
-                                                onClick={() => {
-                                    window.open(route('kategori-perawatan.index'), '_blank');
-                                }}
-                                            >
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                        {errors.kd_kategori && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.kd_kategori}</p>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Kode Jenis Perawatan <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={data.kd_jenis_prw}
-                                            onChange={(e) => setData('kd_jenis_prw', e.target.value)}
-                                            onKeyDown={handleKeyDown}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            placeholder="Masukkan kode jenis perawatan"
-                                            required
-                                        />
-                                        {errors.kd_jenis_prw && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.kd_jenis_prw}</p>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Nama Perawatan <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={data.nm_perawatan}
-                                            onChange={(e) => setData('nm_perawatan', e.target.value)}
-                                            onKeyDown={handleKeyDown}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            placeholder="Masukkan nama perawatan"
-                                            required
-                                        />
-                                        {errors.nm_perawatan && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.nm_perawatan}</p>
-                                        )}
-                                    </div>
-
-                                    {/* Poliklinik untuk Rawat Jalan atau Bangsal untuk Rawat Inap */}
-                                    {category === 'rawat-inap' ? (
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Bangsal <span className="text-red-500">*</span>
+                                
+                                {/* Two Column Layout */}
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    {/* Left Column */}
+                                    <div className="space-y-4">
+                                        {/* Kategori */}
+                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Kategori <span className="text-red-500">*</span>
                                             </label>
-                                            <select
-                                                value={data.kd_bangsal}
-                                                onChange={(e) => setData('kd_bangsal', e.target.value)}
-                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                required
-                                            >
-                                                <option value="">Pilih Bangsal</option>
-                                                {bangsals && bangsals.map((bangsal) => (
-                                                    <option key={bangsal.kd_bangsal} value={bangsal.kd_bangsal}>
-                                                        {bangsal.nm_bangsal}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            {errors.kd_bangsal && (
-                                                <p className="mt-1 text-sm text-red-600">{errors.kd_bangsal}</p>
-                                            )}
+                                            <div className="md:col-span-3">
+                                                <select
+                                                    value={data.kd_kategori}
+                                                    onChange={(e) => {
+                                                        setData('kd_kategori', e.target.value);
+                                                        generateAutoCode(e.target.value, category);
+                                                    }}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    required
+                                                >
+                                                    <option value="">Pilih Kategori</option>
+                                                    {kategoris.map((kategori) => (
+                                                        <option key={kategori.kd_kategori} value={kategori.kd_kategori}>
+                                                            {kategori.nm_kategori}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                {errors.kd_kategori && (
+                                                    <p className="mt-1 text-sm text-red-600">{errors.kd_kategori}</p>
+                                                )}
+                                            </div>
                                         </div>
-                                    ) : (
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Poliklinik <span className="text-red-500">*</span>
-                                            </label>
-                                            <select
-                                                value={data.kd_poli}
-                                                onChange={(e) => setData('kd_poli', e.target.value)}
-                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                required
-                                            >
-                                                <option value="">Pilih Poliklinik</option>
-                                                {polikliniks.map((poli) => (
-                                                    <option key={poli.kd_poli} value={poli.kd_poli}>
-                                                        {poli.nm_poli}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            {errors.kd_poli && (
-                                                <p className="mt-1 text-sm text-red-600">{errors.kd_poli}</p>
-                                            )}
-                                        </div>
-                                    )}
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Cara Bayar <span className="text-red-500">*</span>
-                                        </label>
-                                        <select
-                                            value={data.kd_pj}
-                                            onChange={(e) => setData('kd_pj', e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            required
-                                        >
-                                            <option value="">Pilih Cara Bayar</option>
-                                            {penjaabs.map((penjab) => (
-                                                <option key={penjab.kd_pj} value={penjab.kd_pj}>
-                                                    {penjab.png_jawab}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {errors.kd_pj && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.kd_pj}</p>
-                                        )}
+                                        {/* Kode Jenis Perawatan */}
+                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Kode Jenis Perawatan <span className="text-red-500">*</span>
+                                            </label>
+                                            <div className="md:col-span-3">
+                                                <input
+                                                    type="text"
+                                                    value={data.kd_jenis_prw}
+                                                    onChange={(e) => setData('kd_jenis_prw', e.target.value)}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    placeholder="Kode akan dibuat otomatis"
+                                                    required
+                                                />
+                                                {errors.kd_jenis_prw && (
+                                                    <p className="mt-1 text-sm text-red-600">{errors.kd_jenis_prw}</p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Nama Perawatan */}
+                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Nama Perawatan <span className="text-red-500">*</span>
+                                            </label>
+                                            <div className="md:col-span-3">
+                                                <input
+                                                    type="text"
+                                                    value={data.nm_perawatan}
+                                                    onChange={(e) => setData('nm_perawatan', e.target.value)}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    placeholder="Masukkan nama perawatan"
+                                                    required
+                                                />
+                                                {errors.nm_perawatan && (
+                                                    <p className="mt-1 text-sm text-red-600">{errors.nm_perawatan}</p>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    {/* Field Kelas untuk Rawat Inap */}
-                                    {category === 'rawat-inap' && (
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Kelas <span className="text-red-500">*</span>
-                                            </label>
-                                            <select
-                                                value={data.kelas}
-                                                onChange={(e) => setData('kelas', e.target.value)}
-                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                required
-                                            >
-                                                <option value="">Pilih Kelas</option>
-                                                <option value="Kelas 1">Kelas 1</option>
-                                                <option value="Kelas 2">Kelas 2</option>
-                                                <option value="Kelas 3">Kelas 3</option>
-                                                <option value="Kelas Utama">Kelas Utama</option>
-                                                <option value="Kelas VIP">Kelas VIP</option>
-                                                <option value="Kelas VVIP">Kelas VVIP</option>
-                                            </select>
-                                            {errors.kelas && (
-                                                <p className="mt-1 text-sm text-red-600">{errors.kelas}</p>
-                                            )}
-                                        </div>
-                                    )}
+                                    {/* Right Column */}
+                                    <div className="space-y-4">
+                                        {/* Bangsal (untuk rawat-inap) */}
+                                        {category === 'rawat-inap' && (
+                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                    Bangsal <span className="text-red-500">*</span>
+                                                </label>
+                                                <div className="md:col-span-3">
+                                                    <select
+                                                        value={data.kd_bangsal}
+                                                        onChange={(e) => setData('kd_bangsal', e.target.value)}
+                                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                        required
+                                                    >
+                                                        <option value="">Pilih Bangsal</option>
+                                                        {bangsals.map((bangsal) => (
+                                                            <option key={bangsal.kd_bangsal} value={bangsal.kd_bangsal}>
+                                                                {bangsal.kd_bangsal} - {bangsal.nm_bangsal}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                    {errors.kd_bangsal && (
+                                                        <p className="mt-1 text-sm text-red-600">{errors.kd_bangsal}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Status
-                                        </label>
-                                        <select
-                                            value={data.status}
-                                            onChange={(e) => setData('status', e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                        >
-                                            <option value="1">Aktif</option>
-                                            <option value="0">Tidak Aktif</option>
-                                        </select>
+                                        {/* Poliklinik (untuk rawat-jalan) */}
+                                        {category === 'rawat-jalan' && (
+                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                    Poliklinik <span className="text-red-500">*</span>
+                                                </label>
+                                                <div className="md:col-span-3">
+                                                    <select
+                                                        value={data.kd_poli}
+                                                        onChange={(e) => setData('kd_poli', e.target.value)}
+                                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                        required
+                                                    >
+                                                        <option value="">Pilih Poliklinik</option>
+                                                        {polikliniks.map((poli) => (
+                                                            <option key={poli.kd_poli} value={poli.kd_poli}>
+                                                                {poli.kd_poli} - {poli.nm_poli}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                    {errors.kd_poli && (
+                                                        <p className="mt-1 text-sm text-red-600">{errors.kd_poli}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Cara Bayar */}
+                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Cara Bayar <span className="text-red-500">*</span>
+                                            </label>
+                                            <div className="md:col-span-3">
+                                                <select
+                                                    value={data.kd_pj}
+                                                    onChange={(e) => setData('kd_pj', e.target.value)}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    required
+                                                >
+                                                    <option value="">Pilih Cara Bayar</option>
+                                                    {penjaabs.map((penjab) => (
+                                                        <option key={penjab.kd_pj} value={penjab.kd_pj}>
+                                                            {penjab.kd_pj} - {penjab.png_jawab}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                {errors.kd_pj && (
+                                                    <p className="mt-1 text-sm text-red-600">{errors.kd_pj}</p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Kelas (khusus rawat-inap) */}
+                                        {category === 'rawat-inap' && (
+                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                    Kelas <span className="text-red-500">*</span>
+                                                </label>
+                                                <div className="md:col-span-3">
+                                                    <select
+                                                        value={data.kelas}
+                                                        onChange={(e) => setData('kelas', e.target.value)}
+                                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                        required
+                                                    >
+                                                        <option value="">Pilih Kelas</option>
+                                                        <option value="Kelas 1">Kelas 1</option>
+                                                        <option value="Kelas 2">Kelas 2</option>
+                                                        <option value="Kelas 3">Kelas 3</option>
+                                                        <option value="Kelas Utama">Kelas Utama</option>
+                                                        <option value="Kelas VIP">Kelas VIP</option>
+                                                        <option value="Kelas VVIP">Kelas VVIP</option>
+                                                    </select>
+                                                    {errors.kelas && (
+                                                        <p className="mt-1 text-sm text-red-600">{errors.kelas}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+
+
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Komponen Tarif */}
+                        {/* Komponen Tarif - 3 Kolom Layout */}
                         <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                            <div className="p-6">
+                            <div className="p-4">
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                    Komponen Tarif
+                                    💰 Komponen Tarif
                                 </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Bagian RS <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={getDisplayValue('material')}
-                                            onChange={(e) => handleNumericInput('material', e.target.value)}
-                                            onFocus={() => onFocus('material')}
-                                            onBlur={() => onBlur('material')}
-                                            onKeyDown={handleKeyDown}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            placeholder="0"
-                                            required
-                                        />
-                                        {errors.material && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.material}</p>
-                                        )}
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                    {/* Kolom 1: Bagian RS & BHP */}
+                                    <div className="space-y-4">
+                                        {/* Bagian RS */}
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
+                                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Bagian RS <span className="text-red-500">*</span>
+                                            </label>
+                                            <div className="md:col-span-2">
+                                                <input
+                                                    type="text"
+                                                    value={getDisplayValue('material')}
+                                                    onChange={(e) => handleNumericInput('material', e.target.value)}
+                                                    onFocus={() => onFocus('material')}
+                                                    onBlur={() => onBlur('material')}
+                                                    onKeyDown={handleKeyDown}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    placeholder="0"
+                                                    required
+                                                />
+                                                {errors.material && (
+                                                    <p className="mt-1 text-sm text-red-600">{errors.material}</p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* BHP */}
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
+                                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                BHP <span className="text-red-500">*</span>
+                                            </label>
+                                            <div className="md:col-span-2">
+                                                <input
+                                                    type="text"
+                                                    value={getDisplayValue('bhp')}
+                                                    onChange={(e) => handleNumericInput('bhp', e.target.value)}
+                                                    onFocus={() => onFocus('bhp')}
+                                                    onBlur={() => onBlur('bhp')}
+                                                    onKeyDown={handleKeyDown}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    placeholder="0"
+                                                    required
+                                                />
+                                                {errors.bhp && (
+                                                    <p className="mt-1 text-sm text-red-600">{errors.bhp}</p>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            BHP <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={getDisplayValue('bhp')}
-                                            onChange={(e) => handleNumericInput('bhp', e.target.value)}
-                                            onFocus={() => onFocus('bhp')}
-                                            onBlur={() => onBlur('bhp')}
-                                            onKeyDown={handleKeyDown}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            placeholder="0"
-                                            required
-                                        />
-                                        {errors.bhp && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.bhp}</p>
-                                        )}
+                                    {/* Kolom 2: Jasa Dokter & Jasa Perawat */}
+                                    <div className="space-y-4">
+                                        {/* Jasa Dokter */}
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
+                                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Jasa Dokter <span className="text-red-500">*</span>
+                                            </label>
+                                            <div className="md:col-span-2">
+                                                <input
+                                                    type="text"
+                                                    value={getDisplayValue('tarif_tindakandr')}
+                                                    onChange={(e) => handleNumericInput('tarif_tindakandr', e.target.value)}
+                                                    onFocus={() => onFocus('tarif_tindakandr')}
+                                                    onBlur={() => onBlur('tarif_tindakandr')}
+                                                    onKeyDown={handleKeyDown}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    placeholder="0"
+                                                    required
+                                                />
+                                                {errors.tarif_tindakandr && (
+                                                    <p className="mt-1 text-sm text-red-600">{errors.tarif_tindakandr}</p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Jasa Perawat */}
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
+                                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Jasa Perawat <span className="text-red-500">*</span>
+                                            </label>
+                                            <div className="md:col-span-2">
+                                                <input
+                                                    type="text"
+                                                    value={getDisplayValue('tarif_tindakanpr')}
+                                                    onChange={(e) => handleNumericInput('tarif_tindakanpr', e.target.value)}
+                                                    onFocus={() => onFocus('tarif_tindakanpr')}
+                                                    onBlur={() => onBlur('tarif_tindakanpr')}
+                                                    onKeyDown={handleKeyDown}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    placeholder="0"
+                                                    required
+                                                />
+                                                {errors.tarif_tindakanpr && (
+                                                    <p className="mt-1 text-sm text-red-600">{errors.tarif_tindakanpr}</p>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Jasa Dokter <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={getDisplayValue('tarif_tindakandr')}
-                                            onChange={(e) => handleNumericInput('tarif_tindakandr', e.target.value)}
-                                            onFocus={() => onFocus('tarif_tindakandr')}
-                                            onBlur={() => onBlur('tarif_tindakandr')}
-                                            onKeyDown={handleKeyDown}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            placeholder="0"
-                                            required
-                                        />
-                                        {errors.tarif_tindakandr && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.tarif_tindakandr}</p>
-                                        )}
-                                    </div>
+                                    {/* Kolom 3: KSO & Menejemen */}
+                                    <div className="space-y-4">
+                                        {/* KSO */}
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
+                                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                KSO <span className="text-red-500">*</span>
+                                            </label>
+                                            <div className="md:col-span-2">
+                                                <input
+                                                    type="text"
+                                                    value={getDisplayValue('kso')}
+                                                    onChange={(e) => handleNumericInput('kso', e.target.value)}
+                                                    onFocus={() => onFocus('kso')}
+                                                    onBlur={() => onBlur('kso')}
+                                                    onKeyDown={handleKeyDown}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    placeholder="0"
+                                                    required
+                                                />
+                                                {errors.kso && (
+                                                    <p className="mt-1 text-sm text-red-600">{errors.kso}</p>
+                                                )}
+                                            </div>
+                                        </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Jasa Perawat <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={getDisplayValue('tarif_tindakanpr')}
-                                            onChange={(e) => handleNumericInput('tarif_tindakanpr', e.target.value)}
-                                            onFocus={() => onFocus('tarif_tindakanpr')}
-                                            onBlur={() => onBlur('tarif_tindakanpr')}
-                                            onKeyDown={handleKeyDown}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            placeholder="0"
-                                            required
-                                        />
-                                        {errors.tarif_tindakanpr && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.tarif_tindakanpr}</p>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            KSO <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={getDisplayValue('kso')}
-                                            onChange={(e) => handleNumericInput('kso', e.target.value)}
-                                            onFocus={() => onFocus('kso')}
-                                            onBlur={() => onBlur('kso')}
-                                            onKeyDown={handleKeyDown}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            placeholder="0"
-                                            required
-                                        />
-                                        {errors.kso && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.kso}</p>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Menejemen <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={getDisplayValue('menejemen')}
-                                            onChange={(e) => handleNumericInput('menejemen', e.target.value)}
-                                            onFocus={() => onFocus('menejemen')}
-                                            onBlur={() => onBlur('menejemen')}
-                                            onKeyDown={handleKeyDown}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            placeholder="0"
-                                            required
-                                        />
-                                        {errors.menejemen && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.menejemen}</p>
-                                        )}
+                                        {/* Menejemen */}
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
+                                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Menejemen <span className="text-red-500">*</span>
+                                            </label>
+                                            <div className="md:col-span-2">
+                                                <input
+                                                    type="text"
+                                                    value={getDisplayValue('menejemen')}
+                                                    onChange={(e) => handleNumericInput('menejemen', e.target.value)}
+                                                    onFocus={() => onFocus('menejemen')}
+                                                    onBlur={() => onBlur('menejemen')}
+                                                    onKeyDown={handleKeyDown}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    placeholder="0"
+                                                    required
+                                                />
+                                                {errors.menejemen && (
+                                                    <p className="mt-1 text-sm text-red-600">{errors.menejemen}</p>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -574,17 +626,17 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
 
                         {/* Perhitungan Total Tarif */}
                         <div className="bg-blue-50 dark:bg-blue-900/20 overflow-hidden shadow-sm sm:rounded-lg">
-                            <div className="p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                            <div className="p-4">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                                     📊 Perhitungan Total Tarif
                                 </h3>
-                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                                     Pilih total yang ingin ditampilkan
                                 </p>
                                 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     {/* Total Dokter */}
-                                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border-2 border-green-200 dark:border-green-700">
+                                    <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border-2 border-green-200 dark:border-green-700">
                                         <div className="flex items-center justify-between mb-2">
                                             <h4 className="text-sm font-medium text-green-700 dark:text-green-300">
                                                 🟢 Total Dokter
@@ -599,13 +651,13 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                                 <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Aktif</span>
                                             </label>
                                         </div>
-                                        <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                                        <div className="text-xl font-bold text-green-600 dark:text-green-400">
                                             {formatCurrency(totals.total_dokter)}
                                         </div>
                                     </div>
 
                                     {/* Total Perawat */}
-                                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border-2 border-blue-200 dark:border-blue-700">
+                                    <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border-2 border-blue-200 dark:border-blue-700">
                                         <div className="flex items-center justify-between mb-2">
                                             <h4 className="text-sm font-medium text-blue-700 dark:text-blue-300">
                                                 🔵 Total Perawat
@@ -620,13 +672,13 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                                 <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Aktif</span>
                                             </label>
                                         </div>
-                                        <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                                        <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
                                             {formatCurrency(totals.total_perawat)}
                                         </div>
                                     </div>
 
                                     {/* Total Dokter + Perawat */}
-                                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border-2 border-purple-200 dark:border-purple-700">
+                                    <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border-2 border-purple-200 dark:border-purple-700">
                                         <div className="flex items-center justify-between mb-2">
                                             <h4 className="text-sm font-medium text-purple-700 dark:text-purple-300">
                                                 🟣 Total Dokter + Perawat
@@ -641,7 +693,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                                 <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Aktif</span>
                                             </label>
                                         </div>
-                                        <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                                        <div className="text-xl font-bold text-purple-600 dark:text-purple-400">
                                             {formatCurrency(totals.total_dokter_perawat)}
                                         </div>
                                     </div>
@@ -651,7 +703,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
 
                         {/* Submit Button */}
                         <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                            <div className="p-6">
+                            <div className="p-4">
                                 <div className="flex justify-end gap-4">
                                     <Link
                                         href={route('daftar-tarif.index')}
