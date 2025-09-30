@@ -735,6 +735,7 @@ export default function Index({ title, data, category, search, filters, poliklin
     const [activeTab, setActiveTab] = useState(category || 'rawat-jalan');
     const [selectedFilter, setSelectedFilter] = useState(filters?.status || 'all');
     const [selectedPoliklinik, setSelectedPoliklinik] = useState(filters?.poliklinik || 'all');
+    const [selectedBangsal, setSelectedBangsal] = useState(filters?.bangsal || 'all');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
@@ -751,7 +752,8 @@ export default function Index({ title, data, category, search, filters, poliklin
                 search: value,
                 category: activeTab,
                 status: selectedFilter !== 'all' ? selectedFilter : undefined,
-                poliklinik: selectedPoliklinik !== 'all' ? selectedPoliklinik : undefined,
+                poliklinik: (activeTab === 'rawat-jalan' && selectedPoliklinik !== 'all') ? selectedPoliklinik : undefined,
+                bangsal: (activeTab === 'rawat-inap' && selectedBangsal !== 'all') ? selectedBangsal : undefined,
             }, {
                 preserveState: true,
                 preserveScroll: true,
@@ -765,7 +767,8 @@ export default function Index({ title, data, category, search, filters, poliklin
             search: searchTerm,
             category: newTab,
             status: selectedFilter !== 'all' ? selectedFilter : undefined,
-            poliklinik: selectedPoliklinik !== 'all' ? selectedPoliklinik : undefined,
+            poliklinik: (newTab === 'rawat-jalan' && selectedPoliklinik !== 'all') ? selectedPoliklinik : undefined,
+            bangsal: (newTab === 'rawat-inap' && selectedBangsal !== 'all') ? selectedBangsal : undefined,
         }, {
             preserveState: true,
             replace: true
@@ -781,6 +784,21 @@ export default function Index({ title, data, category, search, filters, poliklin
             category: activeTab,
             status: selectedFilter !== 'all' ? selectedFilter : undefined,
             poliklinik: value !== 'all' ? value : undefined,
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    };
+
+    const handleBangsalChange = (e) => {
+        const value = e.target.value;
+        setSelectedBangsal(value);
+        
+        router.get(route('daftar-tarif.index'), {
+            search: searchTerm,
+            category: activeTab,
+            status: selectedFilter !== 'all' ? selectedFilter : undefined,
+            bangsal: value !== 'all' ? value : undefined,
         }, {
             preserveState: true,
             preserveScroll: true,
@@ -1442,19 +1460,36 @@ export default function Index({ title, data, category, search, filters, poliklin
                                         <option value="0">Tidak Aktif</option>
                                     </select>
 
-                                    {/* Poliklinik Filter */}
-                                    <select
-                                        value={selectedPoliklinik}
-                                        onChange={handlePoliklinikChange}
-                                        className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-0 flex-1 xs:flex-none xs:w-auto"
-                                    >
-                                        <option value="all">Semua Poliklinik</option>
-                                        {polikliniks.map((poli) => (
-                                            <option key={poli.kd_poli} value={poli.kd_poli}>
-                                                {poli.nm_poli}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    {/* Conditional Filter - Poliklinik for rawat-jalan, Bangsal for rawat-inap */}
+                                    {activeTab === 'rawat-jalan' && (
+                                        <select
+                                            value={selectedPoliklinik}
+                                            onChange={handlePoliklinikChange}
+                                            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-0 flex-1 xs:flex-none xs:w-auto"
+                                        >
+                                            <option value="all">Semua Poliklinik</option>
+                                            {polikliniks.map((poli) => (
+                                                <option key={poli.kd_poli} value={poli.kd_poli}>
+                                                    {poli.nm_poli}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    )}
+                                    
+                                    {activeTab === 'rawat-inap' && (
+                                        <select
+                                            value={selectedBangsal}
+                                            onChange={handleBangsalChange}
+                                            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-0 flex-1 xs:flex-none xs:w-auto"
+                                        >
+                                            <option value="all">Semua Bangsal</option>
+                                            {bangsals.map((bangsal) => (
+                                                <option key={bangsal.kd_bangsal} value={bangsal.kd_bangsal}>
+                                                    {bangsal.nm_bangsal}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    )}
                                 </div>
 
                                 {/* Action Buttons */}
