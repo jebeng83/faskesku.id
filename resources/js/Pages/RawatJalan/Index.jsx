@@ -3,6 +3,100 @@ import { Head, Link, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
 
+// Simple Dropdown Component
+function SimpleDropdown({ children, trigger }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [position, setPosition] = useState({ top: 0, left: 0 });
+    const dropdownRef = React.useRef(null);
+
+    React.useEffect(() => {
+        function handleClickOutside(event) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        }
+
+        function handleScroll() {
+            setIsOpen(false);
+        }
+
+        function handleResize() {
+            setIsOpen(false);
+        }
+
+        if (isOpen) {
+            // Delay to avoid immediate close when opening
+            setTimeout(() => {
+                document.addEventListener('mousedown', handleClickOutside);
+            }, 100);
+            window.addEventListener('scroll', handleScroll, true);
+            window.addEventListener('resize', handleResize);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            window.removeEventListener('scroll', handleScroll, true);
+            window.removeEventListener('resize', handleResize);
+        };
+    }, [isOpen]);
+
+    const handleToggle = () => {
+        if (!isOpen && dropdownRef.current) {
+            const rect = dropdownRef.current.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const dropdownWidth = 224; // w-56 = 14rem = 224px
+            
+            // Calculate horizontal position
+            let left = rect.left + window.scrollX;
+            if (left + dropdownWidth > viewportWidth) {
+                left = rect.right + window.scrollX - dropdownWidth;
+            }
+            
+            setPosition({
+                top: rect.bottom + window.scrollY + 4,
+                left: left
+            });
+        }
+        setIsOpen(!isOpen);
+    };
+
+    return (
+        <div className="relative inline-block text-left" ref={dropdownRef}>
+            <div onClick={handleToggle}>
+                {trigger}
+            </div>
+            {isOpen && (
+                <div className="fixed z-[9999] w-56 rounded-lg bg-white dark:bg-gray-800 shadow-xl border border-gray-200 dark:border-gray-600 animate-in slide-in-from-top-2 duration-200 overflow-hidden"
+                     style={{
+                         top: position.top,
+                         left: position.left
+                     }}>
+                    {/* Menu Items */}
+                    <div className="py-1">
+                        {children}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+function DropdownItem({ children, onClick, icon, variant = "default" }) {
+    return (
+        <button
+            onClick={onClick}
+            className="group flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150"
+        >
+            {icon && (
+                <span className="mr-3 w-4 h-4 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors">
+                    {icon}
+                </span>
+            )}
+            <span className="flex-1 text-left">{children}</span>
+        </button>
+    );
+}
+
 export default function Index({ rawatJalan, statusOptions, statusBayarOptions, filters }) {
     const [searchParams, setSearchParams] = useState({
         tanggal: filters.tanggal || new Date().toISOString().slice(0,10),
@@ -81,6 +175,15 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         if (!time) return '-';
         return time.substring(0, 5);
     };
+
+    const handleSuratSehat = (noRawat) => {
+        router.get(route('rawat-jalan.surat-sehat', noRawat));
+    };
+
+    const handleSuratSakit = (noRawat) => {
+        router.get(route('rawat-jalan.surat-sakit', noRawat));
+    };
+
 
     return (
         <AppLayout>
@@ -211,10 +314,49 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                 {rawatJalan.data.map((item) => (
                                     <tr key={item.no_rawat} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                                            {item.no_rawat}
+                                            <div className="flex items-center gap-3">
+                                                <SimpleDropdown
+                                                        trigger={
+                                                            <button 
+                                                                className="p-2 rounded-lg bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/20 dark:hover:bg-orange-900/30 transition-all duration-200 border border-orange-200 dark:border-orange-700 shadow-sm hover:shadow-md group"
+                                                                title="Klik untuk melihat menu surat (Surat Sehat & Surat Sakit)"
+                                                            >
+                                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-orange-600 dark:text-orange-400">
+                                                                    <path d="M8 6h8v2H8V6zm0 4h8v2H8v-2zm0 4h8v2H8v-2z"/>
+                                                                </svg>
+                                                            </button>
+                                                        }
+                                                >
+                                                    <DropdownItem
+                                                        onClick={() => handleSuratSehat(item.no_rawat)}
+                                                        icon={
+                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                                                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                            </svg>
+                                                        }
+                                                    >
+                                                        Surat Sehat
+                                                    </DropdownItem>
+                                                    <DropdownItem
+                                                        onClick={() => handleSuratSakit(item.no_rawat)}
+                                                        icon={
+                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                                                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                                            </svg>
+                                                        }
+                                                    >
+                                                        Surat Sakit
+                                                    </DropdownItem>
+                                                </SimpleDropdown>
+                                                <span className="font-mono text-sm font-semibold text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 px-2 py-1 rounded border">
+                                                    {item.no_rawat}
+                                                </span>
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                            {item.no_rkm_medis}
+                                            <span className="font-mono text-xs bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded">
+                                                {item.no_rkm_medis}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                                             {item.patient?.nm_pasien ? (
