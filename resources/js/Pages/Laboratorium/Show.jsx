@@ -138,7 +138,9 @@ export default function Show({ periksaLab }) {
 										Jenis Kelamin
 									</label>
 									<p className="mt-1 text-sm text-gray-900 dark:text-white font-medium">
-										{periksaLab.reg_periksa?.patient?.jk === "L" ? "Laki-laki" : "Perempuan"}
+										{periksaLab.reg_periksa?.patient?.jk === "L"
+											? "Laki-laki"
+											: "Perempuan"}
 									</p>
 								</div>
 							</div>
@@ -163,12 +165,15 @@ export default function Show({ periksaLab }) {
 										Tanggal Periksa
 									</label>
 									<p className="mt-1 text-sm text-gray-900 dark:text-white font-medium">
-										{new Date(periksaLab.tgl_periksa).toLocaleDateString("id-ID", {
-											weekday: "long",
-											year: "numeric",
-											month: "long",
-											day: "numeric",
-										})}
+										{new Date(periksaLab.tgl_periksa).toLocaleDateString(
+											"id-ID",
+											{
+												weekday: "long",
+												year: "numeric",
+												month: "long",
+												day: "numeric",
+											}
+										)}
 									</p>
 								</div>
 								<div>
@@ -199,7 +204,9 @@ export default function Show({ periksaLab }) {
 									<label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
 										Status
 									</label>
-									<div className="mt-1">{getStatusBadge(periksaLab.status)}</div>
+									<div className="mt-1">
+										{getStatusBadge(periksaLab.status)}
+									</div>
 								</div>
 							</div>
 							{periksaLab.keterangan && (

@@ -64,13 +64,13 @@ class Patient extends Model
     // Accessor untuk format tanggal lahir
     public function getTanggalLahirFormattedAttribute()
     {
-        return $this->tgl_lahir ? $this->tgl_lahir->format('d/m/Y') : '';
+        return $this->tgl_lahir ? Carbon::parse($this->tgl_lahir)->format('d/m/Y') : '';
     }
 
     // Accessor untuk format tanggal daftar
     public function getTanggalDaftarFormattedAttribute()
     {
-        return $this->tgl_daftar ? $this->tgl_daftar->format('d/m/Y') : '';
+        return $this->tgl_daftar ? Carbon::parse($this->tgl_daftar)->format('d/m/Y') : '';
     }
 
     // Accessor untuk jenis kelamin lengkap
@@ -154,8 +154,8 @@ class Patient extends Model
     public function rawatJalanTerbaru()
     {
         return $this->hasOne(RawatJalan::class, 'no_rkm_medis', 'no_rkm_medis')
-                    ->orderBy('tgl_registrasi', 'desc')
-                    ->orderBy('jam_reg', 'desc');
+            ->orderBy('tgl_registrasi', 'desc')
+            ->orderBy('jam_reg', 'desc');
     }
 
     // Method untuk menghitung umur otomatis dari tgl_lahir
@@ -164,14 +164,14 @@ class Patient extends Model
         if (!$this->tgl_lahir) {
             return null;
         }
-        
+
         $birthDate = Carbon::parse($this->tgl_lahir);
         $today = Carbon::now();
-        
+
         $years = $today->diffInYears($birthDate);
         $months = $today->copy()->subYears($years)->diffInMonths($birthDate);
         $days = $today->copy()->subYears($years)->subMonths($months)->diffInDays($birthDate);
-        
+
         if ($years > 0) {
             return $years . ' Th';
         } elseif ($months > 0) {
@@ -200,20 +200,39 @@ class Patient extends Model
         if (!$tgl_lahir) {
             return null;
         }
-        
-        $birthDate = Carbon::parse($tgl_lahir);
-        $today = Carbon::now();
-        
-        $years = $today->diffInYears($birthDate);
-        $months = $today->copy()->subYears($years)->diffInMonths($birthDate);
-        $days = $today->copy()->subYears($years)->subMonths($months)->diffInDays($birthDate);
-        
-        if ($years > 0) {
-            return $years . ' Th';
-        } elseif ($months > 0) {
-            return $months . ' Bl';
-        } else {
-            return $days . ' Hr';
+
+        try {
+            $birthDate = Carbon::parse($tgl_lahir);
+            $today = Carbon::now();
+
+            // Pastikan tanggal lahir tidak di masa depan
+            if ($birthDate->greaterThan($today)) {
+                return '0 Hr';
+            }
+
+            // Hitung komposit: tahun, bulan sisa, hari sisa (menggunakan DateInterval untuk integer)
+            $interval = $birthDate->diff($today);
+            $years = (int) $interval->y;
+            $months = (int) $interval->m;
+            $days = (int) $interval->d;
+
+            // Bangun string hasil ringkas
+            $parts = [];
+            if ($years > 0) {
+                $parts[] = $years . ' Th';
+            }
+            if ($months > 0) {
+                $parts[] = $months . ' Bl';
+            }
+            if ($days > 0 || empty($parts)) {
+                // jika semua nol (lahir hari ini), tampilkan 0 Hr
+                $parts[] = max(0, $days) . ' Hr';
+            }
+
+            return implode(' ', $parts);
+        } catch (\Exception $e) {
+            // Jika terjadi error parsing, return null
+            return null;
         }
     }
 }

@@ -24,6 +24,35 @@ export default function AppLayout({
 		}
 	}, [isDark]);
 
+	// Restore sidebar toggle state from localStorage
+	useEffect(() => {
+		try {
+			const savedCollapsed = localStorage.getItem("sidebarCollapsed");
+			if (savedCollapsed !== null) {
+				setIsSidebarCollapsed(savedCollapsed === "true");
+			}
+			const savedOpen = localStorage.getItem("sidebarOpen");
+			if (savedOpen !== null) {
+				setIsSidebarOpen(savedOpen === "true");
+			}
+		} catch (_) {
+			// ignore
+		}
+	}, []);
+
+	// Persist sidebar states
+	useEffect(() => {
+		try {
+			localStorage.setItem("sidebarCollapsed", String(isSidebarCollapsed));
+		} catch (_) {}
+	}, [isSidebarCollapsed]);
+
+	useEffect(() => {
+		try {
+			localStorage.setItem("sidebarOpen", String(isSidebarOpen));
+		} catch (_) {}
+	}, [isSidebarOpen]);
+
 	// Close dropdown when clicking outside
 	useEffect(() => {
 		const handleClickOutside = (event) => {
@@ -178,10 +207,15 @@ export default function AppLayout({
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								viewBox="0 0 24 24"
-								fill="currentColor"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2"
+								strokeLinecap="round"
+								strokeLinejoin="round"
 								className="w-4 h-4 text-gray-400 absolute left-3"
 							>
-								<path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5z" />
+								<circle cx="11" cy="11" r="8"></circle>
+								<path d="m21 21-4.35-4.35"></path>
 							</svg>
 						</div>
 
@@ -193,7 +227,7 @@ export default function AppLayout({
 								fill="currentColor"
 								className="w-5 h-5 text-gray-600 dark:text-gray-400"
 							>
-								<path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
+								<path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
 							</svg>
 							<span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
 						</button>
@@ -236,9 +270,9 @@ export default function AppLayout({
 						isSidebarOpen
 							? "translate-x-0 w-64"
 							: isSidebarCollapsed
-							? "lg:translate-x-0 lg:w-16 -translate-x-full lg:translate-x-0"
-							: "lg:translate-x-0 lg:w-64 -translate-x-full lg:translate-x-0"
-					} lg:relative fixed z-40 h-[calc(100vh-3.5rem)] lg:h-full`}
+							? "lg:translate-x-0 lg:w-16 -translate-x-full"
+							: "lg:translate-x-0 lg:w-64 -translate-x-full"
+					} lg:relative fixed z-40 h-[calc(100vh-3.5rem)]`}
 				>
 					<div className="h-full flex flex-col overflow-hidden">
 						{/* Dynamic Navigation */}
@@ -247,15 +281,9 @@ export default function AppLayout({
 								<SidebarMenu />
 							</div>
 						) : (
-							<nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-								<div className="space-y-2">
-									<NavItemCollapsed icon="home" active />
-									<NavItemCollapsed icon="box" />
-									<NavItemCollapsed icon="users" />
-									<NavItemCollapsed icon="lock" />
-									<NavItemCollapsed icon="file-text" />
-								</div>
-							</nav>
+							<div className="flex-1 overflow-y-auto p-2">
+								<SidebarMenu collapsed />
+							</div>
 						)}
 
 						{/* Bottom Card - Gradient Pro */}
@@ -271,7 +299,7 @@ export default function AppLayout({
 										Faskesku.id
 									</h4>
 									<p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-										Sistem Informasi Free & open Source{" "}
+										Sistem Informasi Free & open Source
 									</p>
 									<button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 px-3 rounded-md transition-colors">
 										Panduan Aplikasi
@@ -432,7 +460,7 @@ function NavItemCollapsed({ icon, active = false, href = "#" }) {
 
 function UserProfileDropdown({ isOpen, onToggle }) {
 	const handleLogout = () => {
-		router.post(route('logout'));
+		router.post(route("logout"));
 	};
 
 	return (
