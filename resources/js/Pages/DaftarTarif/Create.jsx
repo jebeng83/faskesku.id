@@ -3,12 +3,14 @@ import { Head, Link, useForm, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
 
-export default function Create({ polikliniks, penjaabs, kategoris }) {
+export default function Create({ category = 'rawat-jalan', polikliniks, bangsals, penjaabs, kategoris }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         kd_jenis_prw: '',
         nm_perawatan: '',
         kd_kategori: '',
         kd_poli: '',
+        kd_bangsal: '',
+        kelas: '',
         kd_pj: '',
         status: '1',
         material: '0',
@@ -20,6 +22,7 @@ export default function Create({ polikliniks, penjaabs, kategoris }) {
         show_total_dokter: true,
         show_total_perawat: true,
         show_total_dokter_perawat: true,
+        category: category,
     });
 
     const [totals, setTotals] = useState({
@@ -35,7 +38,7 @@ export default function Create({ polikliniks, penjaabs, kategoris }) {
         if (!kdKategori) return;
         
         try {
-            const response = await fetch(route('daftar-tarif.generate-kode') + `?kd_kategori=${kdKategori}&category=rawat-jalan`);
+            const response = await fetch(route('daftar-tarif.generate-kode') + `?kd_kategori=${kdKategori}&category=${category}`);
             const result = await response.json();
             if (result.success) {
                 setData('kd_jenis_prw', result.kode);
@@ -115,7 +118,12 @@ export default function Create({ polikliniks, penjaabs, kategoris }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         
-        post(route('daftar-tarif.store'), {
+        // Tentukan endpoint berdasarkan kategori
+        const endpoint = category === 'rawat-inap' 
+            ? route('daftar-tarif.store-rawat-inap')
+            : route('daftar-tarif.store');
+        
+        post(endpoint, {
             onSuccess: () => {
                 reset();
             },
@@ -169,16 +177,51 @@ export default function Create({ polikliniks, penjaabs, kategoris }) {
         }).format(amount);
     };
 
+    // Dynamic title and description based on category
+    const getCategoryTitle = () => {
+        switch(category) {
+            case 'rawat-inap':
+                return 'Tambah Tarif Rawat Inap';
+            case 'rawat-jalan':
+                return 'Tambah Tarif Rawat Jalan';
+            case 'laboratorium':
+                return 'Tambah Tarif Laboratorium';
+            case 'radiologi':
+                return 'Tambah Tarif Radiologi';
+            case 'operasi':
+                return 'Tambah Tarif Operasi';
+            default:
+                return 'Tambah Tarif Perawatan';
+        }
+    };
+
+    const getCategoryDescription = () => {
+        switch(category) {
+            case 'rawat-inap':
+                return 'Isi form di bawah untuk menambahkan tarif rawat inap baru';
+            case 'rawat-jalan':
+                return 'Isi form di bawah untuk menambahkan tarif rawat jalan baru';
+            case 'laboratorium':
+                return 'Isi form di bawah untuk menambahkan tarif laboratorium baru';
+            case 'radiologi':
+                return 'Isi form di bawah untuk menambahkan tarif radiologi baru';
+            case 'operasi':
+                return 'Isi form di bawah untuk menambahkan tarif operasi baru';
+            default:
+                return 'Isi form di bawah untuk menambahkan tarif perawatan baru';
+        }
+    };
+
     return (
         <AppLayout
-            title="Tambah Tarif"
+            title={getCategoryTitle()}
             renderHeader={() => (
                 <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                    Tambah Tarif Perawatan
+                    {getCategoryTitle()}
                 </h2>
             )}
         >
-            <Head title="Tambah Tarif" />
+            <Head title={getCategoryTitle()} />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
@@ -188,14 +231,14 @@ export default function Create({ polikliniks, penjaabs, kategoris }) {
                             <div className="flex justify-between items-center">
                                 <div>
                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                        Tambah Tarif Perawatan Baru
+                                        {getCategoryTitle()}
                                     </h3>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                        Isi form di bawah untuk menambahkan tarif perawatan baru
+                                        {getCategoryDescription()}
                                     </p>
                                 </div>
                                 <Link
-                                    href={route('daftar-tarif.index')}
+                                    href={route('daftar-tarif.index', { category: category })}
                                     className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
                                 >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -287,27 +330,52 @@ export default function Create({ polikliniks, penjaabs, kategoris }) {
                                         )}
                                     </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Poliklinik <span className="text-red-500">*</span>
-                                        </label>
-                                        <select
-                                            value={data.kd_poli}
-                                            onChange={(e) => setData('kd_poli', e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            required
-                                        >
-                                            <option value="">Pilih Poliklinik</option>
-                                            {polikliniks.map((poli) => (
-                                                <option key={poli.kd_poli} value={poli.kd_poli}>
-                                                    {poli.nm_poli}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {errors.kd_poli && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.kd_poli}</p>
-                                        )}
-                                    </div>
+                                    {/* Poliklinik untuk Rawat Jalan atau Bangsal untuk Rawat Inap */}
+                                    {category === 'rawat-inap' ? (
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Bangsal <span className="text-red-500">*</span>
+                                            </label>
+                                            <select
+                                                value={data.kd_bangsal}
+                                                onChange={(e) => setData('kd_bangsal', e.target.value)}
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                required
+                                            >
+                                                <option value="">Pilih Bangsal</option>
+                                                {bangsals && bangsals.map((bangsal) => (
+                                                    <option key={bangsal.kd_bangsal} value={bangsal.kd_bangsal}>
+                                                        {bangsal.nm_bangsal}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            {errors.kd_bangsal && (
+                                                <p className="mt-1 text-sm text-red-600">{errors.kd_bangsal}</p>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Poliklinik <span className="text-red-500">*</span>
+                                            </label>
+                                            <select
+                                                value={data.kd_poli}
+                                                onChange={(e) => setData('kd_poli', e.target.value)}
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                required
+                                            >
+                                                <option value="">Pilih Poliklinik</option>
+                                                {polikliniks.map((poli) => (
+                                                    <option key={poli.kd_poli} value={poli.kd_poli}>
+                                                        {poli.nm_poli}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            {errors.kd_poli && (
+                                                <p className="mt-1 text-sm text-red-600">{errors.kd_poli}</p>
+                                            )}
+                                        </div>
+                                    )}
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -330,6 +398,32 @@ export default function Create({ polikliniks, penjaabs, kategoris }) {
                                             <p className="mt-1 text-sm text-red-600">{errors.kd_pj}</p>
                                         )}
                                     </div>
+
+                                    {/* Field Kelas untuk Rawat Inap */}
+                                    {category === 'rawat-inap' && (
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Kelas <span className="text-red-500">*</span>
+                                            </label>
+                                            <select
+                                                value={data.kelas}
+                                                onChange={(e) => setData('kelas', e.target.value)}
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                required
+                                            >
+                                                <option value="">Pilih Kelas</option>
+                                                <option value="Kelas 1">Kelas 1</option>
+                                                <option value="Kelas 2">Kelas 2</option>
+                                                <option value="Kelas 3">Kelas 3</option>
+                                                <option value="Kelas Utama">Kelas Utama</option>
+                                                <option value="Kelas VIP">Kelas VIP</option>
+                                                <option value="Kelas VVIP">Kelas VVIP</option>
+                                            </select>
+                                            {errors.kelas && (
+                                                <p className="mt-1 text-sm text-red-600">{errors.kelas}</p>
+                                            )}
+                                        </div>
+                                    )}
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

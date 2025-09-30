@@ -158,6 +158,7 @@ Route::middleware('auth')->group(function () {
 
     // Daftar Tarif routes
     Route::get('daftar-tarif/generate-kode', [DaftarTarifController::class, 'generateKode'])->name('daftar-tarif.generate-kode');
+    Route::post('daftar-tarif/store-rawat-inap', [DaftarTarifController::class, 'storeRawatInap'])->name('daftar-tarif.store-rawat-inap');
     Route::resource('daftar-tarif', DaftarTarifController::class);
 
     // Tarif Tindakan API routes
