@@ -62,6 +62,24 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
     // Effect to populate form when editing
     useEffect(() => {
         if (editData) {
+            // Debug: Log the values to see what we're getting from database
+            console.log('Edit Data:', {
+                total_byrdr: editData.total_byrdr,
+                total_byrpr: editData.total_byrpr,
+                total_byrdrpr: editData.total_byrdrpr
+            });
+            
+            // Determine checkbox states based on existing total values - must be strictly greater than 0
+            const showTotalDokter = editData.total_byrdr && parseFloat(editData.total_byrdr) > 0;
+            const showTotalPerawat = editData.total_byrpr && parseFloat(editData.total_byrpr) > 0;
+            const showTotalDokterPerawat = editData.total_byrdrpr && parseFloat(editData.total_byrdrpr) > 0;
+            
+            console.log('Checkbox States:', {
+                showTotalDokter,
+                showTotalPerawat,
+                showTotalDokterPerawat
+            });
+            
             setData({
                 kd_jenis_prw: editData.kd_jenis_prw || '',
                 nm_perawatan: editData.nm_perawatan || '',
@@ -80,9 +98,9 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                 total_dr: 0,
                 total_pr: 0,
                 total_drpr: 0,
-                show_total_dokter: false,
-                show_total_perawat: false,
-                show_total_dokter_perawat: false
+                show_total_dokter: showTotalDokter,
+                show_total_perawat: showTotalPerawat,
+                show_total_dokter_perawat: showTotalDokterPerawat
             });
         } else {
             reset();
@@ -126,9 +144,9 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
             // If user types just '0', keep it as 0
             setData(fieldName, 0);
         } else if (/^\d*\.?\d*$/.test(value)) {
-            // If valid number, remove leading zeros and parse
+            // If valid number, remove leading zeros and parse as integer
             const cleanValue = value.replace(/^0+(?=\d)/, '');
-            const numericValue = parseFloat(cleanValue) || 0;
+            const numericValue = parseInt(cleanValue) || 0;
             setData(fieldName, numericValue);
         }
     };
@@ -138,17 +156,19 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
         if (value === 0 && isFocused) {
             return '';
         }
-        return value || '';
+        // Ensure we display integers without decimals
+        const intValue = parseInt(value) || 0;
+        return intValue === 0 ? '' : intValue.toString();
     };
 
     // Calculate total tarif
     const calculateTotal = () => {
-        const material = data.material || 0;
-        const bhp = data.bhp || 0;
-        const tarif_tindakandr = data.tarif_tindakandr || 0;
-        const tarif_tindakanpr = data.tarif_tindakanpr || 0;
-        const kso = data.kso || 0;
-        const menejemen = data.menejemen || 0;
+        const material = parseInt(data.material) || 0;
+        const bhp = parseInt(data.bhp) || 0;
+        const tarif_tindakandr = parseInt(data.tarif_tindakandr) || 0;
+        const tarif_tindakanpr = parseInt(data.tarif_tindakanpr) || 0;
+        const kso = parseInt(data.kso) || 0;
+        const menejemen = parseInt(data.menejemen) || 0;
 
         const totalDr = material + bhp + tarif_tindakandr + kso + menejemen;
         const totalPr = material + bhp + tarif_tindakanpr + kso + menejemen;
@@ -161,13 +181,31 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
 
     // Function to validate form before submission
     const validateForm = () => {
-        const requiredFields = {
+        // Base required fields for all categories
+        const baseRequiredFields = {
             'kd_jenis_prw': 'Kode Jenis Perawatan',
             'nm_perawatan': 'Nama Perawatan',
-            'kd_pj': 'Asuransi / Penanggung Jawab',
-            'kd_poli': 'Poli Klinik',
-            'status': 'Status'
+            'kd_pj': 'Asuransi / Penanggung Jawab'
         };
+        
+        // Category-specific required fields
+        let categorySpecificFields = {};
+        
+        if (category === 'rawat-inap') {
+            categorySpecificFields = {
+                'kd_bangsal': 'Bangsal',
+                'kelas': 'Kelas'
+            };
+        } else {
+            // For rawat-jalan and other categories
+            categorySpecificFields = {
+                'kd_poli': 'Poli Klinik',
+                'status': 'Status'
+            };
+        }
+        
+        // Combine all required fields
+        const requiredFields = { ...baseRequiredFields, ...categorySpecificFields };
         
         const errors = {};
         
@@ -255,18 +293,31 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
             tarif_tindakanpr: parseFloat(data.tarif_tindakanpr) || 0,
             kso: parseFloat(data.kso) || 0,
             menejemen: parseFloat(data.menejemen) || 0,
-            category: category || 'rawat-jalan'
+            category: category || 'rawat-jalan',
+            // Include checkbox states
+            show_total_dokter: data.show_total_dokter || false,
+            show_total_perawat: data.show_total_perawat || false,
+            show_total_dokter_perawat: data.show_total_dokter_perawat || false
         };
+        
+        // For rawat-inap, automatically set status to '1' (active)
+        if (category === 'rawat-inap') {
+            formData.status = '1';
+        }
         
         console.log('Formatted data:', formData);
         
-        const submitMethod = isEditMode ? put : post;
         const submitRoute = isEditMode 
             ? route('daftar-tarif.update', editData.kd_jenis_prw)
             : route('daftar-tarif.store');
         
-        submitMethod(submitRoute, {
-            data: formData,
+        // Add method spoofing for PUT requests
+        if (isEditMode) {
+            formData._method = 'PUT';
+        }
+        
+        // Use router.post for proper method spoofing
+        router.post(submitRoute, formData, {
             onSuccess: () => {
                 // Show success notification
                 const notification = document.createElement('div');
@@ -942,15 +993,15 @@ export default function Index({ title, data, category, search, filters, poliklin
                                 <div className="action-section">
                                     <div className="action-section-title">Aksi</div>
                                     <div className="action-buttons">
-                                        <Link
-                                            href={route('daftar-tarif.edit', item.kd_jenis_prw)}
+                                        <button
+                                            onClick={() => handleEdit(item)}
                                             className="action-btn edit-btn"
                                             title="Edit Tarif"
                                         >
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                             </svg>
-                                        </Link>
+                                        </button>
                                         <button
                                             onClick={() => handleDelete(item)}
                                             className="action-btn delete-btn"
