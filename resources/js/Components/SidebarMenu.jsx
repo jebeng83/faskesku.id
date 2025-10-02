@@ -59,6 +59,15 @@ export default function SidebarMenu() {
 	};
 
 	const getMenuUrl = (menu) => {
+		// Special case: Farmasi root menu should navigate directly to Farmasi Index
+		if ((menu.slug && menu.slug === "farmasi") || (menu.name && menu.name.toLowerCase() === "farmasi")) {
+			try {
+				return route("farmasi.index");
+			} catch (error) {
+				console.warn("Route farmasi.index not found, falling back to /farmasi");
+				return "/farmasi";
+			}
+		}
 		if (menu.url) {
 			return menu.url;
 		}
@@ -75,66 +84,67 @@ export default function SidebarMenu() {
 		return "#";
 	};
 
-	const renderMenuItem = (menu, level = 0) => {
-		const children = menu.active_children_recursive || menu.children || [];
-		const hasChildren = children && children.length > 0;
-		const isExpanded = expandedMenus.has(menu.id);
-		const isActive = isMenuActive(menu);
-		const menuUrl = getMenuUrl(menu);
+    const renderMenuItem = (menu, level = 0) => {
+        // Gunakan anak menu dari backend saja, tanpa quick link tambahan
+        const children = menu.active_children_recursive || menu.children || [];
+        const hasChildren = children && children.length > 0;
+        const isExpanded = expandedMenus.has(menu.id);
+        const isActive = isMenuActive(menu);
+        const menuUrl = getMenuUrl(menu);
 
 
 
 		return (
 			<React.Fragment key={menu.id}>
 				<li>
-					{hasChildren ? (
-						<button
-							onClick={() => toggleExpanded(menu.id)}
-							className={`w-full flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-								isActive
-									? "bg-indigo-100 text-indigo-700"
-									: "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-							}`}
-							style={{ paddingLeft: `${1 + level * 0.5}rem` }}
-						>
-							{menu.icon && (
-								<i className={`${menu.icon} mr-3 flex-shrink-0 h-5 w-5`}></i>
-							)}
-							<span className="flex-1 text-left">{menu.name}</span>
-							{isExpanded ? (
-								<ChevronDownIcon className="ml-3 h-4 w-4 flex-shrink-0" />
-							) : (
-								<ChevronRightIcon className="ml-3 h-4 w-4 flex-shrink-0" />
-							)}
-						</button>
-					) : (
-						<Link
-							href={menuUrl}
-							className={`flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-								isActive
-									? "bg-indigo-100 text-indigo-700"
-									: "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-							}`}
-							style={{ paddingLeft: `${1 + level * 0.5}rem` }}
-						>
-							{menu.icon && (
-								<i className={`${menu.icon} mr-3 flex-shrink-0 h-5 w-5`}></i>
-							)}
-							{menu.name}
-						</Link>
-					)}
-				</li>
+            {hasChildren ? (
+                <button
+                    onClick={() => toggleExpanded(menu.id)}
+                    className={`w-full flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                        isActive
+                            ? "bg-indigo-100 text-indigo-700"
+                            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    }`}
+                    style={{ paddingLeft: `${1 + level * 0.5}rem` }}
+                >
+                    {menu.icon && (
+                        <i className={`${menu.icon} mr-3 flex-shrink-0 h-5 w-5`}></i>
+                    )}
+                    <span className="flex-1 text-left">{menu.name}</span>
+                    {isExpanded ? (
+                        <ChevronDownIcon className="ml-3 h-4 w-4 flex-shrink-0" />
+                    ) : (
+                        <ChevronRightIcon className="ml-3 h-4 w-4 flex-shrink-0" />
+                    )}
+                </button>
+            ) : (
+                <Link
+                    href={menuUrl}
+                    className={`flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                        isActive
+                            ? "bg-indigo-100 text-indigo-700"
+                            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    }`}
+                    style={{ paddingLeft: `${1 + level * 0.5}rem` }}
+                >
+                    {menu.icon && (
+                        <i className={`${menu.icon} mr-3 flex-shrink-0 h-5 w-5`}></i>
+                    )}
+                    {menu.name}
+                </Link>
+            )}
+        </li>
 
-				{hasChildren && isExpanded && (
-					<li>
-						<ul className="space-y-1">
-							{children.map((child) => renderMenuItem(child, level + 1))}
-						</ul>
-					</li>
-				)}
-			</React.Fragment>
-		);
-	};
+        {hasChildren && isExpanded && (
+            <li>
+                <ul className="space-y-1">
+                    {children.map((child) => renderMenuItem(child, level + 1))}
+                </ul>
+            </li>
+        )}
+        </React.Fragment>
+    );
+    };
 
 	if (!menu_hierarchy || menu_hierarchy.length === 0) {
 		return (

@@ -9,7 +9,6 @@ class SetPenjualanUmum extends Model
 {
     use HasFactory;
 
-    protected $connection = 'fufufafa';
     protected $table = 'setpenjualanumum';
     public $timestamps = false;
     public $incrementing = false;

@@ -100,6 +100,8 @@ class PermissionSeeder extends Seeder
             'menu.delete',
             'menus.index',
             'profile.show',
+            // Farmasi module landing permission
+            'farmasi.index',
         ];
 
         foreach ($permissions as $permission) {

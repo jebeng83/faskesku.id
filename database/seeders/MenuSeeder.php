@@ -89,6 +89,18 @@ class MenuSeeder extends Seeder
             'description' => 'Pengaturan sistem dan administrasi'
         ]);
 
+        // Farmasi root menu -> navigates directly to Farmasi Index
+        $farmasi = Menu::create([
+            'name' => 'Farmasi',
+            'slug' => 'farmasi',
+            'icon' => 'fas fa-pills',
+            'route' => 'farmasi.index',
+            'url' => route('farmasi.index'),
+            'sort_order' => 7,
+            'is_active' => true,
+            'description' => 'Modul farmasi dan pengelolaan obat'
+        ]);
+
         // Master Data sub-menus
         Menu::create([
             'name' => 'Data Pasien',
@@ -202,6 +214,8 @@ class MenuSeeder extends Seeder
             'permission_name' => 'menu.view',
             'description' => 'Pengelolaan struktur menu sidebar'
         ]);
+
+        // Note: Farmasi submenu entries are intentionally omitted to keep sidebar clean.
 
         // Profile menu (separate from main navigation)
         Menu::create([

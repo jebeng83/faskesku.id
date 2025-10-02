@@ -1,1159 +1,340 @@
-import React, { useState, useEffect } from 'react';
-import { Head, router } from '@inertiajs/react';
-import { route } from 'ziggy-js';
-import AppLayout from '@/Layouts/AppLayout';
-import axios from 'axios';
-import { toast } from '@/tools/toast';
+import React, { useEffect, useState } from 'react';
+import { Head, Link, useForm, usePage, router } from '@inertiajs/react';
+import { motion, AnimatePresence } from 'framer-motion';
+import AppLayout from '../../Layouts/AppLayout.jsx';
 
-export default function DataObat({ dataBarang = { data: [], links: null, from: 0, to: 0, total: 0 }, filters = {} }) {
-    // Fungsi untuk menghitung tanggal kadaluarsa default (hari ini + 3 tahun)
-    const getDefaultExpiryDate = () => {
-        const today = new Date();
-        const expiryDate = new Date(today);
-        expiryDate.setFullYear(today.getFullYear() + 3);
-        return expiryDate.toISOString().split('T')[0]; // Format YYYY-MM-DD
-    };
+const PageHeader = () => (
+  <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 p-6 text-white shadow-lg">
+    <div className="relative z-10">
+      <h1 className="text-2xl font-bold tracking-tight">Data Obat</h1>
+      <p className="mt-1 opacity-90">Kelola master data obat dari tabel databarang secara cepat dan mudah.</p>
+    </div>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.2 }} className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white" />
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.15 }} className="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-white" />
+  </div>
+);
 
-    const [search, setSearch] = useState(filters.search || '');
-    const [showModal, setShowModal] = useState(false);
-    const [modalType, setModalType] = useState('create'); // 'create' or 'edit'
-    const [selectedItem, setSelectedItem] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [errors, setErrors] = useState({});
-    const [dropdownData, setDropdownData] = useState({
-        kodesatuan: [],
-        jenis: [],
-        industrifarmasi: [],
-        kategori_barang: [],
-        golongan_barang: []
+const Input = ({ label, id, type = 'text', value, onChange, maxLength, placeholder, disabled, error }) => (
+  <div className="space-y-1">
+    <label htmlFor={id} className="block text-sm font-medium text-gray-700">{label}</label>
+    <input
+      id={id}
+      type={type}
+      value={value}
+      onChange={onChange}
+      maxLength={maxLength}
+      placeholder={placeholder}
+      disabled={disabled}
+      className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 disabled:bg-gray-100 disabled:text-gray-500 ${error ? 'border-red-400 focus:ring-red-300' : 'border-gray-300 focus:ring-indigo-300'}`}
+    />
+    {error && <p className="text-xs text-red-600">{error}</p>}
+  </div>
+);
+
+const ConfirmDelete = ({ open, onClose, onConfirm, item }) => (
+  <AnimatePresence>
+    {open && (
+      <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+        <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 20 }} className="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+          <h3 className="text-lg font-semibold">Hapus Obat</h3>
+          <p className="mt-2 text-sm text-gray-600">Anda yakin ingin menghapus <span className="font-medium text-gray-900">{item?.nama_brng}</span> ({item?.kode_brng})?</p>
+          <div className="mt-6 flex justify-end gap-3">
+            <button onClick={onClose} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Batal</button>
+            <button onClick={onConfirm} className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">Hapus</button>
+          </div>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
+
+export default function DataObatPage() {
+  const { props } = usePage();
+  const { items, filters, flash, nextCode } = props;
+
+  const [query, setQuery] = useState(filters?.q || '');
+  const [perPage, setPerPage] = useState(filters?.perPage || 10);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [selected, setSelected] = useState(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const { data, setData, post, processing, errors, reset } = useForm({
+    kode_brng: '',
+    nama_brng: '',
+    kode_sat: '',
+    kode_satbesar: '',
+    dasar: 0,
+    h_beli: '',
+    ralan: '',
+    kelas1: '',
+    kelas2: '',
+    kelas3: '',
+    utama: '',
+    vip: '',
+    vvip: '',
+    beliluar: '',
+    jualbebas: '',
+    karyawan: '',
+    isi: 1,
+    kapasitas: 0,
+    status: '1',
+    letak_barang: 'Apotek',
+    stokminimal: '',
+    kdjns: '',
+    expire: '',
+    kode_industri: '',
+    kode_kategori: '',
+    kode_golongan: ''
+  });
+
+  useEffect(() => {
+    if (flash?.success) {
+      const t = setTimeout(() => {}, 2000);
+      return () => clearTimeout(t);
+    }
+  }, [flash]);
+
+  const openCreate = () => {
+    reset();
+    setIsEdit(false);
+    setSelected(null);
+    setData('kode_brng', (nextCode || '').toUpperCase());
+    setData('dasar', 0);
+    setData('isi', 1);
+    setData('kapasitas', 0);
+    setData('status', '1');
+    setData('letak_barang', 'Apotek');
+    setData('ralan', 0);
+    setData('kelas1', 0);
+    setData('kelas2', 0);
+    setData('kelas3', 0);
+    setData('utama', 0);
+    setData('vip', 0);
+    setData('vvip', 0);
+    setData('beliluar', 0);
+    setData('jualbebas', 0);
+    setData('karyawan', 0);
+    setData('stokminimal', 0);
+    setData('kdjns', '');
+    setData('expire', '');
+    setData('kode_industri', '');
+    setData('kode_kategori', '');
+    setData('kode_golongan', '');
+    setModalOpen(true);
+  };
+
+  const openEdit = (item) => {
+    setIsEdit(true);
+    setSelected(item);
+    setData({
+      kode_brng: item.kode_brng || '',
+      nama_brng: item.nama_brng || '',
+      kode_sat: item.kode_sat || '',
+      kode_satbesar: item.kode_satbesar || '',
+      dasar: item.dasar ?? 0,
+      h_beli: item.h_beli ?? '',
+      ralan: item.ralan ?? '',
+      kelas1: item.kelas1 ?? '',
+      kelas2: item.kelas2 ?? '',
+      kelas3: item.kelas3 ?? '',
+      utama: item.utama ?? '',
+      vip: item.vip ?? '',
+      vvip: item.vvip ?? '',
+      beliluar: item.beliluar ?? '',
+      jualbebas: item.jualbebas ?? '',
+      karyawan: item.karyawan ?? '',
+      isi: item.isi ?? 1,
+      kapasitas: item.kapasitas ?? 0,
+      status: item.status ?? '1',
+      letak_barang: item.letak_barang ?? 'Apotek',
+      stokminimal: item.stokminimal ?? '',
+      kdjns: item.kdjns ?? '',
+      expire: item.expire ?? '',
+      kode_industri: item.kode_industri ?? '',
+      kode_kategori: item.kode_kategori ?? '',
+      kode_golongan: item.kode_golongan ?? ''
     });
-    
-    const [percentageData, setPercentageData] = useState({
-        ralan: 0,
-        kelas1: 0,
-        kelas2: 0,
-        kelas3: 0,
-        utama: 0,
-        vip: 0,
-        vvip: 0,
-        beliluar: 0,
-        jualbebas: 0,
-        karyawan: 0
+    setModalOpen(true);
+  };
+
+  const closeModal = () => setModalOpen(false);
+
+  const submitForm = (e) => {
+    e.preventDefault();
+    if (isEdit && selected) {
+      const kodeBrng = selected.kode_brng?.trim();
+      if (!kodeBrng) {
+        alert('Kode barang kosong. Pilih data yang benar sebelum menyimpan perubahan.');
+        return;
+      }
+      const updateUrl = route('farmasi.data-obat.update', { kode_brng: kodeBrng });
+      router.post(updateUrl, { ...data, _method: 'PUT' }, {
+        forceFormData: true,
+        preserveScroll: true,
+        preserveState: false,
+        onSuccess: () => setModalOpen(false)
+      });
+    } else {
+      post(route('farmasi.data-obat.store'), {
+        preserveScroll: true,
+        onSuccess: () => setModalOpen(false)
+      });
+    }
+  };
+
+  const confirmDelete = (item) => {
+    setSelected(item);
+    setConfirmOpen(true);
+  };
+
+  const performDelete = () => {
+    if (!selected?.kode_brng) return;
+    router.delete(route('farmasi.data-obat.destroy', { kode_brng: selected.kode_brng }), {
+      preserveScroll: true,
+      onSuccess: () => setConfirmOpen(false)
     });
-    
-    const [includePPN, setIncludePPN] = useState(false);
-    
-    const [formData, setFormData] = useState({
-        kode_brng: '',
-        nama_brng: '',
-        kode_sat: '',
-        kode_satbesar: '',
-        letak_barang: 'Apotek',
-        dasar: '0',
-        h_beli: '',
-        ralan: '',
-        kelas1: '',
-        kelas2: '',
-        kelas3: '',
-        utama: '',
-        vip: '',
-        vvip: '',
-        beliluar: '',
-        jualbebas: '',
-        karyawan: '',
-        stokminimal: '100',
-        kdjns: '',
-        isi: '1',
-        kapasitas: '1',
-        expire: getDefaultExpiryDate(),
-        status: '1',
-        kode_industri: '',
-        kode_kategori: '',
-        kode_golongan: ''
-    });
+  };
 
-    const handleSearch = (e) => {
-        e.preventDefault();
-        router.get(route('data-barang.index'), { search }, {
-            preserveState: true,
-            replace: true,
-        });
-    };
+  const onSearch = (e) => {
+    e.preventDefault();
+    router.get(route('farmasi.data-obat'), { q: query, perPage }, { preserveState: true, replace: true });
+  };
 
-    const openCreateModal = async () => {
-        setModalType('create');
-        setSelectedItem(null);
-        
-        // Generate auto code first
-        let autoCode = '';
-        try {
-            const codeResponse = await axios.get('/data-barang-last-code');
-            if (codeResponse.data.success) {
-                autoCode = codeResponse.data.new_code;
-            }
-        } catch (error) {
-            console.error('Error generating item code:', error);
-        }
-        
-        setFormData({
-            kode_brng: autoCode,
-            kode_industri: '',
-            nama_brng: '',
-            kode_satbesar: '',
-            isi: '1',
-            kode_sat: '',
-            kapasitas: '1',
-            kdjns: '',
-            kode_kategori: '',
-            kode_golongan: '',
-            dasar: '0',
-            h_beli: '',
-            ralan: '',
-            kelas1: '',
-            kelas2: '',
-            kelas3: '',
-            utama: '',
-            vip: '',
-            vvip: '',
-            beliluar: '',
-            jualbebas: '',
-            karyawan: '',
-            stokminimal: '100',
-            expire: getDefaultExpiryDate(),
-            status: '1',
-            letak_barang: 'Apotek'
-        });
-        setIncludePPN(false);
-        setErrors({});
-        setShowModal(true);
-    };
+  const onChangePerPage = (e) => {
+    const val = Number(e.target.value);
+    setPerPage(val);
+    router.get(route('farmasi.data-obat'), { q: query, perPage: val }, { preserveState: true, replace: true });
+  };
 
-    const openEditModal = async (item) => {
-        setModalType('edit');
-        setSelectedItem(item);
-        setFormData({
-            kode_brng: item.kode_brng,
-            kode_industri: item.kode_industri || '',
-            nama_brng: item.nama_brng,
-            kode_satbesar: item.kode_satbesar || '',
-            isi: item.isi || '',
-            kode_sat: item.kode_sat,
-            kapasitas: item.kapasitas || '',
-            kdjns: item.kdjns || '',
-            kode_kategori: item.kode_kategori || '',
-            kode_golongan: item.kode_golongan || '',
-            dasar: item.dasar || '',
-            h_beli: item.h_beli || '',
-            ralan: item.ralan || '',
-            kelas1: item.kelas1 || '',
-            kelas2: item.kelas2 || '',
-            kelas3: item.kelas3 || '',
-            utama: item.utama || '',
-            vip: item.vip || '',
-            vvip: item.vvip || '',
-            beliluar: item.beliluar || '',
-            jualbebas: item.jualbebas || '',
-            karyawan: item.karyawan || '',
-            stokminimal: item.stokminimal || '',
-            expire: item.expire || '',
-            status: item.status || '1',
-            letak_barang: item.letak_barang || ''
-        });
-        setIncludePPN(false);
-        setErrors({});
-        setShowModal(true);
-    };
+  return (
+    <div>
+      <Head title="Data Obat" />
+      <div className="space-y-6">
+        <PageHeader />
 
-    const closeModal = () => {
-        setShowModal(false);
-        setSelectedItem(null);
-        setErrors({});
-    };
+        {flash?.success && (
+          <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} className="rounded-lg bg-green-50 p-3 text-sm text-green-800">
+            {flash.success}
+          </motion.div>
+        )}
 
-    // Fungsi untuk menghitung PPN 11%
-    const calculatePPN = (hargaBeli) => {
-        const harga = parseFloat(hargaBeli) || 0;
-        return Math.round(harga * 0.11); // PPN 11%
-    };
-
-    const calculatePrices = (hargaBeli, usePPN = null) => {
-        const harga = parseFloat(hargaBeli) || 0;
-        const shouldIncludePPN = usePPN !== null ? usePPN : includePPN;
-        const ppn = shouldIncludePPN ? calculatePPN(harga) : 0;
-        
-        return {
-            ralan: Math.round(harga + (harga * percentageData.ralan / 100) + ppn),
-            kelas1: Math.round(harga + (harga * percentageData.kelas1 / 100) + ppn),
-            kelas2: Math.round(harga + (harga * percentageData.kelas2 / 100) + ppn),
-            kelas3: Math.round(harga + (harga * percentageData.kelas3 / 100) + ppn),
-            utama: Math.round(harga + (harga * percentageData.utama / 100) + ppn),
-            vip: Math.round(harga + (harga * percentageData.vip / 100) + ppn),
-            vvip: Math.round(harga + (harga * percentageData.vvip / 100) + ppn),
-            beliluar: Math.round(harga + (harga * percentageData.beliluar / 100) + ppn),
-            jualbebas: Math.round(harga + (harga * percentageData.jualbebas / 100) + ppn),
-            karyawan: Math.round(harga + (harga * percentageData.karyawan / 100) + ppn)
-        };
-    };
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        
-        // If changing h_beli, calculate all prices automatically
-        if (name === 'h_beli' && value) {
-            const calculatedPrices = calculatePrices(value);
-            setFormData(prev => ({
-                ...prev,
-                [name]: value,
-                ...calculatedPrices
-            }));
-        } else {
-            setFormData(prev => ({
-                ...prev,
-                [name]: value
-            }));
-        }
-        
-        // Clear error when user starts typing
-        if (errors[name]) {
-            setErrors(prev => ({
-                ...prev,
-                [name]: null
-            }));
-        }
-    };
-    
-    // Handle PPN checkbox change
-    const handlePPNChange = (e) => {
-        const checked = e.target.checked;
-        setIncludePPN(checked);
-        
-        // Recalculate prices if h_beli exists
-        if (formData.h_beli) {
-            const calculatedPrices = calculatePrices(formData.h_beli, checked);
-            setFormData(prev => ({
-                ...prev,
-                ...calculatedPrices
-            }));
-        }
-    };
-    
-    // Fetch dropdown data and generate item code when modal opens
-    useEffect(() => {
-        if (showModal) {
-            const fetchData = async () => {
-                try {
-                    // Fetch dropdown data
-                    const dropdownResponse = await axios.get('/data-barang-dropdown');
-                    setDropdownData(dropdownResponse.data);
-                    
-                    // Fetch percentage data from setpenjualanumum
-                    const percentageResponse = await axios.get('/api/set-harga-obat');
-                    if (percentageResponse.data.success && percentageResponse.data.data) {
-                        const data = percentageResponse.data.data;
-                        setPercentageData({
-                            ralan: parseFloat(data.ralan) || 0,
-                            kelas1: parseFloat(data.kelas1) || 0,
-                            kelas2: parseFloat(data.kelas2) || 0,
-                            kelas3: parseFloat(data.kelas3) || 0,
-                            utama: parseFloat(data.utama) || 0,
-                            vip: parseFloat(data.vip) || 0,
-                            vvip: parseFloat(data.vvip) || 0,
-                            beliluar: parseFloat(data.beliluar) || 0,
-                            jualbebas: parseFloat(data.jualbebas) || 0,
-                            karyawan: parseFloat(data.karyawan) || 0
-                        });
-                    }
-                    
-                    // Auto code generation is now handled in openCreateModal
-                } catch (error) {
-                    console.error('Error fetching data:', error);
-                }
-            };
-            
-            fetchData();
-        }
-    }, [showModal, modalType]);
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setErrors({});
-
-        try {
-            let response;
-            if (modalType === 'create') {
-                response = await axios.post(route('data-barang.store'), formData);
-            } else {
-                response = await axios.put(route('data-barang.update', selectedItem.kode_brng), formData);
-            }
-
-            if (response.data.success) {
-                toast(
-                    modalType === 'create' 
-                        ? 'Data obat berhasil ditambahkan!' 
-                        : 'Data obat berhasil diperbarui!', 
-                    'success'
-                );
-                closeModal();
-                router.reload();
-            }
-        } catch (error) {
-            if (error.response?.data?.errors) {
-                setErrors(error.response.data.errors);
-                toast('Terjadi kesalahan saat menyimpan data. Periksa form kembali.', 'error');
-            } else {
-                toast('Terjadi kesalahan yang tidak terduga.', 'error');
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleDelete = async (item) => {
-        if (confirm('Apakah Anda yakin ingin menghapus data obat ini?')) {
-            try {
-                await axios.delete(route('data-barang.destroy', item.kode_brng));
-                toast('Data obat berhasil dihapus!', 'success');
-                router.reload();
-            } catch (error) {
-                console.error('Error deleting item:', error);
-                toast('Gagal menghapus data obat.', 'error');
-            }
-        }
-    };
-
-    const formatCurrency = (value) => {
-        if (!value) return '-';
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
-        }).format(value);
-    };
-    
-    // Function to generate item code automatically
-    const generateItemCode = async () => {
-        try {
-            const response = await axios.get('/data-barang-last-code');
-            if (response.data.success) {
-                setFormData(prev => ({
-                    ...prev,
-                    kode_brng: response.data.new_code
-                }));
-                return response.data.new_code;
-            }
-            return null;
-        } catch (error) {
-            console.error('Error generating item code:', error);
-            return null;
-        }
-    };
-
-    // Fungsi untuk update harga jual berdasarkan harga beli terbaru dari pembelian
-    const updateHargaJual = async (kodeBarang, hargaBeliBaru) => {
-        try {
-            // Fetch percentage data untuk perhitungan
-            const percentageResponse = await axios.get('/api/set-harga-obat');
-            if (!percentageResponse.data.success) {
-                throw new Error('Gagal mengambil data persentase');
-            }
-
-            const percentages = percentageResponse.data.data;
-            const harga = parseFloat(hargaBeliBaru) || 0;
-
-            // Hitung harga jual berdasarkan persentase keuntungan
-            const hargaJualBaru = {
-                ralan: Math.round(harga + (harga * parseFloat(percentages.ralan || 0) / 100)),
-                kelas1: Math.round(harga + (harga * parseFloat(percentages.kelas1 || 0) / 100)),
-                kelas2: Math.round(harga + (harga * parseFloat(percentages.kelas2 || 0) / 100)),
-                kelas3: Math.round(harga + (harga * parseFloat(percentages.kelas3 || 0) / 100)),
-                utama: Math.round(harga + (harga * parseFloat(percentages.utama || 0) / 100)),
-                vip: Math.round(harga + (harga * parseFloat(percentages.vip || 0) / 100)),
-                vvip: Math.round(harga + (harga * parseFloat(percentages.vvip || 0) / 100)),
-                beliluar: Math.round(harga + (harga * parseFloat(percentages.beliluar || 0) / 100)),
-                jualbebas: Math.round(harga + (harga * parseFloat(percentages.jualbebas || 0) / 100)),
-                karyawan: Math.round(harga + (harga * parseFloat(percentages.karyawan || 0) / 100))
-            };
-
-            // Update harga jual melalui API
-            const updateData = {
-                kode_brng: kodeBarang,
-                h_beli: harga,
-                ...hargaJualBaru
-            };
-
-            const response = await axios.put(`/api/databarang/update-harga-jual/${kodeBarang}`, updateData);
-            
-            if (response.data.success) {
-                console.log(`Harga jual berhasil diupdate untuk ${kodeBarang}:`, hargaJualBaru);
-                return true;
-            } else {
-                console.error(`Gagal update harga jual untuk ${kodeBarang}:`, response.data.message);
-                return false;
-            }
-        } catch (error) {
-            console.error('Error updating harga jual:', error);
-            return false;
-        }
-    };
-
-    return (
-        <AppLayout>
-            <Head title="Data Obat" />
-
-            <div className="space-y-6 -mt-6 -mx-6 p-6">
-                {/* Header */}
-                <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div className="p-6">
-                        <div className="flex justify-between items-center">
-                            <div>
-                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                    Data Obat
-                                </h2>
-                                <p className="text-gray-600 dark:text-gray-400 mt-1">
-                                    Kelola data obat dan barang medis
-                                </p>
-                            </div>
-                            <button
-                                onClick={openCreateModal}
-                                className="bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 shadow-md hover:shadow-lg font-medium text-sm whitespace-nowrap transform hover:scale-105"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                                    <path fillRule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clipRule="evenodd" />
-                                </svg>
-                                <span>Tambah Obat</span>
-                            </button>
-                        </div>
-                    </div>
+        <div className="rounded-xl bg-white p-4 shadow-sm">
+          {modalOpen && (
+            <div className="mb-5 rounded-lg border border-indigo-200 bg-indigo-50/40 p-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold">{isEdit ? 'Edit Obat' : 'Tambah Obat'}</h3>
+                  <p className="text-sm text-gray-600">Form berada di dalam layout utama (inline).</p>
                 </div>
+                <button onClick={closeModal} className="rounded-lg p-2 text-gray-500 hover:bg-gray-100" aria-label="Tutup">✕</button>
+              </div>
 
-                {/* Search and Filters */}
-                <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div className="p-6">
-                        <form onSubmit={handleSearch} className="flex gap-4">
-                            <div className="flex-1">
-                                <input
-                                    type="text"
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    placeholder="Cari berdasarkan kode, nama obat, atau satuan..."
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition-colors"
-                            >
-                                Cari
-                            </button>
-                            {search && (
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setSearch('');
-                                        router.get(route('data-barang.index'));
-                                    }}
-                                    className="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-lg transition-colors"
-                                >
-                                    Reset
-                                </button>
-                            )}
-                        </form>
-                    </div>
+              <form onSubmit={submitForm} className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <Input label="Kode Barang" id="kode_brng" value={data.kode_brng} onChange={(e) => setData('kode_brng', e.target.value.toUpperCase())} maxLength={15} placeholder="Mis. B0001" disabled={isEdit} error={errors?.kode_brng} />
+                <Input label="Nama Barang" id="nama_brng" value={data.nama_brng} onChange={(e) => setData('nama_brng', e.target.value)} maxLength={80} placeholder="Nama obat" error={errors?.nama_brng} />
+                <Input label="Kode Satuan" id="kode_sat" value={data.kode_sat} onChange={(e) => setData('kode_sat', e.target.value.toUpperCase())} maxLength={4} placeholder="Mis. PCS" error={errors?.kode_sat} />
+                <Input label="Kode Satuan Besar" id="kode_satbesar" value={data.kode_satbesar} onChange={(e) => setData('kode_satbesar', e.target.value.toUpperCase())} maxLength={4} placeholder="Mis. BOX" error={errors?.kode_satbesar} />
+                <Input label="Harga Dasar" id="dasar" type="number" value={data.dasar} onChange={(e) => setData('dasar', e.target.value)} placeholder="0" error={errors?.dasar} />
+                <Input label="Harga Beli" id="h_beli" type="number" value={data.h_beli} onChange={(e) => setData('h_beli', e.target.value)} placeholder="0" error={errors?.h_beli} />
+                <Input label="Harga Ralan" id="ralan" type="number" value={data.ralan} onChange={(e) => setData('ralan', e.target.value)} placeholder="0" error={errors?.ralan} />
+                <Input label="Harga Kelas 1" id="kelas1" type="number" value={data.kelas1} onChange={(e) => setData('kelas1', e.target.value)} placeholder="0" error={errors?.kelas1} />
+                <Input label="Harga Kelas 2" id="kelas2" type="number" value={data.kelas2} onChange={(e) => setData('kelas2', e.target.value)} placeholder="0" error={errors?.kelas2} />
+                <Input label="Harga Kelas 3" id="kelas3" type="number" value={data.kelas3} onChange={(e) => setData('kelas3', e.target.value)} placeholder="0" error={errors?.kelas3} />
+                <Input label="Harga Utama" id="utama" type="number" value={data.utama} onChange={(e) => setData('utama', e.target.value)} placeholder="0" error={errors?.utama} />
+                <Input label="Harga VIP" id="vip" type="number" value={data.vip} onChange={(e) => setData('vip', e.target.value)} placeholder="0" error={errors?.vip} />
+                <Input label="Harga VVIP" id="vvip" type="number" value={data.vvip} onChange={(e) => setData('vvip', e.target.value)} placeholder="0" error={errors?.vvip} />
+                <Input label="Harga Beli Luar" id="beliluar" type="number" value={data.beliluar} onChange={(e) => setData('beliluar', e.target.value)} placeholder="0" error={errors?.beliluar} />
+                <Input label="Harga Jual Bebas" id="jualbebas" type="number" value={data.jualbebas} onChange={(e) => setData('jualbebas', e.target.value)} placeholder="0" error={errors?.jualbebas} />
+                <Input label="Harga Karyawan" id="karyawan" type="number" value={data.karyawan} onChange={(e) => setData('karyawan', e.target.value)} placeholder="0" error={errors?.karyawan} />
+                <Input label="Isi" id="isi" type="number" value={data.isi} onChange={(e) => setData('isi', e.target.value)} placeholder="1" error={errors?.isi} />
+                <Input label="Kapasitas" id="kapasitas" type="number" value={data.kapasitas} onChange={(e) => setData('kapasitas', e.target.value)} placeholder="0" error={errors?.kapasitas} />
+                <Input label="Status (0/1)" id="status" value={data.status} onChange={(e) => setData('status', e.target.value)} maxLength={1} placeholder="1" error={errors?.status} />
+                <Input label="Letak Barang" id="letak_barang" value={data.letak_barang} onChange={(e) => setData('letak_barang', e.target.value)} maxLength={100} placeholder="Apotek" error={errors?.letak_barang} />
+                <Input label="Stok Minimal" id="stokminimal" type="number" value={data.stokminimal} onChange={(e) => setData('stokminimal', e.target.value)} placeholder="" error={errors?.stokminimal} />
+                <Input label="Jenis Obat (kdjns)" id="kdjns" value={data.kdjns} onChange={(e) => setData('kdjns', e.target.value.toUpperCase())} maxLength={4} placeholder="Mis. OBT" error={errors?.kdjns} />
+                <Input label="Tanggal Expire" id="expire" type="date" value={data.expire} onChange={(e) => setData('expire', e.target.value)} placeholder="" error={errors?.expire} />
+                <Input label="Kode Industri" id="kode_industri" value={data.kode_industri} onChange={(e) => setData('kode_industri', e.target.value.toUpperCase())} maxLength={5} placeholder="Mis. IND01" error={errors?.kode_industri} />
+                <Input label="Kode Kategori" id="kode_kategori" value={data.kode_kategori} onChange={(e) => setData('kode_kategori', e.target.value.toUpperCase())} maxLength={4} placeholder="Mis. KAT1" error={errors?.kode_kategori} />
+                <Input label="Kode Golongan" id="kode_golongan" value={data.kode_golongan} onChange={(e) => setData('kode_golongan', e.target.value.toUpperCase())} maxLength={4} placeholder="Mis. G01" error={errors?.kode_golongan} />
+
+                <div className="md:col-span-2 mt-2 flex justify-end gap-3">
+                  <button type="button" onClick={closeModal} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Batal</button>
+                  <button type="submit" disabled={processing} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">{isEdit ? 'Simpan Perubahan' : 'Simpan'}</button>
                 </div>
-
-                {/* Data Table */}
-                <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead className="bg-gray-50 dark:bg-gray-700">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Kode
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Nama Obat
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Satuan
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Harga Beli
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Harga Ralan
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Update Terakhir
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Status
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Aksi
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                {dataBarang.data.map((item) => (
-                                    <tr key={item.kode_brng} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                                            {item.kode_brng}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                            {item.nama_brng}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                            {item.kode_sat}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                            {formatCurrency(item.h_beli)}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                            {formatCurrency(item.ralan)}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                            {item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-'}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                                item.status === '1' 
-                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                                                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                            }`}>
-                                                {item.status === '1' ? 'Aktif' : 'Non-Aktif'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <div className="flex space-x-2">
-                                                <button
-                                                    onClick={() => openEditModal(item)}
-                                                    className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(item)}
-                                                    className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                                >
-                                                    Hapus
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Pagination */}
-                    {dataBarang.links && (
-                        <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-700">
-                            <div className="flex items-center justify-between">
-                                <div className="text-sm text-gray-700 dark:text-gray-300">
-                                    Menampilkan {dataBarang.from} sampai {dataBarang.to} dari {dataBarang.total} data
-                                </div>
-                                <div className="flex space-x-2">
-                                    {dataBarang.links.map((link, index) => (
-                                        <button
-                                            key={index}
-                                            onClick={() => router.get(link.url)}
-                                            disabled={!link.url}
-                                            className={`px-3 py-1 text-sm rounded-md ${
-                                                link.active
-                                                    ? 'bg-blue-500 text-white'
-                                                    : link.url
-                                                    ? 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                                                    : 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-600'
-                                            }`}
-                                        >
-                                            {link.label.replace('&laquo;', '«').replace('&raquo;', '»')}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
+              </form>
             </div>
+          )}
 
-            {/* Modal */}
-            {showModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-                        <div className="p-6">
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                    {modalType === 'create' ? 'Tambah Data Obat' : 'Edit Data Obat'}
-                                </h3>
-                                <button
-                                    onClick={closeModal}
-                                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                                >
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
+          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <form onSubmit={onSearch} className="flex w-full max-w-xl items-center gap-2">
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-gray-600">Pencarian</label>
+                <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Cari kode/nama/satuan..." className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-indigo-300" />
+              </div>
+              <button type="submit" className="mt-6 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">Cari</button>
+            </form>
+            <div className="flex items-center gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-600">Baris per halaman</label>
+                <select value={perPage} onChange={onChangePerPage} className="mt-1 rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-indigo-300">
+                  {[10, 20, 50].map(n => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </div>
+              <button onClick={openCreate} className="mt-6 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700">+ Tambah Obat</button>
+            </div>
+          </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    {/* 1. Kode Barang */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Kode Barang *
-                                        </label>
-                                        <div className="flex">
-                                            <input
-                                                type="text"
-                                                name="kode_brng"
-                                                value={formData.kode_brng}
-                                                onChange={handleInputChange}
-                                                disabled={modalType === 'edit'}
-                                                className={`w-full px-3 py-2 border rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
-                                                    errors.kode_brng ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                                                }`}
-                                            />
-                                            {modalType === 'create' && (
-                                                <button
-                                                    type="button"
-                                                    onClick={generateItemCode}
-                                                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-r-lg transition-colors duration-300"
-                                                >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                        <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
-                                                    </svg>
-                                                </button>
-                                            )}
-                                        </div>
-                                        {errors.kode_brng && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.kode_brng[0]}</p>
-                                        )}
-                                    </div>
+          <div className="mt-4 overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600">Kode</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600">Nama Barang</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600">Satuan</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600">Harga Beli</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider text-gray-600">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {items?.data?.length ? items.data.map((item) => (
+                  <tr key={item.kode_brng} className="hover:bg-gray-50">
+                    <td className="px-4 py-2 text-sm font-mono">{item.kode_brng}</td>
+                    <td className="px-4 py-2 text-sm">{item.nama_brng}</td>
+                    <td className="px-4 py-2 text-sm">{item.kode_sat}</td>
+                    <td className="px-4 py-2 text-sm">{item.h_beli ?? 0}</td>
+                    <td className="px-4 py-2 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => openEdit(item)} className="rounded-lg border border-indigo-200 px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-50">Edit</button>
+                        <button onClick={() => confirmDelete(item)} className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50">Hapus</button>
+                      </div>
+                    </td>
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-6 text-center text-sm text-gray-500">Tidak ada data.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
 
-                                    {/* 2. Industri Farmasi */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Industri Farmasi
-                                        </label>
-                                        <select
-                                            name="kode_industri"
-                                            value={formData.kode_industri}
-                                            onChange={handleInputChange}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                        >
-                                            <option value="">Pilih Industri</option>
-                                            {dropdownData.industrifarmasi && dropdownData.industrifarmasi.map((item) => (
-                                                <option key={item.kode_industri} value={item.kode_industri}>
-                                                    {item.nama_industri}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
+          {items?.links && (
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs text-gray-600">Menampilkan {items?.from ?? 0}-{items?.to ?? 0} dari {items?.total ?? 0} data</p>
+              <div className="flex flex-wrap gap-2">
+                {items.links.map((link, idx) => (
+                  <Link key={idx} href={link.url || '#'} preserveState replace className={`rounded-lg px-3 py-1.5 text-xs ${link.active ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 border'} ${!link.url ? 'pointer-events-none opacity-50' : ''}`} dangerouslySetInnerHTML={{ __html: link.label }} />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
-                                    {/* 3. Nama Barang */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Nama Barang *
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="nama_brng"
-                                            value={formData.nama_brng}
-                                            onChange={handleInputChange}
-                                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
-                                                errors.nama_brng ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                                            }`}
-                                        />
-                                        {errors.nama_brng && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.nama_brng[0]}</p>
-                                        )}
-                                    </div>
-
-                                    {/* 4. Satuan Besar */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Satuan Besar
-                                        </label>
-                                        <select
-                                            name="kode_satbesar"
-                                            value={formData.kode_satbesar}
-                                            onChange={handleInputChange}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                        >
-                                            <option value="">Pilih Satuan Besar</option>
-                                            {dropdownData.kodesatuan && dropdownData.kodesatuan.map((item) => (
-                                                <option key={item.kode_sat} value={item.kode_sat}>
-                                                    {item.satuan}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    {/* 6. Isi */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Isi
-                                        </label>
-                                        <input
-                                            type="number"
-                                            name="isi"
-                                            value={formData.isi}
-                                            onChange={handleInputChange}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            step="0.01"
-                                        />
-                                    </div>
-
-                                    {/* 7. Satuan Kecil */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Satuan Kecil *
-                                        </label>
-                                        <select
-                                            name="kode_sat"
-                                            value={formData.kode_sat}
-                                            onChange={handleInputChange}
-                                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
-                                                errors.kode_sat ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                                            }`}
-                                        >
-                                            <option value="">Pilih Satuan</option>
-                                            {dropdownData.kodesatuan && dropdownData.kodesatuan.map((item) => (
-                                                <option key={item.kode_sat} value={item.kode_sat}>
-                                                    {item.satuan}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {errors.kode_sat && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.kode_sat[0]}</p>
-                                        )}
-                                    </div>
-                                    
-                                    {/* 8. Kapasitas */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Kapasitas
-                                        </label>
-                                        <input
-                                            type="number"
-                                            name="kapasitas"
-                                            value={formData.kapasitas}
-                                            onChange={handleInputChange}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            step="0.01"
-                                        />
-                                    </div>
-
-                                    {/* 9. Jenis */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Jenis
-                                        </label>
-                                        <select
-                                            name="kdjns"
-                                            value={formData.kdjns}
-                                            onChange={handleInputChange}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                        >
-                                            <option value="">Pilih Jenis</option>
-                                            {dropdownData.jenis && dropdownData.jenis.map((item) => (
-                                                <option key={item.kdjns} value={item.kdjns}>
-                                                    {item.nama}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    {/* 10. Kategori */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Kategori Barang
-                                        </label>
-                                        <select
-                                            name="kode_kategori"
-                                            value={formData.kode_kategori}
-                                            onChange={handleInputChange}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                        >
-                                            <option value="">Pilih Kategori</option>
-                                            {dropdownData.kategori_barang && dropdownData.kategori_barang.map((item) => (
-                                                <option key={item.kode} value={item.kode}>
-                                                    {item.nama}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    {/* 11. Golongan */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Golongan Barang
-                                        </label>
-                                        <select
-                                            name="kode_golongan"
-                                            value={formData.kode_golongan}
-                                            onChange={handleInputChange}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                        >
-                                            <option value="">Pilih Golongan</option>
-                                            {dropdownData.golongan_barang && dropdownData.golongan_barang.map((item) => (
-                                                <option key={item.kode} value={item.kode}>
-                                                    {item.nama}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-
-
-
-
-
-
-
-
-                                    {/* Status */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Status
-                                        </label>
-                                        <select
-                                            name="status"
-                                            value={formData.status}
-                                            onChange={handleInputChange}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                        >
-                                            <option value="1">Aktif</option>
-                                            <option value="0">Non-Aktif</option>
-                                        </select>
-                                    </div>
-                                    
-
-
-
-                                    {/* Letak Barang */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Letak Barang
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="letak_barang"
-                                            value={formData.letak_barang}
-                                            onChange={handleInputChange}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            maxLength={100}
-                                        />
-                                    </div>
-
-                                    {/* Harga Dasar */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Harga Dasar
-                                        </label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
-                                            </div>
-                                            <input
-                                                type="number"
-                                                name="dasar"
-                                                value={formData.dasar}
-                                                onChange={handleInputChange}
-                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            />
-                                        </div>
-                                    </div>
-
-
-
-                                    {/* Harga Beli */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Harga Beli
-                                        </label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
-                                            </div>
-                                            <input
-                                                type="number"
-                                                name="h_beli"
-                                                value={formData.h_beli}
-                                                onChange={handleInputChange}
-                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            />
-                                            {errors.h_beli && (
-                                                <p className="mt-1 text-sm text-red-600">{errors.h_beli[0]}</p>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Harga Ralan */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Harga Ralan
-                                        </label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
-                                            </div>
-                                            <input
-                                                type="number"
-                                                name="ralan"
-                                                value={formData.ralan}
-                                                onChange={handleInputChange}
-                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Harga Ranap Kelas 1 */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Harga Ranap Kelas 1
-                                        </label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
-                                            </div>
-                                            <input
-                                                type="number"
-                                                name="kelas1"
-                                                value={formData.kelas1}
-                                                onChange={handleInputChange}
-                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Harga Ranap Kelas 2 */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Harga Ranap Kelas 2
-                                        </label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
-                                            </div>
-                                            <input
-                                                type="number"
-                                                name="kelas2"
-                                                value={formData.kelas2}
-                                                onChange={handleInputChange}
-                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Harga Ranap Kelas 3 */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Harga Ranap Kelas 3
-                                        </label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
-                                            </div>
-                                            <input
-                                                type="number"
-                                                name="kelas3"
-                                                value={formData.kelas3}
-                                                onChange={handleInputChange}
-                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Harga Ranap Utama/BPJS */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Harga Ranap Utama/BPJS
-                                        </label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
-                                            </div>
-                                            <input
-                                                type="number"
-                                                name="utama"
-                                                value={formData.utama}
-                                                onChange={handleInputChange}
-                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Harga Ranap Kelas VIP */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Harga Ranap Kelas VIP
-                                        </label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
-                                            </div>
-                                            <input
-                                                type="number"
-                                                name="vip"
-                                                value={formData.vip}
-                                                onChange={handleInputChange}
-                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Harga Ranap Kelas VVIP */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Harga Ranap Kelas VVIP
-                                        </label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
-                                            </div>
-                                            <input
-                                                type="number"
-                                                name="vvip"
-                                                value={formData.vvip}
-                                                onChange={handleInputChange}
-                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Harga Apotek Luar */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Harga Apotek Luar
-                                        </label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
-                                            </div>
-                                            <input
-                                                type="number"
-                                                name="beliluar"
-                                                value={formData.beliluar}
-                                                onChange={handleInputChange}
-                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Harga Jual Obat Bebas */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Harga Jual Obat Bebas
-                                        </label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
-                                            </div>
-                                            <input
-                                                type="number"
-                                                name="jualbebas"
-                                                value={formData.jualbebas}
-                                                onChange={handleInputChange}
-                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Harga Karyawan */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Harga Karyawan
-                                        </label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <span className="text-gray-500 sm:text-sm">Rp.</span>
-                                            </div>
-                                            <input
-                                                type="number"
-                                                name="karyawan"
-                                                value={formData.karyawan}
-                                                onChange={handleInputChange}
-                                                className="w-full pl-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Stok Minimal */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Stok Minimal
-                                        </label>
-                                        <input
-                                            type="number"
-                                            name="stokminimal"
-                                            value={formData.stokminimal}
-                                            onChange={handleInputChange}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                        />
-                                    </div>
-
-                                    {/* Tanggal Kadaluarsa */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Tanggal Kadaluarsa
-                                        </label>
-                                        <input
-                                            type="date"
-                                            name="expire"
-                                            value={formData.expire}
-                                            onChange={handleInputChange}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                        />
-                                    </div>
-
-                                </div>
-
-                                {/* PPN Checkbox */}
-                                <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-                                    <div className="flex items-center space-x-3">
-                                        <input
-                                            type="checkbox"
-                                            id="includePPN"
-                                            checked={includePPN}
-                                            onChange={handlePPNChange}
-                                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                                        />
-                                        <label htmlFor="includePPN" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            Sertakan PPN 11% dalam perhitungan harga jual
-                                        </label>
-                                    </div>
-                                    {includePPN && (
-                                        <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">
-                                            <span className="font-medium">Catatan:</span> Harga jual akan dihitung sebagai: Harga Beli + Keuntungan + PPN 11%
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Action Buttons */}
-                                <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
-                                    <button
-                                        type="button"
-                                        onClick={closeModal}
-                                        className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 dark:text-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
-                                    >
-                                        Batal
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={loading}
-                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                    >
-                                        {loading ? 'Menyimpan...' : (modalType === 'create' ? 'Simpan' : 'Update')}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </AppLayout>
-    );
+        <ConfirmDelete open={confirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={performDelete} item={selected} />
+      </div>
+    </div>
+  );
 }
+
+DataObatPage.layout = (page) => <AppLayout title="Farmasi" children={page} />;

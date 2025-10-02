@@ -241,8 +241,8 @@ export default function AppLayout({
 						isSidebarOpen
 							? "translate-x-0 w-64"
 							: isSidebarCollapsed
-							? "lg:translate-x-0 lg:w-16 -translate-x-full"
-							: "lg:translate-x-0 lg:w-64 -translate-x-full"
+							? "lg:w-16 -translate-x-full lg:translate-x-0"
+							: "lg:w-64 -translate-x-full lg:translate-x-0"
 					} lg:relative fixed z-40 h-[calc(100vh-3.5rem)] lg:h-full`}
 				>
 					<div className="h-full flex flex-col overflow-hidden">

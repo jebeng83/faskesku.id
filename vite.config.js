@@ -14,4 +14,31 @@ export default defineConfig({
 		react(),
 		wayfinder(),
 	],
+	build: {
+		// Increase warning threshold and split vendor libraries into separate chunks
+		chunkSizeWarningLimit: 1024,
+		rollupOptions: {
+			output: {
+				manualChunks: {
+					react: ['react', 'react-dom'],
+					inertia: ['@inertiajs/react'],
+					vendor: [
+						'axios', 'ziggy-js', 'date-fns',
+						'framer-motion', 'motion',
+						'@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities',
+						'recharts', 'lucide-react', '@heroicons/react'
+					],
+				},
+			},
+		},
+	},
+	server: {
+	 	host: '127.0.0.1',
+	 	port: 5174,
+	 	strictPort: true,
+	 	hmr: {
+	 		host: '127.0.0.1',
+	 		port: 5174,
+	 	},
+	},
 });
