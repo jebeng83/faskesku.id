@@ -900,15 +900,20 @@ export default function Index({ title, data, category, search, filters, poliklin
 
     // Handler untuk nonaktifkan dengan konfirmasi
     const handleDelete = (item) => {
-        if (window.confirm(`Apakah Anda yakin ingin menonaktifkan tarif "${item.nm_perawatan}"?`)) {
+        const isRestore = selectedFilter === '0';
+        const confirmMessage = isRestore
+            ? `Apakah Anda yakin ingin mengaktifkan kembali tarif "${item.nm_perawatan}"?`
+            : `Apakah Anda yakin ingin menonaktifkan tarif "${item.nm_perawatan}"?`;
+
+        if (window.confirm(confirmMessage)) {
             router.post(route('daftar-tarif.update-status', item.kd_jenis_prw), {
                 _method: 'PATCH',
                 category: activeTab,
-                status: '0'
+                status: isRestore ? '1' : '0'
             }, {
                 onError: (errors) => {
-                    console.error('Error deactivating tarif:', errors);
-                    alert('Gagal menonaktifkan tarif. Silakan coba lagi.');
+                    console.error(isRestore ? 'Error restoring tarif:' : 'Error deactivating tarif:', errors);
+                    alert(isRestore ? 'Gagal mengembalikan tarif. Silakan coba lagi.' : 'Gagal menonaktifkan tarif. Silakan coba lagi.');
                 }
             });
         }
@@ -1035,12 +1040,21 @@ export default function Index({ title, data, category, search, filters, poliklin
                                         </button>
                                         <button
                                             onClick={() => handleDelete(item)}
-                                            className="action-btn delete-btn"
-                                            title="Nonaktifkan Tarif"
+                                            className={`action-btn ${selectedFilter === '0' ? 'restore-btn' : 'delete-btn'}`}
+                                            title={selectedFilter === '0' ? 'Aktifkan Kembali Tarif' : 'Nonaktifkan Tarif'}
                                         >
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
+                                            {selectedFilter === '0' ? (
+                                                // Ikon Restore (panah melingkar)
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 8a8 8 0 10-16 8" />
+                                                </svg>
+                                            ) : (
+                                                // Ikon Delete
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            )}
                                         </button>
                                     </div>
                                 </div>
@@ -1090,7 +1104,7 @@ export default function Index({ title, data, category, search, filters, poliklin
                                     <div className="tarif-section-title">Komponen Tarif</div>
                                     <div className="tarif-grid">
                                         <div className="tarif-item">
-                                            <span className="tarif-label">Material</span>
+                                            <span className="tarif-label">Bagian RS/Klinik</span>
                                             <span className="tarif-value">{formatCurrency(item.material)}</span>
                                         </div>
                                         <div className="tarif-item">
@@ -1098,11 +1112,11 @@ export default function Index({ title, data, category, search, filters, poliklin
                                             <span className="tarif-value">{formatCurrency(item.bhp)}</span>
                                         </div>
                                         <div className="tarif-item">
-                                            <span className="tarif-label">Tarif Tindakan Dr</span>
+                                            <span className="tarif-label">Jasa Dokter</span>
                                             <span className="tarif-value">{formatCurrency(item.tarif_tindakandr)}</span>
                                         </div>
                                         <div className="tarif-item">
-                                            <span className="tarif-label">Tarif Tindakan Pr</span>
+                                            <span className="tarif-label">Jasa Petugas</span>
                                             <span className="tarif-value">{formatCurrency(item.tarif_tindakanpr)}</span>
                                         </div>
                                         <div className="tarif-item">
@@ -1150,12 +1164,19 @@ export default function Index({ title, data, category, search, filters, poliklin
                                         </button>
                                         <button
                                             onClick={() => handleDelete(item)}
-                                            className="action-btn delete-btn"
-                                            title="Nonaktifkan Tarif"
+                                            className={`action-btn ${selectedFilter === '0' ? 'restore-btn' : 'delete-btn'}`}
+                                            title={selectedFilter === '0' ? 'Aktifkan Kembali Tarif' : 'Nonaktifkan Tarif'}
                                         >
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
+                                            {selectedFilter === '0' ? (
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 8a8 8 0 10-16 8" />
+                                                </svg>
+                                            ) : (
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            )}
                                         </button>
                                     </div>
                                 </div>
@@ -1247,12 +1268,19 @@ export default function Index({ title, data, category, search, filters, poliklin
                                     </button>
                                     <button
                                         onClick={() => handleDelete(item)}
-                                        className="text-red-600 hover:text-red-900 font-medium"
-                                        title="Nonaktifkan"
+                                        className={`inline-flex items-center justify-center px-2 py-1 rounded-md transition-colors font-medium ${selectedFilter === '0' ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : 'bg-red-500 hover:bg-red-600 text-white'}`}
+                                        title={selectedFilter === '0' ? 'Aktifkan Kembali' : 'Nonaktifkan'}
                                     >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
+                                        {selectedFilter === '0' ? (
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 8a8 8 0 10-16 8" />
+                                            </svg>
+                                        ) : (
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        )}
                                     </button>
                                 </div>
                             </td>
@@ -1333,12 +1361,19 @@ export default function Index({ title, data, category, search, filters, poliklin
                                     </button>
                                     <button
                                         onClick={() => handleDelete(item)}
-                                        className="text-red-600 hover:text-red-900 font-medium"
-                                        title="Nonaktifkan"
+                                        className={`inline-flex items-center justify-center px-2 py-1 rounded-md transition-colors font-medium ${selectedFilter === '0' ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : 'bg-red-500 hover:bg-red-600 text-white'}`}
+                                        title={selectedFilter === '0' ? 'Aktifkan Kembali' : 'Nonaktifkan'}
                                     >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
+                                        {selectedFilter === '0' ? (
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 8a8 8 0 10-16 8" />
+                                            </svg>
+                                        ) : (
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        )}
                                     </button>
                                 </div>
                             </td>
@@ -1407,12 +1442,19 @@ export default function Index({ title, data, category, search, filters, poliklin
                                     </button>
                                     <button
                                         onClick={() => handleDelete(item)}
-                                        className="text-red-600 hover:text-red-900 font-medium"
-                                        title="Nonaktifkan"
+                                        className={`inline-flex items-center justify-center px-2 py-1 rounded-md transition-colors font-medium ${selectedFilter === '0' ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : 'bg-red-500 hover:bg-red-600 text-white'}`}
+                                        title={selectedFilter === '0' ? 'Aktifkan Kembali' : 'Nonaktifkan'}
                                     >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
+                                        {selectedFilter === '0' ? (
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 8a8 8 0 10-16 8" />
+                                            </svg>
+                                        ) : (
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        )}
                                     </button>
                                 </div>
                             </td>
@@ -1502,10 +1544,13 @@ export default function Index({ title, data, category, search, filters, poliklin
                                         onClick={() => handleTabChange(tab.id)}
                                         className={`py-4 px-2 lg:px-1 border-b-2 font-medium text-sm whitespace-nowrap flex-shrink-0 transition-colors duration-200 ${
                                             activeTab === tab.id
-                                                ? 'border-blue-500 text-blue-600'
+                                                ? (tab.id === 'rawat-inap' ? 'border-yellow-500 text-yellow-600' : 'border-blue-500 text-blue-600')
                                                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                         }`}
                                     >
+                                        {tab.id === 'rawat-inap' && (
+                                            <span className="inline-block w-2 h-2 rounded-full bg-yellow-500 mr-2"></span>
+                                        )}
                                         {tab.name}
                                     </button>
                                 ))}
