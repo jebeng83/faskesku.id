@@ -322,6 +322,198 @@ getStatistics.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 })
 
 /**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::suratSehat
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:604
+* @route '/rawat-jalan/surat-sehat/{no_rawat}'
+*/
+export const suratSehat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: suratSehat.url(args, options),
+    method: 'get',
+})
+
+suratSehat.definition = {
+    methods: ["get","head"],
+    url: '/rawat-jalan/surat-sehat/{no_rawat}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::suratSehat
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:604
+* @route '/rawat-jalan/surat-sehat/{no_rawat}'
+*/
+suratSehat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { no_rawat: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            no_rawat: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        no_rawat: args.no_rawat,
+    }
+
+    return suratSehat.definition.url
+            .replace('{no_rawat}', parsedArgs.no_rawat.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::suratSehat
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:604
+* @route '/rawat-jalan/surat-sehat/{no_rawat}'
+*/
+suratSehat.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: suratSehat.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::suratSehat
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:604
+* @route '/rawat-jalan/surat-sehat/{no_rawat}'
+*/
+suratSehat.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: suratSehat.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratSehat
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:630
+* @route '/rawat-jalan/surat-sehat'
+*/
+export const storeSuratSehat = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storeSuratSehat.url(options),
+    method: 'post',
+})
+
+storeSuratSehat.definition = {
+    methods: ["post"],
+    url: '/rawat-jalan/surat-sehat',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratSehat
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:630
+* @route '/rawat-jalan/surat-sehat'
+*/
+storeSuratSehat.url = (options?: RouteQueryOptions) => {
+    return storeSuratSehat.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratSehat
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:630
+* @route '/rawat-jalan/surat-sehat'
+*/
+storeSuratSehat.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storeSuratSehat.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::suratSakit
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:655
+* @route '/rawat-jalan/surat-sakit/{no_rawat}'
+*/
+export const suratSakit = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: suratSakit.url(args, options),
+    method: 'get',
+})
+
+suratSakit.definition = {
+    methods: ["get","head"],
+    url: '/rawat-jalan/surat-sakit/{no_rawat}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::suratSakit
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:655
+* @route '/rawat-jalan/surat-sakit/{no_rawat}'
+*/
+suratSakit.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { no_rawat: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            no_rawat: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        no_rawat: args.no_rawat,
+    }
+
+    return suratSakit.definition.url
+            .replace('{no_rawat}', parsedArgs.no_rawat.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::suratSakit
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:655
+* @route '/rawat-jalan/surat-sakit/{no_rawat}'
+*/
+suratSakit.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: suratSakit.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::suratSakit
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:655
+* @route '/rawat-jalan/surat-sakit/{no_rawat}'
+*/
+suratSakit.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: suratSakit.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratSakit
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:681
+* @route '/rawat-jalan/surat-sakit'
+*/
+export const storeSuratSakit = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storeSuratSakit.url(options),
+    method: 'post',
+})
+
+storeSuratSakit.definition = {
+    methods: ["post"],
+    url: '/rawat-jalan/surat-sakit',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratSakit
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:681
+* @route '/rawat-jalan/surat-sakit'
+*/
+storeSuratSakit.url = (options?: RouteQueryOptions) => {
+    return storeSuratSakit.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratSakit
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:681
+* @route '/rawat-jalan/surat-sakit'
+*/
+storeSuratSakit.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storeSuratSakit.url(options),
+    method: 'post',
+})
+
+/**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:21
 * @route '/rawat-jalan'
@@ -681,6 +873,6 @@ destroy.delete = (args: { rawat_jalan: string | number } | [rawat_jalan: string 
     method: 'delete',
 })
 
-const RawatJalanController = { lanjutan, riwayat, pemeriksaanRalan, storePemeriksaanRalan, deletePemeriksaanRalan, updatePemeriksaanRalan, searchPegawai, getStatistics, index, create, store, show, edit, update, destroy }
+const RawatJalanController = { lanjutan, riwayat, pemeriksaanRalan, storePemeriksaanRalan, deletePemeriksaanRalan, updatePemeriksaanRalan, searchPegawai, getStatistics, suratSehat, storeSuratSehat, suratSakit, storeSuratSakit, index, create, store, show, edit, update, destroy }
 
 export default RawatJalanController

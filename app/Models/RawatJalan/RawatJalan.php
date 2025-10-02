@@ -51,6 +51,12 @@ class RawatJalan extends Model
         return $this->belongsTo(Patient::class, 'no_rkm_medis', 'no_rkm_medis');
     }
 
+    // Relasi dengan model Dokter
+    public function dokter()
+    {
+        return $this->belongsTo(\App\Models\Dokter::class, 'kd_dokter', 'kd_dokter');
+    }
+
     // Scope untuk filter status
     public function scopeStatus($query, $status)
     {

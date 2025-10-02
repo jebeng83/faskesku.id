@@ -98,6 +98,16 @@ Route::middleware('auth')->group(function () {
     Route::put('rawat-jalan/pemeriksaan-ralan', [RawatJalanController::class, 'updatePemeriksaanRalan'])->name('rawat-jalan.pemeriksaan-ralan.update');
     Route::get('pegawai/search', [RawatJalanController::class, 'searchPegawai'])->name('pegawai.search');
     Route::get('rawat-jalan-statistics', [RawatJalanController::class, 'getStatistics'])->name('rawat-jalan.statistics');
+    
+    // Surat Sehat dan Surat Sakit routes
+    Route::get('rawat-jalan/surat-sehat/{no_rawat}', [RawatJalanController::class, 'suratSehat'])
+        ->where('no_rawat', '.*')
+        ->name('rawat-jalan.surat-sehat');
+    Route::post('rawat-jalan/surat-sehat', [RawatJalanController::class, 'storeSuratSehat'])->name('rawat-jalan.surat-sehat.store');
+    Route::get('rawat-jalan/surat-sakit/{no_rawat}', [RawatJalanController::class, 'suratSakit'])
+        ->where('no_rawat', '.*')
+        ->name('rawat-jalan.surat-sakit');
+    Route::post('rawat-jalan/surat-sakit', [RawatJalanController::class, 'storeSuratSakit'])->name('rawat-jalan.surat-sakit.store');
 
     // API routes untuk obat
     Route::get('api/obat', [ObatController::class, 'getObatByPoli'])->name('api.obat.index');

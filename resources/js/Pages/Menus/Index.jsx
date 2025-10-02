@@ -15,6 +15,8 @@ import {
 	DndContext,
 	closestCenter,
 	PointerSensor,
+	MouseSensor,
+	TouchSensor,
 	useSensor,
 	useSensors,
 } from "@dnd-kit/core";
@@ -74,12 +76,12 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 	const [menuItems, setMenuItems] = useState(buildMenuHierarchy(menus.data || []));
 	const [isDragging, setIsDragging] = useState(false);
 
+
+
 	const sensors = useSensors(
-		useSensor(PointerSensor, {
-			activationConstraint: {
-				distance: 8,
-			},
-		})
+		useSensor(PointerSensor),
+		useSensor(MouseSensor),
+		useSensor(TouchSensor)
 	);
 
 	const handleSearch = (e) => {
@@ -118,7 +120,7 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 		}
 	};
 
-	const handleDragStart = () => {
+	const handleDragStart = (event) => {
 		setIsDragging(true);
 	};
 
