@@ -24,6 +24,35 @@ export default function AppLayout({
 		}
 	}, [isDark]);
 
+	// Restore sidebar toggle state from localStorage
+	useEffect(() => {
+		try {
+			const savedCollapsed = localStorage.getItem("sidebarCollapsed");
+			if (savedCollapsed !== null) {
+				setIsSidebarCollapsed(savedCollapsed === "true");
+			}
+			const savedOpen = localStorage.getItem("sidebarOpen");
+			if (savedOpen !== null) {
+				setIsSidebarOpen(savedOpen === "true");
+			}
+		} catch (_) {
+			// ignore
+		}
+	}, []);
+
+	// Persist sidebar states
+	useEffect(() => {
+		try {
+			localStorage.setItem("sidebarCollapsed", String(isSidebarCollapsed));
+		} catch (_) {}
+	}, [isSidebarCollapsed]);
+
+	useEffect(() => {
+		try {
+			localStorage.setItem("sidebarOpen", String(isSidebarOpen));
+		} catch (_) {}
+	}, [isSidebarOpen]);
+
 	// Close dropdown when clicking outside
 	useEffect(() => {
 		const handleClickOutside = (event) => {
@@ -241,9 +270,9 @@ export default function AppLayout({
 						isSidebarOpen
 							? "translate-x-0 w-64"
 							: isSidebarCollapsed
-							? "lg:w-16 -translate-x-full lg:translate-x-0"
-							: "lg:w-64 -translate-x-full lg:translate-x-0"
-					} lg:relative fixed z-40 h-[calc(100vh-3.5rem)] lg:h-full`}
+                            ? "lg:translate-x-0 lg:w-16 -translate-x-full"
+                            : "lg:translate-x-0 lg:w-64 -translate-x-full"
+                    } lg:relative fixed z-40 h-[calc(100vh-3.5rem)] lg:h-full`}
 				>
 					<div className="h-full flex flex-col overflow-hidden">
 						{/* Dynamic Navigation */}
@@ -252,15 +281,9 @@ export default function AppLayout({
 								<SidebarMenu />
 							</div>
 						) : (
-							<nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-								<div className="space-y-2">
-									<NavItemCollapsed icon="home" active />
-									<NavItemCollapsed icon="box" />
-									<NavItemCollapsed icon="users" />
-									<NavItemCollapsed icon="lock" />
-									<NavItemCollapsed icon="file-text" />
-								</div>
-							</nav>
+							<div className="flex-1 overflow-y-auto p-2">
+								<SidebarMenu collapsed />
+							</div>
 						)}
 
 						{/* Bottom Card - Gradient Pro */}
@@ -276,7 +299,7 @@ export default function AppLayout({
 										Faskesku.id
 									</h4>
 									<p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-										Sistem Informasi Free & open Source{" "}
+										Sistem Informasi Free & open Source
 									</p>
 									<button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 px-3 rounded-md transition-colors">
 										Panduan Aplikasi
@@ -437,7 +460,7 @@ function NavItemCollapsed({ icon, active = false, href = "#" }) {
 
 function UserProfileDropdown({ isOpen, onToggle }) {
 	const handleLogout = () => {
-		router.post(route('logout'));
+		router.post(route("logout"));
 	};
 
 	return (
