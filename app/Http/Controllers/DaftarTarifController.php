@@ -69,7 +69,12 @@ class DaftarTarifController extends Controller
                 break;
     
             case 'laboratorium':
-                $query = JnsPerawatanLab::with('penjab');
+                $query = JnsPerawatanLab::with([
+                    'penjab',
+                    'templateLaboratorium' => function ($q) {
+                        $q->ordered();
+                    }
+                ]);
                 
                 // Apply status filter
                 if ($statusFilter !== 'all') {

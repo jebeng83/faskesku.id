@@ -802,6 +802,254 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
     );
 };
 
+// Modal untuk edit Template Pemeriksaan (tabel editable)
+const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onSave = () => {}, selectedLabName = '' }) => {
+    if (!isOpen) return null;
+
+    const handleChange = (index, field, value) => {
+        const updated = [...rows];
+        updated[index] = { ...updated[index], [field]: value };
+        setRows(updated);
+    };
+
+    const handleAddRow = () => {
+        setRows([
+            ...rows,
+            {
+                pemeriksaan: '',
+                bagian_rs: '',
+                bhp: '',
+                bagian_perujuk: '',
+                bagian_dokter: '',
+                bagian_laborat: '',
+                kso: '',
+                menejemen: '',
+                biaya_item: ''
+            }
+        ]);
+    };
+
+    const handleRemoveRow = (index) => {
+        const updated = rows.filter((_, i) => i !== index);
+        setRows(updated);
+    };
+
+    return (
+        <div className="modal-overlay">
+            <div className="modal-container w-full sm:max-w-6xl">
+                {/* Modal Header */}
+                <div className="modal-header">
+                    <div className="modal-title-section">
+                        <div className="modal-icon">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 className="modal-title">Edit Template Pemeriksaan</h3>
+                            <p className="modal-subtitle">{selectedLabName || 'Laboratorium'}</p>
+                        </div>
+                    </div>
+                    <button onClick={onClose} className="modal-close-btn">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                {/* Modal Body */}
+                <div className="modal-body px-4 sm:px-6">
+                    <div className="form-section">
+                        <div className="section-header">
+                            <div className="section-icon">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7h18M3 12h18M3 17h18" />
+                                </svg>
+                            </div>
+                            <h4 className="section-title">Daftar Template</h4>
+                            <div className="ml-auto">
+                                <button
+                                    type="button"
+                                    onClick={handleAddRow}
+                                    className="inline-flex items-center px-3 py-2 rounded-md bg-green-600 hover:bg-green-700 text-white text-sm font-medium"
+                                >
+                                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    Tambah Baris
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="relative overflow-x-auto border rounded-md">
+                            <table className="min-w-full divide-y divide-gray-200 text-xs sm:text-sm align-middle">
+                                <thead className="bg-gray-50 sticky top-0 z-10">
+                                    <tr>
+                                        <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Pemeriksaan</th>
+                                        <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Bagian RS</th>
+                                        <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">BHP</th>
+                                        <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Bagian Perujuk</th>
+                                        <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Bagian Dokter</th>
+                                        <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Bagian Laborat</th>
+                                        <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">KSO</th>
+                                        <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Menejemen</th>
+                                        <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Biaya Item (Rp)</th>
+                                        <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {rows.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="10" className="px-4 py-4 text-sm text-gray-500 text-center">Belum ada baris template.</td>
+                                        </tr>
+                                    ) : (
+                                        rows.map((row, idx) => (
+                                            <tr key={idx} className="hover:bg-gray-50">
+                                                <td className="px-3 sm:px-4 py-2">
+                                                    <input
+                                                        type="text"
+                                                        className="form-input w-48 h-9"
+                                                        placeholder="Nama pemeriksaan"
+                                                        value={row.pemeriksaan}
+                                                        onChange={(e) => handleChange(idx, 'pemeriksaan', e.target.value)}
+                                                    />
+                                                </td>
+                                                <td className="px-3 sm:px-4 py-2">
+                                                    <input
+                                                        type="number"
+                                                        className="form-input w-28 h-9 text-right"
+                                                        placeholder="0"
+                                                        step="0.01"
+                                                        min="0"
+                                                        value={row.bagian_rs}
+                                                        onChange={(e) => handleChange(idx, 'bagian_rs', e.target.value)}
+                                                        required
+                                                    />
+                                                </td>
+                                                <td className="px-3 sm:px-4 py-2">
+                                                    <input
+                                                        type="number"
+                                                        className="form-input w-28 h-9 text-right"
+                                                        placeholder="0"
+                                                        step="0.01"
+                                                        min="0"
+                                                        value={row.bhp}
+                                                        onChange={(e) => handleChange(idx, 'bhp', e.target.value)}
+                                                        required
+                                                    />
+                                                </td>
+                                                <td className="px-3 sm:px-4 py-2">
+                                                    <input
+                                                        type="number"
+                                                        className="form-input w-28 h-9 text-right"
+                                                        placeholder="0"
+                                                        step="0.01"
+                                                        min="0"
+                                                        value={row.bagian_perujuk}
+                                                        onChange={(e) => handleChange(idx, 'bagian_perujuk', e.target.value)}
+                                                        required
+                                                    />
+                                                </td>
+                                                <td className="px-3 sm:px-4 py-2">
+                                                    <input
+                                                        type="number"
+                                                        className="form-input w-28 h-9 text-right"
+                                                        placeholder="0"
+                                                        step="0.01"
+                                                        min="0"
+                                                        value={row.bagian_dokter}
+                                                        onChange={(e) => handleChange(idx, 'bagian_dokter', e.target.value)}
+                                                        required
+                                                    />
+                                                </td>
+                                                <td className="px-3 sm:px-4 py-2">
+                                                    <input
+                                                        type="number"
+                                                        className="form-input w-28 h-9 text-right"
+                                                        placeholder="0"
+                                                        step="0.01"
+                                                        min="0"
+                                                        value={row.bagian_laborat}
+                                                        onChange={(e) => handleChange(idx, 'bagian_laborat', e.target.value)}
+                                                        required
+                                                    />
+                                                </td>
+                                                <td className="px-3 sm:px-4 py-2">
+                                                    <input
+                                                        type="number"
+                                                        className="form-input w-28 h-9 text-right"
+                                                        placeholder="0"
+                                                        step="0.01"
+                                                        min="0"
+                                                        value={row.kso}
+                                                        onChange={(e) => handleChange(idx, 'kso', e.target.value)}
+                                                    />
+                                                </td>
+                                                <td className="px-3 sm:px-4 py-2">
+                                                    <input
+                                                        type="number"
+                                                        className="form-input w-28 h-9 text-right"
+                                                        placeholder="0"
+                                                        step="0.01"
+                                                        min="0"
+                                                        value={row.menejemen}
+                                                        onChange={(e) => handleChange(idx, 'menejemen', e.target.value)}
+                                                    />
+                                                </td>
+                                                <td className="px-3 sm:px-4 py-2">
+                                                    <input
+                                                        type="number"
+                                                        className="form-input w-28 h-9 text-right"
+                                                        placeholder="0"
+                                                        step="0.01"
+                                                        value={row.biaya_item}
+                                                        onChange={(e) => handleChange(idx, 'biaya_item', e.target.value)}
+                                                        required
+                                                    />
+                                                </td>
+                                                <td className="px-3 sm:px-4 py-2 w-20">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveRow(idx)}
+                                                        className="inline-flex items-center px-2 py-1 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-medium"
+                                                        title="Hapus Baris"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* Footer Actions */}
+                    <div className="mt-6 flex justify-end gap-2">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="inline-flex items-center px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm font-medium"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="button"
+                            onClick={onSave}
+                            className="inline-flex items-center px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium"
+                        >
+                            Simpan Perubahan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 export default function Index({ title, data, category, search, filters, polikliniks = [], bangsals = [], penjaabs = [], kategoris = [], flash = {} }) {
     const [searchTerm, setSearchTerm] = useState(search || '');
     const [activeTab, setActiveTab] = useState(category || 'rawat-jalan');
@@ -811,6 +1059,10 @@ export default function Index({ title, data, category, search, filters, poliklin
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
+    const [selectedLab, setSelectedLab] = useState(null);
+    const [selectedTemplateIndex, setSelectedTemplateIndex] = useState(null);
+    const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+    const [templateRows, setTemplateRows] = useState([]);
 
     // Handle flash messages
     useEffect(() => {
@@ -855,6 +1107,9 @@ export default function Index({ title, data, category, search, filters, poliklin
             preserveState: true,
             replace: true
         });
+        if (newTab !== 'laboratorium') {
+            setSelectedLab(null);
+        }
     };
 
     const handlePoliklinikChange = (e) => {
@@ -897,6 +1152,141 @@ export default function Index({ title, data, category, search, filters, poliklin
         setEditingItem(item);
         setIsEditModalOpen(true);
     };
+
+    // Handler untuk edit Template Pemeriksaan
+    const handleOpenTemplateModal = () => {
+        if (!selectedLab) return;
+        const rows = (selectedLab.template_laboratorium || []).map((tmpl) => ({
+            pemeriksaan: tmpl.Pemeriksaan || tmpl.item_pemeriksaan || '',
+            bagian_rs: typeof tmpl.bagian_rs !== 'undefined' ? String(tmpl.bagian_rs) : '',
+            bhp: typeof tmpl.bhp !== 'undefined' ? String(tmpl.bhp) : '',
+            bagian_perujuk: typeof tmpl.bagian_perujuk !== 'undefined' ? String(tmpl.bagian_perujuk) : '',
+            bagian_dokter: typeof tmpl.bagian_dokter !== 'undefined' ? String(tmpl.bagian_dokter) : '',
+            bagian_laborat: typeof tmpl.bagian_laborat !== 'undefined' ? String(tmpl.bagian_laborat) : '',
+            kso: typeof tmpl.kso !== 'undefined' && tmpl.kso !== null ? String(tmpl.kso) : '',
+            menejemen: typeof tmpl.menejemen !== 'undefined' && tmpl.menejemen !== null ? String(tmpl.menejemen) : '',
+            biaya_item: typeof tmpl.biaya_item !== 'undefined' ? String(tmpl.biaya_item) : '',
+        }));
+        setTemplateRows(rows);
+        setIsTemplateModalOpen(true);
+    };
+
+    // Reset pilihan item template saat tarif laboratorium berganti
+    useEffect(() => {
+        setSelectedTemplateIndex(null);
+    }, [selectedLab]);
+
+    const handleCloseTemplateModal = () => {
+        setIsTemplateModalOpen(false);
+        setTemplateRows([]);
+    };
+
+    const handleSaveTemplateRows = () => {
+        // Validasi sederhana: pemeriksaan wajib, kolom numeric wajib bernilai angka >= 0
+        const requiredNumericFields = ['bagian_rs', 'bhp', 'bagian_perujuk', 'bagian_dokter', 'bagian_laborat', 'biaya_item'];
+        let hasError = false;
+        let errorMessage = '';
+
+        for (let i = 0; i < templateRows.length; i++) {
+            const row = templateRows[i];
+            if (!row.pemeriksaan || row.pemeriksaan.trim() === '') {
+                hasError = true;
+                errorMessage = 'Nama pemeriksaan wajib diisi.';
+                break;
+            }
+            for (const field of requiredNumericFields) {
+                const val = row[field];
+                if (val === '' || val === null || typeof val === 'undefined') {
+                    hasError = true;
+                    errorMessage = 'Kolom biaya wajib diisi.';
+                    break;
+                }
+                const num = Number(val);
+                if (Number.isNaN(num) || num < 0) {
+                    hasError = true;
+                    errorMessage = 'Nilai biaya harus angka >= 0.';
+                    break;
+                }
+            }
+            if (hasError) break;
+        }
+
+        if (hasError) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 z-50 bg-red-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3';
+            notification.innerHTML = `
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M12 5a7 7 0 100 14 7 7 0 000-14z"></path>
+                </svg>
+                <span class="font-medium">${errorMessage}</span>
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    if (notification.parentNode) notification.parentNode.removeChild(notification);
+                }, 300);
+            }, 2500);
+            return;
+        }
+
+        // Update selectedLab state agar panel kanan langsung mencerminkan perubahan
+        const updatedTemplates = templateRows.map((row) => ({
+            Pemeriksaan: row.pemeriksaan,
+            bagian_rs: Number(row.bagian_rs) || 0,
+            bhp: Number(row.bhp) || 0,
+            bagian_perujuk: Number(row.bagian_perujuk) || 0,
+            bagian_dokter: Number(row.bagian_dokter) || 0,
+            bagian_laborat: Number(row.bagian_laborat) || 0,
+            kso: row.kso === '' ? undefined : Number(row.kso) || 0,
+            menejemen: row.menejemen === '' ? undefined : Number(row.menejemen) || 0,
+            biaya_item: Number(row.biaya_item) || 0,
+        }));
+
+        setSelectedLab((prev) => {
+            if (!prev) return prev;
+            return {
+                ...prev,
+                template_laboratorium: updatedTemplates,
+            };
+        });
+
+        // Notifikasi sederhana
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3';
+        notification.innerHTML = `
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span class="font-medium">Template berhasil diperbarui (lokal).</span>
+        `;
+        document.body.appendChild(notification);
+        setTimeout(() => {
+            notification.style.transform = 'translateX(100%)';
+            notification.style.opacity = '0';
+            setTimeout(() => {
+                if (notification.parentNode) notification.parentNode.removeChild(notification);
+            }, 300);
+        }, 2500);
+
+        handleCloseTemplateModal();
+    };
+
+    // Set default selectedLab saat berada di tab laboratorium
+    useEffect(() => {
+        if (activeTab === 'laboratorium') {
+            const items = data?.data || [];
+            if (items.length > 0) {
+                const stillExists = selectedLab && items.find((it) => it.kd_jenis_prw === selectedLab.kd_jenis_prw);
+                if (!stillExists) {
+                    setSelectedLab(items[0]);
+                }
+            } else {
+                setSelectedLab(null);
+            }
+        }
+    }, [activeTab, data]);
 
     // Handler untuk nonaktifkan dengan konfirmasi
     const handleDelete = (item) => {
@@ -1199,95 +1589,165 @@ export default function Index({ title, data, category, search, filters, poliklin
     );
 
     const renderLaboratoriumTable = () => (
-        <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                    <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Kode
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Nama Pemeriksaan
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Bagian RS
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Tarif Perujuk
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Tarif Dokter
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Total Tarif
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Aksi
-                        </th>
-                    </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                    {data?.data?.map((item) => (
-                        <tr key={item.kd_jenis_prw} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {item.kd_jenis_prw}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {item.nm_perawatan}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {formatCurrency(item.bagian_rs)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {formatCurrency(item.tarif_perujuk)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {formatCurrency(item.tarif_tindakan_dokter)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                {formatCurrency(item.total_byr)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                                <Badge variant={item.status === '1' ? 'default' : 'secondary'}>
-                                    {item.status === '1' ? 'Aktif' : 'Tidak Aktif'}
-                                </Badge>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <div className="flex space-x-2">
-                                    <button
-                                        onClick={() => handleEdit(item)}
-                                        className="text-indigo-600 hover:text-indigo-900 font-medium"
-                                        title="Edit"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(item)}
-                                        className={`inline-flex items-center justify-center px-2 py-1 rounded-md transition-colors font-medium ${selectedFilter === '0' ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : 'bg-red-500 hover:bg-red-600 text-white'}`}
-                                        title={selectedFilter === '0' ? 'Aktifkan Kembali' : 'Nonaktifkan'}
-                                    >
-                                        {selectedFilter === '0' ? (
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6" />
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 8a8 8 0 10-16 8" />
-                                            </svg>
-                                        ) : (
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        )}
-                                    </button>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Kartu kiri: daftar tarif laboratorium */}
+            <div className="bg-white rounded-lg shadow">
+                <div className="px-4 sm:px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900">Daftar Pemeriksaan Lab</h3>
+                    <button
+                        onClick={handleAddTarif}
+                        className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
+                    >
+                        + Tarif
+                    </button>
+                </div>
+                {data?.data?.length ? (
+                    <ul className="divide-y divide-gray-200">
+                        {data.data.map((item) => {
+                            const isSelected = selectedLab?.kd_jenis_prw === item.kd_jenis_prw;
+                            return (
+                                <li
+                                    key={item.kd_jenis_prw}
+                                    className={`px-4 sm:px-6 py-4 cursor-pointer ${isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
+                                    onClick={() => setSelectedLab(item)}
+                                >
+                                    <div>
+                                        <div className="flex items-start justify-between">
+                                    <div>
+                                        <div className="text-sm font-semibold text-gray-900">{item.nm_perawatan}</div>
+                                        <div className="text-xs text-gray-500 flex items-center space-x-3">
+                                            <span>Kode: {item.kd_jenis_prw}</span>
+                                            <span>Kelas: {item.kelas || '-'}</span>
+                                        </div>
+                                    </div>
+                                            <div className="flex items-center space-x-3">
+                                                {item.kategori && (
+                                                    <Badge variant="secondary" title={`Kategori: ${item.kategori}`}>
+                                                        Kategori: {item.kategori}
+                                                    </Badge>
+                                                )}
+                                                {item.penjab?.png_jawab && (
+                                                    <Badge variant="default" title={item.penjab?.png_jawab || ''}>
+                                                        {item.penjab?.png_jawab}
+                                                    </Badge>
+                                                )}
+                                                <Badge variant={item.status === '1' ? 'default' : 'secondary'}>
+                                                    {item.status === '1' ? 'Aktif' : 'Tidak Aktif'}
+                                                </Badge>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleEdit(item); }}
+                                                    className="text-indigo-600 hover:text-indigo-900"
+                                                    title="Edit"
+                                                >
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                    </svg>
+                                                </button>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
+                                                    className="text-red-600 hover:text-red-800"
+                                                    title="Nonaktifkan"
+                                                >
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                            <div className="mt-2 grid grid-cols-2 gap-x-8 gap-y-1 text-xs text-gray-700 leading-tight">
+                                                <div className="flex justify-between"><span>Bagian RS</span><span>{typeof item.bagian_rs !== 'undefined' ? formatCurrency(item.bagian_rs) : '-'}</span></div>
+                                                <div className="flex justify-between"><span>BHP</span><span>{typeof item.bhp !== 'undefined' ? formatCurrency(item.bhp) : '-'}</span></div>
+                                                <div className="flex justify-between"><span>Tarif Perujuk</span><span>{typeof item.tarif_perujuk !== 'undefined' ? formatCurrency(item.tarif_perujuk) : '-'}</span></div>
+                                                <div className="flex justify-between"><span>Tarif Dokter</span><span>{typeof item.tarif_tindakan_dokter !== 'undefined' ? formatCurrency(item.tarif_tindakan_dokter) : '-'}</span></div>
+                                                <div className="flex justify-between"><span>Tarif Petugas</span><span>{typeof item.tarif_tindakan_petugas !== 'undefined' ? formatCurrency(item.tarif_tindakan_petugas) : '-'}</span></div>
+                                            <div className="flex justify-between"><span>KSO</span><span>{typeof item.kso !== 'undefined' ? formatCurrency(item.kso) : '-'}</span></div>
+                                            <div className="flex justify-between"><span>Menejemen</span><span>{typeof item.menejemen !== 'undefined' ? formatCurrency(item.menejemen) : '-'}</span></div>
+                                            <div className="flex justify-between text-gray-900"><span>Total Tarif</span><span className="font-semibold">{typeof item.total_byr !== 'undefined' ? formatCurrency(item.total_byr) : '-'}</span></div>
+                                            {/* Kelas dipindah ke header kiri agar sejajar dengan judul */}
+                                            {/* Kategori dipindah ke header sebagai badge */}
+                                        </div>
+                                    </div>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                ) : (
+                    <div className="p-8 text-center text-gray-500">
+                        Tidak ada data tarif laboratorium.
+                    </div>
+                )}
+                {renderPagination()}
+            </div>
+
+            {/* Kartu kanan: template pemeriksaan untuk tarif terpilih */}
+            <div className={`bg-blue-50 rounded-lg shadow`}>
+                <div className="px-3 sm:px-4 py-3 border-b border-blue-200 bg-blue-100">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div className="min-w-0">
+                            <h3 className="text-base sm:text-lg font-semibold text-gray-950 leading-tight truncate">Template Pemeriksaan</h3>
+                            {selectedLab ? (
+                                <div className="mt-1 text-xs sm:text-sm text-gray-600">
+                                    Menampilkan template untuk: <span className="font-medium text-gray-900">{selectedLab.nm_perawatan}</span>
                                 </div>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+                            ) : (
+                                <div className="mt-1 text-xs sm:text-sm text-gray-600">Pilih tarif laboratorium di kiri untuk melihat template.</div>
+                            )}
+                        </div>
+                        {selectedLab && (
+                            <div className="flex sm:justify-end">
+                                <button
+                                    onClick={handleOpenTemplateModal}
+                                    className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    title="Edit Template Pemeriksaan"
+                                >
+                                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    Edit Template
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+                <div className="p-3 sm:p-4">
+                    {selectedLab ? (
+                        selectedLab?.template_laboratorium?.length ? (
+                            <ul className="divide-y divide-gray-200">
+                                {selectedLab.template_laboratorium.map((tmpl, idx) => (
+                                    <li
+                                        key={idx}
+                                        className={`py-2 px-2 sm:px-3 bg-blue-50`}
+                                    >
+                                        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2 items-start">
+                                            <div>
+                                                <div className="text-sm font-semibold text-gray-900">{tmpl.Pemeriksaan || tmpl.item_pemeriksaan}</div>
+                                                <div className="mt-1 grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-gray-700">
+                                                    {typeof tmpl.bagian_rs !== 'undefined' && <div className="flex justify-between"><span>Bagian RS</span><span className="text-gray-900">{formatCurrency(tmpl.bagian_rs)}</span></div>}
+                                                    {typeof tmpl.bhp !== 'undefined' && <div className="flex justify-between"><span>BHP</span><span className="text-gray-900">{formatCurrency(tmpl.bhp)}</span></div>}
+                                                    {typeof tmpl.bagian_perujuk !== 'undefined' && <div className="flex justify-between"><span>Bagian Perujuk</span><span className="text-gray-900">{formatCurrency(tmpl.bagian_perujuk)}</span></div>}
+                                                    {typeof tmpl.bagian_dokter !== 'undefined' && <div className="flex justify-between"><span>Bagian Dokter</span><span className="text-gray-900">{formatCurrency(tmpl.bagian_dokter)}</span></div>}
+                                                    {typeof tmpl.bagian_laborat !== 'undefined' && <div className="flex justify-between"><span>Bagian Laborat</span><span className="text-gray-900">{formatCurrency(tmpl.bagian_laborat)}</span></div>}
+                                                    {typeof tmpl.kso !== 'undefined' && tmpl.kso !== null && <div className="flex justify-between"><span>KSO</span><span className="text-gray-900">{formatCurrency(tmpl.kso)}</span></div>}
+                                                    {typeof tmpl.menejemen !== 'undefined' && tmpl.menejemen !== null && <div className="flex justify-between"><span>Menejemen</span><span className="text-gray-900">{formatCurrency(tmpl.menejemen)}</span></div>}
+                                                </div>
+                                            </div>
+                                            <div className="text-right sm:pr-1">
+                                                {typeof tmpl.biaya_item !== 'undefined' && (
+                                                    <div className="text-sm sm:text-base font-semibold text-gray-900">{formatCurrency(tmpl.biaya_item)}</div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <div className="text-sm text-gray-500">Belum ada template untuk tarif ini.</div>
+                        )
+                    ) : (
+                        <div className="text-sm text-gray-500">Tidak ada tarif yang dipilih.</div>
+                    )}
+                </div>
+            </div>
         </div>
     );
 
@@ -1716,6 +2176,16 @@ export default function Index({ title, data, category, search, filters, poliklin
                 penjaabs={penjaabs}
                 kategoris={kategoris}
                 editData={editingItem}
+            />
+
+            {/* Modal edit Template Pemeriksaan */}
+            <EditTemplateModal
+                isOpen={isTemplateModalOpen}
+                onClose={handleCloseTemplateModal}
+                rows={templateRows}
+                setRows={setTemplateRows}
+                onSave={handleSaveTemplateRows}
+                selectedLabName={selectedLab?.nm_perawatan || ''}
             />
         </AppLayout>
     );
