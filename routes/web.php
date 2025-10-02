@@ -159,7 +159,7 @@ Route::middleware('auth')->group(function () {
     // Daftar Tarif routes
     Route::get('daftar-tarif/generate-kode', [DaftarTarifController::class, 'generateKode'])->name('daftar-tarif.generate-kode');
     Route::post('daftar-tarif/store-rawat-inap', [DaftarTarifController::class, 'storeRawatInap'])->name('daftar-tarif.store-rawat-inap');
-    Route::resource('daftar-tarif', DaftarTarifController::class);
+    Route::resource('daftar-tarif', DaftarTarifController::class)->where(['daftar_tarif' => '.*']);
 
     // Tarif Tindakan API routes
     Route::prefix('api/tarif-tindakan')->name('api.tarif-tindakan.')->group(function () {

@@ -56,9 +56,13 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
 
     // Handle numeric input with proper zero handling
     const handleNumericInput = (field, value) => {
-        // Allow empty string or valid numbers
-        if (value === '' || (!isNaN(value) && value >= 0)) {
-            setData(field, value);
+        // Allow empty string or valid numbers, but store as integers
+        if (value === '') {
+            setData(field, '');
+        } else if (!isNaN(value) && value >= 0) {
+            // Parse as integer to avoid decimals
+            const intValue = parseInt(value) || 0;
+            setData(field, intValue.toString());
         }
     };
 
@@ -66,10 +70,12 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
     const getDisplayValue = (field) => {
         if (focusedField === field) {
             // When focused, show actual value (empty if 0)
-            return data[field] === '0' ? '' : data[field];
+            return data[field] === '0' || data[field] === 0 ? '' : data[field];
         }
-        // When not focused, show 0 if empty
-        return data[field] || '0';
+        // When not focused, show 0 if empty, ensure integer display
+        const value = data[field] || '0';
+        const intValue = parseInt(value) || 0;
+        return intValue.toString();
     };
 
     // Handle focus
@@ -88,12 +94,12 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
 
     // Calculate totals automatically
     useEffect(() => {
-        const material = parseFloat(data.material) || 0;
-        const bhp = parseFloat(data.bhp) || 0;
-        const tarif_tindakandr = parseFloat(data.tarif_tindakandr) || 0;
-        const tarif_tindakanpr = parseFloat(data.tarif_tindakanpr) || 0;
-        const kso = parseFloat(data.kso) || 0;
-        const menejemen = parseFloat(data.menejemen) || 0;
+        const material = parseInt(data.material) || 0;
+        const bhp = parseInt(data.bhp) || 0;
+        const tarif_tindakandr = parseInt(data.tarif_tindakandr) || 0;
+        const tarif_tindakanpr = parseInt(data.tarif_tindakanpr) || 0;
+        const kso = parseInt(data.kso) || 0;
+        const menejemen = parseInt(data.menejemen) || 0;
 
         const total_dokter = material + bhp + tarif_tindakandr + kso + menejemen;
         const total_perawat = material + bhp + tarif_tindakanpr + kso + menejemen;
@@ -260,7 +266,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                 </div>
                                 <Link
                                     href={route('daftar-tarif.index', { category: category })}
-                                    className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 shadow-lg"
                                 >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -295,7 +301,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                                         setData('kd_kategori', e.target.value);
                                                         generateAutoCode(e.target.value, category);
                                                     }}
-                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                     required
                                                 >
                                                     <option value="">Pilih Kategori</option>
@@ -321,7 +327,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                                     type="text"
                                                     value={data.kd_jenis_prw}
                                                     onChange={(e) => setData('kd_jenis_prw', e.target.value)}
-                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                     placeholder="Kode akan dibuat otomatis"
                                                     required
                                                 />
@@ -341,7 +347,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                                     type="text"
                                                     value={data.nm_perawatan}
                                                     onChange={(e) => setData('nm_perawatan', e.target.value)}
-                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                     placeholder="Masukkan nama perawatan"
                                                     required
                                                 />
@@ -364,7 +370,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                                     <select
                                                         value={data.kd_bangsal}
                                                         onChange={(e) => setData('kd_bangsal', e.target.value)}
-                                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                         required
                                                     >
                                                         <option value="">Pilih Bangsal</option>
@@ -391,7 +397,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                                     <select
                                                         value={data.kd_poli}
                                                         onChange={(e) => setData('kd_poli', e.target.value)}
-                                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                         required
                                                     >
                                                         <option value="">Pilih Poliklinik</option>
@@ -417,7 +423,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                                 <select
                                                     value={data.kd_pj}
                                                     onChange={(e) => setData('kd_pj', e.target.value)}
-                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                     required
                                                 >
                                                     <option value="">Pilih Cara Bayar</option>
@@ -443,7 +449,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                                     <select
                                                         value={data.kelas}
                                                         onChange={(e) => setData('kelas', e.target.value)}
-                                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                         required
                                                     >
                                                         <option value="">Pilih Kelas</option>
@@ -489,7 +495,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                                     onFocus={() => onFocus('material')}
                                                     onBlur={() => onBlur('material')}
                                                     onKeyDown={handleKeyDown}
-                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                     placeholder="0"
                                                     required
                                                 />
@@ -512,7 +518,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                                     onFocus={() => onFocus('bhp')}
                                                     onBlur={() => onBlur('bhp')}
                                                     onKeyDown={handleKeyDown}
-                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                     placeholder="0"
                                                     required
                                                 />
@@ -538,7 +544,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                                     onFocus={() => onFocus('tarif_tindakandr')}
                                                     onBlur={() => onBlur('tarif_tindakandr')}
                                                     onKeyDown={handleKeyDown}
-                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                     placeholder="0"
                                                     required
                                                 />
@@ -561,7 +567,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                                     onFocus={() => onFocus('tarif_tindakanpr')}
                                                     onBlur={() => onBlur('tarif_tindakanpr')}
                                                     onKeyDown={handleKeyDown}
-                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                     placeholder="0"
                                                     required
                                                 />
@@ -587,7 +593,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                                     onFocus={() => onFocus('kso')}
                                                     onBlur={() => onBlur('kso')}
                                                     onKeyDown={handleKeyDown}
-                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                     placeholder="0"
                                                     required
                                                 />
@@ -610,7 +616,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                                     onFocus={() => onFocus('menejemen')}
                                                     onBlur={() => onBlur('menejemen')}
                                                     onKeyDown={handleKeyDown}
-                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                     placeholder="0"
                                                     required
                                                 />
@@ -636,7 +642,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     {/* Total Dokter */}
-                                    <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border-2 border-green-200 dark:border-green-700">
+                                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-4 border-2 border-green-200 dark:border-green-700 shadow-sm">
                                         <div className="flex items-center justify-between mb-2">
                                             <h4 className="text-sm font-medium text-green-700 dark:text-green-300">
                                                 🟢 Total Dokter
@@ -646,7 +652,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                                     type="checkbox"
                                                     checked={data.show_total_dokter}
                                                     onChange={(e) => setData('show_total_dokter', e.target.checked)}
-                                                    className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                                    className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 transition-all duration-200"
                                                 />
                                                 <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Aktif</span>
                                             </label>
@@ -657,7 +663,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                     </div>
 
                                     {/* Total Perawat */}
-                                    <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border-2 border-blue-200 dark:border-blue-700">
+                                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-4 border-2 border-blue-200 dark:border-blue-700 shadow-sm">
                                         <div className="flex items-center justify-between mb-2">
                                             <h4 className="text-sm font-medium text-blue-700 dark:text-blue-300">
                                                 🔵 Total Perawat
@@ -667,7 +673,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                                     type="checkbox"
                                                     checked={data.show_total_perawat}
                                                     onChange={(e) => setData('show_total_perawat', e.target.checked)}
-                                                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 transition-all duration-200"
                                                 />
                                                 <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Aktif</span>
                                             </label>
@@ -678,7 +684,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                     </div>
 
                                     {/* Total Dokter + Perawat */}
-                                    <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border-2 border-purple-200 dark:border-purple-700">
+                                    <div className="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 rounded-lg p-4 border-2 border-purple-200 dark:border-purple-700 shadow-sm">
                                         <div className="flex items-center justify-between mb-2">
                                             <h4 className="text-sm font-medium text-purple-700 dark:text-purple-300">
                                                 🟣 Total Dokter + Perawat
@@ -688,7 +694,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                                     type="checkbox"
                                                     checked={data.show_total_dokter_perawat}
                                                     onChange={(e) => setData('show_total_dokter_perawat', e.target.checked)}
-                                                    className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                                    className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 transition-all duration-200"
                                                 />
                                                 <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Aktif</span>
                                             </label>
@@ -707,14 +713,14 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                 <div className="flex justify-end gap-4">
                                     <Link
                                         href={route('daftar-tarif.index')}
-                                        className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition-colors"
+                                        className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-all duration-200 shadow-sm"
                                     >
                                         Batal
                                     </Link>
                                     <button
                                         type="submit"
                                         disabled={processing}
-                                        className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg transition-colors flex items-center gap-2"
+                                        className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white px-6 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 shadow-lg"
                                     >
                                         {processing && (
                                             <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
