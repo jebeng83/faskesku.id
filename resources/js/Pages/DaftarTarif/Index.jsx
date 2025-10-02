@@ -48,6 +48,23 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
 
     const isEditMode = !!editData;
     const [focusedField, setFocusedField] = useState(null);
+    // Refs untuk navigasi Enter antar input (Laboratorium)
+    const materialRef = React.useRef(null);
+    const bhpRef = React.useRef(null);
+    const drRef = React.useRef(null);
+    const prRef = React.useRef(null);
+    const perujukRef = React.useRef(null);
+    const ksoRef = React.useRef(null);
+    const manajemenRef = React.useRef(null);
+
+    const handleEnterFocus = (e, nextRef) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (nextRef && nextRef.current) {
+                nextRef.current.focus();
+            }
+        }
+    };
 
     // Fungsi helper untuk format angka tanpa currency symbol
     const formatNumber = (amount) => {
@@ -378,8 +395,8 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
     }
 
     return (
-        <div className="modal-overlay">
-            <div className="modal-container">
+                <div className="modal-overlay laptop-dense">
+                    <div className="modal-container">
                 {/* Modal Header */}
                 <div className="modal-header">
                     <div className="modal-title-section">
@@ -408,10 +425,10 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
 
                 {/* Modal Body */}
                 <div className="modal-body">
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         {/* Data Perawatan Section */}
-                        <div className="form-section">
-                            <div className="section-header">
+                        <div className={`form-section ${category === 'laboratorium' ? 'compact' : ''}`}>
+                            <div className={`section-header ${category === 'laboratorium' ? 'compact' : ''}`}>
                                 <div className="section-icon">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -420,9 +437,9 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                 <h4 className="section-title">Data Perawatan</h4>
                             </div>
                             
-                            <div className="form-grid">
+                            <div className={`form-grid ${category === 'laboratorium' ? 'compact' : ''}`}>
                                 {/* Kategori Field */}
-                                <div className="input-group">
+                                <div className={`input-group ${category === 'laboratorium' ? 'compact' : ''}`}>
                                     <label className="input-label">
                                         Kategori Perawatan *
                                     </label>
@@ -457,7 +474,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                 </div>
 
                                 {/* Kode Jenis Perawatan */}
-                                <div className={`input-group ${category === 'laboratorium' ? 'flex items-center gap-4' : ''}`}>
+                                <div className={`input-group ${category === 'laboratorium' ? 'flex items-center gap-4 compact' : ''}`}>
                                     <label className={`input-label ${category === 'laboratorium' ? 'w-40 flex-shrink-0' : ''}`}>
                                         {category === 'laboratorium' ? 'Kode Periksa *' : 'Kode Jenis Perawatan *'}
                                     </label>
@@ -475,7 +492,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                 </div>
 
                                 {/* Nama Perawatan */}
-                                <div className={`input-group ${category === 'laboratorium' ? 'flex items-center gap-4' : ''}`}>
+                                <div className={`input-group ${category === 'laboratorium' ? 'flex items-center gap-4 compact' : ''}`}>
                                     <label className={`input-label ${category === 'laboratorium' ? 'w-40 flex-shrink-0' : ''}`}>
                                         {category === 'laboratorium' ? 'Nama Pemeriksaan *' : 'Nama Perawatan *'}
                                     </label>
@@ -493,7 +510,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
 
                                 {/* Poli Klinik untuk Rawat Jalan atau Bangsal untuk Rawat Inap */}
                                 {category === 'rawat-inap' ? (
-                                    <div className="input-group">
+                                    <div className={`input-group ${category === 'laboratorium' ? 'compact' : ''}`}>
                                         <label className="input-label">
                                             Bangsal *
                                         </label>
@@ -514,7 +531,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                     </div>
                                 ) : (
                                     category !== 'laboratorium' && (
-                                    <div className="input-group">
+                                    <div className={`input-group ${category === 'laboratorium' ? 'compact' : ''}`}>
                                         <label className="input-label">
                                             Poli Klinik *
                                         </label>
@@ -578,7 +595,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
 
                                 {/* Kelas - untuk Rawat Inap dan Laboratorium */}
                                 {(category === 'rawat-inap' || category === 'laboratorium') && (
-                                    <div className="input-group">
+                                    <div className={`input-group ${category === 'laboratorium' ? 'compact' : ''}`}>
                                         <label className="input-label">
                                             Kelas *
                                         </label>
@@ -603,8 +620,8 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
 
                                 {/* Kategori khusus Laboratorium */}
                                 {category === 'laboratorium' && (
-                                    <div className="input-group">
-                                        <label className="input-label">
+                                    <div className={`input-group ${category === 'laboratorium' ? 'flex items-center gap-4 compact' : ''}`}>
+                                        <label className={`input-label ${category === 'laboratorium' ? 'w-40 flex-shrink-0' : ''}`}>
                                             Kategori *
                                         </label>
                                         <select
@@ -616,7 +633,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                                     generateAutoCode(value, category);
                                                 }
                                             }}
-                                            className={`form-select ${errors.kategori ? 'error' : ''}`}
+                                            className={`form-select ${errors.kategori ? 'error' : ''} ${category === 'laboratorium' ? 'flex-1' : ''}`}
                                             required
                                         >
                                             <option value="">Pilih Kategori</option>
@@ -631,8 +648,8 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                         </div>
 
                         {/* Komponen Tarif Section */}
-                        <div className="form-section">
-                            <div className="section-header">
+                        <div className={`form-section ${category === 'laboratorium' ? 'compact' : ''}`}>
+                            <div className={`section-header ${category === 'laboratorium' ? 'compact' : ''}`}>
                                 <div className="section-icon">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
@@ -641,9 +658,9 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                 <h4 className="section-title">Komponen Tarif</h4>
                             </div>
                             
-                            <div className="form-grid">
-                                <div className="input-group">
-                                    <label className="input-label">{category === 'laboratorium' ? 'J.S. Rumah Sakit' : 'Bagian RS'}</label>
+                            <div className={`form-grid ${category === 'laboratorium' ? 'compact' : ''}`}>
+                                <div className={`input-group ${category === 'laboratorium' ? 'flex items-center gap-4' : ''}`}>
+                                    <label className={`input-label ${category === 'laboratorium' ? 'w-40 flex-shrink-0' : ''}`}>{category === 'laboratorium' ? 'J.S. Rumah Sakit' : 'Bagian RS'}</label>
                                     <input
                                         type="text"
                                         inputMode="numeric"
@@ -653,13 +670,15 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                         onChange={(e) => handleNumericInput('material', e.target.value)}
                                         onFocus={() => setFocusedField('material')}
                                         onBlur={() => setFocusedField(null)}
-                                        className="form-input"
+                                        ref={materialRef}
+                                        onKeyDown={(e) => handleEnterFocus(e, bhpRef)}
+                                        className={`form-input ${category === 'laboratorium' ? 'flex-1' : ''}`}
                                     />
                                     {errors.material && <p className="error-text">{errors.material}</p>}
                                 </div>
 
-                                <div className="input-group">
-                                    <label className="input-label">{category === 'laboratorium' ? 'Paket BHP' : 'BHP'}</label>
+                                <div className={`input-group ${category === 'laboratorium' ? 'flex items-center gap-4' : ''}`}>
+                                    <label className={`input-label ${category === 'laboratorium' ? 'w-40 flex-shrink-0' : ''}`}>{category === 'laboratorium' ? 'Paket BHP' : 'BHP'}</label>
                                     <input
                                         type="text"
                                         inputMode="numeric"
@@ -669,13 +688,15 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                         onChange={(e) => handleNumericInput('bhp', e.target.value)}
                                         onFocus={() => setFocusedField('bhp')}
                                         onBlur={() => setFocusedField(null)}
-                                        className="form-input"
+                                        ref={bhpRef}
+                                        onKeyDown={(e) => handleEnterFocus(e, drRef)}
+                                        className={`form-input ${category === 'laboratorium' ? 'flex-1' : ''}`}
                                     />
                                     {errors.bhp && <p className="error-text">{errors.bhp}</p>}
                                 </div>
 
-                                <div className="input-group">
-                                    <label className="input-label">{category === 'laboratorium' ? 'J.M. Dokter' : 'Jasa Dokter'}</label>
+                                <div className={`input-group ${category === 'laboratorium' ? 'flex items-center gap-4' : ''}`}>
+                                    <label className={`input-label ${category === 'laboratorium' ? 'w-40 flex-shrink-0' : ''}`}>{category === 'laboratorium' ? 'J.M. Dokter' : 'Jasa Dokter'}</label>
                                     <input
                                         type="text"
                                         inputMode="numeric"
@@ -685,13 +706,15 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                         onChange={(e) => handleNumericInput('tarif_tindakandr', e.target.value)}
                                         onFocus={() => setFocusedField('tarif_tindakandr')}
                                         onBlur={() => setFocusedField(null)}
-                                        className="form-input"
+                                        ref={drRef}
+                                        onKeyDown={(e) => handleEnterFocus(e, prRef)}
+                                        className={`form-input ${category === 'laboratorium' ? 'flex-1' : ''}`}
                                     />
                                     {errors.tarif_tindakandr && <p className="error-text">{errors.tarif_tindakandr}</p>}
                                 </div>
 
-                                <div className="input-group">
-                                    <label className="input-label">{category === 'laboratorium' ? 'J.M. Petugas' : 'Jasa Perawat'}</label>
+                                <div className={`input-group ${category === 'laboratorium' ? 'flex items-center gap-4' : ''}`}>
+                                    <label className={`input-label ${category === 'laboratorium' ? 'w-40 flex-shrink-0' : ''}`}>{category === 'laboratorium' ? 'J.M. Petugas' : 'Jasa Perawat'}</label>
                                     <input
                                         type="text"
                                         inputMode="numeric"
@@ -701,14 +724,16 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                         onChange={(e) => handleNumericInput('tarif_tindakanpr', e.target.value)}
                                         onFocus={() => setFocusedField('tarif_tindakanpr')}
                                         onBlur={() => setFocusedField(null)}
-                                        className="form-input"
+                                        ref={prRef}
+                                        onKeyDown={(e) => handleEnterFocus(e, category === 'laboratorium' ? perujukRef : ksoRef)}
+                                        className={`form-input ${category === 'laboratorium' ? 'flex-1' : ''}`}
                                     />
                                     {errors.tarif_tindakanpr && <p className="error-text">{errors.tarif_tindakanpr}</p>}
                                 </div>
 
                                 {category === 'laboratorium' && (
-                                    <div className="input-group">
-                                        <label className="input-label">J.M. Perujuk</label>
+                                    <div className={`input-group ${category === 'laboratorium' ? 'flex items-center gap-4' : ''}`}>
+                                        <label className={`input-label ${category === 'laboratorium' ? 'w-40 flex-shrink-0' : ''}`}>J.M. Perujuk</label>
                                         <input
                                             type="text"
                                             inputMode="numeric"
@@ -718,13 +743,15 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                             onChange={(e) => handleNumericInput('bagian_perujuk', e.target.value)}
                                             onFocus={() => setFocusedField('bagian_perujuk')}
                                             onBlur={() => setFocusedField(null)}
-                                            className="form-input"
+                                            ref={perujukRef}
+                                            onKeyDown={(e) => handleEnterFocus(e, ksoRef)}
+                                            className={`form-input ${category === 'laboratorium' ? 'flex-1' : ''}`}
                                         />
                                     </div>
                                 )}
 
-                                <div className="input-group">
-                                    <label className="input-label">{category === 'laboratorium' ? 'K.S.O.' : 'KSO'}</label>
+                                <div className={`input-group ${category === 'laboratorium' ? 'flex items-center gap-4' : ''}`}>
+                                    <label className={`input-label ${category === 'laboratorium' ? 'w-40 flex-shrink-0' : ''}`}>{category === 'laboratorium' ? 'K.S.O.' : 'KSO'}</label>
                                     <input
                                         type="text"
                                         inputMode="numeric"
@@ -734,13 +761,15 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                         onChange={(e) => handleNumericInput('kso', e.target.value)}
                                         onFocus={() => setFocusedField('kso')}
                                         onBlur={() => setFocusedField(null)}
-                                        className="form-input"
+                                        ref={ksoRef}
+                                        onKeyDown={(e) => handleEnterFocus(e, manajemenRef)}
+                                        className={`form-input ${category === 'laboratorium' ? 'flex-1' : ''}`}
                                     />
                                     {errors.kso && <p className="error-text">{errors.kso}</p>}
                                 </div>
 
-                                <div className="input-group">
-                                    <label className="input-label">{category === 'laboratorium' ? 'Manajemen' : 'Menejemen'}</label>
+                                <div className={`input-group ${category === 'laboratorium' ? 'flex items-center gap-4' : ''}`}>
+                                    <label className={`input-label ${category === 'laboratorium' ? 'w-40 flex-shrink-0' : ''}`}>{category === 'laboratorium' ? 'Manajemen' : 'Menejemen'}</label>
                                     <input
                                         type="text"
                                         inputMode="numeric"
@@ -750,18 +779,20 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                         onChange={(e) => handleNumericInput('menejemen', e.target.value)}
                                         onFocus={() => setFocusedField('menejemen')}
                                         onBlur={() => setFocusedField(null)}
-                                        className="form-input"
+                                        ref={manajemenRef}
+                                        onKeyDown={(e) => handleEnterFocus(e, null)}
+                                        className={`form-input ${category === 'laboratorium' ? 'flex-1' : ''}`}
                                     />
                                     {errors.menejemen && <p className="error-text">{errors.menejemen}</p>}
                                 </div>
 
                                 {category === 'laboratorium' && (
-                                    <div className="input-group">
-                                        <label className="input-label">Total Biaya Laborat</label>
+                                    <div className={`input-group ${category === 'laboratorium' ? 'flex items-center gap-4' : ''}`}>
+                                        <label className={`input-label ${category === 'laboratorium' ? 'w-40 flex-shrink-0' : ''}`}>Total Biaya Laborat</label>
                                         <input
                                             type="text"
                                             value={`Rp ${formatNumber(totalLaborat)}`}
-                                            className="form-input"
+                                            className={`form-input ${category === 'laboratorium' ? 'flex-1' : ''}`}
                                             readOnly
                                         />
                                     </div>
