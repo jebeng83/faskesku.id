@@ -1678,7 +1678,6 @@ export default function Index({ title, data, category, search, filters, poliklin
                         Tidak ada data tarif laboratorium.
                     </div>
                 )}
-                {renderPagination()}
             </div>
 
             {/* Kartu kanan: template pemeriksaan untuk tarif terpilih */}
@@ -1950,7 +1949,35 @@ export default function Index({ title, data, category, search, filters, poliklin
                             key={index}
                             onClick={() => {
                                 if (link.url) {
-                                    router.visit(link.url);
+                                    let page = null;
+                                    try {
+                                        const u = new URL(link.url, window.location.origin);
+                                        page = u.searchParams.get('page');
+                                    } catch (e) {
+                                        const match = /[?&]page=(\d+)/.exec(link.url);
+                                        page = match ? match[1] : null;
+                                    }
+
+                                    const params = {
+                                        search: searchTerm,
+                                        category: activeTab,
+                                        status: selectedFilter,
+                                    };
+                                    if (activeTab === 'rawat-jalan' && selectedPoliklinik !== 'all') {
+                                        params.poliklinik = selectedPoliklinik;
+                                    }
+                                    if (activeTab === 'rawat-inap' && selectedBangsal !== 'all') {
+                                        params.bangsal = selectedBangsal;
+                                    }
+                                    if (page) {
+                                        params.page = page;
+                                    }
+
+                                    router.get(route('daftar-tarif.index'), params, {
+                                        preserveState: true,
+                                        preserveScroll: true,
+                                        replace: true,
+                                    });
                                 }
                             }}
                             disabled={!link.url}
