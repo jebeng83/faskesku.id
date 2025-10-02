@@ -306,6 +306,43 @@ class DaftarTarifController extends Controller
     }
 
     /**
+     * Update status tarif (nonaktifkan/aktifkan)
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        $category = $request->get('category', 'rawat-jalan');
+        $status = $request->get('status', '0'); // Default nonaktifkan
+        
+        try {
+            switch ($category) {
+                case 'rawat-jalan':
+                    $tarif = JnsPerawatan::findOrFail($id);
+                    break;
+                case 'rawat-inap':
+                    $tarif = JnsPerawatanInap::findOrFail($id);
+                    break;
+                case 'laboratorium':
+                    $tarif = JnsPerawatanLab::findOrFail($id);
+                    break;
+                case 'radiologi':
+                    $tarif = JnsPerawatanRadiologi::findOrFail($id);
+                    break;
+                default:
+                    return redirect()->back()->with('error', 'Kategori tidak valid');
+            }
+            
+            // Update status
+            $tarif->update(['status' => $status]);
+            
+            $message = $status == '1' ? 'Tarif berhasil diaktifkan' : 'Tarif berhasil dinonaktifkan';
+            return redirect()->back()->with('success', $message);
+            
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal mengubah status tarif');
+        }
+    }
+
+    /**
      * Remove the specified tarif from storage.
      */
     public function destroy(Request $request, $id)
@@ -327,16 +364,16 @@ class DaftarTarifController extends Controller
                     $tarif = JnsPerawatanRadiologi::findOrFail($id);
                     break;
                 default:
-                    return response()->json(['error' => 'Kategori tidak valid'], 400);
+                    return redirect()->back()->with('error', 'Kategori tidak valid');
             }
             
             // Soft delete: set status = 0
             $tarif->update(['status' => '0']);
             
-            return response()->json(['success' => 'Tarif berhasil dihapus']);
+            return redirect()->back()->with('success', 'Tarif berhasil dinonaktifkan');
             
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Gagal menghapus tarif'], 500);
+            return redirect()->back()->with('error', 'Gagal menonaktifkan tarif');
         }
     }
 

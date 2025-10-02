@@ -802,7 +802,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
     );
 };
 
-export default function Index({ title, data, category, search, filters, polikliniks = [], bangsals = [], penjaabs = [], kategoris = [] }) {
+export default function Index({ title, data, category, search, filters, polikliniks = [], bangsals = [], penjaabs = [], kategoris = [], flash = {} }) {
     const [searchTerm, setSearchTerm] = useState(search || '');
     const [activeTab, setActiveTab] = useState(category || 'rawat-jalan');
     const [selectedFilter, setSelectedFilter] = useState(filters?.status || '1');
@@ -811,6 +811,16 @@ export default function Index({ title, data, category, search, filters, poliklin
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
+
+    // Handle flash messages
+    useEffect(() => {
+        if (flash.success) {
+            alert(flash.success);
+        }
+        if (flash.error) {
+            alert(flash.error);
+        }
+    }, [flash]);
 
     // Update search functionality to work without submit button
     const handleSearchChange = (e) => {
@@ -888,18 +898,17 @@ export default function Index({ title, data, category, search, filters, poliklin
         setIsEditModalOpen(true);
     };
 
-    // Handler untuk delete dengan konfirmasi
+    // Handler untuk nonaktifkan dengan konfirmasi
     const handleDelete = (item) => {
-        if (window.confirm(`Apakah Anda yakin ingin menghapus tarif "${item.nm_perawatan}"?`)) {
-            router.delete(route('daftar-tarif.destroy', item.kd_jenis_prw), {
-                data: { category: activeTab },
-                onSuccess: () => {
-                    // Refresh data setelah delete berhasil
-                    router.reload({ only: ['data'] });
-                },
+        if (window.confirm(`Apakah Anda yakin ingin menonaktifkan tarif "${item.nm_perawatan}"?`)) {
+            router.post(route('daftar-tarif.update-status', item.kd_jenis_prw), {
+                _method: 'PATCH',
+                category: activeTab,
+                status: '0'
+            }, {
                 onError: (errors) => {
-                    console.error('Error deleting tarif:', errors);
-                    alert('Gagal menghapus tarif. Silakan coba lagi.');
+                    console.error('Error deactivating tarif:', errors);
+                    alert('Gagal menonaktifkan tarif. Silakan coba lagi.');
                 }
             });
         }
@@ -1027,7 +1036,7 @@ export default function Index({ title, data, category, search, filters, poliklin
                                         <button
                                             onClick={() => handleDelete(item)}
                                             className="action-btn delete-btn"
-                                            title="Hapus Tarif"
+                                            title="Nonaktifkan Tarif"
                                         >
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -1142,7 +1151,7 @@ export default function Index({ title, data, category, search, filters, poliklin
                                         <button
                                             onClick={() => handleDelete(item)}
                                             className="action-btn delete-btn"
-                                            title="Hapus Tarif"
+                                            title="Nonaktifkan Tarif"
                                         >
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -1239,7 +1248,7 @@ export default function Index({ title, data, category, search, filters, poliklin
                                     <button
                                         onClick={() => handleDelete(item)}
                                         className="text-red-600 hover:text-red-900 font-medium"
-                                        title="Hapus"
+                                        title="Nonaktifkan"
                                     >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -1325,7 +1334,7 @@ export default function Index({ title, data, category, search, filters, poliklin
                                     <button
                                         onClick={() => handleDelete(item)}
                                         className="text-red-600 hover:text-red-900 font-medium"
-                                        title="Hapus"
+                                        title="Nonaktifkan"
                                     >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -1399,7 +1408,7 @@ export default function Index({ title, data, category, search, filters, poliklin
                                     <button
                                         onClick={() => handleDelete(item)}
                                         className="text-red-600 hover:text-red-900 font-medium"
-                                        title="Hapus"
+                                        title="Nonaktifkan"
                                     >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
