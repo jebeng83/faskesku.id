@@ -126,24 +126,25 @@ export default function Edit({ jnsPerawatan, polikliniks, bangsals, penjaabs, ka
     const handleSubmit = (e) => {
         e.preventDefault();
         
-        // Use POST with method spoofing to avoid PUT method error
-        const formData = {
+        // Debug: Log the data being sent
+        console.log('Form data being sent:', data);
+        console.log('Status value:', data.status);
+        
+        // Prepare data with category
+        const submitData = {
             ...data,
-            _method: 'PUT',
             category: category
         };
         
-        router.post(route('daftar-tarif.update', jnsPerawatan.kd_jenis_prw), formData, {
+        console.log('Final submit data:', submitData);
+        
+        // Use router.put with the prepared data
+        router.put(route('daftar-tarif.update', jnsPerawatan.kd_jenis_prw), submitData, {
             onSuccess: () => {
                 // Success handled by redirect
             },
             onError: (errors) => {
-                // Silent error handling - only reload on CSRF issues
-                if (errors.csrf) {
-                    router.reload();
-                }
-                // Don't show other errors to user since data is still being saved
-                console.log('Update completed despite method error');
+                console.log('Validation errors:', errors);
             },
         });
     };
@@ -391,16 +392,20 @@ export default function Edit({ jnsPerawatan, polikliniks, bangsals, penjaabs, ka
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Status
+                                            Status <span className="text-red-500">*</span>
                                         </label>
                                         <select
                                             value={data.status}
                                             onChange={(e) => setData('status', e.target.value)}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            required
                                         >
                                             <option value="1">Aktif</option>
                                             <option value="0">Tidak Aktif</option>
                                         </select>
+                                        {errors.status && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.status}</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>

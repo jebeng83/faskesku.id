@@ -34,6 +34,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
         kd_poli: '',
         kd_bangsal: '',
         kelas: '',
+        status: '1',
         category: category,
         total_dr: 0,
         total_pr: 0,
@@ -94,6 +95,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                 kd_poli: editData.kd_poli || '',
                 kd_bangsal: editData.kd_bangsal || '',
                 kelas: editData.kelas || '',
+                status: editData.status || '1',
                 category: category,
                 total_dr: 0,
                 total_pr: 0,
@@ -533,6 +535,25 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                     </select>
                                     {errors.kd_pj && <p className="error-text">{errors.kd_pj}</p>}
                                 </div>
+
+                                {/* Status - untuk kategori selain Rawat Inap */}
+                                {category !== 'rawat-inap' && (
+                                    <div className="input-group">
+                                        <label className="input-label">
+                                            Status *
+                                        </label>
+                                        <select
+                                            value={data.status}
+                                            onChange={(e) => setData('status', e.target.value)}
+                                            className={`form-select ${errors.status ? 'error' : ''}`}
+                                            required
+                                        >
+                                            <option value="1">Aktif</option>
+                                            <option value="0">Tidak Aktif</option>
+                                        </select>
+                                        {errors.status && <p className="error-text">{errors.status}</p>}
+                                    </div>
+                                )}
 
                                 {/* Kelas - hanya untuk Rawat Inap */}
                                 {category === 'rawat-inap' && (
