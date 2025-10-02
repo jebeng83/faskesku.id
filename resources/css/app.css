@@ -296,6 +296,57 @@
     @apply space-y-2;
 }
 
+/* Theme colors per tab for Data Perawatan section */
+.form-section.theme-rawat-jalan {
+    @apply border-blue-200;
+}
+.form-section.theme-rawat-jalan .section-icon {
+    @apply bg-gradient-to-br from-blue-500 to-blue-700 text-white;
+}
+.form-section.theme-rawat-jalan .section-title {
+    @apply text-blue-800;
+}
+
+.form-section.theme-rawat-inap {
+    @apply border-yellow-200;
+}
+.form-section.theme-rawat-inap .section-icon {
+    @apply bg-gradient-to-br from-yellow-500 to-amber-600 text-white;
+}
+.form-section.theme-rawat-inap .section-title {
+    @apply text-yellow-800;
+}
+
+.form-section.theme-laboratorium {
+    @apply border-indigo-200;
+}
+.form-section.theme-laboratorium .section-icon {
+    @apply bg-gradient-to-br from-indigo-500 to-indigo-700 text-white;
+}
+.form-section.theme-laboratorium .section-title {
+    @apply text-indigo-800;
+}
+
+.form-section.theme-radiologi {
+    @apply border-red-200;
+}
+.form-section.theme-radiologi .section-icon {
+    @apply bg-gradient-to-br from-red-500 to-red-700 text-white;
+}
+.form-section.theme-radiologi .section-title {
+    @apply text-red-800;
+}
+
+.form-section.theme-kamar {
+    @apply border-green-200;
+}
+.form-section.theme-kamar .section-icon {
+    @apply bg-gradient-to-br from-green-500 to-emerald-600 text-white;
+}
+.form-section.theme-kamar .section-title {
+    @apply text-green-800;
+}
+
 /* Layout optimal untuk layar laptop: lebih padat dan 3 kolom bila cukup lebar */
 .laptop-dense .modal-body {
     @apply p-4;
