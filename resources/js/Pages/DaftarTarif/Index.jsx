@@ -1061,6 +1061,7 @@ export default function Index({ title, data, category, search, filters, poliklin
     const [editingItem, setEditingItem] = useState(null);
     const [selectedLab, setSelectedLab] = useState(null);
     const [selectedTemplateIndex, setSelectedTemplateIndex] = useState(null);
+    const [showTemplateDetails, setShowTemplateDetails] = useState(false);
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
     const [templateRows, setTemplateRows] = useState([]);
 
@@ -1174,6 +1175,7 @@ export default function Index({ title, data, category, search, filters, poliklin
     // Reset pilihan item template saat tarif laboratorium berganti
     useEffect(() => {
         setSelectedTemplateIndex(null);
+        setShowTemplateDetails(false);
     }, [selectedLab]);
 
     const handleCloseTemplateModal = () => {
@@ -1591,8 +1593,8 @@ export default function Index({ title, data, category, search, filters, poliklin
     const renderLaboratoriumTable = () => (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Kartu kiri: daftar tarif laboratorium */}
-            <div className="bg-white rounded-lg shadow">
-                <div className="px-4 sm:px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <div className="bg-white rounded-xl shadow-lg transition-all ease-out duration-200 hover:shadow-xl hover:-translate-y-0.5 overflow-hidden ring-1 ring-gray-100 hover:ring-gray-200">
+                <div className="px-4 sm:px-6 py-4 border-b border-gray-200 bg-gray-50 rounded-t-xl flex items-center justify-between transition-colors duration-200">
                     <h3 className="text-lg font-semibold text-gray-900">Daftar Pemeriksaan Lab</h3>
                     <button
                         onClick={handleAddTarif}
@@ -1680,21 +1682,28 @@ export default function Index({ title, data, category, search, filters, poliklin
             </div>
 
             {/* Kartu kanan: template pemeriksaan untuk tarif terpilih */}
-            <div className={`bg-blue-50 rounded-lg shadow`}>
-                <div className="px-3 sm:px-4 py-3 border-b border-blue-200 bg-blue-100">
+            <div className={`bg-blue-50 rounded-xl shadow-lg transition-all ease-out duration-200 hover:shadow-xl hover:-translate-y-0.5 overflow-hidden ring-1 ring-blue-100 hover:ring-blue-200`}>
+                <div className="px-3 sm:px-4 py-3 border-b border-blue-200 bg-blue-100 rounded-t-xl transition-colors duration-200">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div className="min-w-0">
                             <h3 className="text-base sm:text-lg font-semibold text-gray-950 leading-tight truncate">Template Pemeriksaan</h3>
                             {selectedLab ? (
-                                <div className="mt-1 text-xs sm:text-sm text-gray-600">
-                                    Menampilkan template untuk: <span className="font-medium text-gray-900">{selectedLab.nm_perawatan}</span>
-                                </div>
+                                <div className="mt-1 text-xs sm:text-sm text-blue-900 font-medium">{selectedLab.nm_perawatan}</div>
                             ) : (
                                 <div className="mt-1 text-xs sm:text-sm text-gray-600">Pilih tarif laboratorium di kiri untuk melihat template.</div>
                             )}
                         </div>
                         {selectedLab && (
-                            <div className="flex sm:justify-end">
+                            <div className="flex items-center gap-3 sm:justify-end">
+                                <label className="inline-flex items-center gap-2 text-xs sm:text-sm text-blue-900">
+                                    <input
+                                        type="checkbox"
+                                        className="rounded border-blue-300 text-indigo-600 focus:ring-indigo-500"
+                                        checked={showTemplateDetails}
+                                        onChange={(e) => setShowTemplateDetails(e.target.checked)}
+                                    />
+                                    Rincian
+                                </label>
                                 <button
                                     onClick={handleOpenTemplateModal}
                                     className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -1721,15 +1730,17 @@ export default function Index({ title, data, category, search, filters, poliklin
                                         <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2 items-start">
                                             <div>
                                                 <div className="text-sm font-semibold text-gray-900">{tmpl.Pemeriksaan || tmpl.item_pemeriksaan}</div>
-                                                <div className="mt-1 grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-gray-700">
-                                                    {typeof tmpl.bagian_rs !== 'undefined' && <div className="flex justify-between"><span>Bagian RS</span><span className="text-gray-900">{formatCurrency(tmpl.bagian_rs)}</span></div>}
-                                                    {typeof tmpl.bhp !== 'undefined' && <div className="flex justify-between"><span>BHP</span><span className="text-gray-900">{formatCurrency(tmpl.bhp)}</span></div>}
-                                                    {typeof tmpl.bagian_perujuk !== 'undefined' && <div className="flex justify-between"><span>Bagian Perujuk</span><span className="text-gray-900">{formatCurrency(tmpl.bagian_perujuk)}</span></div>}
-                                                    {typeof tmpl.bagian_dokter !== 'undefined' && <div className="flex justify-between"><span>Bagian Dokter</span><span className="text-gray-900">{formatCurrency(tmpl.bagian_dokter)}</span></div>}
-                                                    {typeof tmpl.bagian_laborat !== 'undefined' && <div className="flex justify-between"><span>Bagian Laborat</span><span className="text-gray-900">{formatCurrency(tmpl.bagian_laborat)}</span></div>}
-                                                    {typeof tmpl.kso !== 'undefined' && tmpl.kso !== null && <div className="flex justify-between"><span>KSO</span><span className="text-gray-900">{formatCurrency(tmpl.kso)}</span></div>}
-                                                    {typeof tmpl.menejemen !== 'undefined' && tmpl.menejemen !== null && <div className="flex justify-between"><span>Menejemen</span><span className="text-gray-900">{formatCurrency(tmpl.menejemen)}</span></div>}
-                                                </div>
+                                                {showTemplateDetails && (
+                                                    <div className="mt-1 grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-gray-700">
+                                                        {typeof tmpl.bagian_rs !== 'undefined' && <div className="flex justify-between"><span>Bagian RS</span><span className="text-gray-900">{formatCurrency(tmpl.bagian_rs)}</span></div>}
+                                                        {typeof tmpl.bhp !== 'undefined' && <div className="flex justify-between"><span>BHP</span><span className="text-gray-900">{formatCurrency(tmpl.bhp)}</span></div>}
+                                                        {typeof tmpl.bagian_perujuk !== 'undefined' && <div className="flex justify-between"><span>Bagian Perujuk</span><span className="text-gray-900">{formatCurrency(tmpl.bagian_perujuk)}</span></div>}
+                                                        {typeof tmpl.bagian_dokter !== 'undefined' && <div className="flex justify-between"><span>Bagian Dokter</span><span className="text-gray-900">{formatCurrency(tmpl.bagian_dokter)}</span></div>}
+                                                        {typeof tmpl.bagian_laborat !== 'undefined' && <div className="flex justify-between"><span>Bagian Laborat</span><span className="text-gray-900">{formatCurrency(tmpl.bagian_laborat)}</span></div>}
+                                                        {typeof tmpl.kso !== 'undefined' && tmpl.kso !== null && <div className="flex justify-between"><span>KSO</span><span className="text-gray-900">{formatCurrency(tmpl.kso)}</span></div>}
+                                                        {typeof tmpl.menejemen !== 'undefined' && tmpl.menejemen !== null && <div className="flex justify-between"><span>Menejemen</span><span className="text-gray-900">{formatCurrency(tmpl.menejemen)}</span></div>}
+                                                    </div>
+                                                )}
                                             </div>
                                             <div className="text-right sm:pr-1">
                                                 {typeof tmpl.biaya_item !== 'undefined' && (
