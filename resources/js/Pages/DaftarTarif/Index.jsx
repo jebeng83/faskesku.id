@@ -30,10 +30,12 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
         tarif_tindakanpr: 0,
         kso: 0,
         menejemen: 0,
+        bagian_perujuk: 0,
         kd_pj: '',
         kd_poli: '',
         kd_bangsal: '',
-        kelas: '',
+        kelas: category === 'laboratorium' ? '-' : '',
+        kategori: category === 'laboratorium' ? 'PK' : '',
         status: '1',
         category: category,
         total_dr: 0,
@@ -91,10 +93,12 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                 tarif_tindakanpr: editData.tarif_tindakanpr || 0,
                 kso: editData.kso || 0,
                 menejemen: editData.menejemen || 0,
+                bagian_perujuk: editData.tarif_perujuk || editData.bagian_perujuk || 0,
                 kd_pj: editData.kd_pj || '',
                 kd_poli: editData.kd_poli || '',
                 kd_bangsal: editData.kd_bangsal || '',
                 kelas: editData.kelas || '',
+                kategori: editData.kategori || '',
                 status: editData.status || '1',
                 category: category,
                 total_dr: 0,
@@ -171,22 +175,25 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
         const tarif_tindakanpr = parseInt(data.tarif_tindakanpr) || 0;
         const kso = parseInt(data.kso) || 0;
         const menejemen = parseInt(data.menejemen) || 0;
+        const bagian_perujuk = parseInt(data.bagian_perujuk) || 0;
 
         const totalDr = material + bhp + tarif_tindakandr + kso + menejemen;
         const totalPr = material + bhp + tarif_tindakanpr + kso + menejemen;
         const totalDrPr = material + bhp + tarif_tindakandr + tarif_tindakanpr + kso + menejemen;
+        const totalLaborat = material + bhp + tarif_tindakandr + tarif_tindakanpr + bagian_perujuk + kso + menejemen;
 
-        return { totalDr, totalPr, totalDrPr };
+        return { totalDr, totalPr, totalDrPr, totalLaborat };
     };
 
-    const { totalDr, totalPr, totalDrPr } = calculateTotal();
+    const { totalDr, totalPr, totalDrPr, totalLaborat } = calculateTotal();
 
     // Function to validate form before submission
     const validateForm = () => {
         // Base required fields for all categories
         const baseRequiredFields = {
-            'kd_jenis_prw': 'Kode Jenis Perawatan',
-            'nm_perawatan': 'Nama Perawatan',
+            'kd_jenis_prw': category === 'laboratorium' ? 'Kode Periksa' : 'Kode Jenis Perawatan',
+            'nm_perawatan': category === 'laboratorium' ? 'Nama Pemeriksaan' : 'Nama Perawatan',
+            'kd_kategori': 'Kategori Perawatan',
             'kd_pj': 'Asuransi / Penanggung Jawab'
         };
         
@@ -197,6 +204,11 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
             categorySpecificFields = {
                 'kd_bangsal': 'Bangsal',
                 'kelas': 'Kelas'
+            };
+        } else if (category === 'laboratorium') {
+            categorySpecificFields = {
+                'kelas': 'Kelas',
+                'kategori': 'Kategori'
             };
         } else {
             // For rawat-jalan and other categories
@@ -223,12 +235,13 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
         }
         
         // Validate nm_perawatan length (max 80 chars)
-        if (data.nm_perawatan && data.nm_perawatan.length > 80) {
-            errors.nm_perawatan = 'Nama Perawatan maksimal 80 karakter';
+        const maxNameLength = category === 'laboratorium' ? 100 : 80;
+        if (data.nm_perawatan && data.nm_perawatan.length > maxNameLength) {
+            errors.nm_perawatan = category === 'laboratorium' ? 'Nama Pemeriksaan maksimal 100 karakter' : 'Nama Perawatan maksimal 80 karakter';
         }
         
         // Validate numeric fields (should be >= 0)
-        const numericFields = ['material', 'bhp', 'tarif_tindakandr', 'tarif_tindakanpr', 'kso', 'menejemen'];
+        const numericFields = ['material', 'bhp', 'tarif_tindakandr', 'tarif_tindakanpr', 'kso', 'menejemen', 'bagian_perujuk'];
         numericFields.forEach(field => {
             const value = parseFloat(data[field]) || 0;
             if (value < 0) {
@@ -295,6 +308,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
             tarif_tindakanpr: parseFloat(data.tarif_tindakanpr) || 0,
             kso: parseFloat(data.kso) || 0,
             menejemen: parseFloat(data.menejemen) || 0,
+            bagian_perujuk: parseFloat(data.bagian_perujuk) || 0,
             category: category || 'rawat-jalan',
             // Include checkbox states
             show_total_dokter: data.show_total_dokter || false,
@@ -352,7 +366,10 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
     };
 
     const handleClose = () => {
-        reset();
+        reset({
+            kelas: category === 'laboratorium' ? '-' : '',
+            kategori: category === 'laboratorium' ? 'PK' : ''
+        });
         onClose();
     };
 
@@ -373,10 +390,12 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                         </div>
                         <div>
                             <h3 className="modal-title">
-                                {isEditMode ? 'Edit Tarif' : 'Tambah Tarif'}
+                                {isEditMode
+                                    ? (category === 'laboratorium' ? 'Edit Tarif Pemeriksaan Laboratorium' : 'Edit Tarif')
+                                    : (category === 'laboratorium' ? 'Tambah Tarif Pemeriksaan Laboratorium' : 'Tambah Tarif')}
                             </h3>
                             <p className="modal-subtitle">
-                                {category === 'rawat-jalan' ? 'Rawat Jalan' : category}
+                                {category === 'rawat-jalan' ? 'Rawat Jalan' : (category === 'laboratorium' ? 'Laboratorium' : category)}
                             </p>
                         </div>
                     </div>
@@ -438,16 +457,16 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                 </div>
 
                                 {/* Kode Jenis Perawatan */}
-                                <div className="input-group">
-                                    <label className="input-label">
-                                        Kode Jenis Perawatan *
+                                <div className={`input-group ${category === 'laboratorium' ? 'flex items-center gap-4' : ''}`}>
+                                    <label className={`input-label ${category === 'laboratorium' ? 'w-40 flex-shrink-0' : ''}`}>
+                                        {category === 'laboratorium' ? 'Kode Periksa *' : 'Kode Jenis Perawatan *'}
                                     </label>
                                     <input
                                         type="text"
                                         value={data.kd_jenis_prw}
                                         onChange={(e) => setData('kd_jenis_prw', e.target.value.toUpperCase())}
-                                        className={`form-input ${errors.kd_jenis_prw ? 'error' : ''}`}
-                                        placeholder="Masukkan kode jenis perawatan"
+                                        className={`form-input ${errors.kd_jenis_prw ? 'error' : ''} ${category === 'laboratorium' ? 'flex-1' : ''}`}
+                                        placeholder={category === 'laboratorium' ? 'Masukkan kode pemeriksaan' : 'Masukkan kode jenis perawatan'}
                                         maxLength="15"
                                         disabled={isEditMode}
                                         required
@@ -456,16 +475,16 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                 </div>
 
                                 {/* Nama Perawatan */}
-                                <div className="input-group">
-                                    <label className="input-label">
-                                        Nama Perawatan *
+                                <div className={`input-group ${category === 'laboratorium' ? 'flex items-center gap-4' : ''}`}>
+                                    <label className={`input-label ${category === 'laboratorium' ? 'w-40 flex-shrink-0' : ''}`}>
+                                        {category === 'laboratorium' ? 'Nama Pemeriksaan *' : 'Nama Perawatan *'}
                                     </label>
                                     <input
                                         type="text"
                                         value={data.nm_perawatan}
                                         onChange={(e) => setData('nm_perawatan', e.target.value)}
-                                        className={`form-input ${errors.nm_perawatan ? 'error' : ''}`}
-                                        placeholder="Masukkan nama perawatan"
+                                        className={`form-input ${errors.nm_perawatan ? 'error' : ''} ${category === 'laboratorium' ? 'flex-1' : ''}`}
+                                        placeholder={category === 'laboratorium' ? 'Masukkan nama pemeriksaan' : 'Masukkan nama perawatan'}
                                         maxLength="80"
                                         required
                                     />
@@ -494,6 +513,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                         {errors.kd_bangsal && <p className="error-text">{errors.kd_bangsal}</p>}
                                     </div>
                                 ) : (
+                                    category !== 'laboratorium' && (
                                     <div className="input-group">
                                         <label className="input-label">
                                             Poli Klinik *
@@ -513,6 +533,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                         </select>
                                         {errors.kd_poli && <p className="error-text">{errors.kd_poli}</p>}
                                     </div>
+                                    )
                                 )}
 
                                 {/* Asuransi / Penanggung Jawab */}
@@ -537,7 +558,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                 </div>
 
                                 {/* Status - untuk kategori selain Rawat Inap */}
-                                {category !== 'rawat-inap' && (
+                                {(category !== 'rawat-inap' && category !== 'laboratorium') && (
                                     <div className="input-group">
                                         <label className="input-label">
                                             Status *
@@ -555,8 +576,8 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                     </div>
                                 )}
 
-                                {/* Kelas - hanya untuk Rawat Inap */}
-                                {category === 'rawat-inap' && (
+                                {/* Kelas - untuk Rawat Inap dan Laboratorium */}
+                                {(category === 'rawat-inap' || category === 'laboratorium') && (
                                     <div className="input-group">
                                         <label className="input-label">
                                             Kelas *
@@ -568,6 +589,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                             required
                                         >
                                             <option value="">Pilih Kelas</option>
+                                            {category === 'laboratorium' && <option value="-">-</option>}
                                             <option value="Kelas 1">Kelas 1</option>
                                             <option value="Kelas 2">Kelas 2</option>
                                             <option value="Kelas 3">Kelas 3</option>
@@ -576,6 +598,33 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                             <option value="Kelas VVIP">Kelas VVIP</option>
                                         </select>
                                         {errors.kelas && <p className="error-text">{errors.kelas}</p>}
+                                    </div>
+                                )}
+
+                                {/* Kategori khusus Laboratorium */}
+                                {category === 'laboratorium' && (
+                                    <div className="input-group">
+                                        <label className="input-label">
+                                            Kategori *
+                                        </label>
+                                        <select
+                                            value={data.kategori}
+                                            onChange={(e) => {
+                                                const value = e.target.value;
+                                                setData('kategori', value);
+                                                if (category === 'laboratorium' && !isEditMode && value) {
+                                                    generateAutoCode(value, category);
+                                                }
+                                            }}
+                                            className={`form-select ${errors.kategori ? 'error' : ''}`}
+                                            required
+                                        >
+                                            <option value="">Pilih Kategori</option>
+                                            <option value="PK">PK</option>
+                                            <option value="PA">PA</option>
+                                            <option value="MB">MB</option>
+                                        </select>
+                                        {errors.kategori && <p className="error-text">{errors.kategori}</p>}
                                     </div>
                                 )}
                             </div>
@@ -594,7 +643,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                             
                             <div className="form-grid">
                                 <div className="input-group">
-                                    <label className="input-label">Bagian RS</label>
+                                    <label className="input-label">{category === 'laboratorium' ? 'J.S. Rumah Sakit' : 'Bagian RS'}</label>
                                     <input
                                         type="text"
                                         inputMode="numeric"
@@ -610,7 +659,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                 </div>
 
                                 <div className="input-group">
-                                    <label className="input-label">BHP</label>
+                                    <label className="input-label">{category === 'laboratorium' ? 'Paket BHP' : 'BHP'}</label>
                                     <input
                                         type="text"
                                         inputMode="numeric"
@@ -626,7 +675,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                 </div>
 
                                 <div className="input-group">
-                                    <label className="input-label">Jasa Dokter</label>
+                                    <label className="input-label">{category === 'laboratorium' ? 'J.M. Dokter' : 'Jasa Dokter'}</label>
                                     <input
                                         type="text"
                                         inputMode="numeric"
@@ -642,7 +691,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                 </div>
 
                                 <div className="input-group">
-                                    <label className="input-label">Jasa Perawat</label>
+                                    <label className="input-label">{category === 'laboratorium' ? 'J.M. Petugas' : 'Jasa Perawat'}</label>
                                     <input
                                         type="text"
                                         inputMode="numeric"
@@ -657,8 +706,25 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                     {errors.tarif_tindakanpr && <p className="error-text">{errors.tarif_tindakanpr}</p>}
                                 </div>
 
+                                {category === 'laboratorium' && (
+                                    <div className="input-group">
+                                        <label className="input-label">J.M. Perujuk</label>
+                                        <input
+                                            type="text"
+                                            inputMode="numeric"
+                                            pattern="[0-9]*\.?[0-9]*"
+                                            placeholder="0"
+                                            value={getDisplayValue(data.bagian_perujuk, focusedField === 'bagian_perujuk')}
+                                            onChange={(e) => handleNumericInput('bagian_perujuk', e.target.value)}
+                                            onFocus={() => setFocusedField('bagian_perujuk')}
+                                            onBlur={() => setFocusedField(null)}
+                                            className="form-input"
+                                        />
+                                    </div>
+                                )}
+
                                 <div className="input-group">
-                                    <label className="input-label">KSO</label>
+                                    <label className="input-label">{category === 'laboratorium' ? 'K.S.O.' : 'KSO'}</label>
                                     <input
                                         type="text"
                                         inputMode="numeric"
@@ -674,7 +740,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                 </div>
 
                                 <div className="input-group">
-                                    <label className="input-label">Menejemen</label>
+                                    <label className="input-label">{category === 'laboratorium' ? 'Manajemen' : 'Menejemen'}</label>
                                     <input
                                         type="text"
                                         inputMode="numeric"
@@ -688,10 +754,24 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                     />
                                     {errors.menejemen && <p className="error-text">{errors.menejemen}</p>}
                                 </div>
+
+                                {category === 'laboratorium' && (
+                                    <div className="input-group">
+                                        <label className="input-label">Total Biaya Laborat</label>
+                                        <input
+                                            type="text"
+                                            value={`Rp ${formatNumber(totalLaborat)}`}
+                                            className="form-input"
+                                            readOnly
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
 
+
                         {/* Perhitungan Total Section */}
+                        {category !== 'laboratorium' && (
                         <div className="calculation-card">
                             <div className="calculation-header">
                                 <div className="calculation-icon">
@@ -777,6 +857,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                 </div>
                             </div>
                         </div>
+                        )}
 
                         {/* Modal Footer */}
                         <div className="modal-footer">
@@ -1145,7 +1226,11 @@ export default function Index({ title, data, category, search, filters, poliklin
 
     // Handler untuk button + Tarif
     const handleAddTarif = () => {
-        router.visit(route('daftar-tarif.create', { category: activeTab }));
+        if (activeTab === 'laboratorium') {
+            setIsModalOpen(true);
+        } else {
+            router.visit(route('daftar-tarif.create', { category: activeTab }));
+        }
     };
 
     // Handler untuk edit

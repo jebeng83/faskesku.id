@@ -390,7 +390,7 @@ class DaftarTarifController extends Controller
         $kdKategori = $request->get('kd_kategori');
         $category = $request->get('category', 'rawat-jalan');
         
-        if (!$kdKategori) {
+        if (!$kdKategori && $category !== 'laboratorium') {
             return response()->json([
                 'success' => false,
                 'message' => 'Kategori harus dipilih'
@@ -404,6 +404,10 @@ class DaftarTarifController extends Controller
                     break;
                 case 'rawat-inap':
                     $kode = JnsPerawatanInap::generateKodeJenisPerawatan($kdKategori);
+                    break;
+                case 'laboratorium':
+                    // Kode pemeriksaan laboratorium tidak tergantung kd_kategori, gunakan prefix LA
+                    $kode = JnsPerawatanLab::generateKodeJenisPerawatan();
                     break;
                 default:
                     $kode = JnsPerawatan::generateKodeJenisPerawatan($kdKategori);
@@ -479,7 +483,68 @@ class DaftarTarifController extends Controller
         return redirect()->route('daftar-tarif.index', ['category' => 'rawat-inap'])
             ->with('success', 'Tarif rawat inap berhasil ditambahkan');
     }
-    private function storeLaboratorium(Request $request) { /* Implementation for laboratorium */ }
+    private function storeLaboratorium(Request $request) {
+        // Validasi sesuai struktur tabel jns_perawatan_lab
+        $validator = Validator::make($request->all(), [
+            'kd_jenis_prw' => 'required|string|max:15|unique:jns_perawatan_lab,kd_jenis_prw',
+            'nm_perawatan' => 'required|string|max:80',
+            // Komponen tarif
+            'material' => 'nullable|numeric|min:0', // akan dipetakan ke bagian_rs
+            'bhp' => 'required|numeric|min:0',
+            'bagian_perujuk' => 'required|numeric|min:0', // akan dipetakan ke tarif_perujuk
+            'tarif_tindakandr' => 'required|numeric|min:0', // dokter
+            'tarif_tindakanpr' => 'nullable|numeric|min:0', // petugas
+            'kso' => 'nullable|numeric|min:0',
+            'menejemen' => 'nullable|numeric|min:0',
+            // Relasi
+            'kd_pj' => 'required|string|max:3',
+            // Status dan enum
+            'status' => 'nullable|in:0,1',
+            'kelas' => 'required|string|in:-,Rawat Jalan,Kelas 1,Kelas 2,Kelas 3,Kelas Utama,Kelas VIP,Kelas VVIP',
+            'kategori' => 'required|string|in:PK,PA,MB'
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $data = $request->all();
+
+        // Pemetaan field frontend -> kolom database
+        $bagian_rs = (float)($data['material'] ?? 0);
+        $bhp = (float)($data['bhp'] ?? 0);
+        $tarif_perujuk = (float)($data['bagian_perujuk'] ?? 0);
+        $tarif_tindakan_dokter = (float)($data['tarif_tindakandr'] ?? 0);
+        $tarif_tindakan_petugas = (float)($data['tarif_tindakanpr'] ?? 0);
+        $kso = (float)($data['kso'] ?? 0);
+        $menejemen = (float)($data['menejemen'] ?? 0);
+
+        // Hitung total biaya laboratorium
+        $total_byr = $bagian_rs + $bhp + $tarif_perujuk + $tarif_tindakan_dokter + $tarif_tindakan_petugas + $kso + $menejemen;
+
+        // Simpan ke tabel jns_perawatan_lab
+        JnsPerawatanLab::create([
+            'kd_jenis_prw' => $data['kd_jenis_prw'],
+            'nm_perawatan' => $data['nm_perawatan'],
+            'bagian_rs' => $bagian_rs,
+            'bhp' => $bhp,
+            'tarif_perujuk' => $tarif_perujuk,
+            'tarif_tindakan_dokter' => $tarif_tindakan_dokter,
+            'tarif_tindakan_petugas' => $tarif_tindakan_petugas,
+            'kso' => $kso,
+            'menejemen' => $menejemen,
+            'total_byr' => $total_byr,
+            'kd_pj' => $data['kd_pj'],
+            'status' => $data['status'] ?? '1',
+            'kelas' => $data['kelas'],
+            'kategori' => $data['kategori'],
+        ]);
+
+        return redirect()->route('daftar-tarif.index', ['category' => 'laboratorium'])
+            ->with('success', 'Tarif pemeriksaan laboratorium berhasil ditambahkan');
+    }
     private function storeRadiologi(Request $request) { /* Implementation for radiologi */ }
     private function updateRawatInap(Request $request, $id)
     {
