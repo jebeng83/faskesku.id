@@ -805,7 +805,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
 export default function Index({ title, data, category, search, filters, polikliniks = [], bangsals = [], penjaabs = [], kategoris = [] }) {
     const [searchTerm, setSearchTerm] = useState(search || '');
     const [activeTab, setActiveTab] = useState(category || 'rawat-jalan');
-    const [selectedFilter, setSelectedFilter] = useState(filters?.status || 'all');
+    const [selectedFilter, setSelectedFilter] = useState(filters?.status || '1');
     const [selectedPoliklinik, setSelectedPoliklinik] = useState(filters?.poliklinik || 'all');
     const [selectedBangsal, setSelectedBangsal] = useState(filters?.bangsal || 'all');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -823,7 +823,7 @@ export default function Index({ title, data, category, search, filters, poliklin
             router.get(route('daftar-tarif.index'), {
                 search: value,
                 category: activeTab,
-                status: selectedFilter !== 'all' ? selectedFilter : undefined,
+                status: selectedFilter,
                 poliklinik: (activeTab === 'rawat-jalan' && selectedPoliklinik !== 'all') ? selectedPoliklinik : undefined,
                 bangsal: (activeTab === 'rawat-inap' && selectedBangsal !== 'all') ? selectedBangsal : undefined,
             }, {
@@ -838,7 +838,7 @@ export default function Index({ title, data, category, search, filters, poliklin
         router.get(route('daftar-tarif.index'), {
             search: searchTerm,
             category: newTab,
-            status: selectedFilter !== 'all' ? selectedFilter : undefined,
+            status: selectedFilter,
             poliklinik: (newTab === 'rawat-jalan' && selectedPoliklinik !== 'all') ? selectedPoliklinik : undefined,
             bangsal: (newTab === 'rawat-inap' && selectedBangsal !== 'all') ? selectedBangsal : undefined,
         }, {
@@ -854,7 +854,7 @@ export default function Index({ title, data, category, search, filters, poliklin
         router.get(route('daftar-tarif.index'), {
             search: searchTerm,
             category: activeTab,
-            status: selectedFilter !== 'all' ? selectedFilter : undefined,
+            status: selectedFilter,
             poliklinik: value !== 'all' ? value : undefined,
         }, {
             preserveState: true,
@@ -869,7 +869,7 @@ export default function Index({ title, data, category, search, filters, poliklin
         router.get(route('daftar-tarif.index'), {
             search: searchTerm,
             category: activeTab,
-            status: selectedFilter !== 'all' ? selectedFilter : undefined,
+            status: selectedFilter,
             bangsal: value !== 'all' ? value : undefined,
         }, {
             preserveState: true,
@@ -913,8 +913,9 @@ export default function Index({ title, data, category, search, filters, poliklin
         router.get(route('daftar-tarif.index'), {
             search: searchTerm,
             category: activeTab,
-            status: value !== 'all' ? value : undefined,
+            status: value,
             poliklinik: selectedPoliklinik !== 'all' ? selectedPoliklinik : undefined,
+            bangsal: selectedBangsal !== 'all' ? selectedBangsal : undefined,
         }, {
             preserveState: true,
             preserveScroll: true,

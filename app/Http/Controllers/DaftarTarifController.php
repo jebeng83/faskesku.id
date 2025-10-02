@@ -23,13 +23,18 @@ class DaftarTarifController extends Controller
         $perPage = $request->get('per_page', 10);
         $poliklinikFilter = $request->get('poliklinik'); // Add poliklinik filter parameter
         $bangsalFilter = $request->get('bangsal'); // Add bangsal filter parameter
+        $statusFilter = $request->get('status', '1'); // Add status filter parameter with default '1' (aktif)
     
         $data = [];
     
         switch ($category) {
             case 'rawat-jalan':
-                $query = JnsPerawatan::with(['poliklinik', 'penjab'])
-                    ->aktif();
+                $query = JnsPerawatan::with(['poliklinik', 'penjab']);
+                
+                // Apply status filter
+                if ($statusFilter !== 'all') {
+                    $query->where('status', $statusFilter);
+                }
                 
                 if ($search) {
                     $query->search($search);
@@ -44,8 +49,12 @@ class DaftarTarifController extends Controller
                 break;
     
             case 'rawat-inap':
-                $query = JnsPerawatanInap::with(['bangsal', 'penjab'])
-                    ->aktif();
+                $query = JnsPerawatanInap::with(['bangsal', 'penjab']);
+                
+                // Apply status filter
+                if ($statusFilter !== 'all') {
+                    $query->where('status', $statusFilter);
+                }
                 
                 if ($search) {
                     $query->search($search);
@@ -60,8 +69,12 @@ class DaftarTarifController extends Controller
                 break;
     
             case 'laboratorium':
-                $query = JnsPerawatanLab::with('penjab')
-                    ->aktif();
+                $query = JnsPerawatanLab::with('penjab');
+                
+                // Apply status filter
+                if ($statusFilter !== 'all') {
+                    $query->where('status', $statusFilter);
+                }
                 
                 if ($search) {
                     $query->search($search);
@@ -71,8 +84,12 @@ class DaftarTarifController extends Controller
                 break;
     
             case 'radiologi':
-                $query = JnsPerawatanRadiologi::with('penjab')
-                    ->aktif();
+                $query = JnsPerawatanRadiologi::with('penjab');
+                
+                // Apply status filter
+                if ($statusFilter !== 'all') {
+                    $query->where('status', $statusFilter);
+                }
                 
                 if ($search) {
                     $query->search($search);
@@ -83,7 +100,12 @@ class DaftarTarifController extends Controller
     
             case 'kamar':
                 // Untuk kamar, kita bisa menggunakan data dari poliklinik atau bangsal
-                $query = Poliklinik::aktif();
+                $query = Poliklinik::query();
+                
+                // Apply status filter
+                if ($statusFilter !== 'all') {
+                    $query->where('status', $statusFilter);
+                }
                 
                 if ($search) {
                     $query->where(function ($q) use ($search) {
@@ -116,6 +138,7 @@ class DaftarTarifController extends Controller
                 'search' => $search,
                 'category' => $category,
                 'per_page' => $perPage,
+                'status' => $statusFilter, // Pass status filter back to frontend
                 'poliklinik' => $poliklinikFilter, // Pass poliklinik filter back to frontend
                 'bangsal' => $bangsalFilter // Pass bangsal filter back to frontend
             ],
