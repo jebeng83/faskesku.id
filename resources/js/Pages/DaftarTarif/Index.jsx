@@ -1542,14 +1542,29 @@ export default function Index({ title, data, category, search, filters, poliklin
                                     <button
                                         key={tab.id}
                                         onClick={() => handleTabChange(tab.id)}
-                                        className={`py-4 px-2 lg:px-1 border-b-2 font-medium text-sm whitespace-nowrap flex-shrink-0 transition-colors duration-200 ${
+                                        aria-current={activeTab === tab.id ? 'page' : undefined}
+                                        className={`py-3 px-3 lg:px-4 border-b-2 rounded-t-md font-semibold text-sm whitespace-nowrap flex-shrink-0 transition-colors duration-200 ${
                                             activeTab === tab.id
-                                                ? (tab.id === 'rawat-inap' ? 'border-yellow-500 text-yellow-600' : 'border-blue-500 text-blue-600')
+                                                ? (
+                                                    tab.id === 'rawat-jalan' ? 'border-blue-500 text-blue-700 bg-blue-50' :
+                                                    tab.id === 'rawat-inap' ? 'border-yellow-500 text-yellow-700 bg-yellow-50' :
+                                                    tab.id === 'laboratorium' ? 'border-indigo-500 text-indigo-700 bg-indigo-50' :
+                                                    tab.id === 'radiologi' ? 'border-red-500 text-red-700 bg-red-50' :
+                                                    /* kamar */ 'border-green-500 text-green-700 bg-green-50'
+                                                )
                                                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                         }`}
                                     >
-                                        {tab.id === 'rawat-inap' && (
-                                            <span className="inline-block w-2 h-2 rounded-full bg-yellow-500 mr-2"></span>
+                                        {activeTab === tab.id && (
+                                            <span
+                                                className={`${
+                                                    tab.id === 'rawat-jalan' ? 'bg-blue-500' :
+                                                    tab.id === 'rawat-inap' ? 'bg-yellow-500' :
+                                                    tab.id === 'laboratorium' ? 'bg-indigo-500' :
+                                                    tab.id === 'radiologi' ? 'bg-red-500' :
+                                                    'bg-green-500'
+                                                } inline-block w-2 h-2 rounded-full mr-2`}
+                                            ></span>
                                         )}
                                         {tab.name}
                                     </button>
