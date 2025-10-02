@@ -2204,7 +2204,19 @@ export default function Index({ title, data, category, search, filters, poliklin
                     </div>
 
                     {/* Filter Section - Enhanced Responsiveness */}
-                    <div className="px-4 sm:px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <div
+                        className={`px-4 sm:px-6 py-4 border-b border-gray-200 ${
+                            activeTab === 'rawat-jalan'
+                                ? 'bg-blue-50'
+                                : activeTab === 'rawat-inap'
+                                ? 'bg-yellow-50'
+                                : activeTab === 'laboratorium'
+                                ? 'bg-indigo-50'
+                                : activeTab === 'radiologi'
+                                ? 'bg-red-50'
+                                : 'bg-green-50'
+                        }`}
+                    >
                         <div className="space-y-4 lg:space-y-0 lg:flex lg:items-center lg:justify-between">
                             {/* Search Input */}
                             <div className="w-full lg:flex-1 lg:max-w-md">
