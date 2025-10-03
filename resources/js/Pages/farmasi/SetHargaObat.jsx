@@ -91,6 +91,8 @@ export default function SetHargaObat({ auth, hargaObat, schema, penjualanUmum, p
     // Collapse state untuk konten tab Jenis & Barang (default tertutup)
     const [jenisCollapsed, setJenisCollapsed] = useState(true);
     const [barangCollapsed, setBarangCollapsed] = useState(true);
+    // Collapse state untuk tab Pengaturan Harga Umum (default tertutup)
+    const [umumCollapsed, setUmumCollapsed] = useState(true);
 
     useEffect(() => {
         if (error) {
@@ -381,14 +383,28 @@ export default function SetHargaObat({ auth, hargaObat, schema, penjualanUmum, p
 
                             {activeTab === 'umum' && (
                             <form onSubmit={handleSubmitUmum}>
-                                <div className="mb-6">
-                                    <h3 className="text-lg font-semibold text-gray-900">Pengaturan Persentase Harga Jual Obat</h3>
-                                    <p className="text-sm text-gray-600 mt-2">
-                                        Tentukan persentase markup harga jual obat dari harga beli di setiap kategori. Nilai dalam persen (%).
-                                    </p>
+                                <div className="mb-6 flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-lg font-semibold text-gray-900">Pengaturan Persentase Harga Jual Obat</h3>
+                                        <p className="text-sm text-gray-600 mt-2">
+                                            Tentukan persentase markup harga jual obat dari harga beli di setiap kategori. Nilai dalam persen (%).
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <button
+                                            type="button"
+                                            aria-expanded={!umumCollapsed}
+                                            onClick={() => setUmumCollapsed((v) => !v)}
+                                            className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium border rounded-md bg-white hover:bg-gray-50 text-gray-700"
+                                        >
+                                            <span>{umumCollapsed ? 'Tampilkan' : 'Ciutkan'}</span>
+                                            <span aria-hidden="true">{umumCollapsed ? '▼' : '▲'}</span>
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {/* Helper component untuk field persen (dipindah ke module scope agar tidak re-mount saat onChange) */}
+                                {!umumCollapsed && (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     <PercentageField id="ralan" label="Rawat Jalan" value={data.ralan} onChange={(e) => setData('ralan', e.target.value)} error={errors.ralan} />
                                     <PercentageField id="kelas1" label="Kelas 1" value={data.kelas1} onChange={(e) => setData('kelas1', e.target.value)} error={errors.kelas1} />
@@ -401,6 +417,7 @@ export default function SetHargaObat({ auth, hargaObat, schema, penjualanUmum, p
                                     <PercentageField id="jualbebas" label="Jual Bebas" value={data.jualbebas} onChange={(e) => setData('jualbebas', e.target.value)} error={errors.jualbebas} />
                                     <PercentageField id="karyawan" label="Karyawan" value={data.karyawan} onChange={(e) => setData('karyawan', e.target.value)} error={errors.karyawan} />
                                 </div>
+                                )}
 
                                 {/* Datatable dipindahkan ke atas tombol Simpan untuk visibilitas lebih baik */}
                                 <Suspense
@@ -415,6 +432,7 @@ export default function SetHargaObat({ auth, hargaObat, schema, penjualanUmum, p
                                     <UmumSummaryTable penjualanUmum={penjualanUmum} />
                                 </Suspense>
 
+                                {!umumCollapsed && (
                                 <div className="flex items-center justify-end mt-8">
                                     <button
                                         type="submit"
@@ -424,6 +442,7 @@ export default function SetHargaObat({ auth, hargaObat, schema, penjualanUmum, p
                                         {processing ? 'Menyimpan...' : 'Simpan Pengaturan'}
                                     </button>
                                 </div>
+                                )}
                             </form>
                             )}
 

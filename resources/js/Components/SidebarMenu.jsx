@@ -76,26 +76,37 @@ export default function SidebarMenu({ collapsed = false }) {
 
 	const getMenuUrl = (menu) => {
 		// Special case: Farmasi root menu should navigate directly to Farmasi Index
-		if ((menu.slug && menu.slug === "farmasi") || (menu.name && menu.name.toLowerCase() === "farmasi")) {
-			try {
-				return route("farmasi.index");
-			} catch (error) {
-				console.warn("Route farmasi.index not found, falling back to /farmasi");
-				return "/farmasi";
-			}
-		}
+        if ((menu.slug && menu.slug === "farmasi") || (menu.name && menu.name.toLowerCase() === "farmasi")) {
+            try {
+                // gunakan URL relatif agar mengikuti origin aktif
+                return route("farmasi.index", {}, false);
+            } catch (error) {
+                console.warn("Route farmasi.index not found, falling back to /farmasi");
+                return "/farmasi";
+            }
+        }
 		if (menu.url) {
-			return menu.url;
+			try {
+				const currentOrigin = window.location.origin;
+				const u = new URL(menu.url, currentOrigin);
+				// Kembalikan path relatif agar selalu mengikuti origin aktif
+				return u.pathname + u.search + u.hash;
+			} catch (e) {
+				// Jika parsing gagal, paksa menjadi relatif
+				if (menu.url.startsWith("/")) return menu.url;
+				return "/" + menu.url.replace(/^https?:\/\/[^/]+/, "");
+			}
 		}
 
-		if (menu.route) {
-			try {
-				return route(menu.route);
-			} catch (error) {
-				console.warn(`Route ${menu.route} not found for menu ${menu.name}`);
-				return "#";
-			}
-		}
+        if (menu.route) {
+            try {
+                // gunakan URL relatif agar mengikuti origin aktif
+                return route(menu.route, {}, false);
+            } catch (error) {
+                console.warn(`Route ${menu.route} not found for menu ${menu.name}`);
+                return "#";
+            }
+        }
 
 		return "#";
 	};
