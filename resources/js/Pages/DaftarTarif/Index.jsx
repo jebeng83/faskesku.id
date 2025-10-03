@@ -934,9 +934,62 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
 const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onSave = () => {}, selectedLabName = '' }) => {
     if (!isOpen) return null;
 
+    // Bidang numerik yang dibatasi 9 digit, tanpa desimal
+    const numericFields = new Set([
+        'bagian_rs',
+        'bhp',
+        'bagian_perujuk',
+        'bagian_dokter',
+        'bagian_laborat',
+        'kso',
+        'menejemen',
+        'biaya_item'
+    ]);
+
+    // Normalisasi nilai awal agar tidak menampilkan desimal dan hitung Biaya Item otomatis
+    React.useEffect(() => {
+        if (!rows || rows.length === 0) return;
+        const normalized = rows.map((r) => {
+            const updated = { ...r };
+            numericFields.forEach((f) => {
+                if (updated[f] != null && updated[f] !== '') {
+                    const normalizedVal = String(updated[f]).replace(/,/g, '.');
+                    const parsed = parseFloat(normalizedVal);
+                    if (!isNaN(parsed)) {
+                        updated[f] = String(Math.floor(parsed)).slice(0, 9);
+                    }
+                }
+            });
+            // Hitung otomatis Biaya Item sebagai jumlah komponen numerik
+            const sumFields = ['bagian_rs', 'bhp', 'bagian_perujuk', 'bagian_dokter', 'bagian_laborat', 'kso', 'menejemen'];
+            const total = sumFields.reduce((acc, f) => acc + (parseInt(updated[f]) || 0), 0);
+            updated.biaya_item = String(total).slice(0, 9);
+            return updated;
+        });
+        setRows(normalized);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen]);
+
     const handleChange = (index, field, value) => {
+        let nextValue = value;
+        if (numericFields.has(field)) {
+            // Normalisasi: ganti koma ke titik, ambil angka desimal, konversi ke bilangan bulat string
+            const normalized = String(nextValue).replace(/,/g, '.');
+            const parsed = parseFloat(normalized);
+            if (isNaN(parsed)) {
+                nextValue = '';
+            } else {
+                nextValue = String(Math.floor(parsed));
+            }
+            // Batasi maksimal 9 digit
+            if (nextValue.length > 9) nextValue = nextValue.slice(0, 9);
+        }
         const updated = [...rows];
-        updated[index] = { ...updated[index], [field]: value };
+        updated[index] = { ...updated[index], [field]: nextValue };
+        // Perbarui Biaya Item otomatis setiap kali komponen numerik berubah
+        const sumFields = ['bagian_rs', 'bhp', 'bagian_perujuk', 'bagian_dokter', 'bagian_laborat', 'kso', 'menejemen'];
+        const total = sumFields.reduce((acc, f) => acc + (parseInt(updated[index][f]) || 0), 0);
+        updated[index].biaya_item = String(total).slice(0, 9);
         setRows(updated);
     };
 
@@ -962,9 +1015,30 @@ const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onS
         setRows(updated);
     };
 
+    // Ref untuk tabel agar navigasi Enter bisa fokus ke input berikutnya
+    const tableRef = React.useRef(null);
+
+    // Handler: tekan Enter pindah ke input berikutnya dalam urutan DOM
+    const handleEnterFocusNext = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (!tableRef.current) return;
+            const inputs = Array.from(tableRef.current.querySelectorAll('input'));
+            const idx = inputs.indexOf(e.target);
+            if (idx > -1) {
+                let next = null;
+                for (let i = idx + 1; i < inputs.length; i++) {
+                    const el = inputs[i];
+                    if (!el.readOnly && !el.disabled) { next = el; break; }
+                }
+                if (next) next.focus();
+            }
+        }
+    };
+
     return (
-        <div className="modal-overlay">
-            <div className="modal-container w-full sm:max-w-6xl">
+            <div className="modal-overlay laptop-dense">
+                <div className="modal-container">
                 {/* Modal Header */}
                 <div className="modal-header">
                     <div className="modal-title-section">
@@ -985,8 +1059,8 @@ const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onS
                     </button>
                 </div>
 
-                {/* Modal Body */}
-                <div className="modal-body px-4 sm:px-6">
+                    {/* Modal Body */}
+                    <div className="modal-body">
                     <div className="form-section">
                         <div className="section-header">
                             <div className="section-icon">
@@ -1009,22 +1083,22 @@ const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onS
                             </div>
                         </div>
 
-                        <div className="relative overflow-x-auto border rounded-md">
-                            <table className="min-w-full divide-y divide-gray-200 text-xs sm:text-sm align-middle">
-                                <thead className="bg-gray-50 sticky top-0 z-10">
-                                    <tr>
-                                        <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Pemeriksaan</th>
-                                        <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Bagian RS</th>
-                                        <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">BHP</th>
-                                        <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Bagian Perujuk</th>
-                                        <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Bagian Dokter</th>
-                                        <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Bagian Laborat</th>
-                                        <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">KSO</th>
-                                        <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Menejemen</th>
-                                        <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Biaya Item (Rp)</th>
-                                        <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Aksi</th>
-                                    </tr>
-                                </thead>
+                        <div ref={tableRef} className="relative overflow-x-auto border border-gray-200 rounded-md shadow-sm bg-white">
+                            <table className="min-w-full divide-y divide-gray-200 text-xs sm:text-sm align-middle table-fixed">
+                            <thead className="bg-gray-200 sticky top-0 z-10">
+                                <tr>
+                                <th className="px-1 py-0.5 text-center font-medium text-black uppercase tracking-wider whitespace-nowrap w-[30ch]">Pemeriksaan</th>
+                                <th className="px-1 py-0.5 text-center font-medium text-black uppercase tracking-wider whitespace-nowrap w-[12ch] text-[11px]">Bagian RS</th>
+                                <th className="px-1 py-0.5 text-center font-medium text-black uppercase tracking-wider whitespace-nowrap w-[12ch] text-[11px]">BHP</th>
+                                <th className="px-1 py-0.5 text-center font-medium text-black uppercase tracking-wider whitespace-nowrap w-[12ch] text-[11px]">Bagian Perujuk</th>
+                                <th className="px-1 py-0.5 text-center font-medium text-black uppercase tracking-wider whitespace-nowrap w-[12ch] text-[11px]">Bagian Dokter</th>
+                                <th className="px-1 py-0.5 text-center font-medium text-black uppercase tracking-wider whitespace-nowrap w-[12ch] text-[11px]">Bagian Laborat</th>
+                                <th className="px-1 py-0.5 text-center font-medium text-black uppercase tracking-wider whitespace-nowrap w-[12ch] text-[11px]">KSO</th>
+                                <th className="px-1 py-0.5 text-center font-medium text-black uppercase tracking-wider whitespace-nowrap w-[14ch] text-[11px]">Menejemen</th>
+                                <th className="px-1 py-0.5 text-center font-medium text-black uppercase tracking-wider whitespace-nowrap w-[14ch] text-[11px]">Biaya Item (Rp)</th>
+                                <th className="px-1 py-1 text-center font-medium text-black uppercase tracking-wider whitespace-nowrap">Aksi</th>
+                                </tr>
+                            </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
                                     {rows.length === 0 ? (
                                         <tr>
@@ -1032,110 +1106,128 @@ const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onS
                                         </tr>
                                     ) : (
                                         rows.map((row, idx) => (
-                                            <tr key={idx} className="hover:bg-gray-50">
-                                                <td className="px-3 sm:px-4 py-2">
+                                            <tr key={idx} className="odd:bg-white even:bg-gray-50 hover:bg-gray-100">
+                                                <td className="px-1 py-0.5">
                                                     <input
                                                         type="text"
-                                                        className="form-input w-48 h-9"
+                                                        className="form-input !w-[30ch] !min-w-[24ch] !h-7 !px-2 !py-1 text-xs focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                                                         placeholder="Nama pemeriksaan"
                                                         value={row.pemeriksaan}
                                                         onChange={(e) => handleChange(idx, 'pemeriksaan', e.target.value)}
+                                                        onKeyDown={handleEnterFocusNext}
                                                     />
                                                 </td>
-                                                <td className="px-3 sm:px-4 py-2">
+                                                <td className="px-1 py-0.5">
                                                     <input
-                                                        type="number"
-                                                        className="form-input w-28 h-9 text-right"
+                                                        type="text"
+                                                        inputMode="numeric"
+                                                        pattern="[0-9]*"
+                                                        maxLength={9}
+                                                        className="form-input !w-[12ch] !min-w-[12ch] !h-7 !px-2 !py-1 text-right text-xs font-mono focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                                                         placeholder="0"
-                                                        step="0.01"
-                                                        min="0"
                                                         value={row.bagian_rs}
                                                         onChange={(e) => handleChange(idx, 'bagian_rs', e.target.value)}
+                                                        onKeyDown={handleEnterFocusNext}
                                                         required
                                                     />
                                                 </td>
-                                                <td className="px-3 sm:px-4 py-2">
+                                                <td className="px-1 py-0.5">
                                                     <input
-                                                        type="number"
-                                                        className="form-input w-28 h-9 text-right"
+                                                        type="text"
+                                                        inputMode="numeric"
+                                                        pattern="[0-9]*"
+                                                        maxLength={9}
+                                                        className="form-input !w-[12ch] !min-w-[12ch] !h-7 !px-2 !py-1 text-right text-xs font-mono focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                                                         placeholder="0"
-                                                        step="0.01"
-                                                        min="0"
                                                         value={row.bhp}
                                                         onChange={(e) => handleChange(idx, 'bhp', e.target.value)}
+                                                        onKeyDown={handleEnterFocusNext}
                                                         required
                                                     />
                                                 </td>
-                                                <td className="px-3 sm:px-4 py-2">
+                                                <td className="px-1 py-0.5">
                                                     <input
-                                                        type="number"
-                                                        className="form-input w-28 h-9 text-right"
+                                                        type="text"
+                                                        inputMode="numeric"
+                                                        pattern="[0-9]*"
+                                                        maxLength={9}
+                                                        className="form-input !w-[12ch] !min-w-[12ch] !h-7 !px-2 !py-1 text-right text-xs font-mono focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                                                         placeholder="0"
-                                                        step="0.01"
-                                                        min="0"
                                                         value={row.bagian_perujuk}
                                                         onChange={(e) => handleChange(idx, 'bagian_perujuk', e.target.value)}
+                                                        onKeyDown={handleEnterFocusNext}
                                                         required
                                                     />
                                                 </td>
-                                                <td className="px-3 sm:px-4 py-2">
+                                                <td className="px-1 py-0.5">
                                                     <input
-                                                        type="number"
-                                                        className="form-input w-28 h-9 text-right"
+                                                        type="text"
+                                                        inputMode="numeric"
+                                                        pattern="[0-9]*"
+                                                        maxLength={9}
+                                                        className="form-input !w-[12ch] !min-w-[12ch] !h-7 !px-2 !py-1 text-right text-xs font-mono focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                                                         placeholder="0"
-                                                        step="0.01"
-                                                        min="0"
                                                         value={row.bagian_dokter}
                                                         onChange={(e) => handleChange(idx, 'bagian_dokter', e.target.value)}
+                                                        onKeyDown={handleEnterFocusNext}
                                                         required
                                                     />
                                                 </td>
-                                                <td className="px-3 sm:px-4 py-2">
+                                                <td className="px-1 py-0.5">
                                                     <input
-                                                        type="number"
-                                                        className="form-input w-28 h-9 text-right"
+                                                        type="text"
+                                                        inputMode="numeric"
+                                                        pattern="[0-9]*"
+                                                        maxLength={9}
+                                                        className="form-input !w-[12ch] !min-w-[12ch] !h-7 !px-2 !py-1 text-right text-xs font-mono focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                                                         placeholder="0"
-                                                        step="0.01"
-                                                        min="0"
                                                         value={row.bagian_laborat}
                                                         onChange={(e) => handleChange(idx, 'bagian_laborat', e.target.value)}
+                                                        onKeyDown={handleEnterFocusNext}
                                                         required
                                                     />
                                                 </td>
-                                                <td className="px-3 sm:px-4 py-2">
+                                                <td className="px-1 py-0.5">
                                                     <input
-                                                        type="number"
-                                                        className="form-input w-28 h-9 text-right"
+                                                        type="text"
+                                                        inputMode="numeric"
+                                                        pattern="[0-9]*"
+                                                        maxLength={9}
+                                                        className="form-input !w-[12ch] !min-w-[12ch] !h-8 !px-2 !py-1.5 text-right text-xs font-mono focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                                                         placeholder="0"
-                                                        step="0.01"
-                                                        min="0"
                                                         value={row.kso}
                                                         onChange={(e) => handleChange(idx, 'kso', e.target.value)}
+                                                        onKeyDown={handleEnterFocusNext}
                                                     />
                                                 </td>
-                                                <td className="px-3 sm:px-4 py-2">
+                                                <td className="px-1 py-0.5">
                                                     <input
-                                                        type="number"
-                                                        className="form-input w-28 h-9 text-right"
+                                                        type="text"
+                                                        inputMode="numeric"
+                                                        pattern="[0-9]*"
+                                                        maxLength={9}
+                                                        className="form-input !w-[14ch] !min-w-[14ch] !h-7 !px-2 !py-1 text-right text-xs font-mono focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                                                         placeholder="0"
-                                                        step="0.01"
-                                                        min="0"
                                                         value={row.menejemen}
                                                         onChange={(e) => handleChange(idx, 'menejemen', e.target.value)}
+                                                        onKeyDown={handleEnterFocusNext}
                                                     />
                                                 </td>
-                                                <td className="px-3 sm:px-4 py-2">
+                                                <td className="px-1 py-0.5">
                                                     <input
-                                                        type="number"
-                                                        className="form-input w-28 h-9 text-right"
+                                                        type="text"
+                                                        inputMode="numeric"
+                                                        pattern="[0-9]*"
+                                                        maxLength={9}
+                                                        className="form-input !w-[14ch] !min-w-[14ch] !h-7 !px-2 !py-1 text-right text-xs font-mono font-bold bg-gray-50 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                                                         placeholder="0"
-                                                        step="0.01"
                                                         value={row.biaya_item}
-                                                        onChange={(e) => handleChange(idx, 'biaya_item', e.target.value)}
+                                                        readOnly
+                                                        onKeyDown={handleEnterFocusNext}
                                                         required
                                                     />
                                                 </td>
-                                                <td className="px-3 sm:px-4 py-2 w-20">
+                                                <td className="px-1 py-1 w-16">
                                                     <button
                                                         type="button"
                                                         onClick={() => handleRemoveRow(idx)}
