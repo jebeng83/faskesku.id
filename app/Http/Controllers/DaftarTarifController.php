@@ -620,6 +620,69 @@ class DaftarTarifController extends Controller
     private function updateRadiologi(Request $request, $id) { /* Implementation for radiologi */ }
 
     /**
+     * Update template laboratorium rows for a given jenis perawatan.
+     */
+    public function updateLaboratoriumTemplates(Request $request, $kdJenisPrw)
+    {
+        // Validasi struktur rows
+        $validator = Validator::make($request->all(), [
+            'rows' => 'required|array|min:1',
+            'rows.*.pemeriksaan' => 'required|string|max:255',
+            'rows.*.bagian_rs' => 'required|numeric|min:0',
+            'rows.*.bhp' => 'required|numeric|min:0',
+            'rows.*.bagian_perujuk' => 'required|numeric|min:0',
+            'rows.*.bagian_dokter' => 'required|numeric|min:0',
+            'rows.*.bagian_laborat' => 'required|numeric|min:0',
+            'rows.*.kso' => 'nullable|numeric|min:0',
+            'rows.*.menejemen' => 'nullable|numeric|min:0',
+            'rows.*.biaya_item' => 'required|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back(303)
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        try {
+            // Pastikan jenis perawatan ada
+            $jns = \App\Models\JnsPerawatanLab::findOrFail($kdJenisPrw);
+
+            // Hapus semua template lama untuk kd_jenis_prw ini, kemudian insert ulang berdasarkan urut
+            \App\Models\TemplateLaboratorium::where('kd_jenis_prw', $kdJenisPrw)->delete();
+
+            $rows = $request->input('rows', []);
+            $urut = 1;
+            foreach ($rows as $row) {
+                \App\Models\TemplateLaboratorium::create([
+                    'kd_jenis_prw' => $kdJenisPrw,
+                    'Pemeriksaan' => $row['pemeriksaan'],
+                    'satuan' => $row['satuan'] ?? null,
+                    // Map nilai rujukan input (ld/la/pd/pa) ke kolom database yang sesuai
+                    'nilai_rujukan_ld' => $row['ld'] ?? null,
+                    'nilai_rujukan_la' => $row['la'] ?? null,
+                    'nilai_rujukan_pd' => $row['pd'] ?? null,
+                    'nilai_rujukan_pa' => $row['pa'] ?? null,
+                    'bagian_rs' => $row['bagian_rs'] ?? 0,
+                    'bhp' => $row['bhp'] ?? 0,
+                    'bagian_perujuk' => $row['bagian_perujuk'] ?? 0,
+                    'bagian_dokter' => $row['bagian_dokter'] ?? 0,
+                    'bagian_laborat' => $row['bagian_laborat'] ?? 0,
+                    'kso' => $row['kso'] ?? 0,
+                    'menejemen' => $row['menejemen'] ?? 0,
+                    'biaya_item' => $row['biaya_item'] ?? 0,
+                    'urut' => $urut++,
+                ]);
+            }
+
+            return redirect()->route('daftar-tarif.index', ['category' => 'laboratorium'], 303)
+                ->with('success', 'Template laboratorium berhasil diperbarui');
+        } catch (\Exception $e) {
+            return redirect()->back(303)->with('error', 'Gagal memperbarui template laboratorium');
+        }
+    }
+
+    /**
      * Show the form for editing the specified resource.
      */
     public function edit($id)

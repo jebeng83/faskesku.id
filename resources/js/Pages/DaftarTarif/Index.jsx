@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
+import laboratoriumRoutes from '@/routes/daftar-tarif/laboratorium';
 
 // Simple Badge component
 const Badge = ({ children, variant = 'default' }) => {
@@ -339,8 +340,33 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
         }
         
         console.log('Formatted data:', formData);
-        
-        const submitRoute = isEditMode 
+
+        if (isEditMode && (!editData || !editData.kd_jenis_prw)) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 z-50 bg-red-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 max-w-md';
+            notification.innerHTML = `
+                <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M12 5a7 7 0 100 14 7 7 0 000-14z"></path>
+                </svg>
+                <div class="flex-1">
+                    <div class="font-semibold">Gagal memperbarui tarif</div>
+                    <div class="text-sm opacity-90 mt-1">ID tarif tidak ditemukan. Muat ulang halaman atau pilih item yang benar.</div>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 6000);
+            return;
+        }
+
+        const submitRoute = isEditMode
             ? route('daftar-tarif.update', editData.kd_jenis_prw)
             : route('daftar-tarif.store');
         
@@ -998,6 +1024,11 @@ const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onS
             ...rows,
             {
                 pemeriksaan: '',
+                satuan: '',
+                ld: '',
+                la: '',
+                pd: '',
+                pa: '',
                 bagian_rs: '',
                 bhp: '',
                 bagian_perujuk: '',
@@ -1088,6 +1119,11 @@ const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onS
                             <thead className="bg-gray-200 sticky top-0 z-10">
                                 <tr>
                                 <th className="px-1 py-0.5 text-center font-medium text-black uppercase tracking-wider whitespace-nowrap w-[30ch]">Pemeriksaan</th>
+                                <th className="px-1 py-0.5 text-center font-medium text-black uppercase tracking-wider whitespace-nowrap w-[16ch]">Satuan</th>
+                                <th className="px-1 py-0.5 text-center font-medium text-black uppercase tracking-wider whitespace-nowrap w-[12ch]">LD</th>
+                                <th className="px-1 py-0.5 text-center font-medium text-black uppercase tracking-wider whitespace-nowrap w-[12ch]">LA</th>
+                                <th className="px-1 py-0.5 text-center font-medium text-black uppercase tracking-wider whitespace-nowrap w-[12ch]">PD</th>
+                                <th className="px-1 py-0.5 text-center font-medium text-black uppercase tracking-wider whitespace-nowrap w-[12ch]">PA</th>
                                 <th className="px-1 py-0.5 text-center font-medium text-black uppercase tracking-wider whitespace-nowrap w-[12ch] text-[11px]">Bagian RS</th>
                                 <th className="px-1 py-0.5 text-center font-medium text-black uppercase tracking-wider whitespace-nowrap w-[12ch] text-[11px]">BHP</th>
                                 <th className="px-1 py-0.5 text-center font-medium text-black uppercase tracking-wider whitespace-nowrap w-[12ch] text-[11px]">Bagian Perujuk</th>
@@ -1106,7 +1142,7 @@ const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onS
                                         </tr>
                                     ) : (
                                         rows.map((row, idx) => (
-                                            <tr key={idx} className="odd:bg-white even:bg-gray-50 hover:bg-gray-100">
+                                            <tr key={row.id_template ?? idx} className="odd:bg-white even:bg-gray-50 hover:bg-gray-100">
                                                 <td className="px-1 py-0.5">
                                                     <input
                                                         type="text"
@@ -1114,6 +1150,56 @@ const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onS
                                                         placeholder="Nama pemeriksaan"
                                                         value={row.pemeriksaan}
                                                         onChange={(e) => handleChange(idx, 'pemeriksaan', e.target.value)}
+                                                        onKeyDown={handleEnterFocusNext}
+                                                    />
+                                                </td>
+                                                <td className="px-1 py-0.5">
+                                                    <input
+                                                        type="text"
+                                                        className="form-input !w-[16ch] !min-w-[12ch] !h-7 !px-2 !py-1 text-xs focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                                                        placeholder="mg/dL"
+                                                        value={row.satuan || ''}
+                                                        onChange={(e) => handleChange(idx, 'satuan', e.target.value)}
+                                                        onKeyDown={handleEnterFocusNext}
+                                                    />
+                                                </td>
+                                                <td className="px-1 py-0.5">
+                                                    <input
+                                                        type="text"
+                                                        className="form-input !w-[12ch] !min-w-[12ch] !h-7 !px-2 !py-1 text-xs focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                                                        placeholder="Nilai LD"
+                                                        value={row.ld || ''}
+                                                        onChange={(e) => handleChange(idx, 'ld', e.target.value)}
+                                                        onKeyDown={handleEnterFocusNext}
+                                                    />
+                                                </td>
+                                                <td className="px-1 py-0.5">
+                                                    <input
+                                                        type="text"
+                                                        className="form-input !w-[12ch] !min-w-[12ch] !h-7 !px-2 !py-1 text-xs focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                                                        placeholder="Nilai LA"
+                                                        value={row.la || ''}
+                                                        onChange={(e) => handleChange(idx, 'la', e.target.value)}
+                                                        onKeyDown={handleEnterFocusNext}
+                                                    />
+                                                </td>
+                                                <td className="px-1 py-0.5">
+                                                    <input
+                                                        type="text"
+                                                        className="form-input !w-[12ch] !min-w-[12ch] !h-7 !px-2 !py-1 text-xs focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                                                        placeholder="Nilai PD"
+                                                        value={row.pd || ''}
+                                                        onChange={(e) => handleChange(idx, 'pd', e.target.value)}
+                                                        onKeyDown={handleEnterFocusNext}
+                                                    />
+                                                </td>
+                                                <td className="px-1 py-0.5">
+                                                    <input
+                                                        type="text"
+                                                        className="form-input !w-[12ch] !min-w-[12ch] !h-7 !px-2 !py-1 text-xs focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                                                        placeholder="Nilai PA"
+                                                        value={row.pa || ''}
+                                                        onChange={(e) => handleChange(idx, 'pa', e.target.value)}
                                                         onKeyDown={handleEnterFocusNext}
                                                     />
                                                 </td>
@@ -1382,7 +1468,13 @@ export default function Index({ title, data, category, search, filters, poliklin
     const handleOpenTemplateModal = () => {
         if (!selectedLab) return;
         const rows = (selectedLab.template_laboratorium || []).map((tmpl) => ({
+            id_template: tmpl.id_template,
             pemeriksaan: tmpl.Pemeriksaan || tmpl.item_pemeriksaan || '',
+            satuan: typeof tmpl.satuan !== 'undefined' ? String(tmpl.satuan) : '',
+            ld: typeof tmpl.nilai_rujukan_ld !== 'undefined' ? String(tmpl.nilai_rujukan_ld) : (typeof tmpl.ld !== 'undefined' ? String(tmpl.ld) : ''),
+            la: typeof tmpl.nilai_rujukan_la !== 'undefined' ? String(tmpl.nilai_rujukan_la) : (typeof tmpl.la !== 'undefined' ? String(tmpl.la) : ''),
+            pd: typeof tmpl.nilai_rujukan_pd !== 'undefined' ? String(tmpl.nilai_rujukan_pd) : (typeof tmpl.pd !== 'undefined' ? String(tmpl.pd) : ''),
+            pa: typeof tmpl.nilai_rujukan_pa !== 'undefined' ? String(tmpl.nilai_rujukan_pa) : (typeof tmpl.pa !== 'undefined' ? String(tmpl.pa) : ''),
             bagian_rs: typeof tmpl.bagian_rs !== 'undefined' ? String(tmpl.bagian_rs) : '',
             bhp: typeof tmpl.bhp !== 'undefined' ? String(tmpl.bhp) : '',
             bagian_perujuk: typeof tmpl.bagian_perujuk !== 'undefined' ? String(tmpl.bagian_perujuk) : '',
@@ -1460,6 +1552,12 @@ export default function Index({ title, data, category, search, filters, poliklin
         // Update selectedLab state agar panel kanan langsung mencerminkan perubahan
         const updatedTemplates = templateRows.map((row) => ({
             Pemeriksaan: row.pemeriksaan,
+            satuan: typeof row.satuan === 'string' ? row.satuan.trim() : row.satuan ?? null,
+            // Nilai rujukan disimpan sebagai string (varchar) sesuai definisi kolom database
+            ld: row.ld === '' || row.ld === null || typeof row.ld === 'undefined' ? null : String(row.ld).trim(),
+            la: row.la === '' || row.la === null || typeof row.la === 'undefined' ? null : String(row.la).trim(),
+            pd: row.pd === '' || row.pd === null || typeof row.pd === 'undefined' ? null : String(row.pd).trim(),
+            pa: row.pa === '' || row.pa === null || typeof row.pa === 'undefined' ? null : String(row.pa).trim(),
             bagian_rs: Number(row.bagian_rs) || 0,
             bhp: Number(row.bhp) || 0,
             bagian_perujuk: Number(row.bagian_perujuk) || 0,
@@ -1478,25 +1576,71 @@ export default function Index({ title, data, category, search, filters, poliklin
             };
         });
 
-        // Notifikasi sederhana
-        const notification = document.createElement('div');
-        notification.className = 'fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3';
-        notification.innerHTML = `
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-            <span class="font-medium">Template berhasil diperbarui (lokal).</span>
-        `;
-        document.body.appendChild(notification);
-        setTimeout(() => {
-            notification.style.transform = 'translateX(100%)';
-            notification.style.opacity = '0';
-            setTimeout(() => {
-                if (notification.parentNode) notification.parentNode.removeChild(notification);
-            }, 300);
-        }, 2500);
+        // Panggil backend untuk persist perubahan
+        if (selectedLab && selectedLab.kd_jenis_prw) {
+            const payloadRows = templateRows.map((row) => ({
+                pemeriksaan: row.pemeriksaan,
+                satuan: typeof row.satuan === 'string' ? row.satuan.trim() : row.satuan ?? null,
+                // Kirim nilai rujukan sebagai string (varchar) sesuai definisi schema
+                ld: row.ld === '' || row.ld === null || typeof row.ld === 'undefined' ? null : String(row.ld).trim(),
+                la: row.la === '' || row.la === null || typeof row.la === 'undefined' ? null : String(row.la).trim(),
+                pd: row.pd === '' || row.pd === null || typeof row.pd === 'undefined' ? null : String(row.pd).trim(),
+                pa: row.pa === '' || row.pa === null || typeof row.pa === 'undefined' ? null : String(row.pa).trim(),
+                bagian_rs: Number(row.bagian_rs) || 0,
+                bhp: Number(row.bhp) || 0,
+                bagian_perujuk: Number(row.bagian_perujuk) || 0,
+                bagian_dokter: Number(row.bagian_dokter) || 0,
+                bagian_laborat: Number(row.bagian_laborat) || 0,
+                kso: row.kso === '' ? 0 : Number(row.kso) || 0,
+                menejemen: row.menejemen === '' ? 0 : Number(row.menejemen) || 0,
+                biaya_item: Number(row.biaya_item) || 0,
+            }));
 
-        handleCloseTemplateModal();
+            const def = laboratoriumRoutes.updateTemplates.put(selectedLab.kd_jenis_prw);
+            router.put(def.url, {
+                rows: payloadRows,
+            }, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    const notification = document.createElement('div');
+                    notification.className = 'fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3';
+                    notification.innerHTML = `
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span class="font-medium">Template berhasil disimpan.</span>
+                    `;
+                    document.body.appendChild(notification);
+                    setTimeout(() => {
+                        notification.style.transform = 'translateX(100%)';
+                        notification.style.opacity = '0';
+                        setTimeout(() => {
+                            if (notification.parentNode) notification.parentNode.removeChild(notification);
+                        }, 300);
+                    }, 2500);
+                    handleCloseTemplateModal();
+                },
+                onError: (errors) => {
+                    console.error('Gagal menyimpan template:', errors);
+                    const notification = document.createElement('div');
+                    notification.className = 'fixed top-4 right-4 z-50 bg-red-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3';
+                    notification.innerHTML = `
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M12 5a7 7 0 100 14 7 7 0 000-14z"></path>
+                        </svg>
+                        <span class="font-medium">Gagal menyimpan template. Periksa input Anda.</span>
+                    `;
+                    document.body.appendChild(notification);
+                    setTimeout(() => {
+                        notification.style.transform = 'translateX(100%)';
+                        notification.style.opacity = '0';
+                        setTimeout(() => {
+                            if (notification.parentNode) notification.parentNode.removeChild(notification);
+                        }, 300);
+                    }, 2500);
+                }
+            });
+        }
     };
 
     // Set default selectedLab saat berada di tab laboratorium
