@@ -958,8 +958,6 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
 
 // Modal untuk edit Template Pemeriksaan (tabel editable)
 const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onSave = () => {}, selectedLabName = '' }) => {
-    if (!isOpen) return null;
-
     // Bidang numerik yang dibatasi 9 digit, tanpa desimal
     const numericFields = new Set([
         'bagian_rs',
@@ -972,8 +970,12 @@ const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onS
         'biaya_item'
     ]);
 
+    // Ref untuk tabel agar navigasi Enter bisa fokus ke input berikutnya
+    const tableRef = React.useRef(null);
+
     // Normalisasi nilai awal agar tidak menampilkan desimal dan hitung Biaya Item otomatis
     React.useEffect(() => {
+        if (!isOpen) return;
         if (!rows || rows.length === 0) return;
         const normalized = rows.map((r) => {
             const updated = { ...r };
@@ -995,6 +997,8 @@ const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onS
         setRows(normalized);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen]);
+
+    if (!isOpen) return null;
 
     const handleChange = (index, field, value) => {
         let nextValue = value;
@@ -1045,9 +1049,6 @@ const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onS
         const updated = rows.filter((_, i) => i !== index);
         setRows(updated);
     };
-
-    // Ref untuk tabel agar navigasi Enter bisa fokus ke input berikutnya
-    const tableRef = React.useRef(null);
 
     // Handler: tekan Enter pindah ke input berikutnya dalam urutan DOM
     const handleEnterFocusNext = (e) => {
