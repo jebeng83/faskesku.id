@@ -362,15 +362,6 @@ class SetHargaObatController extends Controller
     {
         try {
             $kode = strtoupper(trim($kode_brng));
-            // Pastikan barang ada
-            $existsBarang = DB::table('databarang')->where('kode_brng', $kode)->exists();
-            if (!$existsBarang) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Barang tidak ditemukan',
-                ], 404);
-            }
-
             $row = DB::table('setpenjualanperbarang')
                 ->where('kode_brng', $kode)
                 ->first();
@@ -387,6 +378,101 @@ class SetHargaObatController extends Controller
                 'success' => true,
                 'data' => [
                     'kode_brng' => $row->kode_brng,
+                    'ralan' => (double) $row->ralan,
+                    'kelas1' => (double) $row->kelas1,
+                    'kelas2' => (double) $row->kelas2,
+                    'kelas3' => (double) $row->kelas3,
+                    'utama' => (double) $row->utama,
+                    'vip' => (double) $row->vip,
+                    'vvip' => (double) $row->vvip,
+                    'beliluar' => (double) $row->beliluar,
+                    'jualbebas' => (double) $row->jualbebas,
+                    'karyawan' => (double) $row->karyawan,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Show pengaturan harga umum (setpenjualanumum) sebagai JSON
+     */
+    public function showPenjualanUmum()
+    {
+        try {
+            $row = DB::table('setpenjualanumum')->first();
+            if (!$row) {
+                // Inisialisasi default bila kosong
+                $defaults = [
+                    'ralan' => 20,
+                    'kelas1' => 20,
+                    'kelas2' => 20,
+                    'kelas3' => 20,
+                    'utama' => 20,
+                    'vip' => 20,
+                    'vvip' => 20,
+                    'beliluar' => 20,
+                    'jualbebas' => 20,
+                    'karyawan' => 20,
+                ];
+                DB::table('setpenjualanumum')->insert($defaults);
+                $row = (object) $defaults;
+            }
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'ralan' => (double) $row->ralan,
+                    'kelas1' => (double) $row->kelas1,
+                    'kelas2' => (double) $row->kelas2,
+                    'kelas3' => (double) $row->kelas3,
+                    'utama' => (double) $row->utama,
+                    'vip' => (double) $row->vip,
+                    'vvip' => (double) $row->vvip,
+                    'beliluar' => (double) $row->beliluar,
+                    'jualbebas' => (double) $row->jualbebas,
+                    'karyawan' => (double) $row->karyawan,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Show pengaturan harga per Jenis (setpenjualan) sebagai JSON
+     */
+    public function showPenjualanPerJenis(string $kdjns)
+    {
+        try {
+            $kode = strtoupper(trim($kdjns));
+            // Jika jenis tidak ditemukan, kembalikan data null (hindari 404 agar frontend bisa fallback)
+            $existsJenis = DB::table('jenis')->where('kdjns', $kode)->exists();
+            if (!$existsJenis) {
+                return response()->json([
+                    'success' => true,
+                    'data' => null,
+                ]);
+            }
+
+            $row = DB::table('setpenjualan')->where('kdjns', $kode)->first();
+            if (!$row) {
+                return response()->json([
+                    'success' => true,
+                    'data' => null,
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'kdjns' => $kode,
                     'ralan' => (double) $row->ralan,
                     'kelas1' => (double) $row->kelas1,
                     'kelas2' => (double) $row->kelas2,

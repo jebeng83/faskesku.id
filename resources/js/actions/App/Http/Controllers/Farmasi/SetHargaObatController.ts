@@ -148,6 +148,156 @@ destroyPenjualanPerBarang.delete = (args: { kode_brng: string | number } | [kode
 })
 
 /**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::showPenjualanUmum
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:404
+* @route '/farmasi/set-penjualan-umum'
+*/
+export const showPenjualanUmum = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: showPenjualanUmum.url(options),
+    method: 'get',
+})
+
+showPenjualanUmum.definition = {
+    methods: ["get","head"],
+    url: '/farmasi/set-penjualan-umum',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::showPenjualanUmum
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:404
+* @route '/farmasi/set-penjualan-umum'
+*/
+showPenjualanUmum.url = (options?: RouteQueryOptions) => {
+    return showPenjualanUmum.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::showPenjualanUmum
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:404
+* @route '/farmasi/set-penjualan-umum'
+*/
+showPenjualanUmum.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: showPenjualanUmum.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::showPenjualanUmum
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:404
+* @route '/farmasi/set-penjualan-umum'
+*/
+showPenjualanUmum.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: showPenjualanUmum.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::showPenjualanPerJenis
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:451
+* @route '/farmasi/set-penjualan/{kdjns}'
+*/
+export const showPenjualanPerJenis = (args: { kdjns: string | number } | [kdjns: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: showPenjualanPerJenis.url(args, options),
+    method: 'get',
+})
+
+showPenjualanPerJenis.definition = {
+    methods: ["get","head"],
+    url: '/farmasi/set-penjualan/{kdjns}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::showPenjualanPerJenis
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:451
+* @route '/farmasi/set-penjualan/{kdjns}'
+*/
+showPenjualanPerJenis.url = (args: { kdjns: string | number } | [kdjns: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { kdjns: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            kdjns: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        kdjns: args.kdjns,
+    }
+
+    return showPenjualanPerJenis.definition.url
+            .replace('{kdjns}', parsedArgs.kdjns.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::showPenjualanPerJenis
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:451
+* @route '/farmasi/set-penjualan/{kdjns}'
+*/
+showPenjualanPerJenis.get = (args: { kdjns: string | number } | [kdjns: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: showPenjualanPerJenis.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::showPenjualanPerJenis
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:451
+* @route '/farmasi/set-penjualan/{kdjns}'
+*/
+showPenjualanPerJenis.head = (args: { kdjns: string | number } | [kdjns: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: showPenjualanPerJenis.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @route '/farmasi/set-harga-obat/json'
+*/
+export const getPercentageData = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getPercentageData.url(options),
+    method: 'get',
+})
+
+getPercentageData.definition = {
+    methods: ["get","head"],
+    url: '/farmasi/set-harga-obat/json',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @route '/farmasi/set-harga-obat/json'
+*/
+getPercentageData.url = (options?: RouteQueryOptions) => {
+    return getPercentageData.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @route '/farmasi/set-harga-obat/json'
+*/
+getPercentageData.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getPercentageData.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @route '/farmasi/set-harga-obat/json'
+*/
+getPercentageData.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getPercentageData.url(options),
+    method: 'head',
+})
+
+/**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::index
 * @see app/Http/Controllers/Farmasi/SetHargaObatController.php:18
 * @route '/farmasi/set-harga-obat'
@@ -345,6 +495,6 @@ destroyPenjualanPerJenis.delete = (args: { kdjns: string | number } | [kdjns: st
     method: 'delete',
 })
 
-const SetHargaObatController = { storePenjualanPerBarang, showPenjualanPerBarang, destroyPenjualanPerBarang, index, update, updatePenjualanUmum, storePenjualanPerJenis, destroyPenjualanPerJenis }
+const SetHargaObatController = { storePenjualanPerBarang, showPenjualanPerBarang, destroyPenjualanPerBarang, showPenjualanUmum, showPenjualanPerJenis, getPercentageData, index, update, updatePenjualanUmum, storePenjualanPerJenis, destroyPenjualanPerJenis }
 
 export default SetHargaObatController
