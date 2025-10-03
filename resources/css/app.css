@@ -240,7 +240,7 @@
 }
 
 .modal-container {
-    @apply bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-hidden;
+    @apply bg-white rounded-xl shadow-2xl w-full max-h-[95vh] overflow-hidden;
     animation: slideUp 0.3s ease-out;
 }
 
@@ -512,8 +512,13 @@
 
 /* Lebarkan modal di konteks laptop-dense agar input lebih longgar */
 .laptop-dense .modal-container {
-  /* max-w-6xl */
-  max-width: 72rem;
+  /* Lebarkan sedikit agar tabel tidak perlu scroll horizontal */
+  max-width: 96vw;
+}
+
+/* Kurangi padding overlay di mode laptop-dense agar ruang lebih luas */
+.modal-overlay.laptop-dense {
+  padding: 0.5rem; /* p-2 */
 }
 
 /* Perpendek ukuran box input (atas-bawah) dan sedikit kecilkan padding horizontal */
