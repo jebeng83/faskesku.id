@@ -78,6 +78,58 @@ storeRawatInap.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => 
 })
 
 /**
+* @see \App\Http\Controllers\DaftarTarifController::updateLaboratoriumTemplates
+* @see app/Http/Controllers/DaftarTarifController.php:625
+* @route '/daftar-tarif/laboratorium/{kd_jenis_prw}/templates'
+*/
+export const updateLaboratoriumTemplates = (args: { kd_jenis_prw: string | number } | [kd_jenis_prw: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+    url: updateLaboratoriumTemplates.url(args, options),
+    method: 'put',
+})
+
+updateLaboratoriumTemplates.definition = {
+    methods: ["put"],
+    url: '/daftar-tarif/laboratorium/{kd_jenis_prw}/templates',
+} satisfies RouteDefinition<["put"]>
+
+/**
+* @see \App\Http\Controllers\DaftarTarifController::updateLaboratoriumTemplates
+* @see app/Http/Controllers/DaftarTarifController.php:625
+* @route '/daftar-tarif/laboratorium/{kd_jenis_prw}/templates'
+*/
+updateLaboratoriumTemplates.url = (args: { kd_jenis_prw: string | number } | [kd_jenis_prw: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { kd_jenis_prw: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            kd_jenis_prw: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        kd_jenis_prw: args.kd_jenis_prw,
+    }
+
+    return updateLaboratoriumTemplates.definition.url
+            .replace('{kd_jenis_prw}', parsedArgs.kd_jenis_prw.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\DaftarTarifController::updateLaboratoriumTemplates
+* @see app/Http/Controllers/DaftarTarifController.php:625
+* @route '/daftar-tarif/laboratorium/{kd_jenis_prw}/templates'
+*/
+updateLaboratoriumTemplates.put = (args: { kd_jenis_prw: string | number } | [kd_jenis_prw: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+    url: updateLaboratoriumTemplates.url(args, options),
+    method: 'put',
+})
+
+/**
 * @see \App\Http\Controllers\DaftarTarifController::updateStatus
 * @see app/Http/Controllers/DaftarTarifController.php:316
 * @route '/daftar-tarif/{id}/update-status'
@@ -315,7 +367,7 @@ show.head = (args: { daftar_tarif: string | number } | [daftar_tarif: string | n
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::edit
-* @see app/Http/Controllers/DaftarTarifController.php:625
+* @see app/Http/Controllers/DaftarTarifController.php:688
 * @route '/daftar-tarif/{daftar_tarif}/edit'
 */
 export const edit = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -330,7 +382,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::edit
-* @see app/Http/Controllers/DaftarTarifController.php:625
+* @see app/Http/Controllers/DaftarTarifController.php:688
 * @route '/daftar-tarif/{daftar_tarif}/edit'
 */
 edit.url = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -357,7 +409,7 @@ edit.url = (args: { daftar_tarif: string | number } | [daftar_tarif: string | nu
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::edit
-* @see app/Http/Controllers/DaftarTarifController.php:625
+* @see app/Http/Controllers/DaftarTarifController.php:688
 * @route '/daftar-tarif/{daftar_tarif}/edit'
 */
 edit.get = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -367,7 +419,7 @@ edit.get = (args: { daftar_tarif: string | number } | [daftar_tarif: string | nu
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::edit
-* @see app/Http/Controllers/DaftarTarifController.php:625
+* @see app/Http/Controllers/DaftarTarifController.php:688
 * @route '/daftar-tarif/{daftar_tarif}/edit'
 */
 edit.head = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -377,7 +429,7 @@ edit.head = (args: { daftar_tarif: string | number } | [daftar_tarif: string | n
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::update
-* @see app/Http/Controllers/DaftarTarifController.php:673
+* @see app/Http/Controllers/DaftarTarifController.php:736
 * @route '/daftar-tarif/{daftar_tarif}'
 */
 export const update = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -392,7 +444,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::update
-* @see app/Http/Controllers/DaftarTarifController.php:673
+* @see app/Http/Controllers/DaftarTarifController.php:736
 * @route '/daftar-tarif/{daftar_tarif}'
 */
 update.url = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -419,7 +471,7 @@ update.url = (args: { daftar_tarif: string | number } | [daftar_tarif: string | 
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::update
-* @see app/Http/Controllers/DaftarTarifController.php:673
+* @see app/Http/Controllers/DaftarTarifController.php:736
 * @route '/daftar-tarif/{daftar_tarif}'
 */
 update.put = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -429,7 +481,7 @@ update.put = (args: { daftar_tarif: string | number } | [daftar_tarif: string | 
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::update
-* @see app/Http/Controllers/DaftarTarifController.php:673
+* @see app/Http/Controllers/DaftarTarifController.php:736
 * @route '/daftar-tarif/{daftar_tarif}'
 */
 update.patch = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -489,6 +541,6 @@ destroy.delete = (args: { daftar_tarif: string | number } | [daftar_tarif: strin
     method: 'delete',
 })
 
-const DaftarTarifController = { generateKode, storeRawatInap, updateStatus, index, create, store, show, edit, update, destroy }
+const DaftarTarifController = { generateKode, storeRawatInap, updateLaboratoriumTemplates, updateStatus, index, create, store, show, edit, update, destroy }
 
 export default DaftarTarifController
