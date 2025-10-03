@@ -8,7 +8,8 @@ function createToastContainer() {
     if (!toastContainer) {
         toastContainer = document.createElement('div');
         toastContainer.id = 'toast-container';
-        toastContainer.className = 'fixed top-4 right-4 z-50 space-y-2';
+        // Use inset-x to prevent clipping on small screens and align items to the right
+        toastContainer.className = 'fixed inset-x-4 top-4 z-50 space-y-2 flex flex-col items-end';
         document.body.appendChild(toastContainer);
     }
     return toastContainer;
@@ -18,7 +19,7 @@ function createToastContainer() {
 function createToastElement(message, type = 'success') {
     const toast = document.createElement('div');
     toast.className = `
-        max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto 
+        max-w-lg w-full bg-white shadow-lg rounded-lg pointer-events-auto 
         ring-1 ring-black ring-opacity-5 overflow-hidden transform transition-all 
         duration-300 ease-in-out translate-x-0 opacity-100
     `;
@@ -78,12 +79,12 @@ function createToastElement(message, type = 'success') {
                     ${config.icon}
                 </div>
                 <div class="ml-3 w-0 flex-1 pt-0.5">
-                    <p class="text-sm font-medium ${config.textColor}">
+                    <p class="text-sm font-medium ${config.textColor} break-words whitespace-normal">
                         ${message}
                     </p>
                 </div>
                 <div class="ml-4 flex-shrink-0 flex">
-                    <button class="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onclick="this.closest('.max-w-sm').remove()">
+                    <button class="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onclick="(function(btn){var el=btn.closest('.pointer-events-auto'); if(el) el.remove();})(this)">
                         <span class="sr-only">Close</span>
                         <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -110,10 +111,10 @@ function removeToast(toast) {
 
 // Main toast function
 export function toast(message, type = 'success', duration = 4000) {
-    const container = createToastContainer();
-    const toastElement = createToastElement(message, type);
-    
-    container.appendChild(toastElement);
+  const container = createToastContainer();
+  const toastElement = createToastElement(message, type);
+
+  container.appendChild(toastElement);
 
     // Auto remove after duration
     if (duration > 0) {
@@ -122,8 +123,15 @@ export function toast(message, type = 'success', duration = 4000) {
         }, duration);
     }
 
-    return toastElement;
+  return toastElement;
 }
+
+// Convenience methods so callers can use toast.success(...) and toast.error(...)
+// These wrap the main toast function with common types.
+toast.success = (message, duration = 4000) => toast(message, 'success', duration);
+toast.error = (message, duration = 4000) => toast(message, 'error', duration);
+toast.info = (message, duration = 4000) => toast(message, 'info', duration);
+toast.warning = (message, duration = 4000) => toast(message, 'warning', duration);
 
 // Export as default for compatibility
 export default toast;
