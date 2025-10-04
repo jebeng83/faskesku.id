@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { router } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import { SettingsIcon } from "@/Components/IconSettings";
 import SidebarMenu from "@/Components/SidebarMenu";
+import Breadcrumb from "@/Components/Breadcrumb";
 
 export default function AppLayout({
 	title = "Faskesku",
 	children,
 	variant = "default",
 }) {
+	const { auth, menu_hierarchy, current_menu } = usePage().props;
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 	const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 	const [isDark, setIsDark] = useState(false);
@@ -150,13 +152,21 @@ export default function AppLayout({
 	}
 
 	return (
-		<div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 flex flex-col">
+		<div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
 			{/* Top Navigation Bar - Fixed Header */}
-			<header className="fixed top-0 left-0 right-0 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50 flex-shrink-0">
+			<header
+				className={`fixed top-0 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50 flex-shrink-0 transition-all duration-300 ${
+					isSidebarOpen
+						? "left-64 right-0"
+						: isSidebarCollapsed
+						? "left-0 right-0 lg:left-16"
+						: "left-0 right-0 lg:left-64"
+				}`}
+			>
 				<div className="h-full flex items-center justify-between px-4">
-					{/* Left side - Toggle + Logo */}
+					{/* Left side - Back button + Breadcrumb */}
 					<div className="flex items-center gap-3">
-						{/* Sidebar Toggle Button */}
+						{/* Back Button */}
 						<button
 							onClick={() => {
 								if (window.innerWidth < 1024) {
@@ -171,85 +181,278 @@ export default function AppLayout({
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								viewBox="0 0 24 24"
-								fill="currentColor"
-								className="w-5 h-5"
-							>
-								<path d="M3.75 5.25h16.5a.75.75 0 0 0 0-1.5H3.75a.75.75 0 0 0 0 1.5Zm0 7.5h16.5a.75.75 0 0 0 0-1.5H3.75a.75.75 0 0 0 0 1.5Zm0 7.5h16.5a.75.75 0 0 0 0-1.5H3.75a.75.75 0 0 0 0 1.5Z" />
-							</svg>
-						</button>
-
-						{/* Logo */}
-						<div className="flex items-center gap-2">
-							<div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg border border-blue-400/20">
-								<span className="text-white font-bold text-sm drop-shadow-sm">
-									F
-								</span>
-							</div>
-							<div className="flex flex-col">
-								<span className="font-bold text-gray-900 dark:text-white text-sm">
-									{title}
-								</span>
-								<span className="text-xs text-gray-500 dark:text-gray-400 -mt-1">
-									Elektronik Rekam Medis
-								</span>
-							</div>
-						</div>
-					</div>
-
-					{/* Right side - Search + Actions */}
-					<div className="flex items-center gap-3">
-						{/* Search */}
-						<div className="hidden md:flex items-center relative">
-							<input
-								className="pl-10 pr-4 py-2 w-64 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
-								placeholder="Cari..."
-							/>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								viewBox="0 0 24 24"
 								fill="none"
 								stroke="currentColor"
 								strokeWidth="2"
 								strokeLinecap="round"
 								strokeLinejoin="round"
-								className="w-4 h-4 text-gray-400 absolute left-3"
-							>
-								<circle cx="11" cy="11" r="8"></circle>
-								<path d="m21 21-4.35-4.35"></path>
-							</svg>
-						</div>
-
-						{/* Notifications */}
-						<button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 relative">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								viewBox="0 0 24 24"
-								fill="currentColor"
 								className="w-5 h-5 text-gray-600 dark:text-gray-400"
 							>
-								<path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
+								<path d="M15 18l-6-6 6-6" />
 							</svg>
-							<span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
 						</button>
 
-						{/* Messages */}
-						<button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 relative">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								viewBox="0 0 24 24"
-								fill="currentColor"
-								className="w-5 h-5 text-gray-600 dark:text-gray-400"
-							>
-								<path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+						{/* Breadcrumb Navigation */}
+						<Breadcrumb
+							currentMenu={current_menu}
+							menuHierarchy={menu_hierarchy}
+						/>
+					</div>
+
+					{/* Right side - Actions */}
+					<div className="flex items-center gap-3">
+						{/* Manage Button */}
+						{/* <button className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors">
+							<svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+								<path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
 							</svg>
-							<span className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full"></span>
-						</button>
+							<span>Manage</span>
+						</button> */}
+
+						{/* Share Button */}
+						{/* <button className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors">
+							<svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+								<path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3 3 0 000-2.408l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+							</svg>
+							<span>Share</span>
+						</button> */}
 
 						{/* User Profile Dropdown */}
-						<UserProfileDropdown
-							isOpen={isProfileDropdownOpen}
-							onToggle={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-						/>
+						<div className="relative profile-dropdown">
+							<button
+								onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+								className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+							>
+								<div className="flex flex-col items-end text-right">
+									<span className="text-sm font-medium text-gray-900 dark:text-white">
+										{auth?.user?.name || auth?.user?.username || "User"}
+									</span>
+									<span className="text-xs text-gray-500 dark:text-gray-400">
+										{auth?.user?.employee?.jabatan || "User"}
+									</span>
+								</div>
+								<div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+									<span className="text-white font-semibold text-sm">
+										{(auth?.user?.name || auth?.user?.username || "U")
+											.substring(0, 2)
+											.toUpperCase()}
+									</span>
+								</div>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									viewBox="0 0 24 24"
+									fill="currentColor"
+									className={`w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform ${
+										isProfileDropdownOpen ? "rotate-180" : ""
+									}`}
+								>
+									<path
+										fillRule="evenodd"
+										d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z"
+										clipRule="evenodd"
+									/>
+								</svg>
+							</button>
+
+							{/* Dropdown Menu */}
+							{isProfileDropdownOpen && (
+								<div
+									className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-2 z-50 border border-gray-200 dark:border-gray-700"
+									onClick={(e) => e.stopPropagation()}
+									onMouseDown={(e) => e.stopPropagation()}
+									onMouseUp={(e) => e.stopPropagation()}
+								>
+									{/* User Info */}
+									<div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+										<div className="flex items-center gap-3">
+											<div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+												<span className="text-white font-semibold">
+													{(auth?.user?.name || auth?.user?.username || "U")
+														.substring(0, 2)
+														.toUpperCase()}
+												</span>
+											</div>
+											<div>
+												<p className="text-sm font-medium text-gray-900 dark:text-white">
+													{auth?.user?.name || auth?.user?.username || "User"}
+												</p>
+												<p className="text-xs text-gray-500 dark:text-gray-400">
+													{auth?.user?.email || "No email"}
+												</p>
+											</div>
+										</div>
+									</div>
+
+									{/* Menu Items */}
+									<div className="py-1">
+										<button
+											onClick={() => {
+												router.visit(route("profile.show"));
+												setIsProfileDropdownOpen(false);
+											}}
+											className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left"
+										>
+											<svg
+												className="w-4 h-4"
+												fill="currentColor"
+												viewBox="0 0 20 20"
+											>
+												<path
+													fillRule="evenodd"
+													d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+													clipRule="evenodd"
+												/>
+											</svg>
+											Profil Saya
+										</button>
+										<a
+											href="#"
+											className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+										>
+											<svg
+												className="w-4 h-4"
+												fill="currentColor"
+												viewBox="0 0 20 20"
+											>
+												<path
+													fillRule="evenodd"
+													d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
+													clipRule="evenodd"
+												/>
+											</svg>
+											Pengaturan
+										</a>
+										<a
+											href="#"
+											className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+										>
+											<svg
+												className="w-4 h-4"
+												fill="currentColor"
+												viewBox="0 0 20 20"
+											>
+												<path
+													fillRule="evenodd"
+													d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-2 0c0 .993-.241 1.929-.668 2.754l-1.524-1.525a3.997 3.997 0 00.078-2.183l1.562-1.562C15.759 8.071 16 9.007 16 10zm-5.165 3.913l1.58 1.58A5.98 5.98 0 0110 16a5.976 5.976 0 01-2.516-.552l1.562-1.562a4.006 4.006 0 001.789.027zm-4.677-2.532a1.5 1.5 0 00-2.414.414l-.504.504a1.5 1.5 0 00.414 2.414l.504-.504a1.5 1.5 0 00.414-2.414l-.504.504zM4 10a1.5 1.5 0 011.5-1.5H6a1.5 1.5 0 000 3H5.5A1.5 1.5 0 014 10z"
+													clipRule="evenodd"
+												/>
+											</svg>
+											Bantuan
+										</a>
+									</div>
+
+									{/* Divider */}
+									<div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+
+									{/* Logout */}
+									<button
+										onClick={async (e) => {
+											e.preventDefault();
+											e.stopPropagation();
+
+											// Get fresh CSRF token
+											const getFreshCSRFToken = async () => {
+												try {
+													const response = await fetch("/sanctum/csrf-cookie", {
+														method: "GET",
+														credentials: "same-origin",
+													});
+													if (response.ok) {
+														// Token refreshed, get new token
+														const token = document.querySelector(
+															'meta[name="csrf-token"]'
+														);
+														return token ? token.getAttribute("content") : null;
+													}
+												} catch (error) {
+													console.log("Failed to refresh CSRF token:", error);
+												}
+												return null;
+											};
+
+											try {
+												// Try to get fresh CSRF token first
+												const freshToken = await getFreshCSRFToken();
+
+												// Use Inertia router with fresh token
+												router.post(
+													route("logout"),
+													{},
+													{
+														headers: {
+															"X-CSRF-TOKEN":
+																freshToken ||
+																document
+																	.querySelector('meta[name="csrf-token"]')
+																	?.getAttribute("content") ||
+																"",
+														},
+														onSuccess: () => {
+															// Logout successful
+														},
+														onError: (errors) => {
+															console.log("Logout error:", errors);
+															// If still fails, try direct form submission
+															const form = document.createElement("form");
+															form.method = "POST";
+															form.action = route("logout");
+
+															const csrfInput = document.createElement("input");
+															csrfInput.type = "hidden";
+															csrfInput.name = "_token";
+															csrfInput.value =
+																freshToken ||
+																document
+																	.querySelector('meta[name="csrf-token"]')
+																	?.getAttribute("content") ||
+																"";
+															form.appendChild(csrfInput);
+
+															document.body.appendChild(form);
+															form.submit();
+														},
+													}
+												);
+											} catch (error) {
+												console.log("Logout failed:", error);
+												// Final fallback: direct form submission
+												const form = document.createElement("form");
+												form.method = "POST";
+												form.action = route("logout");
+
+												const csrfInput = document.createElement("input");
+												csrfInput.type = "hidden";
+												csrfInput.name = "_token";
+												csrfInput.value =
+													document
+														.querySelector('meta[name="csrf-token"]')
+														?.getAttribute("content") || "";
+												form.appendChild(csrfInput);
+
+												document.body.appendChild(form);
+												form.submit();
+											}
+										}}
+										onMouseDown={(e) => e.stopPropagation()}
+										onMouseUp={(e) => e.stopPropagation()}
+										className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 w-full text-left"
+									>
+										<svg
+											className="w-4 h-4"
+											fill="currentColor"
+											viewBox="0 0 20 20"
+										>
+											<path
+												fillRule="evenodd"
+												d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z"
+												clipRule="evenodd"
+											/>
+										</svg>
+										Keluar
+									</button>
+								</div>
+							)}
+						</div>
 					</div>
 				</div>
 			</header>
@@ -262,58 +465,57 @@ export default function AppLayout({
 				/>
 			)}
 
-			{/* Main Layout Container - Adjusted for Fixed Header */}
-			<div className="flex flex-1 pt-14 overflow-hidden">
+			{/* Layout Container */}
+			<div className="flex h-screen">
 				{/* Sidebar - Fixed with Independent Scroll */}
 				<aside
-					className={`bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-all duration-300 flex-shrink-0 ${
+					className={`bg-gradient-to-b from-blue-800 via-blue-600 to-blue-500 dark:from-blue-800 dark:via-blue-700 dark:to-blue-600 border-r border-gray-200 dark:border-gray-800 transform transition-all duration-300 flex-shrink-0 ${
 						isSidebarOpen
 							? "translate-x-0 w-64"
 							: isSidebarCollapsed
 							? "lg:translate-x-0 lg:w-16 -translate-x-full"
 							: "lg:translate-x-0 lg:w-64 -translate-x-full"
-					} lg:relative fixed z-40 h-[calc(100vh-3.5rem)]`}
+					} lg:relative fixed z-[60] h-screen`}
 				>
 					<div className="h-full flex flex-col overflow-hidden">
 						{/* Dynamic Navigation */}
 						{!isSidebarCollapsed ? (
 							<div className="flex-1 overflow-y-auto">
-								<SidebarMenu />
+								<SidebarMenu
+									title={title}
+									onToggle={() => {
+										if (window.innerWidth < 1024) {
+											setIsSidebarOpen(!isSidebarOpen);
+										} else {
+											setIsSidebarCollapsed(!isSidebarCollapsed);
+										}
+									}}
+								/>
 							</div>
 						) : (
-							<div className="flex-1 overflow-y-auto p-2">
-								<SidebarMenu collapsed />
-							</div>
-						)}
-
-						{/* Bottom Card - Gradient Pro */}
-						{!isSidebarCollapsed && (
-							<div className="p-4 border-t border-gray-200 dark:border-gray-800 flex-shrink-0">
-								<div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg p-4 text-center">
-									<div className="w-12 h-12 mx-auto mb-3 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg border border-blue-400/20">
-										<span className="text-white font-bold text-lg drop-shadow-sm">
-											F
-										</span>
-									</div>
-									<h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">
-										Faskesku.id
-									</h4>
-									<p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-										Sistem Informasi Free & open Source
-									</p>
-									<button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 px-3 rounded-md transition-colors">
-										Panduan Aplikasi
-									</button>
-								</div>
+							<div className="flex-1 overflow-y-auto">
+								<SidebarMenu
+									collapsed
+									title={title}
+									onToggle={() => {
+										if (window.innerWidth < 1024) {
+											setIsSidebarOpen(!isSidebarOpen);
+										} else {
+											setIsSidebarCollapsed(!isSidebarCollapsed);
+										}
+									}}
+								/>
 							</div>
 						)}
 					</div>
 				</aside>
 
-				{/* Main Content - Independent Scroll */}
-				<main className="flex-1 overflow-y-auto h-[calc(100vh-3.5rem)] p-4">
-					{children}
-				</main>
+				{/* Main Content Area */}
+				<div className="flex-1 overflow-hidden">
+					<main className="h-screen overflow-y-auto bg-white dark:bg-gray-950">
+						<div className="p-4 pt-20 min-h-full">{children}</div>
+					</main>
+				</div>
 			</div>
 		</div>
 	);
