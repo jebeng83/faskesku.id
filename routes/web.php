@@ -147,7 +147,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{noRawat}', [LaboratoriumController::class, 'destroy'])->name('destroy');
         Route::put('/{noRawat}/hasil', [LaboratoriumController::class, 'updateHasil'])->name('update-hasil');
     });
-    
+
     // Permintaan Laboratorium routes
     Route::resource('permintaan-lab', PermintaanLabController::class);
     Route::get('/api/reg-periksa', [PermintaanLabController::class, 'getRegPeriksa'])->name('api.reg-periksa');
@@ -189,27 +189,27 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', function () {
             return Inertia::render('farmasi/Dashboard');
         })->name('dashboard');
-        
+
         Route::get('/pembelian-obat', function () {
             return Inertia::render('farmasi/PembelianObat');
         })->name('pembelian-obat');
-        
+
         Route::get('/penjualan-obat', function () {
             return Inertia::render('farmasi/PenjualanObat');
         })->name('penjualan-obat');
-        
+
         Route::get('/resep-obat', function () {
             return Inertia::render('farmasi/ResepObat');
         })->name('resep-obat');
-        
+
         Route::get('/riwayat-transaksi-gudang', function () {
             return Inertia::render('farmasi/RiwayatTransaksiGudang');
         })->name('riwayat-transaksi-gudang');
-        
+
         Route::get('/stok-obat', function () {
             return Inertia::render('farmasi/StokObat');
         })->name('stok-obat');
-        
+
         Route::get('/stok-opname', function () {
             return Inertia::render('farmasi/StokOpname');
         })->name('stok-opname');
@@ -299,6 +299,13 @@ Route::put('/data-obat/update-harga-semua', [\App\Http\Controllers\Farmasi\DataB
         Route::put('/jenis-obat/{kdjns}', [\App\Http\Controllers\Farmasi\JenisObatController::class, 'update'])->name('jenis-obat.update');
         Route::patch('/jenis-obat/{kdjns}', [\App\Http\Controllers\Farmasi\JenisObatController::class, 'update']);
         Route::delete('/jenis-obat/{kdjns}', [\App\Http\Controllers\Farmasi\JenisObatController::class, 'destroy'])->name('jenis-obat.destroy');
+    });
+
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/penjab', [\App\Http\Controllers\PenjabController::class, 'index'])->name('penjab.index');
+        Route::post('/penjab', [\App\Http\Controllers\PenjabController::class, 'store'])->name('penjab.store');
+        Route::put('/penjab/{kd_pj}', [\App\Http\Controllers\PenjabController::class, 'update'])->name('penjab.update');
+        Route::patch('/penjab/{kd_pj}/toggle-status', [\App\Http\Controllers\PenjabController::class, 'toggleStatus'])->name('penjab.toggle-status');
     });
 });
 // Routes for Set Harga Obat (Farmasi)

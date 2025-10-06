@@ -100,6 +100,14 @@ class PermissionSeeder extends Seeder
             'menu.delete',
             'menus.index',
             'profile.show',
+
+            // Penjab (Asuransi) permissions
+            'view-penjab',
+            'create-penjab',
+            'edit-penjab',
+            'delete-penjab',
+            'penjab.index',
+            'penjab.view',
             // Farmasi module landing permission
             'farmasi.index',
         ];
@@ -131,6 +139,8 @@ class PermissionSeeder extends Seeder
             'view-reports',
             'generate-reports',
             'registration.view',
+            'view-penjab',
+            'penjab.view',
         ]);
 
         $petugasRole = Role::findOrCreate('petugas');
@@ -142,6 +152,8 @@ class PermissionSeeder extends Seeder
             'create-appointments',
             'edit-appointments',
             'registration.view',
+            'view-penjab',
+            'penjab.view',
         ]);
     }
 }
