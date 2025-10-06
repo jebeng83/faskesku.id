@@ -20,8 +20,8 @@ import RehabilitasiMedikController from './RehabilitasiMedikController'
 import KategoriPerawatanController from './KategoriPerawatanController'
 import DaftarTarifController from './DaftarTarifController'
 import TarifTindakanController from './TarifTindakanController'
-import PenjabController from './PenjabController'
 import Farmasi from './Farmasi'
+import PenjabController from './PenjabController'
 
 const Controllers = {
     API: Object.assign(API, API),
@@ -46,8 +46,8 @@ const Controllers = {
     KategoriPerawatanController: Object.assign(KategoriPerawatanController, KategoriPerawatanController),
     DaftarTarifController: Object.assign(DaftarTarifController, DaftarTarifController),
     TarifTindakanController: Object.assign(TarifTindakanController, TarifTindakanController),
-    PenjabController: Object.assign(PenjabController, PenjabController),
     Farmasi: Object.assign(Farmasi, Farmasi),
+    PenjabController: Object.assign(PenjabController, PenjabController),
 }
 
 export default Controllers
