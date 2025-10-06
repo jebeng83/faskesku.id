@@ -108,6 +108,8 @@ class PermissionSeeder extends Seeder
             'delete-penjab',
             'penjab.index',
             'penjab.view',
+            // Farmasi module landing permission
+            'farmasi.index',
         ];
 
         foreach ($permissions as $permission) {

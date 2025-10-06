@@ -597,4 +597,109 @@ class RawatJalanController extends Controller
         return redirect()->route('rawat-jalan.index')
                         ->with('success', 'Data rawat jalan berhasil dihapus.');
     }
+
+    /**
+     * Show surat sehat form
+     */
+    public function suratSehat($noRawat)
+    {
+        $rawatJalan = RawatJalan::where('no_rawat', $noRawat)
+            ->with(['patient', 'dokter'])
+            ->firstOrFail();
+
+        $patient = $rawatJalan->patient;
+        $dokter = $rawatJalan->dokter;
+
+        // Jika dokter tidak ditemukan, buat objek dokter kosong
+        if (!$dokter) {
+            $dokter = new \App\Models\Dokter();
+            $dokter->kd_dokter = '';
+            $dokter->nm_dokter = '';
+        }
+
+        return Inertia::render('RawatJalan/components/SuratSehat', [
+            'rawatJalan' => $rawatJalan,
+            'patient' => $patient,
+            'dokter' => $dokter
+        ]);
+    }
+
+    /**
+     * Store surat sehat
+     */
+    public function storeSuratSehat(Request $request)
+    {
+        $request->validate([
+            'no_surat' => 'required|string|max:17',
+            'no_rawat' => 'required|string|max:17',
+            'tanggalsurat' => 'required|date',
+            'berat' => 'required|string|max:3',
+            'tinggi' => 'required|string|max:3',
+            'tensi' => 'required|string|max:8',
+            'suhu' => 'required|string|max:4',
+            'butawarna' => 'required|in:Ya,Tidak',
+            'keperluan' => 'required|string|max:100',
+            'kesimpulan' => 'required|in:Sehat,Tidak Sehat',
+        ]);
+
+        // TODO: Insert data ke tabel surat_keterangan_sehat
+        // DB::table('surat_keterangan_sehat')->insert($request->all());
+        
+        return redirect()->route('rawat-jalan.index')
+                        ->with('success', 'Surat sehat berhasil dibuat dan disimpan.');
+    }
+
+    /**
+     * Show surat sakit form
+     */
+    public function suratSakit($noRawat)
+    {
+        $rawatJalan = RawatJalan::where('no_rawat', $noRawat)
+            ->with(['patient', 'dokter'])
+            ->firstOrFail();
+
+        $patient = $rawatJalan->patient;
+        $dokter = $rawatJalan->dokter;
+
+        // Jika dokter tidak ditemukan, buat objek dokter kosong
+        if (!$dokter) {
+            $dokter = new \App\Models\Dokter();
+            $dokter->kd_dokter = '';
+            $dokter->nm_dokter = '';
+        }
+
+        return Inertia::render('RawatJalan/components/SuratSakit', [
+            'rawatJalan' => $rawatJalan,
+            'patient' => $patient,
+            'dokter' => $dokter
+        ]);
+    }
+
+    /**
+     * Store surat sakit
+     */
+    public function storeSuratSakit(Request $request)
+    {
+        $request->validate([
+            'no_surat' => 'required|string|max:17',
+            'no_rawat' => 'required|string|max:17',
+            'tanggalawal' => 'required|date',
+            'tanggalakhir' => 'required|date|after:tanggalawal',
+            'lamasakit' => 'required|string|max:20',
+            'nama2' => 'required|string|max:50',
+            'tgl_lahir' => 'required|date',
+            'umur' => 'required|string|max:20',
+            'jk' => 'required|in:Laki-laki,Perempuan',
+            'alamat' => 'required|string|max:200',
+            'hubungan' => 'required|in:Suami,Istri,Anak,Ayah,Saudara,Keponakan',
+            'pekerjaan' => 'required|in:Karyawan Swasta,PNS,Wiraswasta,Pelajar,Mahasiswa,Buruh,Lain-lain',
+            'instansi' => 'required|string|max:50',
+        ]);
+
+        // TODO: Insert data ke tabel suratsakitpihak2
+        // DB::table('suratsakitpihak2')->insert($request->all());
+        
+        return redirect()->route('rawat-jalan.index')
+                        ->with('success', 'Surat sakit berhasil dibuat dan disimpan.');
+    }
 }
