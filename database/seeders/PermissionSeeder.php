@@ -108,6 +108,15 @@ class PermissionSeeder extends Seeder
             'delete-penjab',
             'penjab.index',
             'penjab.view',
+            
+            // Poliklinik permissions
+            'view-poliklinik',
+            'create-poliklinik',
+            'edit-poliklinik',
+            'delete-poliklinik',
+            'poliklinik.index',
+            'poliklinik.view',
+            
             // Farmasi module landing permission
             'farmasi.index',
         ];
@@ -141,6 +150,8 @@ class PermissionSeeder extends Seeder
             'registration.view',
             'view-penjab',
             'penjab.view',
+            'view-poliklinik',
+            'poliklinik.view',
         ]);
 
         $petugasRole = Role::findOrCreate('petugas');
@@ -154,6 +165,8 @@ class PermissionSeeder extends Seeder
             'registration.view',
             'view-penjab',
             'penjab.view',
+            'view-poliklinik',
+            'poliklinik.view',
         ]);
     }
 }
