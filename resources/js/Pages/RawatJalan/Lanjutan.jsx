@@ -2,13 +2,12 @@ import { useState, useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import LanjutanRalanLayout from '@/Layouts/LanjutanRalanLayout';
-import RiwayatKunjungan from './components/RiwayatKunjungan';
+import RiwayatPerawatan from './components/RiwayatPerawatan'; // Updated import
 import CpptSoap from './components/CpptSoap';
 import Resep from './components/Resep';
 import Diagnosa from './components/Diagnosa';
 import PermintaanLab from './components/PermintaanLab';
 import PermintaanRadiologi from './components/PermintaanRadiologi';
-import RiwayatPemeriksaan from './components/RiwayatPemeriksaan';
 import TarifTindakan from './components/TarifTindakan';
 
 export default function Lanjutan({ rawatJalan, params }) {
@@ -435,9 +434,9 @@ export default function Lanjutan({ rawatJalan, params }) {
                             </div>
                             {openAcc.pemeriksaan && (
                                 <div className="p-4 max-h-[calc(100vh-32rem)] min-h-[calc(100vh-28rem)] overflow-y-auto">
-                                    <RiwayatPemeriksaan
+                                    {/* Updated to use the new combined component */}
+                                    <RiwayatPerawatan
                                         token={typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('t') : ''}
-                                        noRawat={params?.no_rawat || rawatJalan?.no_rawat}
                                         noRkmMedis={params?.no_rkm_medis || rawatJalan?.patient?.no_rkm_medis}
                                     />
                                 </div>
@@ -498,7 +497,3 @@ export default function Lanjutan({ rawatJalan, params }) {
         </LanjutanRalanLayout>
     );
 }
- 
-
-
-

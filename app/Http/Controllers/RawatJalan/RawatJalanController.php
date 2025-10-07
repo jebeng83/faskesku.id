@@ -198,8 +198,15 @@ class RawatJalanController extends Controller
                 ->first();
         }
 
+        // Get medication data for this patient visit
+        $medicationData = [];
+        if ($noRawat) {
+            $medicationData = self::getobatRalan($noRawat);
+        }
+
         return Inertia::render('RawatJalan/Lanjutan', [
             'rawatJalan' => $rawat,
+            'medicationData' => $medicationData,
             'params' => [
                 'no_rawat' => $noRawat,
                 'no_rkm_medis' => $noRkmMedis,
@@ -239,6 +246,47 @@ class RawatJalanController extends Controller
     }
 
     /**
+     * Get patient examination history
+     */
+    public function getRiwayatPemeriksaan(Request $request)
+    {
+        $token = $request->query('t');
+        $noRM = $request->query('no_rkm_medis');
+        if ($token) {
+            $padded = str_replace(['-', '_'], ['+', '/'], $token);
+            $paddingNeeded = 4 - (strlen($padded) % 4);
+            if ($paddingNeeded < 4) {
+                $padded .= str_repeat('=', $paddingNeeded);
+            }
+            $decoded = json_decode(base64_decode($padded), true);
+            $noRM = $decoded['no_rkm_medis'] ?? $noRM;
+        }
+
+        if (!$noRM) {
+            return response()->json(['data' => []]);
+        }
+
+        $data = DB::table('reg_periksa')
+            ->join('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli')
+            ->join('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
+            ->where('no_rkm_medis', $noRM)
+            ->where('reg_periksa.stts', '<>', 'Batal')
+            ->select(
+                'reg_periksa.tgl_registrasi',
+                'reg_periksa.no_rawat',
+                'dokter.nm_dokter',
+                'reg_periksa.status_lanjut',
+                'poliklinik.nm_poli',
+                'reg_periksa.no_reg'
+            )
+            ->orderBy('reg_periksa.tgl_registrasi', 'desc')
+            ->limit(10)
+            ->get();
+
+        return response()->json(['data' => $data]);
+    }
+
+    /**
      * Daftar pemeriksaan_ralan untuk no_rawat tertentu (JSON)
      */
     public function pemeriksaanRalan(Request $request)
@@ -268,6 +316,51 @@ class RawatJalanController extends Controller
             ]);
 
         return response()->json(['data' => $rows]);
+    }
+
+    /**
+     * Get medication history for outpatient care (static version)
+     */
+    public static function getobatRalan($noRawat)
+    {
+        $dataobat = DB::table('detail_pemberian_obat')
+            ->join('databarang', 'detail_pemberian_obat.kode_brng', '=', 'databarang.kode_brng')
+            ->where('detail_pemberian_obat.no_rawat', $noRawat)
+            ->where('detail_pemberian_obat.status', 'Ralan')
+            ->select('databarang.nama_brng', 'detail_pemberian_obat.jml','detail_pemberian_obat.kode_brng','detail_pemberian_obat.tgl_perawatan','detail_pemberian_obat.jam')
+            ->get();
+
+        foreach($dataobat as $obat) {
+            $aturan = DB::table('aturan_pakai')
+                ->where('kode_brng', $obat->kode_brng)
+                ->where('no_rawat', $noRawat)
+                ->value('aturan');
+            $obat->aturan = $aturan ?? '-';
+        }
+
+        return $dataobat;
+    }
+
+    /**
+     * Get medication history for outpatient care
+     */
+    public function getobatRalanPublic(Request $request, $no_rawat)
+    {
+        // Handle token-based authentication if needed
+        $token = $request->query('t');
+        if ($token) {
+            $padded = str_replace(['-', '_'], ['+', '/'], $token);
+            $paddingNeeded = 4 - (strlen($padded) % 4);
+            if ($paddingNeeded < 4) {
+                $padded .= str_repeat('=', $paddingNeeded);
+            }
+            $decoded = json_decode(base64_decode($padded), true);
+            $no_rawat = $decoded['no_rawat'] ?? $no_rawat;
+        }
+
+        $dataobat = self::getobatRalan($no_rawat);
+
+        return response()->json(['data' => $dataobat]);
     }
 
     /**

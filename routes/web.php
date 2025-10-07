@@ -92,10 +92,14 @@ Route::middleware('auth')->group(function () {
 
     Route::get('rawat-jalan/lanjutan', [RawatJalanController::class, 'lanjutan'])->name('rawat-jalan.lanjutan');
     Route::get('rawat-jalan/riwayat', [RawatJalanController::class, 'riwayat'])->name('rawat-jalan.riwayat');
+    Route::get('rawat-jalan/riwayat-pemeriksaan', [RawatJalanController::class, 'getRiwayatPemeriksaan'])->name('rawat-jalan.riwayat-pemeriksaan');
     Route::get('rawat-jalan/pemeriksaan-ralan', [RawatJalanController::class, 'pemeriksaanRalan'])->name('rawat-jalan.pemeriksaan-ralan');
     Route::post('rawat-jalan/pemeriksaan-ralan', [RawatJalanController::class, 'storePemeriksaanRalan'])->name('rawat-jalan.pemeriksaan-ralan.store');
     Route::delete('rawat-jalan/pemeriksaan-ralan', [RawatJalanController::class, 'deletePemeriksaanRalan'])->name('rawat-jalan.pemeriksaan-ralan.delete');
     Route::put('rawat-jalan/pemeriksaan-ralan', [RawatJalanController::class, 'updatePemeriksaanRalan'])->name('rawat-jalan.pemeriksaan-ralan.update');
+    Route::get('rawat-jalan/obat-ralan/{no_rawat}', [RawatJalanController::class, 'getobatRalanPublic'])
+        ->where('no_rawat', '.*')
+        ->name('rawat-jalan.obat-ralan');
     Route::get('pegawai/search', [RawatJalanController::class, 'searchPegawai'])->name('pegawai.search');
     Route::get('rawat-jalan-statistics', [RawatJalanController::class, 'getStatistics'])->name('rawat-jalan.statistics');
     
