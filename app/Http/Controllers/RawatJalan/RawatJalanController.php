@@ -377,22 +377,59 @@ class RawatJalanController extends Controller
     /**
      * Get radiology results for outpatient care
      */
-    public static function getRadiologi($no_rawat)
+    public static function getRadiologi($noRawat)
     {
-        $rows = DB::table('hasil_radiologi')
-            ->where('no_rawat', $no_rawat)
-            ->select(
-                'no_rawat',
-                'tgl_periksa',
-                'jam',
-                'hasil',
-                'keterangan'
-            )
-            ->orderBy('tgl_periksa', 'desc')
-            ->orderBy('jam', 'desc')
-            ->get();
+        // Ambil dua sumber terpisah lalu gabungkan di PHP untuk menghindari isu UNION/ORDER BY
+        $periksa = DB::table('periksa_radiologi')
+            ->where('no_rawat', $noRawat)
+            ->get(['no_rawat','tgl_periksa','jam']);
 
-        return $rows;
+        // Tabel hasil_radiologi: no_rawat, tgl_periksa, jam, hasil (tanpa kolom keterangan)
+        $hasil = DB::table('hasil_radiologi')
+            ->where('no_rawat', $noRawat)
+            ->get(['no_rawat','tgl_periksa','jam','hasil']);
+
+        // Index hasil by composite key (tgl_periksa + jam)
+        $keyedHasil = [];
+        foreach ($hasil as $h) {
+            $keyedHasil[$h->tgl_periksa.'|'.$h->jam] = $h;
+        }
+
+        $merged = [];
+        // Gabungkan: mulai dari periksa (supaya waktu ter-cover) dan sertakan hasil bila ada
+        foreach ($periksa as $p) {
+            $key = $p->tgl_periksa.'|'.$p->jam;
+            $h = $keyedHasil[$key] ?? null;
+            $merged[] = (object) [
+                'no_rawat' => $p->no_rawat,
+                'tgl_periksa' => $p->tgl_periksa,
+                'jam' => $p->jam,
+                'hasil' => isset($h->hasil) ? $h->hasil : '',
+                'keterangan' => ''
+            ];
+            // Tandai terpakai
+            unset($keyedHasil[$key]);
+        }
+
+        // Tambahkan sisa hasil yang tidak punya pasangan di periksa
+        foreach ($keyedHasil as $h) {
+            $merged[] = (object) [
+                'no_rawat' => $h->no_rawat,
+                'tgl_periksa' => $h->tgl_periksa,
+                'jam' => $h->jam,
+                'hasil' => isset($h->hasil) ? $h->hasil : '',
+                'keterangan' => ''
+            ];
+        }
+
+        // Urutkan desc berdasarkan tanggal dan jam
+        usort($merged, function($a, $b) {
+            $da = strtotime($a->tgl_periksa.' '.($a->jam ?? '00:00:00'));
+            $db = strtotime($b->tgl_periksa.' '.($b->jam ?? '00:00:00'));
+            return $db <=> $da;
+        });
+
+        return collect($merged);
     }
 
     /**
