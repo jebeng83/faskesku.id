@@ -108,7 +108,7 @@ Route::middleware('auth')->group(function () {
         ->where('no_rawat', '.*');
     Route::get('pegawai/search', [RawatJalanController::class, 'searchPegawai'])->name('pegawai.search');
     Route::get('rawat-jalan-statistics', [RawatJalanController::class, 'getStatistics'])->name('rawat-jalan.statistics');
-    
+
     // Surat Sehat dan Surat Sakit routes
     Route::get('rawat-jalan/surat-sehat/{no_rawat}', [RawatJalanController::class, 'suratSehat'])
         ->where('no_rawat', '.*')
@@ -223,16 +223,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/stok-opname', function () {
             return Inertia::render('farmasi/StokOpname');
         })->name('stok-opname');
-        
-        // Data Obat (DataBarang) CRUD routes with auto-code via props.nextCode
-Route::get('/data-obat', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'index'])->name('data-obat');
-Route::post('/data-obat', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'store'])->name('data-obat.store');
-Route::put('/data-obat/{kode_brng}', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'update'])->name('data-obat.update');
-Route::patch('/data-obat/{kode_brng}', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'update']);
-Route::delete('/data-obat/{kode_brng}', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'destroy'])->name('data-obat.destroy');
 
-// Bulk update semua harga jual databarang berdasarkan konfigurasi Set Harga Obat
-Route::put('/data-obat/update-harga-semua', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'updateHargaSemua'])->name('data-obat.update-harga-semua');
+        // Data Obat (DataBarang) CRUD routes with auto-code via props.nextCode
+        Route::get('/data-obat', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'index'])->name('data-obat');
+        Route::post('/data-obat', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'store'])->name('data-obat.store');
+        Route::put('/data-obat/{kode_brng}', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'update'])->name('data-obat.update');
+        Route::patch('/data-obat/{kode_brng}', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'update']);
+        Route::delete('/data-obat/{kode_brng}', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'destroy'])->name('data-obat.destroy');
+
+        // Bulk update semua harga jual databarang berdasarkan konfigurasi Set Harga Obat
+        Route::put('/data-obat/update-harga-semua', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'updateHargaSemua'])->name('data-obat.update-harga-semua');
 
         // Simpan pengaturan harga per barang
         Route::post('/set-penjualan-barang', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'storePenjualanPerBarang'])->name('set-penjualan-barang.store');
@@ -244,7 +244,7 @@ Route::put('/data-obat/update-harga-semua', [\App\Http\Controllers\Farmasi\DataB
         // Ambil pengaturan harga umum (JSON)
         Route::get('/set-penjualan-umum', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'showPenjualanUmum'])->name('set-penjualan-umum.show');
         // Update pengaturan harga umum (POST sudah ada di bawah - alias global)
-        
+
         // Kategori Obat CRUD routes (no migrations/seeding required)
         Route::get('/kategori-obat', [\App\Http\Controllers\Farmasi\KategoriBarangController::class, 'index'])->name('kategori-obat.index');
         Route::post('/kategori-obat', [\App\Http\Controllers\Farmasi\KategoriBarangController::class, 'store'])->name('kategori-obat.store');
@@ -316,6 +316,12 @@ Route::put('/data-obat/update-harga-semua', [\App\Http\Controllers\Farmasi\DataB
         Route::post('/penjab', [\App\Http\Controllers\PenjabController::class, 'store'])->name('penjab.store');
         Route::put('/penjab/{kd_pj}', [\App\Http\Controllers\PenjabController::class, 'update'])->name('penjab.update');
         Route::patch('/penjab/{kd_pj}/toggle-status', [\App\Http\Controllers\PenjabController::class, 'toggleStatus'])->name('penjab.toggle-status');
+
+        // Poliklinik routes
+        Route::get('/poliklinik', [\App\Http\Controllers\PoliklinikController::class, 'index'])->name('poliklinik.index');
+        Route::post('/poliklinik', [\App\Http\Controllers\PoliklinikController::class, 'store'])->name('poliklinik.store');
+        Route::put('/poliklinik/{kd_poli}', [\App\Http\Controllers\PoliklinikController::class, 'update'])->name('poliklinik.update');
+        Route::patch('/poliklinik/{kd_poli}/toggle-status', [\App\Http\Controllers\PoliklinikController::class, 'toggleStatus'])->name('poliklinik.toggle-status');
     });
 });
 // Routes for Set Harga Obat (Farmasi)
