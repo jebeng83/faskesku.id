@@ -370,12 +370,10 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                         <div className="text-[11px] text-gray-400 mt-0.5">{r.jam || ''}</div>
                     </div>
                 )},
-                { key: 'ket', header: 'Keterangan', render: (r) => r.keterangan || '-' },
             ],
             mobileTemplate: (r) => (
                 <div>
                     <div className="text-sm text-gray-900">{r.hasil || '-'}</div>
-                    <div className="mt-1 text-xs text-gray-500">{r.keterangan || '-'}</div>
                     <div className="mt-0.5 text-[11px] text-gray-400">{r.jam || ''}</div>
                 </div>
             )
