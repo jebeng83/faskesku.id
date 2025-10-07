@@ -188,31 +188,6 @@ export default function LanjutanRalanSidebar({
 					colorScheme: 'indigo'
 				}
 			]
-		},
-		{
-			id: 'riwayat-group',
-			name: 'Riwayat',
-			icon: 'clock',
-			active: false,
-			colorScheme: 'gray',
-			children: [
-				{
-					id: 'riwayat-pemeriksaan',
-					name: 'Riwayat Pemeriksaan',
-					icon: 'document',
-					description: 'History pemeriksaan pasien',
-					active: false,
-					colorScheme: 'gray'
-				},
-				{
-					id: 'riwayat-kunjungan',
-					name: 'Riwayat Kunjungan',
-					icon: 'calendar',
-					description: 'History kunjungan pasien',
-					active: false,
-					colorScheme: 'gray'
-				}
-			]
 		}
 	];
 
