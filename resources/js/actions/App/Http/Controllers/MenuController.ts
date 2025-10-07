@@ -210,7 +210,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
  * @see app/Http/Controllers/MenuController.php:137
  * @route '/menus/{menu}'
  */
-export const show = (args: { menu: string | number | { id: string | number } } | [menu: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const show = (args: { menu: number | { id: number } } | [menu: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -225,7 +225,7 @@ show.definition = {
  * @see app/Http/Controllers/MenuController.php:137
  * @route '/menus/{menu}'
  */
-show.url = (args: { menu: string | number | { id: string | number } } | [menu: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+show.url = (args: { menu: number | { id: number } } | [menu: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { menu: args }
     }
@@ -258,7 +258,7 @@ show.url = (args: { menu: string | number | { id: string | number } } | [menu: s
  * @see app/Http/Controllers/MenuController.php:137
  * @route '/menus/{menu}'
  */
-show.get = (args: { menu: string | number | { id: string | number } } | [menu: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+show.get = (args: { menu: number | { id: number } } | [menu: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -267,7 +267,7 @@ show.get = (args: { menu: string | number | { id: string | number } } | [menu: s
  * @see app/Http/Controllers/MenuController.php:137
  * @route '/menus/{menu}'
  */
-show.head = (args: { menu: string | number | { id: string | number } } | [menu: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+show.head = (args: { menu: number | { id: number } } | [menu: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
 })
@@ -277,7 +277,7 @@ show.head = (args: { menu: string | number | { id: string | number } } | [menu: 
  * @see app/Http/Controllers/MenuController.php:151
  * @route '/menus/{menu}/edit'
  */
-export const edit = (args: { menu: string | number | { id: string | number } } | [menu: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const edit = (args: { menu: number | { id: number } } | [menu: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
@@ -292,7 +292,7 @@ edit.definition = {
  * @see app/Http/Controllers/MenuController.php:151
  * @route '/menus/{menu}/edit'
  */
-edit.url = (args: { menu: string | number | { id: string | number } } | [menu: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+edit.url = (args: { menu: number | { id: number } } | [menu: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { menu: args }
     }
@@ -325,7 +325,7 @@ edit.url = (args: { menu: string | number | { id: string | number } } | [menu: s
  * @see app/Http/Controllers/MenuController.php:151
  * @route '/menus/{menu}/edit'
  */
-edit.get = (args: { menu: string | number | { id: string | number } } | [menu: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+edit.get = (args: { menu: number | { id: number } } | [menu: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
@@ -334,7 +334,7 @@ edit.get = (args: { menu: string | number | { id: string | number } } | [menu: s
  * @see app/Http/Controllers/MenuController.php:151
  * @route '/menus/{menu}/edit'
  */
-edit.head = (args: { menu: string | number | { id: string | number } } | [menu: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+edit.head = (args: { menu: number | { id: number } } | [menu: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: edit.url(args, options),
     method: 'head',
 })
@@ -344,7 +344,7 @@ edit.head = (args: { menu: string | number | { id: string | number } } | [menu: 
  * @see app/Http/Controllers/MenuController.php:171
  * @route '/menus/{menu}'
  */
-export const update = (args: { menu: string | number | { id: string | number } } | [menu: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const update = (args: { menu: number | { id: number } } | [menu: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -359,7 +359,7 @@ update.definition = {
  * @see app/Http/Controllers/MenuController.php:171
  * @route '/menus/{menu}'
  */
-update.url = (args: { menu: string | number | { id: string | number } } | [menu: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+update.url = (args: { menu: number | { id: number } } | [menu: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { menu: args }
     }
@@ -392,7 +392,7 @@ update.url = (args: { menu: string | number | { id: string | number } } | [menu:
  * @see app/Http/Controllers/MenuController.php:171
  * @route '/menus/{menu}'
  */
-update.put = (args: { menu: string | number | { id: string | number } } | [menu: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+update.put = (args: { menu: number | { id: number } } | [menu: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -401,7 +401,7 @@ update.put = (args: { menu: string | number | { id: string | number } } | [menu:
  * @see app/Http/Controllers/MenuController.php:171
  * @route '/menus/{menu}'
  */
-update.patch = (args: { menu: string | number | { id: string | number } } | [menu: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+update.patch = (args: { menu: number | { id: number } } | [menu: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
 })
@@ -411,7 +411,7 @@ update.patch = (args: { menu: string | number | { id: string | number } } | [men
  * @see app/Http/Controllers/MenuController.php:227
  * @route '/menus/{menu}'
  */
-export const destroy = (args: { menu: string | number | { id: string | number } } | [menu: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { menu: number | { id: number } } | [menu: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -426,7 +426,7 @@ destroy.definition = {
  * @see app/Http/Controllers/MenuController.php:227
  * @route '/menus/{menu}'
  */
-destroy.url = (args: { menu: string | number | { id: string | number } } | [menu: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+destroy.url = (args: { menu: number | { id: number } } | [menu: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { menu: args }
     }
@@ -459,7 +459,7 @@ destroy.url = (args: { menu: string | number | { id: string | number } } | [menu
  * @see app/Http/Controllers/MenuController.php:227
  * @route '/menus/{menu}'
  */
-destroy.delete = (args: { menu: string | number | { id: string | number } } | [menu: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { menu: number | { id: number } } | [menu: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -469,7 +469,7 @@ destroy.delete = (args: { menu: string | number | { id: string | number } } | [m
  * @see app/Http/Controllers/MenuController.php:280
  * @route '/menus/{menu}/toggle-status'
  */
-export const toggleStatus = (args: { menu: string | number | { id: string | number } } | [menu: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const toggleStatus = (args: { menu: number | { id: number } } | [menu: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: toggleStatus.url(args, options),
     method: 'post',
 })
@@ -484,7 +484,7 @@ toggleStatus.definition = {
  * @see app/Http/Controllers/MenuController.php:280
  * @route '/menus/{menu}/toggle-status'
  */
-toggleStatus.url = (args: { menu: string | number | { id: string | number } } | [menu: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+toggleStatus.url = (args: { menu: number | { id: number } } | [menu: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { menu: args }
     }
@@ -517,7 +517,7 @@ toggleStatus.url = (args: { menu: string | number | { id: string | number } } | 
  * @see app/Http/Controllers/MenuController.php:280
  * @route '/menus/{menu}/toggle-status'
  */
-toggleStatus.post = (args: { menu: string | number | { id: string | number } } | [menu: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+toggleStatus.post = (args: { menu: number | { id: number } } | [menu: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: toggleStatus.url(args, options),
     method: 'post',
 })

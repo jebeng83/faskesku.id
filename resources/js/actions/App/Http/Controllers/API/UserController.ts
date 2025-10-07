@@ -272,7 +272,7 @@ checkUserByNik.head = (args: { nik: string | number } | [nik: string | number ] 
  * @see app/Http/Controllers/API/UserController.php:83
  * @route '/api/users/{user}'
  */
-export const show = (args: { user: string | number | { id: string | number } } | [user: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const show = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -287,7 +287,7 @@ show.definition = {
  * @see app/Http/Controllers/API/UserController.php:83
  * @route '/api/users/{user}'
  */
-show.url = (args: { user: string | number | { id: string | number } } | [user: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+show.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { user: args }
     }
@@ -320,7 +320,7 @@ show.url = (args: { user: string | number | { id: string | number } } | [user: s
  * @see app/Http/Controllers/API/UserController.php:83
  * @route '/api/users/{user}'
  */
-show.get = (args: { user: string | number | { id: string | number } } | [user: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+show.get = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -329,7 +329,7 @@ show.get = (args: { user: string | number | { id: string | number } } | [user: s
  * @see app/Http/Controllers/API/UserController.php:83
  * @route '/api/users/{user}'
  */
-show.head = (args: { user: string | number | { id: string | number } } | [user: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+show.head = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
 })
@@ -339,7 +339,7 @@ show.head = (args: { user: string | number | { id: string | number } } | [user: 
  * @see app/Http/Controllers/API/UserController.php:93
  * @route '/api/users/{user}'
  */
-export const update = (args: { user: string | number | { id: string | number } } | [user: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const update = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -354,7 +354,7 @@ update.definition = {
  * @see app/Http/Controllers/API/UserController.php:93
  * @route '/api/users/{user}'
  */
-update.url = (args: { user: string | number | { id: string | number } } | [user: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+update.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { user: args }
     }
@@ -387,7 +387,7 @@ update.url = (args: { user: string | number | { id: string | number } } | [user:
  * @see app/Http/Controllers/API/UserController.php:93
  * @route '/api/users/{user}'
  */
-update.put = (args: { user: string | number | { id: string | number } } | [user: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+update.put = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -397,7 +397,7 @@ update.put = (args: { user: string | number | { id: string | number } } | [user:
  * @see app/Http/Controllers/API/UserController.php:138
  * @route '/api/users/{user}'
  */
-export const destroy = (args: { user: string | number | { id: string | number } } | [user: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -412,7 +412,7 @@ destroy.definition = {
  * @see app/Http/Controllers/API/UserController.php:138
  * @route '/api/users/{user}'
  */
-destroy.url = (args: { user: string | number | { id: string | number } } | [user: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+destroy.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { user: args }
     }
@@ -445,7 +445,7 @@ destroy.url = (args: { user: string | number | { id: string | number } } | [user
  * @see app/Http/Controllers/API/UserController.php:138
  * @route '/api/users/{user}'
  */
-destroy.delete = (args: { user: string | number | { id: string | number } } | [user: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -455,7 +455,7 @@ destroy.delete = (args: { user: string | number | { id: string | number } } | [u
  * @see app/Http/Controllers/API/UserController.php:205
  * @route '/api/users/{user}/password'
  */
-export const updatePassword = (args: { user: string | number | { id: string | number } } | [user: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const updatePassword = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: updatePassword.url(args, options),
     method: 'put',
 })
@@ -470,7 +470,7 @@ updatePassword.definition = {
  * @see app/Http/Controllers/API/UserController.php:205
  * @route '/api/users/{user}/password'
  */
-updatePassword.url = (args: { user: string | number | { id: string | number } } | [user: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+updatePassword.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { user: args }
     }
@@ -503,7 +503,7 @@ updatePassword.url = (args: { user: string | number | { id: string | number } } 
  * @see app/Http/Controllers/API/UserController.php:205
  * @route '/api/users/{user}/password'
  */
-updatePassword.put = (args: { user: string | number | { id: string | number } } | [user: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+updatePassword.put = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: updatePassword.url(args, options),
     method: 'put',
 })
