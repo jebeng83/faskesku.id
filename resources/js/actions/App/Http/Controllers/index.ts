@@ -22,6 +22,7 @@ import DaftarTarifController from './DaftarTarifController'
 import TarifTindakanController from './TarifTindakanController'
 import Farmasi from './Farmasi'
 import PenjabController from './PenjabController'
+import PoliklinikController from './PoliklinikController'
 
 const Controllers = {
     API: Object.assign(API, API),
@@ -48,6 +49,7 @@ const Controllers = {
     TarifTindakanController: Object.assign(TarifTindakanController, TarifTindakanController),
     Farmasi: Object.assign(Farmasi, Farmasi),
     PenjabController: Object.assign(PenjabController, PenjabController),
+    PoliklinikController: Object.assign(PoliklinikController, PoliklinikController),
 }
 
 export default Controllers
