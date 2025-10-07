@@ -342,6 +342,69 @@ class RawatJalanController extends Controller
     }
 
     /**
+     * Get laboratory examination history for outpatient care
+     */
+    public static function getPemeriksaanLab($noRawat)
+    {
+        $data = DB::table('detail_periksa_lab')
+            ->join('template_laboratorium', 'detail_periksa_lab.id_template', '=', 'template_laboratorium.id_template')
+            ->where('detail_periksa_lab.no_rawat', $noRawat)
+            ->select(
+                DB::raw('template_laboratorium.Pemeriksaan as pemeriksaan'),
+                'detail_periksa_lab.tgl_periksa',
+                'detail_periksa_lab.jam',
+                'detail_periksa_lab.nilai',
+                DB::raw('template_laboratorium.satuan as satuan'),
+                'detail_periksa_lab.nilai_rujukan',
+                'detail_periksa_lab.keterangan'
+            )
+            ->orderBy('detail_periksa_lab.tgl_periksa', 'desc')
+            ->orderBy('detail_periksa_lab.jam', 'desc')
+            ->get();
+
+        return $data;
+    }
+
+    /**
+     * Public endpoint: Lab history for a no_rawat
+     */
+    public function getPemeriksaanLabPublic(Request $request, $no_rawat)
+    {
+        $rows = self::getPemeriksaanLab($no_rawat);
+        return response()->json(['data' => $rows]);
+    }
+
+    /**
+     * Get radiology results for outpatient care
+     */
+    public static function getRadiologi($no_rawat)
+    {
+        $rows = DB::table('hasil_radiologi')
+            ->where('no_rawat', $no_rawat)
+            ->select(
+                'no_rawat',
+                'tgl_periksa',
+                'jam',
+                'hasil',
+                'keterangan'
+            )
+            ->orderBy('tgl_periksa', 'desc')
+            ->orderBy('jam', 'desc')
+            ->get();
+
+        return $rows;
+    }
+
+    /**
+     * Public endpoint: Radiology history for a no_rawat
+     */
+    public function getRadiologiPublic(Request $request, $no_rawat)
+    {
+        $rows = self::getRadiologi($no_rawat);
+        return response()->json(['data' => $rows]);
+    }
+
+    /**
      * Get medication history for outpatient care
      */
     public function getobatRalanPublic(Request $request, $no_rawat)

@@ -98,8 +98,14 @@ Route::middleware('auth')->group(function () {
     Route::delete('rawat-jalan/pemeriksaan-ralan', [RawatJalanController::class, 'deletePemeriksaanRalan'])->name('rawat-jalan.pemeriksaan-ralan.delete');
     Route::put('rawat-jalan/pemeriksaan-ralan', [RawatJalanController::class, 'updatePemeriksaanRalan'])->name('rawat-jalan.pemeriksaan-ralan.update');
     Route::get('rawat-jalan/obat-ralan/{no_rawat}', [RawatJalanController::class, 'getobatRalanPublic'])
-        ->where('no_rawat', '.*')
-        ->name('rawat-jalan.obat-ralan');
+        ->name('rawat-jalan.obat-ralan')
+        ->where('no_rawat', '.*');
+    Route::get('rawat-jalan/lab/{no_rawat}', [RawatJalanController::class, 'getPemeriksaanLabPublic'])
+        ->name('rawat-jalan.lab')
+        ->where('no_rawat', '.*');
+    Route::get('rawat-jalan/radiologi/{no_rawat}', [RawatJalanController::class, 'getRadiologiPublic'])
+        ->name('rawat-jalan.radiologi')
+        ->where('no_rawat', '.*');
     Route::get('pegawai/search', [RawatJalanController::class, 'searchPegawai'])->name('pegawai.search');
     Route::get('rawat-jalan-statistics', [RawatJalanController::class, 'getStatistics'])->name('rawat-jalan.statistics');
     
