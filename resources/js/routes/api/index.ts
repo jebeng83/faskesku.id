@@ -12,6 +12,7 @@ import dokter from './dokter'
 import permintaanLab from './permintaan-lab'
 import radiologiTests from './radiologi-tests'
 import permintaanRadiologi from './permintaan-radiologi'
+import menu from './menu'
 import tarifTindakan from './tarif-tindakan'
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
@@ -100,20 +101,21 @@ labTests.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 const api = {
     employees: Object.assign(employees, employees),
-penjab: Object.assign(penjab, penjab),
-wilayah: Object.assign(wilayah, wilayah),
-permissions: Object.assign(permissions, permissions),
-regPeriksa: Object.assign(regPeriksa, regPeriksaD17f92),
-users: Object.assign(users, users),
-menus: Object.assign(menus, menus),
-obat: Object.assign(obat, obat),
-resep: Object.assign(resep, resep),
-dokter: Object.assign(dokter, dokter),
-labTests: Object.assign(labTests, labTests),
-permintaanLab: Object.assign(permintaanLab, permintaanLab),
-radiologiTests: Object.assign(radiologiTests, radiologiTests),
-permintaanRadiologi: Object.assign(permintaanRadiologi, permintaanRadiologi),
-tarifTindakan: Object.assign(tarifTindakan, tarifTindakan),
+    penjab: Object.assign(penjab, penjab),
+    wilayah: Object.assign(wilayah, wilayah),
+    permissions: Object.assign(permissions, permissions),
+    regPeriksa: Object.assign(regPeriksa, regPeriksaD17f92),
+    users: Object.assign(users, users),
+    menus: Object.assign(menus, menus),
+    obat: Object.assign(obat, obat),
+    resep: Object.assign(resep, resep),
+    dokter: Object.assign(dokter, dokter),
+    labTests: Object.assign(labTests, labTests),
+    permintaanLab: Object.assign(permintaanLab, permintaanLab),
+    radiologiTests: Object.assign(radiologiTests, radiologiTests),
+    permintaanRadiologi: Object.assign(permintaanRadiologi, permintaanRadiologi),
+    menu: Object.assign(menu, menu),
+    tarifTindakan: Object.assign(tarifTindakan, tarifTindakan),
 }
 
 export default api
