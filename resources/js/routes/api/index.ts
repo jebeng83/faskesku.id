@@ -12,6 +12,7 @@ import dokter from './dokter'
 import permintaanLab from './permintaan-lab'
 import radiologiTests from './radiologi-tests'
 import permintaanRadiologi from './permintaan-radiologi'
+import menu from './menu'
 import tarifTindakan from './tarif-tindakan'
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
@@ -116,6 +117,7 @@ const api = {
     permintaanLab: Object.assign(permintaanLab, permintaanLab),
     radiologiTests: Object.assign(radiologiTests, radiologiTests),
     permintaanRadiologi: Object.assign(permintaanRadiologi, permintaanRadiologi),
+    menu: Object.assign(menu, menu),
     tarifTindakan: Object.assign(tarifTindakan, tarifTindakan),
 }
 

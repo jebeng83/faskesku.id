@@ -39,6 +39,12 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 // API routes that don't require authentication
 Route::get('/api/lab-tests', [PermintaanLabController::class, 'getLabTests'])->name('api.lab-tests');
 
+// API routes that require authentication
+Route::middleware('auth')->prefix('api')->group(function () {
+    Route::get('/menu/search', [\App\Http\Controllers\API\MenuSearchController::class, 'search'])->name('api.menu.search');
+    Route::get('/menu/popular', [\App\Http\Controllers\API\MenuSearchController::class, 'popular'])->name('api.menu.popular');
+});
+
 Route::middleware('auth')->group(function () {
     Route::get('/', function () {
         return Inertia::render('Dashboard');

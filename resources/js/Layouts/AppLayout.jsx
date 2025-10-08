@@ -4,6 +4,7 @@ import { route } from "ziggy-js";
 import { SettingsIcon } from "@/Components/IconSettings";
 import SidebarMenu from "@/Components/SidebarMenu";
 import Breadcrumb from "@/Components/Breadcrumb";
+import MenuSearch from "@/Components/MenuSearch";
 
 export default function AppLayout({
 	title = "Faskesku",
@@ -16,6 +17,7 @@ export default function AppLayout({
 	const [isDark, setIsDark] = useState(false);
 	const [collapsedGroups, setCollapsedGroups] = useState({});
 	const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+	const [isMenuSearchOpen, setIsMenuSearchOpen] = useState(false);
 
 	useEffect(() => {
 		const root = document.documentElement;
@@ -68,6 +70,26 @@ export default function AppLayout({
 			document.removeEventListener("mousedown", handleClickOutside);
 		};
 	}, [isProfileDropdownOpen]);
+
+	// Global keyboard shortcuts
+	useEffect(() => {
+		const handleKeyDown = (event) => {
+			// Command+K or Ctrl+K to open menu search
+			if ((event.metaKey || event.ctrlKey) && event.key === "k") {
+				event.preventDefault();
+				setIsMenuSearchOpen(true);
+			}
+			// Escape to close menu search
+			else if (event.key === "Escape" && isMenuSearchOpen) {
+				setIsMenuSearchOpen(false);
+			}
+		};
+
+		document.addEventListener("keydown", handleKeyDown);
+		return () => {
+			document.removeEventListener("keydown", handleKeyDown);
+		};
+	}, [isMenuSearchOpen]);
 
 	const toggleGroup = (groupTitle) => {
 		setCollapsedGroups((prev) => ({
@@ -201,6 +223,30 @@ export default function AppLayout({
 
 					{/* Right side - Actions */}
 					<div className="flex items-center gap-3">
+						{/* Search Button */}
+						<button
+							onClick={() => setIsMenuSearchOpen(true)}
+							ClassName="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
+							title="Search menus (⌘+K)"
+						>
+							<svg
+								className="w-4 h-4"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth={2}
+									d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+								/>
+							</svg>
+							<span className="hidden sm:inline">Search</span>
+							<kbd className="hidden sm:inline-flex ml-2 px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600">
+								⌘K
+							</kbd>
+						</button>
 						{/* Manage Button */}
 						{/* <button className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors">
 							<svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -517,6 +563,12 @@ export default function AppLayout({
 					</main>
 				</div>
 			</div>
+
+			{/* Menu Search Modal */}
+			<MenuSearch
+				isOpen={isMenuSearchOpen}
+				onClose={() => setIsMenuSearchOpen(false)}
+			/>
 		</div>
 	);
 }
