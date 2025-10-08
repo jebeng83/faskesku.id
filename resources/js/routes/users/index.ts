@@ -29,7 +29,6 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
-
 /**
 * @see routes/web.php:86
 * @route '/users'
@@ -38,7 +37,6 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
 })
-
 const users = {
     index: Object.assign(index, index),
 }

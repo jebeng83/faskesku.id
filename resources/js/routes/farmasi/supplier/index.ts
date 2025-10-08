@@ -29,7 +29,6 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
-
 /**
 * @see routes/web.php:277
 * @route '/farmasi/supplier'
@@ -38,7 +37,6 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
 })
-
 const supplier = {
     index: Object.assign(index, index),
 }
