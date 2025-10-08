@@ -1,234 +1,203 @@
-import React, { useEffect, useState } from 'react';
-import { route } from 'ziggy-js';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-    ChevronDownIcon,
-    ChevronUpIcon,
-    ClipboardDocumentListIcon,
-    BeakerIcon,
-    DocumentTextIcon,
-    CalendarIcon,
-    ClockIcon,
-    HeartIcon
-} from '@heroicons/react/24/outline';
+import React, { useState, useEffect } from 'react';
+import { BeakerIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 
 export default function RiwayatPemeriksaan({ token = '', noRawat = '', noRkmMedis = '' }) {
-    const [rows, setRows] = useState([]);
+    const [medicationItems, setMedicationItems] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [expandedSections, setExpandedSections] = useState({
-        pemeriksaan: true,
-        obat: false,
-        lab: false,
-        radiologi: false
-    });
+    const [error, setError] = useState('');
 
-    const toggleSection = (section) => {
-        setExpandedSections(prev => ({
-            ...prev,
-            [section]: !prev[section]
-        }));
-    };
-
-    const fetchData = async () => {
-        if (!noRawat) return;
-        setLoading(true);
-        setError(null);
-        try {
-            const url = route('rawat-jalan.pemeriksaan-ralan', { no_rawat: noRawat, t: token });
-            const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-            const json = await res.json();
-            setRows(json.data || []);
-        } catch (e) {
-            setError(e.message || 'Gagal memuat riwayat pemeriksaan');
-        } finally {
-            setLoading(false);
-        }
-    };
-
+    // Load medication data dynamically based on noRawat
     useEffect(() => {
-        fetchData();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [noRawat]);
-
-    const getSectionIcon = (section) => {
-        const icons = {
-            pemeriksaan: ClipboardDocumentListIcon,
-            obat: BeakerIcon,
-            lab: BeakerIcon,
-            radiologi: DocumentTextIcon
-        };
-        return icons[section] || DocumentTextIcon;
-    };
-
-    const getSectionColor = (section) => {
-        const colors = {
-            pemeriksaan: 'bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200 text-blue-700',
-            obat: 'bg-gradient-to-r from-green-50 to-green-100 border-green-200 text-green-700',
-            lab: 'bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200 text-purple-700',
-            radiologi: 'bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200 text-orange-700'
-        };
-        return colors[section] || 'bg-gradient-to-r from-gray-50 to-gray-100 border-gray-200 text-gray-700';
-    };
-
-    const getIconColor = (section) => {
-        const colors = {
-            pemeriksaan: 'text-blue-600',
-            obat: 'text-green-600',
-            lab: 'text-purple-600',
-            radiologi: 'text-orange-600'
-        };
-        return colors[section] || 'text-gray-600';
-    };
+        // Clear previous data immediately when noRawat changes
+        setMedicationItems([]);
+        setError('');
+        
+        if (noRawat) {
+            const controller = new AbortController();
+            const fetchMedicationData = async () => {
+                try {
+                    setLoading(true);
+                    
+                    // Construct the URL with proper encoding
+                    const baseUrl = `/rawat-jalan/obat-ralan/${noRawat}`;
+                    const qs = token 
+                        ? `t=${encodeURIComponent(token)}`
+                        : `no_rawat=${encodeURIComponent(noRawat)}`;
+                    
+                    const url = `${baseUrl}?${qs}`;
+                    
+                    const res = await fetch(url, {
+                        signal: controller.signal,
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    
+                    if (!res.ok) {
+                        const errorData = await res.json().catch(() => ({}));
+                        throw new Error(errorData.message || `HTTP ${res.status}: ${res.statusText}`);
+                    }
+                    
+                    const json = await res.json();
+                    
+                    // Ensure we're working with an array
+                    const data = Array.isArray(json.data) ? json.data : [];
+                    setMedicationItems(data);
+                } catch (e) {
+                    if (e.name !== 'AbortError') {
+                        setError(e.message || 'Terjadi kesalahan saat memuat data obat');
+                    }
+                } finally {
+                    setLoading(false);
+                }
+            };
+            
+            fetchMedicationData();
+            
+            return () => {
+                controller.abort();
+            };
+        } else {
+            setMedicationItems([]);
+        }
+    }, [token, noRawat]);
 
     const sections = [
         {
-            key: 'pemeriksaan',
-            title: 'Riwayat Pemeriksaan',
-            subtitle: `${rows.length} pemeriksaan`,
-            content: rows
-        },
-        {
             key: 'obat',
             title: 'Riwayat Obat',
-            subtitle: 'Belum ada data obat',
-            content: []
+            subtitle: medicationItems.length > 0 ? `${medicationItems.length} item` : 'Belum ada data obat',
+            icon: BeakerIcon,
+            color: 'bg-gradient-to-r from-green-50 to-green-100 border-green-200 text-green-700',
+            iconColor: 'text-green-600'
         },
         {
             key: 'lab',
             title: 'Riwayat Lab',
             subtitle: 'Belum ada data lab',
-            content: []
+            icon: BeakerIcon,
+            color: 'bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200 text-purple-700',
+            iconColor: 'text-purple-600'
         },
         {
             key: 'radiologi',
             title: 'Riwayat Radiologi',
             subtitle: 'Belum ada data radiologi',
-            content: []
+            icon: DocumentTextIcon,
+            color: 'bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200 text-orange-700',
+            iconColor: 'text-orange-600'
         }
     ];
 
+    // Render medication table
+    const renderMedicationTable = () => {
+        if (loading) {
+            return (
+                <div className="text-center py-6 text-gray-500">
+                    <div className="flex items-center justify-center space-x-2">
+                        <svg className="animate-spin h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span className="text-xs">Memuat data obat...</span>
+                    </div>
+                </div>
+            );
+        }
+        
+        if (error) {
+            return (
+                <div className="text-center py-6 text-gray-500">
+                    <svg className="w-8 h-8 mx-auto mb-2 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    <p className="text-xs text-red-500">{error}</p>
+                    <button 
+                        onClick={() => window.location.reload()} 
+                        className="mt-2 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                    >
+                        Coba lagi
+                    </button>
+                </div>
+            );
+        }
+
+        if (medicationItems.length === 0) {
+            return (
+                <div className="text-center py-6 text-gray-500">
+                    <BeakerIcon className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                    <p className="text-xs">Belum ada data obat</p>
+                </div>
+            );
+        }
+        
+        return (
+            <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Obat</th>
+                            <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
+                            <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aturan Pakai</th>
+                            <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {medicationItems.map((item, index) => (
+                            <tr key={`${item.kode_brng}-${item.tgl_perawatan}-${item.jam}-${index}`}>
+                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{item.nama_brng || '-'}</td>
+                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{item.jml || '-'}</td>
+                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{item.aturan || '-'}</td>
+                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                                    {item.tgl_perawatan ? `${item.tgl_perawatan} ${item.jam || ''}` : '-'}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        );
+    };
+
     return (
         <div className="space-y-3">
-            {loading && (
-                <div className="flex items-center justify-center py-8">
-                    <div className="text-gray-500">Memuat riwayat...</div>
-                </div>
-            )}
-            
-            {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-                    {error}
-                </div>
-            )}
-
-            {!loading && !error && sections.map((section) => {
-                const Icon = getSectionIcon(section.key);
-                const isExpanded = expandedSections[section.key];
+            {sections.map((section) => {
+                const Icon = section.icon;
                 
                 return (
-                    <motion.div
+                    <div
                         key={section.key}
                         className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
                     >
-                        <button
-                            onClick={() => toggleSection(section.key)}
-                            className={`w-full px-6 py-4 flex items-center justify-between transition-all duration-200 ${getSectionColor(section.key)} hover:shadow-sm`}
-                        >
-                            <div className="flex items-center space-x-4">
-                                <div className={`p-2 rounded-lg bg-white/80 ${getIconColor(section.key)}`}>
-                                    <Icon className="w-5 h-5" />
+                        <div className={`w-full px-4 py-3 flex items-center justify-between ${section.color}`}>
+                            <div className="flex items-center space-x-3">
+                                <div className={`p-1.5 rounded-md bg-white/80 ${section.iconColor}`}>
+                                    <Icon className="w-4 h-4" />
                                 </div>
                                 <div className="text-left">
-                                    <h3 className="font-semibold text-gray-900">
+                                    <h3 className="font-semibold text-gray-900 text-sm">
                                         {section.title}
                                     </h3>
-                                    <p className="text-sm text-gray-600">
+                                    <p className="text-xs text-gray-600">
                                         {section.subtitle}
                                     </p>
                                 </div>
                             </div>
-                            <motion.div
-                                animate={{ rotate: isExpanded ? 180 : 0 }}
-                                transition={{ duration: 0.2 }}
-                            >
-                                <ChevronDownIcon className="w-5 h-5 text-gray-500" />
-                            </motion.div>
-                        </button>
-
-                        <AnimatePresence>
-                            {isExpanded && (
-                                <motion.div
-                                    initial={{ height: 0, opacity: 0 }}
-                                    animate={{ height: 'auto', opacity: 1 }}
-                                    exit={{ height: 0, opacity: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                    className="border-t border-gray-200"
-                                >
-                                    <div className="p-6">
-                                        {section.key === 'pemeriksaan' && section.content.length > 0 ? (
-                                            <div className="space-y-4">
-                                                {section.content.map((row, idx) => (
-                                                    <div key={idx} className="bg-gray-50 rounded-lg p-4 space-y-3">
-                                                        <div className="flex items-center justify-between text-sm">
-                                                            <div className="flex items-center space-x-2 text-gray-600">
-                                                                <CalendarIcon className="w-4 h-4" />
-                                                                <span>{new Date(row.tgl_perawatan).toLocaleDateString('id-ID')}</span>
-                                                            </div>
-                                                            <div className="flex items-center space-x-2 text-gray-600">
-                                                                <ClockIcon className="w-4 h-4" />
-                                                                <span>{String(row.jam_rawat).substring(0,5)}</span>
-                                                            </div>
-                                                        </div>
-                                                        
-                                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                                                            <div className="bg-white rounded p-2">
-                                                                <div className="text-gray-500 text-xs">Suhu</div>
-                                                                <div className="font-medium">{row.suhu_tubuh || '-'}</div>
-                                                            </div>
-                                                            <div className="bg-white rounded p-2">
-                                                                <div className="text-gray-500 text-xs">Tensi</div>
-                                                                <div className="font-medium">{row.tensi || '-'}</div>
-                                                            </div>
-                                                            <div className="bg-white rounded p-2">
-                                                                <div className="text-gray-500 text-xs">Nadi</div>
-                                                                <div className="font-medium">{row.nadi || '-'}</div>
-                                                            </div>
-                                                            <div className="bg-white rounded p-2">
-                                                                <div className="text-gray-500 text-xs">Respirasi</div>
-                                                                <div className="font-medium">{row.respirasi || '-'}</div>
-                                                            </div>
-                                                        </div>
-                                                        
-                                                        {row.kesadaran && (
-                                                            <div className="bg-white rounded p-3">
-                                                                <div className="text-gray-500 text-xs mb-1">Kesadaran</div>
-                                                                <div className="text-sm">{row.kesadaran}</div>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="text-center py-8 text-gray-500">
-                                                <Icon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                                                <p className="text-sm">
-                                                    {section.key === 'pemeriksaan' ? 'Belum ada data pemeriksaan' : `Belum ada data ${section.title.toLowerCase()}`}
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </motion.div>
+                        </div>
+                        
+                        <div className="p-3 border-t border-gray-200">
+                            {section.key === 'obat' ? (
+                                renderMedicationTable()
+                            ) : (
+                                <div className="text-center py-6 text-gray-500">
+                                    <Icon className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                                    <p className="text-xs">
+                                        {`Belum ada data ${section.title.toLowerCase()}`}
+                                    </p>
+                                </div>
                             )}
-                        </AnimatePresence>
-                    </motion.div>
+                        </div>
+                    </div>
                 );
             })}
         </div>
     );
 }
-
-

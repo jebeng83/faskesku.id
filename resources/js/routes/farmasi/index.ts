@@ -42,7 +42,6 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
-
 /**
 * @see routes/web.php:190
 * @route '/farmasi'
@@ -82,7 +81,6 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: dashboard.url(options),
     method: 'get',
 })
-
 /**
 * @see routes/web.php:195
 * @route '/farmasi/dashboard'
@@ -122,7 +120,6 @@ pembelianObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: pembelianObat.url(options),
     method: 'get',
 })
-
 /**
 * @see routes/web.php:199
 * @route '/farmasi/pembelian-obat'
@@ -162,7 +159,6 @@ penjualanObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: penjualanObat.url(options),
     method: 'get',
 })
-
 /**
 * @see routes/web.php:203
 * @route '/farmasi/penjualan-obat'
@@ -202,7 +198,6 @@ resepObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: resepObat.url(options),
     method: 'get',
 })
-
 /**
 * @see routes/web.php:207
 * @route '/farmasi/resep-obat'
@@ -242,7 +237,6 @@ riwayatTransaksiGudang.get = (options?: RouteQueryOptions): RouteDefinition<'get
     url: riwayatTransaksiGudang.url(options),
     method: 'get',
 })
-
 /**
 * @see routes/web.php:211
 * @route '/farmasi/riwayat-transaksi-gudang'
@@ -282,7 +276,6 @@ stokObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: stokObat.url(options),
     method: 'get',
 })
-
 /**
 * @see routes/web.php:215
 * @route '/farmasi/stok-obat'
@@ -322,7 +315,6 @@ stokOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: stokOpname.url(options),
     method: 'get',
 })
-
 /**
 * @see routes/web.php:219
 * @route '/farmasi/stok-opname'
@@ -334,9 +326,9 @@ stokOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\DataBarangController::dataObat
-* @see app/Http/Controllers/Farmasi/DataBarangController.php:12
-* @route '/farmasi/data-obat'
-*/
+ * @see app/Http/Controllers/Farmasi/DataBarangController.php:12
+ * @route '/farmasi/data-obat'
+ */
 export const dataObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: dataObat.url(options),
     method: 'get',
@@ -349,28 +341,27 @@ dataObat.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\DataBarangController::dataObat
-* @see app/Http/Controllers/Farmasi/DataBarangController.php:12
-* @route '/farmasi/data-obat'
-*/
+ * @see app/Http/Controllers/Farmasi/DataBarangController.php:12
+ * @route '/farmasi/data-obat'
+ */
 dataObat.url = (options?: RouteQueryOptions) => {
     return dataObat.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\Farmasi\DataBarangController::dataObat
-* @see app/Http/Controllers/Farmasi/DataBarangController.php:12
-* @route '/farmasi/data-obat'
-*/
+ * @see app/Http/Controllers/Farmasi/DataBarangController.php:12
+ * @route '/farmasi/data-obat'
+ */
 dataObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: dataObat.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\Farmasi\DataBarangController::dataObat
-* @see app/Http/Controllers/Farmasi/DataBarangController.php:12
-* @route '/farmasi/data-obat'
-*/
+ * @see app/Http/Controllers/Farmasi/DataBarangController.php:12
+ * @route '/farmasi/data-obat'
+ */
 dataObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: dataObat.url(options),
     method: 'head',
@@ -378,9 +369,9 @@ dataObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::setHargaObat
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:18
-* @route '/farmasi/set-harga-obat'
-*/
+ * @see app/Http/Controllers/Farmasi/SetHargaObatController.php:18
+ * @route '/farmasi/set-harga-obat'
+ */
 export const setHargaObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: setHargaObat.url(options),
     method: 'get',
@@ -393,56 +384,54 @@ setHargaObat.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::setHargaObat
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:18
-* @route '/farmasi/set-harga-obat'
-*/
+ * @see app/Http/Controllers/Farmasi/SetHargaObatController.php:18
+ * @route '/farmasi/set-harga-obat'
+ */
 setHargaObat.url = (options?: RouteQueryOptions) => {
     return setHargaObat.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::setHargaObat
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:18
-* @route '/farmasi/set-harga-obat'
-*/
+ * @see app/Http/Controllers/Farmasi/SetHargaObatController.php:18
+ * @route '/farmasi/set-harga-obat'
+ */
 setHargaObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: setHargaObat.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::setHargaObat
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:18
-* @route '/farmasi/set-harga-obat'
-*/
+ * @see app/Http/Controllers/Farmasi/SetHargaObatController.php:18
+ * @route '/farmasi/set-harga-obat'
+ */
 setHargaObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: setHargaObat.url(options),
     method: 'head',
 })
-
 const farmasi = {
     index: Object.assign(index, index),
-    dashboard: Object.assign(dashboard, dashboard),
-    pembelianObat: Object.assign(pembelianObat, pembelianObat),
-    penjualanObat: Object.assign(penjualanObat, penjualanObat),
-    resepObat: Object.assign(resepObat, resepObat),
-    riwayatTransaksiGudang: Object.assign(riwayatTransaksiGudang, riwayatTransaksiGudang),
-    stokObat: Object.assign(stokObat, stokObat),
-    stokOpname: Object.assign(stokOpname, stokOpname),
-    dataObat: Object.assign(dataObat, dataObatF6becc),
-    setPenjualanBarang: Object.assign(setPenjualanBarang, setPenjualanBarang),
-    setPenjualanUmum: Object.assign(setPenjualanUmum, setPenjualanUmum),
-    kategoriObat: Object.assign(kategoriObat, kategoriObat),
-    setPenjualan: Object.assign(setPenjualan, setPenjualan),
-    setHargaObat: Object.assign(setHargaObat, setHargaObat),
-    golonganObat: Object.assign(golonganObat, golonganObat),
-    industriFarmasi: Object.assign(industriFarmasi, industriFarmasi),
-    datasuplier: Object.assign(datasuplier, datasuplier),
-    supplier: Object.assign(supplier, supplier),
-    satuanBarang: Object.assign(satuanBarang, satuanBarang),
-    metodeRacik: Object.assign(metodeRacik, metodeRacik),
-    konversiSatuan: Object.assign(konversiSatuan, konversiSatuan),
-    jenisObat: Object.assign(jenisObat, jenisObat),
+dashboard: Object.assign(dashboard, dashboard),
+pembelianObat: Object.assign(pembelianObat, pembelianObat),
+penjualanObat: Object.assign(penjualanObat, penjualanObat),
+resepObat: Object.assign(resepObat, resepObat),
+riwayatTransaksiGudang: Object.assign(riwayatTransaksiGudang, riwayatTransaksiGudang),
+stokObat: Object.assign(stokObat, stokObat),
+stokOpname: Object.assign(stokOpname, stokOpname),
+dataObat: Object.assign(dataObat, dataObatF6becc),
+setPenjualanBarang: Object.assign(setPenjualanBarang, setPenjualanBarang),
+setPenjualanUmum: Object.assign(setPenjualanUmum, setPenjualanUmum),
+kategoriObat: Object.assign(kategoriObat, kategoriObat),
+setPenjualan: Object.assign(setPenjualan, setPenjualan),
+setHargaObat: Object.assign(setHargaObat, setHargaObat),
+golonganObat: Object.assign(golonganObat, golonganObat),
+industriFarmasi: Object.assign(industriFarmasi, industriFarmasi),
+datasuplier: Object.assign(datasuplier, datasuplier),
+supplier: Object.assign(supplier, supplier),
+satuanBarang: Object.assign(satuanBarang, satuanBarang),
+metodeRacik: Object.assign(metodeRacik, metodeRacik),
+konversiSatuan: Object.assign(konversiSatuan, konversiSatuan),
+jenisObat: Object.assign(jenisObat, jenisObat),
 }
 
 export default farmasi

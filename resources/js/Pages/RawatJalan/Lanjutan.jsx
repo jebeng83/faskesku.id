@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import AppLayout from '@/Layouts/AppLayout';
-import RiwayatKunjungan from './components/RiwayatKunjungan';
+import LanjutanRalanLayout from '@/Layouts/LanjutanRalanLayout';
+import RiwayatPerawatan from './components/RiwayatPerawatan'; // Updated import
 import CpptSoap from './components/CpptSoap';
 import Resep from './components/Resep';
 import Diagnosa from './components/Diagnosa';
 import PermintaanLab from './components/PermintaanLab';
 import PermintaanRadiologi from './components/PermintaanRadiologi';
-import RiwayatPemeriksaan from './components/RiwayatPemeriksaan';
 import TarifTindakan from './components/TarifTindakan';
 
 export default function Lanjutan({ rawatJalan, params }) {
@@ -214,32 +213,19 @@ export default function Lanjutan({ rawatJalan, params }) {
     }, [autoSaveStatus]);
 
     return (
-        <AppLayout>
+        <LanjutanRalanLayout 
+            title="Lanjutan Rawat Jalan"
+            menuConfig={{
+                activeTab,
+                onTabChange: handleTabChange
+            }}
+        >
             <Head title={`Lanjutan Rawat Jalan${params?.no_rawat ? ' - ' + params.no_rawat : ''}`} />
 
             <div className="px-4 sm:px-6 lg:px-8 py-6">
-                {/* Breadcrumb Navigation */}
-                <div className="mb-6">
-                    <nav className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-                        <Link href={route('dashboard')} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                            Dashboard
-                        </Link>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                        <Link href={route('rawat-jalan.index')} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                            Rawat Jalan
-                        </Link>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                        <span className="text-gray-900 dark:text-white font-medium">Lanjutan</span>
-                    </nav>
-                </div>
-
                 {/* Header dengan Gradient */}
                 <div className="mb-8">
-                    <div className="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 rounded-2xl p-8 text-white">
+                    <div className="bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 rounded-2xl p-8 text-white">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <div className="p-3 bg-white/20 backdrop-blur rounded-xl">
@@ -251,7 +237,7 @@ export default function Lanjutan({ rawatJalan, params }) {
                                     <h1 className="text-3xl font-bold mb-2">
                                         Lanjutan Rawat Jalan
                                     </h1>
-                                    <p className="text-green-100 text-lg">
+                                    <p className="text-blue-100 text-lg">
                                         Kelola pemeriksaan dan tindakan medis pasien
                                     </p>
                                 </div>
@@ -259,7 +245,7 @@ export default function Lanjutan({ rawatJalan, params }) {
                             {/* Auto-save Status Indicator */}
                             {autoSaveStatus && (
                                 <div className="bg-white/20 backdrop-blur border border-white/20 rounded-xl px-4 py-2 flex items-center gap-2">
-                                    <svg className="w-4 h-4 text-green-200" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg className="w-4 h-4 text-blue-200" fill="currentColor" viewBox="0 0 20 20">
                                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                     </svg>
                                     <span className="text-sm font-medium text-white">{autoSaveStatus}</span>
@@ -411,25 +397,26 @@ export default function Lanjutan({ rawatJalan, params }) {
                     </div>
                 </div>
 
-                {/* Main Content Area - 1:1 Grid Layout */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Left Side - Medical History */}
+                {/* Main Content Area - 3-column layout (1:1:2 ratio) with sidebar handled by layout */}
+                {/* Note: Sidebar (first column) is handled by LanjutanRalanLayout */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Middle Column - Medical History (1 unit) */}
                     <div className="lg:col-span-1">
                         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden sticky top-6">
-                            <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                            <div className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-900/20 dark:to-blue-900/20 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                                 <button
                                     onClick={() => toggle('pemeriksaan')}
                                     className="w-full flex items-center justify-between text-left group hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-lg p-2 transition-all duration-200"
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className={`w-3 h-3 rounded-full transition-colors ${
-                                            openAcc.pemeriksaan ? 'bg-green-500 shadow-lg shadow-green-500/30' : 'bg-gray-400'
+                                            openAcc.pemeriksaan ? 'bg-blue-500 shadow-lg shadow-blue-500/30' : 'bg-gray-400'
                                         }`}></div>
-                                        <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                                         </svg>
                                         <div>
-                                            <h3 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">Riwayat Perawatan</h3>
+                                            <h3 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Riwayat Perawatan</h3>
                                             <p className="text-xs text-gray-500 dark:text-gray-400">History pemeriksaan</p>
                                         </div>
                                     </div>
@@ -446,10 +433,10 @@ export default function Lanjutan({ rawatJalan, params }) {
                                 </button>
                             </div>
                             {openAcc.pemeriksaan && (
-                                <div className="p-4 max-h-[700px] overflow-y-auto">
-                                    <RiwayatPemeriksaan
+                                <div className="p-4 max-h-[calc(100vh-32rem)] min-h-[calc(100vh-28rem)] overflow-y-auto">
+                                    {/* Updated to use the new combined component */}
+                                    <RiwayatPerawatan
                                         token={typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('t') : ''}
-                                        noRawat={params?.no_rawat || rawatJalan?.no_rawat}
                                         noRkmMedis={params?.no_rkm_medis || rawatJalan?.patient?.no_rkm_medis}
                                     />
                                 </div>
@@ -457,8 +444,8 @@ export default function Lanjutan({ rawatJalan, params }) {
                         </div>
                     </div>
 
-                    {/* Right Side - Active Tab Content */}
-                    <div className="lg:col-span-1">
+                    {/* Right Column - Active Tab Content (2 units - double width) */}
+                    <div className="lg:col-span-2">
                         <div className="space-y-4">
                             {/* Tab Content Header */}
                             <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
@@ -507,10 +494,6 @@ export default function Lanjutan({ rawatJalan, params }) {
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </LanjutanRalanLayout>
     );
 }
- 
-
-
-
