@@ -77,9 +77,9 @@ logout.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
- * @see routes/web.php:43
- * @route '/'
- */
+* @see routes/web.php:49
+* @route '/'
+*/
 export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: dashboard.url(options),
     method: 'get',
@@ -91,25 +91,25 @@ dashboard.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:43
- * @route '/'
- */
+* @see routes/web.php:49
+* @route '/'
+*/
 dashboard.url = (options?: RouteQueryOptions) => {
     return dashboard.definition.url + queryParams(options)
 }
 
 /**
- * @see routes/web.php:43
- * @route '/'
- */
+* @see routes/web.php:49
+* @route '/'
+*/
 dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: dashboard.url(options),
     method: 'get',
 })
 /**
- * @see routes/web.php:43
- * @route '/'
- */
+* @see routes/web.php:49
+* @route '/'
+*/
 dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: dashboard.url(options),
     method: 'head',
