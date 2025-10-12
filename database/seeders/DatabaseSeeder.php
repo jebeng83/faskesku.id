@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             PermissionSeeder::class,
             MenuSeeder::class,
+            RouteSeeder::class,
             DokterSeeder::class,
             SpesialisSeeder::class,
             PoliklinikSeeder::class,

@@ -176,6 +176,116 @@ class Menu extends Model
     }
 
     /**
+     * Search menus by query
+     */
+    public static function search($query, $userId = null)
+    {
+        $searchTerms = collect(explode(' ', strtolower(trim($query))))
+            ->filter()
+            ->values();
+
+        if ($searchTerms->isEmpty()) {
+            return collect();
+        }
+
+        // Get all active menus with their hierarchy
+        $menus = self::active()
+            ->with(['parent', 'activeChildrenRecursive'])
+            ->get();
+
+        // Filter by user permissions if provided
+        if ($userId) {
+            $user = \App\Models\User::find($userId);
+            if ($user) {
+                $menus = $menus->filter(function ($menu) use ($user) {
+                    return self::userCanAccessMenu($menu, $user);
+                });
+            }
+        }
+
+        // Search and score results
+        $results = $menus->map(function ($menu) use ($searchTerms) {
+            $searchableText = strtolower(
+                $menu->name . ' ' .
+                    ($menu->description ?? '') . ' ' .
+                    ($menu->slug ?? '')
+            );
+
+            // Calculate relevance score
+            $score = 0;
+            $matchedTerms = 0;
+
+            foreach ($searchTerms as $term) {
+                if (strpos($searchableText, $term) !== false) {
+                    $matchedTerms++;
+
+                    // Exact name match gets highest score
+                    if (strpos(strtolower($menu->name), $term) !== false) {
+                        $score += 10;
+                    }
+                    // Description match gets medium score
+                    elseif (strpos(strtolower($menu->description ?? ''), $term) !== false) {
+                        $score += 5;
+                    }
+                    // Other matches get base score
+                    else {
+                        $score += 1;
+                    }
+                }
+            }
+
+            // Only include if all terms are matched
+            if ($matchedTerms === $searchTerms->count()) {
+                // Boost score for root menus
+                if (!$menu->parent_id) {
+                    $score += 2;
+                }
+
+                return [
+                    'menu' => $menu,
+                    'score' => $score,
+                    'breadcrumb' => $menu->getBreadcrumb()->pluck('name')->join(' › ')
+                ];
+            }
+
+            return null;
+        })->filter()->sortByDesc('score')->values();
+
+        return $results->take(10);
+    }
+
+    /**
+     * Get popular/frequently accessed menus
+     */
+    public static function getPopular($userId = null, $limit = 8)
+    {
+        $query = self::active()
+            ->with(['parent'])
+            ->whereNotNull('route') // Only include menus with routes
+            ->orderBy('sort_order');
+
+        // Filter by user permissions if provided
+        $menus = $query->get();
+
+        if ($userId) {
+            $user = \App\Models\User::find($userId);
+            if ($user) {
+                $menus = $menus->filter(function ($menu) use ($user) {
+                    return self::userCanAccessMenu($menu, $user);
+                });
+            }
+        }
+
+        return $menus->take($limit)->map(function ($menu) {
+            return [
+                'menu' => $menu,
+                'score' => 1,
+                'breadcrumb' => $menu->getBreadcrumb()->pluck('name')->join(' › ')
+            ];
+        });
+    }
+
+    /**
      * Check if this menu has children
      */
     public function hasChildren()

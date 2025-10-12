@@ -1,9 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::index
-* @see app/Http/Controllers/RehabilitasiMedikController.php:13
-* @route '/rehabilitasi-medik'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:13
+ * @route '/rehabilitasi-medik'
+ */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
@@ -16,28 +16,27 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::index
-* @see app/Http/Controllers/RehabilitasiMedikController.php:13
-* @route '/rehabilitasi-medik'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:13
+ * @route '/rehabilitasi-medik'
+ */
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::index
-* @see app/Http/Controllers/RehabilitasiMedikController.php:13
-* @route '/rehabilitasi-medik'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:13
+ * @route '/rehabilitasi-medik'
+ */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::index
-* @see app/Http/Controllers/RehabilitasiMedikController.php:13
-* @route '/rehabilitasi-medik'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:13
+ * @route '/rehabilitasi-medik'
+ */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
@@ -45,9 +44,9 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::create
-* @see app/Http/Controllers/RehabilitasiMedikController.php:23
-* @route '/rehabilitasi-medik/create'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:23
+ * @route '/rehabilitasi-medik/create'
+ */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: create.url(options),
     method: 'get',
@@ -60,28 +59,27 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::create
-* @see app/Http/Controllers/RehabilitasiMedikController.php:23
-* @route '/rehabilitasi-medik/create'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:23
+ * @route '/rehabilitasi-medik/create'
+ */
 create.url = (options?: RouteQueryOptions) => {
     return create.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::create
-* @see app/Http/Controllers/RehabilitasiMedikController.php:23
-* @route '/rehabilitasi-medik/create'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:23
+ * @route '/rehabilitasi-medik/create'
+ */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: create.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::create
-* @see app/Http/Controllers/RehabilitasiMedikController.php:23
-* @route '/rehabilitasi-medik/create'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:23
+ * @route '/rehabilitasi-medik/create'
+ */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: create.url(options),
     method: 'head',
@@ -89,9 +87,9 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::store
-* @see app/Http/Controllers/RehabilitasiMedikController.php:33
-* @route '/rehabilitasi-medik'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:33
+ * @route '/rehabilitasi-medik'
+ */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -104,18 +102,18 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::store
-* @see app/Http/Controllers/RehabilitasiMedikController.php:33
-* @route '/rehabilitasi-medik'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:33
+ * @route '/rehabilitasi-medik'
+ */
 store.url = (options?: RouteQueryOptions) => {
     return store.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::store
-* @see app/Http/Controllers/RehabilitasiMedikController.php:33
-* @route '/rehabilitasi-medik'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:33
+ * @route '/rehabilitasi-medik'
+ */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -123,9 +121,9 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::show
-* @see app/Http/Controllers/RehabilitasiMedikController.php:43
-* @route '/rehabilitasi-medik/{rehabilitasi_medik}'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:43
+ * @route '/rehabilitasi-medik/{rehabilitasi_medik}'
+ */
 export const show = (args: { rehabilitasi_medik: string | number } | [rehabilitasi_medik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
@@ -138,25 +136,26 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::show
-* @see app/Http/Controllers/RehabilitasiMedikController.php:43
-* @route '/rehabilitasi-medik/{rehabilitasi_medik}'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:43
+ * @route '/rehabilitasi-medik/{rehabilitasi_medik}'
+ */
 show.url = (args: { rehabilitasi_medik: string | number } | [rehabilitasi_medik: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { rehabilitasi_medik: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            rehabilitasi_medik: args[0],
-        }
+                    rehabilitasi_medik: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        rehabilitasi_medik: args.rehabilitasi_medik,
-    }
+                        rehabilitasi_medik: args.rehabilitasi_medik,
+                }
 
     return show.definition.url
             .replace('{rehabilitasi_medik}', parsedArgs.rehabilitasi_medik.toString())
@@ -165,19 +164,18 @@ show.url = (args: { rehabilitasi_medik: string | number } | [rehabilitasi_medik:
 
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::show
-* @see app/Http/Controllers/RehabilitasiMedikController.php:43
-* @route '/rehabilitasi-medik/{rehabilitasi_medik}'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:43
+ * @route '/rehabilitasi-medik/{rehabilitasi_medik}'
+ */
 show.get = (args: { rehabilitasi_medik: string | number } | [rehabilitasi_medik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::show
-* @see app/Http/Controllers/RehabilitasiMedikController.php:43
-* @route '/rehabilitasi-medik/{rehabilitasi_medik}'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:43
+ * @route '/rehabilitasi-medik/{rehabilitasi_medik}'
+ */
 show.head = (args: { rehabilitasi_medik: string | number } | [rehabilitasi_medik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
@@ -185,9 +183,9 @@ show.head = (args: { rehabilitasi_medik: string | number } | [rehabilitasi_medik
 
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::edit
-* @see app/Http/Controllers/RehabilitasiMedikController.php:53
-* @route '/rehabilitasi-medik/{rehabilitasi_medik}/edit'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:53
+ * @route '/rehabilitasi-medik/{rehabilitasi_medik}/edit'
+ */
 export const edit = (args: { rehabilitasi_medik: string | number } | [rehabilitasi_medik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
@@ -200,25 +198,26 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::edit
-* @see app/Http/Controllers/RehabilitasiMedikController.php:53
-* @route '/rehabilitasi-medik/{rehabilitasi_medik}/edit'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:53
+ * @route '/rehabilitasi-medik/{rehabilitasi_medik}/edit'
+ */
 edit.url = (args: { rehabilitasi_medik: string | number } | [rehabilitasi_medik: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { rehabilitasi_medik: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            rehabilitasi_medik: args[0],
-        }
+                    rehabilitasi_medik: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        rehabilitasi_medik: args.rehabilitasi_medik,
-    }
+                        rehabilitasi_medik: args.rehabilitasi_medik,
+                }
 
     return edit.definition.url
             .replace('{rehabilitasi_medik}', parsedArgs.rehabilitasi_medik.toString())
@@ -227,19 +226,18 @@ edit.url = (args: { rehabilitasi_medik: string | number } | [rehabilitasi_medik:
 
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::edit
-* @see app/Http/Controllers/RehabilitasiMedikController.php:53
-* @route '/rehabilitasi-medik/{rehabilitasi_medik}/edit'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:53
+ * @route '/rehabilitasi-medik/{rehabilitasi_medik}/edit'
+ */
 edit.get = (args: { rehabilitasi_medik: string | number } | [rehabilitasi_medik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::edit
-* @see app/Http/Controllers/RehabilitasiMedikController.php:53
-* @route '/rehabilitasi-medik/{rehabilitasi_medik}/edit'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:53
+ * @route '/rehabilitasi-medik/{rehabilitasi_medik}/edit'
+ */
 edit.head = (args: { rehabilitasi_medik: string | number } | [rehabilitasi_medik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: edit.url(args, options),
     method: 'head',
@@ -247,9 +245,9 @@ edit.head = (args: { rehabilitasi_medik: string | number } | [rehabilitasi_medik
 
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::update
-* @see app/Http/Controllers/RehabilitasiMedikController.php:63
-* @route '/rehabilitasi-medik/{rehabilitasi_medik}'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:63
+ * @route '/rehabilitasi-medik/{rehabilitasi_medik}'
+ */
 export const update = (args: { rehabilitasi_medik: string | number } | [rehabilitasi_medik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
@@ -262,25 +260,26 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::update
-* @see app/Http/Controllers/RehabilitasiMedikController.php:63
-* @route '/rehabilitasi-medik/{rehabilitasi_medik}'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:63
+ * @route '/rehabilitasi-medik/{rehabilitasi_medik}'
+ */
 update.url = (args: { rehabilitasi_medik: string | number } | [rehabilitasi_medik: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { rehabilitasi_medik: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            rehabilitasi_medik: args[0],
-        }
+                    rehabilitasi_medik: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        rehabilitasi_medik: args.rehabilitasi_medik,
-    }
+                        rehabilitasi_medik: args.rehabilitasi_medik,
+                }
 
     return update.definition.url
             .replace('{rehabilitasi_medik}', parsedArgs.rehabilitasi_medik.toString())
@@ -289,19 +288,18 @@ update.url = (args: { rehabilitasi_medik: string | number } | [rehabilitasi_medi
 
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::update
-* @see app/Http/Controllers/RehabilitasiMedikController.php:63
-* @route '/rehabilitasi-medik/{rehabilitasi_medik}'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:63
+ * @route '/rehabilitasi-medik/{rehabilitasi_medik}'
+ */
 update.put = (args: { rehabilitasi_medik: string | number } | [rehabilitasi_medik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
-
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::update
-* @see app/Http/Controllers/RehabilitasiMedikController.php:63
-* @route '/rehabilitasi-medik/{rehabilitasi_medik}'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:63
+ * @route '/rehabilitasi-medik/{rehabilitasi_medik}'
+ */
 update.patch = (args: { rehabilitasi_medik: string | number } | [rehabilitasi_medik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
@@ -309,9 +307,9 @@ update.patch = (args: { rehabilitasi_medik: string | number } | [rehabilitasi_me
 
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::destroy
-* @see app/Http/Controllers/RehabilitasiMedikController.php:73
-* @route '/rehabilitasi-medik/{rehabilitasi_medik}'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:73
+ * @route '/rehabilitasi-medik/{rehabilitasi_medik}'
+ */
 export const destroy = (args: { rehabilitasi_medik: string | number } | [rehabilitasi_medik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
@@ -324,25 +322,26 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::destroy
-* @see app/Http/Controllers/RehabilitasiMedikController.php:73
-* @route '/rehabilitasi-medik/{rehabilitasi_medik}'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:73
+ * @route '/rehabilitasi-medik/{rehabilitasi_medik}'
+ */
 destroy.url = (args: { rehabilitasi_medik: string | number } | [rehabilitasi_medik: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { rehabilitasi_medik: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            rehabilitasi_medik: args[0],
-        }
+                    rehabilitasi_medik: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        rehabilitasi_medik: args.rehabilitasi_medik,
-    }
+                        rehabilitasi_medik: args.rehabilitasi_medik,
+                }
 
     return destroy.definition.url
             .replace('{rehabilitasi_medik}', parsedArgs.rehabilitasi_medik.toString())
@@ -351,22 +350,21 @@ destroy.url = (args: { rehabilitasi_medik: string | number } | [rehabilitasi_med
 
 /**
 * @see \App\Http\Controllers\RehabilitasiMedikController::destroy
-* @see app/Http/Controllers/RehabilitasiMedikController.php:73
-* @route '/rehabilitasi-medik/{rehabilitasi_medik}'
-*/
+ * @see app/Http/Controllers/RehabilitasiMedikController.php:73
+ * @route '/rehabilitasi-medik/{rehabilitasi_medik}'
+ */
 destroy.delete = (args: { rehabilitasi_medik: string | number } | [rehabilitasi_medik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
-
 const rehabilitasiMedik = {
     index: Object.assign(index, index),
-    create: Object.assign(create, create),
-    store: Object.assign(store, store),
-    show: Object.assign(show, show),
-    edit: Object.assign(edit, edit),
-    update: Object.assign(update, update),
-    destroy: Object.assign(destroy, destroy),
+create: Object.assign(create, create),
+store: Object.assign(store, store),
+show: Object.assign(show, show),
+edit: Object.assign(edit, edit),
+update: Object.assign(update, update),
+destroy: Object.assign(destroy, destroy),
 }
 
 export default rehabilitasiMedik

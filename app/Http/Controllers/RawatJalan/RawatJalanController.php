@@ -198,8 +198,15 @@ class RawatJalanController extends Controller
                 ->first();
         }
 
+        // Get medication data for this patient visit
+        $medicationData = [];
+        if ($noRawat) {
+            $medicationData = self::getobatRalan($noRawat);
+        }
+
         return Inertia::render('RawatJalan/Lanjutan', [
             'rawatJalan' => $rawat,
+            'medicationData' => $medicationData,
             'params' => [
                 'no_rawat' => $noRawat,
                 'no_rkm_medis' => $noRkmMedis,
@@ -239,6 +246,47 @@ class RawatJalanController extends Controller
     }
 
     /**
+     * Get patient examination history
+     */
+    public function getRiwayatPemeriksaan(Request $request)
+    {
+        $token = $request->query('t');
+        $noRM = $request->query('no_rkm_medis');
+        if ($token) {
+            $padded = str_replace(['-', '_'], ['+', '/'], $token);
+            $paddingNeeded = 4 - (strlen($padded) % 4);
+            if ($paddingNeeded < 4) {
+                $padded .= str_repeat('=', $paddingNeeded);
+            }
+            $decoded = json_decode(base64_decode($padded), true);
+            $noRM = $decoded['no_rkm_medis'] ?? $noRM;
+        }
+
+        if (!$noRM) {
+            return response()->json(['data' => []]);
+        }
+
+        $data = DB::table('reg_periksa')
+            ->join('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli')
+            ->join('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
+            ->where('no_rkm_medis', $noRM)
+            ->where('reg_periksa.stts', '<>', 'Batal')
+            ->select(
+                'reg_periksa.tgl_registrasi',
+                'reg_periksa.no_rawat',
+                'dokter.nm_dokter',
+                'reg_periksa.status_lanjut',
+                'poliklinik.nm_poli',
+                'reg_periksa.no_reg'
+            )
+            ->orderBy('reg_periksa.tgl_registrasi', 'desc')
+            ->limit(10)
+            ->get();
+
+        return response()->json(['data' => $data]);
+    }
+
+    /**
      * Daftar pemeriksaan_ralan untuk no_rawat tertentu (JSON)
      */
     public function pemeriksaanRalan(Request $request)
@@ -268,6 +316,151 @@ class RawatJalanController extends Controller
             ]);
 
         return response()->json(['data' => $rows]);
+    }
+
+    /**
+     * Get medication history for outpatient care (static version)
+     */
+    public static function getobatRalan($noRawat)
+    {
+        $dataobat = DB::table('detail_pemberian_obat')
+            ->join('databarang', 'detail_pemberian_obat.kode_brng', '=', 'databarang.kode_brng')
+            ->where('detail_pemberian_obat.no_rawat', $noRawat)
+            ->where('detail_pemberian_obat.status', 'Ralan')
+            ->select('databarang.nama_brng', 'detail_pemberian_obat.jml','detail_pemberian_obat.kode_brng','detail_pemberian_obat.tgl_perawatan','detail_pemberian_obat.jam')
+            ->get();
+
+        foreach($dataobat as $obat) {
+            $aturan = DB::table('aturan_pakai')
+                ->where('kode_brng', $obat->kode_brng)
+                ->where('no_rawat', $noRawat)
+                ->value('aturan');
+            $obat->aturan = $aturan ?? '-';
+        }
+
+        return $dataobat;
+    }
+
+    /**
+     * Get laboratory examination history for outpatient care
+     */
+    public static function getPemeriksaanLab($noRawat)
+    {
+        $data = DB::table('detail_periksa_lab')
+            ->join('template_laboratorium', 'detail_periksa_lab.id_template', '=', 'template_laboratorium.id_template')
+            ->where('detail_periksa_lab.no_rawat', $noRawat)
+            ->select(
+                DB::raw('template_laboratorium.Pemeriksaan as pemeriksaan'),
+                'detail_periksa_lab.tgl_periksa',
+                'detail_periksa_lab.jam',
+                'detail_periksa_lab.nilai',
+                DB::raw('template_laboratorium.satuan as satuan'),
+                'detail_periksa_lab.nilai_rujukan',
+                'detail_periksa_lab.keterangan'
+            )
+            ->orderBy('detail_periksa_lab.tgl_periksa', 'desc')
+            ->orderBy('detail_periksa_lab.jam', 'desc')
+            ->get();
+
+        return $data;
+    }
+
+    /**
+     * Public endpoint: Lab history for a no_rawat
+     */
+    public function getPemeriksaanLabPublic(Request $request, $no_rawat)
+    {
+        $rows = self::getPemeriksaanLab($no_rawat);
+        return response()->json(['data' => $rows]);
+    }
+
+    /**
+     * Get radiology results for outpatient care
+     */
+    public static function getRadiologi($noRawat)
+    {
+        // Ambil dua sumber terpisah lalu gabungkan di PHP untuk menghindari isu UNION/ORDER BY
+        $periksa = DB::table('periksa_radiologi')
+            ->where('no_rawat', $noRawat)
+            ->get(['no_rawat','tgl_periksa','jam']);
+
+        // Tabel hasil_radiologi: no_rawat, tgl_periksa, jam, hasil (tanpa kolom keterangan)
+        $hasil = DB::table('hasil_radiologi')
+            ->where('no_rawat', $noRawat)
+            ->get(['no_rawat','tgl_periksa','jam','hasil']);
+
+        // Index hasil by composite key (tgl_periksa + jam)
+        $keyedHasil = [];
+        foreach ($hasil as $h) {
+            $keyedHasil[$h->tgl_periksa.'|'.$h->jam] = $h;
+        }
+
+        $merged = [];
+        // Gabungkan: mulai dari periksa (supaya waktu ter-cover) dan sertakan hasil bila ada
+        foreach ($periksa as $p) {
+            $key = $p->tgl_periksa.'|'.$p->jam;
+            $h = $keyedHasil[$key] ?? null;
+            $merged[] = (object) [
+                'no_rawat' => $p->no_rawat,
+                'tgl_periksa' => $p->tgl_periksa,
+                'jam' => $p->jam,
+                'hasil' => isset($h->hasil) ? $h->hasil : '',
+                'keterangan' => ''
+            ];
+            // Tandai terpakai
+            unset($keyedHasil[$key]);
+        }
+
+        // Tambahkan sisa hasil yang tidak punya pasangan di periksa
+        foreach ($keyedHasil as $h) {
+            $merged[] = (object) [
+                'no_rawat' => $h->no_rawat,
+                'tgl_periksa' => $h->tgl_periksa,
+                'jam' => $h->jam,
+                'hasil' => isset($h->hasil) ? $h->hasil : '',
+                'keterangan' => ''
+            ];
+        }
+
+        // Urutkan desc berdasarkan tanggal dan jam
+        usort($merged, function($a, $b) {
+            $da = strtotime($a->tgl_periksa.' '.($a->jam ?? '00:00:00'));
+            $db = strtotime($b->tgl_periksa.' '.($b->jam ?? '00:00:00'));
+            return $db <=> $da;
+        });
+
+        return collect($merged);
+    }
+
+    /**
+     * Public endpoint: Radiology history for a no_rawat
+     */
+    public function getRadiologiPublic(Request $request, $no_rawat)
+    {
+        $rows = self::getRadiologi($no_rawat);
+        return response()->json(['data' => $rows]);
+    }
+
+    /**
+     * Get medication history for outpatient care
+     */
+    public function getobatRalanPublic(Request $request, $no_rawat)
+    {
+        // Handle token-based authentication if needed
+        $token = $request->query('t');
+        if ($token) {
+            $padded = str_replace(['-', '_'], ['+', '/'], $token);
+            $paddingNeeded = 4 - (strlen($padded) % 4);
+            if ($paddingNeeded < 4) {
+                $padded .= str_repeat('=', $paddingNeeded);
+            }
+            $decoded = json_decode(base64_decode($padded), true);
+            $no_rawat = $decoded['no_rawat'] ?? $no_rawat;
+        }
+
+        $dataobat = self::getobatRalan($no_rawat);
+
+        return response()->json(['data' => $dataobat]);
     }
 
     /**

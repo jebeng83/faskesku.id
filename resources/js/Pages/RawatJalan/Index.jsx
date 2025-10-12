@@ -2,6 +2,19 @@ import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
+import { motion } from 'framer-motion';
+import {
+  PlusIcon,
+  FunnelIcon,
+  MagnifyingGlassIcon,
+  DocumentTextIcon,
+  DocumentCheckIcon,
+  CalendarDaysIcon,
+  ClockIcon,
+  UserIcon,
+  BanknotesIcon,
+  ArrowPathIcon,
+} from '@heroicons/react/24/outline';
 
 // Simple Dropdown Component
 function SimpleDropdown({ children, trigger }) {
@@ -25,7 +38,6 @@ function SimpleDropdown({ children, trigger }) {
         }
 
         if (isOpen) {
-            // Delay to avoid immediate close when opening
             setTimeout(() => {
                 document.addEventListener('mousedown', handleClickOutside);
             }, 100);
@@ -44,9 +56,8 @@ function SimpleDropdown({ children, trigger }) {
         if (!isOpen && dropdownRef.current) {
             const rect = dropdownRef.current.getBoundingClientRect();
             const viewportWidth = window.innerWidth;
-            const dropdownWidth = 224; // w-56 = 14rem = 224px
+            const dropdownWidth = 224;
             
-            // Calculate horizontal position
             let left = rect.left + window.scrollX;
             if (left + dropdownWidth > viewportWidth) {
                 left = rect.right + window.scrollX - dropdownWidth;
@@ -71,7 +82,6 @@ function SimpleDropdown({ children, trigger }) {
                          top: position.top,
                          left: position.left
                      }}>
-                    {/* Menu Items */}
                     <div className="py-1">
                         {children}
                     </div>
@@ -109,7 +119,6 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         const newParams = { ...searchParams, [key]: value };
         setSearchParams(newParams);
         
-        // Auto submit form when filter changes
         router.get(route('rawat-jalan.index'), newParams, {
             preserveState: true,
             replace: true
@@ -124,46 +133,6 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
             nama_pasien: ''
         });
         router.get(route('rawat-jalan.index'));
-    };
-
-    const getStatusBadge = (status) => {
-        const badgeClasses = {
-            'Belum': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-            'Sudah': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-            'Batal': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
-            'Berkas Diterima': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-            'Dirujuk': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
-            'Meninggal': 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300',
-            'Dirawat': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300',
-            'Pulang Paksa': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
-        };
-        
-        return (
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badgeClasses[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'}`}>
-                {status}
-            </span>
-        );
-    };
-
-    const getStatusBayarBadge = (status) => {
-        const badgeClasses = status === 'Sudah Bayar' 
-            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-        
-        return (
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badgeClasses}`}>
-                {status}
-            </span>
-        );
-    };
-
-    const formatCurrency = (amount) => {
-        if (!amount) return '-';
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0
-        }).format(amount);
     };
 
     const formatDate = (date) => {
@@ -184,223 +153,257 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         router.get(route('rawat-jalan.surat-sakit', noRawat));
     };
 
-
     return (
         <AppLayout>
             <Head title="Data Rawat Jalan" />
 
-            <div className="space-y-6 -mt-6 -mx-6 p-6">
-                {/* Header */}
-                <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div className="p-6">
-                        <div className="flex justify-between items-center">
+            <div className="px-4 sm:px-6 lg:px-8">
+                {/* Page Header with Gradient */}
+                <div className="mb-8">
+                    <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl p-8 text-white">
+                        <div className="flex items-center justify-between">
                             <div>
-                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                <h1 className="text-3xl font-bold mb-2">
                                     Data Rawat Jalan
-                                </h2>
-                                <p className="text-gray-600 dark:text-gray-400 mt-1">
-                                    Kelola data registrasi rawat jalan pasien
+                                </h1>
+                                <p className="text-blue-100 text-lg">
+                                    Kelola data registrasi dan kunjungan pasien rawat jalan
                                 </p>
                             </div>
                             <Link
                                 href={route('rawat-jalan.create')}
-                                className="bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 shadow-md hover:shadow-lg font-medium text-sm whitespace-nowrap transform hover:scale-105"
+                                className="bg-white/20 backdrop-blur hover:bg-white/30 text-white px-6 py-3 rounded-xl flex items-center gap-3 transition-all duration-300 shadow-lg hover:shadow-xl font-medium border border-white/20 transform hover:scale-105"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                                    <path fillRule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clipRule="evenodd" />
-                                </svg>
-                                <span>Tambah Data</span>
+                                <PlusIcon className="w-5 h-5" />
+                                <span>Registrasi Baru</span>
                             </Link>
                         </div>
                     </div>
                 </div>
 
-                {/* Search and Filters */}
-                <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div className="p-6">
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            {/* Filter Tanggal */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Tanggal Registrasi
-                                </label>
-                                <input
-                                    type="date"
-                                    value={searchParams.tanggal}
-                                    onChange={(e) => handleFilterChange('tanggal', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                />
-                            </div>
-
-                            {/* Filter Status */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Status
-                                </label>
-                                <select
-                                    value={searchParams.status}
-                                    onChange={(e) => handleFilterChange('status', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                >
-                                    <option value="">Semua Status</option>
-                                    {Object.entries(statusOptions).map(([key, value]) => (
-                                        <option key={key} value={key}>{value}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Filter Status Bayar */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Status Bayar
-                                </label>
-                                <select
-                                    value={searchParams.status_bayar}
-                                    onChange={(e) => handleFilterChange('status_bayar', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                >
-                                    <option value="">Semua Status Bayar</option>
-                                    {Object.entries(statusBayarOptions).map(([key, value]) => (
-                                        <option key={key} value={key}>{value}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Filter Nama Pasien */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Nama Pasien
-                                </label>
-                                <input
-                                    type="text"
-                                    value={searchParams.nama_pasien}
-                                    onChange={(e) => handleFilterChange('nama_pasien', e.target.value)}
-                                    placeholder="Cari nama pasien..."
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                />
-                            </div>
+                {/* GitHub-style Simple Filter */}
+                <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-3 mb-4">
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                        <div className="flex items-center gap-1">
+                            <FunnelIcon className="w-4 h-4 text-gray-500" />
+                            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Filter:</span>
                         </div>
-
-                        {/* Reset Button */}
+                        
+                        <input
+                            type="date"
+                            value={searchParams.tanggal}
+                            onChange={(e) => handleFilterChange('tanggal', e.target.value)}
+                            className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
+                        />
+                        
+                        <select
+                            value={searchParams.status}
+                            onChange={(e) => handleFilterChange('status', e.target.value)}
+                            className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
+                        >
+                            <option value="">Status</option>
+                            {Object.entries(statusOptions).map(([key, value]) => (
+                                <option key={key} value={key}>{value}</option>
+                            ))}
+                        </select>
+                        
+                        <select
+                            value={searchParams.status_bayar}
+                            onChange={(e) => handleFilterChange('status_bayar', e.target.value)}
+                            className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
+                        >
+                            <option value="">Pembayaran</option>
+                            {Object.entries(statusBayarOptions).map(([key, value]) => (
+                                <option key={key} value={key}>{value}</option>
+                            ))}
+                        </select>
+                        
+                        <div className="relative">
+                            <MagnifyingGlassIcon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
+                            <input
+                                type="text"
+                                value={searchParams.nama_pasien}
+                                onChange={(e) => handleFilterChange('nama_pasien', e.target.value)}
+                                placeholder="Cari pasien..."
+                                className="pl-6 pr-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white w-32"
+                            />
+                        </div>
+                        
                         {(searchParams.tanggal || searchParams.status || searchParams.status_bayar || searchParams.nama_pasien) && (
-                            <div className="mt-4">
-                                <button
-                                    onClick={resetFilters}
-                                    className="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg transition-colors"
-                                >
-                                    Reset Filter
-                                </button>
-                            </div>
+                            <button
+                                onClick={resetFilters}
+                                className="ml-2 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                                title="Reset filters"
+                            >
+                                ✕
+                            </button>
                         )}
                     </div>
                 </div>
 
-                {/* Data Table */}
-                <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                {/* Enhanced Data Table */}
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                Daftar Pasien Rawat Jalan
+                            </h3>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                                Total: <span className="font-semibold text-blue-600 dark:text-blue-400">{rawatJalan.total || 0}</span> pasien
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead className="bg-gray-50 dark:bg-gray-700">
+                            <thead className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">No. Rawat</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">No. RM</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nama Pasien</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tanggal</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Jam</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nama Dokter</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Penjamin</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                        <div className="flex items-center gap-2">
+                                            <DocumentTextIcon className="w-4 h-4" />
+                                            No. Rawat
+                                        </div>
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">No. RM</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                        <div className="flex items-center gap-2">
+                                            <UserIcon className="w-4 h-4" />
+                                            Nama Pasien
+                                        </div>
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                        <div className="flex items-center gap-2">
+                                            <CalendarDaysIcon className="w-4 h-4" />
+                                            Tanggal
+                                        </div>
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                        <div className="flex items-center gap-2">
+                                            <ClockIcon className="w-4 h-4" />
+                                            Jam
+                                        </div>
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Nama Dokter</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                        <div className="flex items-center gap-2">
+                                            <BanknotesIcon className="w-4 h-4" />
+                                            Penjamin
+                                        </div>
+                                    </th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                {rawatJalan.data.map((item) => (
-                                    <tr key={item.no_rawat} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
+                                {rawatJalan.data.map((item, index) => (
+                                    <motion.tr 
+                                        key={item.no_rawat}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: index * 0.05 }}
+                                        className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-800 dark:hover:to-gray-700 transition-all duration-200 group"
+                                    >
+                                        <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center gap-3">
                                                 <SimpleDropdown
-                                                        trigger={
-                                                            <button 
-                                                                className="p-2 rounded-lg bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/20 dark:hover:bg-orange-900/30 transition-all duration-200 border border-orange-200 dark:border-orange-700 shadow-sm hover:shadow-md group"
-                                                                title="Klik untuk melihat menu surat (Surat Sehat & Surat Sakit)"
-                                                            >
-                                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-orange-600 dark:text-orange-400">
-                                                                    <path d="M8 6h8v2H8V6zm0 4h8v2H8v-2zm0 4h8v2H8v-2z"/>
-                                                                </svg>
-                                                            </button>
-                                                        }
+                                                    trigger={
+                                                        <button 
+                                                            className="p-2.5 rounded-xl bg-gradient-to-r from-orange-100 to-red-100 hover:from-orange-200 hover:to-red-200 dark:from-orange-900/20 dark:to-red-900/20 dark:hover:from-orange-900/30 dark:hover:to-red-900/30 transition-all duration-200 border border-orange-200 dark:border-orange-700 shadow-sm hover:shadow-md group-hover:scale-105"
+                                                            title="Menu Surat Keterangan"
+                                                        >
+                                                            <DocumentTextIcon className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                                                        </button>
+                                                    }
                                                 >
                                                     <DropdownItem
                                                         onClick={() => handleSuratSehat(item.no_rawat)}
-                                                        icon={
-                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                                                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                                            </svg>
-                                                        }
+                                                        icon={<DocumentCheckIcon className="w-4 h-4" />}
                                                     >
                                                         Surat Sehat
                                                     </DropdownItem>
                                                     <DropdownItem
                                                         onClick={() => handleSuratSakit(item.no_rawat)}
-                                                        icon={
-                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                                                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                                                            </svg>
-                                                        }
+                                                        icon={<DocumentTextIcon className="w-4 h-4" />}
                                                     >
                                                         Surat Sakit
                                                     </DropdownItem>
                                                 </SimpleDropdown>
-                                                <span className="font-mono text-sm font-semibold text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 px-2 py-1 rounded border">
-                                                    {item.no_rawat}
-                                                </span>
+                                                <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 px-3 py-2 rounded-lg border border-blue-200 dark:border-blue-700">
+                                                    <span className="font-mono text-sm font-semibold text-blue-700 dark:text-blue-300">
+                                                        {item.no_rawat}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                            <span className="font-mono text-xs bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded">
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className="font-mono text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2.5 py-1.5 rounded-lg border">
                                                 {item.no_rkm_medis}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                        <td className="px-6 py-4 whitespace-nowrap">
                                             {item.patient?.nm_pasien ? (
                                                 <Link
                                                     href={`/rawat-jalan/lanjutan?t=${btoa(JSON.stringify({ no_rawat: item.no_rawat, no_rkm_medis: item.no_rkm_medis || '' }))
                                                         .replace(/=+$/, '')
                                                         .replace(/\+/g, '-')
                                                         .replace(/\//g, '_')}`}
-                                                    className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 underline-offset-2 hover:underline"
-                                                    title="Lihat lanjutan pasien"
+                                                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium hover:underline transition-colors duration-200"
+                                                    title="Lihat detail pasien"
                                                 >
                                                     {item.patient.nm_pasien}
                                                 </Link>
                                             ) : (
-                                                <span className="text-gray-900 dark:text-white">-</span>
+                                                <span className="text-gray-500 dark:text-gray-400 italic">Nama tidak tersedia</span>
                                             )}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{formatDate(item.tgl_registrasi)}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{formatTime(item.jam_reg)}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{item.dokter?.nm_dokter || item.nm_dokter || '-'}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{item.nm_penjamin || item.penjab?.png_jawab || item.png_jawab || '-'}</td>
-                                    </tr>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                                                <CalendarDaysIcon className="w-4 h-4 text-blue-500" />
+                                                {formatDate(item.tgl_registrasi)}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                                                <ClockIcon className="w-4 h-4 text-green-500" />
+                                                {formatTime(item.jam_reg)}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white font-medium">
+                                            {item.dokter?.nm_dokter || item.nm_dokter || (
+                                                <span className="text-gray-500 dark:text-gray-400 italic">Dokter tidak tersedia</span>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                            <div className="flex items-center gap-2">
+                                                <BanknotesIcon className="w-4 h-4 text-green-500" />
+                                                {item.nm_penjamin || item.penjab?.png_jawab || item.png_jawab || (
+                                                    <span className="text-gray-500 dark:text-gray-400 italic">Penjamin tidak tersedia</span>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </motion.tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
 
-                    {/* Pagination */}
+                    {/* Enhanced Pagination */}
                     {rawatJalan.links && (
-                        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                        <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
                             <div className="flex items-center justify-between">
-                                <div className="text-sm text-gray-700 dark:text-gray-300">
-                                    Menampilkan {rawatJalan.from} sampai {rawatJalan.to} dari {rawatJalan.total} data
+                                <div className="text-sm text-gray-600 dark:text-gray-400">
+                                    Menampilkan <span className="font-semibold text-blue-600 dark:text-blue-400">{rawatJalan.from}</span> sampai{' '}
+                                    <span className="font-semibold text-blue-600 dark:text-blue-400">{rawatJalan.to}</span> dari{' '}
+                                    <span className="font-semibold text-blue-600 dark:text-blue-400">{rawatJalan.total}</span> data
                                 </div>
                                 <div className="flex gap-2">
                                     {rawatJalan.links.map((link, index) => (
                                         <Link
                                             key={index}
                                             href={link.url || '#'}
-                                            className={`px-3 py-2 text-sm rounded-lg ${
+                                            className={`px-4 py-2 text-sm rounded-lg font-medium transition-all duration-200 ${
                                                 link.active
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                                            } ${!link.url ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg transform scale-105'
+                                                    : 'bg-white text-gray-700 hover:bg-blue-50 hover:text-blue-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-600'
+                                            } ${!link.url ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md hover:scale-105'}`}
                                             dangerouslySetInnerHTML={{ __html: link.label }}
                                         />
                                     ))}
@@ -410,30 +413,32 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                     )}
                 </div>
 
-                {/* Empty State */}
+                {/* Enhanced Empty State */}
                 {rawatJalan.data.length === 0 && (
-                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                        <div className="p-12 text-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-16 h-16 text-gray-400 mx-auto mb-4">
-                                <path d="M13.5 5.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7z"/>
-                            </svg>
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden"
+                    >
+                        <div className="p-16 text-center">
+                            <div className="mx-auto w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl flex items-center justify-center mb-6">
+                                <UserIcon className="w-10 h-10 text-blue-500 dark:text-blue-400" />
+                            </div>
+                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
                                 Tidak ada data rawat jalan
                             </h3>
-                            <p className="text-gray-500 dark:text-gray-400 mb-4">
-                                Belum ada data rawat jalan yang tersimpan.
+                            <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">
+                                Belum ada data rawat jalan yang sesuai dengan filter yang dipilih. Silakan ubah filter atau tambah data baru.
                             </p>
                             <Link
                                 href={route('rawat-jalan.create')}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center gap-2 transition-colors"
+                                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-xl inline-flex items-center gap-3 transition-all duration-300 shadow-lg hover:shadow-xl font-medium transform hover:scale-105"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                                    <path d="M12 4.5v15m7.5-7.5h-15" />
-                                </svg>
+                                <PlusIcon className="w-5 h-5" />
                                 Tambah Data Rawat Jalan Pertama
                             </Link>
                         </div>
-                    </div>
+                    </motion.div>
                 )}
             </div>
         </AppLayout>
