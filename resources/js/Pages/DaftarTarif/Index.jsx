@@ -1367,6 +1367,7 @@ export default function Index({ title, data, category, search, filters, poliklin
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
     const [selectedLab, setSelectedLab] = useState(null);
+    const [selectedRadiologi, setSelectedRadiologi] = useState(null);
     const [selectedTemplateIndex, setSelectedTemplateIndex] = useState(null);
     const [showTemplateDetails, setShowTemplateDetails] = useState(false);
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
@@ -1417,6 +1418,9 @@ export default function Index({ title, data, category, search, filters, poliklin
         });
         if (newTab !== 'laboratorium') {
             setSelectedLab(null);
+        }
+        if (newTab !== 'radiologi') {
+            setSelectedRadiologi(null);
         }
     };
 
@@ -2131,95 +2135,151 @@ export default function Index({ title, data, category, search, filters, poliklin
     );
 
     const renderRadiologiTable = () => (
-        <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                    <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Kode
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Nama Pemeriksaan
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Bagian RS
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Tarif Perujuk
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Tarif Dokter
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Total Tarif
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Aksi
-                        </th>
-                    </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                    {data?.data?.map((item) => (
-                        <tr key={item.kd_jenis_prw} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {item.kd_jenis_prw}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {item.nm_perawatan}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {formatCurrency(item.bagian_rs)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {formatCurrency(item.tarif_perujuk)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {formatCurrency(item.tarif_tindakan_dokter)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                {formatCurrency(item.total_byr)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                                <Badge variant={item.status === '1' ? 'default' : 'secondary'}>
-                                    {item.status === '1' ? 'Aktif' : 'Tidak Aktif'}
-                                </Badge>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <div className="flex space-x-2">
-                                    <button
-                                        onClick={() => handleEdit(item)}
-                                        className="text-indigo-600 hover:text-indigo-900 font-medium"
-                                        title="Edit"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(item)}
-                                        className={`inline-flex items-center justify-center px-2 py-1 rounded-md transition-colors font-medium ${selectedFilter === '0' ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : 'bg-red-500 hover:bg-red-600 text-white'}`}
-                                        title={selectedFilter === '0' ? 'Aktifkan Kembali' : 'Nonaktifkan'}
-                                    >
-                                        {selectedFilter === '0' ? (
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6" />
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 8a8 8 0 10-16 8" />
-                                            </svg>
-                                        ) : (
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        )}
-                                    </button>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Kartu kiri: daftar tarif radiologi */}
+            <div className="bg-white rounded-xl shadow-lg transition-all ease-out duration-200 hover:shadow-xl hover:-translate-y-0.5 overflow-hidden ring-1 ring-gray-100 hover:ring-gray-200">
+                <div className="px-4 sm:px-6 py-4 border-b border-gray-200 bg-gray-50 rounded-t-xl flex items-center justify-between transition-colors duration-200">
+                    <h3 className="text-lg font-semibold text-gray-900">Daftar Pemeriksaan Radiologi</h3>
+                    <button
+                        onClick={handleAddTarif}
+                        className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
+                    >
+                        + Tarif
+                    </button>
+                </div>
+                {data?.data?.length ? (
+                    <ul className="divide-y divide-gray-200">
+                        {data.data.map((item) => {
+                            const isSelected = selectedRadiologi?.kd_jenis_prw === item.kd_jenis_prw;
+                            return (
+                                <li
+                                    key={item.kd_jenis_prw}
+                                    className={`px-4 sm:px-6 py-4 cursor-pointer ${isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
+                                    onClick={() => setSelectedRadiologi(item)}
+                                >
+                                    <div>
+                                        <div className="flex items-start justify-between">
+                                            <div>
+                                                <div className="text-sm font-semibold text-gray-900">{item.nm_perawatan}</div>
+                                                <div className="text-xs text-gray-500 flex items-center space-x-3">
+                                                    <span>Kode: {item.kd_jenis_prw}</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center space-x-3">
+                                                <Badge variant={item.status === '1' ? 'default' : 'secondary'}>
+                                                    {item.status === '1' ? 'Aktif' : 'Tidak Aktif'}
+                                                </Badge>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleEdit(item); }}
+                                                    className="text-indigo-600 hover:text-indigo-900"
+                                                    title="Edit"
+                                                >
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                    </svg>
+                                                </button>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
+                                                    className={`${selectedFilter === '0' ? 'text-yellow-600 hover:text-yellow-800' : 'text-red-600 hover:text-red-800'}`}
+                                                    title={selectedFilter === '0' ? 'Aktifkan Kembali' : 'Nonaktifkan'}
+                                                >
+                                                    {selectedFilter === '0' ? (
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6" />
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 8a8 8 0 10-16 8" />
+                                                        </svg>
+                                                    ) : (
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="mt-2 grid grid-cols-2 gap-x-8 gap-y-1 text-xs text-gray-700 leading-tight">
+                                            <div className="flex justify-between"><span>Bagian RS</span><span>{typeof item.bagian_rs !== 'undefined' ? formatCurrency(item.bagian_rs) : '-'}</span></div>
+                                            <div className="flex justify-between"><span>Tarif Perujuk</span><span>{typeof item.tarif_perujuk !== 'undefined' ? formatCurrency(item.tarif_perujuk) : '-'}</span></div>
+                                            <div className="flex justify-between"><span>Tarif Dokter</span><span>{typeof item.tarif_tindakan_dokter !== 'undefined' ? formatCurrency(item.tarif_tindakan_dokter) : '-'}</span></div>
+                                            <div className="flex justify-between text-gray-900"><span>Total Tarif</span><span className="font-semibold">{typeof item.total_byr !== 'undefined' ? formatCurrency(item.total_byr) : '-'}</span></div>
+                                        </div>
+                                    </div>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                ) : (
+                    <div className="p-8 text-center text-gray-500">
+                        Tidak ada data tarif radiologi.
+                    </div>
+                )}
+            </div>
+
+            {/* Kartu kanan: detail pemeriksaan untuk tarif terpilih */}
+            <div className={`bg-green-50 rounded-xl shadow-lg transition-all ease-out duration-200 hover:shadow-xl hover:-translate-y-0.5 overflow-hidden ring-1 ring-green-100 hover:ring-green-200`}>
+                <div className="px-3 sm:px-4 py-3 border-b border-green-200 bg-green-100 rounded-t-xl transition-colors duration-200">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div className="min-w-0">
+                            <h3 className="text-base sm:text-lg font-semibold text-gray-950 leading-tight truncate">Detail Pemeriksaan</h3>
+                            {selectedRadiologi ? (
+                                <div className="mt-1 text-xs sm:text-sm text-green-900 font-medium">{selectedRadiologi.nm_perawatan}</div>
+                            ) : (
+                                <div className="mt-1 text-xs sm:text-sm text-gray-600">Pilih tarif radiologi di kiri untuk melihat detail.</div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+                <div className="p-3 sm:p-4">
+                    {selectedRadiologi ? (
+                        <div className="space-y-4">
+                            <div className="bg-white rounded-lg p-4 border border-green-200">
+                                <h4 className="text-sm font-semibold text-gray-900 mb-3">Informasi Umum</h4>
+                                <div className="grid grid-cols-1 gap-2 text-sm">
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Kode Pemeriksaan</span>
+                                        <span className="font-medium text-gray-900">{selectedRadiologi.kd_jenis_prw}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Nama Pemeriksaan</span>
+                                        <span className="font-medium text-gray-900">{selectedRadiologi.nm_perawatan}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Status</span>
+                                        <Badge variant={selectedRadiologi.status === '1' ? 'default' : 'secondary'}>
+                                            {selectedRadiologi.status === '1' ? 'Aktif' : 'Tidak Aktif'}
+                                        </Badge>
+                                    </div>
                                 </div>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+                            </div>
+                            
+                            <div className="bg-white rounded-lg p-4 border border-green-200">
+                                <h4 className="text-sm font-semibold text-gray-900 mb-3">Rincian Tarif</h4>
+                                <div className="grid grid-cols-1 gap-2 text-sm">
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Bagian RS</span>
+                                        <span className="font-medium text-gray-900">{typeof selectedRadiologi.bagian_rs !== 'undefined' ? formatCurrency(selectedRadiologi.bagian_rs) : '-'}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Tarif Perujuk</span>
+                                        <span className="font-medium text-gray-900">{typeof selectedRadiologi.tarif_perujuk !== 'undefined' ? formatCurrency(selectedRadiologi.tarif_perujuk) : '-'}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Tarif Dokter</span>
+                                        <span className="font-medium text-gray-900">{typeof selectedRadiologi.tarif_tindakan_dokter !== 'undefined' ? formatCurrency(selectedRadiologi.tarif_tindakan_dokter) : '-'}</span>
+                                    </div>
+                                    <div className="border-t border-gray-200 pt-2 mt-2">
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-900 font-semibold">Total Tarif</span>
+                                            <span className="font-bold text-gray-900 text-base">{typeof selectedRadiologi.total_byr !== 'undefined' ? formatCurrency(selectedRadiologi.total_byr) : '-'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-sm text-gray-500">Tidak ada tarif yang dipilih.</div>
+                    )}
+                </div>
+            </div>
         </div>
     );
 

@@ -109,3 +109,7 @@ Route::post('/permintaan-radiologi', [PermintaanRadiologiController::class, 'sto
 Route::get('/permintaan-radiologi/rawat/{no_rawat}', [PermintaanRadiologiController::class, 'getByNoRawat'])->where('no_rawat', '.*')->name('api.permintaan-radiologi.by-rawat');
 Route::get('/permintaan-radiologi/riwayat/{no_rawat}', [PermintaanRadiologiController::class, 'getRiwayat'])->where('no_rawat', '.*')->name('api.permintaan-radiologi.riwayat');
 Route::delete('/permintaan-radiologi/{noorder}', [PermintaanRadiologiController::class, 'destroy'])->name('api.permintaan-radiologi.destroy');
+
+// API routes untuk settings (public access)
+use App\Http\Controllers\SettingsController;
+Route::get('/settings/active', [SettingsController::class, 'active'])->name('api.settings.active');

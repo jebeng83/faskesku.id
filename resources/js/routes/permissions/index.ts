@@ -29,6 +29,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
+
 /**
 * @see routes/web.php:81
 * @route '/permissions'
@@ -37,6 +38,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
 })
+
 const permissions = {
     index: Object.assign(index, index),
 }

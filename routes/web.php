@@ -349,3 +349,11 @@ Route::post('/farmasi/set-penjualan', [SetHargaObatController::class, 'storePenj
 // Hapus pengaturan harga per jenis
 Route::delete('/farmasi/set-penjualan/{kdjns}', [SetHargaObatController::class, 'destroyPenjualanPerJenis'])
     ->name('set-penjualan.destroy');
+
+// Settings routes
+use App\Http\Controllers\SettingsController;
+Route::middleware(['auth'])->group(function () {
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::get('/settings/active', [SettingsController::class, 'active'])->name('settings.active');
+    Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
+});
