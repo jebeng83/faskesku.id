@@ -243,6 +243,18 @@ class MenuSeeder extends Seeder
 
         // Note: Farmasi submenu entries are intentionally omitted to keep sidebar clean.
 
+        // Keuangan root menu -> navigates directly to Keuangan Index
+        $keuangan = Menu::create([
+            'name' => 'Keuangan',
+            'slug' => 'keuangan',
+            'icon' => 'fas fa-money-bill-wave',
+            'route' => 'keuangan.index',
+            'url' => route('keuangan.index'),
+            'sort_order' => 8,
+            'is_active' => true,
+            'description' => 'Modul keuangan dan akuntansi'
+        ]);
+
         // Profile menu (separate from main navigation)
         Menu::create([
             'name' => 'Profil',

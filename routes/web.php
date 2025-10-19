@@ -317,6 +317,88 @@ Route::middleware('auth')->group(function () {
         Route::delete('/jenis-obat/{kdjns}', [\App\Http\Controllers\Farmasi\JenisObatController::class, 'destroy'])->name('jenis-obat.destroy');
     });
 
+    // Keuangan routes
+    Route::prefix('keuangan')->name('keuangan.')->group(function () {
+        // Landing page for Keuangan module
+        Route::get('/', function () {
+            return Inertia::render('keuangan/Index');
+        })->name('index');
+
+        // Dashboard & Analitik page
+        Route::get('/dashboard', function () {
+            return Inertia::render('keuangan/Dashboard');
+        })->name('dashboard');
+
+        // Laporan Keuangan
+        Route::get('/laporan-keuangan', function () {
+            return Inertia::render('keuangan/LaporanKeuangan');
+        })->name('laporan-keuangan');
+
+        // Kas & Bank
+        Route::get('/kas-bank', function () {
+            return Inertia::render('keuangan/KasBank');
+        })->name('kas-bank');
+
+        // Piutang
+        Route::get('/piutang', function () {
+            return Inertia::render('keuangan/Piutang');
+        })->name('piutang');
+
+        // Hutang
+        Route::get('/hutang', function () {
+            return Inertia::render('keuangan/Hutang');
+        })->name('hutang');
+
+        // Jurnal Umum
+        Route::get('/jurnal-umum', function () {
+            return Inertia::render('keuangan/JurnalUmum');
+        })->name('jurnal-umum');
+
+        // Buku Besar
+        Route::get('/buku-besar', function () {
+            return Inertia::render('keuangan/BukuBesar');
+        })->name('buku-besar');
+
+        // Neraca
+        Route::get('/neraca', function () {
+            return Inertia::render('keuangan/Neraca');
+        })->name('neraca');
+
+        // Laba Rugi
+        Route::get('/laba-rugi', function () {
+            return Inertia::render('keuangan/LabaRugi');
+        })->name('laba-rugi');
+
+        // Additional routes for financial module
+        Route::get('/chart-accounts', function () {
+            return Inertia::render('keuangan/ChartAccounts');
+        })->name('chart-accounts');
+
+        Route::get('/mata-uang', function () {
+            return Inertia::render('keuangan/MataUang');
+        })->name('mata-uang');
+
+        Route::get('/pajak', function () {
+            return Inertia::render('keuangan/Pajak');
+        })->name('pajak');
+
+        Route::get('/kas-masuk', function () {
+            return Inertia::render('keuangan/KasMasuk');
+        })->name('kas-masuk');
+
+        Route::get('/kas-keluar', function () {
+            return Inertia::render('keuangan/KasKeluar');
+        })->name('kas-keluar');
+
+        Route::get('/arus-kas', function () {
+            return Inertia::render('keuangan/ArusKas');
+        })->name('arus-kas');
+
+        Route::get('/laporan-piutang', function () {
+            return Inertia::render('keuangan/LaporanPiutang');
+        })->name('laporan-piutang');
+    });
+
     Route::middleware(['auth'])->group(function () {
         Route::get('/penjab', [\App\Http\Controllers\PenjabController::class, 'index'])->name('penjab.index');
         Route::post('/penjab', [\App\Http\Controllers\PenjabController::class, 'store'])->name('penjab.store');

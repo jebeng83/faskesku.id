@@ -285,13 +285,13 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
             }).join('');
             
             notification.innerHTML = `
-                <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                 </svg>
-                <div class="flex-1">
-                    <div class="font-semibold">Periksa Data Input!</div>
-                    <div class="text-sm opacity-90 mt-1">
-                        <ul class="list-disc list-inside space-y-1">
+                <div className="flex-1">
+                    <div className="font-semibold">Periksa Data Input!</div>
+                    <div className="text-sm opacity-90 mt-1">
+                        <ul className="list-disc list-inside space-y-1">
                             ${errorList}
                         </ul>
                     </div>
@@ -345,12 +345,12 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
             const notification = document.createElement('div');
             notification.className = 'fixed top-4 right-4 z-50 bg-red-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 max-w-md';
             notification.innerHTML = `
-                <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M12 5a7 7 0 100 14 7 7 0 000-14z"></path>
                 </svg>
-                <div class="flex-1">
-                    <div class="font-semibold">Gagal memperbarui tarif</div>
-                    <div class="text-sm opacity-90 mt-1">ID tarif tidak ditemukan. Muat ulang halaman atau pilih item yang benar.</div>
+                <div className="flex-1">
+                    <div className="font-semibold">Gagal memperbarui tarif</div>
+                    <div className="text-sm opacity-90 mt-1">ID tarif tidak ditemukan. Muat ulang halaman atau pilih item yang benar.</div>
                 </div>
             `;
             document.body.appendChild(notification);
@@ -382,10 +382,10 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                 const notification = document.createElement('div');
                 notification.className = 'fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 animate-pulse';
                 notification.innerHTML = `
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                     </svg>
-                    <span class="font-medium">${isEditMode ? 'Data berhasil diperbarui!' : 'Data berhasil disimpan!'}</span>
+                    <span className="font-medium">${isEditMode ? 'Data berhasil diperbarui!' : 'Data berhasil disimpan!'}</span>
                 `;
                 
                 document.body.appendChild(notification);
@@ -1538,10 +1538,10 @@ export default function Index({ title, data, category, search, filters, poliklin
             const notification = document.createElement('div');
             notification.className = 'fixed top-4 right-4 z-50 bg-red-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3';
             notification.innerHTML = `
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M12 5a7 7 0 100 14 7 7 0 000-14z"></path>
                 </svg>
-                <span class="font-medium">${errorMessage}</span>
+                <span className="font-medium">${errorMessage}</span>
             `;
             document.body.appendChild(notification);
             setTimeout(() => {
@@ -1610,10 +1610,10 @@ export default function Index({ title, data, category, search, filters, poliklin
                     const notification = document.createElement('div');
                     notification.className = 'fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3';
                     notification.innerHTML = `
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
-                        <span class="font-medium">Template berhasil disimpan.</span>
+                        <span className="font-medium">Template berhasil disimpan.</span>
                     `;
                     document.body.appendChild(notification);
                     setTimeout(() => {
@@ -1630,10 +1630,10 @@ export default function Index({ title, data, category, search, filters, poliklin
                     const notification = document.createElement('div');
                     notification.className = 'fixed top-4 right-4 z-50 bg-red-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3';
                     notification.innerHTML = `
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M12 5a7 7 0 100 14 7 7 0 000-14z"></path>
                         </svg>
-                        <span class="font-medium">Gagal menyimpan template. Periksa input Anda.</span>
+                        <span className="font-medium">Gagal menyimpan template. Periksa input Anda.</span>
                     `;
                     document.body.appendChild(notification);
                     setTimeout(() => {
