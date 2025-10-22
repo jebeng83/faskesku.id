@@ -2289,11 +2289,9 @@ export default function Index({ title, data, category, search, filters, poliklin
                                                 </button>
                                             </div>
                                         </div>
-                                        <div className="mt-2 grid grid-cols-2 gap-x-8 gap-y-1 text-xs text-gray-700 leading-tight">
-                                            <div className="flex justify-between"><span>Bagian RS</span><span>{typeof item.bagian_rs !== 'undefined' ? formatCurrency(item.bagian_rs) : '-'}</span></div>
-                                            <div className="flex justify-between"><span>Tarif Perujuk</span><span>{typeof item.tarif_perujuk !== 'undefined' ? formatCurrency(item.tarif_perujuk) : '-'}</span></div>
-                                            <div className="flex justify-between"><span>Tarif Dokter</span><span>{typeof item.tarif_tindakan_dokter !== 'undefined' ? formatCurrency(item.tarif_tindakan_dokter) : '-'}</span></div>
-                                            <div className="flex justify-between text-gray-900"><span>Total Tarif</span><span className="font-semibold">{typeof item.total_byr !== 'undefined' ? formatCurrency(item.total_byr) : '-'}</span></div>
+                                        <div className="mt-2 flex justify-between text-xs text-gray-900">
+                                            <span>Total Tarif</span>
+                                            <span className="font-semibold">{typeof item.total_byr !== 'undefined' ? formatCurrency(item.total_byr) : '-'}</span>
                                         </div>
                                     </div>
                                 </li>
@@ -2325,21 +2323,19 @@ export default function Index({ title, data, category, search, filters, poliklin
                     {selectedRadiologi ? (
                         <div className="space-y-4">
                             <div className="bg-white rounded-lg p-4 border border-green-200">
-                                <h4 className="text-sm font-semibold text-gray-900 mb-3">Informasi Umum</h4>
+                                <h4 className="text-sm font-semibold text-gray-900 mb-3">Detail Pemeriksaan</h4>
                                 <div className="grid grid-cols-1 gap-2 text-sm">
                                     <div className="flex justify-between">
-                                        <span className="text-gray-600">Kode Pemeriksaan</span>
-                                        <span className="font-medium text-gray-900">{selectedRadiologi.kd_jenis_prw}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">Nama Pemeriksaan</span>
+                                        <span className="text-gray-600">Nama</span>
                                         <span className="font-medium text-gray-900">{selectedRadiologi.nm_perawatan}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-gray-600">Status</span>
-                                        <Badge variant={selectedRadiologi.status === '1' ? 'default' : 'secondary'}>
-                                            {selectedRadiologi.status === '1' ? 'Aktif' : 'Tidak Aktif'}
-                                        </Badge>
+                                        <span className="text-gray-600">Tindakan</span>
+                                        <span className="font-medium text-gray-900">{selectedRadiologi.kd_jenis_prw}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Total</span>
+                                        <span className="font-bold text-gray-900 text-base">{typeof selectedRadiologi.total_byr !== 'undefined' ? formatCurrency(selectedRadiologi.total_byr) : '-'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -2352,18 +2348,28 @@ export default function Index({ title, data, category, search, filters, poliklin
                                         <span className="font-medium text-gray-900">{typeof selectedRadiologi.bagian_rs !== 'undefined' ? formatCurrency(selectedRadiologi.bagian_rs) : '-'}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-gray-600">Tarif Perujuk</span>
+                                        <span className="text-gray-600">BHP</span>
+                                        <span className="font-medium text-gray-900">{typeof selectedRadiologi.bhp !== 'undefined' ? formatCurrency(selectedRadiologi.bhp) : '-'}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Jasa Perujuk</span>
                                         <span className="font-medium text-gray-900">{typeof selectedRadiologi.tarif_perujuk !== 'undefined' ? formatCurrency(selectedRadiologi.tarif_perujuk) : '-'}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-gray-600">Tarif Dokter</span>
+                                        <span className="text-gray-600">Jasa Dokter</span>
                                         <span className="font-medium text-gray-900">{typeof selectedRadiologi.tarif_tindakan_dokter !== 'undefined' ? formatCurrency(selectedRadiologi.tarif_tindakan_dokter) : '-'}</span>
                                     </div>
-                                    <div className="border-t border-gray-200 pt-2 mt-2">
-                                        <div className="flex justify-between">
-                                            <span className="text-gray-900 font-semibold">Total Tarif</span>
-                                            <span className="font-bold text-gray-900 text-base">{typeof selectedRadiologi.total_byr !== 'undefined' ? formatCurrency(selectedRadiologi.total_byr) : '-'}</span>
-                                        </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Jasa Petugas</span>
+                                        <span className="font-medium text-gray-900">{typeof selectedRadiologi.tarif_tindakan_petugas !== 'undefined' ? formatCurrency(selectedRadiologi.tarif_tindakan_petugas) : '-'}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">KSO</span>
+                                        <span className="font-medium text-gray-900">{typeof selectedRadiologi.kso !== 'undefined' ? formatCurrency(selectedRadiologi.kso) : '-'}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Menejemen</span>
+                                        <span className="font-medium text-gray-900">{typeof selectedRadiologi.menejemen !== 'undefined' ? formatCurrency(selectedRadiologi.menejemen) : '-'}</span>
                                     </div>
                                 </div>
                             </div>
