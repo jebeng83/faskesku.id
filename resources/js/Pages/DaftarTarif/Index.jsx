@@ -449,8 +449,12 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                         <div>
                             <h3 className="modal-title">
                                 {isEditMode
-                                    ? (category === 'laboratorium' ? 'Edit Tarif Pemeriksaan Laboratorium' : 'Edit Tarif')
-                                    : (category === 'laboratorium' ? 'Tambah Tarif Pemeriksaan Laboratorium' : 'Tambah Tarif')}
+                                    ? (category === 'laboratorium' ? 'Edit Tarif Pemeriksaan Laboratorium' 
+                                       : category === 'radiologi' ? 'Edit Tarif Pemeriksaan Radiologi' 
+                                       : 'Edit Tarif')
+                                    : (category === 'laboratorium' ? 'Tambah Tarif Pemeriksaan Laboratorium' 
+                                       : category === 'radiologi' ? 'Tambah Tarif Pemeriksaan Radiologi'
+                                       : 'Tambah Tarif')}
                             </h3>
                             <p className="modal-subtitle">
                                 {category === 'rawat-jalan' ? 'Rawat Jalan' : (category === 'laboratorium' ? 'Laboratorium' : category)}
@@ -629,8 +633,8 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                     {errors.kd_pj && <p className="error-text">{errors.kd_pj}</p>}
                                 </div>
 
-                                {/* Status - untuk kategori selain Rawat Inap */}
-                                {(category !== 'rawat-inap' && category !== 'laboratorium') && (
+                                {/* Status - untuk kategori selain Rawat Inap, Laboratorium, dan Radiologi */}
+                                {(category !== 'rawat-inap' && category !== 'laboratorium' && category !== 'radiologi') && (
                                     <div className="input-group">
                                         <label className="input-label">
                                             Status *
@@ -1426,10 +1430,50 @@ export default function Index({ title, data, category, search, filters, poliklin
     // Handle flash messages
     useEffect(() => {
         if (flash.success) {
-            alert(flash.success);
+            // Show green notification instead of alert
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3';
+            notification.innerHTML = `
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span class="font-medium">${flash.success}</span>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
         }
         if (flash.error) {
-            alert(flash.error);
+            // Show red notification for errors
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 z-50 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3';
+            notification.innerHTML = `
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                <span class="font-medium">${flash.error}</span>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 5000);
         }
     }, [flash]);
 
