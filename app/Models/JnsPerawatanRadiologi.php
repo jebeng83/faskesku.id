@@ -85,20 +85,33 @@ class JnsPerawatanRadiologi extends Model
      */
     public static function generateKodeJenisPerawatan()
     {
-        // Ambil kode terakhir yang dimulai dengan 'R'
-        $last = self::where('kd_jenis_prw', 'like', 'R%')
-            ->orderBy('kd_jenis_prw', 'desc')
-            ->first();
+        // Ambil semua kode yang dimulai dengan 'R'
+        $codes = self::where('kd_jenis_prw', 'like', 'R%')
+            ->pluck('kd_jenis_prw')
+            ->toArray();
 
-        if (!$last) {
+        if (empty($codes)) {
             return 'R000001';
         }
 
-        // Ekstrak angka dan increment
-        $lastCode = $last->kd_jenis_prw;
-        $number = (int)substr($lastCode, 1);
-        $next = $number + 1;
+        $maxNumber = 0;
+        
+        // Loop through all codes to find the highest numeric value
+        foreach ($codes as $code) {
+            // Extract numeric part after 'R', remove any non-numeric characters
+            $numericPart = preg_replace('/[^0-9]/', '', substr($code, 1));
+            if (!empty($numericPart)) {
+                $number = (int) $numericPart;
+                if ($number > $maxNumber) {
+                    $maxNumber = $number;
+                }
+            }
+        }
 
-        return 'R' . str_pad((string)$next, 6, '0', STR_PAD_LEFT);
+        // Increment by 1
+        $newNumber = $maxNumber + 1;
+
+        // Format: R + nomor urut (6 digit)
+        return 'R' . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
     }
 }
