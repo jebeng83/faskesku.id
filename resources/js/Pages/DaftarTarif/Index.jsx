@@ -32,6 +32,11 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
         kso: 0,
         menejemen: 0,
         bagian_perujuk: 0,
+        // Radiologi specific fields
+        bagian_rs: 0,
+        tarif_tindakan_dokter: 0,
+        tarif_tindakan_petugas: 0,
+        tarif_perujuk: 0,
         kd_pj: '',
         kd_poli: '',
         kd_bangsal: '',
@@ -83,23 +88,10 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
     // Effect to populate form when editing
     useEffect(() => {
         if (editData) {
-            // Debug: Log the values to see what we're getting from database
-            console.log('Edit Data:', {
-                total_byrdr: editData.total_byrdr,
-                total_byrpr: editData.total_byrpr,
-                total_byrdrpr: editData.total_byrdrpr
-            });
-            
             // Determine checkbox states based on existing total values - must be strictly greater than 0
             const showTotalDokter = editData.total_byrdr && parseFloat(editData.total_byrdr) > 0;
             const showTotalPerawat = editData.total_byrpr && parseFloat(editData.total_byrpr) > 0;
             const showTotalDokterPerawat = editData.total_byrdrpr && parseFloat(editData.total_byrdrpr) > 0;
-            
-            console.log('Checkbox States:', {
-                showTotalDokter,
-                showTotalPerawat,
-                showTotalDokterPerawat
-            });
             
             setData({
                 kd_jenis_prw: editData.kd_jenis_prw || '',
@@ -112,6 +104,11 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                 kso: editData.kso || 0,
                 menejemen: editData.menejemen || 0,
                 bagian_perujuk: editData.tarif_perujuk || editData.bagian_perujuk || 0,
+                // Radiologi specific fields
+                bagian_rs: editData.bagian_rs || 0,
+                tarif_tindakan_dokter: editData.tarif_tindakan_dokter || 0,
+                tarif_tindakan_petugas: editData.tarif_tindakan_petugas || 0,
+                tarif_perujuk: editData.tarif_perujuk || 0,
                 kd_pj: editData.kd_pj || '',
                 kd_poli: editData.kd_poli || '',
                 kd_bangsal: editData.kd_bangsal || '',
@@ -194,16 +191,23 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
         const kso = parseInt(data.kso) || 0;
         const menejemen = parseInt(data.menejemen) || 0;
         const bagian_perujuk = parseInt(data.bagian_perujuk) || 0;
+        
+        // For radiologi category
+        const bagian_rs = parseInt(data.bagian_rs) || 0;
+        const tarif_tindakan_dokter = parseInt(data.tarif_tindakan_dokter) || 0;
+        const tarif_tindakan_petugas = parseInt(data.tarif_tindakan_petugas) || 0;
+        const tarif_perujuk = parseInt(data.tarif_perujuk) || 0;
 
         const totalDr = material + bhp + tarif_tindakandr + kso + menejemen;
         const totalPr = material + bhp + tarif_tindakanpr + kso + menejemen;
         const totalDrPr = material + bhp + tarif_tindakandr + tarif_tindakanpr + kso + menejemen;
         const totalLaborat = material + bhp + tarif_tindakandr + tarif_tindakanpr + bagian_perujuk + kso + menejemen;
+        const totalRadiologi = bagian_rs + bhp + tarif_tindakan_dokter + tarif_tindakan_petugas + tarif_perujuk + kso + menejemen;
 
-        return { totalDr, totalPr, totalDrPr, totalLaborat };
+        return { totalDr, totalPr, totalDrPr, totalLaborat, totalRadiologi };
     };
 
-    const { totalDr, totalPr, totalDrPr, totalLaborat } = calculateTotal();
+    const { totalDr, totalPr, totalDrPr, totalLaborat, totalRadiologi } = calculateTotal();
 
     // Function to validate form before submission
     const validateForm = () => {
@@ -259,7 +263,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
         }
         
         // Validate numeric fields (should be >= 0)
-        const numericFields = ['material', 'bhp', 'tarif_tindakandr', 'tarif_tindakanpr', 'kso', 'menejemen', 'bagian_perujuk'];
+        const numericFields = ['material', 'bhp', 'tarif_tindakandr', 'tarif_tindakanpr', 'kso', 'menejemen', 'bagian_perujuk', 'bagian_rs', 'tarif_tindakan_dokter', 'tarif_tindakan_petugas', 'tarif_perujuk'];
         numericFields.forEach(field => {
             const value = parseFloat(data[field]) || 0;
             if (value < 0) {
@@ -313,9 +317,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
             return; // Stop submission
         }
         
-        // Debug: Log data yang akan dikirim
-        console.log('Data yang akan dikirim:', data);
-        console.log('Errors saat ini:', errors);
+
         
         // Ensure numeric fields are properly formatted
         const formData = {
@@ -327,6 +329,11 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
             kso: parseFloat(data.kso) || 0,
             menejemen: parseFloat(data.menejemen) || 0,
             bagian_perujuk: parseFloat(data.bagian_perujuk) || 0,
+            // Radiologi specific fields
+            bagian_rs: parseFloat(data.bagian_rs) || 0,
+            tarif_tindakan_dokter: parseFloat(data.tarif_tindakan_dokter) || 0,
+            tarif_tindakan_petugas: parseFloat(data.tarif_tindakan_petugas) || 0,
+            tarif_perujuk: parseFloat(data.tarif_perujuk) || 0,
             category: category || 'rawat-jalan',
             // Include checkbox states
             show_total_dokter: data.show_total_dokter || false,
@@ -339,7 +346,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
             formData.status = '1';
         }
         
-        console.log('Formatted data:', formData);
+
 
         if (isEditMode && (!editData || !editData.kd_jenis_prw)) {
             const notification = document.createElement('div');
@@ -633,8 +640,8 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                     </div>
                                 )}
 
-                                {/* Kelas - untuk Rawat Inap dan Laboratorium */}
-                                {(category === 'rawat-inap' || category === 'laboratorium') && (
+                                {/* Kelas - untuk Rawat Inap, Laboratorium, dan Radiologi */}
+                                {(category === 'rawat-inap' || category === 'laboratorium' || category === 'radiologi') && (
                                     <div className={`input-group ${isLaboratorium ? 'flex items-center gap-3 compact' : ''}`}>
                                         <label className={`input-label ${isLaboratorium ? 'w-28 flex-shrink-0' : ''}`}>
                                             Kelas *
@@ -647,6 +654,12 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                         >
                                             <option value="">Pilih Kelas</option>
                                             {category === 'laboratorium' && <option value="-">-</option>}
+                                            {category === 'radiologi' && (
+                                                <>
+                                                    <option value="-">-</option>
+                                                    <option value="Rawat Jalan">Rawat Jalan</option>
+                                                </>
+                                            )}
                                             <option value="Kelas 1">Kelas 1</option>
                                             <option value="Kelas 2">Kelas 2</option>
                                             <option value="Kelas 3">Kelas 3</option>
@@ -702,21 +715,25 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                             
                             <div className={`form-grid ${category === 'laboratorium' ? 'compact' : ''}`}>
                                 <div className={`input-group ${category === 'laboratorium' ? 'flex items-center gap-3' : ''}`}>
-                                    <label className={`input-label ${category === 'laboratorium' ? 'w-28 flex-shrink-0' : ''}`}>{category === 'laboratorium' ? 'J.S. Rumah Sakit' : 'Bagian RS'}</label>
+                                    <label className={`input-label ${category === 'laboratorium' ? 'w-28 flex-shrink-0' : ''}`}>
+                                        {category === 'laboratorium' ? 'J.S. Rumah Sakit' : 
+                                         category === 'radiologi' ? 'Bagian RS' : 'Bagian RS'}
+                                    </label>
                                     <input
                                         type="text"
                                         inputMode="numeric"
                                         pattern="[0-9]*\.?[0-9]*"
                                         placeholder="0"
-                                        value={getDisplayValue(data.material, focusedField === 'material')}
-                                        onChange={(e) => handleNumericInput('material', e.target.value)}
-                                        onFocus={() => setFocusedField('material')}
+                                        value={getDisplayValue(category === 'radiologi' ? data.bagian_rs : data.material, focusedField === (category === 'radiologi' ? 'bagian_rs' : 'material'))}
+                                        onChange={(e) => handleNumericInput(category === 'radiologi' ? 'bagian_rs' : 'material', e.target.value)}
+                                        onFocus={() => setFocusedField(category === 'radiologi' ? 'bagian_rs' : 'material')}
                                         onBlur={() => setFocusedField(null)}
                                         ref={materialRef}
                                         onKeyDown={(e) => handleEnterFocus(e, bhpRef)}
                                         className={`form-input ${category === 'laboratorium' ? 'flex-1' : ''}`}
                                     />
                                     {errors.material && <p className="error-text">{errors.material}</p>}
+                                    {errors.bagian_rs && <p className="error-text">{errors.bagian_rs}</p>}
                                 </div>
 
                                 <div className={`input-group ${category === 'laboratorium' ? 'flex items-center gap-3' : ''}`}>
@@ -738,57 +755,69 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                 </div>
 
                                 <div className={`input-group ${category === 'laboratorium' ? 'flex items-center gap-3' : ''}`}>
-                                    <label className={`input-label ${category === 'laboratorium' ? 'w-28 flex-shrink-0' : ''}`}>{category === 'laboratorium' ? 'J.M. Dokter' : 'Jasa Dokter'}</label>
+                                    <label className={`input-label ${category === 'laboratorium' ? 'w-28 flex-shrink-0' : ''}`}>
+                                        {category === 'laboratorium' ? 'J.M. Dokter' : 
+                                         category === 'radiologi' ? 'Tarif Tindakan Dokter' : 'Jasa Dokter'}
+                                    </label>
                                     <input
                                         type="text"
                                         inputMode="numeric"
                                         pattern="[0-9]*\.?[0-9]*"
                                         placeholder="0"
-                                        value={getDisplayValue(data.tarif_tindakandr, focusedField === 'tarif_tindakandr')}
-                                        onChange={(e) => handleNumericInput('tarif_tindakandr', e.target.value)}
-                                        onFocus={() => setFocusedField('tarif_tindakandr')}
+                                        value={getDisplayValue(category === 'radiologi' ? data.tarif_tindakan_dokter : data.tarif_tindakandr, focusedField === (category === 'radiologi' ? 'tarif_tindakan_dokter' : 'tarif_tindakandr'))}
+                                        onChange={(e) => handleNumericInput(category === 'radiologi' ? 'tarif_tindakan_dokter' : 'tarif_tindakandr', e.target.value)}
+                                        onFocus={() => setFocusedField(category === 'radiologi' ? 'tarif_tindakan_dokter' : 'tarif_tindakandr')}
                                         onBlur={() => setFocusedField(null)}
                                         ref={drRef}
                                         onKeyDown={(e) => handleEnterFocus(e, prRef)}
                                         className={`form-input ${category === 'laboratorium' ? 'flex-1' : ''}`}
                                     />
                                     {errors.tarif_tindakandr && <p className="error-text">{errors.tarif_tindakandr}</p>}
+                                    {errors.tarif_tindakan_dokter && <p className="error-text">{errors.tarif_tindakan_dokter}</p>}
                                 </div>
 
                                 <div className={`input-group ${category === 'laboratorium' ? 'flex items-center gap-3' : ''}`}>
-                                    <label className={`input-label ${category === 'laboratorium' ? 'w-28 flex-shrink-0' : ''}`}>{category === 'laboratorium' ? 'J.M. Petugas' : 'Jasa Perawat'}</label>
+                                    <label className={`input-label ${category === 'laboratorium' ? 'w-28 flex-shrink-0' : ''}`}>
+                                        {category === 'laboratorium' ? 'J.M. Petugas' : 
+                                         category === 'radiologi' ? 'Tarif Tindakan Petugas' : 'Jasa Perawat'}
+                                    </label>
                                     <input
                                         type="text"
                                         inputMode="numeric"
                                         pattern="[0-9]*\.?[0-9]*"
                                         placeholder="0"
-                                        value={getDisplayValue(data.tarif_tindakanpr, focusedField === 'tarif_tindakanpr')}
-                                        onChange={(e) => handleNumericInput('tarif_tindakanpr', e.target.value)}
-                                        onFocus={() => setFocusedField('tarif_tindakanpr')}
+                                        value={getDisplayValue(category === 'radiologi' ? data.tarif_tindakan_petugas : data.tarif_tindakanpr, focusedField === (category === 'radiologi' ? 'tarif_tindakan_petugas' : 'tarif_tindakanpr'))}
+                                        onChange={(e) => handleNumericInput(category === 'radiologi' ? 'tarif_tindakan_petugas' : 'tarif_tindakanpr', e.target.value)}
+                                        onFocus={() => setFocusedField(category === 'radiologi' ? 'tarif_tindakan_petugas' : 'tarif_tindakanpr')}
                                         onBlur={() => setFocusedField(null)}
                                         ref={prRef}
-                                        onKeyDown={(e) => handleEnterFocus(e, category === 'laboratorium' ? perujukRef : ksoRef)}
+                                        onKeyDown={(e) => handleEnterFocus(e, category === 'laboratorium' ? perujukRef : (category === 'radiologi' ? perujukRef : ksoRef))}
                                         className={`form-input ${category === 'laboratorium' ? 'flex-1' : ''}`}
                                     />
                                     {errors.tarif_tindakanpr && <p className="error-text">{errors.tarif_tindakanpr}</p>}
+                                    {errors.tarif_tindakan_petugas && <p className="error-text">{errors.tarif_tindakan_petugas}</p>}
                                 </div>
 
-                                {category === 'laboratorium' && (
+                                {(category === 'laboratorium' || category === 'radiologi') && (
                                     <div className={`input-group ${category === 'laboratorium' ? 'flex items-center gap-3' : ''}`}>
-                                        <label className={`input-label ${category === 'laboratorium' ? 'w-28 flex-shrink-0' : ''}`}>J.M. Perujuk</label>
+                                        <label className={`input-label ${category === 'laboratorium' ? 'w-28 flex-shrink-0' : ''}`}>
+                                            {category === 'laboratorium' ? 'J.M. Perujuk' : 'Tarif Perujuk'}
+                                        </label>
                                         <input
                                             type="text"
                                             inputMode="numeric"
                                             pattern="[0-9]*\.?[0-9]*"
                                             placeholder="0"
-                                            value={getDisplayValue(data.bagian_perujuk, focusedField === 'bagian_perujuk')}
-                                            onChange={(e) => handleNumericInput('bagian_perujuk', e.target.value)}
-                                            onFocus={() => setFocusedField('bagian_perujuk')}
+                                            value={getDisplayValue(category === 'radiologi' ? data.tarif_perujuk : data.bagian_perujuk, focusedField === (category === 'radiologi' ? 'tarif_perujuk' : 'bagian_perujuk'))}
+                                            onChange={(e) => handleNumericInput(category === 'radiologi' ? 'tarif_perujuk' : 'bagian_perujuk', e.target.value)}
+                                            onFocus={() => setFocusedField(category === 'radiologi' ? 'tarif_perujuk' : 'bagian_perujuk')}
                                             onBlur={() => setFocusedField(null)}
                                             ref={perujukRef}
                                             onKeyDown={(e) => handleEnterFocus(e, ksoRef)}
                                             className={`form-input ${category === 'laboratorium' ? 'flex-1' : ''}`}
                                         />
+                                        {errors.bagian_perujuk && <p className="error-text">{errors.bagian_perujuk}</p>}
+                                        {errors.tarif_perujuk && <p className="error-text">{errors.tarif_perujuk}</p>}
                                     </div>
                                 )}
 
@@ -839,12 +868,24 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
                                         />
                                     </div>
                                 )}
+
+                                {category === 'radiologi' && (
+                                    <div className={`input-group ${category === 'radiologi' ? 'flex items-center gap-3' : ''}`}>
+                                        <label className={`input-label ${category === 'radiologi' ? 'w-28 flex-shrink-0' : ''}`}>Total Tarif</label>
+                                        <input
+                                            type="text"
+                                            value={`Rp ${formatNumber(totalRadiologi)}`}
+                                            className={`form-input ${category === 'radiologi' ? 'flex-1' : ''}`}
+                                            readOnly
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
 
 
                         {/* Perhitungan Total Section */}
-                        {category !== 'laboratorium' && (
+                        {category !== 'laboratorium' && category !== 'radiologi' && (
                         <div className="calculation-card">
                             <div className="calculation-header">
                                 <div className="calculation-icon">
@@ -1456,7 +1497,7 @@ export default function Index({ title, data, category, search, filters, poliklin
 
     // Handler untuk button + Tarif
     const handleAddTarif = () => {
-        if (activeTab === 'laboratorium') {
+        if (activeTab === 'laboratorium' || activeTab === 'radiologi') {
             setIsModalOpen(true);
         } else {
             router.visit(route('daftar-tarif.create', { category: activeTab }));
@@ -1703,7 +1744,6 @@ export default function Index({ title, data, category, search, filters, poliklin
 
     const handleExport = () => {
         // Export functionality
-        console.log('Export data');
     };
 
     const formatCurrency = (amount) => {

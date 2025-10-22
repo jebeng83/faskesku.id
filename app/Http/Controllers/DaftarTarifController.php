@@ -390,7 +390,7 @@ class DaftarTarifController extends Controller
         $kdKategori = $request->get('kd_kategori');
         $category = $request->get('category', 'rawat-jalan');
         
-        if (!$kdKategori && $category !== 'laboratorium') {
+        if (!$kdKategori && !in_array($category, ['laboratorium', 'radiologi'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Kategori harus dipilih'
@@ -408,6 +408,10 @@ class DaftarTarifController extends Controller
                 case 'laboratorium':
                     // Kode pemeriksaan laboratorium tidak tergantung kd_kategori, gunakan prefix LA
                     $kode = JnsPerawatanLab::generateKodeJenisPerawatan();
+                    break;
+                case 'radiologi':
+                    // Kode pemeriksaan radiologi tidak tergantung kd_kategori, gunakan prefix R
+                    $kode = JnsPerawatanRadiologi::generateKodeJenisPerawatan();
                     break;
                 default:
                     $kode = JnsPerawatan::generateKodeJenisPerawatan($kdKategori);
@@ -545,7 +549,54 @@ class DaftarTarifController extends Controller
         return redirect()->route('daftar-tarif.index', ['category' => 'laboratorium'])
             ->with('success', 'Tarif pemeriksaan laboratorium berhasil ditambahkan');
     }
-    private function storeRadiologi(Request $request) { /* Implementation for radiologi */ }
+    private function storeRadiologi(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'kd_jenis_prw' => 'required|string|max:15|unique:jns_perawatan_radiologi,kd_jenis_prw',
+            'nm_perawatan' => 'required|string|max:80',
+            'bagian_rs' => 'nullable|numeric|min:0',
+            'bhp' => 'nullable|numeric|min:0',
+            'tarif_perujuk' => 'nullable|numeric|min:0',
+            'tarif_tindakan_dokter' => 'nullable|numeric|min:0',
+            'tarif_tindakan_petugas' => 'nullable|numeric|min:0',
+            'kso' => 'nullable|numeric|min:0',
+            'menejemen' => 'nullable|numeric|min:0',
+            'kd_pj' => 'required|string|max:3',
+            'status' => 'nullable|in:0,1',
+            'kelas' => 'required|in:-,Rawat Jalan,Kelas 1,Kelas 2,Kelas 3,Kelas Utama,Kelas VIP,Kelas VVIP'
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $data = $request->all();
+        
+        // Calculate total_byr
+        $bagian_rs = $data['bagian_rs'] ?? 0;
+        $bhp = $data['bhp'] ?? 0;
+        $tarif_perujuk = $data['tarif_perujuk'] ?? 0;
+        $tarif_tindakan_dokter = $data['tarif_tindakan_dokter'] ?? 0;
+        $tarif_tindakan_petugas = $data['tarif_tindakan_petugas'] ?? 0;
+        $kso = $data['kso'] ?? 0;
+        $menejemen = $data['menejemen'] ?? 0;
+
+        $total_byr = $bagian_rs + $bhp + $tarif_perujuk + $tarif_tindakan_dokter + $tarif_tindakan_petugas + $kso + $menejemen;
+
+        // Remove unnecessary fields
+        unset($data['category']);
+        
+        // Add calculated total
+        $data['total_byr'] = $total_byr;
+        $data['status'] = $data['status'] ?? '1';
+
+        JnsPerawatanRadiologi::create($data);
+
+        return redirect()->route('daftar-tarif.index', ['category' => 'radiologi'])
+            ->with('success', 'Tarif pemeriksaan radiologi berhasil ditambahkan');
+    }
     private function updateRawatInap(Request $request, $id)
     {
         $jnsPerawatan = JnsPerawatanInap::findOrFail($id);

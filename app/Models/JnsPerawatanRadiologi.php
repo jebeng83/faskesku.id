@@ -27,7 +27,8 @@ class JnsPerawatanRadiologi extends Model
         'menejemen',
         'total_byr',
         'kd_pj',
-        'status'
+        'status',
+        'kelas'
     ];
 
     protected $casts = [
@@ -76,5 +77,28 @@ class JnsPerawatanRadiologi extends Model
     public function penjab()
     {
         return $this->belongsTo(Penjab::class, 'kd_pj', 'kd_pj');
+    }
+
+    /**
+     * Generate kode otomatis untuk pemeriksaan radiologi
+     * Format: R000001, R000002, dst.
+     */
+    public static function generateKodeJenisPerawatan()
+    {
+        // Ambil kode terakhir yang dimulai dengan 'R'
+        $last = self::where('kd_jenis_prw', 'like', 'R%')
+            ->orderBy('kd_jenis_prw', 'desc')
+            ->first();
+
+        if (!$last) {
+            return 'R000001';
+        }
+
+        // Ekstrak angka dan increment
+        $lastCode = $last->kd_jenis_prw;
+        $number = (int)substr($lastCode, 1);
+        $next = $number + 1;
+
+        return 'R' . str_pad((string)$next, 6, '0', STR_PAD_LEFT);
     }
 }
