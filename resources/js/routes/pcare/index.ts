@@ -5,7 +5,7 @@ import dokter from './dokter'
 import poli from './poli'
 import setting from './setting'
 /**
-* @see routes/web.php:316
+* @see routes/web.php:335
 * @route '/pcare'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -19,7 +19,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:316
+* @see routes/web.php:335
 * @route '/pcare'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -27,7 +27,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:316
+* @see routes/web.php:335
 * @route '/pcare'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -36,7 +36,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:316
+* @see routes/web.php:335
 * @route '/pcare'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
