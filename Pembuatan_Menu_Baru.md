@@ -229,3 +229,5 @@ Menu::firstOrCreate([
 - [ ] Server Laravel dan Vite berjalan, halaman dapat diakses dari sidebar.
 
 Selesai. Dengan panduan ini, Anda bisa menambahkan menu baru secara konsisten dan aman untuk pengembangan lanjutan.
+
+++
