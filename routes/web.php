@@ -141,6 +141,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
+    // Profile Menu (Inertia)
+    Route::get('/profile/menu', function () {
+        return Inertia::render('Profile/index');
+    })->name('profile.menu');
+
     // Menu Management routes
     Route::resource('menus', MenuController::class);
     Route::post('/menus/{menu}/toggle-status', [MenuController::class, 'toggleStatus'])->name('menus.toggle-status');
@@ -225,11 +230,19 @@ Route::middleware('auth')->group(function () {
         Route::get('/stok-obat', function () {
             return Inertia::render('farmasi/StokObat');
         })->name('stok-obat');
-
         Route::get('/stok-opname', function () {
             return Inertia::render('farmasi/StokOpname');
         })->name('stok-opname');
 
+        // Farmasi - Data Opname (laporan/daftar hasil opname)
+        Route::get('/data-opname', function () {
+            return Inertia::render('farmasi/DataOpname');
+        })->name('data-opname');
+
+        // Alias route under farmasi namespace for consistency dengan frontend route helpers
+        Route::get('/farmasi/data-opname', function () {
+            return Inertia::render('farmasi/DataOpname');
+        })->name('farmasi.data-opname');
         // Data Obat (DataBarang) CRUD routes with auto-code via props.nextCode
         Route::get('/data-obat', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'index'])->name('data-obat');
         Route::post('/data-obat', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'store'])->name('data-obat.store');
@@ -316,7 +329,14 @@ Route::middleware('auth')->group(function () {
         Route::patch('/jenis-obat/{kdjns}', [\App\Http\Controllers\Farmasi\JenisObatController::class, 'update']);
         Route::delete('/jenis-obat/{kdjns}', [\App\Http\Controllers\Farmasi\JenisObatController::class, 'destroy'])->name('jenis-obat.destroy');
     });
+    // Pcare routes
+    Route::prefix('pcare')->name('pcare.')->group(function () {
+        // Landing page
+        Route::get('/', function () {
+            return Inertia::render('Pcare/Menu');
+        })->name('index');
 
+<<<<<<< HEAD
     // Keuangan routes
     Route::prefix('keuangan')->name('keuangan.')->group(function () {
         // Landing page for Keuangan module
@@ -404,13 +424,76 @@ Route::middleware('auth')->group(function () {
         Route::post('/penjab', [\App\Http\Controllers\PenjabController::class, 'store'])->name('penjab.store');
         Route::put('/penjab/{kd_pj}', [\App\Http\Controllers\PenjabController::class, 'update'])->name('penjab.update');
         Route::patch('/penjab/{kd_pj}/toggle-status', [\App\Http\Controllers\PenjabController::class, 'toggleStatus'])->name('penjab.toggle-status');
+=======
+        // Referensi Diagnosa page (Inertia)
+        Route::get('/referensi/diagnosa', function () {
+            return Inertia::render('Pcare/ReferensiPcare/ReferensiDiagnosa');
+        })->name('referensi.diagnosa');
+>>>>>>> main
 
-        // Poliklinik routes
-        Route::get('/poliklinik', [\App\Http\Controllers\PoliklinikController::class, 'index'])->name('poliklinik.index');
-        Route::post('/poliklinik', [\App\Http\Controllers\PoliklinikController::class, 'store'])->name('poliklinik.store');
-        Route::put('/poliklinik/{kd_poli}', [\App\Http\Controllers\PoliklinikController::class, 'update'])->name('poliklinik.update');
-        Route::patch('/poliklinik/{kd_poli}/toggle-status', [\App\Http\Controllers\PoliklinikController::class, 'toggleStatus'])->name('poliklinik.toggle-status');
+        // Referensi Dokter page (Inertia)
+        Route::get('/referensi/dokter', function () {
+            return Inertia::render('Pcare/ReferensiPcare/ReferensiDokter');
+        })->name('referensi.dokter');
+
+        // Referensi Poli page (Inertia)
+        Route::get('/referensi/poli', function () {
+            return Inertia::render('Pcare/ReferensiPcare/ReferensiPoli');
+        })->name('referensi.poli');
+
+        // Referensi Kesadaran page (Inertia)
+        Route::get('/referensi/kesadaran', function () {
+            return Inertia::render('Pcare/ReferensiPcare/ReferensiKesadaran');
+        })->name('referensi.kesadaran');
+
+        // Referensi DPHO page (Inertia)
+        Route::get('/referensi/dpho', function () {
+            return Inertia::render('Pcare/ReferensiPcare/ReferensiDpho');
+        })->name('referensi.dpho');
+
+        // Referensi Provider Rayonisasi page (Inertia)
+        Route::get('/referensi/provider', function () {
+            return Inertia::render('Pcare/ReferensiPcare/ReferensiProvider');
+        })->name('referensi.provider');
+
+        // Referensi Spesialis page (Inertia)
+        Route::get('/referensi/spesialis', function () {
+            return Inertia::render('Pcare/ReferensiPcare/ReferensiSpesialis');
+        })->name('referensi.spesialis');
+
+        // API: Get Diagnosa dari BPJS PCare
+        Route::get('/api/diagnosa', [\App\Http\Controllers\Pcare\PcareController::class, 'getDiagnosa'])
+            ->name('diagnosa.api');
+
+        // API: Get Dokter dari BPJS PCare
+        Route::get('/api/dokter', [\App\Http\Controllers\Pcare\PcareController::class, 'getDokter'])
+            ->name('dokter.api');
+
+        // API: Get Poli dari BPJS PCare
+        Route::get('/api/poli', [\App\Http\Controllers\Pcare\PcareController::class, 'getPoli'])
+            ->name('poli.api');
+
+        // Setting Bridging BPJS PCare (Inertia form + CRUD)
+        Route::get('/setting', [\App\Http\Controllers\Pcare\SettingBridgingBpjsController::class, 'index'])
+            ->name('setting.index');
+        Route::post('/setting', [\App\Http\Controllers\Pcare\SettingBridgingBpjsController::class, 'store'])
+            ->name('setting.store');
+        Route::delete('/setting', [\App\Http\Controllers\Pcare\SettingBridgingBpjsController::class, 'destroy'])
+            ->name('setting.destroy');
     });
+
+    // Penjab & Poliklinik routes
+    Route::get('/penjab', [\App\Http\Controllers\PenjabController::class, 'index'])->name('penjab.index');
+    Route::post('/penjab', [\App\Http\Controllers\PenjabController::class, 'store'])->name('penjab.store');
+    Route::put('/penjab/{kd_pj}', [\App\Http\Controllers\PenjabController::class, 'update'])->name('penjab.update');
+    Route::patch('/penjab/{kd_pj}/toggle-status', [\App\Http\Controllers\PenjabController::class, 'toggleStatus'])->name('penjab.toggle-status');
+
+    // Poliklinik routes
+    Route::get('/poliklinik', [\App\Http\Controllers\PoliklinikController::class, 'index'])->name('poliklinik.index');
+    Route::post('/poliklinik', [\App\Http\Controllers\PoliklinikController::class, 'store'])->name('poliklinik.store');
+    Route::put('/poliklinik/{kd_poli}', [\App\Http\Controllers\PoliklinikController::class, 'update'])->name('poliklinik.update');
+    Route::patch('/poliklinik/{kd_poli}/toggle-status', [\App\Http\Controllers\PoliklinikController::class, 'toggleStatus'])->name('poliklinik.toggle-status');
+
 });
 // Routes for Set Harga Obat (Farmasi)
 use App\Http\Controllers\Farmasi\SetHargaObatController;

@@ -46,7 +46,11 @@ generateKode.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::storeRawatInap
+<<<<<<< HEAD
 * @see app/Http/Controllers/DaftarTarifController.php:434
+=======
+* @see app/Http/Controllers/DaftarTarifController.php:430
+>>>>>>> main
 * @route '/daftar-tarif/store-rawat-inap'
 */
 export const storeRawatInap = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -61,7 +65,11 @@ storeRawatInap.definition = {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::storeRawatInap
+<<<<<<< HEAD
 * @see app/Http/Controllers/DaftarTarifController.php:434
+=======
+* @see app/Http/Controllers/DaftarTarifController.php:430
+>>>>>>> main
 * @route '/daftar-tarif/store-rawat-inap'
 */
 storeRawatInap.url = (options?: RouteQueryOptions) => {
@@ -70,7 +78,11 @@ storeRawatInap.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::storeRawatInap
+<<<<<<< HEAD
 * @see app/Http/Controllers/DaftarTarifController.php:434
+=======
+* @see app/Http/Controllers/DaftarTarifController.php:430
+>>>>>>> main
 * @route '/daftar-tarif/store-rawat-inap'
 */
 storeRawatInap.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -316,7 +328,11 @@ show.head = (args: { daftar_tarif: string | number } | [daftar_tarif: string | n
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::edit
+<<<<<<< HEAD
 * @see app/Http/Controllers/DaftarTarifController.php:739
+=======
+* @see app/Http/Controllers/DaftarTarifController.php:688
+>>>>>>> main
 * @route '/daftar-tarif/{daftar_tarif}/edit'
 */
 export const edit = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -331,7 +347,11 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::edit
+<<<<<<< HEAD
 * @see app/Http/Controllers/DaftarTarifController.php:739
+=======
+* @see app/Http/Controllers/DaftarTarifController.php:688
+>>>>>>> main
 * @route '/daftar-tarif/{daftar_tarif}/edit'
 */
 edit.url = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -358,7 +378,11 @@ edit.url = (args: { daftar_tarif: string | number } | [daftar_tarif: string | nu
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::edit
+<<<<<<< HEAD
 * @see app/Http/Controllers/DaftarTarifController.php:739
+=======
+* @see app/Http/Controllers/DaftarTarifController.php:688
+>>>>>>> main
 * @route '/daftar-tarif/{daftar_tarif}/edit'
 */
 edit.get = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -368,7 +392,11 @@ edit.get = (args: { daftar_tarif: string | number } | [daftar_tarif: string | nu
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::edit
+<<<<<<< HEAD
 * @see app/Http/Controllers/DaftarTarifController.php:739
+=======
+* @see app/Http/Controllers/DaftarTarifController.php:688
+>>>>>>> main
 * @route '/daftar-tarif/{daftar_tarif}/edit'
 */
 edit.head = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -378,7 +406,11 @@ edit.head = (args: { daftar_tarif: string | number } | [daftar_tarif: string | n
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::update
+<<<<<<< HEAD
 * @see app/Http/Controllers/DaftarTarifController.php:787
+=======
+* @see app/Http/Controllers/DaftarTarifController.php:736
+>>>>>>> main
 * @route '/daftar-tarif/{daftar_tarif}'
 */
 export const update = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -393,7 +425,11 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::update
+<<<<<<< HEAD
 * @see app/Http/Controllers/DaftarTarifController.php:787
+=======
+* @see app/Http/Controllers/DaftarTarifController.php:736
+>>>>>>> main
 * @route '/daftar-tarif/{daftar_tarif}'
 */
 update.url = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -420,7 +456,11 @@ update.url = (args: { daftar_tarif: string | number } | [daftar_tarif: string | 
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::update
+<<<<<<< HEAD
 * @see app/Http/Controllers/DaftarTarifController.php:787
+=======
+* @see app/Http/Controllers/DaftarTarifController.php:736
+>>>>>>> main
 * @route '/daftar-tarif/{daftar_tarif}'
 */
 update.put = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -430,7 +470,11 @@ update.put = (args: { daftar_tarif: string | number } | [daftar_tarif: string | 
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::update
+<<<<<<< HEAD
 * @see app/Http/Controllers/DaftarTarifController.php:787
+=======
+* @see app/Http/Controllers/DaftarTarifController.php:736
+>>>>>>> main
 * @route '/daftar-tarif/{daftar_tarif}'
 */
 update.patch = (args: { daftar_tarif: string | number } | [daftar_tarif: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({

@@ -16,7 +16,7 @@ class ProfileController extends Controller
         $user = $request->user()->load('employee');
         $roles = method_exists($user, 'getRoleNames') ? $user->getRoleNames() : collect();
 
-        return Inertia::render('Profile/Show', [
+        return Inertia::render('Profile/index', [
             'user' => $user,
             'roles' => $roles,
         ]);

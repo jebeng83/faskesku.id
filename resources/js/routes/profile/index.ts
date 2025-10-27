@@ -77,9 +77,56 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     method: 'put',
 })
 
+<<<<<<< HEAD
 const profile = {
     show: Object.assign(show, show),
     update: Object.assign(update, update),
+=======
+/**
+* @see routes/web.php:145
+* @route '/profile/menu'
+*/
+export const menu = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: menu.url(options),
+    method: 'get',
+})
+
+menu.definition = {
+    methods: ["get","head"],
+    url: '/profile/menu',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:145
+* @route '/profile/menu'
+*/
+menu.url = (options?: RouteQueryOptions) => {
+    return menu.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:145
+* @route '/profile/menu'
+*/
+menu.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: menu.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:145
+* @route '/profile/menu'
+*/
+menu.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: menu.url(options),
+    method: 'head',
+})
+
+const profile = {
+    show: Object.assign(show, show),
+    update: Object.assign(update, update),
+    menu: Object.assign(menu, menu),
+>>>>>>> main
 }
 
 export default profile

@@ -13,6 +13,23 @@ const toNumber = (val) => {
   return Number.isFinite(n) ? n : 0;
 };
 
+// Normalisasi nilai untuk input tanggal (type="date") agar sesuai format "yyyy-MM-dd"
+// Menghindari nilai seperti "0000-00-00" atau string dengan waktu yang menyebabkan warning browser
+const normalizeDateValue = (val) => {
+  if (!val) return '';
+  // Zero-date dari MySQL tidak valid untuk input date HTML
+  if (val === '0000-00-00' || val === '0000-00-00 00:00:00') return '';
+  // Jika Date object
+  if (val instanceof Date && !isNaN(val)) {
+    return val.toISOString().slice(0, 10);
+  }
+  const str = String(val);
+  // Ambil hanya bagian tanggal "YYYY-MM-DD" bila string mengandung waktu
+  const m = str.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (m) return m[1];
+  return '';
+};
+
 // Ambil harga dasar dari item sesuai konfigurasi hargadasar
 // Preferensi field: h_beli > dasar > h_diskon (jika tersedia)
 const pickBasePrice = (item, hargadasar) => {
@@ -243,7 +260,7 @@ const ObatModal = ({ open, isEdit, onClose, onSubmit, data, setData, errors, pro
               </select>
               {errors?.kdjns && <p className="text-xs text-red-600">{errors.kdjns}</p>}
             </div>
-            <Input label="Tanggal Expire" id="expire" type="date" value={data.expire} onChange={(e) => setData('expire', e.target.value)} placeholder="" error={errors?.expire} />
+            <Input label="Tanggal Expire" id="expire" type="date" value={normalizeDateValue(data.expire)} onChange={(e) => setData('expire', e.target.value)} placeholder="" error={errors?.expire} />
             <div className="space-y-1">
               <label htmlFor="kode_industri" className="block text-sm font-medium text-gray-700">Kode Industri</label>
               <select id="kode_industri" value={data.kode_industri} onChange={(e) => setData('kode_industri', e.target.value)} className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 ${errors?.kode_industri ? 'border-red-400 focus:ring-red-300' : 'border-gray-300 focus:ring-indigo-300'}`}>

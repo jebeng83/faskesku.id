@@ -125,6 +125,12 @@ const tabs = [
         icon: BeakerIcon,
         accent: "from-blue-500 to-indigo-500",
       },
+    ],
+  },
+  {
+    key: "transaksi",
+    label: "Transaksi",
+    items: [
       {
         title: "Stok Opname",
         description: "Lakukan penyesuaian dan audit stok berkala",
@@ -132,12 +138,6 @@ const tabs = [
         icon: ClipboardDocumentListIcon,
         accent: "from-purple-500 to-pink-500",
       },
-    ],
-  },
-  {
-    key: "transaksi",
-    label: "Transaksi",
-    items: [
       {
         title: "Pembelian Obat",
         description: "Catat dan kelola transaksi pembelian dari supplier",

@@ -119,6 +119,8 @@ class PermissionSeeder extends Seeder
             
             // Farmasi module landing permission
             'farmasi.index',
+            // Bridging PCare landing permission
+            'pcare.index',
         ];
 
         foreach ($permissions as $permission) {

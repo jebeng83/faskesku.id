@@ -45,7 +45,11 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::store
+<<<<<<< HEAD
 * @see app/Http/Controllers/Farmasi/GolonganBarangController.php:48
+=======
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:69
+>>>>>>> main
 * @route '/farmasi/golongan-obat'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +64,11 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::store
+<<<<<<< HEAD
 * @see app/Http/Controllers/Farmasi/GolonganBarangController.php:48
+=======
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:69
+>>>>>>> main
 * @route '/farmasi/golongan-obat'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -69,7 +77,11 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::store
+<<<<<<< HEAD
 * @see app/Http/Controllers/Farmasi/GolonganBarangController.php:48
+=======
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:69
+>>>>>>> main
 * @route '/farmasi/golongan-obat'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -79,7 +91,11 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::update
+<<<<<<< HEAD
 * @see app/Http/Controllers/Farmasi/GolonganBarangController.php:72
+=======
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:93
+>>>>>>> main
 * @route '/farmasi/golongan-obat/{kode}'
 */
 export const update = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -94,7 +110,11 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::update
+<<<<<<< HEAD
 * @see app/Http/Controllers/Farmasi/GolonganBarangController.php:72
+=======
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:93
+>>>>>>> main
 * @route '/farmasi/golongan-obat/{kode}'
 */
 update.url = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -121,7 +141,11 @@ update.url = (args: { kode: string | number } | [kode: string | number ] | strin
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::update
+<<<<<<< HEAD
 * @see app/Http/Controllers/Farmasi/GolonganBarangController.php:72
+=======
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:93
+>>>>>>> main
 * @route '/farmasi/golongan-obat/{kode}'
 */
 update.put = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -131,7 +155,11 @@ update.put = (args: { kode: string | number } | [kode: string | number ] | strin
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::destroy
+<<<<<<< HEAD
 * @see app/Http/Controllers/Farmasi/GolonganBarangController.php:93
+=======
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:114
+>>>>>>> main
 * @route '/farmasi/golongan-obat/{kode}'
 */
 export const destroy = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -146,7 +174,11 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::destroy
+<<<<<<< HEAD
 * @see app/Http/Controllers/Farmasi/GolonganBarangController.php:93
+=======
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:114
+>>>>>>> main
 * @route '/farmasi/golongan-obat/{kode}'
 */
 destroy.url = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -173,7 +205,11 @@ destroy.url = (args: { kode: string | number } | [kode: string | number ] | stri
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::destroy
+<<<<<<< HEAD
 * @see app/Http/Controllers/Farmasi/GolonganBarangController.php:93
+=======
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:114
+>>>>>>> main
 * @route '/farmasi/golongan-obat/{kode}'
 */
 destroy.delete = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

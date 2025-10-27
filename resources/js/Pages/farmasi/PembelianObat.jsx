@@ -310,8 +310,12 @@ export default function PembelianObat() {
                 });
                 
                 if (response.ok) {
-                    // Update harga jual berdasarkan harga beli terbaru
-                    const hargaJualUpdated = await updateHargaJualFromPembelian(item.kode_brng, hargaBeliBaru);
+                    // Update harga jual berdasarkan harga beli/dasar terbaru
+                    const hargaJualUpdated = await updateHargaJualFromPembelian(
+                        item.kode_brng,
+                        hargaBeliBaru,
+                        hargaDasar // gunakan harga dasar sebagai base perhitungan bila tersedia
+                    );
                     if (!hargaJualUpdated) {
                         updateSuccess = false;
                     }
@@ -333,7 +337,7 @@ export default function PembelianObat() {
     };
 
     // Fungsi untuk update harga jual berdasarkan harga beli terbaru dari pembelian
-    const updateHargaJualFromPembelian = async (kodeBarang, hargaBeliBaru) => {
+    const updateHargaJualFromPembelian = async (kodeBarang, hargaBeliBaru, baseHargaJual = null) => {
         try {
             // Fetch percentage data untuk perhitungan
             const percentageResponse = await fetch('/api/set-harga-obat');
@@ -345,19 +349,20 @@ export default function PembelianObat() {
 
             const percentages = percentageData.data;
             const harga = parseFloat(hargaBeliBaru) || 0;
+            const base = parseFloat(baseHargaJual ?? hargaBeliBaru) || 0;
 
             // Hitung harga jual berdasarkan persentase keuntungan
             const hargaJualBaru = {
-                ralan: Math.round(harga + (harga * parseFloat(percentages.ralan || 0) / 100)),
-                kelas1: Math.round(harga + (harga * parseFloat(percentages.kelas1 || 0) / 100)),
-                kelas2: Math.round(harga + (harga * parseFloat(percentages.kelas2 || 0) / 100)),
-                kelas3: Math.round(harga + (harga * parseFloat(percentages.kelas3 || 0) / 100)),
-                utama: Math.round(harga + (harga * parseFloat(percentages.utama || 0) / 100)),
-                vip: Math.round(harga + (harga * parseFloat(percentages.vip || 0) / 100)),
-                vvip: Math.round(harga + (harga * parseFloat(percentages.vvip || 0) / 100)),
-                beliluar: Math.round(harga + (harga * parseFloat(percentages.beliluar || 0) / 100)),
-                jualbebas: Math.round(harga + (harga * parseFloat(percentages.jualbebas || 0) / 100)),
-                karyawan: Math.round(harga + (harga * parseFloat(percentages.karyawan || 0) / 100))
+                ralan: Math.round(base + (base * parseFloat(percentages.ralan || 0) / 100)),
+                kelas1: Math.round(base + (base * parseFloat(percentages.kelas1 || 0) / 100)),
+                kelas2: Math.round(base + (base * parseFloat(percentages.kelas2 || 0) / 100)),
+                kelas3: Math.round(base + (base * parseFloat(percentages.kelas3 || 0) / 100)),
+                utama: Math.round(base + (base * parseFloat(percentages.utama || 0) / 100)),
+                vip: Math.round(base + (base * parseFloat(percentages.vip || 0) / 100)),
+                vvip: Math.round(base + (base * parseFloat(percentages.vvip || 0) / 100)),
+                beliluar: Math.round(base + (base * parseFloat(percentages.beliluar || 0) / 100)),
+                jualbebas: Math.round(base + (base * parseFloat(percentages.jualbebas || 0) / 100)),
+                karyawan: Math.round(base + (base * parseFloat(percentages.karyawan || 0) / 100))
             };
 
             // Update harga jual melalui API
