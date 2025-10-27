@@ -19,7 +19,7 @@ class HandleInertiaRequests
             ],
             'errors' => fn() => $request->session()->get('errors') ? $request->session()->get('errors')->getBag('default')->getMessages() : (object) [],
             'auth' => [
-                'user' => fn() => $request->user() ? $request->user()->only('id', 'name', 'email') : null,
+                'user' => fn() => $request->user() ? $request->user()->load('employee')->only('id', 'name', 'username', 'email', 'nik', 'employee') : null,
                 'permissions' => fn() => $request->user() ? $request->user()->getAllPermissions()->pluck('name') : [],
             ],
             'menu_hierarchy' => fn() => $request->user() ? Menu::getMenuHierarchy($request->user()->id)->toArray() : [],

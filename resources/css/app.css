@@ -160,6 +160,11 @@
     @apply text-white bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 shadow-sm hover:shadow-md;
 }
 
+/* Restore Button - kuning */
+.restore-btn {
+    @apply text-white bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 shadow-sm hover:shadow-md;
+}
+
 /* Empty State */
 .empty-state {
     @apply text-center py-12 px-6 bg-white rounded-lg border border-gray-200;
@@ -235,7 +240,7 @@
 }
 
 .modal-container {
-    @apply bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-hidden;
+    @apply bg-white rounded-xl shadow-2xl w-full max-h-[95vh] overflow-hidden;
     animation: slideUp 0.3s ease-out;
 }
 
@@ -291,6 +296,103 @@
     @apply space-y-2;
 }
 
+/* Theme colors per tab for Data Perawatan section */
+.form-section.theme-rawat-jalan {
+    @apply border-blue-200;
+}
+.form-section.theme-rawat-jalan .section-icon {
+    @apply bg-gradient-to-br from-blue-500 to-blue-700 text-white;
+}
+.form-section.theme-rawat-jalan .section-title {
+    @apply text-blue-800;
+}
+
+.form-section.theme-rawat-inap {
+    @apply border-yellow-200;
+}
+.form-section.theme-rawat-inap .section-icon {
+    @apply bg-gradient-to-br from-yellow-500 to-amber-600 text-white;
+}
+.form-section.theme-rawat-inap .section-title {
+    @apply text-yellow-800;
+}
+
+.form-section.theme-laboratorium {
+    @apply border-indigo-200;
+}
+.form-section.theme-laboratorium .section-icon {
+    @apply bg-gradient-to-br from-indigo-500 to-indigo-700 text-white;
+}
+.form-section.theme-laboratorium .section-title {
+    @apply text-indigo-800;
+}
+
+.form-section.theme-radiologi {
+    @apply border-red-200;
+}
+.form-section.theme-radiologi .section-icon {
+    @apply bg-gradient-to-br from-red-500 to-red-700 text-white;
+}
+.form-section.theme-radiologi .section-title {
+    @apply text-red-800;
+}
+
+.form-section.theme-kamar {
+    @apply border-green-200;
+}
+.form-section.theme-kamar .section-icon {
+    @apply bg-gradient-to-br from-green-500 to-emerald-600 text-white;
+}
+.form-section.theme-kamar .section-title {
+    @apply text-green-800;
+}
+
+/* Layout optimal untuk layar laptop: lebih padat dan 3 kolom bila cukup lebar */
+.laptop-dense .modal-body {
+    @apply p-4;
+}
+
+.laptop-dense .form-section {
+    @apply p-4;
+}
+
+.laptop-dense .section-header {
+    @apply mb-3;
+}
+
+.laptop-dense .form-grid {
+    @apply gap-4;
+}
+
+/* Grid 3 kolom untuk laptop/desktop sedang (>=1024px) */
+@media (min-width: 1024px) {
+    .laptop-dense .form-grid {
+        @apply grid-cols-3;
+    }
+}
+
+/* Padatkan input-group agar lebih hemat ruang di laptop */
+.laptop-dense .input-group {
+    @apply space-y-1;
+}
+
+/* Compact variants for tighter spacing (Laboratorium modal) */
+.form-section.compact {
+    @apply p-4;
+}
+
+.section-header.compact {
+    @apply mb-4;
+}
+
+.form-grid.compact {
+    @apply gap-4;
+}
+
+.input-group.compact {
+    @apply space-y-1;
+}
+
 .input-group.col-span-2 {
     @apply md:col-span-2;
 }
@@ -342,7 +444,7 @@
 
 
 .modal-footer {
-    @apply flex justify-end space-x-3 p-6 bg-gray-50 border-t border-gray-200;
+    @apply sticky bottom-0 z-30 bg-white/90 backdrop-blur flex justify-end space-x-3 p-6 shadow-sm border-t border-gray-200;
 }
 
 .btn-secondary {
@@ -403,4 +505,67 @@
     .total-grid {
         @apply grid-cols-1;
     }
+}
+.laptop-dense .modal-body {
+  padding: 0.5rem 0.75rem;
+}
+
+/* Lebarkan modal di konteks laptop-dense agar input lebih longgar */
+.laptop-dense .modal-container {
+  /* Lebarkan sedikit agar tabel tidak perlu scroll horizontal */
+  max-width: 96vw;
+}
+
+/* Kurangi padding overlay di mode laptop-dense agar ruang lebih luas */
+.modal-overlay.laptop-dense {
+  padding: 0.5rem; /* p-2 */
+}
+
+/* Perpendek ukuran box input (atas-bawah) dan sedikit kecilkan padding horizontal */
+.laptop-dense .form-input,
+.laptop-dense .form-select {
+  padding-top: 0.5rem;   /* py-2 */
+  padding-bottom: 0.5rem;
+  padding-left: 0.75rem; /* px-3 */
+  padding-right: 0.75rem;
+  font-size: 0.875rem;   /* text-sm */
+}
+
+/* Perlebar input dengan mengecilkan lebar label pada baris input fleksibel */
+.laptop-dense .input-group .input-label {
+  width: 7rem; /* w-28, dari w-40 agar input lebih lebar */
+}
+
+/* Kecilkan jarak antar elemen dalam satu baris input fleksibel */
+.laptop-dense .input-group {
+  gap: 0.75rem; /* gap-3 */
+}
+
+.laptop-dense .form-section {
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+}
+
+.laptop-dense .section-header {
+  margin-bottom: 0.25rem;
+}
+
+.laptop-dense .section-title {
+  font-size: 0.95rem;
+}
+
+.laptop-dense .section-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.laptop-dense .modal-footer {
+  padding: 0.5rem 0.75rem;
+}
+
+.laptop-dense .btn-primary,
+.laptop-dense .btn-secondary {
+  padding: 0.375rem 0.6rem;
+  font-size: 0.75rem;
+  border-radius: 0.35rem;
 }
