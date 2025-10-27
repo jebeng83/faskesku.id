@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Opname;
-use App\Models\GudangBarang;
+use App\Models\RawatJalan\Gudangbarang as GudangBarang;
 use App\Models\DataBarang;
 use App\Models\Bangsal;
 use App\Models\RiwayatTransaksiGudangBarang;
@@ -355,6 +355,7 @@ class OpnameController extends Controller
                     'opname.nomihilang',
                     'opname.nomilebih',
                     'opname.keterangan',
+                    'opname.kd_bangsal',
                     'bangsal.nm_bangsal',
                     'opname.no_batch',
                     'opname.no_faktur'
@@ -382,6 +383,86 @@ class OpnameController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mencari data opname: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Batch delete data opname berdasarkan kombinasi kunci
+     * Required fields per item: kd_bangsal, tanggal, no_batch, no_faktur, kode_brng
+     */
+    public function destroy(Request $request)
+    {
+        try {
+            $items = $request->input('items');
+            if (!is_array($items) || count($items) === 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Daftar item yang akan dihapus kosong'
+                ], 422);
+            }
+
+            // Validasi setiap item
+            foreach ($items as $i => $item) {
+                if (!isset($item['kd_bangsal'], $item['tanggal'], $item['kode_brng'])) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Item ke-" . ($i+1) . " tidak valid: kd_bangsal, tanggal, dan kode_brng wajib diisi"
+                    ], 422);
+                }
+            }
+
+            DB::connection('fufufafa')->beginTransaction();
+
+            $deleted = 0;
+            foreach ($items as $item) {
+                $kdBangsal = $item['kd_bangsal'];
+                $tanggal = $item['tanggal'];
+                $kodeBrng = $item['kode_brng'];
+                $noBatch = $item['no_batch'] ?? '';
+                $noFaktur = $item['no_faktur'] ?? '';
+
+                $query = DB::connection('fufufafa')
+                    ->table('opname')
+                    ->where('kd_bangsal', $kdBangsal)
+                    ->whereDate('tanggal', $tanggal)
+                    ->where('kode_brng', $kodeBrng);
+
+                // Match no_batch (handle '', null)
+                $query->where(function($q) use ($noBatch) {
+                    if ($noBatch === '' || $noBatch === null) {
+                        $q->whereNull('no_batch')->orWhere('no_batch', '');
+                    } else {
+                        $q->where('no_batch', $noBatch);
+                    }
+                });
+
+                // Match no_faktur (handle '', null)
+                $query->where(function($q) use ($noFaktur) {
+                    if ($noFaktur === '' || $noFaktur === null) {
+                        $q->whereNull('no_faktur')->orWhere('no_faktur', '');
+                    } else {
+                        $q->where('no_faktur', $noFaktur);
+                    }
+                });
+
+                $count = $query->delete();
+
+                $deleted += $count;
+            }
+
+            DB::connection('fufufafa')->commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil menghapus data opname',
+                'deleted_count' => $deleted
+            ]);
+        } catch (\Exception $e) {
+            DB::connection('fufufafa')->rollback();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus data opname: ' . $e->getMessage()
             ], 500);
         }
     }
