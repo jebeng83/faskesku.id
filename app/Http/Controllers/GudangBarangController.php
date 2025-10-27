@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\GudangBarang;
+use App\Models\RawatJalan\Gudangbarang as GudangBarang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
@@ -37,10 +37,29 @@ class GudangBarangController extends Controller
             $noBatch = $request->no_batch;
             $noFaktur = $request->no_faktur;
 
-            // Update atau create stok menggunakan method dari model
-            $result = GudangBarang::updateOrCreateStok($kodeBarang, $kdBangsal, $noBatch, $noFaktur, $stok);
+            // Cari record existing berdasarkan composite key
+            $record = GudangBarang::where('kode_brng', $kodeBarang)
+                ->where('kd_bangsal', $kdBangsal)
+                ->where('no_batch', $noBatch)
+                ->where('no_faktur', $noFaktur)
+                ->first();
 
-            if ($result) {
+            if ($record) {
+                // Tambahkan stok
+                $record->stok = ($record->stok ?? 0) + $stok;
+                $record->save();
+            } else {
+                // Buat record baru
+                $record = GudangBarang::create([
+                    'kode_brng' => $kodeBarang,
+                    'kd_bangsal' => $kdBangsal,
+                    'stok' => $stok,
+                    'no_batch' => $noBatch,
+                    'no_faktur' => $noFaktur,
+                ]);
+            }
+
+            if ($record) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Stok gudang barang berhasil diupdate',
@@ -48,7 +67,7 @@ class GudangBarangController extends Controller
                         'kode_brng' => $kodeBarang,
                         'kd_bangsal' => $kdBangsal,
                         'stok_ditambahkan' => $stok,
-                        'total_stok' => GudangBarang::getTotalStok($kodeBarang, $kdBangsal)
+                        'total_stok' => GudangBarang::getTotalStokByBarangBangsal($kodeBarang, $kdBangsal)
                     ]
                 ]);
             } else {
@@ -90,7 +109,7 @@ class GudangBarangController extends Controller
             $kodeBarang = $request->kode_brng;
             $kdBangsal = $request->kd_bangsal;
 
-            $totalStok = GudangBarang::getTotalStok($kodeBarang, $kdBangsal);
+            $totalStok = GudangBarang::getTotalStokByBarangBangsal($kodeBarang, $kdBangsal);
 
             return response()->json([
                 'success' => true,
@@ -135,7 +154,7 @@ class GudangBarangController extends Controller
 
             $stokDetail = GudangBarang::where('kode_brng', $kodeBarang)
                 ->where('kd_bangsal', $kdBangsal)
-                ->with('dataBarang')
+                ->with('databarang')
                 ->get();
 
             return response()->json([

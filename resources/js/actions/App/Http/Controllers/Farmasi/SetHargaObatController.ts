@@ -1,5 +1,98 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @route '/api/set-harga-obat'
+*/
+const getPercentageDatad6bb6e085ea43cb89f88eead49a50c62 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getPercentageDatad6bb6e085ea43cb89f88eead49a50c62.url(options),
+    method: 'get',
+})
+
+getPercentageDatad6bb6e085ea43cb89f88eead49a50c62.definition = {
+    methods: ["get","head"],
+    url: '/api/set-harga-obat',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @route '/api/set-harga-obat'
+*/
+getPercentageDatad6bb6e085ea43cb89f88eead49a50c62.url = (options?: RouteQueryOptions) => {
+    return getPercentageDatad6bb6e085ea43cb89f88eead49a50c62.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @route '/api/set-harga-obat'
+*/
+getPercentageDatad6bb6e085ea43cb89f88eead49a50c62.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getPercentageDatad6bb6e085ea43cb89f88eead49a50c62.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @route '/api/set-harga-obat'
+*/
+getPercentageDatad6bb6e085ea43cb89f88eead49a50c62.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getPercentageDatad6bb6e085ea43cb89f88eead49a50c62.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @route '/farmasi/set-harga-obat/json'
+*/
+const getPercentageData3f776a6ffcf1045714a07bb1ca44f250 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getPercentageData3f776a6ffcf1045714a07bb1ca44f250.url(options),
+    method: 'get',
+})
+
+getPercentageData3f776a6ffcf1045714a07bb1ca44f250.definition = {
+    methods: ["get","head"],
+    url: '/farmasi/set-harga-obat/json',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @route '/farmasi/set-harga-obat/json'
+*/
+getPercentageData3f776a6ffcf1045714a07bb1ca44f250.url = (options?: RouteQueryOptions) => {
+    return getPercentageData3f776a6ffcf1045714a07bb1ca44f250.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @route '/farmasi/set-harga-obat/json'
+*/
+getPercentageData3f776a6ffcf1045714a07bb1ca44f250.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getPercentageData3f776a6ffcf1045714a07bb1ca44f250.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @route '/farmasi/set-harga-obat/json'
+*/
+getPercentageData3f776a6ffcf1045714a07bb1ca44f250.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getPercentageData3f776a6ffcf1045714a07bb1ca44f250.url(options),
+    method: 'head',
+})
+
+export const getPercentageData = {
+    '/api/set-harga-obat': getPercentageDatad6bb6e085ea43cb89f88eead49a50c62,
+    '/farmasi/set-harga-obat/json': getPercentageData3f776a6ffcf1045714a07bb1ca44f250,
+}
+
+/**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::storePenjualanPerBarang
 * @see app/Http/Controllers/Farmasi/SetHargaObatController.php:291
 * @route '/farmasi/set-penjualan-barang'
@@ -254,50 +347,6 @@ showPenjualanPerJenis.head = (args: { kdjns: string | number } | [kdjns: string 
 })
 
 /**
-* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
-* @route '/farmasi/set-harga-obat/json'
-*/
-export const getPercentageData = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: getPercentageData.url(options),
-    method: 'get',
-})
-
-getPercentageData.definition = {
-    methods: ["get","head"],
-    url: '/farmasi/set-harga-obat/json',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
-* @route '/farmasi/set-harga-obat/json'
-*/
-getPercentageData.url = (options?: RouteQueryOptions) => {
-    return getPercentageData.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
-* @route '/farmasi/set-harga-obat/json'
-*/
-getPercentageData.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: getPercentageData.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
-* @route '/farmasi/set-harga-obat/json'
-*/
-getPercentageData.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: getPercentageData.url(options),
-    method: 'head',
-})
-
-/**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::index
 * @see app/Http/Controllers/Farmasi/SetHargaObatController.php:18
 * @route '/farmasi/set-harga-obat'
@@ -495,6 +544,6 @@ destroyPenjualanPerJenis.delete = (args: { kdjns: string | number } | [kdjns: st
     method: 'delete',
 })
 
-const SetHargaObatController = { storePenjualanPerBarang, showPenjualanPerBarang, destroyPenjualanPerBarang, showPenjualanUmum, showPenjualanPerJenis, getPercentageData, index, update, updatePenjualanUmum, storePenjualanPerJenis, destroyPenjualanPerJenis }
+const SetHargaObatController = { getPercentageData, storePenjualanPerBarang, showPenjualanPerBarang, destroyPenjualanPerBarang, showPenjualanUmum, showPenjualanPerJenis, index, update, updatePenjualanUmum, storePenjualanPerJenis, destroyPenjualanPerJenis }
 
 export default SetHargaObatController

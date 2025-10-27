@@ -101,6 +101,18 @@ class MenuSeeder extends Seeder
             'description' => 'Modul farmasi dan pengelolaan obat'
         ]);
 
+        // Bridging PCare root menu -> navigates to PCare Menu page
+        $pcare = Menu::create([
+            'name' => 'Briding Pcare',
+            'slug' => 'pcare',
+            'icon' => 'fas fa-link',
+            'route' => 'pcare.index',
+            'url' => route('pcare.index'),
+            'sort_order' => 8,
+            'is_active' => true,
+            'description' => 'Bridging ke layanan PCare BPJS'
+        ]);
+
         // Master Data sub-menus
         Menu::create([
             'name' => 'Data Pasien',

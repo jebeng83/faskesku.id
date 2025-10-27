@@ -12,6 +12,12 @@ import dokter from './dokter'
 import permintaanLab from './permintaan-lab'
 import radiologiTests from './radiologi-tests'
 import permintaanRadiologi from './permintaan-radiologi'
+import opname from './opname'
+import pembelian from './pembelian'
+import barang from './barang'
+import databarang from './databarang'
+import gudangbarang from './gudangbarang'
+import pcare from './pcare'
 import tarifTindakan from './tarif-tindakan'
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
@@ -101,6 +107,50 @@ labTests.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::setHargaObat
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @route '/api/set-harga-obat'
+*/
+export const setHargaObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: setHargaObat.url(options),
+    method: 'get',
+})
+
+setHargaObat.definition = {
+    methods: ["get","head"],
+    url: '/api/set-harga-obat',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::setHargaObat
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @route '/api/set-harga-obat'
+*/
+setHargaObat.url = (options?: RouteQueryOptions) => {
+    return setHargaObat.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::setHargaObat
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @route '/api/set-harga-obat'
+*/
+setHargaObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: setHargaObat.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::setHargaObat
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @route '/api/set-harga-obat'
+*/
+setHargaObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: setHargaObat.url(options),
+    method: 'head',
+})
+
 const api = {
     employees: Object.assign(employees, employees),
     penjab: Object.assign(penjab, penjab),
@@ -116,6 +166,13 @@ const api = {
     permintaanLab: Object.assign(permintaanLab, permintaanLab),
     radiologiTests: Object.assign(radiologiTests, radiologiTests),
     permintaanRadiologi: Object.assign(permintaanRadiologi, permintaanRadiologi),
+    opname: Object.assign(opname, opname),
+    pembelian: Object.assign(pembelian, pembelian),
+    barang: Object.assign(barang, barang),
+    databarang: Object.assign(databarang, databarang),
+    setHargaObat: Object.assign(setHargaObat, setHargaObat),
+    gudangbarang: Object.assign(gudangbarang, gudangbarang),
+    pcare: Object.assign(pcare, pcare),
     tarifTindakan: Object.assign(tarifTindakan, tarifTindakan),
 }
 

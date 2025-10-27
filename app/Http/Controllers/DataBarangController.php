@@ -303,23 +303,10 @@ class DataBarangController extends Controller
     public function updateHargaJual(Request $request, $kode_brng)
     {
         try {
-            // Validasi input
-            $validated = $request->validate([
-                'kode_brng' => 'required|string',
-                'h_beli' => 'required|numeric|min:0',
-                'ralan' => 'required|numeric|min:0',
-                'kelas1' => 'required|numeric|min:0',
-                'kelas2' => 'required|numeric|min:0',
-                'kelas3' => 'required|numeric|min:0',
-                'utama' => 'required|numeric|min:0',
-                'vip' => 'required|numeric|min:0',
-                'vvip' => 'required|numeric|min:0',
-                'beliluar' => 'required|numeric|min:0',
-                'jualbebas' => 'required|numeric|min:0',
-                'karyawan' => 'required|numeric|min:0'
-            ]);
+            // Cek apakah frontend mengirim harga jual lengkap (mode lama) atau hanya base harga (mode baru)
+            $sendManualPrices = $request->has(['ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan']);
 
-            // Cek apakah data barang ada
+            // Ambil data barang terlebih dahulu (untuk kdjns dan fallback dasar/h_beli)
             $dataBarang = DB::connection('fufufafa')
                 ->table('databarang')
                 ->where('kode_brng', $kode_brng)
@@ -332,31 +319,28 @@ class DataBarangController extends Controller
                 ], 404);
             }
 
-            // Update harga beli dan semua harga jual
-            DB::connection('fufufafa')
-                ->table('databarang')
-                ->where('kode_brng', $kode_brng)
-                ->update([
-                    'h_beli' => $validated['h_beli'],
-                    'ralan' => $validated['ralan'],
-                    'kelas1' => $validated['kelas1'],
-                    'kelas2' => $validated['kelas2'],
-                    'kelas3' => $validated['kelas3'],
-                    'utama' => $validated['utama'],
-                    'vip' => $validated['vip'],
-                    'vvip' => $validated['vvip'],
-                    'beliluar' => $validated['beliluar'],
-                    'jualbebas' => $validated['jualbebas'],
-                    'karyawan' => $validated['karyawan']
+            if ($sendManualPrices) {
+                // Mode lama: validasi angka harga jual yang sudah dihitung oleh frontend
+                $validated = $request->validate([
+                    'kode_brng' => 'required|string',
+                    'h_beli' => 'required|numeric|min:0',
+                    'ralan' => 'required|numeric|min:0',
+                    'kelas1' => 'required|numeric|min:0',
+                    'kelas2' => 'required|numeric|min:0',
+                    'kelas3' => 'required|numeric|min:0',
+                    'utama' => 'required|numeric|min:0',
+                    'vip' => 'required|numeric|min:0',
+                    'vvip' => 'required|numeric|min:0',
+                    'beliluar' => 'required|numeric|min:0',
+                    'jualbebas' => 'required|numeric|min:0',
+                    'karyawan' => 'required|numeric|min:0'
                 ]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Harga jual berhasil diupdate berdasarkan harga beli terbaru',
-                'data' => [
-                    'kode_brng' => $kode_brng,
-                    'h_beli' => $validated['h_beli'],
-                    'harga_jual' => [
+                DB::connection('fufufafa')
+                    ->table('databarang')
+                    ->where('kode_brng', $kode_brng)
+                    ->update([
+                        'h_beli' => $validated['h_beli'],
                         'ralan' => $validated['ralan'],
                         'kelas1' => $validated['kelas1'],
                         'kelas2' => $validated['kelas2'],
@@ -367,6 +351,145 @@ class DataBarangController extends Controller
                         'beliluar' => $validated['beliluar'],
                         'jualbebas' => $validated['jualbebas'],
                         'karyawan' => $validated['karyawan']
+                    ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Harga jual berhasil diupdate (manual) berdasarkan harga beli terbaru',
+                    'data' => [
+                        'kode_brng' => $kode_brng,
+                        'h_beli' => $validated['h_beli'],
+                        'harga_jual' => [
+                            'ralan' => $validated['ralan'],
+                            'kelas1' => $validated['kelas1'],
+                            'kelas2' => $validated['kelas2'],
+                            'kelas3' => $validated['kelas3'],
+                            'utama' => $validated['utama'],
+                            'vip' => $validated['vip'],
+                            'vvip' => $validated['vvip'],
+                            'beliluar' => $validated['beliluar'],
+                            'jualbebas' => $validated['jualbebas'],
+                            'karyawan' => $validated['karyawan']
+                        ]
+                    ]
+                ]);
+            }
+
+            // Mode baru: frontend hanya mengirim base harga jual. Backend akan menghitung harga jual berdasarkan konfigurasi set_harga_obat.
+            $validated = $request->validate([
+                'kode_brng' => 'required|string',
+                'h_beli' => 'required|numeric|min:0',
+                // base harga dapat dikirim dengan beberapa nama field; semuanya opsional
+                'baseHargaJual' => 'nullable|numeric|min:0',
+                'base_harga_jual' => 'nullable|numeric|min:0',
+                'harga_dasar' => 'nullable|numeric|min:0',
+            ]);
+
+            // Ambil konfigurasi set_harga_obat
+            $cfg = DB::connection('fufufafa')
+                ->table('set_harga_obat')
+                ->select('setharga', 'hargadasar', 'ppn')
+                ->first();
+
+            $setharga = $cfg->setharga ?? 'Umum';
+            $hargadasarCfg = $cfg->hargadasar ?? 'Harga Beli';
+            $ppn = $cfg->ppn ?? 'Yes';
+
+            // Tentukan base harga: prioritas ke baseHargaJual (dasar hasil harga beli – diskon) yang dikirim dari frontend
+            $baseFromRequest = $validated['baseHargaJual'] ?? $validated['base_harga_jual'] ?? $validated['harga_dasar'] ?? null;
+            if ($baseFromRequest !== null) {
+                $base = (float) $baseFromRequest;
+            } else {
+                // Fallback ke konfigurasi hargadasar
+                if ($hargadasarCfg === 'Harga Beli') {
+                    $base = (float)($validated['h_beli'] ?? $dataBarang->h_beli ?? $dataBarang->dasar ?? 0);
+                } else {
+                    // Harga Diskon: gunakan kolom dasar sebagai representasi harga setelah diskon
+                    $base = (float)($dataBarang->dasar ?? $validated['h_beli'] ?? 0);
+                }
+            }
+
+            // Ambil persentase sesuai mode
+            $persen = null;
+            if ($setharga === 'Umum') {
+                $persen = DB::connection('fufufafa')
+                    ->table('setpenjualanumum')
+                    ->select('ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan')
+                    ->first();
+            } elseif ($setharga === 'Per Jenis') {
+                if (!empty($dataBarang->kdjns)) {
+                    $persen = DB::connection('fufufafa')
+                        ->table('setpenjualan')
+                        ->select('ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan')
+                        ->where('kdjns', $dataBarang->kdjns)
+                        ->first();
+                }
+            } elseif ($setharga === 'Per Barang') {
+                $persen = DB::connection('fufufafa')
+                    ->table('setpenjualanperbarang')
+                    ->select('ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan')
+                    ->where('kode_brng', $kode_brng)
+                    ->first();
+            }
+
+            // Normalisasi persentase (fallback 0 jika tidak tersedia)
+            $ps = [
+                'ralan' => (float)($persen->ralan ?? 0),
+                'kelas1' => (float)($persen->kelas1 ?? 0),
+                'kelas2' => (float)($persen->kelas2 ?? 0),
+                'kelas3' => (float)($persen->kelas3 ?? 0),
+                'utama' => (float)($persen->utama ?? 0),
+                'vip' => (float)($persen->vip ?? 0),
+                'vvip' => (float)($persen->vvip ?? 0),
+                'beliluar' => (float)($persen->beliluar ?? 0),
+                'jualbebas' => (float)($persen->jualbebas ?? 0),
+                'karyawan' => (float)($persen->karyawan ?? 0),
+            ];
+
+            // Fungsi hitung harga jual dari base dan persen + PPN jika diaktifkan
+            $apply = function (float $b, float $percent) use ($ppn): float {
+                $harga = $b * (1.0 + ($percent / 100.0));
+                if ($ppn === 'Yes') { $harga *= 1.11; }
+                return round($harga, 2);
+            };
+
+            $updates = [
+                'h_beli' => $validated['h_beli'],
+                'ralan' => $apply($base, $ps['ralan']),
+                'kelas1' => $apply($base, $ps['kelas1']),
+                'kelas2' => $apply($base, $ps['kelas2']),
+                'kelas3' => $apply($base, $ps['kelas3']),
+                'utama' => $apply($base, $ps['utama']),
+                'vip' => $apply($base, $ps['vip']),
+                'vvip' => $apply($base, $ps['vvip']),
+                'beliluar' => $apply($base, $ps['beliluar']),
+                'jualbebas' => $apply($base, $ps['jualbebas']),
+                'karyawan' => $apply($base, $ps['karyawan']),
+            ];
+
+            DB::connection('fufufafa')
+                ->table('databarang')
+                ->where('kode_brng', $kode_brng)
+                ->update($updates);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Harga jual berhasil dihitung dari baseHargaJual dan diperbarui sesuai konfigurasi',
+                'data' => [
+                    'kode_brng' => $kode_brng,
+                    'base' => $base,
+                    'config' => [ 'setharga' => $setharga, 'hargadasar' => $hargadasarCfg, 'ppn' => $ppn ],
+                    'harga_jual' => [
+                        'ralan' => $updates['ralan'],
+                        'kelas1' => $updates['kelas1'],
+                        'kelas2' => $updates['kelas2'],
+                        'kelas3' => $updates['kelas3'],
+                        'utama' => $updates['utama'],
+                        'vip' => $updates['vip'],
+                        'vvip' => $updates['vvip'],
+                        'beliluar' => $updates['beliluar'],
+                        'jualbebas' => $updates['jualbebas'],
+                        'karyawan' => $updates['karyawan']
                     ]
                 ]
             ]);

@@ -18,6 +18,27 @@ class GolonganBarangController
         $perPage = (int) $request->input('perPage', 10);
         if ($perPage <= 0) { $perPage = 10; }
 
+        // Jika klien meminta JSON (dropdown/selector), kembalikan data sederhana
+        if ($request->wantsJson()) {
+            $query = DB::table('golongan_barang')
+                ->select('kode', 'nama');
+
+            if ($q !== '') {
+                $query->where(function ($w) use ($q) {
+                    $w->where('kode', 'like', "%$q%")
+                      ->orWhere('nama', 'like', "%$q%");
+                });
+            }
+
+            $items = $query->orderBy('kode')
+                ->limit(100)
+                ->get();
+
+            return response()->json([
+                'items' => $items,
+            ]);
+        }
+
         $query = DB::table('golongan_barang');
         if ($q !== '') {
             $query->where(function ($w) use ($q) {

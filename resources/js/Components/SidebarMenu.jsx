@@ -85,6 +85,19 @@ export default function SidebarMenu({ collapsed = false }) {
                 return "/farmasi";
             }
         }
+        // Special case: PCare root menu should navigate directly to PCare Index
+        if (
+            (menu.slug && (menu.slug === "pcare" || menu.slug === "bridging-pcare")) ||
+            (menu.name && menu.name.toLowerCase().includes("pcare"))
+        ) {
+            try {
+                // gunakan URL relatif agar mengikuti origin aktif
+                return route("pcare.index", {}, false);
+            } catch (error) {
+                console.warn("Route pcare.index not found, falling back to /pcare");
+                return "/pcare";
+            }
+        }
 		if (menu.url) {
 			try {
 				const currentOrigin = window.location.origin;

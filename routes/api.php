@@ -13,6 +13,13 @@ use App\Http\Controllers\RawatJalan\ResepController;
 use App\Http\Controllers\API\DokterController;
 use App\Http\Controllers\PermintaanLabController;
 use App\Http\Controllers\PermintaanRadiologiController;
+use App\Http\Controllers\OpnameController;
+use App\Http\Controllers\PembelianController;
+use App\Http\Controllers\BarangController;
+use App\Http\Controllers\DataBarangController;
+use App\Http\Controllers\GudangBarangController;
+use App\Http\Controllers\Farmasi\SetHargaObatController;
+use App\Http\Controllers\Pcare\PcareController;
 
 Route::post('/employees', [EmployeeController::class, 'store'])->name('api.employees.store');
 Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('api.employees.destroy');
@@ -109,3 +116,57 @@ Route::post('/permintaan-radiologi', [PermintaanRadiologiController::class, 'sto
 Route::get('/permintaan-radiologi/rawat/{no_rawat}', [PermintaanRadiologiController::class, 'getByNoRawat'])->where('no_rawat', '.*')->name('api.permintaan-radiologi.by-rawat');
 Route::get('/permintaan-radiologi/riwayat/{no_rawat}', [PermintaanRadiologiController::class, 'getRiwayat'])->where('no_rawat', '.*')->name('api.permintaan-radiologi.riwayat');
 Route::delete('/permintaan-radiologi/{noorder}', [PermintaanRadiologiController::class, 'destroy'])->name('api.permintaan-radiologi.destroy');
+
+// Farmasi - Stok Opname API Routes
+Route::prefix('opname')->group(function () {
+    Route::get('/lokasi', [OpnameController::class, 'getLokasi'])->name('api.opname.lokasi');
+    Route::get('/data-barang', [OpnameController::class, 'getDataBarang'])->name('api.opname.data-barang');
+    Route::post('/store', [OpnameController::class, 'store'])->name('api.opname.store');
+    // Listing & pencarian data opname (untuk halaman Data Opname)
+    Route::get('/list', [OpnameController::class, 'getOpnameData'])->name('api.opname.list');
+    Route::get('/search', [OpnameController::class, 'searchOpnameData'])->name('api.opname.search');
+    Route::delete('/delete', [OpnameController::class, 'destroy'])->name('api.opname.delete');
+});
+
+// Farmasi - Pembelian Obat API Routes
+Route::prefix('pembelian')->group(function () {
+    Route::get('/supplier', [PembelianController::class, 'getSupplier'])->name('api.pembelian.supplier');
+    Route::get('/petugas', [PembelianController::class, 'getPetugas'])->name('api.pembelian.petugas');
+    Route::get('/lokasi', [PembelianController::class, 'getLokasi'])->name('api.pembelian.lokasi');
+    Route::get('/akun-bayar', [PembelianController::class, 'getAkunBayar'])->name('api.pembelian.akun-bayar');
+    Route::get('/generate-no-faktur', [PembelianController::class, 'generateNoFaktur'])->name('api.pembelian.generate-no-faktur');
+    Route::post('/store', [PembelianController::class, 'store'])->name('api.pembelian.store');
+});
+
+// Barang search endpoint (used by Pembelian Obat page)
+Route::get('/barang/search', [BarangController::class, 'search'])->name('api.barang.search');
+
+// DataBarang price update endpoints (used by Pembelian Obat page)
+Route::put('/databarang/update-harga/{kode_brng}', [DataBarangController::class, 'updateHarga'])
+    ->where('kode_brng', '.*')
+    ->name('api.databarang.update-harga');
+Route::put('/databarang/update-harga-jual/{kode_brng}', [DataBarangController::class, 'updateHargaJual'])
+    ->where('kode_brng', '.*')
+    ->name('api.databarang.update-harga-jual');
+
+// Set Harga Obat percentages (for calculating harga jual from pembelian)
+Route::get('/set-harga-obat', [SetHargaObatController::class, 'getPercentageData'])->name('api.set-harga-obat');
+
+// Gudang Barang stock update
+Route::post('/gudangbarang/update-stok', [GudangBarangController::class, 'updateStok'])->name('api.gudangbarang.update-stok');
+
+Route::prefix('pcare')->group(function () {
+    Route::get('/ping', [PcareController::class, 'ping'])->name('api.pcare.ping');
+    Route::match(['get','post','put','delete'], '/proxy/{endpoint}', [PcareController::class, 'proxy'])
+        ->where('endpoint','.*')
+        ->name('api.pcare.proxy');
+    Route::get('/dokter', [PcareController::class, 'getDokter'])->name('api.pcare.dokter');
+    Route::get('/faskes', [PcareController::class, 'getFaskes'])->name('api.pcare.faskes');
+    Route::get('/poli', [PcareController::class, 'getPoli'])->name('api.pcare.poli');
+    Route::get('/kesadaran', [PcareController::class, 'getKesadaran'])->name('api.pcare.kesadaran');
+    Route::get('/dpho', [PcareController::class, 'getDpho'])->name('api.pcare.dpho');
+    Route::get('/provider', [PcareController::class, 'getProvider'])->name('api.pcare.provider');
+    Route::get('/spesialis', [PcareController::class, 'getSpesialis'])->name('api.pcare.spesialis');
+    Route::get('/peserta/{noka}/{tglPelayanan}', [PcareController::class, 'pesertaByNoKartu'])->name('api.pcare.peserta-nokartu');
+    Route::post('/kunjungan', [PcareController::class, 'daftarKunjungan'])->name('api.pcare.kunjungan.store');
+});
