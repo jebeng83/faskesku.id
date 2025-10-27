@@ -1,10 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
-<<<<<<< HEAD
-* @see routes/web.php:281
-=======
-* @see routes/web.php:277
->>>>>>> main
+* @see routes/web.php:300
 * @route '/farmasi/supplier'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -18,11 +14,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-* @see routes/web.php:281
-=======
-* @see routes/web.php:277
->>>>>>> main
+* @see routes/web.php:300
 * @route '/farmasi/supplier'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -30,29 +22,23 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-* @see routes/web.php:281
-=======
-* @see routes/web.php:277
->>>>>>> main
+* @see routes/web.php:300
 * @route '/farmasi/supplier'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
+
 /**
-<<<<<<< HEAD
-* @see routes/web.php:281
-=======
-* @see routes/web.php:277
->>>>>>> main
+* @see routes/web.php:300
 * @route '/farmasi/supplier'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
 })
+
 const supplier = {
     index: Object.assign(index, index),
 }
