@@ -27,7 +27,9 @@ class JnsPerawatanLab extends Model
         'menejemen',
         'total_byr',
         'kd_pj',
-        'status'
+        'status',
+        'kelas',
+        'kategori'
     ];
 
     protected $casts = [
@@ -88,5 +90,28 @@ class JnsPerawatanLab extends Model
     public function permintaanDetailPermintaanLab()
     {
         return $this->hasMany(PermintaanDetailPermintaanLab::class, 'kd_jenis_prw', 'kd_jenis_prw');
+    }
+
+    /**
+     * Generate kode otomatis untuk pemeriksaan laboratorium
+     * Format: LA000001, LA000002, dst.
+     */
+    public static function generateKodeJenisPerawatan()
+    {
+        // Ambil kode terakhir yang dimulai dengan 'LA'
+        $last = self::where('kd_jenis_prw', 'like', 'LA%')
+            ->orderBy('kd_jenis_prw', 'desc')
+            ->first();
+
+        if (!$last) {
+            return 'LA000001';
+        }
+
+        // Ekstrak angka dan increment
+        $lastCode = $last->kd_jenis_prw;
+        $number = (int)substr($lastCode, 2);
+        $next = $number + 1;
+
+        return 'LA' . str_pad((string)$next, 6, '0', STR_PAD_LEFT);
     }
 }

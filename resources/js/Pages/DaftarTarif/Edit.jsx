@@ -3,12 +3,14 @@ import { Head, Link, useForm, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
 
-export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris }) {
+export default function Edit({ jnsPerawatan, polikliniks, bangsals, penjaabs, kategoris, category = 'rawat-jalan' }) {
     const { data, setData, put, processing, errors, reset } = useForm({
         kd_jenis_prw: jnsPerawatan?.kd_jenis_prw || '',
         nm_perawatan: jnsPerawatan?.nm_perawatan || '',
         kd_kategori: jnsPerawatan?.kd_kategori || '',
         kd_poli: jnsPerawatan?.kd_poli || '',
+        kd_bangsal: jnsPerawatan?.kd_bangsal || '',
+        kelas: jnsPerawatan?.kelas || '',
         kd_pj: jnsPerawatan?.kd_pj || '',
         status: jnsPerawatan?.status || '1',
         material: jnsPerawatan?.material || '0',
@@ -35,7 +37,7 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
         if (!kdKategori) return;
         
         try {
-            const response = await fetch(route('daftar-tarif.generate-kode') + `?kd_kategori=${kdKategori}&category=rawat-jalan`);
+            const response = await fetch(route('daftar-tarif.generate-kode') + `?kd_kategori=${kdKategori}&category=${category}`);
             const result = await response.json();
             if (result.success) {
                 setData('kd_jenis_prw', result.kode);
@@ -56,9 +58,13 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
 
     // Handle numeric input with proper zero handling
     const handleNumericInput = (field, value) => {
-        // Allow empty string or valid numbers
-        if (value === '' || (!isNaN(value) && value >= 0)) {
-            setData(field, value);
+        // Allow empty string or valid numbers, but store as integers
+        if (value === '') {
+            setData(field, '');
+        } else if (!isNaN(value) && value >= 0) {
+            // Parse as integer to avoid decimals
+            const intValue = parseInt(value) || 0;
+            setData(field, intValue.toString());
         }
     };
 
@@ -66,10 +72,12 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
     const getDisplayValue = (field) => {
         if (focusedField === field) {
             // When focused, show actual value (empty if 0)
-            return data[field] === '0' ? '' : data[field];
+            return data[field] === '0' || data[field] === 0 ? '' : data[field];
         }
-        // When not focused, show 0 if empty
-        return data[field] || '0';
+        // When not focused, show 0 if empty, ensure integer display
+        const value = data[field] || '0';
+        const intValue = parseInt(value) || 0;
+        return intValue.toString();
     };
 
     // Handle focus
@@ -88,12 +96,12 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
 
     // Calculate totals automatically
     useEffect(() => {
-        const material = parseFloat(data.material) || 0;
-        const bhp = parseFloat(data.bhp) || 0;
-        const tarif_tindakandr = parseFloat(data.tarif_tindakandr) || 0;
-        const tarif_tindakanpr = parseFloat(data.tarif_tindakanpr) || 0;
-        const kso = parseFloat(data.kso) || 0;
-        const menejemen = parseFloat(data.menejemen) || 0;
+        const material = parseInt(data.material) || 0;
+        const bhp = parseInt(data.bhp) || 0;
+        const tarif_tindakandr = parseInt(data.tarif_tindakandr) || 0;
+        const tarif_tindakanpr = parseInt(data.tarif_tindakanpr) || 0;
+        const kso = parseInt(data.kso) || 0;
+        const menejemen = parseInt(data.menejemen) || 0;
 
         const total_dokter = material + bhp + tarif_tindakandr + kso + menejemen;
         const total_perawat = material + bhp + tarif_tindakanpr + kso + menejemen;
@@ -118,23 +126,25 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
     const handleSubmit = (e) => {
         e.preventDefault();
         
-        // Use POST with method spoofing to avoid PUT method error
-        const formData = {
+        // Debug: Log the data being sent
+        console.log('Form data being sent:', data);
+        console.log('Status value:', data.status);
+        
+        // Prepare data with category
+        const submitData = {
             ...data,
-            _method: 'PUT'
+            category: category
         };
         
-        router.post(route('daftar-tarif.update', jnsPerawatan.kd_jenis_prw), formData, {
+        console.log('Final submit data:', submitData);
+        
+        // Use router.put with the prepared data
+        router.put(route('daftar-tarif.update', jnsPerawatan.kd_jenis_prw), submitData, {
             onSuccess: () => {
                 // Success handled by redirect
             },
             onError: (errors) => {
-                // Silent error handling - only reload on CSRF issues
-                if (errors.csrf) {
-                    router.reload();
-                }
-                // Don't show other errors to user since data is still being saved
-                console.log('Update completed despite method error');
+                console.log('Validation errors:', errors);
             },
         });
     };
@@ -287,27 +297,76 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
                                         )}
                                     </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Poliklinik <span className="text-red-500">*</span>
-                                        </label>
-                                        <select
-                                            value={data.kd_poli}
-                                            onChange={(e) => setData('kd_poli', e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            required
-                                        >
-                                            <option value="">Pilih Poliklinik</option>
-                                            {polikliniks.map((poli) => (
-                                                <option key={poli.kd_poli} value={poli.kd_poli}>
-                                                    {poli.nm_poli}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {errors.kd_poli && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.kd_poli}</p>
-                                        )}
-                                    </div>
+                                    {category === 'rawat-inap' ? (
+                                        <>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Bangsal <span className="text-red-500">*</span>
+                                                </label>
+                                                <select
+                                                    value={data.kd_bangsal}
+                                                    onChange={(e) => setData('kd_bangsal', e.target.value)}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    required
+                                                >
+                                                    <option value="">Pilih Bangsal</option>
+                                                    {bangsals?.map((bangsal) => (
+                                                        <option key={bangsal.kd_bangsal} value={bangsal.kd_bangsal}>
+                                                            {bangsal.nm_bangsal}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                {errors.kd_bangsal && (
+                                                    <p className="mt-1 text-sm text-red-600">{errors.kd_bangsal}</p>
+                                                )}
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Kelas <span className="text-red-500">*</span>
+                                                </label>
+                                                <select
+                                                    value={data.kelas}
+                                                    onChange={(e) => setData('kelas', e.target.value)}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    required
+                                                >
+                                                    <option value="">Pilih Kelas</option>
+                                                    <option value="Kelas 1">Kelas 1</option>
+                                                    <option value="Kelas 2">Kelas 2</option>
+                                                    <option value="Kelas 3">Kelas 3</option>
+                                                    <option value="Kelas Utama">Kelas Utama</option>
+                                                    <option value="Kelas VIP">Kelas VIP</option>
+                                                    <option value="Kelas VVIP">Kelas VVIP</option>
+                                                </select>
+                                                {errors.kelas && (
+                                                    <p className="mt-1 text-sm text-red-600">{errors.kelas}</p>
+                                                )}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Poliklinik <span className="text-red-500">*</span>
+                                            </label>
+                                            <select
+                                                value={data.kd_poli}
+                                                onChange={(e) => setData('kd_poli', e.target.value)}
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                required
+                                            >
+                                                <option value="">Pilih Poliklinik</option>
+                                                {polikliniks?.map((poli) => (
+                                                    <option key={poli.kd_poli} value={poli.kd_poli}>
+                                                        {poli.nm_poli}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            {errors.kd_poli && (
+                                                <p className="mt-1 text-sm text-red-600">{errors.kd_poli}</p>
+                                            )}
+                                        </div>
+                                    )}
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -333,16 +392,20 @@ export default function Edit({ jnsPerawatan, polikliniks, penjaabs, kategoris })
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Status
+                                            Status <span className="text-red-500">*</span>
                                         </label>
                                         <select
                                             value={data.status}
                                             onChange={(e) => setData('status', e.target.value)}
                                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            required
                                         >
                                             <option value="1">Aktif</option>
                                             <option value="0">Tidak Aktif</option>
                                         </select>
+                                        {errors.status && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.status}</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>

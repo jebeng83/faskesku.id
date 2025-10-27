@@ -164,6 +164,32 @@ class MenuSeeder extends Seeder
             'description' => 'Pengelolaan data spesialis medis'
         ]);
 
+        Menu::create([
+            'name' => 'Data Asuransi',
+            'slug' => 'data-asuransi',
+            'icon' => 'fas fa-shield-alt',
+            'route' => 'penjab.index',
+            'url' => route('penjab.index'),
+            'parent_id' => $masterData->id,
+            'sort_order' => 5,
+            'is_active' => true,
+            'permission_name' => 'penjab.view',
+            'description' => 'Pengelolaan data penjamin (asuransi)'
+        ]);
+
+        Menu::create([
+            'name' => 'Data Poliklinik',
+            'slug' => 'data-poliklinik',
+            'icon' => 'fas fa-clinic-medical',
+            'route' => 'poliklinik.index',
+            'url' => route('poliklinik.index'),
+            'parent_id' => $masterData->id,
+            'sort_order' => 6,
+            'is_active' => true,
+            'permission_name' => 'poliklinik.view',
+            'description' => 'Pengelolaan data poliklinik dan tarif registrasi'
+        ]);
+
         // Registration sub-menus
         Menu::create([
             'name' => 'Pendaftaran Pasien',

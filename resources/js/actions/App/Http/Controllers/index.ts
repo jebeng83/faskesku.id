@@ -27,6 +27,7 @@ import RehabilitasiMedikController from './RehabilitasiMedikController'
 import KategoriPerawatanController from './KategoriPerawatanController'
 import DaftarTarifController from './DaftarTarifController'
 import TarifTindakanController from './TarifTindakanController'
+<<<<<<< HEAD
 
 const Controllers = {
     API: Object.assign(API, API),
@@ -58,6 +59,37 @@ const Controllers = {
     KategoriPerawatanController: Object.assign(KategoriPerawatanController, KategoriPerawatanController),
     DaftarTarifController: Object.assign(DaftarTarifController, DaftarTarifController),
     TarifTindakanController: Object.assign(TarifTindakanController, TarifTindakanController),
+=======
+import Farmasi from './Farmasi'
+import PenjabController from './PenjabController'
+import PoliklinikController from './PoliklinikController'
+const Controllers = {
+    API: Object.assign(API, API),
+PermintaanLabController: Object.assign(PermintaanLabController, PermintaanLabController),
+MenuController: Object.assign(MenuController, MenuController),
+RawatJalan: Object.assign(RawatJalan, RawatJalan),
+PermintaanRadiologiController: Object.assign(PermintaanRadiologiController, PermintaanRadiologiController),
+AuthController: Object.assign(AuthController, AuthController),
+PatientController: Object.assign(PatientController, PatientController),
+RegistrationController: Object.assign(RegistrationController, RegistrationController),
+EmployeeController: Object.assign(EmployeeController, EmployeeController),
+DoctorController: Object.assign(DoctorController, DoctorController),
+SpesialisController: Object.assign(SpesialisController, SpesialisController),
+RegPeriksaController: Object.assign(RegPeriksaController, RegPeriksaController),
+ProfileController: Object.assign(ProfileController, ProfileController),
+RawatInapController: Object.assign(RawatInapController, RawatInapController),
+IGDController: Object.assign(IGDController, IGDController),
+KamarOperasiController: Object.assign(KamarOperasiController, KamarOperasiController),
+LaboratoriumController: Object.assign(LaboratoriumController, LaboratoriumController),
+RadiologiController: Object.assign(RadiologiController, RadiologiController),
+RehabilitasiMedikController: Object.assign(RehabilitasiMedikController, RehabilitasiMedikController),
+KategoriPerawatanController: Object.assign(KategoriPerawatanController, KategoriPerawatanController),
+DaftarTarifController: Object.assign(DaftarTarifController, DaftarTarifController),
+TarifTindakanController: Object.assign(TarifTindakanController, TarifTindakanController),
+Farmasi: Object.assign(Farmasi, Farmasi),
+PenjabController: Object.assign(PenjabController, PenjabController),
+PoliklinikController: Object.assign(PoliklinikController, PoliklinikController),
+>>>>>>> main
 }
 
 export default Controllers

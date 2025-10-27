@@ -1,9 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\ProfileController::show
-* @see app/Http/Controllers/ProfileController.php:14
-* @route '/profile'
-*/
+ * @see app/Http/Controllers/ProfileController.php:14
+ * @route '/profile'
+ */
 export const show = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(options),
     method: 'get',
@@ -16,28 +16,27 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\ProfileController::show
-* @see app/Http/Controllers/ProfileController.php:14
-* @route '/profile'
-*/
+ * @see app/Http/Controllers/ProfileController.php:14
+ * @route '/profile'
+ */
 show.url = (options?: RouteQueryOptions) => {
     return show.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\ProfileController::show
-* @see app/Http/Controllers/ProfileController.php:14
-* @route '/profile'
-*/
+ * @see app/Http/Controllers/ProfileController.php:14
+ * @route '/profile'
+ */
 show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\ProfileController::show
-* @see app/Http/Controllers/ProfileController.php:14
-* @route '/profile'
-*/
+ * @see app/Http/Controllers/ProfileController.php:14
+ * @route '/profile'
+ */
 show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(options),
     method: 'head',
@@ -45,9 +44,9 @@ show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\ProfileController::update
-* @see app/Http/Controllers/ProfileController.php:28
-* @route '/profile'
-*/
+ * @see app/Http/Controllers/ProfileController.php:28
+ * @route '/profile'
+ */
 export const update = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(options),
     method: 'put',
@@ -60,22 +59,23 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\ProfileController::update
-* @see app/Http/Controllers/ProfileController.php:28
-* @route '/profile'
-*/
+ * @see app/Http/Controllers/ProfileController.php:28
+ * @route '/profile'
+ */
 update.url = (options?: RouteQueryOptions) => {
     return update.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\ProfileController::update
-* @see app/Http/Controllers/ProfileController.php:28
-* @route '/profile'
-*/
+ * @see app/Http/Controllers/ProfileController.php:28
+ * @route '/profile'
+ */
 update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(options),
     method: 'put',
 })
+<<<<<<< HEAD
 
 /**
 * @see routes/web.php:129
@@ -121,6 +121,11 @@ const profile = {
     show: Object.assign(show, show),
     update: Object.assign(update, update),
     menu: Object.assign(menu, menu),
+=======
+const profile = {
+    show: Object.assign(show, show),
+update: Object.assign(update, update),
+>>>>>>> main
 }
 
 export default profile
