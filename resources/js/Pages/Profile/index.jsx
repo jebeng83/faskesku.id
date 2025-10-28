@@ -23,7 +23,7 @@ const containerVariants = {
 
 const cardsByTab = {
   app: [
-    { key: 'pref', title: 'Preferensi Sistem', desc: 'Pengaturan dasar aplikasi', href: '#' },
+    { key: 'pref', title: 'Preferensi Sistem', desc: 'Pengaturan dasar aplikasi', href: '/setting' },
     { key: 'tema', title: 'Tema & Tampilan', desc: 'Mode gelap, warna, layout', href: '#' },
     { key: 'integrasi', title: 'Integrasi & API', desc: 'Konfigurasi layanan eksternal', href: '#' },
     { key: 'info', title: 'Informasi Sistem', desc: 'Versi dan status modul', href: '#' },
@@ -35,6 +35,7 @@ const cardsByTab = {
   ],
   bpjs: [
     { key: 'pcare', title: 'Bridging PCare', desc: 'Menu modul PCare', href: '/pcare/setting' },
+    { key: 'mobilejkn', title: 'Setting Bridging Mobile JKN', desc: 'Konfigurasi Mobile JKN', href: '/pcare/setting-mobilejkn' },
     { key: 'vclaim', title: 'Bridging VClaim', desc: 'Konten akan hadir', href: '#' },
   ],
 };

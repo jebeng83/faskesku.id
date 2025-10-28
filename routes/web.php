@@ -19,6 +19,7 @@ use App\Http\Controllers\RadiologiController;
 use App\Http\Controllers\RehabilitasiMedikController;
 use App\Http\Controllers\Farmasi\IndustriFarmasiController;
 use App\Http\Controllers\Farmasi\DataSuplierController;
+use App\Http\Controllers\setting\SettingController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\SpesialisController;
 use App\Http\Controllers\DaftarTarifController;
@@ -49,6 +50,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
+
+    // Master Data landing page
+    Route::get('/master-data', function () {
+        return Inertia::render('MasterData/MenuUtama');
+    })->name('master-data.index');
 
     // Patient routes
     Route::resource('patients', PatientController::class);
@@ -145,6 +151,24 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/menu', function () {
         return Inertia::render('Profile/index');
     })->name('profile.menu');
+
+    // Application Settings (CRUD generic untuk tabel `setting`)
+    Route::prefix('setting')->name('setting.')->group(function () {
+        Route::get('/', [SettingController::class, 'index'])->name('index');
+        Route::get('/describe', [SettingController::class, 'describe'])->name('describe');
+        Route::post('/', [SettingController::class, 'store'])->name('store');
+        Route::put('/{id}', [SettingController::class, 'update'])->name('update');
+        Route::delete('/{id}', [SettingController::class, 'destroy'])->name('destroy');
+
+        // Legacy App Settings CRUD sesuai tabel `setting` (schema pada gambar)
+        Route::get('/app', [SettingController::class, 'appIndex'])->name('app.index');
+        Route::post('/app', [SettingController::class, 'appStore'])->name('app.store');
+        Route::put('/app/{nama_instansi}', [SettingController::class, 'appUpdate'])->name('app.update');
+        Route::delete('/app/{nama_instansi}', [SettingController::class, 'appDestroy'])->name('app.destroy');
+        // Stream blob untuk preview
+        Route::get('/app/{nama_instansi}/wallpaper', [SettingController::class, 'appWallpaper'])->name('app.wallpaper');
+        Route::get('/app/{nama_instansi}/logo', [SettingController::class, 'appLogo'])->name('app.logo');
+    });
 
     // Menu Management routes
     Route::resource('menus', MenuController::class);
@@ -356,6 +380,16 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('Pcare/ReferensiPcare/ReferensiKesadaran');
         })->name('referensi.kesadaran');
 
+        // Referensi Prognosa page (Inertia)
+        Route::get('/referensi/prognosa', function () {
+            return Inertia::render('Pcare/ReferensiPcare/ReferensiPrognosa');
+        })->name('referensi.prognosa');
+
+        // Referensi Tindakan page (Inertia)
+        Route::get('/referensi/tindakan', function () {
+            return Inertia::render('Pcare/ReferensiPcare/ReferensiTindakan');
+        })->name('referensi.tindakan');
+
         // Referensi DPHO page (Inertia)
         Route::get('/referensi/dpho', function () {
             return Inertia::render('Pcare/ReferensiPcare/ReferensiDpho');
@@ -371,6 +405,71 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('Pcare/ReferensiPcare/ReferensiSpesialis');
         })->name('referensi.spesialis');
 
+        // Referensi Sub Spesialis page (Inertia)
+        Route::get('/referensi/subspesialis', function () {
+            return Inertia::render('Pcare/ReferensiPcare/ReferensiSubSpesialis');
+        })->name('referensi.subspesialis');
+
+        // Referensi Sarana page (Inertia)
+        Route::get('/referensi/sarana', function () {
+            return Inertia::render('Pcare/ReferensiPcare/ReferensiSarana');
+        })->name('referensi.sarana');
+
+        // Referensi Khusus page (Inertia)
+        Route::get('/referensi/khusus', function () {
+            return Inertia::render('Pcare/ReferensiPcare/ReferensiKhusus');
+        })->name('referensi.khusus');
+
+        // Referensi Alergi page (Inertia)
+        Route::get('/referensi/alergi', function () {
+            return Inertia::render('Pcare/ReferensiPcare/ReferensiAlergi');
+        })->name('referensi.alergi');
+
+        // Referensi Status Pulang page (Inertia)
+        Route::get('/referensi/statuspulang', function () {
+            return Inertia::render('Pcare/ReferensiPcare/ReferensiStatusPulang');
+        })->name('referensi.statuspulang');
+
+        // Referensi Faskes Rujukan page (Inertia)
+        Route::get('/referensi/faskes-rujukan', function () {
+            return Inertia::render('Pcare/ReferensiPcare/ReferensiFaskesRujukan');
+        })->name('referensi.faskes-rujukan');
+
+        // Referensi Poli MobileJKN page (Inertia)
+        Route::get('/referensi-mobilejkn/poli', function () {
+            return Inertia::render('Pcare/ReferensiMobileJkn/ReferensiPoliMobileJkn');
+        })->name('referensi.mobilejkn.poli');
+
+        // Referensi Dokter MobileJKN page (Inertia)
+        Route::get('/referensi-mobilejkn/dokter', function () {
+            return Inertia::render('Pcare/ReferensiMobileJkn/ReferensiDokterMobileJkn');
+        })->name('referensi.mobilejkn.dokter');
+
+        // Layanan PCare: Cek Peserta by NIK (Inertia page)
+        Route::get('/data-peserta-by-nik', function () {
+            return Inertia::render('Pcare/LayananPcare/CekPesertaPcareNik');
+        })->name('layanan.cek-peserta-nik');
+
+        // Kegiatan Kelompok - Club Prolanis (Inertia page)
+        Route::get('/kelompok/club-prolanis', function () {
+            return Inertia::render('Pcare/KegiatanKelompok/ClubProlanis');
+        })->name('kelompok.club-prolanis');
+
+        // Kegiatan Kelompok - Form & daftar kegiatan (Inertia page)
+        Route::get('/kelompok/kegiatan', function () {
+            return Inertia::render('Pcare/KegiatanKelompok/KegiatanKelompok');
+        })->name('kelompok.kegiatan');
+
+        // Kegiatan Kelompok - Entri Kegiatan (Inertia page)
+        Route::get('/kelompok/entri', function () {
+            return Inertia::render('Pcare/KegiatanKelompok/EntriKegiatan');
+        })->name('kelompok.entri');
+
+        // Kegiatan Kelompok - Peserta Kegiatan (Inertia page)
+        Route::get('/kelompok/peserta-kegiatan', function () {
+            return Inertia::render('Pcare/KegiatanKelompok/PesertaKegiatan');
+        })->name('kelompok.peserta-kegiatan');
+
         // API: Get Diagnosa dari BPJS PCare
         Route::get('/api/diagnosa', [\App\Http\Controllers\Pcare\PcareController::class, 'getDiagnosa'])
             ->name('diagnosa.api');
@@ -383,6 +482,63 @@ Route::middleware('auth')->group(function () {
         Route::get('/api/poli', [\App\Http\Controllers\Pcare\PcareController::class, 'getPoli'])
             ->name('poli.api');
 
+        // API: Get Referensi Tindakan dari BPJS PCare
+        Route::get('/api/tindakan', [\App\Http\Controllers\Pcare\PcareController::class, 'getTindakan'])
+            ->name('tindakan.api');
+
+        // API: Get Peserta by NIK dari BPJS PCare
+        Route::get('/api/peserta/nik', [\App\Http\Controllers\Pcare\PcareController::class, 'pesertaByNik'])
+            ->name('peserta.nik.api');
+
+        // API: Get Peserta by No. Kartu (versi sederhana — tanpa tanggal pelayanan)
+        Route::get('/api/peserta/{noka}', [\App\Http\Controllers\Pcare\PcareController::class, 'getPeserta'])
+            ->where('noka', '.*')
+            ->name('peserta.noka.simple.api');
+
+        // API: Get Peserta by No. Kartu dan Tanggal Pelayanan
+        Route::get('/api/peserta/nokartu/{noka}/tgl/{tglPelayanan}', [\App\Http\Controllers\Pcare\PcareController::class, 'pesertaByNoKartu'])
+            ->where('noka', '.*')
+            ->where('tglPelayanan', '.*')
+            ->name('peserta.nokartu.api');
+
+        // API: Club Prolanis by jenis program (01=DM, 02=Hipertensi)
+        Route::get('/api/kelompok/club/{kdProgram}', [\App\Http\Controllers\Pcare\PcareController::class, 'getClubProlanis'])
+            ->where('kdProgram', '.*')
+            ->name('kelompok.club.api');
+
+        // API: Kegiatan Kelompok berdasarkan bulan (tanggal dd-mm-yyyy)
+        Route::get('/api/kelompok/kegiatan/{tanggal}', [\App\Http\Controllers\Pcare\PcareController::class, 'getKegiatanKelompok'])
+            ->where('tanggal', '.*')
+            ->name('kelompok.kegiatan.api');
+
+        // API: Tambah Kegiatan Kelompok (POST)
+        Route::post('/api/kelompok/kegiatan', [\App\Http\Controllers\Pcare\PcareController::class, 'addKegiatanKelompok'])
+            ->name('kelompok.kegiatan.add.api');
+
+        // API: Update Kegiatan Kelompok (PUT)
+        Route::put('/api/kelompok/kegiatan', [\App\Http\Controllers\Pcare\PcareController::class, 'updateKegiatanKelompok'])
+            ->name('kelompok.kegiatan.update.api');
+
+        // API: Delete Kegiatan Kelompok (DELETE)
+        Route::delete('/api/kelompok/kegiatan/{eduId}', [\App\Http\Controllers\Pcare\PcareController::class, 'deleteKegiatanKelompok'])
+            ->where('eduId', '.*')
+            ->name('kelompok.kegiatan.delete.api');
+
+        // API: Peserta Kegiatan Kelompok berdasarkan eduId
+        Route::get('/api/kelompok/peserta/{eduId}', [\App\Http\Controllers\Pcare\PcareController::class, 'getPesertaKegiatan'])
+            ->where('eduId', '.*')
+            ->name('kelompok.peserta.api');
+
+        // API: Tambah Peserta Kegiatan Kelompok (POST)
+        Route::post('/api/kelompok/peserta', [\App\Http\Controllers\Pcare\PcareController::class, 'addPesertaKegiatan'])
+            ->name('kelompok.peserta.add.api');
+
+        // API: Delete Peserta Kegiatan Kelompok (DELETE)
+        Route::delete('/api/kelompok/peserta/{eduId}/{noKartu}', [\App\Http\Controllers\Pcare\PcareController::class, 'deletePesertaKegiatan'])
+            ->where('eduId', '.*')
+            ->where('noKartu', '.*')
+            ->name('kelompok.peserta.delete.api');
+
         // Setting Bridging BPJS PCare (Inertia form + CRUD)
         Route::get('/setting', [\App\Http\Controllers\Pcare\SettingBridgingBpjsController::class, 'index'])
             ->name('setting.index');
@@ -390,6 +546,14 @@ Route::middleware('auth')->group(function () {
             ->name('setting.store');
         Route::delete('/setting', [\App\Http\Controllers\Pcare\SettingBridgingBpjsController::class, 'destroy'])
             ->name('setting.destroy');
+
+        // Setting Bridging Mobile JKN (Inertia form + CRUD)
+        Route::get('/setting-mobilejkn', [\App\Http\Controllers\Pcare\SettingBridgingMobileJknController::class, 'index'])
+            ->name('setting.mobilejkn.index');
+        Route::post('/setting-mobilejkn', [\App\Http\Controllers\Pcare\SettingBridgingMobileJknController::class, 'store'])
+            ->name('setting.mobilejkn.store');
+        Route::delete('/setting-mobilejkn', [\App\Http\Controllers\Pcare\SettingBridgingMobileJknController::class, 'destroy'])
+            ->name('setting.mobilejkn.destroy');
     });
 
     // Penjab & Poliklinik routes

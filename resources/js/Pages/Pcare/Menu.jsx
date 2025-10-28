@@ -11,6 +11,8 @@ const tabs = [
   { key: 'referensi', label: 'Referensi Pcare' },
   { key: 'mapping', label: 'Mapping Pcare' },
   { key: 'layanan', label: 'Layanan Pcare' },
+  { key: 'kelompok', label: 'Kegiatan Kelompok' },
+  { key: 'setting', label: 'Setting & Tools' },
 ];
 
 const cardVariants = {
@@ -44,6 +46,31 @@ const cardsByTab = {
       desc: 'Daftar dokter FKTP',
       href: '/pcare/referensi/dokter',
       gradient: 'from-rose-500 to-red-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M12 12a4 4 0 100-8 4 4 0 000 8z" />
+          <path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" />
+        </svg>
+      )
+    },
+    {
+      key: 'refPoliMobileJkn',
+      title: 'Referensi Poli Mobile Jkn',
+      desc: 'Daftar poli dari Mobile JKN',
+      href: '/pcare/referensi-mobilejkn/poli',
+      gradient: 'from-emerald-500 to-teal-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M4 6h16M4 12h10M4 18h7" />
+        </svg>
+      )
+    },
+    {
+      key: 'refDokterMobileJkn',
+      title: 'Referensi Dokter Mobile Jkn',
+      desc: 'Daftar dokter dari Mobile JKN',
+      href: '/pcare/referensi-mobilejkn/dokter',
+      gradient: 'from-teal-500 to-emerald-600',
       icon: (
         <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
           <path d="M12 12a4 4 0 100-8 4 4 0 000 8z" />
@@ -93,6 +120,20 @@ const cardsByTab = {
       )
     },
     {
+      key: 'refSubSpesialis',
+      title: 'Referensi Sub Spesialis Pcare',
+      desc: 'Daftar sub-spesialis berdasarkan spesialis',
+      href: '/pcare/referensi/subspesialis',
+      gradient: 'from-cyan-500 to-sky-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M12 6v6" />
+          <path d="M9 12h6" />
+          <circle cx="12" cy="17" r="4" />
+        </svg>
+      )
+    },
+    {
       key: 'refDpho',
       title: 'Referensi DPHO',
       desc: 'Daftar obat DPHO (PCare)',
@@ -102,6 +143,20 @@ const cardsByTab = {
         <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
           <rect x="4" y="4" width="16" height="12" rx="2" />
           <path d="M8 10h8M8 14h8" />
+        </svg>
+      )
+    },
+    {
+      key: 'refTindakan',
+      title: 'Referensi Tindakan',
+      desc: 'Daftar tindakan PCare',
+      href: '/pcare/referensi/tindakan',
+      gradient: 'from-lime-500 to-green-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M9 12h6" />
+          <path d="M12 9v6" />
+          <rect x="4" y="4" width="16" height="16" rx="3" />
         </svg>
       )
     },
@@ -116,6 +171,89 @@ const cardsByTab = {
           <path d="M3 11h18" />
           <path d="M6 11V7h3v4M15 11V5h3v6" />
           <path d="M5 18h14" />
+        </svg>
+      )
+    },
+    {
+      key: 'refSarana',
+      title: 'Referensi Sarana Pcare',
+      desc: 'Daftar sarana PCare',
+      href: '/pcare/referensi/sarana',
+      gradient: 'from-sky-500 to-indigo-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <rect x="4" y="4" width="16" height="12" rx="2" />
+          <path d="M8 10h8M8 14h5" />
+        </svg>
+      )
+    },
+    {
+      key: 'refPrognosa',
+      title: 'Referensi Prognosa Pcare',
+      desc: 'Daftar prognosa PCare',
+      href: '/pcare/referensi/prognosa',
+      gradient: 'from-violet-500 to-purple-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <rect x="4" y="4" width="16" height="12" rx="2" />
+          <path d="M8 10h8M8 14h5" />
+        </svg>
+      )
+    },
+    {
+      key: 'refKhusus',
+      title: 'Referensi Khusus Pcare',
+      desc: 'Daftar referensi khusus PCare',
+      href: '/pcare/referensi/khusus',
+      gradient: 'from-fuchsia-500 to-pink-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M12 3v6" />
+          <path d="M9 9h6" />
+          <circle cx="12" cy="15" r="5" />
+        </svg>
+      )
+    },
+    {
+      key: 'refStatusPulang',
+      title: 'Referensi Status Pulang Pcare',
+      desc: 'Daftar status pulang (RI/RJ)',
+      href: '/pcare/referensi/statuspulang',
+      gradient: 'from-orange-500 to-amber-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M4 7h10v10H4z" />
+          <path d="M14 12h6" />
+          <path d="M18 9l3 3-3 3" />
+        </svg>
+      )
+    },
+    {
+      key: 'refAlergi',
+      title: 'Referensi Alergi Pcare',
+      desc: 'Daftar alergi (Makanan/Udara/Obat)',
+      href: '/pcare/referensi/alergi',
+      gradient: 'from-rose-500 to-red-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M12 2a10 10 0 100 20 10 10 0 000-20z" />
+          <path d="M8 12l4-4 4 4" />
+          <path d="M8 16h8" />
+        </svg>
+      )
+    },
+    {
+      key: 'refFaskesRujukan',
+      title: 'Referensi Faskes Rujukan Pcare',
+      desc: 'Daftar faskes rujukan subspesialis',
+      href: '/pcare/referensi/faskes-rujukan',
+      gradient: 'from-indigo-500 to-sky-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M3 4h18" />
+          <path d="M6 8h12" />
+          <path d="M6 12h12" />
+          <path d="M6 16h12" />
         </svg>
       )
     },
@@ -143,6 +281,58 @@ const cardsByTab = {
         <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
           <path d="M5 12h14" />
           <path d="M12 5v14" />
+        </svg>
+      )
+    },
+  ],
+  kelompok: [
+    {
+      key: 'clubProlanis',
+      title: 'Club Prolanis',
+      desc: 'Daftar Club Prolanis (DM/Hipertensi)',
+      href: '/pcare/kelompok/club-prolanis',
+      gradient: 'from-indigo-500 to-purple-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M4 6h16M4 12h10M4 18h7" />
+        </svg>
+      )
+    },
+    {
+      key: 'entriKegiatan',
+      title: 'Entri Kegiatan',
+      desc: 'Form entri + daftar hadir',
+      href: '/pcare/kelompok/entri',
+      gradient: 'from-emerald-500 to-teal-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M4 6h16M4 12h10M4 18h7" />
+        </svg>
+      )
+    },
+    {
+      key: 'kegiatanKelompok',
+      title: 'Kegiatan Kelompok',
+      desc: 'Form & data kegiatan per bulan',
+      href: '/pcare/kelompok/kegiatan',
+      gradient: 'from-sky-500 to-blue-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M5 12h14" />
+          <path d="M12 5v14" />
+        </svg>
+      )
+    },
+    {
+      key: 'pesertaKegiatan',
+      title: 'Peserta Kegiatan',
+      desc: 'Data peserta per eduId',
+      href: '/pcare/kelompok/peserta-kegiatan',
+      gradient: 'from-amber-500 to-orange-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
+          <path d="M3 20c0-3.866 3.582-7 8-7s8 3.134 8 7" />
         </svg>
       )
     },
@@ -207,6 +397,33 @@ const cardsByTab = {
         <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
           <path d="M5 12h14" />
           <path d="M12 5v14" />
+        </svg>
+      )
+    },
+  ],
+  setting: [
+    {
+      key: 'settingPcare',
+      title: 'Setting Bridging PCare',
+      desc: 'Konfigurasi kredensial PCare',
+      href: '/pcare/setting',
+      gradient: 'from-indigo-500 to-sky-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M12 3l8 4-8 4-8-4 8-4z" />
+          <path d="M4 7v6l8 4 8-4V7" />
+        </svg>
+      )
+    },
+    {
+      key: 'settingMobileJkn',
+      title: 'Setting Bridging Mobile JKN',
+      desc: 'Konfigurasi kredensial Mobile JKN',
+      href: '/pcare/setting-mobilejkn',
+      gradient: 'from-emerald-500 to-teal-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M4 6h16M4 12h10M4 18h7" />
         </svg>
       )
     },
