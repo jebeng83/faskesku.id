@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Link, usePage } from "@inertiajs/react";
-import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, ChevronRightIcon, Bars3Icon, ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 import { route } from "ziggy-js";
 
 export default function SidebarMenu({
-	collapsed = false,
-	title = "Faskesku",
-	onToggle,
+    collapsed = false,
+    title = "Faskesku",
+    onToggle,
 }) {
-	const { menu_hierarchy, current_menu } = usePage().props;
-	const [expandedMenus, setExpandedMenus] = useState(new Set());
+    const { menu_hierarchy, current_menu } = usePage().props;
+    const [expandedMenus, setExpandedMenus] = useState(new Set());
+    // Drawer state untuk mobile (efek slide-in + overlay)
+    const [drawerOpen, setDrawerOpen] = useState(false);
 
 	// Debug logging (remove in production)
 	useEffect(() => {
@@ -20,7 +22,14 @@ export default function SidebarMenu({
 			console.log("Menu Hierarchy:", menu_hierarchy);
 			console.log("Current Path:", window.location.pathname);
 		}
-	}, [current_menu, menu_hierarchy]);
+    }, [current_menu, menu_hierarchy]);
+
+    // Tutup drawer ketika route/menu aktif berubah (navigasi)
+    useEffect(() => {
+        if (drawerOpen) {
+            setDrawerOpen(false);
+        }
+    }, [current_menu?.id]);
 
 	// Variants untuk animasi
 	const itemVariants = {
@@ -31,10 +40,24 @@ export default function SidebarMenu({
 		hidden: { opacity: 0, scale: 0.9 },
 		show: { opacity: 1, scale: 1 },
 	};
-	const listVariants = {
-		hidden: { opacity: 0 },
-		show: { opacity: 1, transition: { staggerChildren: 0.03 } },
-	};
+    const listVariants = {
+        hidden: { opacity: 0 },
+        show: { opacity: 1, transition: { staggerChildren: 0.03 } },
+    };
+
+    // Variants untuk efek drawer & overlay (mobile)
+    const framerSidebarBackground = {
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        exit: { opacity: 0, transition: { delay: 0.2 } },
+        transition: { duration: 0.3 },
+    };
+    const framerSidebarPanel = {
+        initial: { x: "-100%" },
+        animate: { x: 0 },
+        exit: { x: "-100%" },
+        transition: { duration: 0.3 },
+    };
 
 	// Auto-expand menus that have active children
 	useEffect(() => {
@@ -298,39 +321,39 @@ export default function SidebarMenu({
 					animate="show"
 					transition={{ type: "spring", stiffness: 200, damping: 20 }}
 				>
-					{hasChildren ? (
-						<motion.button
-							onClick={() => toggleExpanded(menu.id)}
-							className={`relative w-full flex items-center px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 group ${
-								isActive
-									? "text-blue-600 dark:text-blue-500"
-									: "text-white hover:text-white/80 dark:text-white dark:hover:text-white/80"
-							}`}
-							style={{ paddingLeft: `${1 + level * 0.5}rem` }}
-							whileTap={{ scale: 0.98 }}
-						>
-							{/* Background untuk active state */}
-							{isActive && (
-								<motion.div
-									className="absolute inset-0 bg-white dark:bg-gray-100 rounded-xl shadow-lg"
-									initial={{ scale: 0, opacity: 0 }}
-									animate={{ scale: 1, opacity: 1 }}
-									transition={{
-										type: "spring",
-										stiffness: 300,
-										damping: 25,
-										duration: 0.3,
-									}}
-								/>
-							)}
+                    {hasChildren ? (
+                        <motion.button
+                            onClick={() => toggleExpanded(menu.id)}
+                            className={`relative w-full flex items-center px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 group ${
+                                (isActive || isExpanded)
+                                    ? "text-blue-600 dark:text-blue-500"
+                                    : "text-white hover:text-white/80 dark:text-white dark:hover:text-white/80"
+                            }`}
+                            style={{ paddingLeft: `${1 + level * 0.5}rem` }}
+                            whileTap={{ scale: 0.98 }}
+                        >
+                            {/* Background untuk active state */}
+                            {(isActive || isExpanded) && (
+                                <motion.div
+                                    className="absolute inset-0 bg-white dark:bg-gray-100 rounded-xl shadow-lg"
+                                    initial={{ scale: 0, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    transition={{
+                                        type: "spring",
+                                        stiffness: 300,
+                                        damping: 25,
+                                        duration: 0.3,
+                                    }}
+                                />
+                            )}
 
-							{/* Hover background effect */}
-							{!isActive && (
-								<motion.div
-									className="absolute inset-0 bg-white/10 dark:bg-white/5 rounded-xl opacity-0 group-hover:opacity-100"
-									transition={{ duration: 0.2 }}
-								/>
-							)}
+                            {/* Hover background effect */}
+                            {!(isActive || isExpanded) && (
+                                <motion.div
+                                    className="absolute inset-0 bg-white/10 dark:bg-white/5 rounded-xl opacity-0 group-hover:opacity-100"
+                                    transition={{ duration: 0.2 }}
+                                />
+                            )}
 
 							{/* Content */}
 							<div className="relative z-10 flex items-center w-full">
@@ -430,55 +453,109 @@ export default function SidebarMenu({
 		);
 	}
 
-	if (collapsed) {
-		// Render top-level menus as icons only
-		return (
-			<div className="h-full flex flex-col">
-				{/* Logo - Collapsed */}
-				<div className="p-4 border-b border-blue-400/30 dark:border-blue-600/30 flex-shrink-0">
-					<div className="flex items-center justify-center">
-						<div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg border border-blue-400/20">
-							<span className="text-white font-bold text-sm drop-shadow-sm">
-								F
-							</span>
-						</div>
-					</div>
-				</div>
-				<nav className="px-1 pb-2 flex-1">
-					{renderCollapsed(menu_hierarchy)}
-				</nav>
-			</div>
-		);
-	}
+    // Render kombinasi: Desktop (tetap seperti sebelumnya) + Mobile Drawer
+    return (
+        <>
+            {/* Toggle button (mobile only) */}
+            <div className="md:hidden p-2">
+                <button
+                    type="button"
+                    onClick={() => setDrawerOpen(true)}
+                    className="p-2 border-2 border-zinc-800 rounded-xl bg-zinc-900 text-white"
+                    aria-label="Buka sidebar"
+                >
+                    <Bars3Icon className="h-5 w-5" />
+                </button>
+            </div>
 
-	return (
-		<div className="h-full flex flex-col">
-			{/* Logo - Normal */}
-			<div className="p-4 border-b border-blue-400/30 dark:border-blue-600/30 flex-shrink-0">
-				<div className="flex items-center gap-3">
-					<div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg border border-blue-400/20">
-						<span className="text-white font-bold text-sm drop-shadow-sm">
-							F
-						</span>
-					</div>
-					<div className="flex flex-col">
-						<span className="font-bold text-white text-sm">{title}</span>
-						<span className="text-xs text-white/80 -mt-1">
-							Elektronik Rekam Medis
-						</span>
-					</div>
-				</div>
-			</div>
-			<motion.nav
-				className="px-4 py-4 pb-4 space-y-1 flex-1"
-				variants={listVariants}
-				initial="hidden"
-				animate="show"
-			>
-				<motion.ul className="space-y-1" variants={listVariants}>
-					{menu_hierarchy.map((menu) => renderMenuItem(menu))}
-				</motion.ul>
-			</motion.nav>
-		</div>
-	);
+            {/* Desktop/Tablet: sidebar seperti semula */}
+            <div className="hidden md:flex h-full flex-col">
+                {collapsed ? (
+                    <>
+                        {/* Logo - Collapsed */}
+                        <div className="p-4 border-b border-blue-400/30 dark:border-blue-600/30 flex-shrink-0">
+                            <div className="flex items-center justify-center">
+                                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg border border-blue-400/20">
+                                    <span className="text-white font-bold text-sm drop-shadow-sm">F</span>
+                                </div>
+                            </div>
+                        </div>
+                        <nav className="px-1 pb-2 flex-1">{renderCollapsed(menu_hierarchy)}</nav>
+                    </>
+                ) : (
+                    <>
+                        {/* Logo - Normal */}
+                        <div className="p-4 border-b border-blue-400/30 dark:border-blue-600/30 flex-shrink-0">
+                            <div className="flex items-center gap-3">
+                                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg border border-blue-400/20">
+                                    <span className="text-white font-bold text-sm drop-shadow-sm">F</span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="font-bold text-white text-sm">{title}</span>
+                                    <span className="text-xs text-white/80 -mt-1">Elektronik Rekam Medis</span>
+                                </div>
+                            </div>
+                        </div>
+                        <motion.nav className="px-4 py-4 pb-4 space-y-1 flex-1" variants={listVariants} initial="hidden" animate="show">
+                            <motion.ul className="space-y-1" variants={listVariants}>
+                                {menu_hierarchy.map((menu) => renderMenuItem(menu))}
+                            </motion.ul>
+                        </motion.nav>
+                    </>
+                )}
+            </div>
+
+            {/* Mobile drawer dengan efek overlay & slide-in */}
+            <AnimatePresence mode="wait" initial={false}>
+                {drawerOpen && (
+                    <>
+                        {/* Overlay */}
+                        <motion.div
+                            {...framerSidebarBackground}
+                            aria-hidden="true"
+                            className="fixed inset-0 z-40 bg-[rgba(0,0,0,0.12)] backdrop-blur-sm"
+                            onClick={() => setDrawerOpen(false)}
+                        />
+                        {/* Panel */}
+                        <motion.div
+                            {...framerSidebarPanel}
+                            className="fixed inset-y-0 left-0 z-50 w-full h-screen max-w-xs border-r-2 border-zinc-800 bg-zinc-900"
+                            aria-label="Sidebar"
+                        >
+                            <div className="flex items-center justify-between p-5 border-b-2 border-zinc-800">
+                                <span className="text-white/90">Welcome</span>
+                                <button
+                                    type="button"
+                                    onClick={() => setDrawerOpen(false)}
+                                    className="p-2 border-2 border-zinc-800 rounded-xl text-white"
+                                    aria-label="Tutup sidebar"
+                                >
+                                    <ArrowUturnLeftIcon className="h-5 w-5" />
+                                </button>
+                            </div>
+                            {/* Isi sidebar (non-collapsed untuk mobile agar mudah dibaca) */}
+                            <div className="h-full flex flex-col">
+                                <div className="p-4 border-b border-blue-400/30 dark:border-blue-600/30 flex-shrink-0">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg border border-blue-400/20">
+                                            <span className="text-white font-bold text-sm drop-shadow-sm">F</span>
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="font-bold text-white text-sm">{title}</span>
+                                            <span className="text-xs text-white/80 -mt-1">Elektronik Rekam Medis</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <motion.nav className="px-4 py-4 pb-4 space-y-1 flex-1 overflow-y-auto" variants={listVariants} initial="hidden" animate="show">
+                                    <motion.ul className="space-y-1" variants={listVariants}>
+                                        {menu_hierarchy.map((menu) => renderMenuItem(menu))}
+                                    </motion.ul>
+                                </motion.nav>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+        </>
+    );
 }

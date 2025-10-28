@@ -34,11 +34,11 @@ export default defineConfig({
 	},
 	server: {
 	 	host: '127.0.0.1',
-	 	port: 5177,
-	 	strictPort: true,
+	 	port: Number(process.env.VITE_PORT || process.env.PORT || 5177),
+	 	strictPort: false,
 	 	hmr: {
 	 		host: '127.0.0.1',
-	 		port: 5177,
+	 		port: Number(process.env.VITE_PORT || process.env.PORT || 5177),
 	 	},
 	},
 });

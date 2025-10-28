@@ -20,6 +20,7 @@ use App\Http\Controllers\DataBarangController;
 use App\Http\Controllers\GudangBarangController;
 use App\Http\Controllers\Farmasi\SetHargaObatController;
 use App\Http\Controllers\Pcare\PcareController;
+use App\Http\Controllers\Pcare\MobileJknController;
 
 Route::post('/employees', [EmployeeController::class, 'store'])->name('api.employees.store');
 Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('api.employees.destroy');
@@ -165,8 +166,26 @@ Route::prefix('pcare')->group(function () {
     Route::get('/poli', [PcareController::class, 'getPoli'])->name('api.pcare.poli');
     Route::get('/kesadaran', [PcareController::class, 'getKesadaran'])->name('api.pcare.kesadaran');
     Route::get('/dpho', [PcareController::class, 'getDpho'])->name('api.pcare.dpho');
+    Route::get('/tindakan', [PcareController::class, 'getTindakan'])->name('api.pcare.tindakan');
     Route::get('/provider', [PcareController::class, 'getProvider'])->name('api.pcare.provider');
     Route::get('/spesialis', [PcareController::class, 'getSpesialis'])->name('api.pcare.spesialis');
+    Route::get('/spesialis/subspesialis', [PcareController::class, 'getSubSpesialis'])->name('api.pcare.subspesialis');
+    Route::get('/spesialis/sarana', [PcareController::class, 'getSarana'])->name('api.pcare.sarana');
+    Route::get('/spesialis/khusus', [PcareController::class, 'getKhusus'])->name('api.pcare.khusus');
+    Route::get('/prognosa', [PcareController::class, 'getPrognosa'])->name('api.pcare.prognosa');
+    Route::get('/alergi', [PcareController::class, 'getAlergi'])->name('api.pcare.alergi');
+    Route::get('/statuspulang', [PcareController::class, 'getStatusPulang'])->name('api.pcare.statuspulang');
+    Route::get('/spesialis/rujuk/subspesialis/{kdSubSpesialis}/sarana/{kdSarana}/tglEstRujuk/{tglEstRujuk}', [PcareController::class, 'getFaskesRujukanSubSpesialis'])->name('api.pcare.faskes-rujukan.subspesialis');
     Route::get('/peserta/{noka}/{tglPelayanan}', [PcareController::class, 'pesertaByNoKartu'])->name('api.pcare.peserta-nokartu');
     Route::post('/kunjungan', [PcareController::class, 'daftarKunjungan'])->name('api.pcare.kunjungan.store');
+});
+
+// Mobile JKN API Routes
+Route::prefix('mobilejkn')->group(function () {
+    // Debug: lihat konfigurasi yang terpakai (gunakan untuk memastikan .env & DB sudah benar)
+    Route::get('/config', [MobileJknController::class, 'config'])->name('api.mobilejkn.config');
+    // Referensi Poli (tanggal as query: ?tanggal=YYYY-MM-DD)
+    Route::get('/ref/poli', [MobileJknController::class, 'getReferensiPoli'])->name('api.mobilejkn.ref.poli');
+    // Referensi Dokter per Poli (query: ?kodepoli=XXX&tanggal=YYYY-MM-DD)
+    Route::get('/ref/dokter', [MobileJknController::class, 'getReferensiDokter'])->name('api.mobilejkn.ref.dokter');
 });

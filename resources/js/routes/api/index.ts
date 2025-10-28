@@ -18,6 +18,7 @@ import barang from './barang'
 import databarang from './databarang'
 import gudangbarang from './gudangbarang'
 import pcare from './pcare'
+import mobilejkn from './mobilejkn'
 import menu from './menu'
 import tarifTindakan from './tarif-tindakan'
 /**
@@ -174,6 +175,7 @@ const api = {
     setHargaObat: Object.assign(setHargaObat, setHargaObat),
     gudangbarang: Object.assign(gudangbarang, gudangbarang),
     pcare: Object.assign(pcare, pcare),
+    mobilejkn: Object.assign(mobilejkn, mobilejkn),
     menu: Object.assign(menu, menu),
     tarifTindakan: Object.assign(tarifTindakan, tarifTindakan),
 }
