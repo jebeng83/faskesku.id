@@ -142,6 +142,7 @@ export default function EntriKegiatan() {
   const [submitError, setSubmitError] = useState('');
   const [submitSuccess, setSubmitSuccess] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [proposeAddInstead, setProposeAddInstead] = useState(false);
   const [deletingEduId, setDeletingEduId] = useState('');
   const [deletingPesertaNoKartu, setDeletingPesertaNoKartu] = useState('');
 
@@ -402,20 +403,44 @@ export default function EntriKegiatan() {
     };
 
     setSubmitting(true);
+    setProposeAddInstead(false);
     try {
-      const method = isEditing ? 'PUT' : 'POST';
+      let lastStatus = 0;
+      // Perbaikan 405 Method Not Allowed untuk PUT:
+      // - Gunakan method spoofing via POST + FormData dengan _method=PUT ketika isEditing=true
+      // - Biarkan browser yang menetapkan Content-Type (multipart/form-data) agar Laravel mengenali _method
+      const formData = new FormData();
+      Object.entries(payload).forEach(([key, val]) => {
+        if (typeof val !== 'undefined' && val !== null) {
+          formData.append(key, String(val));
+        }
+      });
+      if (isEditing) {
+        formData.append('_method', 'PUT');
+      }
+
       const res = await fetch('/pcare/api/kelompok/kegiatan', {
-        method,
+        method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          // Jangan set Content-Type manual, biarkan browser mengisi boundary untuk FormData
           'X-CSRF-TOKEN': getCsrfToken() || undefined,
           'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json',
         },
         credentials: 'same-origin',
-        body: JSON.stringify(payload),
+        body: formData,
       });
+      lastStatus = res.status;
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
+        // Tampilkan pesan khusus untuk 405 (PCare Method Not Allowed) dan 412 (PCare bukan Administrator)
+        if (res.status === 405) {
+          setProposeAddInstead(true);
+          throw new Error('Metode PUT tidak diizinkan oleh layanan PCare untuk endpoint ini. Coba simpan sebagai data baru (POST), atau hubungi admin BPJS/PCare untuk konfirmasi dukungan update.');
+        }
+        if (res.status === 412) {
+          throw new Error(json?.metaData?.message || 'Aksi tidak diizinkan oleh PCare (412). Pastikan akun PCare memiliki hak Administrator untuk mengubah/hapus kegiatan/peserta.');
+        }
         throw new Error(json?.metaData?.message || json?.message || (isEditing ? 'Gagal mengubah kegiatan' : 'Gagal menambah kegiatan'));
       }
       setSubmitSuccess(json?.metaData?.message || (isEditing ? 'Kegiatan berhasil diperbarui' : 'Kegiatan berhasil ditambahkan'));
@@ -426,6 +451,64 @@ export default function EntriKegiatan() {
       // resetForm();
     } catch (e) {
       setSubmitError(e.message || (isEditing ? 'Terjadi kesalahan saat mengubah kegiatan' : 'Terjadi kesalahan saat menambah kegiatan'));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const simpanSebagaiBaru = async () => {
+    // Bangun payload tanpa eduId dan kirim POST JSON agar dibuat kegiatan baru
+    const toDdMmYyyyLocal = (val) => toDdMmYyyy(val || tglPelaksanaan);
+    const mapKdKegiatan = (label) => {
+      const s = String(label || '').toLowerCase();
+      const hasSenam = s.includes('senam');
+      const hasPenyuluhan = s.includes('penyuluhan') || s.includes('edukasi');
+      if (hasSenam && !hasPenyuluhan) return '01';
+      if (hasPenyuluhan && !hasSenam) return '10';
+      if (hasSenam && hasPenyuluhan) return '11';
+      return '11';
+    };
+
+    const payloadBaru = {
+      clubId: isNaN(Number(clubId)) ? clubId : Number(clubId),
+      tglPelayanan: toDdMmYyyyLocal(tglPelaksanaan),
+      kdKegiatan: mapKdKegiatan(jenisKegiatan),
+      kdKelompok: kdProgram,
+      materi,
+      pembicara: namaPembicara || pembicaraNoKartu || '',
+      lokasi,
+      keterangan,
+      biaya: Number(totalBiaya || 0),
+    };
+
+    setSubmitting(true);
+    setSubmitError('');
+    setSubmitSuccess('');
+    try {
+      const res = await fetch('/pcare/api/kelompok/kegiatan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'X-CSRF-TOKEN': getCsrfToken() || undefined,
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json',
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify(payloadBaru),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(json?.metaData?.message || json?.message || 'Gagal menambah kegiatan');
+      }
+      setSubmitSuccess(json?.metaData?.message || 'Kegiatan berhasil ditambahkan');
+      const maybeEduId = json?.response?.eduId || json?.eduId || '';
+      if (maybeEduId) setEduIdKegiatan(String(maybeEduId));
+      setIsEditing(false);
+      setProposeAddInstead(false);
+      showToast('success', json?.metaData?.message || 'Kegiatan baru berhasil dibuat');
+    } catch (e) {
+      setSubmitError(e.message || 'Terjadi kesalahan saat menambah kegiatan');
+      showToast('error', e.message || 'Terjadi kesalahan saat menambah kegiatan');
     } finally {
       setSubmitting(false);
     }
@@ -494,11 +577,39 @@ export default function EntriKegiatan() {
       if (!res.ok) throw new Error(json?.metaData?.message || 'Gagal mengambil peserta');
       const list = json?.response?.list || [];
       const normalize = (arr) => {
+        // Parser tgl lahir dari format dd-MM-yyyy atau yyyy-MM-dd
+        const parseTgl = (v) => {
+          if (!v) return null;
+          if (/^\d{2}-\d{2}-\d{4}$/.test(v)) {
+            const [d, m, y] = v.split('-');
+            return new Date(Number(y), Number(m) - 1, Number(d));
+          }
+          if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
+            const [y, m, d] = v.split('-');
+            return new Date(Number(y), Number(m) - 1, Number(d));
+          }
+          const dt = new Date(v);
+          return isNaN(dt) ? null : dt;
+        };
+        // Hitung usia (tahun penuh) dari tgl lahir berdasarkan tanggal hari ini
         const toUsia = (tgl) => {
-          if (!tgl) return '-';
-          const dt = new Date(tgl);
-          if (isNaN(dt)) return '-';
-          return Math.max(0, Math.floor((Date.now() - dt.getTime()) / (365 * 24 * 3600 * 1000)));
+          const birth = parseTgl(tgl);
+          if (!birth) return '-';
+          const today = new Date();
+          let age = today.getFullYear() - birth.getFullYear();
+          const m = today.getMonth() - birth.getMonth();
+          if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+          return Math.max(0, age);
+        };
+        // Normalkan status prolanis ke YA/TIDAK, prioritas ambil dari pstProl (getPeserta)
+        const toProlanis = (p) => {
+          const raw = (p?.pstProl ?? p?.prolanis ?? p?.kdProlanis ?? p?.kdprolanis ?? '')
+            .toString()
+            .trim()
+            .toUpperCase();
+          if (!raw || raw === '-' || raw === '0' || raw === 'FALSE' || raw === 'TIDAK') return 'TIDAK';
+          if (raw.includes('DM') || raw.includes('HT') || raw === 'YA' || raw === 'TRUE' || raw === '1') return 'YA';
+          return 'TIDAK';
         };
         return arr.map((it) => {
           const p = it?.peserta || it || {};
@@ -509,7 +620,7 @@ export default function EntriKegiatan() {
             jnsPeserta: p?.jnsPeserta?.nama || '-',
             tglLahir: p.tglLahir || '-',
             usia: toUsia(p.tglLahir),
-            prolanis: (p?.kdProlanis || p?.prolanis || '-') ?? '-',
+            prolanis: toProlanis(p),
           };
         });
       };
@@ -594,7 +705,37 @@ export default function EntriKegiatan() {
         setPesertaRows((rows) => {
           const exists = rows.some((r) => r.noKartu === p.noKartu);
           if (exists) return rows;
-          const usia = p?.tglLahir ? Math.max(0, Math.floor((Date.now() - new Date(p.tglLahir).getTime()) / (365 * 24 * 3600 * 1000))) : '-';
+          const parseTgl = (v) => {
+            if (!v) return null;
+            if (/^\d{2}-\d{2}-\d{4}$/.test(v)) {
+              const [d, m, y] = v.split('-');
+              return new Date(Number(y), Number(m) - 1, Number(d));
+            }
+            if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
+              const [y, m, d] = v.split('-');
+              return new Date(Number(y), Number(m) - 1, Number(d));
+            }
+            const dt = new Date(v);
+            return isNaN(dt) ? null : dt;
+          };
+          const birth = parseTgl(p?.tglLahir);
+          let usia = '-';
+          if (birth) {
+            const today = new Date();
+            usia = today.getFullYear() - birth.getFullYear();
+            const mm = today.getMonth() - birth.getMonth();
+            if (mm < 0 || (mm === 0 && today.getDate() < birth.getDate())) usia--;
+            usia = Math.max(0, usia);
+          }
+          const prolanis = (() => {
+            const raw = (p?.pstProl ?? p?.prolanis ?? p?.kdProlanis ?? p?.kdprolanis ?? '')
+              .toString()
+              .trim()
+              .toUpperCase();
+            if (!raw || raw === '-' || raw === '0' || raw === 'FALSE' || raw === 'TIDAK') return 'TIDAK';
+            if (raw.includes('DM') || raw.includes('HT') || raw === 'YA' || raw === 'TRUE' || raw === '1') return 'YA';
+            return 'TIDAK';
+          })();
           return [
             ...rows,
             {
@@ -604,7 +745,7 @@ export default function EntriKegiatan() {
               jnsPeserta: p?.jnsPeserta?.nama || '-',
               tglLahir: p.tglLahir || '-',
               usia,
-              prolanis: (p?.kdProlanis || p?.prolanis || '-') ?? '-',
+              prolanis,
             },
           ];
         });
@@ -867,6 +1008,19 @@ export default function EntriKegiatan() {
           {submitError && (
             <div className="mt-3 rounded-md border border-rose-200 bg-rose-50 p-2 text-[12px] text-rose-700">
               {submitError}
+            </div>
+          )}
+          {proposeAddInstead && (
+            <div className="mt-2 rounded-md border border-sky-200 bg-sky-50 p-2 text-[12px] text-sky-800">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  Update PUT tidak didukung oleh layanan PCare untuk endpoint ini. Anda dapat menyimpan sebagai kegiatan baru.
+                </div>
+                <button onClick={simpanSebagaiBaru} disabled={submitting} className={ui.btnSlate}>
+                  <Icon.Plus className="h-4 w-4" />
+                  <span className="ml-1.5">Simpan sebagai kegiatan baru</span>
+                </button>
+              </div>
             </div>
           )}
           {submitSuccess && (
