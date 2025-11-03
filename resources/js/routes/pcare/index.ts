@@ -1,10 +1,12 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
+import mapping from './mapping'
 import referensi from './referensi'
 import layanan from './layanan'
 import kelompok from './kelompok'
 import diagnosa from './diagnosa'
 import dokter from './dokter'
 import poli from './poli'
+import rs from './rs'
 import tindakan from './tindakan'
 import peserta from './peserta'
 import setting from './setting'
@@ -50,12 +52,14 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 const pcare = {
     index: Object.assign(index, index),
+    mapping: Object.assign(mapping, mapping),
     referensi: Object.assign(referensi, referensi),
     layanan: Object.assign(layanan, layanan),
     kelompok: Object.assign(kelompok, kelompok),
     diagnosa: Object.assign(diagnosa, diagnosa),
     dokter: Object.assign(dokter, dokter),
     poli: Object.assign(poli, poli),
+    rs: Object.assign(rs, rs),
     tindakan: Object.assign(tindakan, tindakan),
     peserta: Object.assign(peserta, peserta),
     setting: Object.assign(setting, setting),

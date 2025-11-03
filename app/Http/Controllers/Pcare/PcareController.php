@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Pcare;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Traits\BpjsTraits;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Controller untuk bridging BPJS PCare.
@@ -862,5 +863,152 @@ class PcareController extends Controller
         $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
 
         return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Pencarian poliklinik RS dari tabel lokal 'poliklinik'.
+     * Query param: q (opsional) - cari pada kd_poli atau nm_poli
+     * Response: { data: [{ kd_poli, nm_poli }] }
+     */
+    public function searchPoliklinikRs(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+        $query = DB::table('poliklinik')->select(['kd_poli', 'nm_poli']);
+        if ($q !== '') {
+            $like = '%' . $q . '%';
+            $query->where(function ($w) use ($like) {
+                $w->where('kd_poli', 'like', $like)
+                    ->orWhere('nm_poli', 'like', $like);
+            });
+        }
+        $rows = $query->orderBy('kd_poli')->limit(100)->get();
+        return response()->json(['data' => $rows]);
+    }
+
+    /**
+     * Ambil daftar mapping poli dari tabel 'maping_poliklinik_pcare'.
+     * Response: { data: [{ kd_poli_rs, kd_poli_pcare, nm_poli_pcare }] }
+     */
+    public function getMappingPoli(Request $request)
+    {
+        $rows = DB::table('maping_poliklinik_pcare')
+            ->select(['kd_poli_rs', 'kd_poli_pcare', 'nm_poli_pcare'])
+            ->orderBy('kd_poli_rs')
+            ->limit(1000)
+            ->get();
+        return response()->json(['data' => $rows]);
+    }
+
+    /**
+     * Simpan mapping poli ke tabel 'maping_poliklinik_pcare'.
+     * Body JSON: { kd_poli_rs: char(5), kd_poli_pcare: char(5), nm_poli_pcare: varchar(50) }
+     * Tidak melakukan migrasi — tabel sudah ada.
+     * Perilaku: upsert berdasarkan kd_poli_rs.
+     */
+    public function storeMappingPoli(Request $request)
+    {
+        $kdPoliRs = strtoupper(trim((string) $request->input('kd_poli_rs', '')));
+        $kdPoliPcare = strtoupper(trim((string) $request->input('kd_poli_pcare', '')));
+        $nmPoliPcare = trim((string) $request->input('nm_poli_pcare', ''));
+
+        if ($kdPoliRs === '' || $kdPoliPcare === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'kd_poli_rs dan kd_poli_pcare wajib diisi',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+        if (strlen($kdPoliRs) > 5 || strlen($kdPoliPcare) > 5) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Panjang kd_poli_rs dan kd_poli_pcare maksimal 5 karakter',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+        if (strlen($nmPoliPcare) > 50) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Panjang nm_poli_pcare maksimal 50 karakter',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        try {
+            DB::table('maping_poliklinik_pcare')->updateOrInsert(
+                ['kd_poli_rs' => $kdPoliRs],
+                [
+                    'kd_poli_pcare' => $kdPoliPcare,
+                    'nm_poli_pcare' => $nmPoliPcare,
+                ]
+            );
+        } catch (\Throwable $e) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Gagal menyimpan mapping: ' . $e->getMessage(),
+                    'code' => 500,
+                ],
+            ], 500);
+        }
+
+        return response()->json([
+            'metaData' => [
+                'message' => 'Berhasil menyimpan mapping poli',
+                'code' => 200,
+            ],
+        ]);
+    }
+
+    /**
+     * Hapus mapping poli dari tabel 'maping_poliklinik_pcare'.
+     * Body JSON: { kd_poli_rs: char(5), kd_poli_pcare?: char(5) }
+     * Jika kd_poli_pcare tidak diisi, akan menghapus berdasarkan kd_poli_rs saja.
+     */
+    public function deleteMappingPoli(Request $request)
+    {
+        $kdPoliRs = strtoupper(trim((string) $request->input('kd_poli_rs', '')));
+        $kdPoliPcare = strtoupper(trim((string) $request->input('kd_poli_pcare', '')));
+
+        if ($kdPoliRs === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'kd_poli_rs wajib diisi untuk hapus mapping',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        try {
+            $query = DB::table('maping_poliklinik_pcare')->where('kd_poli_rs', $kdPoliRs);
+            if ($kdPoliPcare !== '') {
+                $query->where('kd_poli_pcare', $kdPoliPcare);
+            }
+            $deleted = $query->delete();
+        } catch (\Throwable $e) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Gagal menghapus mapping: ' . $e->getMessage(),
+                    'code' => 500,
+                ],
+            ], 500);
+        }
+
+        if ($deleted > 0) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Berhasil menghapus mapping poli',
+                    'code' => 200,
+                ],
+            ]);
+        }
+
+        return response()->json([
+            'metaData' => [
+                'message' => 'Mapping poli tidak ditemukan',
+                'code' => 404,
+            ],
+        ], 404);
     }
 }

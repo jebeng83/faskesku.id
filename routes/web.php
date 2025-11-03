@@ -360,6 +360,11 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('Pcare/Menu');
         })->name('index');
 
+        // Mapping Poli PCare page (Inertia)
+        Route::get('/mapping/poli', function () {
+            return Inertia::render('Pcare/MappingPoliPcare');
+        })->name('mapping.poli');
+
         // Referensi Diagnosa page (Inertia)
         Route::get('/referensi/diagnosa', function () {
             return Inertia::render('Pcare/ReferensiPcare/ReferensiDiagnosa');
@@ -481,6 +486,18 @@ Route::middleware('auth')->group(function () {
         // API: Get Poli dari BPJS PCare
         Route::get('/api/poli', [\App\Http\Controllers\Pcare\PcareController::class, 'getPoli'])
             ->name('poli.api');
+
+        // API: Pencarian Poliklinik RS (sumber: tabel poliklinik)
+        Route::get('/api/rs/poliklinik', [\App\Http\Controllers\Pcare\PcareController::class, 'searchPoliklinikRs'])
+            ->name('rs.poliklinik.api');
+
+        // API: Mapping Poli (GET daftar & POST simpan)
+        Route::get('/api/mapping/poli', [\App\Http\Controllers\Pcare\PcareController::class, 'getMappingPoli'])
+            ->name('mapping.poli.get');
+        Route::post('/api/mapping/poli', [\App\Http\Controllers\Pcare\PcareController::class, 'storeMappingPoli'])
+            ->name('mapping.poli.store');
+        Route::delete('/api/mapping/poli', [\App\Http\Controllers\Pcare\PcareController::class, 'deleteMappingPoli'])
+            ->name('mapping.poli.delete');
 
         // API: Get Referensi Tindakan dari BPJS PCare
         Route::get('/api/tindakan', [\App\Http\Controllers\Pcare\PcareController::class, 'getTindakan'])
