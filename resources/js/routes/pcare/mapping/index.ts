@@ -1,6 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 import poli16996d from './poli'
 import dokter1a4744 from './dokter'
+import obatE6960e from './obat'
 /**
 * @see routes/web.php:364
 * @route '/pcare/mapping/poli'
@@ -81,9 +82,50 @@ dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+/**
+* @see routes/web.php:374
+* @route '/pcare/mapping/obat'
+*/
+export const obat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: obat.url(options),
+    method: 'get',
+})
+
+obat.definition = {
+    methods: ["get","head"],
+    url: '/pcare/mapping/obat',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:374
+* @route '/pcare/mapping/obat'
+*/
+obat.url = (options?: RouteQueryOptions) => {
+    return obat.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:374
+* @route '/pcare/mapping/obat'
+*/
+obat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: obat.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:374
+* @route '/pcare/mapping/obat'
+*/
+obat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: obat.url(options),
+    method: 'head',
+})
+
 const mapping = {
     poli: Object.assign(poli, poli16996d),
     dokter: Object.assign(dokter, dokter1a4744),
+    obat: Object.assign(obat, obatE6960e),
 }
 
 export default mapping

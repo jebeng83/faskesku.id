@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import AppLayout from "@/Layouts/AppLayout";
 import { motion, AnimatePresence } from "framer-motion";
-import { Toaster } from "@/Components/ui";
+import { Toaster, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/Components/ui";
 import {
     ArrowPathIcon,
     CheckCircleIcon,
@@ -11,6 +11,8 @@ import {
     PencilSquareIcon,
     TrashIcon,
     XMarkIcon,
+    ArrowsUpDownIcon,
+    UserCircleIcon,
 } from "@heroicons/react/24/outline";
 
 /**
@@ -89,6 +91,11 @@ export default function MappingDokterPcare() {
         const el = document.querySelector("meta[name=csrf-token]");
         return el ? el.getAttribute("content") : "";
     }, []);
+
+    // Pagination state
+    const [page, setPage] = useState(1);
+    const [perPage, setPerPage] = useState(10);
+    const [mapQuery, setMapQuery] = useState("");
 
     useEffect(() => {
         // initial load of mappings and bpjs doctors (first page)
@@ -205,6 +212,30 @@ export default function MappingDokterPcare() {
             console.error("fetchMappings failed", e);
         }
     }
+
+    // Filter & pagination for Data Mapping
+    const filteredRows = useMemo(() => {
+        const q = mapQuery.trim().toLowerCase();
+        if (!q) return mappings;
+        return mappings.filter((row) =>
+            (row.kd_dokter || "").toLowerCase().includes(q) ||
+            (row.kd_dokter_pcare || "").toLowerCase().includes(q) ||
+            (row.nm_dokter_pcare || "").toLowerCase().includes(q)
+        );
+    }, [mappings, mapQuery]);
+
+    // Clamp page when data or perPage changes
+    useEffect(() => {
+        const total = filteredRows.length;
+        const pc = Math.max(1, Math.ceil(total / perPage));
+        setPage((prev) => Math.min(prev, pc));
+    }, [filteredRows, perPage]);
+
+    const totalRows = filteredRows.length;
+    const pageCount = Math.max(1, Math.ceil(totalRows / perPage));
+    const startIndex = (page - 1) * perPage;
+    const endIndexExclusive = Math.min(startIndex + perPage, totalRows);
+    const visibleRows = filteredRows.slice(startIndex, endIndexExclusive);
 
     function onSelectRsDoctor(item) {
         setSelectedRsDoctor(item);
@@ -664,7 +695,7 @@ export default function MappingDokterPcare() {
                 </motion.button>
             </motion.div>
 
-            {/* Datatable */}
+            {/* Data Mapping - Card Model */}
             <motion.div
                 variants={itemVariants}
                 className="mt-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
@@ -680,83 +711,139 @@ export default function MappingDokterPcare() {
                         </span>
                     </div>
                 </div>
-                <div className="mt-3 overflow-x-auto">
-                    <table className="min-w-full text-sm">
-                        <thead>
-                            <tr className="text-left text-slate-600">
-                                <th className="px-3 py-2 border-b">Dokter </th>
-                                <th className="px-3 py-2 border-b">
-                                    Dokter BPJS{" "}
-                                </th>
-                                <th className="px-3 py-2 border-b">
-                                    Nama Dokter BPJS{" "}
-                                </th>
-                                <th className="px-3 py-2 border-b">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {mappings.map((row, idx) => (
-                                <tr
-                                    key={`${row.kd_dokter}-${
-                                        row.kd_dokter_pcare || ""
-                                    }-${idx}`}
-                                    className="border-b last:border-b-0"
-                                >
-                                    <td className="px-3 py-2">
-                                        {row.kd_dokter}
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        {row.kd_dokter_pcare}
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        {row.nm_dokter_pcare || ""}
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex items-center gap-2">
-                                            <motion.button
-                                                type="button"
-                                                onClick={() => onEditRow(row)}
-                                                className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs bg-sky-600 text-white hover:bg-sky-700"
-                                                whileHover={{ scale: 1.05 }}
-                                                whileTap={{ scale: 0.97 }}
-                                            >
-                                                <PencilSquareIcon className="h-4 w-4" />{" "}
-                                                Edit
-                                            </motion.button>
-                                            <motion.button
-                                                type="button"
-                                                onClick={() =>
-                                                    onDeleteMapping(row)
-                                                }
-                                                className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs bg-red-600 text-white hover:bg-red-700"
-                                                whileHover={{ scale: 1.05 }}
-                                                whileTap={{ scale: 0.97 }}
-                                                disabled={
-                                                    deletingKey ===
-                                                    row.kd_dokter
-                                                }
-                                            >
-                                                <TrashIcon className="h-4 w-4" />{" "}
-                                                {deletingKey === row.kd_dokter
-                                                    ? "Menghapus…"
-                                                    : "Hapus"}
-                                            </motion.button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                            {mappings.length === 0 && (
-                                <tr>
-                                    <td
-                                        className="px-3 py-4 text-center text-slate-500"
-                                        colSpan={4}
+                {/* Toolbar: Cari & Tampilkan */}
+                <div className="mt-3 flex items-center justify-between gap-3">
+                    <div className="flex-1 max-w-md">
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm">Cari mapping:</span>
+                            <div className="flex items-center gap-2 flex-1">
+                                <MagnifyingGlassIcon className="h-4 w-4 text-slate-500" />
+                                <input
+                                    type="text"
+                                    value={mapQuery}
+                                    onChange={(e) => { setMapQuery(e.target.value); setPage(1); }}
+                                    placeholder="Cari dokter RS/BPJS…"
+                                    className="w-full rounded-xl border-2 border-slate-300 text-sm px-3 py-1.5 placeholder-slate-400 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm">Tampilkan</span>
+                        <Select value={String(perPage)} onValueChange={(val) => { setPerPage(Number(val)); setPage(1); }}>
+                            <SelectTrigger className="w-[90px] h-8 text-xs">
+                                <SelectValue placeholder="Jumlah" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="5">5</SelectItem>
+                                <SelectItem value="10">10</SelectItem>
+                                <SelectItem value="25">25</SelectItem>
+                                <SelectItem value="50">50</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <span className="text-sm">data</span>
+                    </div>
+                </div>
+
+                {/* Header columns (responsive) */}
+                <div className="mt-3 hidden md:grid grid-cols-12 gap-2 text-xs text-slate-600">
+                    <div className="col-span-1 px-2 flex items-center gap-1">No <ArrowsUpDownIcon className="h-3 w-3" /></div>
+                    <div className="col-span-3 px-2 flex items-center gap-1">Dokter RS <ArrowsUpDownIcon className="h-3 w-3" /></div>
+                    <div className="col-span-3 px-2 flex items-center gap-1">Dokter BPJS <ArrowsUpDownIcon className="h-3 w-3" /></div>
+                    <div className="col-span-4 px-2">Nama Dokter BPJS</div>
+                    <div className="col-span-1 px-2 text-right">Aksi</div>
+                </div>
+
+                {/* Card list */}
+                <div className="mt-1 space-y-2">
+                    {visibleRows.map((row, idx) => (
+                        <div
+                            key={`${row.kd_dokter}-${row.kd_dokter_pcare || ''}-${idx}`}
+                            className="grid grid-cols-12 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm hover:shadow transition"
+                        >
+                            {/* No */}
+                            <div className="col-span-1">
+                                <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
+                                    {startIndex + idx + 1}
+                                </span>
+                            </div>
+                            {/* Dokter RS */}
+                            <div className="col-span-12 md:col-span-3">
+                                <div className="flex items-center gap-2">
+                                    <UserCircleIcon className="h-5 w-5 text-slate-500" />
+                                    <div className="text-sm font-medium text-slate-800">{row.kd_dokter}</div>
+                                </div>
+                            </div>
+                            {/* Dokter BPJS */}
+                            <div className="col-span-6 md:col-span-3">
+                                <span className="inline-flex items-center rounded-full bg-sky-100 text-sky-700 px-2 py-0.5 text-xs">
+                                    {row.kd_dokter_pcare}
+                                </span>
+                            </div>
+                            {/* Nama Dokter BPJS */}
+                            <div className="col-span-6 md:col-span-4">
+                                <span className="text-sm text-slate-700">
+                                    {row.nm_dokter_pcare || '-'}
+                                </span>
+                            </div>
+                            {/* Aksi */}
+                            <div className="col-span-12 md:col-span-1 md:text-right">
+                                <div className="flex md:justify-end items-center gap-2">
+                                    <motion.button
+                                        type="button"
+                                        onClick={() => onEditRow(row)}
+                                        className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs bg-sky-600 text-white hover:bg-sky-700"
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.97 }}
                                     >
-                                        Belum ada mapping
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                                        <PencilSquareIcon className="h-4 w-4" /> Edit
+                                    </motion.button>
+                                    <motion.button
+                                        type="button"
+                                        onClick={() => onDeleteMapping(row)}
+                                        className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs bg-red-600 text-white hover:bg-red-700"
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.97 }}
+                                        disabled={deletingKey === row.kd_dokter}
+                                    >
+                                        <TrashIcon className="h-4 w-4" /> {deletingKey === row.kd_dokter ? 'Menghapus…' : 'Hapus'}
+                                    </motion.button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+
+                    {!totalRows && (
+                        <div className="rounded-lg border border-slate-200 bg-white px-3 py-4 text-center text-slate-500">
+                            Belum ada mapping
+                        </div>
+                    )}
+                </div>
+
+                {/* Pagination controls */}
+                <div className="mt-3 flex items-center justify-between text-xs text-slate-600">
+                    <div>
+                        Menampilkan {totalRows === 0 ? 0 : startIndex + 1}–{totalRows === 0 ? 0 : endIndexExclusive} dari {totalRows} data
+                    </div>
+                    <div className="inline-flex items-center gap-1">
+                        <button
+                            type="button"
+                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                            disabled={page <= 1}
+                            className={`px-2 py-1 rounded-md border ${page <= 1 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                        >
+                            Prev
+                        </button>
+                        <span className="px-2 py-1 rounded-md border bg-white text-slate-700">{page}</span>
+                        <button
+                            type="button"
+                            onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+                            disabled={page >= pageCount}
+                            className={`px-2 py-1 rounded-md border ${page >= pageCount ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                        >
+                            Next
+                        </button>
+                    </div>
                 </div>
             </motion.div>
         </motion.div>

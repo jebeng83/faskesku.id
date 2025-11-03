@@ -906,6 +906,26 @@ class PcareController extends Controller
     }
 
     /**
+     * Pencarian obat RS dari tabel lokal 'databarang'.
+     * Query param: q (opsional) - cari pada kode_brng atau nama_brng
+     * Response: { data: [{ kode_brng, nama_brng }] }
+     */
+    public function searchObatRs(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+        $query = DB::table('databarang')->select(['kode_brng', 'nama_brng']);
+        if ($q !== '') {
+            $like = '%' . $q . '%';
+            $query->where(function ($w) use ($like) {
+                $w->where('kode_brng', 'like', $like)
+                    ->orWhere('nama_brng', 'like', $like);
+            });
+        }
+        $rows = $query->orderBy('kode_brng')->limit(100)->get();
+        return response()->json(['data' => $rows]);
+    }
+
+    /**
      * Ambil daftar mapping poli dari tabel 'maping_poliklinik_pcare'.
      * Response: { data: [{ kd_poli_rs, kd_poli_pcare, nm_poli_pcare }] }
      */
@@ -1154,6 +1174,132 @@ class PcareController extends Controller
         return response()->json([
             'metaData' => [
                 'message' => 'Mapping dokter tidak ditemukan',
+                'code' => 404,
+            ],
+        ], 404);
+    }
+
+    /**
+     * Ambil daftar mapping obat dari tabel 'maping_obat_pcare'.
+     * Response: { data: [{ kode_brng, kode_brng_pcare, nama_brng_pcare }] }
+     */
+    public function getMappingObat(Request $request)
+    {
+        $rows = DB::table('maping_obat_pcare')
+            ->select(['kode_brng', 'kode_brng_pcare', 'nama_brng_pcare'])
+            ->orderBy('kode_brng')
+            ->limit(1000)
+            ->get();
+        return response()->json(['data' => $rows]);
+    }
+
+    /**
+     * Simpan mapping obat ke tabel 'maping_obat_pcare'.
+     * Body JSON: { kode_brng: varchar(15), kode_brng_pcare: varchar(15), nama_brng_pcare: varchar(80) }
+     * Perilaku: upsert berdasarkan kode_brng.
+     */
+    public function storeMappingObat(Request $request)
+    {
+        $kodeBrng = strtoupper(trim((string) $request->input('kode_brng', '')));
+        $kodeBrngPcare = strtoupper(trim((string) $request->input('kode_brng_pcare', '')));
+        $namaBrngPcare = trim((string) $request->input('nama_brng_pcare', ''));
+
+        if ($kodeBrng === '' || $kodeBrngPcare === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'kode_brng dan kode_brng_pcare wajib diisi',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+        if (strlen($kodeBrng) > 15 || strlen($kodeBrngPcare) > 15) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Panjang kode_brng dan kode_brng_pcare maksimal 15 karakter',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+        if (strlen($namaBrngPcare) > 80) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Panjang nama_brng_pcare maksimal 80 karakter',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        try {
+            DB::table('maping_obat_pcare')->updateOrInsert(
+                ['kode_brng' => $kodeBrng],
+                [
+                    'kode_brng_pcare' => $kodeBrngPcare,
+                    'nama_brng_pcare' => $namaBrngPcare,
+                ]
+            );
+        } catch (\Throwable $e) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Gagal menyimpan mapping: ' . $e->getMessage(),
+                    'code' => 500,
+                ],
+            ], 500);
+        }
+
+        return response()->json([
+            'metaData' => [
+                'message' => 'Berhasil menyimpan mapping obat',
+                'code' => 200,
+            ],
+        ]);
+    }
+
+    /**
+     * Hapus mapping obat dari tabel 'maping_obat_pcare'.
+     * Body JSON: { kode_brng: varchar(15), kode_brng_pcare?: varchar(15) }
+     * Jika kode_brng_pcare tidak diisi, akan menghapus berdasarkan kode_brng saja.
+     */
+    public function deleteMappingObat(Request $request)
+    {
+        $kodeBrng = strtoupper(trim((string) $request->input('kode_brng', '')));
+        $kodeBrngPcare = strtoupper(trim((string) $request->input('kode_brng_pcare', '')));
+
+        if ($kodeBrng === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'kode_brng wajib diisi untuk hapus mapping',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        try {
+            $query = DB::table('maping_obat_pcare')->where('kode_brng', $kodeBrng);
+            if ($kodeBrngPcare !== '') {
+                $query->where('kode_brng_pcare', $kodeBrngPcare);
+            }
+            $deleted = $query->delete();
+        } catch (\Throwable $e) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Gagal menghapus mapping: ' . $e->getMessage(),
+                    'code' => 500,
+                ],
+            ], 500);
+        }
+
+        if ($deleted > 0) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Berhasil menghapus mapping obat',
+                    'code' => 200,
+                ],
+            ]);
+        }
+
+        return response()->json([
+            'metaData' => [
+                'message' => 'Mapping obat tidak ditemukan',
                 'code' => 404,
             ],
         ], 404);

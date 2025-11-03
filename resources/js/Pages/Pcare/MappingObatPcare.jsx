@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
+import { Toaster, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/Components/ui';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowPathIcon, CheckCircleIcon, ExclamationTriangleIcon, MagnifyingGlassIcon, PlusIcon, PencilSquareIcon, TrashIcon, XMarkIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/Components/ui';
+import { ArrowPathIcon, CheckCircleIcon, ExclamationTriangleIcon, MagnifyingGlassIcon, PlusIcon, PencilSquareIcon, TrashIcon, XMarkIcon, ArrowsUpDownIcon, BeakerIcon } from '@heroicons/react/24/outline';
 
 const containerVariants = {
   hidden: { opacity: 0, y: 8 },
@@ -14,48 +14,71 @@ const itemVariants = {
   show: { opacity: 1, y: 0 },
 };
 
-// Smooth dropdown animation
 const dropdownVariants = {
   initial: { opacity: 0, y: 8, scale: 0.98 },
   animate: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.15 } },
   exit: { opacity: 0, y: 4, scale: 0.98, transition: { duration: 0.12 } },
 };
 
-export default function MappingPoliPcare() {
+export default function MappingObatPcare() {
+  // Toast state
+  const [toasts, setToasts] = useState([]);
+  const showToast = ({ type = 'info', title, message, duration = 3000 }) => {
+    const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    setToasts((prev) => [...prev, { id, type, title, message, duration }]);
+  };
+  const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id));
+
   // Search inputs
   const [qRs, setQRs] = useState('');
   const [qBpjs, setQBpjs] = useState('');
 
-  // RS Poliklinik state
+  // RS Obat state (databarang)
   const [rsLoading, setRsLoading] = useState(false);
   const [rsError, setRsError] = useState(null);
-  const [rsList, setRsList] = useState([]);
-  const [selectedRs, setSelectedRs] = useState(null); // { kd_poli, nm_poli }
+  const [rsList, setRsList] = useState([]); // items: { kode_brng, nama_brng }
+  const [selectedRs, setSelectedRs] = useState(null);
   const [showRsDropdown, setShowRsDropdown] = useState(false);
   const [rsAutoFetchLocked, setRsAutoFetchLocked] = useState(false);
 
-  // BPJS PCare Poli state
+  // BPJS DPHO state
   const [bpjsLoading, setBpjsLoading] = useState(false);
   const [bpjsError, setBpjsError] = useState(null);
-  const [bpjsList, setBpjsList] = useState([]); // items: { kdPoli, nmPoli }
-  const [selectedBpjs, setSelectedBpjs] = useState(null); // { kdPoli, nmPoli }
+  const [bpjsList, setBpjsList] = useState([]); // items: { kdObat, nmObat }
+  const [selectedBpjs, setSelectedBpjs] = useState(null);
   const [showBpjsDropdown, setShowBpjsDropdown] = useState(false);
 
   // Mapping table
   const [mapLoading, setMapLoading] = useState(false);
   const [mapError, setMapError] = useState(null);
   const [mappings, setMappings] = useState([]);
-  const [editingRow, setEditingRow] = useState(null); // row being edited
+  const [editingRow, setEditingRow] = useState(null);
   // Query for filtering Data Mapping list
   const [mapQuery, setMapQuery] = useState('');
+
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const q = mapQuery.trim().toLowerCase();
+  const filteredRows = useMemo(() => {
+    if (!q) return mappings;
+    return (mappings || []).filter((row) => (
+      String(row?.kode_brng || '').toLowerCase().includes(q) ||
+      String(row?.kode_brng_pcare || '').toLowerCase().includes(q) ||
+      String(row?.nama_brng_pcare || '').toLowerCase().includes(q)
+    ));
+  }, [mappings, q]);
+  const totalRows = filteredRows.length;
+  const pageCount = Math.max(1, Math.ceil(totalRows / perPage || 1));
+  const startIndex = Math.min((page - 1) * perPage, Math.max(0, totalRows - 1));
+  const endIndexExclusive = Math.min(startIndex + perPage, totalRows);
+  const visibleRows = useMemo(() => filteredRows.slice(startIndex, endIndexExclusive), [filteredRows, startIndex, endIndexExclusive]);
+  useEffect(() => { if (page > pageCount) setPage(pageCount); }, [pageCount]);
+  useEffect(() => { setPage(1); }, [perPage, mapQuery]);
 
   // Save status
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState('');
-
-  // Pagination state
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
 
   const fetchRs = async (keyword = '') => {
     setRsLoading(true);
@@ -63,11 +86,12 @@ export default function MappingPoliPcare() {
     try {
       const params = new URLSearchParams();
       if (keyword) params.set('q', keyword);
-      const res = await fetch(`/pcare/api/rs/poliklinik?${params.toString()}`, { headers: { Accept: 'application/json' } });
+      const res = await fetch(`/pcare/api/rs/obat?${params.toString()}`, { headers: { Accept: 'application/json' } });
       const json = await res.json();
       setRsList(Array.isArray(json?.data) ? json.data : []);
     } catch (e) {
-      setRsError(e?.message || 'Gagal memuat poliklinik RS');
+      setRsError(e?.message || 'Gagal memuat obat RS');
+      showToast({ type: 'error', title: 'Gagal Memuat', message: e?.message || 'Tidak dapat memuat data obat RS' });
     } finally {
       setRsLoading(false);
     }
@@ -77,13 +101,14 @@ export default function MappingPoliPcare() {
     setBpjsLoading(true);
     setBpjsError(null);
     try {
-      // Ambil data poli dari PCare (paged). Untuk kebutuhan pencarian sederhana, ambil 100 item pertama.
-      const res = await fetch(`/pcare/api/poli?start=0&limit=100`, { headers: { Accept: 'application/json' } });
+      // Ambil daftar DPHO (100 item pertama untuk pencarian cepat)
+      const res = await fetch(`/api/pcare/dpho?start=0&limit=100`, { headers: { Accept: 'application/json' } });
       const json = await res.json();
       const list = json?.response?.list || [];
       setBpjsList(Array.isArray(list) ? list : []);
     } catch (e) {
-      setBpjsError(e?.message || 'Gagal memuat referensi poli BPJS');
+      setBpjsError(e?.message || 'Gagal memuat referensi DPHO');
+      showToast({ type: 'error', title: 'Gagal Memuat', message: e?.message || 'Tidak dapat memuat referensi DPHO' });
     } finally {
       setBpjsLoading(false);
     }
@@ -93,39 +118,16 @@ export default function MappingPoliPcare() {
     setMapLoading(true);
     setMapError(null);
     try {
-      const res = await fetch(`/pcare/api/mapping/poli`, { headers: { Accept: 'application/json' } });
+      const res = await fetch(`/pcare/api/mapping/obat`, { headers: { Accept: 'application/json' } });
       const json = await res.json();
       setMappings(Array.isArray(json?.data) ? json.data : []);
     } catch (e) {
       setMapError(e?.message || 'Gagal memuat data mapping');
+      showToast({ type: 'error', title: 'Gagal Memuat', message: e?.message || 'Tidak dapat memuat data mapping obat' });
     } finally {
       setMapLoading(false);
     }
   };
-
-  // Filtered rows based on mapQuery
-  const q = mapQuery.trim().toLowerCase();
-  const filteredRows = useMemo(() => {
-    if (!q) return mappings;
-    return (mappings || []).filter((row) => (
-      String(row?.kd_poli_rs || row?.kd_poli || '').toLowerCase().includes(q) ||
-      String(row?.kd_poli_pcare || row?.kdPoli || '').toLowerCase().includes(q) ||
-      String(row?.nm_poli_pcare || row?.nmPoli || row?.nama || '').toLowerCase().includes(q)
-    ));
-  }, [mappings, q]);
-
-  // Clamp page when filtered data or perPage changes
-  useEffect(() => {
-    const total = filteredRows.length;
-    const pc = Math.max(1, Math.ceil(total / perPage));
-    setPage((prev) => Math.min(prev, pc));
-  }, [filteredRows, perPage]);
-
-  const totalRows = filteredRows.length;
-  const pageCount = Math.max(1, Math.ceil(totalRows / perPage));
-  const startIndex = (page - 1) * perPage;
-  const endIndexExclusive = Math.min(startIndex + perPage, totalRows);
-  const visibleRows = filteredRows.slice(startIndex, endIndexExclusive);
 
   useEffect(() => {
     fetchRs('');
@@ -134,32 +136,31 @@ export default function MappingPoliPcare() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Filter BPJS list by qBpjs in-memory
   const filteredBpjs = useMemo(() => {
     if (!qBpjs) return bpjsList;
     const q = qBpjs.toLowerCase();
     return (bpjsList || []).filter((it) => (
-      String(it?.kdPoli || '').toLowerCase().includes(q) ||
-      String(it?.nmPoli || it?.nama || '').toLowerCase().includes(q)
+      String(it?.kdObat || '').toLowerCase().includes(q) ||
+      String(it?.nmObat || '').toLowerCase().includes(q)
     ));
   }, [bpjsList, qBpjs]);
 
   const handleSelectRs = (it) => {
     setSelectedRs(it);
-    setQRs(`${it.kd_poli} — ${it.nm_poli}`);
+    setQRs(`${it.kode_brng} — ${it.nama_brng}`);
     setShowRsDropdown(false);
     setRsAutoFetchLocked(true);
   };
 
   const handleSelectBpjs = (it) => {
     setSelectedBpjs(it);
-    setQBpjs(`${it.kdPoli || '-'} — ${it.nmPoli || it.nama || '-'}`);
+    setQBpjs(`${it.kdObat || '-'} — ${it.nmObat || '-'}`);
     setShowBpjsDropdown(false);
   };
 
-  // Auto fetch RS when typing 2+ characters (debounced)
+  // Auto fetch RS obat when typing 2+ characters (debounced)
   useEffect(() => {
-    if (rsAutoFetchLocked) return; // prevent immediate refetch right after selecting
+    if (rsAutoFetchLocked) return;
     const term = qRs.trim();
     const t = setTimeout(() => {
       if (term.length >= 2) {
@@ -173,19 +174,20 @@ export default function MappingPoliPcare() {
 
   const onSave = async () => {
     if (!selectedRs || !selectedBpjs) {
-      setSaveMsg('Pilih poli RS dan poli BPJS terlebih dahulu');
+      setSaveMsg('Pilih obat RS dan obat BPJS (DPHO) terlebih dahulu');
+      showToast({ type: 'warning', title: 'Validasi', message: 'Pilih obat RS dan obat BPJS (DPHO) terlebih dahulu' });
       return;
     }
     setSaving(true);
     setSaveMsg('');
     try {
       const payload = {
-        kd_poli_rs: selectedRs.kd_poli,
-        kd_poli_pcare: selectedBpjs.kdPoli,
-        nm_poli_pcare: selectedBpjs.nmPoli || selectedBpjs.nama || '',
+        kode_brng: selectedRs.kode_brng,
+        kode_brng_pcare: selectedBpjs.kdObat,
+        nama_brng_pcare: selectedBpjs.nmObat || '',
       };
       const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-      const res = await fetch('/pcare/api/mapping/poli', {
+      const res = await fetch('/pcare/api/mapping/obat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrf, 'X-Requested-With': 'XMLHttpRequest' },
         credentials: 'same-origin',
@@ -196,30 +198,31 @@ export default function MappingPoliPcare() {
         setSaveMsg(json?.metaData?.message || (editingRow ? 'Berhasil menyimpan perubahan' : 'Berhasil menyimpan mapping'));
         fetchMappings();
         setEditingRow(null);
+        showToast({ type: 'success', title: 'Tersimpan', message: json?.metaData?.message || (editingRow ? 'Perubahan mapping obat tersimpan' : 'Mapping obat berhasil ditambahkan') });
       } else {
         setSaveMsg(json?.metaData?.message || 'Gagal menyimpan mapping');
+        showToast({ type: 'error', title: 'Gagal Menyimpan', message: json?.metaData?.message || 'Terjadi kesalahan saat menyimpan mapping' });
       }
     } catch (e) {
       setSaveMsg(e?.message || 'Gagal menyimpan mapping');
+      showToast({ type: 'error', title: 'Gagal Menyimpan', message: e?.message || 'Terjadi kesalahan saat menyimpan mapping' });
     } finally {
       setSaving(false);
     }
   };
 
   const onEdit = (row) => {
-    // Set mode edit dan preload pilihan berdasarkan baris
     setEditingRow(row);
-    const rs = (rsList || []).find((r) => r.kd_poli === row.kd_poli_rs) || { kd_poli: row.kd_poli_rs, nm_poli: '' };
+    const rs = (rsList || []).find((r) => r.kode_brng === row.kode_brng) || { kode_brng: row.kode_brng, nama_brng: '' };
     setSelectedRs(rs);
-    // Isi textbox RS dengan nilai dari baris yang diedit
-    setQRs(rs.nm_poli ? `${rs.kd_poli} — ${rs.nm_poli}` : `${rs.kd_poli}`);
+    setQRs(rs.nama_brng ? `${rs.kode_brng} — ${rs.nama_brng}` : `${rs.kode_brng}`);
     setShowRsDropdown(false);
     setRsAutoFetchLocked(true);
-    const bp = (bpjsList || []).find((b) => (b.kdPoli || '') === (row.kd_poli_pcare || '')) || { kdPoli: row.kd_poli_pcare, nmPoli: row.nm_poli_pcare };
+
+    const bp = (bpjsList || []).find((b) => (b.kdObat || '') === (row.kode_brng_pcare || '')) || { kdObat: row.kode_brng_pcare, nmObat: row.nama_brng_pcare };
     setSelectedBpjs(bp);
-    // Isi textbox BPJS dengan nilai dari baris yang diedit
-    const nmBpjs = bp.nmPoli || bp.nama || row.nm_poli_pcare || '';
-    setQBpjs(nmBpjs ? `${bp.kdPoli} — ${nmBpjs}` : `${bp.kdPoli || ''}`);
+    const nmBpjs = bp.nmObat || row.nama_brng_pcare || '';
+    setQBpjs(nmBpjs ? `${bp.kdObat} — ${nmBpjs}` : `${bp.kdObat || ''}`);
     setShowBpjsDropdown(false);
   };
 
@@ -231,29 +234,32 @@ export default function MappingPoliPcare() {
   };
 
   const onDelete = async (row) => {
-    if (!confirm(`Hapus mapping untuk RS ${row.kd_poli_rs} -> BPJS ${row.kd_poli_pcare}?`)) return;
+    if (!confirm(`Hapus mapping untuk RS ${row.kode_brng} -> BPJS ${row.kode_brng_pcare}?`)) return;
     setSaving(true);
     setSaveMsg('');
     try {
       const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-      const res = await fetch('/pcare/api/mapping/poli', {
+      const res = await fetch('/pcare/api/mapping/obat', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrf, 'X-Requested-With': 'XMLHttpRequest' },
         credentials: 'same-origin',
-        body: JSON.stringify({ kd_poli_rs: row.kd_poli_rs, kd_poli_pcare: row.kd_poli_pcare }),
+        body: JSON.stringify({ kode_brng: row.kode_brng, kode_brng_pcare: row.kode_brng_pcare }),
       });
       const json = await res.json();
       if (res.ok) {
         setSaveMsg(json?.metaData?.message || 'Berhasil menghapus mapping');
         fetchMappings();
-        if (editingRow && editingRow.kd_poli_rs === row.kd_poli_rs) {
+        if (editingRow && editingRow.kode_brng === row.kode_brng) {
           onCancelEdit();
         }
+        showToast({ type: 'success', title: 'Terhapus', message: json?.metaData?.message || 'Mapping obat berhasil dihapus' });
       } else {
         setSaveMsg(json?.metaData?.message || 'Gagal menghapus mapping');
+        showToast({ type: 'error', title: 'Gagal Menghapus', message: json?.metaData?.message || 'Terjadi kesalahan saat menghapus mapping' });
       }
     } catch (e) {
       setSaveMsg(e?.message || 'Gagal menghapus mapping');
+      showToast({ type: 'error', title: 'Gagal Menghapus', message: e?.message || 'Terjadi kesalahan saat menghapus mapping' });
     } finally {
       setSaving(false);
     }
@@ -261,13 +267,15 @@ export default function MappingPoliPcare() {
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4">
+      {/* Toaster */}
+      <Toaster toasts={toasts} onRemove={removeToast} />
       {/* Header */}
       <motion.div variants={itemVariants} className="mb-4">
-        <div className="rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-500 text-white p-5 shadow">
+        <div className="rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-sky-500 text-white p-5 shadow">
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-xl font-semibold">Mapping Poli PCare</h1>
-              <p className="text-sm opacity-90">Hubungkan kode poli RS ke referensi poli BPJS PCare.</p>
+              <h1 className="text-xl font-semibold">Mapping Obat PCare</h1>
+              <p className="text-sm opacity-90">Hubungkan obat RS (databarang) ke DPHO PCare.</p>
             </div>
             <div className="flex items-center gap-2 text-xs">
               <span className="inline-flex items-center rounded-full bg-white/20 px-2 py-0.5">Form</span>
@@ -279,12 +287,11 @@ export default function MappingPoliPcare() {
 
       {/* Search Inputs */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* RS Poliklinik */}
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-colors hover:border-indigo-200 hover:shadow-md">
+        {/* RS Obat */}
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-colors hover:border-teal-200 hover:shadow-md">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm font-semibold text-slate-800">Poli RS</div>
-              
+              <div className="text-sm font-semibold text-slate-800">Obat RS</div>
             </div>
             <motion.button
               whileHover={{ scale: 1.03 }}
@@ -304,8 +311,8 @@ export default function MappingPoliPcare() {
                 onChange={(e) => { setQRs(e.target.value); setShowRsDropdown(true); setRsAutoFetchLocked(false); }}
                 onKeyDown={(e) => { if (e.key === 'Enter') fetchRs(qRs); if (e.key === 'Escape') setShowRsDropdown(false); }}
                 onFocus={() => setShowRsDropdown(true)}
-                placeholder="Cari kode/nama poli RS…"
-                className="w-full rounded-xl border-2 border-slate-300 text-base px-3 py-2 placeholder-slate-400 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
+                placeholder="Cari kode/nama obat RS…"
+                className="w-full rounded-xl border-2 border-slate-300 text-base px-3 py-2 placeholder-slate-400 shadow-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition"
               />
             </div>
             <AnimatePresence>
@@ -324,14 +331,14 @@ export default function MappingPoliPcare() {
                 ) : (rsList || []).length > 0 ? (
                   rsList.map((it) => (
                     <motion.button
-                      whileHover={{ backgroundColor: 'rgba(99,102,241,0.08)' }}
+                      whileHover={{ backgroundColor: 'rgba(13,148,136,0.08)' }}
                       type="button"
-                      key={it.kd_poli}
+                      key={it.kode_brng}
                       onClick={() => handleSelectRs(it)}
-                      className={`w-full text-left px-3 py-2 text-sm transition-colors ${selectedRs?.kd_poli === it.kd_poli ? 'bg-slate-100' : ''}`}
+                      className={`w-full text-left px-3 py-2 text-sm transition-colors ${selectedRs?.kode_brng === it.kode_brng ? 'bg-slate-100' : ''}`}
                     >
-                      <div className="font-medium text-slate-800">{it.kd_poli}</div>
-                      <div className="text-slate-600">{it.nm_poli}</div>
+                      <div className="font-medium text-slate-800">{it.kode_brng}</div>
+                      <div className="text-slate-600">{it.nama_brng}</div>
                     </motion.button>
                   ))
                 ) : (
@@ -341,17 +348,16 @@ export default function MappingPoliPcare() {
               )}
             </AnimatePresence>
             {selectedRs && (
-              <div className="mt-2 text-xs text-slate-600">Dipilih: {selectedRs.kd_poli} — {selectedRs.nm_poli}</div>
+              <div className="mt-2 text-xs text-slate-600">Dipilih: {selectedRs.kode_brng} — {selectedRs.nama_brng}</div>
             )}
           </div>
         </div>
 
-        {/* BPJS Poli */}
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-colors hover:border-indigo-200 hover:shadow-md">
+        {/* BPJS DPHO */}
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-colors hover:border-teal-200 hover:shadow-md">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm font-semibold text-slate-800">Poli BPJS</div>
-             
+              <div className="text-sm font-semibold text-slate-800">Obat BPJS (DPHO)</div>
             </div>
             <motion.button
               whileHover={{ scale: 1.03 }}
@@ -371,8 +377,8 @@ export default function MappingPoliPcare() {
                 onChange={(e) => { setQBpjs(e.target.value); setShowBpjsDropdown(true); }}
                 onKeyDown={(e) => { if (e.key === 'Escape') setShowBpjsDropdown(false); }}
                 onFocus={() => setShowBpjsDropdown(true)}
-                placeholder="Cari kode/nama poli BPJS…"
-                className="w-full rounded-xl border-2 border-slate-300 text-base px-3 py-2 placeholder-slate-400 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
+                placeholder="Cari kode/nama obat BPJS…"
+                className="w-full rounded-xl border-2 border-slate-300 text-base px-3 py-2 placeholder-slate-400 shadow-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition"
               />
             </div>
             <AnimatePresence>
@@ -391,14 +397,14 @@ export default function MappingPoliPcare() {
                 ) : filteredBpjs.length > 0 ? (
                   filteredBpjs.map((it, idx) => (
                     <motion.button
-                      whileHover={{ backgroundColor: 'rgba(99,102,241,0.08)' }}
+                      whileHover={{ backgroundColor: 'rgba(13,148,136,0.08)' }}
                       type="button"
-                      key={`${it.kdPoli || idx}-${idx}`}
+                      key={`${it.kdObat || idx}-${idx}`}
                       onClick={() => handleSelectBpjs(it)}
-                      className={`w-full text-left px-3 py-2 text-sm transition-colors ${selectedBpjs?.kdPoli === it.kdPoli ? 'bg-slate-100' : ''}`}
+                      className={`w-full text-left px-3 py-2 text-sm transition-colors ${selectedBpjs?.kdObat === it.kdObat ? 'bg-slate-100' : ''}`}
                     >
-                      <div className="font-medium text-slate-800">{it.kdPoli || '-'}</div>
-                      <div className="text-slate-600">{it.nmPoli || it.nama || '-'}</div>
+                      <div className="font-medium text-slate-800">{it.kdObat || '-'}</div>
+                      <div className="text-slate-600">{it.nmObat || '-'}</div>
                     </motion.button>
                   ))
                 ) : (
@@ -408,7 +414,7 @@ export default function MappingPoliPcare() {
               )}
             </AnimatePresence>
             {selectedBpjs && (
-              <div className="mt-2 text-xs text-slate-600">Dipilih: {selectedBpjs.kdPoli} — {selectedBpjs.nmPoli || selectedBpjs.nama}</div>
+              <div className="mt-2 text-xs text-slate-600">Dipilih: {selectedBpjs.kdObat} — {selectedBpjs.nmObat}</div>
             )}
           </div>
         </div>
@@ -420,7 +426,7 @@ export default function MappingPoliPcare() {
           type="button"
           onClick={onSave}
           disabled={saving || !selectedRs || !selectedBpjs}
-          className={`inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm shadow ${saving || !selectedRs || !selectedBpjs ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : (editingRow ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-indigo-600 text-white hover:bg-indigo-700')}`}
+          className={`inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm shadow ${saving || !selectedRs || !selectedBpjs ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : (editingRow ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-teal-600 text-white hover:bg-teal-700')}`}
           whileHover={{ scale: (saving || !selectedRs || !selectedBpjs) ? 1 : 1.02 }}
           whileTap={{ scale: (saving || !selectedRs || !selectedBpjs) ? 1 : 0.97 }}
         >
@@ -468,7 +474,7 @@ export default function MappingPoliPcare() {
                   type="text"
                   value={mapQuery}
                   onChange={(e) => { setMapQuery(e.target.value); setPage(1); }}
-                  placeholder="Cari poli RS/BPJS…"
+                  placeholder="Cari obat RS/BPJS…"
                   className="w-full rounded-xl border-2 border-slate-300 text-sm px-3 py-1.5 placeholder-slate-400 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
                 />
               </div>
@@ -494,9 +500,9 @@ export default function MappingPoliPcare() {
         {/* Header columns (responsive) */}
         <div className="mt-3 hidden md:grid grid-cols-12 gap-2 text-xs text-slate-600">
           <div className="col-span-1 px-2 flex items-center gap-1">No <ArrowsUpDownIcon className="h-3 w-3" /></div>
-          <div className="col-span-3 px-2 flex items-center gap-1">Kode Poli RS <ArrowsUpDownIcon className="h-3 w-3" /></div>
-          <div className="col-span-3 px-2 flex items-center gap-1">Kode Poli BPJS <ArrowsUpDownIcon className="h-3 w-3" /></div>
-          <div className="col-span-4 px-2">Nama Poli BPJS</div>
+          <div className="col-span-3 px-2 flex items-center gap-1">Kode Obat RS <ArrowsUpDownIcon className="h-3 w-3" /></div>
+          <div className="col-span-3 px-2 flex items-center gap-1">Kode Obat BPJS <ArrowsUpDownIcon className="h-3 w-3" /></div>
+          <div className="col-span-4 px-2">Nama Obat BPJS</div>
           <div className="col-span-1 px-2 text-right">Aksi</div>
         </div>
 
@@ -504,7 +510,7 @@ export default function MappingPoliPcare() {
         <div className="mt-1 space-y-2">
           {visibleRows.map((row, idx) => (
             <div
-              key={`${row.kd_poli_rs}-${row.kd_poli_pcare || ''}-${idx}`}
+              key={`${row.kode_brng}-${row.kode_brng_pcare || ''}-${idx}`}
               className="grid grid-cols-12 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm hover:shadow transition"
             >
               {/* No */}
@@ -513,20 +519,23 @@ export default function MappingPoliPcare() {
                   {startIndex + idx + 1}
                 </span>
               </div>
-              {/* Kode Poli RS */}
+              {/* Kode Obat RS */}
               <div className="col-span-12 md:col-span-3">
-                <div className="text-sm font-medium text-slate-800">{row.kd_poli_rs}</div>
+                <div className="flex items-center gap-2">
+                  <BeakerIcon className="h-5 w-5 text-slate-500" />
+                  <div className="text-sm font-medium text-slate-800">{row.kode_brng}</div>
+                </div>
               </div>
-              {/* Kode Poli BPJS */}
+              {/* Kode Obat BPJS */}
               <div className="col-span-6 md:col-span-3">
                 <span className="inline-flex items-center rounded-full bg-sky-100 text-sky-700 px-2 py-0.5 text-xs">
-                  {row.kd_poli_pcare}
+                  {row.kode_brng_pcare}
                 </span>
               </div>
-              {/* Nama Poli BPJS */}
+              {/* Nama Obat BPJS */}
               <div className="col-span-6 md:col-span-4">
                 <span className="text-sm text-slate-700">
-                  {row.nm_poli_pcare || '-'}
+                  {row.nama_brng_pcare || '-'}
                 </span>
               </div>
               {/* Aksi */}
@@ -592,4 +601,4 @@ export default function MappingPoliPcare() {
   );
 }
 
-MappingPoliPcare.layout = (page) => <AppLayout title="Mapping Poli PCare" children={page} />;
+MappingObatPcare.layout = (page) => <AppLayout title="Mapping Obat PCare" children={page} />;
