@@ -275,7 +275,7 @@ const cardsByTab = {
       key: 'mapDokter',
       title: 'Mapping Dokter PCare',
       desc: 'Map dokter RS → PCare',
-      href: '#',
+      href: '/pcare/mapping/dokter',
       gradient: 'from-fuchsia-500 to-pink-600',
       icon: (
         <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">

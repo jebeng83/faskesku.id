@@ -6,3 +6,5 @@ export { default as Textarea } from './Textarea';
 export { Card, CardHeader, CardTitle, CardContent } from './Card';
 export { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from './Select';
 export { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from './Table';
+export { default as Toast } from './Toast';
+export { default as Toaster } from './Toaster';

@@ -886,6 +886,26 @@ class PcareController extends Controller
     }
 
     /**
+     * Pencarian dokter RS dari tabel lokal 'dokter'.
+     * Query param: q (opsional) - cari pada kd_dokter atau nm_dokter
+     * Response: { data: [{ kd_dokter, nm_dokter }] }
+     */
+    public function searchDokterRs(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+        $query = DB::table('dokter')->select(['kd_dokter', 'nm_dokter']);
+        if ($q !== '') {
+            $like = '%' . $q . '%';
+            $query->where(function ($w) use ($like) {
+                $w->where('kd_dokter', 'like', $like)
+                    ->orWhere('nm_dokter', 'like', $like);
+            });
+        }
+        $rows = $query->orderBy('kd_dokter')->limit(100)->get();
+        return response()->json(['data' => $rows]);
+    }
+
+    /**
      * Ambil daftar mapping poli dari tabel 'maping_poliklinik_pcare'.
      * Response: { data: [{ kd_poli_rs, kd_poli_pcare, nm_poli_pcare }] }
      */
@@ -1007,6 +1027,133 @@ class PcareController extends Controller
         return response()->json([
             'metaData' => [
                 'message' => 'Mapping poli tidak ditemukan',
+                'code' => 404,
+            ],
+        ], 404);
+    }
+
+    /**
+     * Ambil daftar mapping dokter dari tabel 'maping_dokter_pcare'.
+     * Response: { data: [{ kd_dokter, kd_dokter_pcare, nm_dokter_pcare }] }
+     */
+    public function getMappingDokter(Request $request)
+    {
+        $rows = DB::table('maping_dokter_pcare')
+            ->select(['kd_dokter', 'kd_dokter_pcare', 'nm_dokter_pcare'])
+            ->orderBy('kd_dokter')
+            ->limit(1000)
+            ->get();
+        return response()->json(['data' => $rows]);
+    }
+
+    /**
+     * Simpan mapping dokter ke tabel 'maping_dokter_pcare'.
+     * Body JSON: { kd_dokter: varchar(20), kd_dokter_pcare: varchar(20), nm_dokter_pcare: varchar(50) }
+     * Tidak melakukan migrasi — tabel sudah ada.
+     * Perilaku: upsert berdasarkan kd_dokter.
+     */
+    public function storeMappingDokter(Request $request)
+    {
+        $kdDokter = strtoupper(trim((string) $request->input('kd_dokter', '')));
+        $kdDokterPcare = strtoupper(trim((string) $request->input('kd_dokter_pcare', '')));
+        $nmDokterPcare = trim((string) $request->input('nm_dokter_pcare', ''));
+
+        if ($kdDokter === '' || $kdDokterPcare === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'kd_dokter dan kd_dokter_pcare wajib diisi',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+        if (strlen($kdDokter) > 20 || strlen($kdDokterPcare) > 20) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Panjang kd_dokter dan kd_dokter_pcare maksimal 20 karakter',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+        if (strlen($nmDokterPcare) > 50) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Panjang nm_dokter_pcare maksimal 50 karakter',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        try {
+            DB::table('maping_dokter_pcare')->updateOrInsert(
+                ['kd_dokter' => $kdDokter],
+                [
+                    'kd_dokter_pcare' => $kdDokterPcare,
+                    'nm_dokter_pcare' => $nmDokterPcare,
+                ]
+            );
+        } catch (\Throwable $e) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Gagal menyimpan mapping: ' . $e->getMessage(),
+                    'code' => 500,
+                ],
+            ], 500);
+        }
+
+        return response()->json([
+            'metaData' => [
+                'message' => 'Berhasil menyimpan mapping dokter',
+                'code' => 200,
+            ],
+        ]);
+    }
+
+    /**
+     * Hapus mapping dokter dari tabel 'maping_dokter_pcare'.
+     * Body JSON: { kd_dokter: varchar(20), kd_dokter_pcare?: varchar(20) }
+     * Jika kd_dokter_pcare tidak diisi, akan menghapus berdasarkan kd_dokter saja.
+     */
+    public function deleteMappingDokter(Request $request)
+    {
+        $kdDokter = strtoupper(trim((string) $request->input('kd_dokter', '')));
+        $kdDokterPcare = strtoupper(trim((string) $request->input('kd_dokter_pcare', '')));
+
+        if ($kdDokter === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'kd_dokter wajib diisi untuk hapus mapping',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        try {
+            $query = DB::table('maping_dokter_pcare')->where('kd_dokter', $kdDokter);
+            if ($kdDokterPcare !== '') {
+                $query->where('kd_dokter_pcare', $kdDokterPcare);
+            }
+            $deleted = $query->delete();
+        } catch (\Throwable $e) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Gagal menghapus mapping: ' . $e->getMessage(),
+                    'code' => 500,
+                ],
+            ], 500);
+        }
+
+        if ($deleted > 0) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Berhasil menghapus mapping dokter',
+                    'code' => 200,
+                ],
+            ]);
+        }
+
+        return response()->json([
+            'metaData' => [
+                'message' => 'Mapping dokter tidak ditemukan',
                 'code' => 404,
             ],
         ], 404);

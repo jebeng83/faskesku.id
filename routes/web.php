@@ -365,6 +365,11 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('Pcare/MappingPoliPcare');
         })->name('mapping.poli');
 
+        // Mapping Dokter PCare page (Inertia)
+        Route::get('/mapping/dokter', function () {
+            return Inertia::render('Pcare/MappingDokterPcare');
+        })->name('mapping.dokter');
+
         // Referensi Diagnosa page (Inertia)
         Route::get('/referensi/diagnosa', function () {
             return Inertia::render('Pcare/ReferensiPcare/ReferensiDiagnosa');
@@ -491,6 +496,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/api/rs/poliklinik', [\App\Http\Controllers\Pcare\PcareController::class, 'searchPoliklinikRs'])
             ->name('rs.poliklinik.api');
 
+        // API: Pencarian Dokter RS (sumber: tabel dokter)
+        Route::get('/api/rs/dokter', [\App\Http\Controllers\Pcare\PcareController::class, 'searchDokterRs'])
+            ->name('rs.dokter.api');
+
         // API: Mapping Poli (GET daftar & POST simpan)
         Route::get('/api/mapping/poli', [\App\Http\Controllers\Pcare\PcareController::class, 'getMappingPoli'])
             ->name('mapping.poli.get');
@@ -498,6 +507,14 @@ Route::middleware('auth')->group(function () {
             ->name('mapping.poli.store');
         Route::delete('/api/mapping/poli', [\App\Http\Controllers\Pcare\PcareController::class, 'deleteMappingPoli'])
             ->name('mapping.poli.delete');
+
+        // API: Mapping Dokter (GET daftar & POST simpan & DELETE)
+        Route::get('/api/mapping/dokter', [\App\Http\Controllers\Pcare\PcareController::class, 'getMappingDokter'])
+            ->name('mapping.dokter.get');
+        Route::post('/api/mapping/dokter', [\App\Http\Controllers\Pcare\PcareController::class, 'storeMappingDokter'])
+            ->name('mapping.dokter.store');
+        Route::delete('/api/mapping/dokter', [\App\Http\Controllers\Pcare\PcareController::class, 'deleteMappingDokter'])
+            ->name('mapping.dokter.delete');
 
         // API: Get Referensi Tindakan dari BPJS PCare
         Route::get('/api/tindakan', [\App\Http\Controllers\Pcare\PcareController::class, 'getTindakan'])
