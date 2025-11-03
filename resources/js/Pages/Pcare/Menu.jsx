@@ -284,6 +284,19 @@ const cardsByTab = {
         </svg>
       )
     },
+    {
+      key: 'mapObat',
+      title: 'Mapping Obat PCare',
+      desc: 'Map obat RS → DPHO PCare',
+      href: '/pcare/mapping/obat',
+      gradient: 'from-emerald-500 to-teal-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <rect x="4" y="4" width="16" height="12" rx="2" />
+          <path d="M8 10h8M8 14h8" />
+        </svg>
+      )
+    },
   ],
   kelompok: [
     {
