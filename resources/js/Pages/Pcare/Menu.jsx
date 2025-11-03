@@ -263,7 +263,7 @@ const cardsByTab = {
       key: 'mapPoli',
       title: 'Mapping Poli PCare',
       desc: 'Map kode poli RS → PCare',
-      href: '#',
+      href: '/pcare/mapping/poli',
       gradient: 'from-cyan-500 to-sky-600',
       icon: (
         <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
