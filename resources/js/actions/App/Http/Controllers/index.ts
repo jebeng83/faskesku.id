@@ -10,6 +10,7 @@ import DataBarangController from './DataBarangController'
 import Farmasi from './Farmasi'
 import GudangBarangController from './GudangBarangController'
 import Pcare from './Pcare'
+import JadwalController from './JadwalController'
 import AuthController from './AuthController'
 import PatientController from './PatientController'
 import RegistrationController from './RegistrationController'
@@ -44,6 +45,7 @@ const Controllers = {
     Farmasi: Object.assign(Farmasi, Farmasi),
     GudangBarangController: Object.assign(GudangBarangController, GudangBarangController),
     Pcare: Object.assign(Pcare, Pcare),
+    JadwalController: Object.assign(JadwalController, JadwalController),
     AuthController: Object.assign(AuthController, AuthController),
     PatientController: Object.assign(PatientController, PatientController),
     RegistrationController: Object.assign(RegistrationController, RegistrationController),

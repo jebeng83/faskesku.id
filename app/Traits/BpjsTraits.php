@@ -20,14 +20,15 @@ trait BpjsTraits
         $row = DB::table('setting_bridging_bpjs')->first();
     
         return [
-            'base_url' => env('BPJS_PCARE_BASE_URL'),
-            'cons_id' => $row?->cons_id_pcare ?? env('BPJS_PCARE_CONS_ID'),
-            'cons_pwd' => $row?->secretkey_pcare ?? env('BPJS_PCARE_CONS_PWD'),
-            'user_key' => $row?->userkey_pcare ?? env('BPJS_PCARE_USER_KEY'),
-            'user' => $row?->user_pcare ?? env('BPJS_PCARE_USER'),
-            'pass' => $row?->pass_pcare ?? env('BPJS_PCARE_PASS'),
-            'kode_ppk' => env('BPJS_PCARE_KODE_PPK'),
-            'app_code' => env('BPJS_PCARE_APP_CODE', '095'),
+            // Gunakan config() agar nilai dari .env tetap tersedia saat config di-cache
+            'base_url' => config('bpjs.pcare.base_url'),
+            'cons_id' => $row?->cons_id_pcare ?? config('bpjs.pcare.cons_id'),
+            'cons_pwd' => $row?->secretkey_pcare ?? config('bpjs.pcare.cons_pwd'),
+            'user_key' => $row?->userkey_pcare ?? config('bpjs.pcare.user_key'),
+            'user' => $row?->user_pcare ?? config('bpjs.pcare.user'),
+            'pass' => $row?->pass_pcare ?? config('bpjs.pcare.pass'),
+            'kode_ppk' => config('bpjs.pcare.kode_ppk'),
+            'app_code' => config('bpjs.pcare.app_code'),
         ];
     }
 
@@ -124,7 +125,12 @@ trait BpjsTraits
     ): array {
         $cfg = $this->pcareConfig();
         $headers = array_merge($this->buildPcareHeaders($overrideTimestamp), $extraHeaders);
-        $url = rtrim($cfg['base_url'], '/') . '/' . ltrim($endpoint, '/');
+        // Pastikan base_url bertipe string untuk mencegah TypeError ketika env tidak di-set
+        $baseUrl = rtrim((string) ($cfg['base_url'] ?? ''), '/');
+        if ($baseUrl === '') {
+            throw new \InvalidArgumentException('Base URL PCare belum dikonfigurasi. Set BPJS_PCARE_BASE_URL di .env untuk server ini.');
+        }
+        $url = $baseUrl . '/' . ltrim($endpoint, '/');
 
         $request = Http::withHeaders($headers);
 

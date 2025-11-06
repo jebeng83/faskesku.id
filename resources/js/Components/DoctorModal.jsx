@@ -51,7 +51,7 @@ export default function DoctorModal({
 	availableEmployees,
 	spesialisList,
 }) {
-	const { data, setData, post, put, processing, errors, reset } = useForm({
+	const { data, setData, post, put, processing, errors, reset, transform } = useForm({
 		kd_dokter: doctor?.kd_dokter || "",
 		nm_dokter: doctor?.nm_dokter || "",
 		jk: doctor?.jk || "L",
@@ -312,9 +312,16 @@ export default function DoctorModal({
 				},
 			});
 		} else {
-			put(route("doctors.update", doctor.kd_dokter), {
+			// Use method spoofing to avoid PUT 405 issues
+			transform((payload) => ({ ...payload, _method: "PUT" }));
+			post(route("doctors.update", doctor.kd_dokter), {
+				forceFormData: true,
 				onSuccess: () => {
 					onClose();
+				},
+				onFinish: () => {
+					// Reset transform to avoid affecting subsequent requests
+					transform((payload) => payload);
 				},
 			});
 		}

@@ -2,8 +2,18 @@ import React, { useState, useEffect } from "react";
 import { Head, router } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  ArrowPathIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  IdentificationIcon,
+  MagnifyingGlassIcon,
+  ClipboardDocumentCheckIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 import axios from "axios";
 import PatientCreateModal from "@/Components/PatientCreateModal";
+import PatientEditModal from "@/Components/PatientEditModal";
 
 export default function Registration({
 	auth,
@@ -21,6 +31,8 @@ export default function Registration({
 	const [selectedRegistration, setSelectedRegistration] = useState(null);
 	const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 	const [isPatientModalOpen, setIsPatientModalOpen] = useState(false);
+	const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+	const [editPatient, setEditPatient] = useState(null);
 	const [registrationData, setRegistrationData] = useState(registrations);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [isLoading, setIsLoading] = useState(false);
@@ -57,6 +69,39 @@ export default function Registration({
 		biaya_reg: 0,
 		has_registered: false,
 	});
+
+	// BPJS PCare membership state
+	const [bpjsNik, setBpjsNik] = useState("");
+	const [bpjsLoading, setBpjsLoading] = useState(false);
+	const [bpjsError, setBpjsError] = useState(null);
+	const [bpjsData, setBpjsData] = useState(null); // { metaData, response }
+
+	const sanitizeNik = (value) => (value || "").replace(/[^0-9]/g, "").slice(0, 16);
+
+	const fetchBpjsByNik = async (nikOverride) => {
+		const n = sanitizeNik(nikOverride ?? bpjsNik);
+		setBpjsNik(n);
+		setBpjsError(null);
+		setBpjsData(null);
+		if (!n || n.length < 8) {
+			setBpjsError("Masukkan NIK yang valid (min. 8 digit, ideal 16 digit).");
+			return;
+		}
+		setBpjsLoading(true);
+		try {
+			const res = await axios.get("/pcare/api/peserta/nik", { params: { nik: n } });
+			// Expect shape: { metaData, response }
+			if (res.status === 200) {
+				setBpjsData({ metaData: res.data?.metaData, response: res.data?.response });
+			} else {
+				setBpjsError(res.data?.metaData?.message || "Gagal mengambil data peserta");
+			}
+		} catch (e) {
+			setBpjsError(e?.response?.data?.metaData?.message || e?.message || "Terjadi kesalahan jaringan");
+		} finally {
+			setBpjsLoading(false);
+		}
+	};
 
 	// Search patients
 	const handleSearch = async (term) => {
@@ -96,6 +141,18 @@ export default function Registration({
 			p_jawab: patient.namakeluarga || "",
 			almt_pj: patient.alamatpj || patient.alamat || "",
 		});
+
+		// Initialize BPJS check by default using patient's NIK if available
+		try {
+			const nik = sanitizeNik(patient?.no_ktp || "");
+			setBpjsNik(nik);
+			setBpjsError(null);
+			setBpjsData(null);
+			if (nik) {
+				// Fire and forget; no need to await before opening modal
+				fetchBpjsByNik(nik);
+			}
+		} catch (_) {}
 		setIsModalOpen(true);
 	};
 
@@ -141,6 +198,23 @@ export default function Registration({
 
 			if (response.data.success) {
 				alert(response.data.message);
+				// Setelah registrasi lokal berhasil, coba kirim antrean ke Mobile JKN
+				try {
+					const reg = response.data.data || {};
+					await axios.post('/api/mobilejkn/antrean/add', {
+						no_rkm_medis: selectedPatient.no_rkm_medis,
+						kd_poli: formData.kd_poli,
+						kd_dokter: formData.kd_dokter,
+						tanggalperiksa: reg.tgl_registrasi,
+						no_reg: reg.no_reg,
+					});
+					// Beri informasi sukses ringan; respons detail ditangani di backend
+					console.log('Antrean Mobile JKN berhasil dikirim');
+				} catch (err) {
+					console.warn('Gagal mengirim antrean Mobile JKN:', err?.response?.data || err?.message);
+					// Jangan blokir alur registrasi; tampilkan info ringan
+					alert('Registrasi lokal berhasil, namun kirim antrean Mobile JKN gagal. Silakan cek pengaturan Mobile JKN.');
+				}
 				setIsModalOpen(false);
 				resetForm();
 				// Refresh registrations
@@ -197,6 +271,45 @@ export default function Registration({
 	// Open patient modal
 	const openPatientModal = () => {
 		setIsPatientModalOpen(true);
+	};
+
+	// Open/Close edit patient modal
+	const openEditModal = (patient) => {
+		setEditPatient(patient || selectedPatient);
+		setIsEditModalOpen(true);
+	};
+
+	const closeEditModal = () => {
+		setIsEditModalOpen(false);
+		setEditPatient(null);
+	};
+
+	// After successful edit, refresh search results and selected patient data
+	const handleEditSuccess = (updatedData) => {
+		try {
+			// Refresh list if searching
+			if (searchTerm) {
+				handleSearch(searchTerm);
+			}
+
+			// Update selected patient info in modal
+			if (selectedPatient && (editPatient?.no_rkm_medis === selectedPatient.no_rkm_medis)) {
+				setSelectedPatient((prev) => ({ ...prev, ...updatedData }));
+				setFormData((prev) => ({
+					...prev,
+					p_jawab: updatedData?.namakeluarga ?? prev.p_jawab,
+					almt_pj: updatedData?.alamatpj ?? updatedData?.alamat ?? prev.almt_pj,
+				}));
+
+				// If NIK changes, refresh BPJS data
+				const newNik = sanitizeNik(updatedData?.no_ktp || selectedPatient?.no_ktp || "");
+				if (newNik && newNik !== bpjsNik) {
+					fetchBpjsByNik(newNik);
+				}
+			}
+		} catch (error) {
+			console.error("Error updating local state after edit:", error);
+		}
 	};
 
 	// Close patient modal
@@ -740,39 +853,52 @@ export default function Registration({
 																}}
 																whileTap={{ scale: 0.98 }}
 															>
-																<div className="flex justify-between items-start">
-																	<div className="flex-1">
-																		<h4 className="font-medium text-gray-900 dark:text-white">
-																			{patient.nm_pasien}
-																		</h4>
-																		<p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
-																			RM: {patient.no_rkm_medis}
-																		</p>
-																		{patient.no_ktp && (
-																			<p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
-																				KTP: {patient.no_ktp}
-																			</p>
-																		)}
-																		<p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
-																			{patient.jk === "L"
-																				? "Laki-laki"
-																				: "Perempuan"}
-																			, {patient.umur}
-																		</p>
-																		<p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-																			{patient.alamat}
-																		</p>
-																	</div>
-																	<motion.button
-																		className="ml-2 px-2 lg:px-3 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 transition-colors flex-shrink-0"
-																		whileHover={{ scale: 1.05 }}
-																		whileTap={{ scale: 0.95 }}
-																	>
-																		Pilih
-																	</motion.button>
-																</div>
-															</motion.div>
-													  ))
+                                                                <div className="flex justify-between items-start">
+                                                                    <div className="flex-1">
+                                                                        <h4 className="font-medium text-gray-900 dark:text-white">
+                                                                            {patient.nm_pasien}
+                                                                        </h4>
+                                                                        <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
+                                                                            RM: {patient.no_rkm_medis}
+                                                                        </p>
+                                                                        {patient.no_ktp && (
+                                                                            <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
+                                                                                KTP: {patient.no_ktp}
+                                                                            </p>
+                                                                        )}
+                                                                        <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
+                                                                            {patient.jk === "L"
+                                                                                ? "Laki-laki"
+                                                                                : "Perempuan"}
+                                                                            , {patient.umur}
+                                                                        </p>
+                                                                        <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                                                                            {patient.alamat}
+                                                                        </p>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2 ml-2">
+                                                                        <motion.button
+                                                                            className="px-2 lg:px-3 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 transition-colors flex-shrink-0"
+                                                                            whileHover={{ scale: 1.05 }}
+                                                                            whileTap={{ scale: 0.95 }}
+                                                                        >
+                                                                            Pilih
+                                                                        </motion.button>
+                                                                        <motion.button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                openEditModal(patient);
+                                                                            }}
+                                                                            className="px-2 lg:px-3 py-1 bg-indigo-600 text-white text-xs rounded-md hover:bg-indigo-700 transition-colors flex-shrink-0"
+                                                                            whileHover={{ scale: 1.05 }}
+                                                                            whileTap={{ scale: 0.95 }}
+                                                                        >
+                                                                            Edit
+                                                                        </motion.button>
+                                                                    </div>
+                                                                </div>
+                                                            </motion.div>
+                                                      ))
 													: !isSearching && (
 															<motion.div
 																className="text-center py-6 lg:py-8 text-gray-500 dark:text-gray-400"
@@ -1459,44 +1585,192 @@ export default function Registration({
 							onClick={(e) => e.stopPropagation()}
 						>
 							<div className="p-4 lg:p-6">
-								<motion.div
-									className="flex justify-between items-center mb-4 lg:mb-6"
-									initial={{ opacity: 0, y: -20 }}
-									animate={{ opacity: 1, y: 0 }}
-									transition={{ duration: 0.3, delay: 0.1 }}
-								>
-									<h3 className="text-base lg:text-lg font-semibold text-gray-900 dark:text-white pr-4">
-										Registrasi Periksa - {selectedPatient?.nm_pasien}
-									</h3>
-									<motion.button
-										onClick={closeModal}
-										className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0"
-										whileHover={{ scale: 1.1, rotate: 90 }}
-										whileTap={{ scale: 0.9 }}
-										transition={{ duration: 0.2 }}
-									>
-										<svg
-											className="w-6 h-6"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												strokeWidth={2}
-												d="M6 18L18 6M6 6l12 12"
-											/>
-										</svg>
-									</motion.button>
-								</motion.div>
+                                <motion.div
+                                    className="flex justify-between items-center mb-4 lg:mb-6"
+                                    initial={{ opacity: 0, y: -20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3, delay: 0.1 }}
+                                >
+                                    <h3 className="text-base lg:text-lg font-semibold text-gray-900 dark:text-white pr-4">
+                                        Registrasi Periksa - {selectedPatient?.nm_pasien}
+                                    </h3>
+                                    <div className="flex items-center gap-2">
+                                        <motion.button
+                                            onClick={() => openEditModal(selectedPatient)}
+                                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 text-xs rounded-md flex items-center gap-1 transition-colors shadow-sm"
+                                            whileHover={{ scale: 1.05, y: -1 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            transition={{ duration: 0.2 }}
+                                        >
+                                            <svg
+                                                className="w-3.5 h-3.5"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M11 5h2m-6 6h6m-3 6h6M7 7l10 10"
+                                                />
+                                            </svg>
+                                            Edit Data Pasien
+                                        </motion.button>
+                                        <motion.button
+                                            onClick={closeModal}
+                                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0"
+                                            whileHover={{ scale: 1.1, rotate: 90 }}
+                                            whileTap={{ scale: 0.9 }}
+                                            transition={{ duration: 0.2 }}
+                                        >
+                                            <svg
+                                                className="w-6 h-6"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M6 18L18 6M6 6l12 12"
+                                                />
+                                            </svg>
+                                        </motion.button>
+                                    </div>
+                                </motion.div>
 
-								<motion.form
-									onSubmit={handleSubmitRegister}
-									className="space-y-3 lg:space-y-4"
-									initial={{ opacity: 0, y: 20 }}
-									animate={{ opacity: 1, y: 0 }}
-									transition={{ duration: 0.4, delay: 0.2 }}
+                                {/* BPJS Kepesertaan - tampil di atas form registrasi */}
+                                <motion.div
+                                    className="mb-4"
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3, delay: 0.2 }}
+                                >
+                                    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <IdentificationIcon className="h-5 w-5 text-slate-500" />
+                                                <div>
+                                                    <div className="text-sm font-semibold text-slate-800">Kepesertaan BPJS</div>
+                                                    <div className="text-xs text-slate-500">Cek otomatis berdasarkan NIK pasien</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    value={bpjsNik}
+                                                    onChange={(e) => setBpjsNik(sanitizeNik(e.target.value))}
+                                                    placeholder="Masukkan NIK"
+                                                    className="w-40 rounded-md border border-slate-300 px-2 py-1 text-sm"
+                                                />
+                                                <button
+                                                    onClick={() => fetchBpjsByNik()}
+                                                    disabled={bpjsLoading}
+                                                    className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-white shadow ${bpjsLoading ? 'bg-emerald-400' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+                                                >
+                                                    {bpjsLoading ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <MagnifyingGlassIcon className="h-4 w-4" />}
+                                                    {bpjsLoading ? 'Mencari…' : 'Cari'}
+                                                </button>
+                                                <button
+                                                    onClick={() => { setBpjsNik(sanitizeNik(selectedPatient?.no_ktp || '')); setBpjsError(null); setBpjsData(null); }}
+                                                    className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-50"
+                                                >
+                                                    Reset
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Status */}
+                                        <div className="mt-2 flex items-center gap-2">
+                                            {bpjsLoading ? (
+                                                <>
+                                                    <ArrowPathIcon className="h-4 w-4 animate-spin text-emerald-600" />
+                                                    <span className="text-slate-700 text-sm">Memuat…</span>
+                                                </>
+                                            ) : bpjsError ? (
+                                                <>
+                                                    <ExclamationTriangleIcon className="h-4 w-4 text-red-600" />
+                                                    <span className="text-red-700 text-sm">{bpjsError}</span>
+                                                </>
+                                            ) : bpjsData?.response ? (
+                                                <>
+                                                    <CheckCircleIcon className="h-4 w-4 text-emerald-600" />
+                                                    <span className="text-slate-700 text-sm">{bpjsData?.metaData?.message || 'OK'}</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <IdentificationIcon className="h-4 w-4 text-slate-500" />
+                                                    <span className="text-slate-600 text-sm">Siap mencari</span>
+                                                </>
+                                            )}
+                                        </div>
+
+                                        {/* Hasil singkat */}
+                                        {bpjsData?.response && (
+                                            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                                <div className="rounded-lg border border-slate-200 p-3">
+                                                    <div className="text-xs text-slate-500">Nama Peserta</div>
+                                                    <div className="mt-1 flex items-center gap-2 text-sm text-slate-800">
+                                                        <span>{bpjsData.response?.nama || '-'}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="rounded-lg border border-slate-200 p-3">
+                                                    <div className="text-xs text-slate-500">No. Kartu</div>
+                                                    <div className="mt-1 flex items-center gap-2 text-sm text-slate-800">
+                                                        <span>{bpjsData.response?.noKartu || '-'}</span>
+                                                        {bpjsData.response?.noKartu && (
+                                                            <button onClick={async () => { try { await navigator.clipboard.writeText(bpjsData.response.noKartu); } catch(_){} }} className="ml-1 rounded p-1 text-slate-400 hover:text-slate-600" title="Salin No. Kartu">
+                                                                <ClipboardDocumentCheckIcon className="h-4 w-4" />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="rounded-lg border border-slate-200 p-3">
+                                                    <div className="text-xs text-slate-500">Status</div>
+                                                    <div className="mt-1 text-sm">
+                                                        {bpjsData.response?.aktif ? (
+                                                            <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">AKTIF</span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">TIDAK AKTIF</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="rounded-lg border border-slate-200 p-3">
+                                                    <div className="text-xs text-slate-500">NIK</div>
+                                                    <div className="mt-1 text-sm text-slate-800">{bpjsData.response?.noKTP || '-'}</div>
+                                                </div>
+                                                <div className="rounded-lg border border-slate-200 p-3">
+                                                    <div className="text-xs text-slate-500">Provider FKTP</div>
+                                                    <div className="mt-1 text-sm text-slate-800">{bpjsData.response?.kdProviderPst?.nmProvider || '-'}</div>
+                                                </div>
+                                                <div className="rounded-lg border border-slate-200 p-3">
+                                                    <div className="text-xs text-slate-500">Kelas</div>
+                                                    <div className="mt-1 text-sm text-slate-800">{bpjsData.response?.jnsKelas?.nama || bpjsData.response?.jnsKelas?.kode || '-'}</div>
+                                                </div>
+                                                <div className="rounded-lg border border-slate-200 p-3">
+                                                    <div className="text-xs text-slate-500">Mulai Aktif</div>
+                                                    <div className="mt-1 text-sm text-slate-800">{bpjsData.response?.tglMulaiAktif || '-'}</div>
+                                                </div>
+                                                <div className="rounded-lg border border-slate-200 p-3">
+                                                    <div className="text-xs text-slate-500">Akhir Berlaku</div>
+                                                    <div className="mt-1 text-sm text-slate-800">{bpjsData.response?.tglAkhirBerlaku || '-'}</div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </motion.div>
+
+                                <motion.form
+                                    onSubmit={handleSubmitRegister}
+                                    className="space-y-3 lg:space-y-4"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.4, delay: 0.2 }}
 								>
 									<motion.div
 										className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4"
@@ -2039,6 +2313,14 @@ export default function Registration({
 				isOpen={isPatientModalOpen}
 				onClose={closePatientModal}
 				onSuccess={handlePatientSuccess}
+			/>
+
+			{/* Patient Edit Modal */}
+			<PatientEditModal
+				isOpen={isEditModalOpen}
+				onClose={closeEditModal}
+				patient={editPatient || selectedPatient}
+				onSuccess={handleEditSuccess}
 			/>
 		</AppLayout>
 	);

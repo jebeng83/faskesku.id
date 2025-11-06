@@ -121,6 +121,14 @@ class PermissionSeeder extends Seeder
             'farmasi.index',
             // Bridging PCare landing permission
             'pcare.index',
+
+            // Jadwal permissions
+            'view-jadwal',
+            'create-jadwal',
+            'edit-jadwal',
+            'delete-jadwal',
+            // Menu route permission alias
+            'jadwal.index',
         ];
 
         foreach ($permissions as $permission) {

@@ -5,7 +5,7 @@ import AppLayout from '@/Layouts/AppLayout';
 
 // Modal Component for Add/Edit Kategori
 const KategoriModal = ({ isOpen, onClose, editData = null }) => {
-    const { data, setData, post, put, processing, errors, reset } = useForm({
+    const { data, setData, post, put, processing, errors, reset, transform } = useForm({
         kd_kategori: editData?.kd_kategori || '',
         nm_kategori: editData?.nm_kategori || ''
     });
@@ -16,14 +16,18 @@ const KategoriModal = ({ isOpen, onClose, editData = null }) => {
         e.preventDefault();
         
         if (isEditMode) {
-            put(route('kategori-perawatan.update', editData.kd_kategori), {
+            // Spoof PUT via POST
+            transform((payload) => ({ ...payload, _method: 'PUT' }));
+            post(route('kategori-perawatan.update', editData.kd_kategori), {
+                forceFormData: true,
                 onSuccess: () => {
                     reset();
                     onClose();
                 },
                 onError: (errors) => {
                     console.error('Update errors:', errors);
-                }
+                },
+                onFinish: () => transform((payload) => payload)
             });
         } else {
             post(route('kategori-perawatan.store'), {
@@ -159,7 +163,8 @@ export default function Index({ title, data, search, filters }) {
 
     const handleDelete = (kategori) => {
         if (confirm(`Apakah Anda yakin ingin menghapus kategori "${kategori.nm_kategori}"?`)) {
-            router.delete(route('kategori-perawatan.destroy', kategori.kd_kategori), {
+            router.post(route('kategori-perawatan.destroy', kategori.kd_kategori), { _method: 'DELETE' }, {
+                forceFormData: true,
                 onSuccess: () => {
                     // Success handled by Inertia
                 },

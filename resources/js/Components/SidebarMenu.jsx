@@ -4,6 +4,30 @@ import { ChevronDownIcon, ChevronRightIcon, Bars3Icon, ArrowUturnLeftIcon } from
 import { motion, AnimatePresence } from "framer-motion";
 import { route } from "ziggy-js";
 
+// Helper to resolve a route name robustly by trying common variants (casing/spacing)
+const resolveRouteUrl = (routeName, absolute = false) => {
+    const candidates = [];
+    if (typeof routeName === "string") {
+        const raw = routeName;
+        candidates.push(raw);
+        candidates.push(raw.toLowerCase());
+        candidates.push(raw.replace(/\s+/g, "-").toLowerCase());
+        candidates.push(raw.replace(/\s+/g, "_").toLowerCase());
+    } else if (routeName) {
+        candidates.push(routeName);
+    }
+
+    for (const name of candidates) {
+        try {
+            const url = route(name, {}, absolute);
+            if (url) return url;
+        } catch (e) {
+            // try next candidate
+        }
+    }
+    return null;
+};
+
 export default function SidebarMenu({
     collapsed = false,
     title = "Faskesku",
@@ -119,21 +143,14 @@ export default function SidebarMenu({
 
 		// Check if menu route matches current route name
 		if (menu.route) {
-			try {
-				const menuUrl = route(menu.route);
-				if (currentPath === menuUrl) {
-					if (process.env.NODE_ENV === "development") {
-						console.log(
-							`Menu ${menu.name} is active (route match: ${menu.route} -> ${menuUrl})`
-						);
-					}
-					return true;
-				}
-			} catch (error) {
-				// Route not found, continue checking
+			const menuUrl = resolveRouteUrl(menu.route);
+			if (menuUrl && currentPath === menuUrl) {
 				if (process.env.NODE_ENV === "development") {
-					console.warn(`Route ${menu.route} not found for menu ${menu.name}`);
+					console.log(
+						`Menu ${menu.name} is active (route match: ${menu.route} -> ${menuUrl})`
+					);
 				}
+				return true;
 			}
 		}
 
@@ -149,22 +166,19 @@ export default function SidebarMenu({
 
 		// Check if current path matches menu route pattern
 		if (menu.route) {
-			try {
-				const menuUrl = route(menu.route);
-				if (
-					menuUrl !== "#" &&
-					currentPath.startsWith(menuUrl) &&
-					menuUrl !== "/"
-				) {
-					if (process.env.NODE_ENV === "development") {
-						console.log(
-							`Menu ${menu.name} is active (route prefix match: ${menu.route} -> ${menuUrl})`
-						);
-					}
-					return true;
+			const menuUrl = resolveRouteUrl(menu.route);
+			if (
+				menuUrl &&
+				menuUrl !== "#" &&
+				currentPath.startsWith(menuUrl) &&
+				menuUrl !== "/"
+			) {
+				if (process.env.NODE_ENV === "development") {
+					console.log(
+						`Menu ${menu.name} is active (route prefix match: ${menu.route} -> ${menuUrl})`
+					);
 				}
-			} catch (error) {
-				// Route not found, continue checking
+				return true;
 			}
 		}
 
@@ -205,6 +219,20 @@ export default function SidebarMenu({
                 return "/pcare";
             }
         }
+        // Special case: Rawat Jalan root should navigate to a valid default sub-route
+        if (
+            (menu.slug && menu.slug.replace(/\s+/g, "-").toLowerCase() === "rawat-jalan") ||
+            (menu.name && menu.name.replace(/\s+/g, "-").toLowerCase().includes("rawat-jalan"))
+        ) {
+            try {
+                return route("rawat-jalan.lanjutan", {}, false);
+            } catch (error) {
+                console.warn(
+                    "Route rawat-jalan.lanjutan not found, falling back to /rawat-jalan/lanjutan"
+                );
+                return "/rawat-jalan/lanjutan";
+            }
+        }
 		if (menu.url) {
 			try {
 				const currentOrigin = window.location.origin;
@@ -218,15 +246,12 @@ export default function SidebarMenu({
 			}
 		}
 
-        if (menu.route) {
-            try {
-                // gunakan URL relatif agar mengikuti origin aktif
-                return route(menu.route, {}, false);
-            } catch (error) {
-                console.warn(`Route ${menu.route} not found for menu ${menu.name}`);
-                return "#";
-            }
-        }
+		if (menu.route) {
+			const url = resolveRouteUrl(menu.route, false);
+			if (url) return url;
+			console.warn(`Route ${menu.route} not found for menu ${menu.name}`);
+			return "#";
+		}
 
 		return "#";
 	};

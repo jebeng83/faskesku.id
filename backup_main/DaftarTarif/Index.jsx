@@ -753,8 +753,8 @@ export default function Index({ title, data, category, search, filters, poliklin
     // Handler untuk delete dengan konfirmasi
     const handleDelete = (item) => {
         if (window.confirm(`Apakah Anda yakin ingin menghapus tarif "${item.nm_perawatan}"?`)) {
-            router.delete(route('daftar-tarif.destroy', item.kd_jenis_prw), {
-                data: { category: activeTab },
+            router.post(route('daftar-tarif.destroy', item.kd_jenis_prw), { _method: 'DELETE', category: activeTab }, {
+                forceFormData: true,
                 onSuccess: () => {
                     // Refresh data setelah delete berhasil
                     router.reload({ only: ['data'] });

@@ -56,6 +56,13 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('MasterData/MenuUtama');
     })->name('master-data.index');
 
+    // Master Data - Jadwal Dokter (Inertia)
+    Route::get('/master-data/jadwal', [\App\Http\Controllers\JadwalController::class, 'index'])
+        ->name('jadwal.index');
+    // Describe tabel jadwal (JSON)
+    Route::get('/master-data/jadwal/describe', [\App\Http\Controllers\JadwalController::class, 'describe'])
+        ->name('jadwal.describe');
+
     // Patient routes
     Route::resource('patients', PatientController::class);
     Route::post('/patients/{patient}/register-periksa', [PatientController::class, 'registerPeriksa'])->name('patients.register-periksa');

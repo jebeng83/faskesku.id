@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:577
+* @see app/Http/Controllers/Pcare/PcareController.php:607
 * @route '/pcare/api/kelompok/kegiatan'
 */
 export const api = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ api.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:577
+* @see app/Http/Controllers/Pcare/PcareController.php:607
 * @route '/pcare/api/kelompok/kegiatan'
 */
 api.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ api.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:577
+* @see app/Http/Controllers/Pcare/PcareController.php:607
 * @route '/pcare/api/kelompok/kegiatan'
 */
 api.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

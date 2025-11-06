@@ -138,8 +138,9 @@ export default function Edit({ jnsPerawatan, polikliniks, bangsals, penjaabs, ka
         
         console.log('Final submit data:', submitData);
         
-        // Use router.put with the prepared data
-        router.put(route('daftar-tarif.update', jnsPerawatan.kd_jenis_prw), submitData, {
+        // Use method spoofing to avoid PUT 405
+        router.post(route('daftar-tarif.update', jnsPerawatan.kd_jenis_prw), { ...submitData, _method: 'PUT' }, {
+            forceFormData: true,
             onSuccess: () => {
                 // Success handled by redirect
             },

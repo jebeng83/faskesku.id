@@ -19,7 +19,7 @@ export default function Edit({
     sttsumurOptions, 
     keputusanOptions 
 }) {
-    const { data, setData, put, processing, errors } = useForm({
+    const { data, setData, post, processing, errors, transform } = useForm({
         no_rkm_medis: rawatJalan.no_rkm_medis || '',
         tgl_registrasi: rawatJalan.tgl_registrasi || '',
         jam_reg: rawatJalan.jam_reg ? rawatJalan.jam_reg.substring(0, 5) : '',
@@ -42,7 +42,12 @@ export default function Edit({
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        put(route('rawat-jalan.update', rawatJalan.no_rawat));
+        // Spoof PUT via POST to avoid 405
+        transform((payload) => ({ ...payload, _method: 'PUT' }));
+        post(route('rawat-jalan.update', rawatJalan.no_rawat), {
+            forceFormData: true,
+            onFinish: () => transform((payload) => payload),
+        });
     };
 
     return (

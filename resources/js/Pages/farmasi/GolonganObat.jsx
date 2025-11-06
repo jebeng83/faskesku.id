@@ -124,7 +124,8 @@ export default function GolonganObatPage() {
 
   const performDelete = () => {
     if (!selected) return;
-    router.delete(route('farmasi.golongan-obat.destroy', { kode: selected.kode }), {
+    router.post(route('farmasi.golongan-obat.destroy', { kode: selected.kode }), { _method: 'DELETE' }, {
+      forceFormData: true,
       preserveScroll: true,
       onSuccess: () => setConfirmOpen(false)
     });

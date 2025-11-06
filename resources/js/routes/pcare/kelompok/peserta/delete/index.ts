@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:844
+* @see app/Http/Controllers/Pcare/PcareController.php:874
 * @route '/pcare/api/kelompok/peserta/{eduId}/{noKartu}'
 */
 export const api = (args: { eduId: string | number, noKartu: string | number } | [eduId: string | number, noKartu: string | number ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -16,7 +16,7 @@ api.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:844
+* @see app/Http/Controllers/Pcare/PcareController.php:874
 * @route '/pcare/api/kelompok/peserta/{eduId}/{noKartu}'
 */
 api.url = (args: { eduId: string | number, noKartu: string | number } | [eduId: string | number, noKartu: string | number ], options?: RouteQueryOptions) => {
@@ -42,7 +42,7 @@ api.url = (args: { eduId: string | number, noKartu: string | number } | [eduId: 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:844
+* @see app/Http/Controllers/Pcare/PcareController.php:874
 * @route '/pcare/api/kelompok/peserta/{eduId}/{noKartu}'
 */
 api.delete = (args: { eduId: string | number, noKartu: string | number } | [eduId: string | number, noKartu: string | number ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

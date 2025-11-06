@@ -1598,9 +1598,9 @@ export default function Index({ title, data, category, search, filters, poliklin
             }));
 
             const def = laboratoriumRoutes.updateTemplates.put(selectedLab.kd_jenis_prw);
-            router.put(def.url, {
-                rows: payloadRows,
-            }, {
+            // Spoof PUT via POST to avoid 405 and ensure Laravel sees _method
+            router.post(def.url, { rows: payloadRows, _method: 'PUT' }, {
+                forceFormData: true,
                 preserveScroll: true,
                 onSuccess: () => {
                     const notification = document.createElement('div');

@@ -13,6 +13,7 @@ class EmployeeController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
+            // Data utama pegawai
             'nik' => ['required', 'string', 'max:50'],
             'no_ktp' => ['required', 'digits:16'],
             'nama' => ['required', 'string', 'max:191'],
@@ -20,17 +21,27 @@ class EmployeeController extends Controller
             'tmp_lahir' => ['required', 'string', 'max:100'],
             'tgl_lahir' => ['required', 'date'],
             'alamat' => ['required', 'string'],
+
+            // Informasi kepegawaian (opsional)
+            'jbtn' => ['nullable', 'string', 'max:100'],
+            'jnj_jabatan' => ['nullable', 'string', 'max:100'],
+            'departemen' => ['nullable', 'string', 'max:100'],
+            'bidang' => ['nullable', 'string', 'max:100'],
+            'stts_wp' => ['nullable', 'string', 'max:50'],
+            'stts_kerja' => ['nullable', 'string', 'max:50'],
+            'pendidikan' => ['nullable', 'string', 'max:50'],
+            'kota' => ['nullable', 'string', 'max:100'],
+            'mulai_kerja' => ['nullable', 'date'],
+            'stts_aktif' => ['nullable', 'string', 'max:20'],
+
+            // Informasi finansial (opsional)
+            'npwp' => ['nullable', 'string', 'max:30'],
+            'gapok' => ['nullable', 'numeric'],
+            'bpd' => ['nullable', 'string', 'max:50'],
+            'rekening' => ['nullable', 'string', 'max:30'],
         ]);
 
-        $employee = Employee::create([
-            'nik' => $validated['nik'],
-            'no_ktp' => $validated['no_ktp'],
-            'nama' => $validated['nama'],
-            'jk' => $validated['jk'],
-            'tmp_lahir' => $validated['tmp_lahir'],
-            'tgl_lahir' => $validated['tgl_lahir'],
-            'alamat' => $validated['alamat'],
-        ]);
+        $employee = Employee::create($validated);
 
         return response()->json([
             'message' => 'Pegawai berhasil dibuat',

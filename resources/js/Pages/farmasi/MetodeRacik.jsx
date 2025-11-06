@@ -146,7 +146,8 @@ export default function MetodeRacikPage() {
 
   const performDelete = () => {
     if (!selected?.kd_racik) return;
-    router.delete(route('farmasi.metode-racik.destroy', { kd_racik: selected.kd_racik }), {
+    router.post(route('farmasi.metode-racik.destroy', { kd_racik: selected.kd_racik }), { _method: 'DELETE' }, {
+      forceFormData: true,
       preserveScroll: true,
       onSuccess: () => setConfirmOpen(false)
     });

@@ -23,9 +23,9 @@ export default function DropdownMenu({
 		};
 	}, []);
 
-	const getPositionClasses = () => {
-		const baseClasses =
-			"absolute z-50 mt-1 w-48 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none";
+    const getPositionClasses = () => {
+        const baseClasses =
+            "absolute z-[1000] mt-1 w-48 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none";
 
 		// Position (top/bottom)
 		const positionClasses =
@@ -41,12 +41,12 @@ export default function DropdownMenu({
 		return `${baseClasses} ${positionClasses} ${alignClasses[align]}`;
 	};
 
-	return (
-		<div
-			className={`relative inline-block text-left ${className}`}
-			ref={dropdownRef}
-		>
-			<div onClick={() => setIsOpen(!isOpen)}>{trigger}</div>
+    return (
+        <div
+            className={`relative inline-block text-left ${isOpen ? 'z-[2000]' : 'z-50'} ${className}`}
+            ref={dropdownRef}
+        >
+            <div onClick={() => setIsOpen(!isOpen)}>{trigger}</div>
 
 			{isOpen && (
 				<div className={getPositionClasses()}>

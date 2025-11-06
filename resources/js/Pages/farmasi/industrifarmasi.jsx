@@ -191,7 +191,8 @@ export default function IndustriFarmasiPage() {
       alert('Kode industri kosong. Pilih data yang benar sebelum menghapus.');
       return;
     }
-    router.delete(route('farmasi.industri-farmasi.destroy', { kode_industri: selected.kode_industri }) , {
+    router.post(route('farmasi.industri-farmasi.destroy', { kode_industri: selected.kode_industri }) , { _method: 'DELETE' }, {
+      forceFormData: true,
       preserveScroll: true,
       onSuccess: () => setConfirmOpen(false)
     });

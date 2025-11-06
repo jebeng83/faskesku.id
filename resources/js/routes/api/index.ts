@@ -1,6 +1,11 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 import employees from './employees'
 import penjab from './penjab'
+import pasien from './pasien'
+import perusahaanPasien from './perusahaan-pasien'
+import sukuBangsa from './suku-bangsa'
+import bahasaPasien from './bahasa-pasien'
+import cacatFisik from './cacat-fisik'
 import wilayah from './wilayah'
 import permissions from './permissions'
 import regPeriksaD17f92 from './reg-periksa'
@@ -19,6 +24,8 @@ import databarang from './databarang'
 import gudangbarang from './gudangbarang'
 import pcare from './pcare'
 import mobilejkn from './mobilejkn'
+import jadwal from './jadwal'
+import v1 from './v1'
 import menu from './menu'
 import tarifTindakan from './tarif-tindakan'
 /**
@@ -156,6 +163,11 @@ setHargaObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 const api = {
     employees: Object.assign(employees, employees),
     penjab: Object.assign(penjab, penjab),
+    pasien: Object.assign(pasien, pasien),
+    perusahaanPasien: Object.assign(perusahaanPasien, perusahaanPasien),
+    sukuBangsa: Object.assign(sukuBangsa, sukuBangsa),
+    bahasaPasien: Object.assign(bahasaPasien, bahasaPasien),
+    cacatFisik: Object.assign(cacatFisik, cacatFisik),
     wilayah: Object.assign(wilayah, wilayah),
     permissions: Object.assign(permissions, permissions),
     regPeriksa: Object.assign(regPeriksa, regPeriksaD17f92),
@@ -176,6 +188,8 @@ const api = {
     gudangbarang: Object.assign(gudangbarang, gudangbarang),
     pcare: Object.assign(pcare, pcare),
     mobilejkn: Object.assign(mobilejkn, mobilejkn),
+    jadwal: Object.assign(jadwal, jadwal),
+    v1: Object.assign(v1, v1),
     menu: Object.assign(menu, menu),
     tarifTindakan: Object.assign(tarifTindakan, tarifTindakan),
 }

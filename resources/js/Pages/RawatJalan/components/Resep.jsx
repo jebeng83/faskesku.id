@@ -309,7 +309,12 @@ export default function Resep({ token = '', noRkmMedis = '', noRawat = '', kdPol
         const deleteKey = `${resep.tgl_peresepan}_${resep.jam_peresepan}`;
         setDeletingResep(deleteKey);
         try {
-            const response = await axios.delete(`/api/resep/${resep.no_resep}`);
+            // Method spoofing: use POST + _method=DELETE to avoid 405 issues
+            const fd = new FormData();
+            fd.append('_method', 'DELETE');
+            const response = await axios.post(`/api/resep/${resep.no_resep}`, fd, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
             
             if (response.data.success) {
                 alert('Resep berhasil dihapus');

@@ -35,7 +35,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\API\EmployeeController::destroy
-* @see app/Http/Controllers/API/EmployeeController.php:41
+* @see app/Http/Controllers/API/EmployeeController.php:52
 * @route '/api/employees/{employee}'
 */
 export const destroy = (args: { employee: number | { id: number } } | [employee: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -50,7 +50,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\API\EmployeeController::destroy
-* @see app/Http/Controllers/API/EmployeeController.php:41
+* @see app/Http/Controllers/API/EmployeeController.php:52
 * @route '/api/employees/{employee}'
 */
 destroy.url = (args: { employee: number | { id: number } } | [employee: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -83,7 +83,7 @@ destroy.url = (args: { employee: number | { id: number } } | [employee: number |
 
 /**
 * @see \App\Http\Controllers\API\EmployeeController::destroy
-* @see app/Http/Controllers/API/EmployeeController.php:41
+* @see app/Http/Controllers/API/EmployeeController.php:52
 * @route '/api/employees/{employee}'
 */
 destroy.delete = (args: { employee: number | { id: number } } | [employee: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

@@ -102,7 +102,7 @@ class RegistrationController extends Controller
         $updatedAge = Patient::calculateAgeFromDate($patient->tgl_lahir);
         $patient->update(['umur' => $updatedAge]);
 
-        RegPeriksa::create([
+        $registration = RegPeriksa::create([
             'no_reg' => $noReg,
             'no_rawat' => $noRawat,
             'tgl_registrasi' => now()->toDateString(),
@@ -126,7 +126,16 @@ class RegistrationController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Pasien berhasil didaftarkan untuk periksa.'
+            'message' => 'Pasien berhasil didaftarkan untuk periksa.',
+            'data' => [
+                'no_reg' => $registration->no_reg,
+                'no_rawat' => $registration->no_rawat,
+                'tgl_registrasi' => $registration->tgl_registrasi,
+                'jam_reg' => $registration->jam_reg,
+                'kd_dokter' => $registration->kd_dokter,
+                'kd_poli' => $registration->kd_poli,
+                'no_rkm_medis' => $registration->no_rkm_medis,
+            ]
         ]);
     }
 

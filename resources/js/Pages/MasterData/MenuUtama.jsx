@@ -17,6 +17,7 @@ import {
   Cog6ToothIcon,
   MagnifyingGlassIcon,
   XMarkIcon,
+  CalendarDaysIcon,
 } from "@heroicons/react/24/outline";
 
 // Animation variants
@@ -57,6 +58,13 @@ const items = [
     href: route("poliklinik.index"),
     icon: BuildingOffice2Icon,
     accent: "from-sky-500 to-blue-500",
+  },
+  {
+    title: "Jadwal Dokter",
+    description: "Kelola jadwal praktik dokter & kuota",
+    href: route("jadwal.index"),
+    icon: CalendarDaysIcon,
+    accent: "from-blue-500 to-indigo-500",
   },
   {
     title: "Penjamin (Penjab)",

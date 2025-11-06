@@ -104,8 +104,38 @@ class PcareController extends Controller
     {
         $start = $request->query('start', 0);
         $limit = $request->query('limit', 100);
-        // Per spesifikasi PCare REST, poli FKTP ada pada path 'poli/fktp/{start}/{limit}'
-        $result = $this->pcareRequest('GET', "poli/fktp/{$start}/{$limit}");
+        // Validasi konfigurasi dasar terlebih dahulu agar tidak 500 ketika base URL kosong
+        $cfg = $this->pcareConfig();
+        $base = trim((string) ($cfg['base_url'] ?? ''));
+        if ($base === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'BPJS_PCARE_BASE_URL belum dikonfigurasi di server ini (.env). Silakan isi nilai base URL PCare (mis. https://apijkn.bpjs-kesehatan.go.id/pcare-rest atau pcare-rest-v3.0).',
+                    'code' => 422,
+                ],
+                'response' => [
+                    'list' => [],
+                    'count' => 0,
+                ],
+            ], 422);
+        }
+
+        try {
+            // Per spesifikasi PCare REST, poli FKTP ada pada path 'poli/fktp/{start}/{limit}'
+            $result = $this->pcareRequest('GET', "poli/fktp/{$start}/{$limit}");
+        } catch (\InvalidArgumentException $e) {
+            // Kembalikan pesan yang ramah bila terjadi kesalahan konfigurasi
+            return response()->json([
+                'metaData' => [
+                    'message' => $e->getMessage(),
+                    'code' => 422,
+                ],
+                'response' => [
+                    'list' => [],
+                    'count' => 0,
+                ],
+            ], 422);
+        }
 
         $response = $result['response'];
         $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);

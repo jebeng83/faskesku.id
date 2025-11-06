@@ -37,6 +37,10 @@ export default function ReferensiPoli() {
       const params = new URLSearchParams({ start: rowStart, limit: rowLimit });
       const res = await fetch(`/api/pcare/poli?${params.toString()}`, { headers: { Accept: 'application/json' } });
       const json = await res.json();
+      if (!res.ok) {
+        const msg = json?.metaData?.message || `Gagal memuat data (HTTP ${res.status})`;
+        throw new Error(msg);
+      }
       setData(json);
     } catch (e) {
       setError(e?.message || 'Gagal memuat data');

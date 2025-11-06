@@ -9,40 +9,53 @@ import WilayahSearchableSelect from "@/Components/WilayahSearchableSelect";
 import AddressDisplay from "@/Components/AddressDisplay";
 
 export default function Create() {
-	const [penjabOptions, setPenjabOptions] = useState([]);
-	const [isPenjabModalOpen, setIsPenjabModalOpen] = useState(false);
-	const [selectedWilayah, setSelectedWilayah] = useState(null);
-	const [loadingWilayah, setLoadingWilayah] = useState(false);
+    const [penjabOptions, setPenjabOptions] = useState([]);
+    const [isPenjabModalOpen, setIsPenjabModalOpen] = useState(false);
+    const [selectedWilayah, setSelectedWilayah] = useState(null);
+    const [loadingWilayah, setLoadingWilayah] = useState(false);
+    const [perusahaanOptions, setPerusahaanOptions] = useState([]);
+    const [sukuOptions, setSukuOptions] = useState([]);
+    const [bahasaOptions, setBahasaOptions] = useState([]);
+    const [cacatOptions, setCacatOptions] = useState([]);
 
 	// Address states - now handled by WilayahSearchableSelect components
 
-	const { data, setData, post, processing, errors } = useForm({
-		nm_pasien: "",
-		no_ktp: "",
-		jk: "L",
-		tmp_lahir: "",
-		tgl_lahir: "",
-		nm_ibu: "",
-		alamat: "",
-		gol_darah: "",
-		pekerjaan: "",
-		stts_nikah: "BELUM MENIKAH",
-		agama: "",
-		no_tlp: "",
-		pnd: "SMA",
-		keluarga: "DIRI SENDIRI",
-		namakeluarga: "",
-		kd_pj: "UMUM",
-		no_peserta: "",
-		pekerjaanpj: "",
-		alamatpj: "",
-		kode_wilayah: "",
-		email: "",
-	});
+    const { data, setData, post, processing, errors } = useForm({
+        nm_pasien: "",
+        no_ktp: "",
+        jk: "L",
+        tmp_lahir: "",
+        tgl_lahir: "",
+        nm_ibu: "",
+        alamat: "",
+        gol_darah: "",
+        pekerjaan: "",
+        stts_nikah: "BELUM MENIKAH",
+        agama: "",
+        no_tlp: "",
+        pnd: "SMA",
+        keluarga: "DIRI SENDIRI",
+        namakeluarga: "",
+        kd_pj: "UMUM",
+        no_peserta: "",
+        pekerjaanpj: "",
+        alamatpj: "",
+        kode_wilayah: "",
+        email: "",
+        perusahaan_pasien: "",
+        perusahaan_pasien_text: "",
+        suku_bangsa: "",
+        suku_bangsa_text: "",
+        bahasa_pasien: "",
+        bahasa_pasien_text: "",
+        cacat_fisik: "",
+        cacat_fisik_text: "",
+        nip: "",
+    });
 
 	// Load penjab options on component mount
-	useEffect(() => {
-		const loadPenjabOptions = async () => {
+    useEffect(() => {
+        const loadPenjabOptions = async () => {
 			try {
 				const response = await fetch("/api/penjab");
 				if (response.ok) {
@@ -56,10 +69,43 @@ export default function Create() {
 			} catch (error) {
 				console.error("Error loading penjab options:", error);
 			}
-		};
+    };
 
-		loadPenjabOptions();
-	}, []);
+        loadPenjabOptions();
+    }, []);
+
+    // Load reference options (perusahaan pasien, suku bangsa, bahasa pasien, cacat fisik)
+    useEffect(() => {
+        const loadRefs = async () => {
+            try {
+                const [perusahaanRes, sukuRes, bahasaRes, cacatRes] = await Promise.all([
+                    fetch('/api/perusahaan-pasien'),
+                    fetch('/api/suku-bangsa'),
+                    fetch('/api/bahasa-pasien'),
+                    fetch('/api/cacat-fisik'),
+                ]);
+                if (perusahaanRes.ok) {
+                    const r = await perusahaanRes.json();
+                    setPerusahaanOptions((r.data || []).map((d) => ({ value: d.value, label: d.label })));
+                }
+                if (sukuRes.ok) {
+                    const r = await sukuRes.json();
+                    setSukuOptions((r.data || []).map((d) => ({ value: d.value, label: d.label })));
+                }
+                if (bahasaRes.ok) {
+                    const r = await bahasaRes.json();
+                    setBahasaOptions((r.data || []).map((d) => ({ value: d.value, label: d.label })));
+                }
+                if (cacatRes.ok) {
+                    const r = await cacatRes.json();
+                    setCacatOptions((r.data || []).map((d) => ({ value: d.value, label: d.label })));
+                }
+            } catch (e) {
+                console.error('Error loading reference options:', e);
+            }
+        };
+        loadRefs();
+    }, []);
 
 	// Load wilayah details when kode_wilayah is set (for editing)
 	useEffect(() => {
@@ -104,6 +150,13 @@ export default function Create() {
 		return Array.isArray(errors[fieldName])
 			? errors[fieldName][0]
 			: errors[fieldName];
+	};
+
+	// Helper to get label from options
+	const findLabelByValue = (options, value) => {
+		if (!value) return "";
+		const found = options.find((o) => o.value === value);
+		return found ? found.label : "";
 	};
 
 	// Debug: Log errors to console
@@ -213,9 +266,9 @@ export default function Create() {
 									</svg>
 									Kembali
 								</Link>
-							</div>
-						</div>
-					</div>
+                                </div>
+                            </div>
+                        </div>
 
 					{/* Form */}
 					<form
@@ -562,40 +615,58 @@ export default function Create() {
 										)}
 									</div>
 
-									<div>
-										<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-											Pendidikan *
-										</label>
-										<select
-											name="pnd"
-											value={data.pnd}
-											onChange={(e) => setData("pnd", e.target.value)}
-											className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-										>
-											<option value="TS">Tidak Sekolah</option>
-											<option value="TK">Taman Kanak-kanak</option>
-											<option value="SD">Sekolah Dasar</option>
-											<option value="SMP">Sekolah Menengah Pertama</option>
-											<option value="SMA">Sekolah Menengah Atas</option>
-											<option value="SLTA/SEDERAJAT">SLTA/Sederajat</option>
-											<option value="D1">Diploma 1</option>
-											<option value="D2">Diploma 2</option>
-											<option value="D3">Diploma 3</option>
-											<option value="D4">Diploma 4</option>
-											<option value="S1">Sarjana</option>
-											<option value="S2">Magister</option>
-											<option value="S3">Doktor</option>
-											<option value="-">Tidak Diketahui</option>
-										</select>
-										{getErrorMessage("pnd") && (
-											<p className="mt-1 text-sm text-red-600">
-												{getErrorMessage("pnd")}
-											</p>
-										)}
-									</div>
-								</div>
-							</div>
-						</div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Pendidikan *
+                                        </label>
+                                        <select
+                                            name="pnd"
+                                            value={data.pnd}
+                                            onChange={(e) => setData("pnd", e.target.value)}
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                        >
+                                            <option value="TS">Tidak Sekolah</option>
+                                            <option value="TK">Taman Kanak-kanak</option>
+                                            <option value="SD">Sekolah Dasar</option>
+                                            <option value="SMP">Sekolah Menengah Pertama</option>
+                                            <option value="SMA">Sekolah Menengah Atas</option>
+                                            <option value="SLTA/SEDERAJAT">SLTA/Sederajat</option>
+                                            <option value="D1">Diploma 1</option>
+                                            <option value="D2">Diploma 2</option>
+                                            <option value="D3">Diploma 3</option>
+                                            <option value="D4">Diploma 4</option>
+                                            <option value="S1">Sarjana</option>
+                                            <option value="S2">Magister</option>
+                                            <option value="S3">Doktor</option>
+                                            <option value="-">Tidak Diketahui</option>
+                                        </select>
+                                        {getErrorMessage("pnd") && (
+                                            <p className="mt-1 text-sm text-red-600">
+                                                {getErrorMessage("pnd")}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            No. Peserta
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="no_peserta"
+                                            value={data.no_peserta}
+                                            onChange={(e) => setData("no_peserta", e.target.value)}
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            placeholder="Masukkan nomor peserta BPJS/Asuransi"
+                                        />
+                                        {getErrorMessage("no_peserta") && (
+                                            <p className="mt-1 text-sm text-red-600">
+                                                {getErrorMessage("no_peserta")}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
 						{/* Family Information */}
 						<div className="bg-white dark:bg-gray-800 overflow-visible shadow-sm sm:rounded-lg mb-8">
@@ -727,26 +798,169 @@ export default function Create() {
 							</div>
 						</div>
 
-						{/* Submit Button */}
-						<div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-							<div className="p-6">
-								<div className="flex justify-end gap-4">
-									<Link
-										href={route("patients.index")}
-										className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition-colors"
-									>
-										Batal
-									</Link>
-									<button
-										type="submit"
-										className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors flex items-center gap-2"
-									>
-										Simpan
-									</button>
-								</div>
-							</div>
-						</div>
-					</form>
+                        {/* Referensi Tambahan (Perusahaan, Suku Bangsa, Bahasa, Cacat Fisik, NIP) */}
+                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                            <div className="p-6">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                    Informasi Administrasi
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* Perusahaan Pasien: Textbox Pencarian + Dropdown (SearchableSelect) */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Perusahaan Pasien *
+                                        </label>
+                                        <SearchableSelect
+                                            options={perusahaanOptions}
+                                            value={data.perusahaan_pasien}
+                                            onChange={(val) => {
+                                                setData('perusahaan_pasien', val);
+                                            }}
+                                            placeholder="Pilih atau cari perusahaan pasien"
+                                            searchPlaceholder="Ketik nama_perusahaan untuk mencari..."
+                                            displayKey="label"
+                                            valueKey="value"
+                                            error={!!getErrorMessage('perusahaan_pasien')}
+                                        />
+                                        {getErrorMessage('perusahaan_pasien') && (
+                                            <p className="mt-1 text-sm text-red-600">{getErrorMessage('perusahaan_pasien')}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Suku Bangsa: Dropdown + Textbox Join */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Suku Bangsa *
+                                        </label>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            <SearchableSelect
+                                                options={sukuOptions}
+                                                value={data.suku_bangsa}
+                                                onChange={(val) => {
+                                                    setData('suku_bangsa', val);
+                                                    setData('suku_bangsa_text', findLabelByValue(sukuOptions, val));
+                                                }}
+                                                placeholder="Pilih suku bangsa"
+                                                error={!!getErrorMessage('suku_bangsa')}
+                                            />
+                                            <input
+                                                type="text"
+                                                name="suku_bangsa_text"
+                                                value={data.suku_bangsa_text}
+                                                onChange={(e) => setData('suku_bangsa_text', e.target.value)}
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                placeholder="Isi suku bangsa (manual)"
+                                            />
+                                        </div>
+                                        {getErrorMessage('suku_bangsa') && (
+                                            <p className="mt-1 text-sm text-red-600">{getErrorMessage('suku_bangsa')}</p>
+                                        )}
+                                        <p className="mt-1 text-xs text-gray-500">Jika tidak ada di daftar, isi manual di kolom sebelah.</p>
+                                    </div>
+
+                                    {/* Bahasa Pasien: Dropdown + Textbox Join */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Bahasa Pasien *
+                                        </label>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            <SearchableSelect
+                                                options={bahasaOptions}
+                                                value={data.bahasa_pasien}
+                                                onChange={(val) => {
+                                                    setData('bahasa_pasien', val);
+                                                    setData('bahasa_pasien_text', findLabelByValue(bahasaOptions, val));
+                                                }}
+                                                placeholder="Pilih bahasa pasien"
+                                                error={!!getErrorMessage('bahasa_pasien')}
+                                            />
+                                            <input
+                                                type="text"
+                                                name="bahasa_pasien_text"
+                                                value={data.bahasa_pasien_text}
+                                                onChange={(e) => setData('bahasa_pasien_text', e.target.value)}
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                placeholder="Isi bahasa pasien (manual)"
+                                            />
+                                        </div>
+                                        {getErrorMessage('bahasa_pasien') && (
+                                            <p className="mt-1 text-sm text-red-600">{getErrorMessage('bahasa_pasien')}</p>
+                                        )}
+                                        <p className="mt-1 text-xs text-gray-500">Jika tidak ada di daftar, isi manual di kolom sebelah.</p>
+                                    </div>
+
+                                    {/* Cacat Fisik: Dropdown + Textbox Join */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Cacat Fisik *
+                                        </label>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            <SearchableSelect
+                                                options={cacatOptions}
+                                                value={data.cacat_fisik}
+                                                onChange={(val) => {
+                                                    setData('cacat_fisik', val);
+                                                    setData('cacat_fisik_text', findLabelByValue(cacatOptions, val));
+                                                }}
+                                                placeholder="Pilih cacat fisik"
+                                                error={!!getErrorMessage('cacat_fisik')}
+                                            />
+                                            <input
+                                                type="text"
+                                                name="cacat_fisik_text"
+                                                value={data.cacat_fisik_text}
+                                                onChange={(e) => setData('cacat_fisik_text', e.target.value)}
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                placeholder="Isi cacat fisik (manual)"
+                                            />
+                                        </div>
+                                        {getErrorMessage('cacat_fisik') && (
+                                            <p className="mt-1 text-sm text-red-600">{getErrorMessage('cacat_fisik')}</p>
+                                        )}
+                                        <p className="mt-1 text-xs text-gray-500">Jika tidak ada di daftar, isi manual di kolom sebelah.</p>
+                                    </div>
+
+                                    {/* NIP (opsional) */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            NIP
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="nip"
+                                            value={data.nip}
+                                            onChange={(e) => setData('nip', e.target.value)}
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            placeholder="Masukkan NIP (opsional)"
+                                        />
+                                        {getErrorMessage('nip') && (
+                                            <p className="mt-1 text-sm text-red-600">{getErrorMessage('nip')}</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Submit Button */}
+                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                            <div className="p-6">
+                                <div className="flex justify-end gap-4">
+                                    <Link
+                                        href={route("patients.index")}
+                                        className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition-colors"
+                                    >
+                                        Batal
+                                    </Link>
+                                    <button
+                                        type="submit"
+                                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors flex items-center gap-2"
+                                    >
+                                        Simpan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
 
 					{/* Penjab Create Modal */}
 					<PenjabCreateModal

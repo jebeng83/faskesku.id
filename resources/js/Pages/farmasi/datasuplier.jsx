@@ -176,7 +176,8 @@ export default function DataSuplierPage() {
       alert('Kode suplier kosong. Pilih data yang benar sebelum menghapus.');
       return;
     }
-    router.delete(route('farmasi.datasuplier.destroy', { kode_suplier: selected.kode_suplier }), {
+    router.post(route('farmasi.datasuplier.destroy', { kode_suplier: selected.kode_suplier }), { _method: 'DELETE' }, {
+      forceFormData: true,
       preserveScroll: true,
       onSuccess: () => setConfirmOpen(false)
     });
