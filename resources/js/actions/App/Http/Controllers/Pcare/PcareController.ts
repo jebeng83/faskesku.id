@@ -367,7 +367,7 @@ export const getPoli = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getKesadaran
-* @see app/Http/Controllers/Pcare/PcareController.php:120
+* @see app/Http/Controllers/Pcare/PcareController.php:150
 * @route '/api/pcare/kesadaran'
 */
 export const getKesadaran = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -382,7 +382,7 @@ getKesadaran.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getKesadaran
-* @see app/Http/Controllers/Pcare/PcareController.php:120
+* @see app/Http/Controllers/Pcare/PcareController.php:150
 * @route '/api/pcare/kesadaran'
 */
 getKesadaran.url = (options?: RouteQueryOptions) => {
@@ -391,7 +391,7 @@ getKesadaran.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getKesadaran
-* @see app/Http/Controllers/Pcare/PcareController.php:120
+* @see app/Http/Controllers/Pcare/PcareController.php:150
 * @route '/api/pcare/kesadaran'
 */
 getKesadaran.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -401,7 +401,7 @@ getKesadaran.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getKesadaran
-* @see app/Http/Controllers/Pcare/PcareController.php:120
+* @see app/Http/Controllers/Pcare/PcareController.php:150
 * @route '/api/pcare/kesadaran'
 */
 getKesadaran.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -411,7 +411,7 @@ getKesadaran.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getDpho
-* @see app/Http/Controllers/Pcare/PcareController.php:231
+* @see app/Http/Controllers/Pcare/PcareController.php:261
 * @route '/api/pcare/dpho'
 */
 export const getDpho = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -426,7 +426,7 @@ getDpho.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getDpho
-* @see app/Http/Controllers/Pcare/PcareController.php:231
+* @see app/Http/Controllers/Pcare/PcareController.php:261
 * @route '/api/pcare/dpho'
 */
 getDpho.url = (options?: RouteQueryOptions) => {
@@ -435,7 +435,7 @@ getDpho.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getDpho
-* @see app/Http/Controllers/Pcare/PcareController.php:231
+* @see app/Http/Controllers/Pcare/PcareController.php:261
 * @route '/api/pcare/dpho'
 */
 getDpho.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -445,7 +445,7 @@ getDpho.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getDpho
-* @see app/Http/Controllers/Pcare/PcareController.php:231
+* @see app/Http/Controllers/Pcare/PcareController.php:261
 * @route '/api/pcare/dpho'
 */
 getDpho.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -455,7 +455,7 @@ getDpho.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getTindakan
-* @see app/Http/Controllers/Pcare/PcareController.php:254
+* @see app/Http/Controllers/Pcare/PcareController.php:284
 * @route '/api/pcare/tindakan'
 */
 const getTindakanf3204ee63d2491d40fdcb6b4497e21c7 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -470,7 +470,7 @@ getTindakanf3204ee63d2491d40fdcb6b4497e21c7.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getTindakan
-* @see app/Http/Controllers/Pcare/PcareController.php:254
+* @see app/Http/Controllers/Pcare/PcareController.php:284
 * @route '/api/pcare/tindakan'
 */
 getTindakanf3204ee63d2491d40fdcb6b4497e21c7.url = (options?: RouteQueryOptions) => {
@@ -479,7 +479,7 @@ getTindakanf3204ee63d2491d40fdcb6b4497e21c7.url = (options?: RouteQueryOptions) 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getTindakan
-* @see app/Http/Controllers/Pcare/PcareController.php:254
+* @see app/Http/Controllers/Pcare/PcareController.php:284
 * @route '/api/pcare/tindakan'
 */
 getTindakanf3204ee63d2491d40fdcb6b4497e21c7.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -489,7 +489,7 @@ getTindakanf3204ee63d2491d40fdcb6b4497e21c7.get = (options?: RouteQueryOptions):
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getTindakan
-* @see app/Http/Controllers/Pcare/PcareController.php:254
+* @see app/Http/Controllers/Pcare/PcareController.php:284
 * @route '/api/pcare/tindakan'
 */
 getTindakanf3204ee63d2491d40fdcb6b4497e21c7.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -499,7 +499,7 @@ getTindakanf3204ee63d2491d40fdcb6b4497e21c7.head = (options?: RouteQueryOptions)
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getTindakan
-* @see app/Http/Controllers/Pcare/PcareController.php:254
+* @see app/Http/Controllers/Pcare/PcareController.php:284
 * @route '/pcare/api/tindakan'
 */
 const getTindakan9af2a269b8bedaa7030c0f00a75b17bb = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -514,7 +514,7 @@ getTindakan9af2a269b8bedaa7030c0f00a75b17bb.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getTindakan
-* @see app/Http/Controllers/Pcare/PcareController.php:254
+* @see app/Http/Controllers/Pcare/PcareController.php:284
 * @route '/pcare/api/tindakan'
 */
 getTindakan9af2a269b8bedaa7030c0f00a75b17bb.url = (options?: RouteQueryOptions) => {
@@ -523,7 +523,7 @@ getTindakan9af2a269b8bedaa7030c0f00a75b17bb.url = (options?: RouteQueryOptions) 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getTindakan
-* @see app/Http/Controllers/Pcare/PcareController.php:254
+* @see app/Http/Controllers/Pcare/PcareController.php:284
 * @route '/pcare/api/tindakan'
 */
 getTindakan9af2a269b8bedaa7030c0f00a75b17bb.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -533,7 +533,7 @@ getTindakan9af2a269b8bedaa7030c0f00a75b17bb.get = (options?: RouteQueryOptions):
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getTindakan
-* @see app/Http/Controllers/Pcare/PcareController.php:254
+* @see app/Http/Controllers/Pcare/PcareController.php:284
 * @route '/pcare/api/tindakan'
 */
 getTindakan9af2a269b8bedaa7030c0f00a75b17bb.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -548,7 +548,7 @@ export const getTindakan = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getProvider
-* @see app/Http/Controllers/Pcare/PcareController.php:295
+* @see app/Http/Controllers/Pcare/PcareController.php:325
 * @route '/api/pcare/provider'
 */
 export const getProvider = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -563,7 +563,7 @@ getProvider.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getProvider
-* @see app/Http/Controllers/Pcare/PcareController.php:295
+* @see app/Http/Controllers/Pcare/PcareController.php:325
 * @route '/api/pcare/provider'
 */
 getProvider.url = (options?: RouteQueryOptions) => {
@@ -572,7 +572,7 @@ getProvider.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getProvider
-* @see app/Http/Controllers/Pcare/PcareController.php:295
+* @see app/Http/Controllers/Pcare/PcareController.php:325
 * @route '/api/pcare/provider'
 */
 getProvider.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -582,7 +582,7 @@ getProvider.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getProvider
-* @see app/Http/Controllers/Pcare/PcareController.php:295
+* @see app/Http/Controllers/Pcare/PcareController.php:325
 * @route '/api/pcare/provider'
 */
 getProvider.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -592,7 +592,7 @@ getProvider.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getSpesialis
-* @see app/Http/Controllers/Pcare/PcareController.php:312
+* @see app/Http/Controllers/Pcare/PcareController.php:342
 * @route '/api/pcare/spesialis'
 */
 export const getSpesialis = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -607,7 +607,7 @@ getSpesialis.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getSpesialis
-* @see app/Http/Controllers/Pcare/PcareController.php:312
+* @see app/Http/Controllers/Pcare/PcareController.php:342
 * @route '/api/pcare/spesialis'
 */
 getSpesialis.url = (options?: RouteQueryOptions) => {
@@ -616,7 +616,7 @@ getSpesialis.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getSpesialis
-* @see app/Http/Controllers/Pcare/PcareController.php:312
+* @see app/Http/Controllers/Pcare/PcareController.php:342
 * @route '/api/pcare/spesialis'
 */
 getSpesialis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -626,7 +626,7 @@ getSpesialis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getSpesialis
-* @see app/Http/Controllers/Pcare/PcareController.php:312
+* @see app/Http/Controllers/Pcare/PcareController.php:342
 * @route '/api/pcare/spesialis'
 */
 getSpesialis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -636,7 +636,7 @@ getSpesialis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getSubSpesialis
-* @see app/Http/Controllers/Pcare/PcareController.php:328
+* @see app/Http/Controllers/Pcare/PcareController.php:358
 * @route '/api/pcare/spesialis/subspesialis'
 */
 export const getSubSpesialis = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -651,7 +651,7 @@ getSubSpesialis.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getSubSpesialis
-* @see app/Http/Controllers/Pcare/PcareController.php:328
+* @see app/Http/Controllers/Pcare/PcareController.php:358
 * @route '/api/pcare/spesialis/subspesialis'
 */
 getSubSpesialis.url = (options?: RouteQueryOptions) => {
@@ -660,7 +660,7 @@ getSubSpesialis.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getSubSpesialis
-* @see app/Http/Controllers/Pcare/PcareController.php:328
+* @see app/Http/Controllers/Pcare/PcareController.php:358
 * @route '/api/pcare/spesialis/subspesialis'
 */
 getSubSpesialis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -670,7 +670,7 @@ getSubSpesialis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getSubSpesialis
-* @see app/Http/Controllers/Pcare/PcareController.php:328
+* @see app/Http/Controllers/Pcare/PcareController.php:358
 * @route '/api/pcare/spesialis/subspesialis'
 */
 getSubSpesialis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -680,7 +680,7 @@ getSubSpesialis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getSarana
-* @see app/Http/Controllers/Pcare/PcareController.php:350
+* @see app/Http/Controllers/Pcare/PcareController.php:380
 * @route '/api/pcare/spesialis/sarana'
 */
 export const getSarana = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -695,7 +695,7 @@ getSarana.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getSarana
-* @see app/Http/Controllers/Pcare/PcareController.php:350
+* @see app/Http/Controllers/Pcare/PcareController.php:380
 * @route '/api/pcare/spesialis/sarana'
 */
 getSarana.url = (options?: RouteQueryOptions) => {
@@ -704,7 +704,7 @@ getSarana.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getSarana
-* @see app/Http/Controllers/Pcare/PcareController.php:350
+* @see app/Http/Controllers/Pcare/PcareController.php:380
 * @route '/api/pcare/spesialis/sarana'
 */
 getSarana.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -714,7 +714,7 @@ getSarana.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getSarana
-* @see app/Http/Controllers/Pcare/PcareController.php:350
+* @see app/Http/Controllers/Pcare/PcareController.php:380
 * @route '/api/pcare/spesialis/sarana'
 */
 getSarana.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -724,7 +724,7 @@ getSarana.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getKhusus
-* @see app/Http/Controllers/Pcare/PcareController.php:365
+* @see app/Http/Controllers/Pcare/PcareController.php:395
 * @route '/api/pcare/spesialis/khusus'
 */
 export const getKhusus = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -739,7 +739,7 @@ getKhusus.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getKhusus
-* @see app/Http/Controllers/Pcare/PcareController.php:365
+* @see app/Http/Controllers/Pcare/PcareController.php:395
 * @route '/api/pcare/spesialis/khusus'
 */
 getKhusus.url = (options?: RouteQueryOptions) => {
@@ -748,7 +748,7 @@ getKhusus.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getKhusus
-* @see app/Http/Controllers/Pcare/PcareController.php:365
+* @see app/Http/Controllers/Pcare/PcareController.php:395
 * @route '/api/pcare/spesialis/khusus'
 */
 getKhusus.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -758,7 +758,7 @@ getKhusus.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getKhusus
-* @see app/Http/Controllers/Pcare/PcareController.php:365
+* @see app/Http/Controllers/Pcare/PcareController.php:395
 * @route '/api/pcare/spesialis/khusus'
 */
 getKhusus.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -768,7 +768,7 @@ getKhusus.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getPrognosa
-* @see app/Http/Controllers/Pcare/PcareController.php:413
+* @see app/Http/Controllers/Pcare/PcareController.php:443
 * @route '/api/pcare/prognosa'
 */
 export const getPrognosa = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -783,7 +783,7 @@ getPrognosa.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getPrognosa
-* @see app/Http/Controllers/Pcare/PcareController.php:413
+* @see app/Http/Controllers/Pcare/PcareController.php:443
 * @route '/api/pcare/prognosa'
 */
 getPrognosa.url = (options?: RouteQueryOptions) => {
@@ -792,7 +792,7 @@ getPrognosa.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getPrognosa
-* @see app/Http/Controllers/Pcare/PcareController.php:413
+* @see app/Http/Controllers/Pcare/PcareController.php:443
 * @route '/api/pcare/prognosa'
 */
 getPrognosa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -802,7 +802,7 @@ getPrognosa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getPrognosa
-* @see app/Http/Controllers/Pcare/PcareController.php:413
+* @see app/Http/Controllers/Pcare/PcareController.php:443
 * @route '/api/pcare/prognosa'
 */
 getPrognosa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -812,7 +812,7 @@ getPrognosa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getAlergi
-* @see app/Http/Controllers/Pcare/PcareController.php:381
+* @see app/Http/Controllers/Pcare/PcareController.php:411
 * @route '/api/pcare/alergi'
 */
 export const getAlergi = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -827,7 +827,7 @@ getAlergi.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getAlergi
-* @see app/Http/Controllers/Pcare/PcareController.php:381
+* @see app/Http/Controllers/Pcare/PcareController.php:411
 * @route '/api/pcare/alergi'
 */
 getAlergi.url = (options?: RouteQueryOptions) => {
@@ -836,7 +836,7 @@ getAlergi.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getAlergi
-* @see app/Http/Controllers/Pcare/PcareController.php:381
+* @see app/Http/Controllers/Pcare/PcareController.php:411
 * @route '/api/pcare/alergi'
 */
 getAlergi.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -846,7 +846,7 @@ getAlergi.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getAlergi
-* @see app/Http/Controllers/Pcare/PcareController.php:381
+* @see app/Http/Controllers/Pcare/PcareController.php:411
 * @route '/api/pcare/alergi'
 */
 getAlergi.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -856,7 +856,7 @@ getAlergi.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getStatusPulang
-* @see app/Http/Controllers/Pcare/PcareController.php:429
+* @see app/Http/Controllers/Pcare/PcareController.php:459
 * @route '/api/pcare/statuspulang'
 */
 export const getStatusPulang = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -871,7 +871,7 @@ getStatusPulang.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getStatusPulang
-* @see app/Http/Controllers/Pcare/PcareController.php:429
+* @see app/Http/Controllers/Pcare/PcareController.php:459
 * @route '/api/pcare/statuspulang'
 */
 getStatusPulang.url = (options?: RouteQueryOptions) => {
@@ -880,7 +880,7 @@ getStatusPulang.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getStatusPulang
-* @see app/Http/Controllers/Pcare/PcareController.php:429
+* @see app/Http/Controllers/Pcare/PcareController.php:459
 * @route '/api/pcare/statuspulang'
 */
 getStatusPulang.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -890,7 +890,7 @@ getStatusPulang.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getStatusPulang
-* @see app/Http/Controllers/Pcare/PcareController.php:429
+* @see app/Http/Controllers/Pcare/PcareController.php:459
 * @route '/api/pcare/statuspulang'
 */
 getStatusPulang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -900,7 +900,7 @@ getStatusPulang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getFaskesRujukanSubSpesialis
-* @see app/Http/Controllers/Pcare/PcareController.php:449
+* @see app/Http/Controllers/Pcare/PcareController.php:479
 * @route '/api/pcare/spesialis/rujuk/subspesialis/{kdSubSpesialis}/sarana/{kdSarana}/tglEstRujuk/{tglEstRujuk}'
 */
 export const getFaskesRujukanSubSpesialis = (args: { kdSubSpesialis: string | number, kdSarana: string | number, tglEstRujuk: string | number } | [kdSubSpesialis: string | number, kdSarana: string | number, tglEstRujuk: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -915,7 +915,7 @@ getFaskesRujukanSubSpesialis.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getFaskesRujukanSubSpesialis
-* @see app/Http/Controllers/Pcare/PcareController.php:449
+* @see app/Http/Controllers/Pcare/PcareController.php:479
 * @route '/api/pcare/spesialis/rujuk/subspesialis/{kdSubSpesialis}/sarana/{kdSarana}/tglEstRujuk/{tglEstRujuk}'
 */
 getFaskesRujukanSubSpesialis.url = (args: { kdSubSpesialis: string | number, kdSarana: string | number, tglEstRujuk: string | number } | [kdSubSpesialis: string | number, kdSarana: string | number, tglEstRujuk: string | number ], options?: RouteQueryOptions) => {
@@ -944,7 +944,7 @@ getFaskesRujukanSubSpesialis.url = (args: { kdSubSpesialis: string | number, kdS
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getFaskesRujukanSubSpesialis
-* @see app/Http/Controllers/Pcare/PcareController.php:449
+* @see app/Http/Controllers/Pcare/PcareController.php:479
 * @route '/api/pcare/spesialis/rujuk/subspesialis/{kdSubSpesialis}/sarana/{kdSarana}/tglEstRujuk/{tglEstRujuk}'
 */
 getFaskesRujukanSubSpesialis.get = (args: { kdSubSpesialis: string | number, kdSarana: string | number, tglEstRujuk: string | number } | [kdSubSpesialis: string | number, kdSarana: string | number, tglEstRujuk: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -954,7 +954,7 @@ getFaskesRujukanSubSpesialis.get = (args: { kdSubSpesialis: string | number, kdS
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getFaskesRujukanSubSpesialis
-* @see app/Http/Controllers/Pcare/PcareController.php:449
+* @see app/Http/Controllers/Pcare/PcareController.php:479
 * @route '/api/pcare/spesialis/rujuk/subspesialis/{kdSubSpesialis}/sarana/{kdSarana}/tglEstRujuk/{tglEstRujuk}'
 */
 getFaskesRujukanSubSpesialis.head = (args: { kdSubSpesialis: string | number, kdSarana: string | number, tglEstRujuk: string | number } | [kdSubSpesialis: string | number, kdSarana: string | number, tglEstRujuk: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -964,7 +964,7 @@ getFaskesRujukanSubSpesialis.head = (args: { kdSubSpesialis: string | number, kd
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::pesertaByNoKartu
-* @see app/Http/Controllers/Pcare/PcareController.php:135
+* @see app/Http/Controllers/Pcare/PcareController.php:165
 * @route '/api/pcare/peserta/{noka}/{tglPelayanan}'
 */
 const pesertaByNoKartucb059312c5e60a47467e92dea3abfd2b = (args: { noka: string | number, tglPelayanan: string | number } | [noka: string | number, tglPelayanan: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -979,7 +979,7 @@ pesertaByNoKartucb059312c5e60a47467e92dea3abfd2b.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::pesertaByNoKartu
-* @see app/Http/Controllers/Pcare/PcareController.php:135
+* @see app/Http/Controllers/Pcare/PcareController.php:165
 * @route '/api/pcare/peserta/{noka}/{tglPelayanan}'
 */
 pesertaByNoKartucb059312c5e60a47467e92dea3abfd2b.url = (args: { noka: string | number, tglPelayanan: string | number } | [noka: string | number, tglPelayanan: string | number ], options?: RouteQueryOptions) => {
@@ -1005,7 +1005,7 @@ pesertaByNoKartucb059312c5e60a47467e92dea3abfd2b.url = (args: { noka: string | n
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::pesertaByNoKartu
-* @see app/Http/Controllers/Pcare/PcareController.php:135
+* @see app/Http/Controllers/Pcare/PcareController.php:165
 * @route '/api/pcare/peserta/{noka}/{tglPelayanan}'
 */
 pesertaByNoKartucb059312c5e60a47467e92dea3abfd2b.get = (args: { noka: string | number, tglPelayanan: string | number } | [noka: string | number, tglPelayanan: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1015,7 +1015,7 @@ pesertaByNoKartucb059312c5e60a47467e92dea3abfd2b.get = (args: { noka: string | n
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::pesertaByNoKartu
-* @see app/Http/Controllers/Pcare/PcareController.php:135
+* @see app/Http/Controllers/Pcare/PcareController.php:165
 * @route '/api/pcare/peserta/{noka}/{tglPelayanan}'
 */
 pesertaByNoKartucb059312c5e60a47467e92dea3abfd2b.head = (args: { noka: string | number, tglPelayanan: string | number } | [noka: string | number, tglPelayanan: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1025,7 +1025,7 @@ pesertaByNoKartucb059312c5e60a47467e92dea3abfd2b.head = (args: { noka: string | 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::pesertaByNoKartu
-* @see app/Http/Controllers/Pcare/PcareController.php:135
+* @see app/Http/Controllers/Pcare/PcareController.php:165
 * @route '/pcare/api/peserta/nokartu/{noka}/tgl/{tglPelayanan}'
 */
 const pesertaByNoKartud24fc36189df31f5571f5a4c0711693d = (args: { noka: string | number, tglPelayanan: string | number } | [noka: string | number, tglPelayanan: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1040,7 +1040,7 @@ pesertaByNoKartud24fc36189df31f5571f5a4c0711693d.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::pesertaByNoKartu
-* @see app/Http/Controllers/Pcare/PcareController.php:135
+* @see app/Http/Controllers/Pcare/PcareController.php:165
 * @route '/pcare/api/peserta/nokartu/{noka}/tgl/{tglPelayanan}'
 */
 pesertaByNoKartud24fc36189df31f5571f5a4c0711693d.url = (args: { noka: string | number, tglPelayanan: string | number } | [noka: string | number, tglPelayanan: string | number ], options?: RouteQueryOptions) => {
@@ -1066,7 +1066,7 @@ pesertaByNoKartud24fc36189df31f5571f5a4c0711693d.url = (args: { noka: string | n
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::pesertaByNoKartu
-* @see app/Http/Controllers/Pcare/PcareController.php:135
+* @see app/Http/Controllers/Pcare/PcareController.php:165
 * @route '/pcare/api/peserta/nokartu/{noka}/tgl/{tglPelayanan}'
 */
 pesertaByNoKartud24fc36189df31f5571f5a4c0711693d.get = (args: { noka: string | number, tglPelayanan: string | number } | [noka: string | number, tglPelayanan: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1076,7 +1076,7 @@ pesertaByNoKartud24fc36189df31f5571f5a4c0711693d.get = (args: { noka: string | n
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::pesertaByNoKartu
-* @see app/Http/Controllers/Pcare/PcareController.php:135
+* @see app/Http/Controllers/Pcare/PcareController.php:165
 * @route '/pcare/api/peserta/nokartu/{noka}/tgl/{tglPelayanan}'
 */
 pesertaByNoKartud24fc36189df31f5571f5a4c0711693d.head = (args: { noka: string | number, tglPelayanan: string | number } | [noka: string | number, tglPelayanan: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1091,7 +1091,7 @@ export const pesertaByNoKartu = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::daftarKunjungan
-* @see app/Http/Controllers/Pcare/PcareController.php:174
+* @see app/Http/Controllers/Pcare/PcareController.php:204
 * @route '/api/pcare/kunjungan'
 */
 export const daftarKunjungan = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1106,7 +1106,7 @@ daftarKunjungan.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::daftarKunjungan
-* @see app/Http/Controllers/Pcare/PcareController.php:174
+* @see app/Http/Controllers/Pcare/PcareController.php:204
 * @route '/api/pcare/kunjungan'
 */
 daftarKunjungan.url = (options?: RouteQueryOptions) => {
@@ -1115,7 +1115,7 @@ daftarKunjungan.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::daftarKunjungan
-* @see app/Http/Controllers/Pcare/PcareController.php:174
+* @see app/Http/Controllers/Pcare/PcareController.php:204
 * @route '/api/pcare/kunjungan'
 */
 daftarKunjungan.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1124,8 +1124,194 @@ daftarKunjungan.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =>
 })
 
 /**
+* @see \App\Http\Controllers\Pcare\PcareController::searchDokterRs
+* @see app/Http/Controllers/Pcare/PcareController.php:923
+* @route '/api/v1/rs/dokter'
+*/
+const searchDokterRsd08acf3ebfc3d304666316c344331a0f = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: searchDokterRsd08acf3ebfc3d304666316c344331a0f.url(options),
+    method: 'get',
+})
+
+searchDokterRsd08acf3ebfc3d304666316c344331a0f.definition = {
+    methods: ["get","head"],
+    url: '/api/v1/rs/dokter',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::searchDokterRs
+* @see app/Http/Controllers/Pcare/PcareController.php:923
+* @route '/api/v1/rs/dokter'
+*/
+searchDokterRsd08acf3ebfc3d304666316c344331a0f.url = (options?: RouteQueryOptions) => {
+    return searchDokterRsd08acf3ebfc3d304666316c344331a0f.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::searchDokterRs
+* @see app/Http/Controllers/Pcare/PcareController.php:923
+* @route '/api/v1/rs/dokter'
+*/
+searchDokterRsd08acf3ebfc3d304666316c344331a0f.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: searchDokterRsd08acf3ebfc3d304666316c344331a0f.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::searchDokterRs
+* @see app/Http/Controllers/Pcare/PcareController.php:923
+* @route '/api/v1/rs/dokter'
+*/
+searchDokterRsd08acf3ebfc3d304666316c344331a0f.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: searchDokterRsd08acf3ebfc3d304666316c344331a0f.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::searchDokterRs
+* @see app/Http/Controllers/Pcare/PcareController.php:923
+* @route '/pcare/api/rs/dokter'
+*/
+const searchDokterRs1493b6224e643d45bff2cf8399432e47 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: searchDokterRs1493b6224e643d45bff2cf8399432e47.url(options),
+    method: 'get',
+})
+
+searchDokterRs1493b6224e643d45bff2cf8399432e47.definition = {
+    methods: ["get","head"],
+    url: '/pcare/api/rs/dokter',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::searchDokterRs
+* @see app/Http/Controllers/Pcare/PcareController.php:923
+* @route '/pcare/api/rs/dokter'
+*/
+searchDokterRs1493b6224e643d45bff2cf8399432e47.url = (options?: RouteQueryOptions) => {
+    return searchDokterRs1493b6224e643d45bff2cf8399432e47.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::searchDokterRs
+* @see app/Http/Controllers/Pcare/PcareController.php:923
+* @route '/pcare/api/rs/dokter'
+*/
+searchDokterRs1493b6224e643d45bff2cf8399432e47.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: searchDokterRs1493b6224e643d45bff2cf8399432e47.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::searchDokterRs
+* @see app/Http/Controllers/Pcare/PcareController.php:923
+* @route '/pcare/api/rs/dokter'
+*/
+searchDokterRs1493b6224e643d45bff2cf8399432e47.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: searchDokterRs1493b6224e643d45bff2cf8399432e47.url(options),
+    method: 'head',
+})
+
+export const searchDokterRs = {
+    '/api/v1/rs/dokter': searchDokterRsd08acf3ebfc3d304666316c344331a0f,
+    '/pcare/api/rs/dokter': searchDokterRs1493b6224e643d45bff2cf8399432e47,
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::searchPoliklinikRs
+* @see app/Http/Controllers/Pcare/PcareController.php:903
+* @route '/api/v1/rs/poliklinik'
+*/
+const searchPoliklinikRs19ab1bbccff3314ba7658fa440f15486 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: searchPoliklinikRs19ab1bbccff3314ba7658fa440f15486.url(options),
+    method: 'get',
+})
+
+searchPoliklinikRs19ab1bbccff3314ba7658fa440f15486.definition = {
+    methods: ["get","head"],
+    url: '/api/v1/rs/poliklinik',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::searchPoliklinikRs
+* @see app/Http/Controllers/Pcare/PcareController.php:903
+* @route '/api/v1/rs/poliklinik'
+*/
+searchPoliklinikRs19ab1bbccff3314ba7658fa440f15486.url = (options?: RouteQueryOptions) => {
+    return searchPoliklinikRs19ab1bbccff3314ba7658fa440f15486.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::searchPoliklinikRs
+* @see app/Http/Controllers/Pcare/PcareController.php:903
+* @route '/api/v1/rs/poliklinik'
+*/
+searchPoliklinikRs19ab1bbccff3314ba7658fa440f15486.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: searchPoliklinikRs19ab1bbccff3314ba7658fa440f15486.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::searchPoliklinikRs
+* @see app/Http/Controllers/Pcare/PcareController.php:903
+* @route '/api/v1/rs/poliklinik'
+*/
+searchPoliklinikRs19ab1bbccff3314ba7658fa440f15486.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: searchPoliklinikRs19ab1bbccff3314ba7658fa440f15486.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::searchPoliklinikRs
+* @see app/Http/Controllers/Pcare/PcareController.php:903
+* @route '/pcare/api/rs/poliklinik'
+*/
+const searchPoliklinikRsa4d385e4e437ef2cb1785cd31ab1eba2 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: searchPoliklinikRsa4d385e4e437ef2cb1785cd31ab1eba2.url(options),
+    method: 'get',
+})
+
+searchPoliklinikRsa4d385e4e437ef2cb1785cd31ab1eba2.definition = {
+    methods: ["get","head"],
+    url: '/pcare/api/rs/poliklinik',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::searchPoliklinikRs
+* @see app/Http/Controllers/Pcare/PcareController.php:903
+* @route '/pcare/api/rs/poliklinik'
+*/
+searchPoliklinikRsa4d385e4e437ef2cb1785cd31ab1eba2.url = (options?: RouteQueryOptions) => {
+    return searchPoliklinikRsa4d385e4e437ef2cb1785cd31ab1eba2.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::searchPoliklinikRs
+* @see app/Http/Controllers/Pcare/PcareController.php:903
+* @route '/pcare/api/rs/poliklinik'
+*/
+searchPoliklinikRsa4d385e4e437ef2cb1785cd31ab1eba2.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: searchPoliklinikRsa4d385e4e437ef2cb1785cd31ab1eba2.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::searchPoliklinikRs
+* @see app/Http/Controllers/Pcare/PcareController.php:903
+* @route '/pcare/api/rs/poliklinik'
+*/
+searchPoliklinikRsa4d385e4e437ef2cb1785cd31ab1eba2.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: searchPoliklinikRsa4d385e4e437ef2cb1785cd31ab1eba2.url(options),
+    method: 'head',
+})
+
+export const searchPoliklinikRs = {
+    '/api/v1/rs/poliklinik': searchPoliklinikRs19ab1bbccff3314ba7658fa440f15486,
+    '/pcare/api/rs/poliklinik': searchPoliklinikRsa4d385e4e437ef2cb1785cd31ab1eba2,
+}
+
+/**
 * @see \App\Http\Controllers\Pcare\PcareController::getDiagnosa
-* @see app/Http/Controllers/Pcare/PcareController.php:191
+* @see app/Http/Controllers/Pcare/PcareController.php:221
 * @route '/pcare/api/diagnosa'
 */
 export const getDiagnosa = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1140,7 +1326,7 @@ getDiagnosa.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getDiagnosa
-* @see app/Http/Controllers/Pcare/PcareController.php:191
+* @see app/Http/Controllers/Pcare/PcareController.php:221
 * @route '/pcare/api/diagnosa'
 */
 getDiagnosa.url = (options?: RouteQueryOptions) => {
@@ -1149,7 +1335,7 @@ getDiagnosa.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getDiagnosa
-* @see app/Http/Controllers/Pcare/PcareController.php:191
+* @see app/Http/Controllers/Pcare/PcareController.php:221
 * @route '/pcare/api/diagnosa'
 */
 getDiagnosa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1159,7 +1345,7 @@ getDiagnosa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getDiagnosa
-* @see app/Http/Controllers/Pcare/PcareController.php:191
+* @see app/Http/Controllers/Pcare/PcareController.php:221
 * @route '/pcare/api/diagnosa'
 */
 getDiagnosa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1168,96 +1354,8 @@ getDiagnosa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\Pcare\PcareController::searchPoliklinikRs
-* @see app/Http/Controllers/Pcare/PcareController.php:873
-* @route '/pcare/api/rs/poliklinik'
-*/
-export const searchPoliklinikRs = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: searchPoliklinikRs.url(options),
-    method: 'get',
-})
-
-searchPoliklinikRs.definition = {
-    methods: ["get","head"],
-    url: '/pcare/api/rs/poliklinik',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::searchPoliklinikRs
-* @see app/Http/Controllers/Pcare/PcareController.php:873
-* @route '/pcare/api/rs/poliklinik'
-*/
-searchPoliklinikRs.url = (options?: RouteQueryOptions) => {
-    return searchPoliklinikRs.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::searchPoliklinikRs
-* @see app/Http/Controllers/Pcare/PcareController.php:873
-* @route '/pcare/api/rs/poliklinik'
-*/
-searchPoliklinikRs.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: searchPoliklinikRs.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::searchPoliklinikRs
-* @see app/Http/Controllers/Pcare/PcareController.php:873
-* @route '/pcare/api/rs/poliklinik'
-*/
-searchPoliklinikRs.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: searchPoliklinikRs.url(options),
-    method: 'head',
-})
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::searchDokterRs
-* @see app/Http/Controllers/Pcare/PcareController.php:893
-* @route '/pcare/api/rs/dokter'
-*/
-export const searchDokterRs = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: searchDokterRs.url(options),
-    method: 'get',
-})
-
-searchDokterRs.definition = {
-    methods: ["get","head"],
-    url: '/pcare/api/rs/dokter',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::searchDokterRs
-* @see app/Http/Controllers/Pcare/PcareController.php:893
-* @route '/pcare/api/rs/dokter'
-*/
-searchDokterRs.url = (options?: RouteQueryOptions) => {
-    return searchDokterRs.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::searchDokterRs
-* @see app/Http/Controllers/Pcare/PcareController.php:893
-* @route '/pcare/api/rs/dokter'
-*/
-searchDokterRs.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: searchDokterRs.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::searchDokterRs
-* @see app/Http/Controllers/Pcare/PcareController.php:893
-* @route '/pcare/api/rs/dokter'
-*/
-searchDokterRs.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: searchDokterRs.url(options),
-    method: 'head',
-})
-
-/**
 * @see \App\Http\Controllers\Pcare\PcareController::searchObatRs
-* @see app/Http/Controllers/Pcare/PcareController.php:913
+* @see app/Http/Controllers/Pcare/PcareController.php:943
 * @route '/pcare/api/rs/obat'
 */
 export const searchObatRs = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1272,7 +1370,7 @@ searchObatRs.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::searchObatRs
-* @see app/Http/Controllers/Pcare/PcareController.php:913
+* @see app/Http/Controllers/Pcare/PcareController.php:943
 * @route '/pcare/api/rs/obat'
 */
 searchObatRs.url = (options?: RouteQueryOptions) => {
@@ -1281,7 +1379,7 @@ searchObatRs.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::searchObatRs
-* @see app/Http/Controllers/Pcare/PcareController.php:913
+* @see app/Http/Controllers/Pcare/PcareController.php:943
 * @route '/pcare/api/rs/obat'
 */
 searchObatRs.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1291,7 +1389,7 @@ searchObatRs.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::searchObatRs
-* @see app/Http/Controllers/Pcare/PcareController.php:913
+* @see app/Http/Controllers/Pcare/PcareController.php:943
 * @route '/pcare/api/rs/obat'
 */
 searchObatRs.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1301,7 +1399,7 @@ searchObatRs.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getMappingPoli
-* @see app/Http/Controllers/Pcare/PcareController.php:932
+* @see app/Http/Controllers/Pcare/PcareController.php:962
 * @route '/pcare/api/mapping/poli'
 */
 export const getMappingPoli = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1316,7 +1414,7 @@ getMappingPoli.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getMappingPoli
-* @see app/Http/Controllers/Pcare/PcareController.php:932
+* @see app/Http/Controllers/Pcare/PcareController.php:962
 * @route '/pcare/api/mapping/poli'
 */
 getMappingPoli.url = (options?: RouteQueryOptions) => {
@@ -1325,7 +1423,7 @@ getMappingPoli.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getMappingPoli
-* @see app/Http/Controllers/Pcare/PcareController.php:932
+* @see app/Http/Controllers/Pcare/PcareController.php:962
 * @route '/pcare/api/mapping/poli'
 */
 getMappingPoli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1335,7 +1433,7 @@ getMappingPoli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getMappingPoli
-* @see app/Http/Controllers/Pcare/PcareController.php:932
+* @see app/Http/Controllers/Pcare/PcareController.php:962
 * @route '/pcare/api/mapping/poli'
 */
 getMappingPoli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1345,7 +1443,7 @@ getMappingPoli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::storeMappingPoli
-* @see app/Http/Controllers/Pcare/PcareController.php:948
+* @see app/Http/Controllers/Pcare/PcareController.php:978
 * @route '/pcare/api/mapping/poli'
 */
 export const storeMappingPoli = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1360,7 +1458,7 @@ storeMappingPoli.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::storeMappingPoli
-* @see app/Http/Controllers/Pcare/PcareController.php:948
+* @see app/Http/Controllers/Pcare/PcareController.php:978
 * @route '/pcare/api/mapping/poli'
 */
 storeMappingPoli.url = (options?: RouteQueryOptions) => {
@@ -1369,7 +1467,7 @@ storeMappingPoli.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::storeMappingPoli
-* @see app/Http/Controllers/Pcare/PcareController.php:948
+* @see app/Http/Controllers/Pcare/PcareController.php:978
 * @route '/pcare/api/mapping/poli'
 */
 storeMappingPoli.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1379,7 +1477,7 @@ storeMappingPoli.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deleteMappingPoli
-* @see app/Http/Controllers/Pcare/PcareController.php:1009
+* @see app/Http/Controllers/Pcare/PcareController.php:1039
 * @route '/pcare/api/mapping/poli'
 */
 export const deleteMappingPoli = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -1394,7 +1492,7 @@ deleteMappingPoli.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deleteMappingPoli
-* @see app/Http/Controllers/Pcare/PcareController.php:1009
+* @see app/Http/Controllers/Pcare/PcareController.php:1039
 * @route '/pcare/api/mapping/poli'
 */
 deleteMappingPoli.url = (options?: RouteQueryOptions) => {
@@ -1403,7 +1501,7 @@ deleteMappingPoli.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deleteMappingPoli
-* @see app/Http/Controllers/Pcare/PcareController.php:1009
+* @see app/Http/Controllers/Pcare/PcareController.php:1039
 * @route '/pcare/api/mapping/poli'
 */
 deleteMappingPoli.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -1413,7 +1511,7 @@ deleteMappingPoli.delete = (options?: RouteQueryOptions): RouteDefinition<'delet
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getMappingDokter
-* @see app/Http/Controllers/Pcare/PcareController.php:1059
+* @see app/Http/Controllers/Pcare/PcareController.php:1089
 * @route '/pcare/api/mapping/dokter'
 */
 export const getMappingDokter = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1428,7 +1526,7 @@ getMappingDokter.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getMappingDokter
-* @see app/Http/Controllers/Pcare/PcareController.php:1059
+* @see app/Http/Controllers/Pcare/PcareController.php:1089
 * @route '/pcare/api/mapping/dokter'
 */
 getMappingDokter.url = (options?: RouteQueryOptions) => {
@@ -1437,7 +1535,7 @@ getMappingDokter.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getMappingDokter
-* @see app/Http/Controllers/Pcare/PcareController.php:1059
+* @see app/Http/Controllers/Pcare/PcareController.php:1089
 * @route '/pcare/api/mapping/dokter'
 */
 getMappingDokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1447,7 +1545,7 @@ getMappingDokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getMappingDokter
-* @see app/Http/Controllers/Pcare/PcareController.php:1059
+* @see app/Http/Controllers/Pcare/PcareController.php:1089
 * @route '/pcare/api/mapping/dokter'
 */
 getMappingDokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1457,7 +1555,7 @@ getMappingDokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::storeMappingDokter
-* @see app/Http/Controllers/Pcare/PcareController.php:1075
+* @see app/Http/Controllers/Pcare/PcareController.php:1105
 * @route '/pcare/api/mapping/dokter'
 */
 export const storeMappingDokter = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1472,7 +1570,7 @@ storeMappingDokter.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::storeMappingDokter
-* @see app/Http/Controllers/Pcare/PcareController.php:1075
+* @see app/Http/Controllers/Pcare/PcareController.php:1105
 * @route '/pcare/api/mapping/dokter'
 */
 storeMappingDokter.url = (options?: RouteQueryOptions) => {
@@ -1481,7 +1579,7 @@ storeMappingDokter.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::storeMappingDokter
-* @see app/Http/Controllers/Pcare/PcareController.php:1075
+* @see app/Http/Controllers/Pcare/PcareController.php:1105
 * @route '/pcare/api/mapping/dokter'
 */
 storeMappingDokter.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1491,7 +1589,7 @@ storeMappingDokter.post = (options?: RouteQueryOptions): RouteDefinition<'post'>
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deleteMappingDokter
-* @see app/Http/Controllers/Pcare/PcareController.php:1136
+* @see app/Http/Controllers/Pcare/PcareController.php:1166
 * @route '/pcare/api/mapping/dokter'
 */
 export const deleteMappingDokter = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -1506,7 +1604,7 @@ deleteMappingDokter.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deleteMappingDokter
-* @see app/Http/Controllers/Pcare/PcareController.php:1136
+* @see app/Http/Controllers/Pcare/PcareController.php:1166
 * @route '/pcare/api/mapping/dokter'
 */
 deleteMappingDokter.url = (options?: RouteQueryOptions) => {
@@ -1515,7 +1613,7 @@ deleteMappingDokter.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deleteMappingDokter
-* @see app/Http/Controllers/Pcare/PcareController.php:1136
+* @see app/Http/Controllers/Pcare/PcareController.php:1166
 * @route '/pcare/api/mapping/dokter'
 */
 deleteMappingDokter.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -1525,7 +1623,7 @@ deleteMappingDokter.delete = (options?: RouteQueryOptions): RouteDefinition<'del
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getMappingObat
-* @see app/Http/Controllers/Pcare/PcareController.php:1186
+* @see app/Http/Controllers/Pcare/PcareController.php:1216
 * @route '/pcare/api/mapping/obat'
 */
 export const getMappingObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1540,7 +1638,7 @@ getMappingObat.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getMappingObat
-* @see app/Http/Controllers/Pcare/PcareController.php:1186
+* @see app/Http/Controllers/Pcare/PcareController.php:1216
 * @route '/pcare/api/mapping/obat'
 */
 getMappingObat.url = (options?: RouteQueryOptions) => {
@@ -1549,7 +1647,7 @@ getMappingObat.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getMappingObat
-* @see app/Http/Controllers/Pcare/PcareController.php:1186
+* @see app/Http/Controllers/Pcare/PcareController.php:1216
 * @route '/pcare/api/mapping/obat'
 */
 getMappingObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1559,7 +1657,7 @@ getMappingObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getMappingObat
-* @see app/Http/Controllers/Pcare/PcareController.php:1186
+* @see app/Http/Controllers/Pcare/PcareController.php:1216
 * @route '/pcare/api/mapping/obat'
 */
 getMappingObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1569,7 +1667,7 @@ getMappingObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::storeMappingObat
-* @see app/Http/Controllers/Pcare/PcareController.php:1201
+* @see app/Http/Controllers/Pcare/PcareController.php:1231
 * @route '/pcare/api/mapping/obat'
 */
 export const storeMappingObat = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1584,7 +1682,7 @@ storeMappingObat.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::storeMappingObat
-* @see app/Http/Controllers/Pcare/PcareController.php:1201
+* @see app/Http/Controllers/Pcare/PcareController.php:1231
 * @route '/pcare/api/mapping/obat'
 */
 storeMappingObat.url = (options?: RouteQueryOptions) => {
@@ -1593,7 +1691,7 @@ storeMappingObat.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::storeMappingObat
-* @see app/Http/Controllers/Pcare/PcareController.php:1201
+* @see app/Http/Controllers/Pcare/PcareController.php:1231
 * @route '/pcare/api/mapping/obat'
 */
 storeMappingObat.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1603,7 +1701,7 @@ storeMappingObat.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deleteMappingObat
-* @see app/Http/Controllers/Pcare/PcareController.php:1262
+* @see app/Http/Controllers/Pcare/PcareController.php:1292
 * @route '/pcare/api/mapping/obat'
 */
 export const deleteMappingObat = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -1618,7 +1716,7 @@ deleteMappingObat.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deleteMappingObat
-* @see app/Http/Controllers/Pcare/PcareController.php:1262
+* @see app/Http/Controllers/Pcare/PcareController.php:1292
 * @route '/pcare/api/mapping/obat'
 */
 deleteMappingObat.url = (options?: RouteQueryOptions) => {
@@ -1627,7 +1725,7 @@ deleteMappingObat.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deleteMappingObat
-* @see app/Http/Controllers/Pcare/PcareController.php:1262
+* @see app/Http/Controllers/Pcare/PcareController.php:1292
 * @route '/pcare/api/mapping/obat'
 */
 deleteMappingObat.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -1637,7 +1735,7 @@ deleteMappingObat.delete = (options?: RouteQueryOptions): RouteDefinition<'delet
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::pesertaByNik
-* @see app/Http/Controllers/Pcare/PcareController.php:471
+* @see app/Http/Controllers/Pcare/PcareController.php:501
 * @route '/pcare/api/peserta/nik'
 */
 export const pesertaByNik = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1652,7 +1750,7 @@ pesertaByNik.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::pesertaByNik
-* @see app/Http/Controllers/Pcare/PcareController.php:471
+* @see app/Http/Controllers/Pcare/PcareController.php:501
 * @route '/pcare/api/peserta/nik'
 */
 pesertaByNik.url = (options?: RouteQueryOptions) => {
@@ -1661,7 +1759,7 @@ pesertaByNik.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::pesertaByNik
-* @see app/Http/Controllers/Pcare/PcareController.php:471
+* @see app/Http/Controllers/Pcare/PcareController.php:501
 * @route '/pcare/api/peserta/nik'
 */
 pesertaByNik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1671,7 +1769,7 @@ pesertaByNik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::pesertaByNik
-* @see app/Http/Controllers/Pcare/PcareController.php:471
+* @see app/Http/Controllers/Pcare/PcareController.php:501
 * @route '/pcare/api/peserta/nik'
 */
 pesertaByNik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1681,7 +1779,7 @@ pesertaByNik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getPeserta
-* @see app/Http/Controllers/Pcare/PcareController.php:150
+* @see app/Http/Controllers/Pcare/PcareController.php:180
 * @route '/pcare/api/peserta/{noka}'
 */
 export const getPeserta = (args: { noka: string | number } | [noka: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1696,7 +1794,7 @@ getPeserta.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getPeserta
-* @see app/Http/Controllers/Pcare/PcareController.php:150
+* @see app/Http/Controllers/Pcare/PcareController.php:180
 * @route '/pcare/api/peserta/{noka}'
 */
 getPeserta.url = (args: { noka: string | number } | [noka: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -1723,7 +1821,7 @@ getPeserta.url = (args: { noka: string | number } | [noka: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getPeserta
-* @see app/Http/Controllers/Pcare/PcareController.php:150
+* @see app/Http/Controllers/Pcare/PcareController.php:180
 * @route '/pcare/api/peserta/{noka}'
 */
 getPeserta.get = (args: { noka: string | number } | [noka: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1733,7 +1831,7 @@ getPeserta.get = (args: { noka: string | number } | [noka: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getPeserta
-* @see app/Http/Controllers/Pcare/PcareController.php:150
+* @see app/Http/Controllers/Pcare/PcareController.php:180
 * @route '/pcare/api/peserta/{noka}'
 */
 getPeserta.head = (args: { noka: string | number } | [noka: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1743,7 +1841,7 @@ getPeserta.head = (args: { noka: string | number } | [noka: string | number ] | 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getClubProlanis
-* @see app/Http/Controllers/Pcare/PcareController.php:496
+* @see app/Http/Controllers/Pcare/PcareController.php:526
 * @route '/pcare/api/kelompok/club/{kdProgram}'
 */
 export const getClubProlanis = (args: { kdProgram: string | number } | [kdProgram: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1758,7 +1856,7 @@ getClubProlanis.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getClubProlanis
-* @see app/Http/Controllers/Pcare/PcareController.php:496
+* @see app/Http/Controllers/Pcare/PcareController.php:526
 * @route '/pcare/api/kelompok/club/{kdProgram}'
 */
 getClubProlanis.url = (args: { kdProgram: string | number } | [kdProgram: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -1785,7 +1883,7 @@ getClubProlanis.url = (args: { kdProgram: string | number } | [kdProgram: string
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getClubProlanis
-* @see app/Http/Controllers/Pcare/PcareController.php:496
+* @see app/Http/Controllers/Pcare/PcareController.php:526
 * @route '/pcare/api/kelompok/club/{kdProgram}'
 */
 getClubProlanis.get = (args: { kdProgram: string | number } | [kdProgram: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1795,7 +1893,7 @@ getClubProlanis.get = (args: { kdProgram: string | number } | [kdProgram: string
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getClubProlanis
-* @see app/Http/Controllers/Pcare/PcareController.php:496
+* @see app/Http/Controllers/Pcare/PcareController.php:526
 * @route '/pcare/api/kelompok/club/{kdProgram}'
 */
 getClubProlanis.head = (args: { kdProgram: string | number } | [kdProgram: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1805,7 +1903,7 @@ getClubProlanis.head = (args: { kdProgram: string | number } | [kdProgram: strin
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getKegiatanKelompok
-* @see app/Http/Controllers/Pcare/PcareController.php:535
+* @see app/Http/Controllers/Pcare/PcareController.php:565
 * @route '/pcare/api/kelompok/kegiatan/{tanggal}'
 */
 export const getKegiatanKelompok = (args: { tanggal: string | number } | [tanggal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1820,7 +1918,7 @@ getKegiatanKelompok.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getKegiatanKelompok
-* @see app/Http/Controllers/Pcare/PcareController.php:535
+* @see app/Http/Controllers/Pcare/PcareController.php:565
 * @route '/pcare/api/kelompok/kegiatan/{tanggal}'
 */
 getKegiatanKelompok.url = (args: { tanggal: string | number } | [tanggal: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -1847,7 +1945,7 @@ getKegiatanKelompok.url = (args: { tanggal: string | number } | [tanggal: string
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getKegiatanKelompok
-* @see app/Http/Controllers/Pcare/PcareController.php:535
+* @see app/Http/Controllers/Pcare/PcareController.php:565
 * @route '/pcare/api/kelompok/kegiatan/{tanggal}'
 */
 getKegiatanKelompok.get = (args: { tanggal: string | number } | [tanggal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1857,7 +1955,7 @@ getKegiatanKelompok.get = (args: { tanggal: string | number } | [tanggal: string
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getKegiatanKelompok
-* @see app/Http/Controllers/Pcare/PcareController.php:535
+* @see app/Http/Controllers/Pcare/PcareController.php:565
 * @route '/pcare/api/kelompok/kegiatan/{tanggal}'
 */
 getKegiatanKelompok.head = (args: { tanggal: string | number } | [tanggal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1867,7 +1965,7 @@ getKegiatanKelompok.head = (args: { tanggal: string | number } | [tanggal: strin
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::addKegiatanKelompok
-* @see app/Http/Controllers/Pcare/PcareController.php:577
+* @see app/Http/Controllers/Pcare/PcareController.php:607
 * @route '/pcare/api/kelompok/kegiatan'
 */
 export const addKegiatanKelompok = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1882,7 +1980,7 @@ addKegiatanKelompok.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::addKegiatanKelompok
-* @see app/Http/Controllers/Pcare/PcareController.php:577
+* @see app/Http/Controllers/Pcare/PcareController.php:607
 * @route '/pcare/api/kelompok/kegiatan'
 */
 addKegiatanKelompok.url = (options?: RouteQueryOptions) => {
@@ -1891,7 +1989,7 @@ addKegiatanKelompok.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::addKegiatanKelompok
-* @see app/Http/Controllers/Pcare/PcareController.php:577
+* @see app/Http/Controllers/Pcare/PcareController.php:607
 * @route '/pcare/api/kelompok/kegiatan'
 */
 addKegiatanKelompok.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1901,7 +1999,7 @@ addKegiatanKelompok.post = (options?: RouteQueryOptions): RouteDefinition<'post'
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::updateKegiatanKelompok
-* @see app/Http/Controllers/Pcare/PcareController.php:665
+* @see app/Http/Controllers/Pcare/PcareController.php:695
 * @route '/pcare/api/kelompok/kegiatan'
 */
 export const updateKegiatanKelompok = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -1916,7 +2014,7 @@ updateKegiatanKelompok.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::updateKegiatanKelompok
-* @see app/Http/Controllers/Pcare/PcareController.php:665
+* @see app/Http/Controllers/Pcare/PcareController.php:695
 * @route '/pcare/api/kelompok/kegiatan'
 */
 updateKegiatanKelompok.url = (options?: RouteQueryOptions) => {
@@ -1925,7 +2023,7 @@ updateKegiatanKelompok.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::updateKegiatanKelompok
-* @see app/Http/Controllers/Pcare/PcareController.php:665
+* @see app/Http/Controllers/Pcare/PcareController.php:695
 * @route '/pcare/api/kelompok/kegiatan'
 */
 updateKegiatanKelompok.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -1935,7 +2033,7 @@ updateKegiatanKelompok.put = (options?: RouteQueryOptions): RouteDefinition<'put
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deleteKegiatanKelompok
-* @see app/Http/Controllers/Pcare/PcareController.php:755
+* @see app/Http/Controllers/Pcare/PcareController.php:785
 * @route '/pcare/api/kelompok/kegiatan/{eduId}'
 */
 export const deleteKegiatanKelompok = (args: { eduId: string | number } | [eduId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -1950,7 +2048,7 @@ deleteKegiatanKelompok.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deleteKegiatanKelompok
-* @see app/Http/Controllers/Pcare/PcareController.php:755
+* @see app/Http/Controllers/Pcare/PcareController.php:785
 * @route '/pcare/api/kelompok/kegiatan/{eduId}'
 */
 deleteKegiatanKelompok.url = (args: { eduId: string | number } | [eduId: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -1977,7 +2075,7 @@ deleteKegiatanKelompok.url = (args: { eduId: string | number } | [eduId: string 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deleteKegiatanKelompok
-* @see app/Http/Controllers/Pcare/PcareController.php:755
+* @see app/Http/Controllers/Pcare/PcareController.php:785
 * @route '/pcare/api/kelompok/kegiatan/{eduId}'
 */
 deleteKegiatanKelompok.delete = (args: { eduId: string | number } | [eduId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -1987,7 +2085,7 @@ deleteKegiatanKelompok.delete = (args: { eduId: string | number } | [eduId: stri
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getPesertaKegiatan
-* @see app/Http/Controllers/Pcare/PcareController.php:818
+* @see app/Http/Controllers/Pcare/PcareController.php:848
 * @route '/pcare/api/kelompok/peserta/{eduId}'
 */
 export const getPesertaKegiatan = (args: { eduId: string | number } | [eduId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -2002,7 +2100,7 @@ getPesertaKegiatan.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getPesertaKegiatan
-* @see app/Http/Controllers/Pcare/PcareController.php:818
+* @see app/Http/Controllers/Pcare/PcareController.php:848
 * @route '/pcare/api/kelompok/peserta/{eduId}'
 */
 getPesertaKegiatan.url = (args: { eduId: string | number } | [eduId: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -2029,7 +2127,7 @@ getPesertaKegiatan.url = (args: { eduId: string | number } | [eduId: string | nu
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getPesertaKegiatan
-* @see app/Http/Controllers/Pcare/PcareController.php:818
+* @see app/Http/Controllers/Pcare/PcareController.php:848
 * @route '/pcare/api/kelompok/peserta/{eduId}'
 */
 getPesertaKegiatan.get = (args: { eduId: string | number } | [eduId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -2039,7 +2137,7 @@ getPesertaKegiatan.get = (args: { eduId: string | number } | [eduId: string | nu
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getPesertaKegiatan
-* @see app/Http/Controllers/Pcare/PcareController.php:818
+* @see app/Http/Controllers/Pcare/PcareController.php:848
 * @route '/pcare/api/kelompok/peserta/{eduId}'
 */
 getPesertaKegiatan.head = (args: { eduId: string | number } | [eduId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -2049,7 +2147,7 @@ getPesertaKegiatan.head = (args: { eduId: string | number } | [eduId: string | n
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::addPesertaKegiatan
-* @see app/Http/Controllers/Pcare/PcareController.php:784
+* @see app/Http/Controllers/Pcare/PcareController.php:814
 * @route '/pcare/api/kelompok/peserta'
 */
 export const addPesertaKegiatan = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -2064,7 +2162,7 @@ addPesertaKegiatan.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::addPesertaKegiatan
-* @see app/Http/Controllers/Pcare/PcareController.php:784
+* @see app/Http/Controllers/Pcare/PcareController.php:814
 * @route '/pcare/api/kelompok/peserta'
 */
 addPesertaKegiatan.url = (options?: RouteQueryOptions) => {
@@ -2073,7 +2171,7 @@ addPesertaKegiatan.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::addPesertaKegiatan
-* @see app/Http/Controllers/Pcare/PcareController.php:784
+* @see app/Http/Controllers/Pcare/PcareController.php:814
 * @route '/pcare/api/kelompok/peserta'
 */
 addPesertaKegiatan.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -2083,7 +2181,7 @@ addPesertaKegiatan.post = (options?: RouteQueryOptions): RouteDefinition<'post'>
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deletePesertaKegiatan
-* @see app/Http/Controllers/Pcare/PcareController.php:844
+* @see app/Http/Controllers/Pcare/PcareController.php:874
 * @route '/pcare/api/kelompok/peserta/{eduId}/{noKartu}'
 */
 export const deletePesertaKegiatan = (args: { eduId: string | number, noKartu: string | number } | [eduId: string | number, noKartu: string | number ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -2098,7 +2196,7 @@ deletePesertaKegiatan.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deletePesertaKegiatan
-* @see app/Http/Controllers/Pcare/PcareController.php:844
+* @see app/Http/Controllers/Pcare/PcareController.php:874
 * @route '/pcare/api/kelompok/peserta/{eduId}/{noKartu}'
 */
 deletePesertaKegiatan.url = (args: { eduId: string | number, noKartu: string | number } | [eduId: string | number, noKartu: string | number ], options?: RouteQueryOptions) => {
@@ -2124,7 +2222,7 @@ deletePesertaKegiatan.url = (args: { eduId: string | number, noKartu: string | n
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deletePesertaKegiatan
-* @see app/Http/Controllers/Pcare/PcareController.php:844
+* @see app/Http/Controllers/Pcare/PcareController.php:874
 * @route '/pcare/api/kelompok/peserta/{eduId}/{noKartu}'
 */
 deletePesertaKegiatan.delete = (args: { eduId: string | number, noKartu: string | number } | [eduId: string | number, noKartu: string | number ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -2132,6 +2230,6 @@ deletePesertaKegiatan.delete = (args: { eduId: string | number, noKartu: string 
     method: 'delete',
 })
 
-const PcareController = { ping, proxy, getDokter, getFaskes, getPoli, getKesadaran, getDpho, getTindakan, getProvider, getSpesialis, getSubSpesialis, getSarana, getKhusus, getPrognosa, getAlergi, getStatusPulang, getFaskesRujukanSubSpesialis, pesertaByNoKartu, daftarKunjungan, getDiagnosa, searchPoliklinikRs, searchDokterRs, searchObatRs, getMappingPoli, storeMappingPoli, deleteMappingPoli, getMappingDokter, storeMappingDokter, deleteMappingDokter, getMappingObat, storeMappingObat, deleteMappingObat, pesertaByNik, getPeserta, getClubProlanis, getKegiatanKelompok, addKegiatanKelompok, updateKegiatanKelompok, deleteKegiatanKelompok, getPesertaKegiatan, addPesertaKegiatan, deletePesertaKegiatan }
+const PcareController = { ping, proxy, getDokter, getFaskes, getPoli, getKesadaran, getDpho, getTindakan, getProvider, getSpesialis, getSubSpesialis, getSarana, getKhusus, getPrognosa, getAlergi, getStatusPulang, getFaskesRujukanSubSpesialis, pesertaByNoKartu, daftarKunjungan, searchDokterRs, searchPoliklinikRs, getDiagnosa, searchObatRs, getMappingPoli, storeMappingPoli, deleteMappingPoli, getMappingDokter, storeMappingDokter, deleteMappingDokter, getMappingObat, storeMappingObat, deleteMappingObat, pesertaByNik, getPeserta, getClubProlanis, getKegiatanKelompok, addKegiatanKelompok, updateKegiatanKelompok, deleteKegiatanKelompok, getPesertaKegiatan, addPesertaKegiatan, deletePesertaKegiatan }
 
 export default PcareController

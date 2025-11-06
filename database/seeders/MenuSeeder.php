@@ -48,6 +48,8 @@ class MenuSeeder extends Seeder
             'name' => 'Master Data',
             'slug' => 'master-data',
             'icon' => 'fas fa-database',
+            'route' => 'master-data.index',
+            'url' => route('master-data.index'),
             'sort_order' => 2,
             'is_active' => true,
             'description' => 'Pengelolaan data master sistem'
@@ -188,6 +190,20 @@ class MenuSeeder extends Seeder
             'is_active' => true,
             'permission_name' => 'poliklinik.view',
             'description' => 'Pengelolaan data poliklinik dan tarif registrasi'
+        ]);
+
+        // Jadwal Dokter (Master Data)
+        Menu::create([
+            'name' => 'Jadwal Dokter',
+            'slug' => 'jadwal-dokter',
+            'icon' => 'fas fa-calendar-alt',
+            'route' => 'jadwal.index',
+            'url' => route('jadwal.index'),
+            'parent_id' => $masterData->id,
+            'sort_order' => 7,
+            'is_active' => true,
+            'permission_name' => 'jadwal.index',
+            'description' => 'Pengaturan jadwal praktik dokter per poliklinik'
         ]);
 
         // Registration sub-menus

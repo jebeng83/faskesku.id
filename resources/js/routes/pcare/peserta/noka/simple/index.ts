@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:150
+* @see app/Http/Controllers/Pcare/PcareController.php:180
 * @route '/pcare/api/peserta/{noka}'
 */
 export const api = (args: { noka: string | number } | [noka: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ api.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:150
+* @see app/Http/Controllers/Pcare/PcareController.php:180
 * @route '/pcare/api/peserta/{noka}'
 */
 api.url = (args: { noka: string | number } | [noka: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ api.url = (args: { noka: string | number } | [noka: string | number ] | string |
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:150
+* @see app/Http/Controllers/Pcare/PcareController.php:180
 * @route '/pcare/api/peserta/{noka}'
 */
 api.get = (args: { noka: string | number } | [noka: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ api.get = (args: { noka: string | number } | [noka: string | number ] | string |
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:150
+* @see app/Http/Controllers/Pcare/PcareController.php:180
 * @route '/pcare/api/peserta/{noka}'
 */
 api.head = (args: { noka: string | number } | [noka: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

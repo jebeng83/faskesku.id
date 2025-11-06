@@ -2,14 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useForm } from "@inertiajs/react";
 
 export default function EditProfileModal({ isOpen, onClose, user }) {
-	const { data, setData, put, processing, errors, reset } = useForm({
-		name: user?.name || "",
-		username: user?.username || "",
-		email: user?.email || "",
-		current_password: "",
-		password: "",
-		password_confirmation: "",
-	});
+    const { data, setData, post, processing, errors, reset, transform } = useForm({
+        name: user?.name || "",
+        username: user?.username || "",
+        email: user?.email || "",
+        current_password: "",
+        password: "",
+        password_confirmation: "",
+    });
 
 	const [isAnimating, setIsAnimating] = useState(false);
 	const [showPasswordSection, setShowPasswordSection] = useState(false);
@@ -38,14 +38,18 @@ export default function EditProfileModal({ isOpen, onClose, user }) {
 		}, 200);
 	};
 
-	const handleSubmit = (e) => {
-		e.preventDefault();
-		put(route("profile.update"), {
-			onSuccess: () => {
-				handleClose();
-			},
-		});
-	};
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        // Spoof PUT via POST to avoid 405 and ensure Laravel recognizes _method
+        transform((payload) => ({ ...payload, _method: "PUT" }));
+        post(route("profile.update"), {
+            forceFormData: true,
+            onSuccess: () => {
+                handleClose();
+            },
+            onFinish: () => transform((payload) => payload),
+        });
+    };
 
 	if (!isOpen && !isAnimating) return null;
 

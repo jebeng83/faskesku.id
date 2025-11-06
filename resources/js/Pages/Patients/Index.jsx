@@ -51,7 +51,7 @@ export default function Index({
 
 	const handleDelete = (patient) => {
 		if (confirm("Apakah Anda yakin ingin menghapus data pasien ini?")) {
-			router.delete(route("patients.destroy", patient.no_rkm_medis));
+			router.post(route("patients.destroy", patient.no_rkm_medis), { _method: "DELETE" }, { forceFormData: true, preserveScroll: true });
 		}
 	};
 

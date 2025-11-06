@@ -284,7 +284,15 @@ export default function DataObat({ dataBarang = { data: [], links: null, from: 0
             if (modalType === 'create') {
                 response = await axios.post(route('data-barang.store'), formData);
             } else {
-                response = await axios.put(route('data-barang.update', selectedItem.kode_brng), formData);
+                // Spoof PUT via POST using FormData to ensure Laravel recognizes _method
+                const fd = new FormData();
+                Object.entries(formData).forEach(([key, value]) => {
+                    fd.append(key, value ?? "");
+                });
+                fd.append('_method', 'PUT');
+                response = await axios.post(route('data-barang.update', selectedItem.kode_brng), fd, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                });
             }
 
             if (response.data.success) {
@@ -312,7 +320,12 @@ export default function DataObat({ dataBarang = { data: [], links: null, from: 0
     const handleDelete = async (item) => {
         if (confirm('Apakah Anda yakin ingin menghapus data obat ini?')) {
             try {
-                await axios.delete(route('data-barang.destroy', item.kode_brng));
+                // Use method spoofing for DELETE to avoid 405
+                const fd = new FormData();
+                fd.append('_method', 'DELETE');
+                await axios.post(route('data-barang.destroy', item.kode_brng), fd, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                });
                 toast('Data obat berhasil dihapus!', 'success');
                 router.reload();
             } catch (error) {
@@ -383,7 +396,13 @@ export default function DataObat({ dataBarang = { data: [], links: null, from: 0
                 ...hargaJualBaru
             };
 
-            const response = await axios.put(`/api/databarang/update-harga-jual/${kodeBarang}`, updateData);
+            // Spoof PUT via POST to avoid 405 issues
+            const fd = new FormData();
+            Object.entries(updateData).forEach(([key, value]) => fd.append(key, value ?? ""));
+            fd.append('_method', 'PUT');
+            const response = await axios.post(`/api/databarang/update-harga-jual/${kodeBarang}`, fd, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
             
             if (response.data.success) {
                 console.log(`Harga jual berhasil diupdate untuk ${kodeBarang}:`, hargaJualBaru);

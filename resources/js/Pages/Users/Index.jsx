@@ -204,11 +204,17 @@ export default function Index() {
 		setErrors({});
 
 		try {
-			if (modalMode === "create") {
-				await axios.post("/api/users", formData);
-			} else {
-				await axios.put(`/api/users/${selectedUser.id}`, formData);
-			}
+            if (modalMode === "create") {
+                await axios.post("/api/users", formData);
+            } else {
+                // Spoof PUT via POST using FormData
+                const fd = new FormData();
+                Object.entries(formData).forEach(([key, value]) => fd.append(key, value ?? ""));
+                fd.append('_method', 'PUT');
+                await axios.post(`/api/users/${selectedUser.id}`, fd, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                });
+            }
 			closeModal();
 			fetchUsers();
 		} catch (error) {
@@ -222,26 +228,37 @@ export default function Index() {
 		e.preventDefault();
 		setErrors({});
 
-		try {
-			await axios.put(`/api/users/${selectedUser.id}/password`, passwordData);
-			closeModal();
-		} catch (error) {
-			if (error.response?.status === 422) {
-				setErrors(error.response.data.errors);
-			}
-		}
+        try {
+            // Spoof PUT via POST using FormData
+            const fd = new FormData();
+            Object.entries(passwordData).forEach(([key, value]) => fd.append(key, value ?? ""));
+            fd.append('_method', 'PUT');
+            await axios.post(`/api/users/${selectedUser.id}/password`, fd, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            closeModal();
+        } catch (error) {
+            if (error.response?.status === 422) {
+                setErrors(error.response.data.errors);
+            }
+        }
 	};
 
 	const handleDelete = async (user) => {
 		if (confirm(`Apakah Anda yakin ingin menghapus user ${user.name}?`)) {
-			try {
-				await axios.delete(`/api/users/${user.id}`);
-				fetchUsers();
-			} catch (error) {
-				alert(
-					"Gagal menghapus user: " + (error.response?.data?.message || "Error")
-				);
-			}
+            try {
+                // Spoof DELETE via POST
+                const fd = new FormData();
+                fd.append('_method', 'DELETE');
+                await axios.post(`/api/users/${user.id}`, fd, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                });
+                fetchUsers();
+            } catch (error) {
+                alert(
+                    "Gagal menghapus user: " + (error.response?.data?.message || "Error")
+                );
+            }
 		}
 	};
 

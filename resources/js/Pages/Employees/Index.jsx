@@ -5,14 +5,12 @@ import AppLayout from "@/Layouts/AppLayout";
 import ResponsiveTable from "@/Components/ResponsiveTable";
 import ActionDropdown from "@/Components/ActionDropdown";
 import Pagination from "@/Components/Pagination";
-import EmployeeCreateModal from "@/Components/EmployeeCreateModal";
 import CreateUserFromEmployeeModal from "@/Components/CreateUserFromEmployeeModal";
 import ConfirmationAlert from "@/Components/ConfirmationAlert";
 import Alert from "@/Components/Alert";
 
 export default function Index({ employees, filters }) {
 	const [search, setSearch] = useState(filters.search || "");
-	const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 	const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
 	const [selectedEmployee, setSelectedEmployee] = useState(null);
 	const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -104,10 +102,6 @@ export default function Index({ employees, filters }) {
 		setEmployeeToDelete(null);
 	};
 
-	const handleCreateSuccess = () => {
-		// Refresh the page to show new data
-		router.reload();
-	};
 
 	const handleCreateUser = (employee) => {
 		setSelectedEmployee(employee);
@@ -175,10 +169,10 @@ export default function Index({ employees, filters }) {
 		<AppLayout>
 			<Head title="Data Pegawai" />
 
-			<div className="space-y-6 -mt-6 -mx-6 p-6">
-				{/* Header */}
-				<div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-					<div className="p-6">
+            <div className="space-y-6 -mt-6 -mx-6 p-6">
+                {/* Header */}
+                <div className="bg-white/95 dark:bg-gray-900/60 backdrop-blur-sm overflow-visible shadow-sm border border-gray-200 dark:border-gray-700 rounded-xl">
+                    <div className="p-6">
 						<div className="flex justify-between items-center">
 							<div>
 								<h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -188,62 +182,78 @@ export default function Index({ employees, filters }) {
 									Kelola data pegawai rumah sakit
 								</p>
 							</div>
-							<button
-								onClick={() => setIsCreateModalOpen(true)}
-								className="bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 shadow-md hover:shadow-lg font-medium text-sm whitespace-nowrap transform hover:scale-105"
-							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									viewBox="0 0 24 24"
-									fill="currentColor"
-									className="w-4 h-4"
-								>
-									<path
-										fillRule="evenodd"
-										d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
-										clipRule="evenodd"
-									/>
-								</svg>
-								<span>Tambah Pegawai</span>
-							</button>
+					<Link
+						href={route("employees.create")}
+						className="bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 shadow-md hover:shadow-lg font-medium text-sm whitespace-nowrap transform hover:scale-105"
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 24 24"
+							fill="currentColor"
+							className="w-4 h-4"
+						>
+							<path
+								fillRule="evenodd"
+								d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+								clipRule="evenodd"
+							/>
+						</svg>
+						<span>Tambah Pegawai</span>
+					</Link>
 						</div>
 					</div>
 				</div>
 
-				{/* Search and Filters */}
-				<div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-					<div className="p-6">
-						<form onSubmit={handleSearch} className="flex gap-4">
-							<div className="flex-1">
-								<input
-									type="text"
-									value={search}
-									onChange={(e) => setSearch(e.target.value)}
-									placeholder="Cari berdasarkan nama, NIK, jabatan, atau departemen..."
-									className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-								/>
-							</div>
-							<button
-								type="submit"
-								className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition-colors"
-							>
-								Cari
-							</button>
-							{search && (
-								<button
-									type="button"
-									onClick={() => {
-										setSearch("");
-										router.get(route("employees.index"));
-									}}
-									className="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-lg transition-colors"
-								>
-									Reset
-								</button>
-							)}
-						</form>
-					</div>
-				</div>
+                {/* Search and Filters */}
+                <div className="bg-white/95 dark:bg-gray-900/60 backdrop-blur-sm overflow-visible shadow-sm border border-gray-200 dark:border-gray-700 rounded-xl">
+                    <div className="p-6">
+                        <form onSubmit={handleSearch} className="flex gap-4">
+                            <div className="flex-1 relative">
+                                <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                                        <path fillRule="evenodd" d="M10.5 3.75a6.75 6.75 0 104.243 11.94l4.283 4.287a.75.75 0 101.06-1.06l-4.287-4.283A6.75 6.75 0 0010.5 3.75zm0 1.5a5.25 5.25 0 100 10.5 5.25 5.25 0 000-10.5z" clipRule="evenodd" />
+                                    </svg>
+                                </span>
+                                <input
+                                    aria-label="Cari pegawai"
+                                    type="text"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    placeholder="Cari berdasarkan nama, NIK, jabatan, atau departemen..."
+                                    className="w-full h-11 pl-10 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow shadow-sm"
+                                />
+                                {search && (
+                                    <button
+                                        type="button"
+                                        aria-label="Bersihkan pencarian"
+                                        onClick={() => setSearch("")}
+                                        className="absolute inset-y-0 right-3 my-auto px-2 h-7 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-300 text-xs"
+                                    >
+                                        Bersihkan
+                                    </button>
+                                )}
+                            </div>
+                            <button
+                                type="submit"
+                                className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-6 h-11 rounded-lg transition-all shadow-sm"
+                            >
+                                Cari
+                            </button>
+                            {search && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setSearch("");
+                                        router.get(route("employees.index"));
+                                    }}
+                                    className="px-5 h-11 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
+                                >
+                                    Reset
+                                </button>
+                            )}
+                        </form>
+                    </div>
+                </div>
 
 				{/* Data Table */}
 				<ResponsiveTable
@@ -328,10 +338,10 @@ export default function Index({ employees, filters }) {
 							<path d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM14.25 8.625a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0zM1.5 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM17.25 19.128l-.001.144a2.25 2.25 0 01-.233.96 10.088 10.088 0 005.06-1.01.75.75 0 00.42-.643 4.875 4.875 0 00-6.957-4.611 8.586 8.586 0 011.71 5.157v.003z" />
 						</svg>
 					}
-					mobileCardRender={(employee) => (
-						<div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-4">
-							<div className="flex items-start justify-between">
-								<div className="flex-1">
+                    mobileCardRender={(employee) => (
+                        <div className="bg-white/95 dark:bg-gray-900/60 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-4">
+                            <div className="flex items-start justify-between">
+                                <div className="flex-1">
 									{/* Avatar dan Nama */}
 									<div className="flex items-center mb-3">
 										<div className="flex-shrink-0 h-12 w-12">
@@ -405,12 +415,7 @@ export default function Index({ employees, filters }) {
 					total={employees.total}
 				/>
 
-				{/* Create Employee Modal */}
-				<EmployeeCreateModal
-					isOpen={isCreateModalOpen}
-					onClose={() => setIsCreateModalOpen(false)}
-					onSuccess={handleCreateSuccess}
-				/>
+			{/* Create Employee dialihkan ke halaman Create */}
 
 				{/* Create User from Employee Modal */}
 				<CreateUserFromEmployeeModal

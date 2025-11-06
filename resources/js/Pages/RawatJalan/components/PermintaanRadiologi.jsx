@@ -106,10 +106,13 @@ export default function PermintaanRadiologi({ token = '', noRkmMedis = '', noRaw
         }
         
         try {
-            const response = await axios.delete(`/api/permintaan-radiologi/${noorder}`, {
+            // Method spoofing: use POST + _method=DELETE to avoid 405 and align with backend
+            const fd = new FormData();
+            fd.append('_method', 'DELETE');
+            const response = await axios.post(`/api/permintaan-radiologi/${noorder}`, fd, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'multipart/form-data'
                 }
             });
             

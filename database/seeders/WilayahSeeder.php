@@ -23,8 +23,8 @@ class WilayahSeeder extends Seeder
         // Enable foreign key checks
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        // Read and parse the SQL file
-        $sqlFile = '/Users/hardiko/Downloads/wilayah.sql';
+        // Read and parse the SQL file (now from public/wilayah.sql)
+        $sqlFile = public_path('wilayah.sql');
 
         if (file_exists($sqlFile)) {
             $this->seedFromSqlFile($sqlFile);
@@ -38,60 +38,51 @@ class WilayahSeeder extends Seeder
      */
     private function seedFromSqlFile($sqlFile)
     {
-        $sql = file_get_contents($sqlFile);
+        $handle = fopen($sqlFile, 'r');
+        if (!$handle) {
+            $this->seedSampleData();
+            return;
+        }
 
-        // Split SQL into individual INSERT statements
-        $statements = array_filter(array_map('trim', explode(';', $sql)));
-
-        $batchSize = 1000;
+        $batchSize = 2000;
         $batch = [];
+        $pattern = "/\\(\\s*'((?:''|[^'])*)'\\s*,\\s*'((?:''|[^'])*)'\\s*\\)[,;]?/";
 
-        foreach ($statements as $statement) {
-            if (strpos($statement, 'INSERT INTO wilayah') === 0) {
-                // Extract values from INSERT statement
-                if (preg_match('/VALUES\s*(.+)/i', $statement, $matches)) {
-                    $valuesString = $matches[1];
+        while (($line = fgets($handle)) !== false) {
+            $line = trim($line);
+            if ($line === '' || str_starts_with($line, '--') || str_starts_with($line, '/*')) {
+                continue; // skip comments and empty lines
+            }
 
-                    // Parse individual value tuples - handle both formats
-                    if (preg_match_all("/\('([^']+)',\s*'([^']+)'\)/", $valuesString, $matches, PREG_SET_ORDER)) {
-                        foreach ($matches as $match) {
-                            $batch[] = [
-                                'kode' => $match[1],
-                                'nama' => $match[2],
-                                'created_at' => now(),
-                                'updated_at' => now(),
-                            ];
+            if (preg_match_all($pattern, $line, $matches, PREG_SET_ORDER)) {
+                foreach ($matches as $match) {
+                    $kodeRaw = $match[1];
+                    $namaRaw = $match[2];
 
-                            if (count($batch) >= $batchSize) {
-                                Wilayah::insert($batch);
-                                $batch = [];
-                            }
-                        }
-                    }
-                    // Handle format with spaces in kode (like '11 01 03')
-                    elseif (preg_match_all("/\('([^']+)',\s*'([^']+)'\)/", $valuesString, $matches, PREG_SET_ORDER)) {
-                        foreach ($matches as $match) {
-                            // Clean kode by removing spaces and replacing with dots
-                            $kode = str_replace(' ', '.', $match[1]);
+                    // Unescape doubled apostrophes
+                    $kode = str_replace("''", "'", $kodeRaw);
+                    $nama = str_replace("''", "'", $namaRaw);
 
-                            $batch[] = [
-                                'kode' => $kode,
-                                'nama' => $match[2],
-                                'created_at' => now(),
-                                'updated_at' => now(),
-                            ];
+                    // Normalize kode by replacing spaces with dots
+                    $kode = str_replace(' ', '.', $kode);
 
-                            if (count($batch) >= $batchSize) {
-                                Wilayah::insert($batch);
-                                $batch = [];
-                            }
-                        }
+                    $batch[] = [
+                        'kode' => $kode,
+                        'nama' => $nama,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+
+                    if (count($batch) >= $batchSize) {
+                        Wilayah::insert($batch);
+                        $batch = [];
                     }
                 }
             }
         }
 
-        // Insert remaining batch
+        fclose($handle);
+
         if (!empty($batch)) {
             Wilayah::insert($batch);
         }

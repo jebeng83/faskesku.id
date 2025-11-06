@@ -11,6 +11,8 @@ use App\Models\Wilayah;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -75,11 +77,17 @@ class PatientController extends Controller
             'pnd' => 'required|in:TS,TK,SD,SMP,SMA,SLTA/SEDERAJAT,D1,D2,D3,D4,S1,S2,S3,-',
             'keluarga' => 'nullable|in:AYAH,IBU,ISTRI,SUAMI,SAUDARA,ANAK,DIRI SENDIRI,LAIN-LAIN',
             'namakeluarga' => 'required|string|max:50',
-            'kd_pj' => 'required|string|max:3',
+            'kd_pj' => 'required|exists:penjab,kd_pj',
             'no_peserta' => 'nullable|string|max:25',
-            // 'pekerjaanpj' => 'required|string|max:35',
+            'pekerjaanpj' => 'required|string|max:35',
             'alamatpj' => 'required|string|max:100',
             'kode_wilayah' => 'required|string|max:13|exists:wilayah,kode',
+            'email' => 'nullable|email|max:50',
+            'perusahaan_pasien' => 'required|string|exists:perusahaan_pasien,kode_perusahaan|max:8',
+            'suku_bangsa' => 'required|integer|exists:suku_bangsa,id',
+            'bahasa_pasien' => 'required|integer|exists:bahasa_pasien,id',
+            'cacat_fisik' => 'required|integer|exists:cacat_fisik,id',
+            'nip' => 'nullable|string|max:30',
         ], [
             'nm_pasien.required' => 'Nama Pasien harus diisi',
             'nm_pasien.max' => 'Nama Pasien maksimal 40 karakter',
@@ -97,14 +105,26 @@ class PatientController extends Controller
             'alamat.required' => 'Alamat harus diisi',
             'alamat.max' => 'Alamat maksimal 200 karakter',
             'kd_pj.required' => 'Penjab harus diisi',
-            'kd_pj.max' => 'Penjab maksimal 3 karakter',
-            // 'pekerjaanpj.required' => 'Pekerjaan Penanggung Jawab harus diisi',
-            // 'pekerjaanpj.max' => 'Pekerjaan Penanggung Jawab maksimal 35 karakter',
+            'kd_pj.exists' => 'Penjab tidak valid',
+            'pekerjaanpj.required' => 'Pekerjaan Penanggung Jawab harus diisi',
+            'pekerjaanpj.max' => 'Pekerjaan Penanggung Jawab maksimal 35 karakter',
             'alamatpj.required' => 'Alamat Penanggung Jawab harus diisi',
             'alamatpj.max' => 'Alamat Penanggung Jawab maksimal 100 karakter',
             'kode_wilayah.required' => 'Kode Wilayah harus diisi',
             'kode_wilayah.max' => 'Kode Wilayah maksimal 13 karakter',
             'kode_wilayah.exists' => 'Kode Wilayah tidak ditemukan',
+            'email.email' => 'Format email tidak valid',
+            'email.max' => 'Email maksimal 50 karakter',
+            'perusahaan_pasien.required' => 'Perusahaan pasien harus diisi',
+            'perusahaan_pasien.exists' => 'Perusahaan pasien tidak valid',
+            'perusahaan_pasien.max' => 'Kode perusahaan maksimal 8 karakter',
+            'suku_bangsa.required' => 'Suku bangsa harus diisi',
+            'suku_bangsa.exists' => 'Suku bangsa tidak valid',
+            'bahasa_pasien.required' => 'Bahasa pasien harus diisi',
+            'bahasa_pasien.exists' => 'Bahasa pasien tidak valid',
+            'cacat_fisik.required' => 'Cacat fisik harus diisi',
+            'cacat_fisik.exists' => 'Cacat fisik tidak valid',
+            'nip.max' => 'NIP maksimal 30 karakter',
         ]);
 
         if ($validator->fails()) {
@@ -121,6 +141,27 @@ class PatientController extends Controller
             $data['kecamatanpj'] = $wilayahDetails['district'];
             $data['kabupatenpj'] = $wilayahDetails['regency'];
             $data['propinsipj'] = $wilayahDetails['province'];
+
+            // Map kode_wilayah => kd_prop, kd_kab, kd_kec, kd_kel
+            // Format expected: PP.RR.DD.VVVV (e.g., 74.01.01.1001)
+            if (preg_match('/^\d{2}\.\d{2}\.\d{2}\.\d{4}$/', $data['kode_wilayah'])) {
+                [$pp, $rr, $dd, $vvvv] = explode('.', $data['kode_wilayah']);
+                $ppInt = (int) $pp;
+                $rrInt = (int) $rr;
+                $ddInt = (int) $dd;
+                $vvvvInt = (int) $vvvv;
+
+                // Guard: only set kd_* if corresponding legacy tables contain the reference
+                $hasProp = Schema::hasTable('propinsi') ? DB::table('propinsi')->where('kd_prop', $ppInt)->exists() : false;
+                $hasKab  = Schema::hasTable('kabupaten') ? DB::table('kabupaten')->where('kd_kab', $rrInt)->exists() : false;
+                $hasKec  = Schema::hasTable('kecamatan') ? DB::table('kecamatan')->where('kd_kec', $ddInt)->exists() : false;
+                $hasKel  = Schema::hasTable('kelurahan') ? DB::table('kelurahan')->where('kd_kel', $vvvvInt)->exists() : false;
+
+                if ($hasProp) { $data['kd_prop'] = $ppInt; }
+                if ($hasKab)  { $data['kd_kab']  = $rrInt; }
+                if ($hasKec)  { $data['kd_kec']  = $ddInt; }
+                if ($hasKel)  { $data['kd_kel']  = $vvvvInt; }
+            }
         }
 
         // Generate nomor RM otomatis
@@ -128,32 +169,22 @@ class PatientController extends Controller
         $data['tgl_daftar'] = now()->toDateString();
         $data['umur'] = Patient::calculateAgeFromDate($data['tgl_lahir']);
 
-        // Set default values for required fields
-        $data['kd_kel'] = $data['kd_kel'] ?? 1;
-        $data['kd_kec'] = $data['kd_kec'] ?? 1;
-        $data['kd_kab'] = $data['kd_kab'] ?? 1;
-        $data['perusahaan_pasien'] = $data['perusahaan_pasien'] ?? '-';
-        $data['suku_bangsa'] = $data['suku_bangsa'] ?? '1';
-        $data['bahasa_pasien'] = $data['bahasa_pasien'] ?? '1';
-        $data['cacat_fisik'] = $data['cacat_fisik'] ?? '1';
-        $data['nip'] = $data['nip'] ?? '';
+        // Set default values for required legacy region fields to avoid FK violation
         $data['kd_prop'] = $data['kd_prop'] ?? 1;
+        $data['kd_kab']  = $data['kd_kab']  ?? 1;
+        $data['kd_kec']  = $data['kd_kec']  ?? 1;
+        $data['kd_kel']  = $data['kd_kel']  ?? 1;
+        // keep non-null defaults for optional string fields
+        $data['nip'] = $data['nip'] ?? '';
         $data['email'] = $data['email'] ?? '';
         $data['pekerjaanpj'] = $data['pekerjaanpj'] ?? '';
 
+        // Ensure kd_pj references an existing penjab (validated above)
+
         Patient::create($data);
 
-        // Check if request is from Inertia (modal)
-        if (request()->header('X-Inertia')) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Data pasien berhasil ditambahkan.',
-                'data' => Patient::where('no_rkm_medis', $data['no_rkm_medis'])->first()
-            ]);
-        }
-
-        return redirect()->route('patients.index')
-            ->with('success', 'Data pasien berhasil ditambahkan.');
+        // Always respond with a redirect for Inertia requests to avoid plain JSON overlay
+        return redirect()->back()->with('success', 'Data pasien berhasil ditambahkan.');
     }
 
     /**
@@ -161,8 +192,25 @@ class PatientController extends Controller
      */
     public function show(Patient $patient)
     {
+        // Ambil nama cacat fisik dengan join sederhana (lookup) untuk tampilan
+        $labelCol = Schema::hasColumn('cacat_fisik', 'nama_cacat')
+            ? 'nama_cacat'
+            : (Schema::hasColumn('cacat_fisik', 'nama_cacat_fisik')
+                ? 'nama_cacat_fisik'
+                : (Schema::hasColumn('cacat_fisik', 'nama') ? 'nama' : null));
+
+        $namaCacat = null;
+        if ($labelCol && $patient->cacat_fisik) {
+            $namaCacat = DB::table('cacat_fisik')
+                ->where('id', $patient->cacat_fisik)
+                ->value($labelCol);
+        }
+
+        $patientData = $patient->toArray();
+        $patientData['cacat_fisik_nama'] = $namaCacat;
+
         return Inertia::render('Patients/Show', [
-            'patient' => $patient,
+            'patient' => $patientData,
         ]);
     }
 
@@ -197,12 +245,17 @@ class PatientController extends Controller
             'pnd' => 'required|in:TS,TK,SD,SMP,SMA,SLTA/SEDERAJAT,D1,D2,D3,D4,S1,S2,S3,-',
             'keluarga' => 'nullable|in:AYAH,IBU,ISTRI,SUAMI,SAUDARA,ANAK,DIRI SENDIRI,LAIN-LAIN',
             'namakeluarga' => 'required|string|max:50',
-            'kd_pj' => 'required|string|max:3',
+            'kd_pj' => 'required|exists:penjab,kd_pj',
             'no_peserta' => 'nullable|string|max:25',
             'pekerjaanpj' => 'required|string|max:35',
             'alamatpj' => 'required|string|max:100',
             'kode_wilayah' => 'required|string|max:13|exists:wilayah,kode',
             'email' => 'nullable|email|max:50',
+            'perusahaan_pasien' => 'required|string|exists:perusahaan_pasien,kode_perusahaan|max:8',
+            'suku_bangsa' => 'required|integer|exists:suku_bangsa,id',
+            'bahasa_pasien' => 'required|integer|exists:bahasa_pasien,id',
+            'cacat_fisik' => 'required|integer|exists:cacat_fisik,id',
+            'nip' => 'nullable|string|max:30',
         ]);
 
         if ($validator->fails()) {
@@ -219,6 +272,28 @@ class PatientController extends Controller
             $data['kecamatanpj'] = $wilayahDetails['district'];
             $data['kabupatenpj'] = $wilayahDetails['regency'];
             $data['propinsipj'] = $wilayahDetails['province'];
+
+            // Map kode_wilayah => kd_prop, kd_kab, kd_kec, kd_kel
+            // Guarded by existence checks on legacy tables to avoid FK violations
+            if (preg_match('/^\d{2}\.\d{2}\.\d{2}\.\d{4}$/', $data['kode_wilayah'])) {
+                [$pp, $rr, $dd, $vvvv] = explode('.', $data['kode_wilayah']);
+                $ppInt = (int) $pp;
+                $rrInt = (int) $rr;
+                $ddInt = (int) $dd;
+                $vvvvInt = (int) $vvvv;
+
+                // Check existence of legacy region rows before setting kd_*
+                $hasProp = Schema::hasTable('propinsi') ? DB::table('propinsi')->where('kd_prop', $ppInt)->exists() : false;
+                $hasKab  = Schema::hasTable('kabupaten') ? DB::table('kabupaten')->where('kd_kab', $rrInt)->exists() : false;
+                $hasKec  = Schema::hasTable('kecamatan') ? DB::table('kecamatan')->where('kd_kec', $ddInt)->exists() : false;
+                $hasKel  = Schema::hasTable('kelurahan') ? DB::table('kelurahan')->where('kd_kel', $vvvvInt)->exists() : false;
+
+                // Only set kd_* values if corresponding legacy table contains the reference
+                if ($hasProp) { $data['kd_prop'] = $ppInt; }
+                if ($hasKab)  { $data['kd_kab']  = $rrInt; }
+                if ($hasKec)  { $data['kd_kec']  = $ddInt; }
+                if ($hasKel)  { $data['kd_kel']  = $vvvvInt; }
+            }
         }
 
         // Update umur
@@ -226,8 +301,8 @@ class PatientController extends Controller
 
         $patient->update($data);
 
-        return redirect()->route('patients.index')
-            ->with('success', 'Data pasien berhasil diperbarui.');
+        // Always respond with a redirect for Inertia requests to avoid plain JSON overlay
+        return redirect()->back()->with('success', 'Data pasien berhasil diperbarui.');
     }
 
     /**

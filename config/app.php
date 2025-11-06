@@ -65,7 +65,9 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    // Default application timezone. Use Asia/Jakarta (UTC+7).
+    // You can override this via APP_TIMEZONE in your .env if needed.
+    'timezone' => env('APP_TIMEZONE', 'Asia/Jakarta'),
 
     /*
     |--------------------------------------------------------------------------

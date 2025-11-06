@@ -124,7 +124,8 @@ export default function JenisObatPage() {
 
   const performDelete = () => {
     if (!selected) return;
-    router.delete(route('farmasi.jenis-obat.destroy', { kdjns: selected.kdjns }), {
+    router.post(route('farmasi.jenis-obat.destroy', { kdjns: selected.kdjns }), { _method: 'DELETE' }, {
+      forceFormData: true,
       preserveScroll: true,
       onSuccess: () => setConfirmOpen(false)
     });
