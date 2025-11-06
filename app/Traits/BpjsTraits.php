@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Utilities for BPJS PCare bridging: header generation, HTTP request helper,
@@ -123,6 +124,8 @@ trait BpjsTraits
         array $extraHeaders = [],
         ?string $overrideTimestamp = null
     ): array {
+        $start = microtime(true);
+        $logId = uniqid('pcare_', true);
         $cfg = $this->pcareConfig();
         $headers = array_merge($this->buildPcareHeaders($overrideTimestamp), $extraHeaders);
         // Pastikan base_url bertipe string untuk mencegah TypeError ketika env tidak di-set
@@ -131,6 +134,34 @@ trait BpjsTraits
             throw new \InvalidArgumentException('Base URL PCare belum dikonfigurasi. Set BPJS_PCARE_BASE_URL di .env untuk server ini.');
         }
         $url = $baseUrl . '/' . ltrim($endpoint, '/');
+
+        // Sanitasi header sebelum logging (hindari kredensial sensitif)
+        $sanitizedHeaders = [
+            'X-cons-id' => (string) ($headers['X-cons-id'] ?? ''),
+            'X-timestamp' => (string) ($headers['X-timestamp'] ?? ''),
+            // signature, authorization, user_key sengaja tidak dicatat
+            'Accept' => (string) ($headers['Accept'] ?? ''),
+            'Content-Type' => (string) ($headers['Content-Type'] ?? ''),
+        ];
+
+        // Preview body untuk membantu debugging tanpa membebani log
+        $bodyPreview = null;
+        if (is_array($body)) {
+            $bodyPreview = json_encode($body);
+            $bodyPreview = $bodyPreview !== false ? substr($bodyPreview, 0, 1000) : null;
+        } elseif (is_string($body)) {
+            $bodyPreview = substr($body, 0, 1000);
+        }
+
+        Log::channel('bpjs')->debug('PCare request', [
+            'id' => $logId,
+            'method' => strtoupper($method),
+            'url' => $url,
+            'endpoint' => $endpoint,
+            'query' => $query,
+            'headers' => $sanitizedHeaders,
+            'body_preview' => $bodyPreview,
+        ]);
 
         $request = Http::withHeaders($headers);
 
@@ -168,6 +199,18 @@ trait BpjsTraits
             default:
                 throw new \InvalidArgumentException("Unsupported HTTP method: {$method}");
         }
+
+        $durationMs = (int) round((microtime(true) - $start) * 1000);
+        $rawBody = $response->body();
+        Log::channel('bpjs')->debug('PCare response', [
+            'id' => $logId,
+            'status' => $response->status(),
+            'successful' => $response->successful(),
+            'duration_ms' => $durationMs,
+            'url' => $url,
+            'timestamp_used' => $headers['X-timestamp'] ?? null,
+            'body_excerpt' => substr($rawBody ?? '', 0, 1000),
+        ]);
 
         return [
             'response' => $response,
@@ -217,12 +260,39 @@ trait BpjsTraits
         array $extraHeaders = [],
         ?string $overrideTimestamp = null
     ): array {
+        $start = microtime(true);
+        $logId = uniqid('mobilejkn_', true);
         $cfg = $this->mobilejknConfig();
         if (empty($cfg['base_url'])) {
             throw new \InvalidArgumentException('Base URL Mobile JKN belum dikonfigurasi di database (kolom base_url_mobilejkn).');
         }
         $headers = array_merge($this->buildMobileJknHeaders($overrideTimestamp), $extraHeaders);
         $url = rtrim($cfg['base_url'], '/') . '/' . ltrim($endpoint, '/');
+
+        $sanitizedHeaders = [
+            'X-cons-id' => (string) ($headers['X-cons-id'] ?? ''),
+            'X-timestamp' => (string) ($headers['X-timestamp'] ?? ''),
+            'Accept' => (string) ($headers['Accept'] ?? ''),
+            'Content-Type' => (string) ($headers['Content-Type'] ?? ''),
+        ];
+
+        $bodyPreview = null;
+        if (is_array($body)) {
+            $bodyPreview = json_encode($body);
+            $bodyPreview = $bodyPreview !== false ? substr($bodyPreview, 0, 1000) : null;
+        } elseif (is_string($body)) {
+            $bodyPreview = substr($body, 0, 1000);
+        }
+
+        Log::channel('bpjs')->debug('MobileJKN request', [
+            'id' => $logId,
+            'method' => strtoupper($method),
+            'url' => $url,
+            'endpoint' => $endpoint,
+            'query' => $query,
+            'headers' => $sanitizedHeaders,
+            'body_preview' => $bodyPreview,
+        ]);
 
         $request = Http::withHeaders($headers);
 
@@ -249,6 +319,18 @@ trait BpjsTraits
             default:
                 throw new \InvalidArgumentException("Unsupported HTTP method: {$method}");
         }
+
+        $durationMs = (int) round((microtime(true) - $start) * 1000);
+        $rawBody = $response->body();
+        Log::channel('bpjs')->debug('MobileJKN response', [
+            'id' => $logId,
+            'status' => $response->status(),
+            'successful' => $response->successful(),
+            'duration_ms' => $durationMs,
+            'url' => $url,
+            'timestamp_used' => $headers['X-timestamp'] ?? null,
+            'body_excerpt' => substr($rawBody ?? '', 0, 1000),
+        ]);
 
         return [
             'response' => $response,

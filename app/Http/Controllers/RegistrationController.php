@@ -230,8 +230,17 @@ class RegistrationController extends Controller
             $query->where('status_poli', $request->status_poli);
         }
 
+        // Mendukung parameter per_page dari request agar client dapat mengatur jumlah data per halaman
+        $perPage = (int) ($request->get('per_page') ?? 15);
+        if ($perPage <= 0) {
+            $perPage = 15;
+        } elseif ($perPage > 100) {
+            // Batasi maksimal 100 agar tidak membebani server
+            $perPage = 100;
+        }
+
         $registrations = $query->orderBy('jam_reg', 'desc')
-            ->paginate(15); // Increased from 10 to 15 for better UX
+            ->paginate($perPage);
 
         return response()->json([
             'success' => true,

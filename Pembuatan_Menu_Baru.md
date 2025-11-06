@@ -231,3 +231,5 @@ Menu::firstOrCreate([
 Selesai. Dengan panduan ini, Anda bisa menambahkan menu baru secara konsisten dan aman untuk pengembangan lanjutan.
 
 ++
+
+php artisan config:clear && php artisan route:clear && php artisan cache:clear 

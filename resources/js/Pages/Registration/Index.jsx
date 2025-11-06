@@ -47,12 +47,16 @@ export default function Registration({
 		totalBiaya: 0,
 	});
 	const [filters, setFilters] = useState({
-		date: new Date().toISOString().split("T")[0],
+		// Biarkan kosong agar backend menentukan tanggal default (timezone server)
+		// Menghindari mismatch timezone client vs server yang dapat membuat data terlihat hanya 1
+		date: "",
 		kd_poli: "",
 		kd_dokter: "",
 		search: "",
 		status: "",
 		status_poli: "",
+		// Tambahkan per_page agar daftar menampilkan lebih dari 1 data per halaman
+		per_page: 50,
 	});
 
 	const [formData, setFormData] = useState({
@@ -75,6 +79,34 @@ export default function Registration({
 	const [bpjsLoading, setBpjsLoading] = useState(false);
 	const [bpjsError, setBpjsError] = useState(null);
 	const [bpjsData, setBpjsData] = useState(null); // { metaData, response }
+
+	// Popup untuk menampilkan respon BPJS saat simpan registrasi (jika status selain 200)
+	const [isBpjsPopupOpen, setIsBpjsPopupOpen] = useState(false);
+	const [bpjsPopup, setBpjsPopup] = useState({
+		status: null,
+		message: '',
+		endpoint: '',
+		method: '',
+		data: null,
+		raw: '',
+	});
+
+	const openBpjsPopup = ({ status, message, endpoint, method, data, raw }) => {
+		setBpjsPopup({
+			status: typeof status === 'number' ? status : null,
+			message: message || '',
+			endpoint: endpoint || '/api/mobilejkn/antrean/add',
+			method: method || 'POST',
+			data: data ?? null,
+			raw: typeof raw === 'string' ? raw : '',
+		});
+		setIsBpjsPopupOpen(true);
+	};
+
+	const closeBpjsPopup = () => {
+		setIsBpjsPopupOpen(false);
+		setBpjsPopup({ status: null, message: '', endpoint: '', method: '', data: null, raw: '' });
+	};
 
 	const sanitizeNik = (value) => (value || "").replace(/[^0-9]/g, "").slice(0, 16);
 
@@ -201,19 +233,64 @@ export default function Registration({
 				// Setelah registrasi lokal berhasil, coba kirim antrean ke Mobile JKN
 				try {
 					const reg = response.data.data || {};
-					await axios.post('/api/mobilejkn/antrean/add', {
+					const mjRes = await axios.post('/api/mobilejkn/antrean/add', {
 						no_rkm_medis: selectedPatient.no_rkm_medis,
 						kd_poli: formData.kd_poli,
 						kd_dokter: formData.kd_dokter,
 						tanggalperiksa: reg.tgl_registrasi,
 						no_reg: reg.no_reg,
 					});
-					// Beri informasi sukses ringan; respons detail ditangani di backend
-					console.log('Antrean Mobile JKN berhasil dikirim');
+					// Jika status selain 200, tampilkan popup respon BPJS
+					if (mjRes?.status !== 200) {
+						openBpjsPopup({
+							status: mjRes?.status,
+							message:
+								mjRes?.data?.metaData?.message ||
+								mjRes?.data?.metadata?.message ||
+								'BPJS Mobile JKN mengembalikan status selain 200',
+							endpoint: '/api/mobilejkn/antrean/add',
+							method: 'POST',
+							data: mjRes?.data ?? null,
+							raw: typeof mjRes?.data === 'string' ? mjRes.data : JSON.stringify(mjRes?.data ?? {}, null, 2),
+						});
+					} else {
+						// Status HTTP 200, tetapi perlu cek metaData.code dan pesan kegagalan pada body
+						const meta = mjRes?.data?.metaData ?? mjRes?.data?.metadata ?? {};
+						const codeNum = Number(meta?.code ?? 200);
+						const msgStr = String(meta?.message ?? '').trim();
+						const looksLikeFailure = codeNum !== 200 || /skrining kesehatan|gagal|tidak/i.test(msgStr);
+						if (looksLikeFailure) {
+							openBpjsPopup({
+								status: 200,
+								message: msgStr || 'Respon BPJS mengindikasikan kegagalan meskipun status HTTP 200',
+								endpoint: '/api/mobilejkn/antrean/add',
+								method: 'POST',
+								data: mjRes?.data ?? null,
+								raw: typeof mjRes?.data === 'string' ? mjRes.data : JSON.stringify(mjRes?.data ?? {}, null, 2),
+							});
+						} else {
+							// Beri informasi sukses ringan; respons detail ditangani di backend
+							console.log('Antrean Mobile JKN berhasil dikirim');
+						}
+					}
 				} catch (err) {
 					console.warn('Gagal mengirim antrean Mobile JKN:', err?.response?.data || err?.message);
-					// Jangan blokir alur registrasi; tampilkan info ringan
-					alert('Registrasi lokal berhasil, namun kirim antrean Mobile JKN gagal. Silakan cek pengaturan Mobile JKN.');
+					// Tampilkan popup respon BPJS dengan detail error
+					openBpjsPopup({
+						status: err?.response?.status ?? null,
+						message:
+							err?.response?.data?.metaData?.message ||
+							err?.response?.data?.metadata?.message ||
+							err?.message ||
+							'Gagal mengirim antrean ke Mobile JKN',
+						endpoint: '/api/mobilejkn/antrean/add',
+						method: 'POST',
+						data: err?.response?.data ?? null,
+						raw:
+							typeof err?.response?.data === 'string'
+								? err.response.data
+								: JSON.stringify(err?.response?.data ?? { error: err?.message }, null, 2),
+					});
 				}
 				setIsModalOpen(false);
 				resetForm();
@@ -357,8 +434,13 @@ export default function Registration({
 	const loadRegistrations = async (page = 1) => {
 		setIsLoading(true);
 		try {
+			// Hindari mengirim parameter kosong agar backend memakai default
+			const params = { ...filters, page };
+			Object.keys(params).forEach((key) => {
+				if (params[key] === "" || params[key] === null) delete params[key];
+			});
 			const response = await axios.get("/registration/get-registrations", {
-				params: { ...filters, page },
+				params,
 			});
 			setRegistrationData(response.data.data);
 			setStats(calculateStats(response.data.data));
@@ -1995,9 +2077,9 @@ export default function Registration({
 
 			{/* Detail Registration Modal */}
 			<AnimatePresence>
-				{isDetailModalOpen && selectedRegistration && (
-					<motion.div
-						className="fixed inset-0 bg-black/20 backdrop-blur-md flex items-center justify-center z-[9999] p-4 overflow-y-auto"
+			{isDetailModalOpen && selectedRegistration && (
+				<motion.div
+					className="fixed inset-0 bg-black/20 backdrop-blur-md flex items-center justify-center z-[9999] p-4 overflow-y-auto"
 						initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
 						animate={{ opacity: 1, backdropFilter: "blur(12px)" }}
 						exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
@@ -2305,8 +2387,101 @@ export default function Registration({
 							</div>
 						</motion.div>
 					</motion.div>
-				)}
-			</AnimatePresence>
+			)}
+		</AnimatePresence>
+
+	{/* BPJS Response Popup (tampil saat status respon selain 200 atau error) */}
+	<AnimatePresence>
+		{isBpjsPopupOpen && (
+			<motion.div
+				className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[10000] p-4"
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				exit={{ opacity: 0 }}
+				transition={{ duration: 0.25 }}
+				onClick={closeBpjsPopup}
+			>
+				<motion.div
+					className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 max-w-3xl w-full overflow-hidden"
+					initial={{ scale: 0.95, y: 20, opacity: 0 }}
+					animate={{ scale: 1, y: 0, opacity: 1 }}
+					exit={{ scale: 0.95, y: 20, opacity: 0 }}
+					transition={{ duration: 0.25 }}
+					onClick={(e) => e.stopPropagation()}
+				>
+					<div className="p-4 lg:p-6">
+						<div className="flex items-start justify-between">
+							<div className="flex items-center gap-3">
+								<ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
+								<div>
+									<h3 className="text-base lg:text-lg font-semibold text-gray-900 dark:text-white">
+										Respon BPJS (Mobile JKN)
+									</h3>
+									<p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
+										{bpjsPopup.method} {bpjsPopup.endpoint}
+									</p>
+								</div>
+							</div>
+							<button
+								onClick={closeBpjsPopup}
+								className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+								title="Tutup"
+							>
+								<XMarkIcon className="h-6 w-6" />
+							</button>
+						</div>
+
+						<div className="mt-4 space-y-3">
+							<div className="flex items-center gap-2">
+								<span className="text-xs font-medium text-gray-700 dark:text-gray-300">Status:</span>
+								<span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300">
+									{bpjsPopup.status ?? 'N/A'}
+								</span>
+							</div>
+							{bpjsPopup.message && (
+								<div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-3">
+									<div className="text-xs text-red-700 dark:text-red-300">Pesan</div>
+									<div className="mt-1 text-sm text-red-800 dark:text-red-200">{bpjsPopup.message}</div>
+								</div>
+							)}
+
+							<div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30">
+								<div className="flex items-center justify-between px-3 py-2">
+									<div className="text-xs font-medium text-gray-700 dark:text-gray-300">Detail Respon</div>
+									<button
+										onClick={async () => {
+											try {
+												await navigator.clipboard.writeText(
+													bpjsPopup.raw || JSON.stringify(bpjsPopup.data ?? {}, null, 2)
+												);
+											} catch (_) {}
+										}}
+										className="text-xs rounded-md border border-gray-300 bg-white px-2 py-1 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+									>
+										Salin
+									</button>
+								</div>
+										<pre className="max-h-64 overflow-auto whitespace-pre-wrap break-all text-xs leading-relaxed px-3 pb-3 text-gray-800 dark:text-gray-100">
+											{bpjsPopup.raw || JSON.stringify(bpjsPopup.data ?? {}, null, 2)}
+										</pre>
+									</div>
+
+									{/* Penutup kontainer detail (space-y-3) yang sebelumnya belum tertutup */}
+									</div>
+
+							<div className="mt-4 flex justify-end">
+								<button
+									onClick={closeBpjsPopup}
+									className="px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+								>
+									Tutup
+								</button>
+							</div>
+						</div>
+					</motion.div>
+				</motion.div>
+			)}
+		</AnimatePresence>
 
 			{/* Patient Create Modal */}
 			<PatientCreateModal

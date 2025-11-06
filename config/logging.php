@@ -123,6 +123,15 @@ return [
             'handler' => NullHandler::class,
         ],
 
+        // Channel khusus untuk logging BPJS (harian)
+        'bpjs' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/bpjs.log'),
+            'level' => env('LOG_BPJS_LEVEL', 'debug'),
+            'days' => env('LOG_BPJS_DAYS', 30),
+            'replace_placeholders' => true,
+        ],
+
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],
