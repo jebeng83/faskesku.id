@@ -219,18 +219,47 @@ export default function SidebarMenu({
                 return "/pcare";
             }
         }
-        // Special case: Rawat Jalan root should navigate to a valid default sub-route
+        // Special case: Rawat Jalan root should navigate to Rawat Jalan Index (/rawat-jalan)
+        // and preserve last selected Dokter/Poli via localStorage query params
         if (
             (menu.slug && menu.slug.replace(/\s+/g, "-").toLowerCase() === "rawat-jalan") ||
             (menu.name && menu.name.replace(/\s+/g, "-").toLowerCase().includes("rawat-jalan"))
         ) {
+            let basePath = "/rawat-jalan";
             try {
-                return route("rawat-jalan.lanjutan", {}, false);
+                basePath = route("rawat-jalan.index", {}, false) || "/rawat-jalan";
             } catch (error) {
                 console.warn(
-                    "Route rawat-jalan.lanjutan not found, falling back to /rawat-jalan/lanjutan"
+                    "Route rawat-jalan.index not found, falling back to /rawat-jalan"
                 );
-                return "/rawat-jalan/lanjutan";
+            }
+
+            // Read saved filters from localStorage (if available)
+            let kd_dokter = "";
+            let kd_poli = "";
+            try {
+                if (typeof window !== "undefined" && window.localStorage) {
+                    const saved = window.localStorage.getItem("rawatJalanFilters");
+                    if (saved) {
+                        const parsed = JSON.parse(saved);
+                        kd_dokter = parsed?.kd_dokter || "";
+                        kd_poli = parsed?.kd_poli || "";
+                    }
+                }
+            } catch (e) {
+                // ignore JSON parse errors
+            }
+
+            try {
+                const u = new URL(basePath, window.location.origin);
+                if (kd_dokter) u.searchParams.set("kd_dokter", kd_dokter);
+                if (kd_poli) u.searchParams.set("kd_poli", kd_poli);
+                return u.pathname + u.search + u.hash;
+            } catch (e) {
+                const qs = [];
+                if (kd_dokter) qs.push(`kd_dokter=${encodeURIComponent(kd_dokter)}`);
+                if (kd_poli) qs.push(`kd_poli=${encodeURIComponent(kd_poli)}`);
+                return basePath + (qs.length ? `?${qs.join("&")}` : "");
             }
         }
 		if (menu.url) {

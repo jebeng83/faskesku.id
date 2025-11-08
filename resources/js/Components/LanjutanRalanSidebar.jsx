@@ -244,6 +244,41 @@ export default function LanjutanRalanSidebar({
 	};
 
 	const getMenuUrl = (menu) => {
+		// Khusus menu "Data Rawat Jalan": ambil kd_dokter/kd_poli terakhir dari localStorage
+		// agar saat klik menu, filter Dokter/Poli tetap dipertahankan.
+		if (menu.id === 'rawat-jalan-list' || (menu.name && menu.name.toLowerCase().includes('rawat jalan'))) {
+			let basePath = '/rawat-jalan';
+			try {
+				// Gunakan path relatif agar konsisten dengan origin aktif
+				basePath = route('rawat-jalan.index', {}, false);
+			} catch (_) {}
+
+			let kd_dokter = '';
+			let kd_poli = '';
+			try {
+				const saved = window.localStorage.getItem('rawatJalanFilters');
+				if (saved) {
+					const parsed = JSON.parse(saved);
+					kd_dokter = parsed?.kd_dokter || '';
+					kd_poli = parsed?.kd_poli || '';
+				}
+			} catch (_) {
+				// Abaikan error parsing localStorage
+			}
+
+			try {
+				const u = new URL(basePath, window.location.origin);
+				if (kd_dokter) u.searchParams.set('kd_dokter', kd_dokter);
+				if (kd_poli) u.searchParams.set('kd_poli', kd_poli);
+				return u.pathname + u.search + u.hash;
+			} catch (_) {
+				const qs = [];
+				if (kd_dokter) qs.push(`kd_dokter=${encodeURIComponent(kd_dokter)}`);
+				if (kd_poli) qs.push(`kd_poli=${encodeURIComponent(kd_poli)}`);
+				return basePath + (qs.length ? `?${qs.join('&')}` : '');
+			}
+		}
+
 		if (menu.url) return menu.url;
 		if (menu.route) {
 			try {

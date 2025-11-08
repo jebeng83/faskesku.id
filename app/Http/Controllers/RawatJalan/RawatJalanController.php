@@ -23,10 +23,12 @@ class RawatJalanController extends Controller
         $query = RawatJalan::query()
             ->with('patient')
             ->leftJoin('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
+            ->leftJoin('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli')
             ->leftJoin('penjab', 'reg_periksa.kd_pj', '=', 'penjab.kd_pj')
             ->select([
                 'reg_periksa.*',
                 DB::raw('dokter.nm_dokter as nm_dokter'),
+                DB::raw('poliklinik.nm_poli as nm_poli'),
                 DB::raw('penjab.png_jawab as nm_penjamin'),
             ]);
 
@@ -57,6 +59,22 @@ class RawatJalanController extends Controller
             });
         }
 
+        // Filter berdasarkan dokter (kode atau nama)
+        if ($request->filled('kd_dokter')) {
+            $query->where('reg_periksa.kd_dokter', $request->kd_dokter);
+        }
+        if ($request->filled('nama_dokter')) {
+            $query->where('dokter.nm_dokter', 'like', '%' . $request->nama_dokter . '%');
+        }
+
+        // Filter berdasarkan poliklinik (kode atau nama)
+        if ($request->filled('kd_poli')) {
+            $query->where('reg_periksa.kd_poli', $request->kd_poli);
+        }
+        if ($request->filled('nama_poli')) {
+            $query->where('poliklinik.nm_poli', 'like', '%' . $request->nama_poli . '%');
+        }
+
         $rawatJalan = $query->orderBy('reg_periksa.tgl_registrasi', 'desc')
                            ->orderBy('reg_periksa.jam_reg', 'desc')
                            ->paginate(15);
@@ -77,12 +95,22 @@ class RawatJalanController extends Controller
             'Belum Bayar' => 'Belum Bayar'
         ];
 
+        // Ambil opsi dokter dan poliklinik untuk dropdown statis
+        $dokterOptions = Dokter::aktif()
+            ->orderBy('nm_dokter')
+            ->get(['kd_dokter', 'nm_dokter']);
+        $poliOptions = Poliklinik::aktif()
+            ->orderBy('nm_poli')
+            ->get(['kd_poli', 'nm_poli']);
+
         return Inertia::render('RawatJalan/Index', [
             'rawatJalan' => $rawatJalan,
             'statusOptions' => $statusOptions,
             'statusBayarOptions' => $statusBayarOptions,
+            'dokterOptions' => $dokterOptions,
+            'poliOptions' => $poliOptions,
             'filters' => array_merge(
-                $request->only(['tanggal', 'status', 'status_bayar', 'nama_pasien']),
+                $request->only(['tanggal', 'status', 'status_bayar', 'nama_pasien', 'kd_dokter', 'kd_poli', 'nama_dokter', 'nama_poli']),
                 ['tanggal' => $appliedDate]
             )
         ]);
