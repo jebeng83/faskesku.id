@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
+import { setRawatJalanFilters, clearRawatJalanFilters } from '@/tools/rawatJalanFilters';
 import AppLayout from '@/Layouts/AppLayout';
 import { motion } from 'framer-motion';
 import {
@@ -144,16 +145,12 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         const newParams = { ...searchParams, [key]: value };
         setSearchParams(newParams);
 
-        // Persist pilihan Dokter/Poli ke localStorage agar dipertahankan saat klik menu sidebar
-        try {
-            if (key === 'kd_dokter' || key === 'kd_poli') {
-                const saved = JSON.parse(localStorage.getItem('rawatJalanFilters') || '{}');
-                saved.kd_dokter = (key === 'kd_dokter' ? value : newParams.kd_dokter) || '';
-                saved.kd_poli = (key === 'kd_poli' ? value : newParams.kd_poli) || '';
-                localStorage.setItem('rawatJalanFilters', JSON.stringify(saved));
-            }
-        } catch (e) {
-            // ignore storage errors
+        // Persist pilihan Dokter/Poli via helper agar konsisten di seluruh aplikasi
+        if (key === 'kd_dokter' || key === 'kd_poli') {
+            setRawatJalanFilters({
+                kd_dokter: (key === 'kd_dokter' ? value : newParams.kd_dokter) || '',
+                kd_poli: (key === 'kd_poli' ? value : newParams.kd_poli) || '',
+            });
         }
         
         router.get(route('rawat-jalan.index'), newParams, {
@@ -171,22 +168,18 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
             kd_dokter: '',
             kd_poli: ''
         });
-        try {
-            localStorage.removeItem('rawatJalanFilters');
-        } catch (e) {}
+        clearRawatJalanFilters();
         router.get(route('rawat-jalan.index'));
     };
 
     // Simpan ke localStorage ketika halaman dimuat dengan filters dari server (mis. dari URL)
     useEffect(() => {
-        try {
-            if (filters?.kd_dokter || filters?.kd_poli) {
-                localStorage.setItem('rawatJalanFilters', JSON.stringify({
-                    kd_dokter: filters?.kd_dokter || '',
-                    kd_poli: filters?.kd_poli || ''
-                }));
-            }
-        } catch (e) {}
+        if (filters?.kd_dokter || filters?.kd_poli) {
+            setRawatJalanFilters({
+                kd_dokter: filters?.kd_dokter || '',
+                kd_poli: filters?.kd_poli || ''
+            });
+        }
     }, [filters?.kd_dokter, filters?.kd_poli]);
 
     const formatDate = (date) => {
@@ -419,10 +412,17 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             {item.patient?.nm_pasien ? (
                                                 <Link
-                                                    href={`/rawat-jalan/lanjutan?t=${btoa(JSON.stringify({ no_rawat: item.no_rawat, no_rkm_medis: item.no_rkm_medis || '' }))
-                                                        .replace(/=+$/, '')
-                                                        .replace(/\+/g, '-')
-                                                        .replace(/\//g, '_')}`}
+                                                    href={route('rawat-jalan.lanjutan', {
+                                                        t: btoa(
+                                                            JSON.stringify({
+                                                                no_rawat: item.no_rawat,
+                                                                no_rkm_medis: item.no_rkm_medis || '',
+                                                            })
+                                                        )
+                                                            .replace(/=+$/, '')
+                                                            .replace(/\+/g, '-')
+                                                            .replace(/\//g, '_'),
+                                                    })}
                                                     className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium hover:underline transition-colors duration-200"
                                                     title="Lihat detail pasien"
                                                 >

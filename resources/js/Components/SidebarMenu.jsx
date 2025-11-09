@@ -3,6 +3,7 @@ import { Link, usePage } from "@inertiajs/react";
 import { ChevronDownIcon, ChevronRightIcon, Bars3Icon, ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 import { route } from "ziggy-js";
+import { getRawatJalanFilters } from '@/tools/rawatJalanFilters';
 
 // Helper to resolve a route name robustly by trying common variants (casing/spacing)
 const resolveRouteUrl = (routeName, absolute = false) => {
@@ -234,21 +235,8 @@ export default function SidebarMenu({
                 );
             }
 
-            // Read saved filters from localStorage (if available)
-            let kd_dokter = "";
-            let kd_poli = "";
-            try {
-                if (typeof window !== "undefined" && window.localStorage) {
-                    const saved = window.localStorage.getItem("rawatJalanFilters");
-                    if (saved) {
-                        const parsed = JSON.parse(saved);
-                        kd_dokter = parsed?.kd_dokter || "";
-                        kd_poli = parsed?.kd_poli || "";
-                    }
-                }
-            } catch (e) {
-                // ignore JSON parse errors
-            }
+            // Read saved filters via helper for consistency
+            const { kd_dokter = "", kd_poli = "" } = getRawatJalanFilters();
 
             try {
                 const u = new URL(basePath, window.location.origin);
