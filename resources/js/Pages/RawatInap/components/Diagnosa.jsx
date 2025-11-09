@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
     PlusIcon, 
-    SearchIcon, 
+    MagnifyingGlassIcon, 
     TrashIcon,
     ClipboardDocumentListIcon,
     ExclamationTriangleIcon,
@@ -160,7 +160,7 @@ const Diagnosa = () => {
                                 Cari Kode ICD-10
                             </label>
                             <div className="relative">
-                                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                                 <input
                                     type="text"
                                     value={searchICD}

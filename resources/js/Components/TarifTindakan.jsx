@@ -108,7 +108,13 @@ const TarifTindakan = ({ noRawat, kdDokter, nipPerawat, onTindakanAdded }) => {
         };
 
         try {
-            await axios.delete('/api/tarif-tindakan', { data });
+            // Method spoofing: POST + _method=DELETE
+            const fd = new FormData();
+            Object.entries(data).forEach(([k, v]) => fd.append(k, v));
+            fd.append('_method', 'DELETE');
+            await axios.post('/api/tarif-tindakan', fd, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
             alert('Tindakan berhasil dihapus');
             loadRiwayatTindakan();
         } catch (error) {

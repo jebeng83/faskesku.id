@@ -53,7 +53,8 @@ export default function Index({ periksaLab, statusOptions, filters }) {
 
 	const handleDelete = (noRawat) => {
 		if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
-			router.delete(route("laboratorium.destroy", noRawat), {
+			router.post(route("laboratorium.destroy", noRawat), { _method: "DELETE" }, {
+				forceFormData: true,
 				onSuccess: () => {
 					setAlertConfig({
 						type: "success",

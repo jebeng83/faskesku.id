@@ -102,7 +102,7 @@ class RegistrationController extends Controller
         $updatedAge = Patient::calculateAgeFromDate($patient->tgl_lahir);
         $patient->update(['umur' => $updatedAge]);
 
-        RegPeriksa::create([
+        $registration = RegPeriksa::create([
             'no_reg' => $noReg,
             'no_rawat' => $noRawat,
             'tgl_registrasi' => now()->toDateString(),
@@ -126,7 +126,16 @@ class RegistrationController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Pasien berhasil didaftarkan untuk periksa.'
+            'message' => 'Pasien berhasil didaftarkan untuk periksa.',
+            'data' => [
+                'no_reg' => $registration->no_reg,
+                'no_rawat' => $registration->no_rawat,
+                'tgl_registrasi' => $registration->tgl_registrasi,
+                'jam_reg' => $registration->jam_reg,
+                'kd_dokter' => $registration->kd_dokter,
+                'kd_poli' => $registration->kd_poli,
+                'no_rkm_medis' => $registration->no_rkm_medis,
+            ]
         ]);
     }
 
@@ -221,8 +230,17 @@ class RegistrationController extends Controller
             $query->where('status_poli', $request->status_poli);
         }
 
+        // Mendukung parameter per_page dari request agar client dapat mengatur jumlah data per halaman
+        $perPage = (int) ($request->get('per_page') ?? 15);
+        if ($perPage <= 0) {
+            $perPage = 15;
+        } elseif ($perPage > 100) {
+            // Batasi maksimal 100 agar tidak membebani server
+            $perPage = 100;
+        }
+
         $registrations = $query->orderBy('jam_reg', 'desc')
-            ->paginate(15); // Increased from 10 to 15 for better UX
+            ->paginate($perPage);
 
         return response()->json([
             'success' => true,

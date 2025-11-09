@@ -1,9 +1,13 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:287
 =======
 * @see routes/web.php:300
+>>>>>>> main
+=======
+* @see routes/web.php:331
 >>>>>>> main
 * @route '/farmasi/supplier'
 */
@@ -19,9 +23,13 @@ index.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:287
 =======
 * @see routes/web.php:300
+>>>>>>> main
+=======
+* @see routes/web.php:331
 >>>>>>> main
 * @route '/farmasi/supplier'
 */
@@ -31,9 +39,13 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:287
 =======
 * @see routes/web.php:300
+>>>>>>> main
+=======
+* @see routes/web.php:331
 >>>>>>> main
 * @route '/farmasi/supplier'
 */
@@ -44,9 +56,13 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:287
 =======
 * @see routes/web.php:300
+>>>>>>> main
+=======
+* @see routes/web.php:331
 >>>>>>> main
 * @route '/farmasi/supplier'
 */

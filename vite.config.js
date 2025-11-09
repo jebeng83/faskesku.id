@@ -34,11 +34,8 @@ export default defineConfig({
 	},
 	server: {
 	 	host: '127.0.0.1',
-	 	port: 5177,
-	 	strictPort: true,
-	 	hmr: {
-	 		host: '127.0.0.1',
-	 		port: 5177,
-	 	},
+	 	port: Number(process.env.VITE_PORT || process.env.PORT || 5177),
+	 	strictPort: false,
+	 	// Do not hardcode HMR port; let Vite use the actual dev server port to avoid mismatches
 	},
 });

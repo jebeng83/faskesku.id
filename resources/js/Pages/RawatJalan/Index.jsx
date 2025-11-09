@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
@@ -107,17 +107,54 @@ function DropdownItem({ children, onClick, icon, variant = "default" }) {
     );
 }
 
-export default function Index({ rawatJalan, statusOptions, statusBayarOptions, filters }) {
+export default function Index({ rawatJalan, statusOptions, statusBayarOptions, filters, dokterOptions = [], poliOptions = [] }) {
     const [searchParams, setSearchParams] = useState({
         tanggal: filters.tanggal || new Date().toISOString().slice(0,10),
         status: filters.status || '',
         status_bayar: filters.status_bayar || '',
-        nama_pasien: filters.nama_pasien || ''
+        nama_pasien: filters.nama_pasien || '',
+        kd_dokter: filters.kd_dokter || '',
+        kd_poli: filters.kd_poli || ''
     });
+
+    // Sinkronisasi state dengan props filters setiap kali halaman dikunjungi ulang
+    // (misal: klik menu Rawat Jalan di sidebar) agar pilihan Dokter/Poli tidak "terkunci".
+    useEffect(() => {
+        setSearchParams((prev) => ({
+            // Untuk sinkronisasi, tanggal tidak dipaksa ke default hari ini.
+            // Jika filters.tanggal kosong, biarkan kosong agar reset bekerja sesuai harapan.
+            tanggal: filters.tanggal || '',
+            status: filters.status || '',
+            status_bayar: filters.status_bayar || '',
+            nama_pasien: filters.nama_pasien || '',
+            kd_dokter: filters.kd_dokter || '',
+            kd_poli: filters.kd_poli || '',
+        }));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [
+        filters?.tanggal,
+        filters?.status,
+        filters?.status_bayar,
+        filters?.nama_pasien,
+        filters?.kd_dokter,
+        filters?.kd_poli,
+    ]);
 
     const handleFilterChange = (key, value) => {
         const newParams = { ...searchParams, [key]: value };
         setSearchParams(newParams);
+
+        // Persist pilihan Dokter/Poli ke localStorage agar dipertahankan saat klik menu sidebar
+        try {
+            if (key === 'kd_dokter' || key === 'kd_poli') {
+                const saved = JSON.parse(localStorage.getItem('rawatJalanFilters') || '{}');
+                saved.kd_dokter = (key === 'kd_dokter' ? value : newParams.kd_dokter) || '';
+                saved.kd_poli = (key === 'kd_poli' ? value : newParams.kd_poli) || '';
+                localStorage.setItem('rawatJalanFilters', JSON.stringify(saved));
+            }
+        } catch (e) {
+            // ignore storage errors
+        }
         
         router.get(route('rawat-jalan.index'), newParams, {
             preserveState: true,
@@ -130,10 +167,27 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
             tanggal: '',
             status: '',
             status_bayar: '',
-            nama_pasien: ''
+            nama_pasien: '',
+            kd_dokter: '',
+            kd_poli: ''
         });
+        try {
+            localStorage.removeItem('rawatJalanFilters');
+        } catch (e) {}
         router.get(route('rawat-jalan.index'));
     };
+
+    // Simpan ke localStorage ketika halaman dimuat dengan filters dari server (mis. dari URL)
+    useEffect(() => {
+        try {
+            if (filters?.kd_dokter || filters?.kd_poli) {
+                localStorage.setItem('rawatJalanFilters', JSON.stringify({
+                    kd_dokter: filters?.kd_dokter || '',
+                    kd_poli: filters?.kd_poli || ''
+                }));
+            }
+        } catch (e) {}
+    }, [filters?.kd_dokter, filters?.kd_poli]);
 
     const formatDate = (date) => {
         if (!date) return '-';
@@ -217,6 +271,30 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                 <option key={key} value={key}>{value}</option>
                             ))}
                         </select>
+
+                        {/* Filter Dokter (statis) */}
+                        <select
+                            value={searchParams.kd_dokter}
+                            onChange={(e) => handleFilterChange('kd_dokter', e.target.value)}
+                            className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
+                        >
+                            <option value="">Dokter</option>
+                            {Array.isArray(dokterOptions) && dokterOptions.map((d) => (
+                                <option key={d.kd_dokter} value={d.kd_dokter}>{d.nm_dokter}</option>
+                            ))}
+                        </select>
+
+                        {/* Filter Poliklinik (statis) */}
+                        <select
+                            value={searchParams.kd_poli}
+                            onChange={(e) => handleFilterChange('kd_poli', e.target.value)}
+                            className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
+                        >
+                            <option value="">Poliklinik</option>
+                            {Array.isArray(poliOptions) && poliOptions.map((p) => (
+                                <option key={p.kd_poli} value={p.kd_poli}>{p.nm_poli}</option>
+                            ))}
+                        </select>
                         
                         <div className="relative">
                             <MagnifyingGlassIcon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
@@ -229,7 +307,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                             />
                         </div>
                         
-                        {(searchParams.tanggal || searchParams.status || searchParams.status_bayar || searchParams.nama_pasien) && (
+                        {(searchParams.tanggal || searchParams.status || searchParams.status_bayar || searchParams.nama_pasien || searchParams.kd_dokter || searchParams.kd_poli) && (
                             <button
                                 onClick={resetFilters}
                                 className="ml-2 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"

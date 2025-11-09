@@ -1,9 +1,51 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
 
 export default function Show({ patient }) {
+    const [labels, setLabels] = useState({
+        perusahaan: '-',
+        sukuBangsa: '-',
+        bahasa: '-',
+        cacatFisik: '-',
+    });
+
+    useEffect(() => {
+        let isMounted = true;
+        const fetchLabels = async () => {
+            try {
+                const [perusahaanRes, sukuRes, bahasaRes, cacatRes] = await Promise.all([
+                    fetch('/api/perusahaan-pasien').then(r => r.ok ? r.json() : null).catch(() => null),
+                    fetch('/api/suku-bangsa').then(r => r.ok ? r.json() : null).catch(() => null),
+                    fetch('/api/bahasa-pasien').then(r => r.ok ? r.json() : null).catch(() => null),
+                    fetch('/api/cacat-fisik').then(r => r.ok ? r.json() : null).catch(() => null),
+                ]);
+
+                const perusahaanLabel = perusahaanRes?.data?.find?.(x => x.value === patient.perusahaan_pasien)?.label ?? '-';
+                const sukuLabel = sukuRes?.data?.find?.(x => String(x.value) === String(patient.suku_bangsa))?.label ?? '-';
+                const bahasaLabel = bahasaRes?.data?.find?.(x => String(x.value) === String(patient.bahasa_pasien))?.label ?? '-';
+                // Jika backend sudah menyediakan nama cacat fisik, gunakan itu terlebih dahulu
+                const cacatLabel = patient.cacat_fisik_nama ?? (
+                    cacatRes?.data?.find?.(x => String(x.value) === String(patient.cacat_fisik))?.label ?? '-'
+                );
+
+                if (isMounted) {
+                    setLabels({
+                        perusahaan: perusahaanLabel,
+                        sukuBangsa: sukuLabel,
+                        bahasa: bahasaLabel,
+                        cacatFisik: cacatLabel,
+                    });
+                }
+            } catch (e) {
+                // ignore errors; keep defaults
+            }
+        };
+
+        fetchLabels();
+        return () => { isMounted = false; };
+    }, [patient.perusahaan_pasien, patient.suku_bangsa, patient.bahasa_pasien, patient.cacat_fisik]);
     return (
         <AppLayout>
             <Head title={`Detail Pasien - ${patient.nm_pasien}`} />
@@ -264,6 +306,71 @@ export default function Show({ patient }) {
                                         <p className="mt-1 text-sm text-gray-900 dark:text-white">
                                             {patient.alamatpj}
                                         </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Administrative Information */}
+                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                            <div className="p-6">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                    Informasi Administrasi
+                                </h3>
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                No. Peserta
+                                            </label>
+                                            <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                                {patient.no_peserta || '-'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                NIP
+                                            </label>
+                                            <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                                {patient.nip || '-'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                Perusahaan Pasien
+                                            </label>
+                                            <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                                {labels.perusahaan}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                Suku Bangsa
+                                            </label>
+                                            <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                                {labels.sukuBangsa}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                Bahasa Pasien
+                                            </label>
+                                            <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                                {labels.bahasa}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                Cacat Fisik
+                                            </label>
+                                            <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                                                {labels.cacatFisik}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

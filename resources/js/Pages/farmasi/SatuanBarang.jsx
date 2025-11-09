@@ -109,7 +109,7 @@ export default function SatuanBarangPage() {
   const confirmDelete = (item) => { setSelected(item); setConfirmOpen(true); };
   const performDelete = () => {
     if (!selected?.kode_sat) { alert('Kode satuan kosong. Pilih data yang benar sebelum menghapus.'); return; }
-    router.delete(route('farmasi.satuan-barang.destroy', { kode_sat: selected.kode_sat }), { preserveScroll: true, onSuccess: () => setConfirmOpen(false) });
+    router.post(route('farmasi.satuan-barang.destroy', { kode_sat: selected.kode_sat }), { _method: 'DELETE' }, { forceFormData: true, preserveScroll: true, onSuccess: () => setConfirmOpen(false) });
   };
 
   const onSearch = (e) => { e.preventDefault(); router.get(route('farmasi.satuan-barang.index'), { q: query, perPage }, { preserveState: true, replace: true }); };

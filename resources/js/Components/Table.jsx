@@ -11,7 +11,7 @@ export default function Table({
 }) {
 	return (
 		<div
-			className={`bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg ${className}`}
+			className={`bg-white dark:bg-gray-800 overflow-visible shadow-sm sm:rounded-lg ${className}`}
 		>
 			<div className="overflow-x-auto">
 				<table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">

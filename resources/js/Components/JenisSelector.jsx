@@ -78,7 +78,7 @@ export default function JenisSelector({ value, onChange, className = '' }) {
         </button>
 
         {open && (
-          <div className="absolute z-20 mt-2 w-full max-h-64 overflow-auto rounded-md border border-gray-200 bg-white shadow-md">
+          <div className="absolute z-[1000] mt-2 w-full max-h-64 overflow-auto rounded-md border border-gray-200 bg-white shadow-md">
             {loading ? (
               <div className="px-3 py-2 text-sm text-gray-500">Memuat data jenis...</div>
             ) : items.length === 0 ? (

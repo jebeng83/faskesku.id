@@ -11,6 +11,8 @@ use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RawatJalan\ObatController;
 use App\Http\Controllers\RawatJalan\ResepController;
 use App\Http\Controllers\API\DokterController;
+use App\Http\Controllers\API\PatientController as ApiPatientController;
+use App\Http\Controllers\API\ReferenceController;
 use App\Http\Controllers\PermintaanLabController;
 use App\Http\Controllers\PermintaanRadiologiController;
 use App\Http\Controllers\OpnameController;
@@ -20,12 +22,23 @@ use App\Http\Controllers\DataBarangController;
 use App\Http\Controllers\GudangBarangController;
 use App\Http\Controllers\Farmasi\SetHargaObatController;
 use App\Http\Controllers\Pcare\PcareController;
+use App\Http\Controllers\Pcare\MobileJknController;
+use App\Http\Controllers\JadwalController;
 
 Route::post('/employees', [EmployeeController::class, 'store'])->name('api.employees.store');
 Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('api.employees.destroy');
 
 Route::get('/penjab', [PenjabController::class, 'index'])->name('api.penjab.index');
 Route::post('/penjab', [PenjabController::class, 'store'])->name('api.penjab.store');
+
+// Pasien describe endpoint
+Route::get('/pasien/describe', [ApiPatientController::class, 'describe'])->name('api.pasien.describe');
+
+// Reference lookup endpoints
+Route::get('/perusahaan-pasien', [ReferenceController::class, 'perusahaanPasien'])->name('api.perusahaan-pasien.index');
+Route::get('/suku-bangsa', [ReferenceController::class, 'sukuBangsa'])->name('api.suku-bangsa.index');
+Route::get('/bahasa-pasien', [ReferenceController::class, 'bahasaPasien'])->name('api.bahasa-pasien.index');
+Route::get('/cacat-fisik', [ReferenceController::class, 'cacatFisik'])->name('api.cacat-fisik.index');
 
 // Wilayah routes
 Route::get('/wilayah/provinces', [WilayahController::class, 'provinces'])->name('api.wilayah.provinces');
@@ -170,9 +183,56 @@ Route::prefix('pcare')->group(function () {
     Route::get('/poli', [PcareController::class, 'getPoli'])->name('api.pcare.poli');
     Route::get('/kesadaran', [PcareController::class, 'getKesadaran'])->name('api.pcare.kesadaran');
     Route::get('/dpho', [PcareController::class, 'getDpho'])->name('api.pcare.dpho');
+    Route::get('/tindakan', [PcareController::class, 'getTindakan'])->name('api.pcare.tindakan');
     Route::get('/provider', [PcareController::class, 'getProvider'])->name('api.pcare.provider');
     Route::get('/spesialis', [PcareController::class, 'getSpesialis'])->name('api.pcare.spesialis');
+    Route::get('/spesialis/subspesialis', [PcareController::class, 'getSubSpesialis'])->name('api.pcare.subspesialis');
+    Route::get('/spesialis/sarana', [PcareController::class, 'getSarana'])->name('api.pcare.sarana');
+    Route::get('/spesialis/khusus', [PcareController::class, 'getKhusus'])->name('api.pcare.khusus');
+    Route::get('/prognosa', [PcareController::class, 'getPrognosa'])->name('api.pcare.prognosa');
+    Route::get('/alergi', [PcareController::class, 'getAlergi'])->name('api.pcare.alergi');
+    Route::get('/statuspulang', [PcareController::class, 'getStatusPulang'])->name('api.pcare.statuspulang');
+    Route::get('/spesialis/rujuk/subspesialis/{kdSubSpesialis}/sarana/{kdSarana}/tglEstRujuk/{tglEstRujuk}', [PcareController::class, 'getFaskesRujukanSubSpesialis'])->name('api.pcare.faskes-rujukan.subspesialis');
     Route::get('/peserta/{noka}/{tglPelayanan}', [PcareController::class, 'pesertaByNoKartu'])->name('api.pcare.peserta-nokartu');
     Route::post('/kunjungan', [PcareController::class, 'daftarKunjungan'])->name('api.pcare.kunjungan.store');
+});
+<<<<<<< HEAD
+>>>>>>> main
+=======
+
+// Mobile JKN API Routes
+Route::prefix('mobilejkn')->group(function () {
+    // Debug: lihat konfigurasi yang terpakai (gunakan untuk memastikan .env & DB sudah benar)
+    Route::get('/config', [MobileJknController::class, 'config'])->name('api.mobilejkn.config');
+    // Referensi Poli (tanggal as query: ?tanggal=YYYY-MM-DD)
+    Route::get('/ref/poli', [MobileJknController::class, 'getReferensiPoli'])->name('api.mobilejkn.ref.poli');
+    // Referensi Dokter per Poli (query: ?kodepoli=XXX&tanggal=YYYY-MM-DD)
+    Route::get('/ref/dokter', [MobileJknController::class, 'getReferensiDokter'])->name('api.mobilejkn.ref.dokter');
+    // Tambah Antrean
+    Route::post('/antrean/add', [MobileJknController::class, 'addAntrean'])->name('api.mobilejkn.antrean.add');
+});
+
+// Jadwal API Routes
+Route::prefix('jadwal')->group(function () {
+    // List jadwal (join dokter & poliklinik)
+    Route::get('/', [JadwalController::class, 'list'])->name('api.jadwal.index');
+    // Simpan jadwal baru
+    Route::post('/', [JadwalController::class, 'store'])->name('api.jadwal.store');
+    // Update jadwal
+    Route::put('/', [JadwalController::class, 'update'])->name('api.jadwal.update');
+    // Hapus jadwal
+    Route::delete('/', [JadwalController::class, 'destroy'])->name('api.jadwal.destroy');
+    // Hari kerja enum values
+    Route::get('/hari', [JadwalController::class, 'getHariKerja'])->name('api.jadwal.hari');
+    // Describe tabel jadwal
+    Route::get('/describe', [JadwalController::class, 'describe'])->name('api.jadwal.describe');
+});
+
+// RS lookup endpoints (v1) - tidak membutuhkan sesi auth, dipakai oleh Typeahead di MasterData/Jadwal
+Route::prefix('v1/rs')->group(function () {
+    // Cari dokter RS dari tabel lokal 'dokter'
+    Route::get('/dokter', [PcareController::class, 'searchDokterRs'])->name('api.v1.rs.dokter');
+    // Cari poliklinik RS dari tabel lokal 'poliklinik'
+    Route::get('/poliklinik', [PcareController::class, 'searchPoliklinikRs'])->name('api.v1.rs.poliklinik');
 });
 >>>>>>> main

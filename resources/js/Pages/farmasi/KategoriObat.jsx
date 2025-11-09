@@ -124,7 +124,8 @@ export default function KategoriObatPage() {
 
   const performDelete = () => {
     if (!selected) return;
-    router.delete(route('farmasi.kategori-obat.destroy', { kode: selected.kode }), {
+    router.post(route('farmasi.kategori-obat.destroy', { kode: selected.kode }), { _method: 'DELETE' }, {
+      forceFormData: true,
       preserveScroll: true,
       onSuccess: () => setConfirmOpen(false)
     });

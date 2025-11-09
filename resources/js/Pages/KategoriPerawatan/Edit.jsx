@@ -4,20 +4,21 @@ import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
 
 export default function Edit({ title, kategori }) {
-    const { data, setData, put, processing, errors } = useForm({
+    const { data, setData, post, processing, errors, transform } = useForm({
         kd_kategori: kategori.kd_kategori || '',
         nm_kategori: kategori.nm_kategori || ''
     });
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        put(route('kategori-perawatan.update', kategori.kd_kategori), {
-            onSuccess: () => {
-                // Success handled by Inertia
-            },
+        // Spoof PUT via POST to avoid 405
+        transform((payload) => ({ ...payload, _method: 'PUT' }));
+        post(route('kategori-perawatan.update', kategori.kd_kategori), {
+            forceFormData: true,
             onError: (errors) => {
                 console.error('Update errors:', errors);
-            }
+            },
+            onFinish: () => transform((payload) => payload)
         });
     };
 

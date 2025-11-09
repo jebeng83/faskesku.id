@@ -336,8 +336,12 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat }) => {
                         }
                     }
                     
-                    const response = await axios.delete(`/api/tarif-tindakan`, {
-                        data: deleteData
+                    // Method spoofing: POST + _method=DELETE
+                    const fd = new FormData();
+                    Object.entries(deleteData).forEach(([k, v]) => fd.append(k, v));
+                    fd.append('_method', 'DELETE');
+                    const response = await axios.post(`/api/tarif-tindakan`, fd, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
                     });
                     
                     setAlertConfig({

@@ -1,10 +1,23 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
+import WilayahSearchableSelect from '@/Components/WilayahSearchableSelect';
+import SelectWithAdd from "@/Components/SelectWithAdd";
+import PenjabCreateModal from "@/Components/PenjabCreateModal";
+import SearchableSelect from "@/Components/SearchableSelect";
 
 export default function Edit({ patient }) {
-    const { data, setData, put, processing, errors } = useForm({
+    const [selectedWilayah, setSelectedWilayah] = useState(null);
+    const [loadingWilayah, setLoadingWilayah] = useState(false);
+    const [penjabOptions, setPenjabOptions] = useState([]);
+    const [isPenjabModalOpen, setIsPenjabModalOpen] = useState(false);
+    const [perusahaanOptions, setPerusahaanOptions] = useState([]);
+    const [sukuOptions, setSukuOptions] = useState([]);
+    const [bahasaOptions, setBahasaOptions] = useState([]);
+    const [cacatOptions, setCacatOptions] = useState([]);
+
+    const { data, setData, post, processing, errors, transform } = useForm({
         nm_pasien: patient.nm_pasien || '',
         no_ktp: patient.no_ktp || '',
         jk: patient.jk || 'L',
@@ -29,11 +42,194 @@ export default function Edit({ patient }) {
         kabupatenpj: patient.kabupatenpj || '',
         propinsipj: patient.propinsipj || '',
         email: patient.email || '',
+        kode_wilayah: '',
+        perusahaan_pasien: patient.perusahaan_pasien || '',
+        suku_bangsa: patient.suku_bangsa || '',
+        bahasa_pasien: patient.bahasa_pasien || '',
+        cacat_fisik: patient.cacat_fisik || '',
+        nip: patient.nip || '',
     });
+
+    // Load penjab options on component mount
+    useEffect(() => {
+        const loadPenjabOptions = async () => {
+            try {
+                const response = await fetch('/api/penjab');
+                if (response.ok) {
+                    const result = await response.json();
+                    const options = (result.data || []).map((penjab) => ({
+                        value: penjab.kd_pj,
+                        label: penjab.png_jawab,
+                    }));
+                    setPenjabOptions(options);
+                }
+            } catch (error) {
+                console.error('Error loading penjab options:', error);
+            }
+        };
+        loadPenjabOptions();
+    }, []);
+
+    // Load reference options (perusahaan pasien, suku bangsa, bahasa pasien, cacat fisik)
+    useEffect(() => {
+        const loadRefs = async () => {
+            try {
+                const [perusahaanRes, sukuRes, bahasaRes, cacatRes] = await Promise.all([
+                    fetch('/api/perusahaan-pasien'),
+                    fetch('/api/suku-bangsa'),
+                    fetch('/api/bahasa-pasien'),
+                    fetch('/api/cacat-fisik'),
+                ]);
+                if (perusahaanRes.ok) {
+                    const r = await perusahaanRes.json();
+                    setPerusahaanOptions((r.data || []).map((d) => ({ value: d.value, label: d.label })));
+                }
+                if (sukuRes.ok) {
+                    const r = await sukuRes.json();
+                    setSukuOptions((r.data || []).map((d) => ({ value: d.value, label: d.label })));
+                }
+                if (bahasaRes.ok) {
+                    const r = await bahasaRes.json();
+                    setBahasaOptions((r.data || []).map((d) => ({ value: d.value, label: d.label })));
+                }
+                if (cacatRes.ok) {
+                    const r = await cacatRes.json();
+                    setCacatOptions((r.data || []).map((d) => ({ value: d.value, label: d.label })));
+                }
+            } catch (e) {
+                console.error('Error loading reference options:', e);
+            }
+        };
+        loadRefs();
+    }, []);
+
+    const handleAddPenjab = () => {
+        setIsPenjabModalOpen(true);
+    };
+
+    const handlePenjabSuccess = async () => {
+        // Reload penjab options after successful creation
+        try {
+            const response = await fetch('/api/penjab');
+            if (response.ok) {
+                const result = await response.json();
+                const options = (result.data || []).map((penjab) => ({
+                    value: penjab.kd_pj,
+                    label: penjab.png_jawab,
+                }));
+                setPenjabOptions(options);
+            }
+        } catch (error) {
+            console.error('Error loading penjab options:', error);
+        }
+    };
+
+    // Build and load wilayah details for display
+    useEffect(() => {
+        const isValidWilayahCode = (c) => /^(\d{2})\.(\d{2})\.(\d{2})\.(\d{4})$/.test(String(c || '').trim());
+        let code = patient.kode_wilayah;
+        if (!code && patient.kd_prop && patient.kd_kab && patient.kd_kec && patient.kd_kel) {
+            const pad2 = (n) => String(n).padStart(2, '0');
+            const pad4 = (n) => String(n).padStart(4, '0');
+            code = `${pad2(patient.kd_prop)}.${pad2(patient.kd_kab)}.${pad2(patient.kd_kec)}.${pad4(patient.kd_kel)}`;
+        }
+        if (code && isValidWilayahCode(code)) {
+            setData('kode_wilayah', code);
+            setLoadingWilayah(true);
+            fetch(`/api/wilayah/${code}`)
+                .then(async (response) => {
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success) {
+                            const fullAddress = result.data.full_address || '';
+                            const parts = fullAddress.split(', ').map((p) => p.trim());
+                            const wilayah = {
+                                village: parts[0] || '',
+                                district: parts[1] || '',
+                                regency: parts[2] || '',
+                                province: parts[3] || '',
+                            };
+                            setSelectedWilayah(wilayah);
+                            // Auto-fill related fields
+                            setData('kelurahanpj', wilayah.village);
+                            setData('kecamatanpj', wilayah.district);
+                            setData('kabupatenpj', wilayah.regency);
+                            setData('propinsipj', wilayah.province);
+                        }
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error fetching wilayah details:', error);
+                })
+                .finally(() => setLoadingWilayah(false));
+        } else {
+            if (code) {
+                console.warn('Invalid kode_wilayah format, expected PP.RR.DD.VVVV but got:', code);
+            }
+            setSelectedWilayah(null);
+        }
+    }, [patient]);
+
+    // Handle wilayah selection change
+    const handleWilayahChange = async (event) => {
+        const value = event.target.value;
+        setData('kode_wilayah', value);
+
+        if (event.fullAddress) {
+            const parts = event.fullAddress.split(', ').map((p) => p.trim());
+            const wilayah = {
+                village: parts[0] || '',
+                district: parts[1] || '',
+                regency: parts[2] || '',
+                province: parts[3] || '',
+            };
+            setSelectedWilayah(wilayah);
+            setData('kelurahanpj', wilayah.village);
+            setData('kecamatanpj', wilayah.district);
+            setData('kabupatenpj', wilayah.regency);
+            setData('propinsipj', wilayah.province);
+        } else if (value && /^(\d{2})\.(\d{2})\.(\d{2})\.(\d{4})$/.test(String(value).trim())) {
+            setLoadingWilayah(true);
+            try {
+                const response = await fetch(`/api/wilayah/${value}`);
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        const fullAddress = result.data.full_address || '';
+                        const parts = fullAddress.split(', ').map((p) => p.trim());
+                        const wilayah = {
+                            village: parts[0] || '',
+                            district: parts[1] || '',
+                            regency: parts[2] || '',
+                            province: parts[3] || '',
+                        };
+                        setSelectedWilayah(wilayah);
+                        setData('kelurahanpj', wilayah.village);
+                        setData('kecamatanpj', wilayah.district);
+                        setData('kabupatenpj', wilayah.regency);
+                        setData('propinsipj', wilayah.province);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching wilayah details:', error);
+            } finally {
+                setLoadingWilayah(false);
+            }
+        } else {
+            if (value) {
+                console.warn('Invalid kode_wilayah format, expected PP.RR.DD.VVVV but got:', value);
+            }
+            setSelectedWilayah(null);
+        }
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        put(route('patients.update', patient.no_rkm_medis));
+        transform((payload) => ({ ...payload, _method: 'PUT' }));
+        post(route('patients.update', patient.no_rkm_medis), {
+            forceFormData: true,
+            onFinish: () => transform((payload) => payload),
+        });
     };
 
     return (
@@ -340,6 +536,22 @@ export default function Edit({ patient }) {
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            No. Peserta (BPJS)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={data.no_peserta}
+                                            onChange={(e) => setData('no_peserta', e.target.value)}
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            placeholder="Masukkan nomor peserta BPJS (jika ada)"
+                                        />
+                                        {errors.no_peserta && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.no_peserta}</p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                             Pendidikan *
                                         </label>
                                         <select
@@ -432,21 +644,18 @@ export default function Edit({ patient }) {
                                         )}
                                     </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Kode Penanggung Jawab *
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={data.kd_pj}
-                                            onChange={(e) => setData('kd_pj', e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            placeholder="Masukkan kode penanggung jawab"
-                                        />
-                                        {errors.kd_pj && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.kd_pj}</p>
-                                        )}
-                                    </div>
+                                    <SelectWithAdd
+                                        label="Penanggung Jawab"
+                                        name="kd_pj"
+                                        value={data.kd_pj}
+                                        onChange={(e) => setData('kd_pj', e.target.value)}
+                                        options={penjabOptions}
+                                        placeholder="Pilih penanggung jawab"
+                                        error={errors.kd_pj}
+                                        required={true}
+                                        onAdd={handleAddPenjab}
+                                        addButtonText="Tambah Penjab"
+                                    />
 
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -471,9 +680,9 @@ export default function Edit({ patient }) {
                                         <input
                                             type="text"
                                             value={data.kelurahanpj}
-                                            onChange={(e) => setData('kelurahanpj', e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            placeholder="Masukkan kelurahan"
+                                            readOnly
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400"
+                                            placeholder="Pilih dari Wilayah di bawah"
                                         />
                                         {errors.kelurahanpj && (
                                             <p className="mt-1 text-sm text-red-600">{errors.kelurahanpj}</p>
@@ -487,9 +696,9 @@ export default function Edit({ patient }) {
                                         <input
                                             type="text"
                                             value={data.kecamatanpj}
-                                            onChange={(e) => setData('kecamatanpj', e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            placeholder="Masukkan kecamatan"
+                                            readOnly
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400"
+                                            placeholder="Pilih dari Wilayah di bawah"
                                         />
                                         {errors.kecamatanpj && (
                                             <p className="mt-1 text-sm text-red-600">{errors.kecamatanpj}</p>
@@ -503,9 +712,9 @@ export default function Edit({ patient }) {
                                         <input
                                             type="text"
                                             value={data.kabupatenpj}
-                                            onChange={(e) => setData('kabupatenpj', e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            placeholder="Masukkan kabupaten"
+                                            readOnly
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400"
+                                            placeholder="Pilih dari Wilayah di bawah"
                                         />
                                         {errors.kabupatenpj && (
                                             <p className="mt-1 text-sm text-red-600">{errors.kabupatenpj}</p>
@@ -519,12 +728,122 @@ export default function Edit({ patient }) {
                                         <input
                                             type="text"
                                             value={data.propinsipj}
-                                            onChange={(e) => setData('propinsipj', e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                            placeholder="Masukkan provinsi"
+                                            readOnly
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400"
+                                            placeholder="Pilih dari Wilayah di bawah"
                                         />
                                         {errors.propinsipj && (
                                             <p className="mt-1 text-sm text-red-600">{errors.propinsipj}</p>
+                                        )}
+                                    </div>
+                                </div>
+                                {/* Wilayah & Kode selection */}
+                                <div className="mt-6">
+                                    <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-2">Wilayah & Kode</h4>
+                                    <WilayahSearchableSelect
+                                        label="Wilayah (Kelurahan/Desa)"
+                                        name="kode_wilayah"
+                                        value={data.kode_wilayah}
+                                        onChange={handleWilayahChange}
+                                        level="village"
+                                        error={errors.kode_wilayah}
+                                    />
+                                    {/* Optional: Show selected address preview */}
+                                    {selectedWilayah && (
+                                        <div className="mt-3 p-3 border rounded bg-gray-50 dark:bg-gray-700">
+                                            <p className="text-sm text-gray-700 dark:text-gray-200">
+                                                Alamat wilayah: {selectedWilayah.village}, {selectedWilayah.district}, {selectedWilayah.regency}, {selectedWilayah.province}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Informasi Administrasi (Perusahaan, Suku Bangsa, Bahasa, Cacat Fisik, NIP) */}
+                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                            <div className="p-6">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                    Informasi Administrasi
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Perusahaan Pasien *
+                                        </label>
+                                        <SearchableSelect
+                                            options={perusahaanOptions}
+                                            value={data.perusahaan_pasien}
+                                            onChange={(val) => setData('perusahaan_pasien', val)}
+                                            placeholder="Pilih atau cari perusahaan pasien"
+                                            displayKey="label"
+                                            valueKey="value"
+                                            searchPlaceholder="Ketik nama_perusahaan untuk mencari..."
+                                            error={errors.perusahaan_pasien}
+                                        />
+                                        {errors.perusahaan_pasien && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.perusahaan_pasien}</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Suku Bangsa *
+                                        </label>
+                                        <SearchableSelect
+                                            options={sukuOptions}
+                                            value={data.suku_bangsa}
+                                            onChange={(val) => setData('suku_bangsa', val)}
+                                            placeholder="Pilih suku bangsa"
+                                            error={errors.suku_bangsa}
+                                        />
+                                        {errors.suku_bangsa && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.suku_bangsa}</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Bahasa Pasien *
+                                        </label>
+                                        <SearchableSelect
+                                            options={bahasaOptions}
+                                            value={data.bahasa_pasien}
+                                            onChange={(val) => setData('bahasa_pasien', val)}
+                                            placeholder="Pilih bahasa pasien"
+                                            error={errors.bahasa_pasien}
+                                        />
+                                        {errors.bahasa_pasien && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.bahasa_pasien}</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Cacat Fisik *
+                                        </label>
+                                        <SearchableSelect
+                                            options={cacatOptions}
+                                            value={data.cacat_fisik}
+                                            onChange={(val) => setData('cacat_fisik', val)}
+                                            placeholder="Pilih cacat fisik"
+                                            error={errors.cacat_fisik}
+                                        />
+                                        {errors.cacat_fisik && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.cacat_fisik}</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            NIP
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="nip"
+                                            value={data.nip}
+                                            onChange={(e) => setData('nip', e.target.value)}
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            placeholder="Masukkan NIP (opsional)"
+                                        />
+                                        {errors.nip && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.nip}</p>
                                         )}
                                     </div>
                                 </div>
@@ -560,6 +879,12 @@ export default function Edit({ patient }) {
                     </form>
                 </div>
             </div>
+                    {/* Penjab Create Modal */}
+                    <PenjabCreateModal
+                        isOpen={isPenjabModalOpen}
+                        onClose={() => setIsPenjabModalOpen(false)}
+                        onSuccess={handlePenjabSuccess}
+                    />
         </AppLayout>
     );
 }

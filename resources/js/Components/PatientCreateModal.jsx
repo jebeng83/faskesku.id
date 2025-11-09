@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { useForm } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { route } from "ziggy-js";
 import SelectWithAdd from "@/Components/SelectWithAdd";
+import SearchableSelect from "@/Components/SearchableSelect";
 import PenjabCreateModal from "@/Components/PenjabCreateModal";
 import WilayahSearchableSelect from "@/Components/WilayahSearchableSelect";
 import AddressDisplay from "@/Components/AddressDisplay";
@@ -12,6 +14,10 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
 	const [isPenjabModalOpen, setIsPenjabModalOpen] = useState(false);
 	const [selectedWilayah, setSelectedWilayah] = useState(null);
 	const [loadingWilayah, setLoadingWilayah] = useState(false);
+    const [perusahaanOptions, setPerusahaanOptions] = useState([]);
+    const [sukuOptions, setSukuOptions] = useState([]);
+    const [bahasaOptions, setBahasaOptions] = useState([]);
+    const [cacatOptions, setCacatOptions] = useState([]);
 
 	const { data, setData, post, processing, errors, reset } = useForm({
 		nm_pasien: "",
@@ -35,6 +41,11 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
 		alamatpj: "",
 		kode_wilayah: "",
 		email: "",
+        perusahaan_pasien: "",
+        suku_bangsa: "",
+        bahasa_pasien: "",
+        cacat_fisik: "",
+        nip: "",
 	});
 
 	// Load penjab options on component mount
@@ -59,6 +70,35 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
 			loadPenjabOptions();
 		}
 	}, [isOpen]);
+
+    // Load reference options (perusahaan pasien, suku bangsa, bahasa pasien, cacat fisik) when modal opens
+    useEffect(() => {
+        const loadRefs = async () => {
+            try {
+                const [perusahaanRes, sukuRes, bahasaRes, cacatRes] = await Promise.all([
+                    axios.get('/api/perusahaan-pasien'),
+                    axios.get('/api/suku-bangsa'),
+                    axios.get('/api/bahasa-pasien'),
+                    axios.get('/api/cacat-fisik'),
+                ]);
+
+                const perusahaanData = Array.isArray(perusahaanRes?.data?.data) ? perusahaanRes.data.data : [];
+                const sukuData = Array.isArray(sukuRes?.data?.data) ? sukuRes.data.data : [];
+                const bahasaData = Array.isArray(bahasaRes?.data?.data) ? bahasaRes.data.data : [];
+                const cacatData = Array.isArray(cacatRes?.data?.data) ? cacatRes.data.data : [];
+
+                setPerusahaanOptions(perusahaanData.map((d) => ({ value: d.value, label: d.label })));
+                setSukuOptions(sukuData.map((d) => ({ value: d.value, label: d.label })));
+                setBahasaOptions(bahasaData.map((d) => ({ value: d.value, label: d.label })));
+                setCacatOptions(cacatData.map((d) => ({ value: d.value, label: d.label })));
+            } catch (e) {
+                console.error('Error loading reference options:', e);
+            }
+        };
+        if (isOpen) {
+            loadRefs();
+        }
+    }, [isOpen]);
 
 	// Reset form when modal opens
 	useEffect(() => {
@@ -88,6 +128,13 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
 			? errors[fieldName][0]
 			: errors[fieldName];
 	};
+
+    // Helper to get label from options
+    const findLabelByValue = (options, value) => {
+        if (!value) return "";
+        const found = options.find((o) => o.value === value);
+        return found ? found.label : "";
+    };
 
 	const handleAddPenjab = () => {
 		setIsPenjabModalOpen(true);
@@ -379,6 +426,112 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
 										</div>
 									</motion.div>
 
+									{/* Informasi Administrasi */}
+									<motion.div
+										className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4"
+										initial={{ opacity: 0, x: 20 }}
+										animate={{ opacity: 1, x: 0 }}
+										transition={{ duration: 0.3, delay: 0.45 }}
+									>
+					<h4 className="text-base font-semibold text-gray-900 dark:text-white mb-4">
+						Informasi Administrasi
+					</h4>
+                    <div className="grid grid-cols-1 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                No. Peserta
+                            </label>
+                            <input
+                                type="text"
+                                name="no_peserta"
+                                value={data.no_peserta}
+                                onChange={(e) => setData("no_peserta", e.target.value)}
+                                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                placeholder="Masukkan nomor peserta BPJS/Asuransi"
+                            />
+                            {getErrorMessage("no_peserta") && (
+                                <p className="mt-1 text-xs text-red-600">
+                                    {getErrorMessage("no_peserta")}
+                                </p>
+                            )}
+                        </div>
+                        {/* Baris 4 kolom: Bahasa, Suku, Perusahaan, Cacat */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            {/* Bahasa Pasien */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Bahasa Pasien</label>
+                                <SearchableSelect
+                                    options={bahasaOptions}
+                                    value={data.bahasa_pasien}
+                                    onChange={(val) => { setData('bahasa_pasien', val); }}
+                                    placeholder="Pilih bahasa"
+                                    searchPlaceholder="Ketik nama bahasa untuk mencari..."
+                                    displayKey="label"
+                                    valueKey="value"
+                                    error={!!getErrorMessage('bahasa_pasien')}
+                                />
+                                {getErrorMessage('bahasa_pasien') && (
+                                    <p className="mt-1 text-xs text-red-600">{getErrorMessage('bahasa_pasien')}</p>
+                                )}
+                            </div>
+
+                            {/* Suku Bangsa */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Suku Bangsa</label>
+                                <SearchableSelect
+                                    options={sukuOptions}
+                                    value={data.suku_bangsa}
+                                    onChange={(val) => { setData('suku_bangsa', val); }}
+                                    placeholder="Pilih suku bangsa"
+                                    searchPlaceholder="Ketik nama suku bangsa untuk mencari..."
+                                    displayKey="label"
+                                    valueKey="value"
+                                    error={!!getErrorMessage('suku_bangsa')}
+                                />
+                                {getErrorMessage('suku_bangsa') && (
+                                    <p className="mt-1 text-xs text-red-600">{getErrorMessage('suku_bangsa')}</p>
+                                )}
+                            </div>
+
+                            {/* Perusahaan Pasien */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Perusahaan Pasien</label>
+                                <SearchableSelect
+                                    options={perusahaanOptions}
+                                    value={data.perusahaan_pasien}
+                                    onChange={(val) => { setData('perusahaan_pasien', val); }}
+                                    placeholder="Pilih atau cari perusahaan pasien"
+                                    searchPlaceholder="Ketik nama_perusahaan untuk mencari..."
+                                    displayKey="label"
+                                    valueKey="value"
+                                    error={!!getErrorMessage('perusahaan_pasien')}
+                                />
+                                {getErrorMessage('perusahaan_pasien') && (
+                                    <p className="mt-1 text-xs text-red-600">{getErrorMessage('perusahaan_pasien')}</p>
+                                )}
+                            </div>
+
+                            {/* Cacat Fisik */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cacat Fisik</label>
+                                <SearchableSelect
+                                    options={cacatOptions}
+                                    value={data.cacat_fisik}
+                                    onChange={(val) => { setData('cacat_fisik', val); }}
+                                    placeholder="Pilih cacat fisik"
+                                    searchPlaceholder="Ketik nama cacat fisik untuk mencari..."
+                                    displayKey="label"
+                                    valueKey="value"
+                                    error={!!getErrorMessage('cacat_fisik')}
+                                />
+                                {getErrorMessage('cacat_fisik') && (
+                                    <p className="mt-1 text-xs text-red-600">{getErrorMessage('cacat_fisik')}</p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+									</motion.div>
+
 									{/* Contact Information */}
 									<motion.div
 										className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4"
@@ -456,10 +609,10 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
 										animate={{ opacity: 1, x: 0 }}
 										transition={{ duration: 0.3, delay: 0.4 }}
 									>
-										<h4 className="text-base font-semibold text-gray-900 dark:text-white mb-4">
-											Informasi Keluarga
-										</h4>
-										<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<h4 className="text-base font-semibold text-gray-900 dark:text-white mb-4">
+						Informasi Keluarga
+					</h4>
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 											<div>
 												<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
 													Hubungan Keluarga
@@ -484,7 +637,27 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
 														{getErrorMessage("keluarga")}
 													</p>
 												)}
-											</div>
+						</div>
+
+						{/* Pekerjaan Penanggung Jawab */}
+						<div>
+							<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+								Pekerjaan Penanggung Jawab *
+							</label>
+							<input
+								type="text"
+								name="pekerjaanpj"
+								value={data.pekerjaanpj}
+								onChange={(e) => setData("pekerjaanpj", e.target.value)}
+								className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+								placeholder="Masukkan pekerjaan penanggung jawab"
+							/>
+							{getErrorMessage("pekerjaanpj") && (
+								<p className="mt-1 text-xs text-red-600">
+									{getErrorMessage("pekerjaanpj")}
+								</p>
+							)}
+						</div>
 
 											<div>
 												<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

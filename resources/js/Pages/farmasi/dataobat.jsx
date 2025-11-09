@@ -579,7 +579,8 @@ export default function DataObatPage() {
 
   const performDelete = () => {
     if (!selected?.kode_brng) return;
-    router.delete(route('farmasi.data-obat.destroy', { kode_brng: selected.kode_brng }), {
+    router.post(route('farmasi.data-obat.destroy', { kode_brng: selected.kode_brng }), { _method: 'DELETE' }, {
+      forceFormData: true,
       preserveScroll: true,
       onSuccess: () => setConfirmOpen(false)
     });

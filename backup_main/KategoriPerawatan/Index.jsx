@@ -159,7 +159,8 @@ export default function Index({ title, data, search, filters }) {
 
     const handleDelete = (kategori) => {
         if (confirm(`Apakah Anda yakin ingin menghapus kategori "${kategori.nm_kategori}"?`)) {
-            router.delete(route('kategori-perawatan.destroy', kategori.kd_kategori), {
+            router.post(route('kategori-perawatan.destroy', kategori.kd_kategori), { _method: 'DELETE' }, {
+                forceFormData: true,
                 onSuccess: () => {
                     // Success handled by Inertia
                 },

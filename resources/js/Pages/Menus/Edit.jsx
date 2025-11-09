@@ -55,19 +55,21 @@ export default function Edit({ menu, parentMenus, permissions }) {
 			data,
 		});
 
-		router.put(updateUrl, data, {
-			onSuccess: () => {
-				setProcessing(false);
-				// Redirect will be handled by controller response
-			},
-			onError: (errors) => {
-				setProcessing(false);
-				console.error("Form submission errors:", errors);
-			},
-			onFinish: () => {
-				setProcessing(false);
-			},
-		});
+    router.post(updateUrl, { ...data, _method: 'PUT' }, {
+            // Gunakan method spoofing agar kompatibel dengan konfigurasi server yang tidak menerima PUT langsung
+            forceFormData: true,
+            onSuccess: () => {
+                setProcessing(false);
+                // Redirect will be handled by controller response
+            },
+            onError: (errors) => {
+                setProcessing(false);
+                console.error("Form submission errors:", errors);
+            },
+            onFinish: () => {
+                setProcessing(false);
+            },
+        });
 	};
 
 	const handleSlugChange = (e) => {

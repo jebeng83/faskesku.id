@@ -81,7 +81,8 @@ export default function KonversiSatuanPage() {
       nilai: item.nilai,
       nilai_konversi: item.nilai_konversi,
     };
-    router.delete(route('farmasi.konversi-satuan.destroy', params), {
+    router.post(route('farmasi.konversi-satuan.destroy', params), { _method: 'DELETE' }, {
+      forceFormData: true,
       preserveScroll: true,
     });
   };

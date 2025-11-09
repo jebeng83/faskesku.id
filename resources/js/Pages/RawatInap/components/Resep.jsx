@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
     PlusIcon, 
-    SearchIcon, 
+    MagnifyingGlassIcon, 
     TrashIcon,
     ClipboardDocumentListIcon,
     HeartIcon,
@@ -230,7 +230,7 @@ const Resep = () => {
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                         <h4 className="font-medium text-gray-900 mb-4">Cari Obat</h4>
                         <div className="relative mb-4">
-                            <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                             <input
                                 type="text"
                                 value={searchDrug}

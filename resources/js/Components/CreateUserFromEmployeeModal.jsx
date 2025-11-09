@@ -122,8 +122,13 @@ export default function CreateUserFromEmployeeModal({
 
 		try {
 			if (isEditMode && existingUser) {
-				// Update existing user
-				await axios.put(`/api/users/${existingUser.id}`, formData);
+				// Update existing user with method spoofing
+				const fd = new FormData();
+				Object.entries(formData).forEach(([key, value]) => fd.append(key, value ?? ""));
+				fd.append("_method", "PUT");
+				await axios.post(`/api/users/${existingUser.id}`, fd, {
+					headers: { "Content-Type": "multipart/form-data" },
+				});
 			} else {
 				// Create new user
 				await axios.post("/api/users", formData);

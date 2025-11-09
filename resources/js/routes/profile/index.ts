@@ -83,7 +83,7 @@ const profile = {
     update: Object.assign(update, update),
 =======
 /**
-* @see routes/web.php:145
+* @see routes/web.php:158
 * @route '/profile/menu'
 */
 export const menu = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -97,7 +97,7 @@ menu.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:145
+* @see routes/web.php:158
 * @route '/profile/menu'
 */
 menu.url = (options?: RouteQueryOptions) => {
@@ -105,7 +105,7 @@ menu.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:145
+* @see routes/web.php:158
 * @route '/profile/menu'
 */
 menu.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -114,7 +114,7 @@ menu.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:145
+* @see routes/web.php:158
 * @route '/profile/menu'
 */
 menu.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -8,7 +8,7 @@ import Alert from "@/Components/Alert";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
 export default function Edit({ periksaLab, jenisPerawatan, petugas }) {
-	const { data, setData, put, processing, errors } = useForm({
+	const { data, setData, post, processing, errors, transform } = useForm({
 		no_rawat: periksaLab.no_rawat || "",
 		kd_jenis_prw: periksaLab.kd_jenis_prw || "",
 		tgl_periksa: periksaLab.tgl_periksa
@@ -31,7 +31,9 @@ export default function Edit({ periksaLab, jenisPerawatan, petugas }) {
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		put(route("laboratorium.update", periksaLab.no_rawat), {
+		transform((payload) => ({ ...payload, _method: "PUT" }));
+		post(route("laboratorium.update", periksaLab.no_rawat), {
+			forceFormData: true,
 			onSuccess: () => {
 				setAlertConfig({
 					type: "success",
@@ -50,6 +52,7 @@ export default function Edit({ periksaLab, jenisPerawatan, petugas }) {
 				});
 				setShowAlert(true);
 			},
+			onFinish: () => transform((payload) => payload),
 		});
 	};
 

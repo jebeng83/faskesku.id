@@ -56,7 +56,13 @@ export default function Show({ rawatJalan }) {
 
     const handleDelete = () => {
         if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
-            router.delete(route('rawat-jalan.destroy', rawatJalan.no_rawat));
+            // Use POST with method spoofing to avoid 405 errors
+            router.post(route('rawat-jalan.destroy', rawatJalan.no_rawat), {
+                _method: 'DELETE'
+            }, {
+                forceFormData: true,
+                preserveScroll: true
+            });
         }
     };
 

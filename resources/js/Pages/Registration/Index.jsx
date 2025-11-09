@@ -2,8 +2,18 @@ import React, { useState, useEffect } from "react";
 import { Head, router } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  ArrowPathIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  IdentificationIcon,
+  MagnifyingGlassIcon,
+  ClipboardDocumentCheckIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 import axios from "axios";
 import PatientCreateModal from "@/Components/PatientCreateModal";
+import PatientEditModal from "@/Components/PatientEditModal";
 
 export default function Registration({
 	auth,
@@ -21,6 +31,8 @@ export default function Registration({
 	const [selectedRegistration, setSelectedRegistration] = useState(null);
 	const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 	const [isPatientModalOpen, setIsPatientModalOpen] = useState(false);
+	const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+	const [editPatient, setEditPatient] = useState(null);
 	const [registrationData, setRegistrationData] = useState(registrations);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [isLoading, setIsLoading] = useState(false);
@@ -35,12 +47,16 @@ export default function Registration({
 		totalBiaya: 0,
 	});
 	const [filters, setFilters] = useState({
-		date: new Date().toISOString().split("T")[0],
+		// Biarkan kosong agar backend menentukan tanggal default (timezone server)
+		// Menghindari mismatch timezone client vs server yang dapat membuat data terlihat hanya 1
+		date: "",
 		kd_poli: "",
 		kd_dokter: "",
 		search: "",
 		status: "",
 		status_poli: "",
+		// Tambahkan per_page agar daftar menampilkan lebih dari 1 data per halaman
+		per_page: 50,
 	});
 
 	const [formData, setFormData] = useState({
@@ -57,6 +73,109 @@ export default function Registration({
 		biaya_reg: 0,
 		has_registered: false,
 	});
+
+	// BPJS PCare membership state
+	const [bpjsNik, setBpjsNik] = useState("");
+	const [bpjsLoading, setBpjsLoading] = useState(false);
+	const [bpjsError, setBpjsError] = useState(null);
+	const [bpjsData, setBpjsData] = useState(null); // { metaData, response }
+
+	// Popup untuk menampilkan respon BPJS saat simpan registrasi (jika status selain 200)
+	const [isBpjsPopupOpen, setIsBpjsPopupOpen] = useState(false);
+	const [bpjsPopup, setBpjsPopup] = useState({
+		status: null,
+		message: '',
+		endpoint: '',
+		method: '',
+		data: null,
+		raw: '',
+	});
+
+	const openBpjsPopup = ({ status, message, endpoint, method, data, raw }) => {
+		setBpjsPopup({
+			status: typeof status === 'number' ? status : null,
+			message: message || '',
+			endpoint: endpoint || '/api/mobilejkn/antrean/add',
+			method: method || 'POST',
+			data: data ?? null,
+			raw: typeof raw === 'string' ? raw : '',
+		});
+		setIsBpjsPopupOpen(true);
+	};
+
+	const closeBpjsPopup = () => {
+		setIsBpjsPopupOpen(false);
+		setBpjsPopup({ status: null, message: '', endpoint: '', method: '', data: null, raw: '' });
+	};
+
+	const sanitizeNik = (value) => (value || "").replace(/[^0-9]/g, "").slice(0, 16);
+
+	// Helper: resolusi jenis bayar dari kd_pj (menggunakan label png_jawab)
+	// Normalisasi ke salah satu dari: 'BPJ' (termasuk BPJS/JKN/KIS), 'PBI', 'NON' (termasuk UMUM/NON JKN)
+	const resolveJenisBayarFromKdPj = (kd_pj) => {
+		if (!kd_pj) return '';
+		try {
+			const pj = (penjabs || []).find((p) => String(p.kd_pj) === String(kd_pj));
+			const label = String(pj?.png_jawab || '').trim();
+			const normalized = label.toLowerCase().replace(/[^a-z0-9]/g, '');
+			if (/pbi/.test(normalized)) return 'PBI';
+			if (/bpjs|bpj|jkn|kis/.test(normalized)) return 'BPJ';
+			if (/umum|nonjkn|non/.test(normalized)) return 'NON';
+			// Jika tidak cocok, kembalikan label asli untuk referensi
+			return label || '';
+		} catch (_) {
+			return '';
+		}
+	};
+
+	// Helper: buat token base64-url untuk navigasi aman ke halaman lanjutan
+	const toBase64Url = (obj) => {
+		try {
+			const json = JSON.stringify(obj || {});
+			const base = btoa(json); // base64 standar
+			// ubah ke base64-url (tanpa padding "=")
+			return base.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+		} catch (_) {
+			return '';
+		}
+	};
+
+	const goToLanjutan = (no_rawat, no_rkm_medis) => {
+		const token = toBase64Url({ no_rawat, no_rkm_medis });
+		// Gunakan router Inertia untuk navigasi
+		router.get('/rawat-jalan/lanjutan', { t: token }, { preserveScroll: true });
+	};
+
+	// Hanya kirim antrean ke Mobile JKN bila jenis bayar termasuk BPJ / PBI
+	const isJenisBayarAllowedForAntrean = (kd_pj) => {
+		const jenis = resolveJenisBayarFromKdPj(kd_pj);
+		return jenis === 'BPJ' || jenis === 'PBI';
+	};
+
+	const fetchBpjsByNik = async (nikOverride) => {
+		const n = sanitizeNik(nikOverride ?? bpjsNik);
+		setBpjsNik(n);
+		setBpjsError(null);
+		setBpjsData(null);
+		if (!n || n.length < 8) {
+			setBpjsError("Masukkan NIK yang valid (min. 8 digit, ideal 16 digit).");
+			return;
+		}
+		setBpjsLoading(true);
+		try {
+			const res = await axios.get("/pcare/api/peserta/nik", { params: { nik: n } });
+			// Expect shape: { metaData, response }
+			if (res.status === 200) {
+				setBpjsData({ metaData: res.data?.metaData, response: res.data?.response });
+			} else {
+				setBpjsError(res.data?.metaData?.message || "Gagal mengambil data peserta");
+			}
+		} catch (e) {
+			setBpjsError(e?.response?.data?.metaData?.message || e?.message || "Terjadi kesalahan jaringan");
+		} finally {
+			setBpjsLoading(false);
+		}
+	};
 
 	// Search patients
 	const handleSearch = async (term) => {
@@ -96,6 +215,18 @@ export default function Registration({
 			p_jawab: patient.namakeluarga || "",
 			almt_pj: patient.alamatpj || patient.alamat || "",
 		});
+
+		// Initialize BPJS check by default using patient's NIK if available
+		try {
+			const nik = sanitizeNik(patient?.no_ktp || "");
+			setBpjsNik(nik);
+			setBpjsError(null);
+			setBpjsData(null);
+			if (nik) {
+				// Fire and forget; no need to await before opening modal
+				fetchBpjsByNik(nik);
+			}
+		} catch (_) {}
 		setIsModalOpen(true);
 	};
 
@@ -141,6 +272,76 @@ export default function Registration({
 
 			if (response.data.success) {
 				alert(response.data.message);
+				// Setelah registrasi lokal berhasil, kirim antrean ke Mobile JKN hanya jika jenis bayar diizinkan (BPJ/PBI/NON)
+				try {
+					if (!isJenisBayarAllowedForAntrean(formData.kd_pj)) {
+						// Jenis bayar selain BPJ/PBI: hanya simpan lokal, tidak kirim antrean dan tidak tampilkan popup
+						console.info('Jenis bayar bukan BPJ/PBI, melewati pengiriman antrean Mobile JKN.', {
+							kd_pj: formData.kd_pj,
+							jenis: resolveJenisBayarFromKdPj(formData.kd_pj),
+						});
+					} else {
+						const reg = response.data.data || {};
+						const mjRes = await axios.post('/api/mobilejkn/antrean/add', {
+							no_rkm_medis: selectedPatient.no_rkm_medis,
+							kd_poli: formData.kd_poli,
+							kd_dokter: formData.kd_dokter,
+							tanggalperiksa: reg.tgl_registrasi,
+							no_reg: reg.no_reg,
+						});
+						// Jika status selain 200, tampilkan popup respon BPJS
+						if (mjRes?.status !== 200) {
+							openBpjsPopup({
+								status: mjRes?.status,
+								message:
+									mjRes?.data?.metaData?.message ||
+									mjRes?.data?.metadata?.message ||
+									'BPJS Mobile JKN mengembalikan status selain 200',
+								endpoint: '/api/mobilejkn/antrean/add',
+								method: 'POST',
+								data: mjRes?.data ?? null,
+								raw: typeof mjRes?.data === 'string' ? mjRes.data : JSON.stringify(mjRes?.data ?? {}, null, 2),
+							});
+						} else {
+							// Status HTTP 200, tetapi perlu cek metaData.code dan pesan kegagalan pada body
+							const meta = mjRes?.data?.metaData ?? mjRes?.data?.metadata ?? {};
+							const codeNum = Number(meta?.code ?? 200);
+							const msgStr = String(meta?.message ?? '').trim();
+							const looksLikeFailure = codeNum !== 200 || /skrining kesehatan|gagal|tidak/i.test(msgStr);
+							if (looksLikeFailure) {
+								openBpjsPopup({
+									status: 200,
+									message: msgStr || 'Respon BPJS mengindikasikan kegagalan meskipun status HTTP 200',
+									endpoint: '/api/mobilejkn/antrean/add',
+									method: 'POST',
+									data: mjRes?.data ?? null,
+									raw: typeof mjRes?.data === 'string' ? mjRes.data : JSON.stringify(mjRes?.data ?? {}, null, 2),
+								});
+							} else {
+								// Beri informasi sukses ringan; respons detail ditangani di backend
+								console.log('Antrean Mobile JKN berhasil dikirim');
+							}
+						}
+					}
+				} catch (err) {
+					console.warn('Gagal mengirim antrean Mobile JKN:', err?.response?.data || err?.message);
+					// Tampilkan popup respon BPJS dengan detail error
+					openBpjsPopup({
+						status: err?.response?.status ?? null,
+						message:
+							err?.response?.data?.metaData?.message ||
+							err?.response?.data?.metadata?.message ||
+							err?.message ||
+							'Gagal mengirim antrean ke Mobile JKN',
+						endpoint: '/api/mobilejkn/antrean/add',
+						method: 'POST',
+						data: err?.response?.data ?? null,
+						raw:
+							typeof err?.response?.data === 'string'
+								? err.response.data
+								: JSON.stringify(err?.response?.data ?? { error: err?.message }, null, 2),
+					});
+				}
 				setIsModalOpen(false);
 				resetForm();
 				// Refresh registrations
@@ -199,6 +400,45 @@ export default function Registration({
 		setIsPatientModalOpen(true);
 	};
 
+	// Open/Close edit patient modal
+	const openEditModal = (patient) => {
+		setEditPatient(patient || selectedPatient);
+		setIsEditModalOpen(true);
+	};
+
+	const closeEditModal = () => {
+		setIsEditModalOpen(false);
+		setEditPatient(null);
+	};
+
+	// After successful edit, refresh search results and selected patient data
+	const handleEditSuccess = (updatedData) => {
+		try {
+			// Refresh list if searching
+			if (searchTerm) {
+				handleSearch(searchTerm);
+			}
+
+			// Update selected patient info in modal
+			if (selectedPatient && (editPatient?.no_rkm_medis === selectedPatient.no_rkm_medis)) {
+				setSelectedPatient((prev) => ({ ...prev, ...updatedData }));
+				setFormData((prev) => ({
+					...prev,
+					p_jawab: updatedData?.namakeluarga ?? prev.p_jawab,
+					almt_pj: updatedData?.alamatpj ?? updatedData?.alamat ?? prev.almt_pj,
+				}));
+
+				// If NIK changes, refresh BPJS data
+				const newNik = sanitizeNik(updatedData?.no_ktp || selectedPatient?.no_ktp || "");
+				if (newNik && newNik !== bpjsNik) {
+					fetchBpjsByNik(newNik);
+				}
+			}
+		} catch (error) {
+			console.error("Error updating local state after edit:", error);
+		}
+	};
+
 	// Close patient modal
 	const closePatientModal = () => {
 		setIsPatientModalOpen(false);
@@ -244,8 +484,13 @@ export default function Registration({
 	const loadRegistrations = async (page = 1) => {
 		setIsLoading(true);
 		try {
+			// Hindari mengirim parameter kosong agar backend memakai default
+			const params = { ...filters, page };
+			Object.keys(params).forEach((key) => {
+				if (params[key] === "" || params[key] === null) delete params[key];
+			});
 			const response = await axios.get("/registration/get-registrations", {
-				params: { ...filters, page },
+				params,
 			});
 			setRegistrationData(response.data.data);
 			setStats(calculateStats(response.data.data));
@@ -283,6 +528,8 @@ export default function Registration({
 		filters.search,
 		filters.status,
 		filters.status_poli,
+		// Muat ulang jika jumlah per halaman berubah
+		filters.per_page,
 	]);
 
 	// Calculate initial stats
@@ -740,39 +987,52 @@ export default function Registration({
 																}}
 																whileTap={{ scale: 0.98 }}
 															>
-																<div className="flex justify-between items-start">
-																	<div className="flex-1">
-																		<h4 className="font-medium text-gray-900 dark:text-white">
-																			{patient.nm_pasien}
-																		</h4>
-																		<p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
-																			RM: {patient.no_rkm_medis}
-																		</p>
-																		{patient.no_ktp && (
-																			<p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
-																				KTP: {patient.no_ktp}
-																			</p>
-																		)}
-																		<p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
-																			{patient.jk === "L"
-																				? "Laki-laki"
-																				: "Perempuan"}
-																			, {patient.umur}
-																		</p>
-																		<p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-																			{patient.alamat}
-																		</p>
-																	</div>
-																	<motion.button
-																		className="ml-2 px-2 lg:px-3 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 transition-colors flex-shrink-0"
-																		whileHover={{ scale: 1.05 }}
-																		whileTap={{ scale: 0.95 }}
-																	>
-																		Pilih
-																	</motion.button>
-																</div>
-															</motion.div>
-													  ))
+                                                                <div className="flex justify-between items-start">
+                                                                    <div className="flex-1">
+                                                                        <h4 className="font-medium text-gray-900 dark:text-white">
+                                                                            {patient.nm_pasien}
+                                                                        </h4>
+                                                                        <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
+                                                                            RM: {patient.no_rkm_medis}
+                                                                        </p>
+                                                                        {patient.no_ktp && (
+                                                                            <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
+                                                                                KTP: {patient.no_ktp}
+                                                                            </p>
+                                                                        )}
+                                                                        <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
+                                                                            {patient.jk === "L"
+                                                                                ? "Laki-laki"
+                                                                                : "Perempuan"}
+                                                                            , {patient.umur}
+                                                                        </p>
+                                                                        <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                                                                            {patient.alamat}
+                                                                        </p>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2 ml-2">
+                                                                        <motion.button
+                                                                            className="px-2 lg:px-3 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 transition-colors flex-shrink-0"
+                                                                            whileHover={{ scale: 1.05 }}
+                                                                            whileTap={{ scale: 0.95 }}
+                                                                        >
+                                                                            Pilih
+                                                                        </motion.button>
+                                                                        <motion.button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                openEditModal(patient);
+                                                                            }}
+                                                                            className="px-2 lg:px-3 py-1 bg-indigo-600 text-white text-xs rounded-md hover:bg-indigo-700 transition-colors flex-shrink-0"
+                                                                            whileHover={{ scale: 1.05 }}
+                                                                            whileTap={{ scale: 0.95 }}
+                                                                        >
+                                                                            Edit
+                                                                        </motion.button>
+                                                                    </div>
+                                                                </div>
+                                                            </motion.div>
+                                                      ))
 													: !isSearching && (
 															<motion.div
 																className="text-center py-6 lg:py-8 text-gray-500 dark:text-gray-400"
@@ -1232,9 +1492,16 @@ export default function Registration({
 																		{registration.stts}
 																	</motion.span>
 																</div>
-																<h4 className="font-medium text-sm lg:text-base text-gray-900 dark:text-white">
-																	{registration.pasien?.nm_pasien}
-																</h4>
+                                                                <h4 className="font-medium text-sm lg:text-base text-gray-900 dark:text-white">
+                                                                    <button
+                                                                        type="button"
+                                                                        title="Buka halaman Rawat Jalan / Lanjutan"
+                                                                        onClick={(e) => { e.stopPropagation(); goToLanjutan(registration.no_rawat, registration.no_rkm_medis); }}
+                                                                        className="text-blue-600 hover:text-blue-700 hover:underline"
+                                                                    >
+                                                                        {registration.pasien?.nm_pasien}
+                                                                    </button>
+                                                                </h4>
 																<p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
 																	RM: {registration.no_rkm_medis}
 																</p>
@@ -1426,12 +1693,191 @@ export default function Registration({
 									</div>
 								</motion.div>
 							)}
-						</div>
-					</motion.div>
-				</div>
-			</motion.div>
+		</div>
+				</motion.div>
+			</div>
+		</motion.div>
 
-			{/* Registration Modal */}
+            {/* Datatable Registrasi - reg_periksa */}
+            <motion.div
+                className="mt-6 bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+            >
+                <div className="p-4 lg:p-6">
+                    <div className="flex items-center justify-between mb-4 lg:mb-6">
+                        <h3 className="text-base lg:text-lg font-semibold text-gray-900 dark:text-white">
+                            Datatable Registrasi (reg_periksa)
+                        </h3>
+                        <div className="flex items-center gap-2">
+                            <label className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
+                                Per halaman
+                            </label>
+                            <select
+                                name="per_page"
+                                value={filters.per_page}
+                                onChange={handleFilterChange}
+                                className="px-2 py-1.5 text-xs lg:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                            >
+                                <option value={10}>10</option>
+                                <option value={25}>25</option>
+                                <option value={50}>50</option>
+                                <option value={100}>100</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                        {isLoading && (
+                            <div className="flex items-center justify-center py-10">
+                                <svg
+                                    className="animate-spin h-6 w-6 text-blue-500 mr-2"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <circle
+                                        className="opacity-25"
+                                        cx="12"
+                                        cy="12"
+                                        r="10"
+                                        stroke="currentColor"
+                                        strokeWidth="4"
+                                    ></circle>
+                                    <path
+                                        className="opacity-75"
+                                        fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                    ></path>
+                                </svg>
+                                <span className="text-sm text-gray-600 dark:text-gray-400">Memuat datatable registrasi...</span>
+                            </div>
+                        )}
+
+                        {!isLoading && (registrationData?.data?.length > 0 ? (
+                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead className="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">No Reg</th>
+                                        <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">No Rawat</th>
+                                        <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">Pasien</th>
+                                        <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">RM</th>
+                                        <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">Poliklinik</th>
+                                        <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">Dokter</th>
+                                        <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">Penanggung</th>
+                                        <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">Status</th>
+                                        <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">Status Poli</th>
+                                        <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">Jam</th>
+                                        <th className="px-3 py-2 text-right text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">Biaya</th>
+                                        <th className="px-3 py-2 text-center text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
+                                    {registrationData.data.map((reg) => (
+                                        <tr key={reg.no_rawat} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                            <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">{reg.no_reg}</td>
+                                            <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <button
+                                                    type="button"
+                                                    title="Buka halaman Rawat Jalan / Lanjutan"
+                                                    onClick={() => goToLanjutan(reg.no_rawat, reg.no_rkm_medis)}
+                                                    className="text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+                                                >
+                                                    {reg.no_rawat}
+                                                </button>
+                                            </td>
+                                            <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">{reg.pasien?.nm_pasien}</td>
+                                            <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">{reg.no_rkm_medis}</td>
+                                            <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">{reg.poliklinik?.nm_poli}</td>
+                                            <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">{reg.dokter?.nm_dokter}</td>
+                                            <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">{reg.penjab?.png_jawab}</td>
+                                            <td className="px-3 py-2 text-xs lg:text-sm">
+                                                <span className={
+                                                    "px-2 py-1 rounded-full text-xs " +
+                                                    (reg.stts === "Belum"
+                                                        ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300"
+                                                        : reg.stts === "Batal"
+                                                        ? "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300"
+                                                        : "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300")
+                                                }>
+                                                    {reg.stts}
+                                                </span>
+                                            </td>
+                                            <td className="px-3 py-2 text-xs lg:text-sm">
+                                                <span className={
+                                                    "px-2 py-1 rounded-full text-xs " +
+                                                    (reg.status_poli === "Baru"
+                                                        ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300"
+                                                        : "bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300")
+                                                }>
+                                                    {reg.status_poli}
+                                                </span>
+                                            </td>
+                                            <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">{reg.jam_reg?.slice(0, 5)}</td>
+                                            <td className="px-3 py-2 text-right text-xs lg:text-sm text-gray-700 dark:text-gray-300">Rp {(reg.biaya_reg ?? 0).toLocaleString("id-ID")}</td>
+                                            <td className="px-3 py-2 text-center">
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <button onClick={() => openDetailModal(reg)} className="px-2 py-1 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors">Detail</button>
+                                                    {reg.stts === "Belum" && (
+                                                        <button onClick={(e) => { e.stopPropagation(); handleCancelRegistration(reg.no_rawat); }} className="px-2 py-1 text-xs font-medium bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors">Batal</button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <div className="text-center py-10">
+                                <p className="text-sm lg:text-base text-gray-500 dark:text-gray-400">Belum ada data registrasi</p>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Pagination (datatable) */}
+                    {!isLoading && registrationData?.data?.length > 0 && registrationData?.links && (
+                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <div className="text-sm text-gray-600 dark:text-gray-400">
+                                    Menampilkan {registrationData.from || 0} sampai {registrationData.to || 0} dari {registrationData.total || 0} data
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <button onClick={() => loadRegistrations(registrationData.current_page - 1)} disabled={!registrationData.prev_page_url} className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                                    </button>
+                                    <div className="flex items-center space-x-1">
+                                        {registrationData.links.map((link, index) => {
+                                            if (index === 0 || index === registrationData.links.length - 1) return null;
+                                            const page = parseInt(link.label);
+                                            const isCurrentPage = link.active;
+                                            return (
+                                                <button
+                                                    key={index}
+                                                    onClick={() => loadRegistrations(page)}
+                                                    className={
+                                                        "px-3 py-2 text-sm font-medium rounded-lg " +
+                                                        (isCurrentPage
+                                                            ? "bg-blue-600 text-white"
+                                                            : "text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700")
+                                                    }
+                                                >
+                                                    {link.label}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    <button onClick={() => loadRegistrations(registrationData.current_page + 1)} disabled={!registrationData.next_page_url} className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </motion.div>
+
+		{/* Registration Modal */}
 			<AnimatePresence>
 				{isModalOpen && selectedPatient && (
 					<motion.div
@@ -1459,44 +1905,192 @@ export default function Registration({
 							onClick={(e) => e.stopPropagation()}
 						>
 							<div className="p-4 lg:p-6">
-								<motion.div
-									className="flex justify-between items-center mb-4 lg:mb-6"
-									initial={{ opacity: 0, y: -20 }}
-									animate={{ opacity: 1, y: 0 }}
-									transition={{ duration: 0.3, delay: 0.1 }}
-								>
-									<h3 className="text-base lg:text-lg font-semibold text-gray-900 dark:text-white pr-4">
-										Registrasi Periksa - {selectedPatient?.nm_pasien}
-									</h3>
-									<motion.button
-										onClick={closeModal}
-										className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0"
-										whileHover={{ scale: 1.1, rotate: 90 }}
-										whileTap={{ scale: 0.9 }}
-										transition={{ duration: 0.2 }}
-									>
-										<svg
-											className="w-6 h-6"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												strokeWidth={2}
-												d="M6 18L18 6M6 6l12 12"
-											/>
-										</svg>
-									</motion.button>
-								</motion.div>
+                                <motion.div
+                                    className="flex justify-between items-center mb-4 lg:mb-6"
+                                    initial={{ opacity: 0, y: -20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3, delay: 0.1 }}
+                                >
+                                    <h3 className="text-base lg:text-lg font-semibold text-gray-900 dark:text-white pr-4">
+                                        Registrasi Periksa - {selectedPatient?.nm_pasien}
+                                    </h3>
+                                    <div className="flex items-center gap-2">
+                                        <motion.button
+                                            onClick={() => openEditModal(selectedPatient)}
+                                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 text-xs rounded-md flex items-center gap-1 transition-colors shadow-sm"
+                                            whileHover={{ scale: 1.05, y: -1 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            transition={{ duration: 0.2 }}
+                                        >
+                                            <svg
+                                                className="w-3.5 h-3.5"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M11 5h2m-6 6h6m-3 6h6M7 7l10 10"
+                                                />
+                                            </svg>
+                                            Edit Data Pasien
+                                        </motion.button>
+                                        <motion.button
+                                            onClick={closeModal}
+                                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0"
+                                            whileHover={{ scale: 1.1, rotate: 90 }}
+                                            whileTap={{ scale: 0.9 }}
+                                            transition={{ duration: 0.2 }}
+                                        >
+                                            <svg
+                                                className="w-6 h-6"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M6 18L18 6M6 6l12 12"
+                                                />
+                                            </svg>
+                                        </motion.button>
+                                    </div>
+                                </motion.div>
 
-								<motion.form
-									onSubmit={handleSubmitRegister}
-									className="space-y-3 lg:space-y-4"
-									initial={{ opacity: 0, y: 20 }}
-									animate={{ opacity: 1, y: 0 }}
-									transition={{ duration: 0.4, delay: 0.2 }}
+                                {/* BPJS Kepesertaan - tampil di atas form registrasi */}
+                                <motion.div
+                                    className="mb-4"
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3, delay: 0.2 }}
+                                >
+                                    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <IdentificationIcon className="h-5 w-5 text-slate-500" />
+                                                <div>
+                                                    <div className="text-sm font-semibold text-slate-800">Kepesertaan BPJS</div>
+                                                    <div className="text-xs text-slate-500">Cek otomatis berdasarkan NIK pasien</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    value={bpjsNik}
+                                                    onChange={(e) => setBpjsNik(sanitizeNik(e.target.value))}
+                                                    placeholder="Masukkan NIK"
+                                                    className="w-40 rounded-md border border-slate-300 px-2 py-1 text-sm"
+                                                />
+                                                <button
+                                                    onClick={() => fetchBpjsByNik()}
+                                                    disabled={bpjsLoading}
+                                                    className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-white shadow ${bpjsLoading ? 'bg-emerald-400' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+                                                >
+                                                    {bpjsLoading ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <MagnifyingGlassIcon className="h-4 w-4" />}
+                                                    {bpjsLoading ? 'Mencari…' : 'Cari'}
+                                                </button>
+                                                <button
+                                                    onClick={() => { setBpjsNik(sanitizeNik(selectedPatient?.no_ktp || '')); setBpjsError(null); setBpjsData(null); }}
+                                                    className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-50"
+                                                >
+                                                    Reset
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Status */}
+                                        <div className="mt-2 flex items-center gap-2">
+                                            {bpjsLoading ? (
+                                                <>
+                                                    <ArrowPathIcon className="h-4 w-4 animate-spin text-emerald-600" />
+                                                    <span className="text-slate-700 text-sm">Memuat…</span>
+                                                </>
+                                            ) : bpjsError ? (
+                                                <>
+                                                    <ExclamationTriangleIcon className="h-4 w-4 text-red-600" />
+                                                    <span className="text-red-700 text-sm">{bpjsError}</span>
+                                                </>
+                                            ) : bpjsData?.response ? (
+                                                <>
+                                                    <CheckCircleIcon className="h-4 w-4 text-emerald-600" />
+                                                    <span className="text-slate-700 text-sm">{bpjsData?.metaData?.message || 'OK'}</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <IdentificationIcon className="h-4 w-4 text-slate-500" />
+                                                    <span className="text-slate-600 text-sm">Siap mencari</span>
+                                                </>
+                                            )}
+                                        </div>
+
+                                        {/* Hasil singkat */}
+                                        {bpjsData?.response && (
+                                            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                                <div className="rounded-lg border border-slate-200 p-3">
+                                                    <div className="text-xs text-slate-500">Nama Peserta</div>
+                                                    <div className="mt-1 flex items-center gap-2 text-sm text-slate-800">
+                                                        <span>{bpjsData.response?.nama || '-'}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="rounded-lg border border-slate-200 p-3">
+                                                    <div className="text-xs text-slate-500">No. Kartu</div>
+                                                    <div className="mt-1 flex items-center gap-2 text-sm text-slate-800">
+                                                        <span>{bpjsData.response?.noKartu || '-'}</span>
+                                                        {bpjsData.response?.noKartu && (
+                                                            <button onClick={async () => { try { await navigator.clipboard.writeText(bpjsData.response.noKartu); } catch(_){} }} className="ml-1 rounded p-1 text-slate-400 hover:text-slate-600" title="Salin No. Kartu">
+                                                                <ClipboardDocumentCheckIcon className="h-4 w-4" />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="rounded-lg border border-slate-200 p-3">
+                                                    <div className="text-xs text-slate-500">Status</div>
+                                                    <div className="mt-1 text-sm">
+                                                        {bpjsData.response?.aktif ? (
+                                                            <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">AKTIF</span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">TIDAK AKTIF</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="rounded-lg border border-slate-200 p-3">
+                                                    <div className="text-xs text-slate-500">NIK</div>
+                                                    <div className="mt-1 text-sm text-slate-800">{bpjsData.response?.noKTP || '-'}</div>
+                                                </div>
+                                                <div className="rounded-lg border border-slate-200 p-3">
+                                                    <div className="text-xs text-slate-500">Provider FKTP</div>
+                                                    <div className="mt-1 text-sm text-slate-800">{bpjsData.response?.kdProviderPst?.nmProvider || '-'}</div>
+                                                </div>
+                                                <div className="rounded-lg border border-slate-200 p-3">
+                                                    <div className="text-xs text-slate-500">Kelas</div>
+                                                    <div className="mt-1 text-sm text-slate-800">{bpjsData.response?.jnsKelas?.nama || bpjsData.response?.jnsKelas?.kode || '-'}</div>
+                                                </div>
+                                                <div className="rounded-lg border border-slate-200 p-3">
+                                                    <div className="text-xs text-slate-500">Mulai Aktif</div>
+                                                    <div className="mt-1 text-sm text-slate-800">{bpjsData.response?.tglMulaiAktif || '-'}</div>
+                                                </div>
+                                                <div className="rounded-lg border border-slate-200 p-3">
+                                                    <div className="text-xs text-slate-500">Akhir Berlaku</div>
+                                                    <div className="mt-1 text-sm text-slate-800">{bpjsData.response?.tglAkhirBerlaku || '-'}</div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </motion.div>
+
+                                <motion.form
+                                    onSubmit={handleSubmitRegister}
+                                    className="space-y-3 lg:space-y-4"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.4, delay: 0.2 }}
 								>
 									<motion.div
 										className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4"
@@ -1721,9 +2315,9 @@ export default function Registration({
 
 			{/* Detail Registration Modal */}
 			<AnimatePresence>
-				{isDetailModalOpen && selectedRegistration && (
-					<motion.div
-						className="fixed inset-0 bg-black/20 backdrop-blur-md flex items-center justify-center z-[9999] p-4 overflow-y-auto"
+			{isDetailModalOpen && selectedRegistration && (
+				<motion.div
+					className="fixed inset-0 bg-black/20 backdrop-blur-md flex items-center justify-center z-[9999] p-4 overflow-y-auto"
 						initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
 						animate={{ opacity: 1, backdropFilter: "blur(12px)" }}
 						exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
@@ -2031,14 +2625,113 @@ export default function Registration({
 							</div>
 						</motion.div>
 					</motion.div>
-				)}
-			</AnimatePresence>
+			)}
+		</AnimatePresence>
+
+	{/* BPJS Response Popup (tampil saat status respon selain 200 atau error) */}
+	<AnimatePresence>
+		{isBpjsPopupOpen && (
+			<motion.div
+				className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[10000] p-4"
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				exit={{ opacity: 0 }}
+				transition={{ duration: 0.25 }}
+				onClick={closeBpjsPopup}
+			>
+				<motion.div
+					className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 max-w-3xl w-full overflow-hidden"
+					initial={{ scale: 0.95, y: 20, opacity: 0 }}
+					animate={{ scale: 1, y: 0, opacity: 1 }}
+					exit={{ scale: 0.95, y: 20, opacity: 0 }}
+					transition={{ duration: 0.25 }}
+					onClick={(e) => e.stopPropagation()}
+				>
+					<div className="p-4 lg:p-6">
+						<div className="flex items-start justify-between">
+								<div className="flex items-center gap-3">
+									<ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
+									<div>
+										<h3 className="text-base lg:text-lg font-semibold text-gray-900 dark:text-white">
+											Respon BPJS (Mobile JKN)
+										</h3>
+										{/* Menghapus tampilan method dan endpoint sesuai permintaan: tidak menampilkan "POST /api/mobilejkn/antrean/add" */}
+									</div>
+								</div>
+							<button
+								onClick={closeBpjsPopup}
+								className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+								title="Tutup"
+							>
+								<XMarkIcon className="h-6 w-6" />
+							</button>
+						</div>
+
+						<div className="mt-4 space-y-3">
+							<div className="flex items-center gap-2">
+								<span className="text-xs font-medium text-gray-700 dark:text-gray-300">Status:</span>
+								<span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300">
+									{bpjsPopup.status ?? 'N/A'}
+								</span>
+							</div>
+							{bpjsPopup.message && (
+								<div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-3">
+									<div className="text-xs text-red-700 dark:text-red-300">Pesan</div>
+									<div className="mt-1 text-sm text-red-800 dark:text-red-200">{bpjsPopup.message}</div>
+								</div>
+							)}
+
+							<div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30">
+								<div className="flex items-center justify-between px-3 py-2">
+									<div className="text-xs font-medium text-gray-700 dark:text-gray-300">Detail Respon</div>
+									<button
+										onClick={async () => {
+											try {
+												await navigator.clipboard.writeText(
+													bpjsPopup.raw || JSON.stringify(bpjsPopup.data ?? {}, null, 2)
+												);
+											} catch (_) {}
+										}}
+										className="text-xs rounded-md border border-gray-300 bg-white px-2 py-1 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+									>
+										Salin
+									</button>
+								</div>
+										<pre className="max-h-64 overflow-auto whitespace-pre-wrap break-all text-xs leading-relaxed px-3 pb-3 text-gray-800 dark:text-gray-100">
+											{bpjsPopup.raw || JSON.stringify(bpjsPopup.data ?? {}, null, 2)}
+										</pre>
+									</div>
+
+									{/* Penutup kontainer detail (space-y-3) yang sebelumnya belum tertutup */}
+									</div>
+
+							<div className="mt-4 flex justify-end">
+								<button
+									onClick={closeBpjsPopup}
+									className="px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+								>
+									Tutup
+								</button>
+							</div>
+						</div>
+					</motion.div>
+				</motion.div>
+			)}
+		</AnimatePresence>
 
 			{/* Patient Create Modal */}
 			<PatientCreateModal
 				isOpen={isPatientModalOpen}
 				onClose={closePatientModal}
 				onSuccess={handlePatientSuccess}
+			/>
+
+			{/* Patient Edit Modal */}
+			<PatientEditModal
+				isOpen={isEditModalOpen}
+				onClose={closeEditModal}
+				patient={editPatient || selectedPatient}
+				onSuccess={handleEditSuccess}
 			/>
 		</AppLayout>
 	);

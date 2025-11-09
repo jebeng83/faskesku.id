@@ -376,15 +376,16 @@ function EditModal({ isOpen, onClose, item }) {
 		setSubmitting(true);
 		setFormErrors({});
 
-		router.put(route("penjab.update", item.kd_pj), form, {
-			onSuccess: () => {
-				handleClose();
-			},
-			onError: (errors) => {
-				setFormErrors(errors);
-			},
-			onFinish: () => setSubmitting(false),
-		});
+    router.post(route("penjab.update", item.kd_pj), { ...form, _method: 'PUT' }, {
+            forceFormData: true,
+            onSuccess: () => {
+                handleClose();
+            },
+            onError: (errors) => {
+                setFormErrors(errors);
+            },
+            onFinish: () => setSubmitting(false),
+        });
 	};
 
 	return (

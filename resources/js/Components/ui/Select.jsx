@@ -31,7 +31,7 @@ const Select = ({ children, value, onValueChange, ...props }) => {
   };
 
   return (
-    <div ref={selectRef} className="relative" {...props}>
+    <div ref={selectRef} className={`relative ${isOpen ? 'z-[2000]' : ''}`} {...props}>
       {React.Children.map(children, (child) => {
         if (React.isValidElement(child)) {
           return React.cloneElement(child, {
@@ -81,7 +81,7 @@ const SelectContent = ({ children, className = '', isOpen, ...props }) => {
 
   return (
     <div
-      className={`absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto ${className}`}
+      className={`absolute z-[1000] w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto ${className}`}
       {...props}
     >
       {children}

@@ -111,7 +111,8 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 
 	const confirmDelete = () => {
 		if (menuToDelete) {
-			router.delete(route("menus.destroy", menuToDelete.id), {
+			router.post(route("menus.destroy", menuToDelete.id), { _method: "DELETE" }, {
+				forceFormData: true,
 				onSuccess: () => {
 					setShowDeleteModal(false);
 					setMenuToDelete(null);

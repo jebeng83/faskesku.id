@@ -379,15 +379,16 @@ function EditModal({ isOpen, onClose, item }) {
 		setSubmitting(true);
 		setFormErrors({});
 
-		router.put(route("poliklinik.update", item.kd_poli), form, {
-			onSuccess: () => {
-				handleClose();
-			},
-			onError: (errors) => {
-				setFormErrors(errors);
-			},
-			onFinish: () => setSubmitting(false),
-		});
+    router.post(route("poliklinik.update", item.kd_poli), { ...form, _method: 'PUT' }, {
+            forceFormData: true,
+            onSuccess: () => {
+                handleClose();
+            },
+            onError: (errors) => {
+                setFormErrors(errors);
+            },
+            onFinish: () => setSubmitting(false),
+        });
 	};
 
 	return (
