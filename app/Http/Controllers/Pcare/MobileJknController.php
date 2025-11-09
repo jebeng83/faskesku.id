@@ -193,6 +193,19 @@ class MobileJknController extends Controller
                 'keterangan' => '',
             ];
 
+            // Logging terstruktur sebelum request
+            Log::info('MobileJKN addAntrean request', [
+                'no_rkm_medis' => $noRkmMedis,
+                'kd_poli_rs' => $kdPoli,
+                'kd_poli_pcare' => $mapPoli->kd_poli_pcare ?? null,
+                'kd_dokter_rs' => $kdDokter,
+                'kd_dokter_pcare' => $mapDokter->kd_dokter_pcare ?? null,
+                'tanggalperiksa' => $tanggalPeriksa,
+                'jampraktek' => $jamPraktek,
+                'nomorantrean' => $nomorAntrean,
+                'angkaantrean' => $angkaAntrean,
+            ]);
+
             // Panggil API Mobile JKN
             $result = $this->mobilejknRequest('POST', 'antrean/add', [], $payload);
             $response = $result['response'];
@@ -203,6 +216,21 @@ class MobileJknController extends Controller
 
             // Kembalikan response yang telah di-parse jika memungkinkan
             if (is_array($parsed)) {
+                // Normalisasi metadata.code terhadap HTTP status agar frontend konsisten
+                $meta = $parsed['metadata'] ?? $parsed['metaData'] ?? null;
+                if (is_array($meta)) {
+                    $code = (int) ($meta['code'] ?? 200);
+                    $httpStatus = $code === 200 ? 200 : 400;
+                    Log::info('MobileJKN addAntrean response (normalized)', [
+                        'metadata' => $meta,
+                        'http_status' => $httpStatus,
+                    ]);
+                    return response()->json($parsed, $httpStatus);
+                }
+                // Jika tidak ada metadata, gunakan status asli
+                Log::info('MobileJKN addAntrean response (no metadata)', [
+                    'status' => $response->status(),
+                ]);
                 return response()->json($parsed, $response->status());
             }
             return response($body, $response->status())->header('Content-Type', 'application/json');
@@ -219,6 +247,11 @@ class MobileJknController extends Controller
         } catch (\Throwable $e) {
             Log::error('MobileJKN addAntrean error', [
                 'message' => $e->getMessage(),
+                'no_rkm_medis' => $request->input('no_rkm_medis'),
+                'kd_poli' => $request->input('kd_poli'),
+                'kd_dokter' => $request->input('kd_dokter'),
+                'tanggalperiksa' => $request->input('tanggalperiksa') ?: date('Y-m-d'),
+                'no_reg' => $request->input('no_reg') ?: null,
             ]);
             return response()->json([
                 'metadata' => [
@@ -290,6 +323,317 @@ class MobileJknController extends Controller
                 'metadata' => [
                     'code' => 500,
                     'message' => 'Terjadi kesalahan saat mengambil referensi dokter Mobile JKN',
+                ],
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Update Status / Panggil Antrean (Mobile JKN)
+     * Endpoint katalog: {BASE}/{Service}/antrean/panggil
+     * Method: POST
+     * Body (JSON): {
+     *   tanggalperiksa: YYYY-MM-DD,
+     *   kodepoli: string (kode poli PCare),
+     *   nomorkartu: string (no peserta BPJS),
+     *   status: 1|2 (1=Hadir, 2=Tidak Hadir),
+     *   waktu: int (timestamp in milliseconds)
+     * }
+     * Catatan: kodepoli dan nomorkartu akan dipetakan otomatis dari data lokal.
+     */
+    public function panggilAntrean(Request $request)
+    {
+        try {
+            // Validasi input minimal
+            $request->validate([
+                'no_rkm_medis' => 'required|string',
+                'kd_poli' => 'required|string',
+                'status' => 'required|integer|in:1,2',
+                'tanggalperiksa' => 'nullable|date',
+            ]);
+
+            $noRkmMedis = (string) $request->input('no_rkm_medis');
+            $kdPoli = (string) $request->input('kd_poli');
+            $status = (int) $request->input('status'); // 1 = Hadir, 2 = Tidak Hadir
+            $tanggalPeriksa = (string) ($request->input('tanggalperiksa') ?: date('Y-m-d'));
+
+            // Early log: record incoming request even if it fails early (patient/mapping not found)
+            \Illuminate\Support\Facades\Log::channel('bpjs')->info('MobileJKN panggilAntrean request received', [
+                'no_rkm_medis' => $noRkmMedis,
+                'kd_poli_rs' => $kdPoli,
+                'tanggalperiksa' => $tanggalPeriksa,
+                'status' => $status,
+            ]);
+
+            // Ambil data pasien (nomor kartu BPJS)
+            $pasien = \Illuminate\Support\Facades\DB::table('pasien')
+                ->select(['no_peserta', 'no_rkm_medis'])
+                ->where('no_rkm_medis', $noRkmMedis)
+                ->first();
+
+            if (!$pasien) {
+                \Illuminate\Support\Facades\Log::channel('bpjs')->warning('MobileJKN panggilAntrean early exit: pasien tidak ditemukan', [
+                    'no_rkm_medis' => $noRkmMedis,
+                ]);
+                return response()->json([
+                    'metadata' => [
+                        'code' => 404,
+                        'message' => 'Data pasien tidak ditemukan',
+                    ],
+                ], 404);
+            }
+
+            if (empty($pasien->no_peserta)) {
+                \Illuminate\Support\Facades\Log::channel('bpjs')->warning('MobileJKN panggilAntrean early exit: no_peserta kosong', [
+                    'no_rkm_medis' => $noRkmMedis,
+                ]);
+                return response()->json([
+                    'metadata' => [
+                        'code' => 400,
+                        'message' => 'Nomor kartu BPJS (no_peserta) pasien tidak tersedia',
+                    ],
+                ], 400);
+            }
+
+            // Ambil mapping poli ke PCare
+            $mapPoli = \Illuminate\Support\Facades\DB::table('maping_poliklinik_pcare')
+                ->select(['kd_poli_rs', 'kd_poli_pcare'])
+                ->where('kd_poli_rs', $kdPoli)
+                ->first();
+
+            if (!$mapPoli) {
+                \Illuminate\Support\Facades\Log::channel('bpjs')->warning('MobileJKN panggilAntrean early exit: mapping poli tidak ditemukan', [
+                    'kd_poli_rs' => $kdPoli,
+                ]);
+                return response()->json([
+                    'metadata' => [
+                        'code' => 400,
+                        'message' => 'Mapping poli ke PCare tidak ditemukan. Mohon set di menu Mapping Poli PCare.',
+                    ],
+                ], 400);
+            }
+
+            // Waktu dalam timestamp miliseconds
+            $waktuMs = (int) round(microtime(true) * 1000);
+
+            $payload = [
+                'tanggalperiksa' => $tanggalPeriksa,
+                'kodepoli' => (string) ($mapPoli->kd_poli_pcare ?? ''),
+                'nomorkartu' => (string) ($pasien->no_peserta ?? ''),
+                'status' => $status,
+                'waktu' => $waktuMs,
+            ];
+
+            // Logging terstruktur sebelum request
+            \Illuminate\Support\Facades\Log::channel('bpjs')->info('MobileJKN panggilAntrean request', [
+                'no_rkm_medis' => $noRkmMedis,
+                'kd_poli_rs' => $kdPoli,
+                'kd_poli_pcare' => $mapPoli->kd_poli_pcare ?? null,
+                'tanggalperiksa' => $tanggalPeriksa,
+                'status' => $status,
+                'waktu_ms' => $waktuMs,
+            ]);
+
+            // Debug payload yang akan dikirim ke Mobile JKN
+            \Illuminate\Support\Facades\Log::channel('bpjs')->debug('MobileJKN panggilAntrean payload', $payload);
+
+            // Debug sebelum mengirim request
+            \Illuminate\Support\Facades\Log::channel('bpjs')->debug('MobileJKN panggilAntrean send', [
+                'endpoint' => 'antrean/panggil',
+                'method' => 'POST',
+            ]);
+
+            $result = $this->mobilejknRequest('POST', 'antrean/panggil', [], $payload);
+            $response = $result['response'];
+            $timestamp = $result['timestamp_used'];
+
+            $body = $response->body();
+            $parsed = $this->maybeDecryptAndDecompressMobileJkn($body, $timestamp);
+
+            if (is_array($parsed)) {
+                $meta = $parsed['metadata'] ?? $parsed['metaData'] ?? null;
+                if (is_array($meta)) {
+                    $code = (int) ($meta['code'] ?? 200);
+                    $httpStatus = $code === 200 ? 200 : 400;
+                    \Illuminate\Support\Facades\Log::channel('bpjs')->info('MobileJKN panggilAntrean response (normalized)', [
+                        'metadata' => $meta,
+                        'http_status' => $httpStatus,
+                    ]);
+                    return response()->json($parsed, $httpStatus);
+                }
+                return response()->json($parsed, $response->status());
+            }
+            return response($body, $response->status())->header('Content-Type', 'application/json');
+        } catch (\InvalidArgumentException $e) {
+            \Illuminate\Support\Facades\Log::channel('bpjs')->warning('MobileJKN configuration error (panggilAntrean)', [
+                'message' => $e->getMessage(),
+            ]);
+            return response()->json([
+                'metadata' => [
+                    'code' => 400,
+                    'message' => 'Konfigurasi Mobile JKN belum lengkap: ' . $e->getMessage(),
+                ],
+            ], 400);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::channel('bpjs')->error('MobileJKN panggilAntrean error', [
+                'message' => $e->getMessage(),
+                'no_rkm_medis' => $request->input('no_rkm_medis'),
+                'kd_poli' => $request->input('kd_poli'),
+                'status' => $request->input('status'),
+                'tanggalperiksa' => $request->input('tanggalperiksa') ?: date('Y-m-d'),
+            ]);
+            return response()->json([
+                'metadata' => [
+                    'code' => 500,
+                    'message' => 'Terjadi kesalahan saat memanggil antrean Mobile JKN',
+                ],
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Batal Antrean (Mobile JKN)
+     * Endpoint katalog: {BASE}/{Service}/antrean/batal
+     * Method: POST
+     * Body (JSON): {
+     *   tanggalperiksa: YYYY-MM-DD,
+     *   kodepoli: string (kode poli PCare),
+     *   nomorkartu: string (no peserta BPJS),
+     *   alasan: string
+     * }
+     * Catatan: kodepoli dan nomorkartu akan dipetakan otomatis dari data lokal.
+     */
+    public function batalAntrean(Request $request)
+    {
+        try {
+            // Validasi input minimal dari frontend (gunakan data lokal untuk melengkapi)
+            $request->validate([
+                'no_rkm_medis' => 'required|string',
+                'kd_poli' => 'required|string',
+                'tanggalperiksa' => 'nullable|date',
+                'alasan' => 'nullable|string',
+            ]);
+
+            $noRkmMedis = (string) $request->input('no_rkm_medis');
+            $kdPoli = (string) $request->input('kd_poli');
+            $tanggalPeriksa = (string) ($request->input('tanggalperiksa') ?: date('Y-m-d'));
+            $alasan = (string) ($request->input('alasan') ?: 'Dibatalkan oleh petugas via aplikasi');
+
+            // Early log: record incoming request even if it fails early
+            \Illuminate\Support\Facades\Log::channel('bpjs')->info('MobileJKN batalAntrean request received', [
+                'no_rkm_medis' => $noRkmMedis,
+                'kd_poli_rs' => $kdPoli,
+                'tanggalperiksa' => $tanggalPeriksa,
+                'alasan' => $alasan,
+            ]);
+
+            // Ambil data pasien (nomor kartu BPJS)
+            $pasien = \Illuminate\Support\Facades\DB::table('pasien')
+                ->select(['no_peserta', 'no_rkm_medis'])
+                ->where('no_rkm_medis', $noRkmMedis)
+                ->first();
+
+            if (!$pasien) {
+                \Illuminate\Support\Facades\Log::channel('bpjs')->warning('MobileJKN batalAntrean early exit: pasien tidak ditemukan', [
+                    'no_rkm_medis' => $noRkmMedis,
+                ]);
+                return response()->json([
+                    'metadata' => [
+                        'code' => 404,
+                        'message' => 'Data pasien tidak ditemukan',
+                    ],
+                ], 404);
+            }
+
+            if (empty($pasien->no_peserta)) {
+                \Illuminate\Support\Facades\Log::channel('bpjs')->warning('MobileJKN batalAntrean early exit: no_peserta kosong', [
+                    'no_rkm_medis' => $noRkmMedis,
+                ]);
+                return response()->json([
+                    'metadata' => [
+                        'code' => 400,
+                        'message' => 'Nomor kartu BPJS (no_peserta) pasien tidak tersedia',
+                    ],
+                ], 400);
+            }
+
+            // Ambil mapping poli ke PCare
+            $mapPoli = \Illuminate\Support\Facades\DB::table('maping_poliklinik_pcare')
+                ->select(['kd_poli_rs', 'kd_poli_pcare'])
+                ->where('kd_poli_rs', $kdPoli)
+                ->first();
+
+            if (!$mapPoli) {
+                \Illuminate\Support\Facades\Log::channel('bpjs')->warning('MobileJKN batalAntrean early exit: mapping poli tidak ditemukan', [
+                    'kd_poli_rs' => $kdPoli,
+                ]);
+                return response()->json([
+                    'metadata' => [
+                        'code' => 400,
+                        'message' => 'Mapping poli ke PCare tidak ditemukan. Mohon set di menu Mapping Poli PCare.',
+                    ],
+                ], 400);
+            }
+
+            $payload = [
+                'tanggalperiksa' => $tanggalPeriksa,
+                'kodepoli' => (string) ($mapPoli->kd_poli_pcare ?? ''),
+                'nomorkartu' => (string) ($pasien->no_peserta ?? ''),
+                'alasan' => $alasan,
+            ];
+
+            // Debug payload yang akan dikirim
+            \Illuminate\Support\Facades\Log::channel('bpjs')->debug('MobileJKN batalAntrean payload', $payload);
+            \Illuminate\Support\Facades\Log::channel('bpjs')->debug('MobileJKN batalAntrean send', [
+                'endpoint' => 'antrean/batal',
+                'method' => 'POST',
+            ]);
+
+            $result = $this->mobilejknRequest('POST', 'antrean/batal', [], $payload);
+            $response = $result['response'];
+            $timestamp = $result['timestamp_used'];
+
+            $body = $response->body();
+            $parsed = $this->maybeDecryptAndDecompressMobileJkn($body, $timestamp);
+
+            if (is_array($parsed)) {
+                $meta = $parsed['metadata'] ?? $parsed['metaData'] ?? null;
+                if (is_array($meta)) {
+                    $code = (int) ($meta['code'] ?? 200);
+                    $httpStatus = $code === 200 ? 200 : 400;
+                    \Illuminate\Support\Facades\Log::channel('bpjs')->info('MobileJKN batalAntrean response (normalized)', [
+                        'metadata' => $meta,
+                        'http_status' => $httpStatus,
+                    ]);
+                    return response()->json($parsed, $httpStatus);
+                }
+                return response()->json($parsed, $response->status());
+            }
+            return response($body, $response->status())->header('Content-Type', 'application/json');
+        } catch (\InvalidArgumentException $e) {
+            \Illuminate\Support\Facades\Log::channel('bpjs')->warning('MobileJKN configuration error (batalAntrean)', [
+                'message' => $e->getMessage(),
+            ]);
+            return response()->json([
+                'metadata' => [
+                    'code' => 400,
+                    'message' => 'Konfigurasi Mobile JKN belum lengkap: ' . $e->getMessage(),
+                ],
+            ], 400);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::channel('bpjs')->error('MobileJKN batalAntrean error', [
+                'message' => $e->getMessage(),
+                'no_rkm_medis' => $request->input('no_rkm_medis'),
+                'kd_poli' => $request->input('kd_poli'),
+                'tanggalperiksa' => $request->input('tanggalperiksa') ?: date('Y-m-d'),
+                'alasan' => $request->input('alasan') ?: null,
+            ]);
+            return response()->json([
+                'metadata' => [
+                    'code' => 500,
+                    'message' => 'Terjadi kesalahan saat membatalkan antrean Mobile JKN',
                 ],
                 'error' => $e->getMessage(),
             ], 500);

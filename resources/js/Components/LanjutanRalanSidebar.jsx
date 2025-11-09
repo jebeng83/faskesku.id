@@ -4,6 +4,7 @@ import { Link, usePage } from "@inertiajs/react";
 import { ChevronDownIcon, ChevronRightIcon, HomeIcon, UserGroupIcon, ClipboardDocumentListIcon, DocumentTextIcon, CalculatorIcon, BeakerIcon, HeartIcon, CameraIcon, ClockIcon, DocumentIcon, CalendarIcon } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 import { route } from "ziggy-js";
+import { getRawatJalanFilters } from '@/tools/rawatJalanFilters';
 
 export default function LanjutanRalanSidebar({
 	collapsed = false,
@@ -253,18 +254,7 @@ export default function LanjutanRalanSidebar({
 				basePath = route('rawat-jalan.index', {}, false);
 			} catch (_) {}
 
-			let kd_dokter = '';
-			let kd_poli = '';
-			try {
-				const saved = window.localStorage.getItem('rawatJalanFilters');
-				if (saved) {
-					const parsed = JSON.parse(saved);
-					kd_dokter = parsed?.kd_dokter || '';
-					kd_poli = parsed?.kd_poli || '';
-				}
-			} catch (_) {
-				// Abaikan error parsing localStorage
-			}
+            const { kd_dokter = '', kd_poli = '' } = getRawatJalanFilters();
 
 			try {
 				const u = new URL(basePath, window.location.origin);

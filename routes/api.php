@@ -202,6 +202,10 @@ Route::prefix('mobilejkn')->group(function () {
     Route::get('/ref/dokter', [MobileJknController::class, 'getReferensiDokter'])->name('api.mobilejkn.ref.dokter');
     // Tambah Antrean
     Route::post('/antrean/add', [MobileJknController::class, 'addAntrean'])->name('api.mobilejkn.antrean.add');
+    // Panggil/Update Status Antrean
+    Route::post('/antrean/panggil', [MobileJknController::class, 'panggilAntrean'])->name('api.mobilejkn.antrean.panggil');
+    // Batal Antrean
+    Route::post('/antrean/batal', [MobileJknController::class, 'batalAntrean'])->name('api.mobilejkn.antrean.batal');
 });
 
 // Jadwal API Routes
