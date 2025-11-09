@@ -24,6 +24,7 @@ use App\Http\Controllers\Farmasi\SetHargaObatController;
 use App\Http\Controllers\Pcare\PcareController;
 use App\Http\Controllers\Pcare\MobileJknController;
 use App\Http\Controllers\JadwalController;
+use App\Http\Controllers\SettingsController;
 
 Route::post('/employees', [EmployeeController::class, 'store'])->name('api.employees.store');
 Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('api.employees.destroy');
@@ -129,12 +130,9 @@ Route::post('/permintaan-radiologi', [PermintaanRadiologiController::class, 'sto
 Route::get('/permintaan-radiologi/rawat/{no_rawat}', [PermintaanRadiologiController::class, 'getByNoRawat'])->where('no_rawat', '.*')->name('api.permintaan-radiologi.by-rawat');
 Route::get('/permintaan-radiologi/riwayat/{no_rawat}', [PermintaanRadiologiController::class, 'getRiwayat'])->where('no_rawat', '.*')->name('api.permintaan-radiologi.riwayat');
 Route::delete('/permintaan-radiologi/{noorder}', [PermintaanRadiologiController::class, 'destroy'])->name('api.permintaan-radiologi.destroy');
-
-<<<<<<< HEAD
 // API routes untuk settings (public access)
-use App\Http\Controllers\SettingsController;
 Route::get('/settings/active', [SettingsController::class, 'active'])->name('api.settings.active');
-=======
+
 // Farmasi - Stok Opname API Routes
 Route::prefix('opname')->group(function () {
     Route::get('/lokasi', [OpnameController::class, 'getLokasi'])->name('api.opname.lokasi');
@@ -196,10 +194,6 @@ Route::prefix('pcare')->group(function () {
     Route::get('/peserta/{noka}/{tglPelayanan}', [PcareController::class, 'pesertaByNoKartu'])->name('api.pcare.peserta-nokartu');
     Route::post('/kunjungan', [PcareController::class, 'daftarKunjungan'])->name('api.pcare.kunjungan.store');
 });
-<<<<<<< HEAD
->>>>>>> main
-=======
-
 // Mobile JKN API Routes
 Route::prefix('mobilejkn')->group(function () {
     // Debug: lihat konfigurasi yang terpakai (gunakan untuk memastikan .env & DB sudah benar)
@@ -235,4 +229,3 @@ Route::prefix('v1/rs')->group(function () {
     // Cari poliklinik RS dari tabel lokal 'poliklinik'
     Route::get('/poliklinik', [PcareController::class, 'searchPoliklinikRs'])->name('api.v1.rs.poliklinik');
 });
->>>>>>> main

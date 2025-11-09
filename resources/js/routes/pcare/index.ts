@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
+import penjab from './penjab'
 import mapping from './mapping'
 import referensi from './referensi'
 import layanan from './layanan'
@@ -52,6 +53,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 const pcare = {
     index: Object.assign(index, index),
+    penjab: Object.assign(penjab, penjab),
     mapping: Object.assign(mapping, mapping),
     referensi: Object.assign(referensi, referensi),
     layanan: Object.assign(layanan, layanan),

@@ -17,22 +17,16 @@ import dokter from './dokter'
 import permintaanLab from './permintaan-lab'
 import radiologiTests from './radiologi-tests'
 import permintaanRadiologi from './permintaan-radiologi'
-<<<<<<< HEAD
 import settings from './settings'
-=======
 import opname from './opname'
 import pembelian from './pembelian'
 import barang from './barang'
 import databarang from './databarang'
 import gudangbarang from './gudangbarang'
 import pcare from './pcare'
-<<<<<<< HEAD
->>>>>>> main
-=======
 import mobilejkn from './mobilejkn'
 import jadwal from './jadwal'
 import v1 from './v1'
->>>>>>> main
 import menu from './menu'
 import tarifTindakan from './tarif-tindakan'
 /**
@@ -123,8 +117,6 @@ labTests.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
-<<<<<<< HEAD
-=======
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::setHargaObat
 * @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
@@ -169,7 +161,6 @@ setHargaObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
->>>>>>> main
 const api = {
     employees: Object.assign(employees, employees),
     penjab: Object.assign(penjab, penjab),
@@ -190,9 +181,7 @@ const api = {
     permintaanLab: Object.assign(permintaanLab, permintaanLab),
     radiologiTests: Object.assign(radiologiTests, radiologiTests),
     permintaanRadiologi: Object.assign(permintaanRadiologi, permintaanRadiologi),
-<<<<<<< HEAD
     settings: Object.assign(settings, settings),
-=======
     opname: Object.assign(opname, opname),
     pembelian: Object.assign(pembelian, pembelian),
     barang: Object.assign(barang, barang),
@@ -200,13 +189,9 @@ const api = {
     setHargaObat: Object.assign(setHargaObat, setHargaObat),
     gudangbarang: Object.assign(gudangbarang, gudangbarang),
     pcare: Object.assign(pcare, pcare),
-<<<<<<< HEAD
->>>>>>> main
-=======
     mobilejkn: Object.assign(mobilejkn, mobilejkn),
     jadwal: Object.assign(jadwal, jadwal),
     v1: Object.assign(v1, v1),
->>>>>>> main
     menu: Object.assign(menu, menu),
     tarifTindakan: Object.assign(tarifTindakan, tarifTindakan),
 }

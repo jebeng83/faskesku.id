@@ -3,9 +3,7 @@ import PermintaanLabController from './PermintaanLabController'
 import MenuController from './MenuController'
 import RawatJalan from './RawatJalan'
 import PermintaanRadiologiController from './PermintaanRadiologiController'
-<<<<<<< HEAD
 import SettingsController from './SettingsController'
-=======
 import OpnameController from './OpnameController'
 import PembelianController from './PembelianController'
 import BarangController from './BarangController'
@@ -13,11 +11,7 @@ import DataBarangController from './DataBarangController'
 import Farmasi from './Farmasi'
 import GudangBarangController from './GudangBarangController'
 import Pcare from './Pcare'
-<<<<<<< HEAD
->>>>>>> main
-=======
 import JadwalController from './JadwalController'
->>>>>>> main
 import AuthController from './AuthController'
 import PatientController from './PatientController'
 import RegistrationController from './RegistrationController'
@@ -45,9 +39,7 @@ const Controllers = {
     MenuController: Object.assign(MenuController, MenuController),
     RawatJalan: Object.assign(RawatJalan, RawatJalan),
     PermintaanRadiologiController: Object.assign(PermintaanRadiologiController, PermintaanRadiologiController),
-<<<<<<< HEAD
     SettingsController: Object.assign(SettingsController, SettingsController),
-=======
     OpnameController: Object.assign(OpnameController, OpnameController),
     PembelianController: Object.assign(PembelianController, PembelianController),
     BarangController: Object.assign(BarangController, BarangController),
@@ -55,11 +47,7 @@ const Controllers = {
     Farmasi: Object.assign(Farmasi, Farmasi),
     GudangBarangController: Object.assign(GudangBarangController, GudangBarangController),
     Pcare: Object.assign(Pcare, Pcare),
-<<<<<<< HEAD
->>>>>>> main
-=======
     JadwalController: Object.assign(JadwalController, JadwalController),
->>>>>>> main
     AuthController: Object.assign(AuthController, AuthController),
     PatientController: Object.assign(PatientController, PatientController),
     RegistrationController: Object.assign(RegistrationController, RegistrationController),
@@ -78,10 +66,6 @@ const Controllers = {
     KategoriPerawatanController: Object.assign(KategoriPerawatanController, KategoriPerawatanController),
     DaftarTarifController: Object.assign(DaftarTarifController, DaftarTarifController),
     TarifTindakanController: Object.assign(TarifTindakanController, TarifTindakanController),
-<<<<<<< HEAD
-    Farmasi: Object.assign(Farmasi, Farmasi),
-=======
->>>>>>> main
     PenjabController: Object.assign(PenjabController, PenjabController),
     PoliklinikController: Object.assign(PoliklinikController, PoliklinikController),
 }

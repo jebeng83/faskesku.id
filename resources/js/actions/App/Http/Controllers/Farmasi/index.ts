@@ -12,10 +12,6 @@ import JenisObatController from './JenisObatController'
 const Farmasi = {
     SetHargaObatController: Object.assign(SetHargaObatController, SetHargaObatController),
     DataBarangController: Object.assign(DataBarangController, DataBarangController),
-<<<<<<< HEAD
-    SetHargaObatController: Object.assign(SetHargaObatController, SetHargaObatController),
-=======
->>>>>>> main
     KategoriBarangController: Object.assign(KategoriBarangController, KategoriBarangController),
     GolonganBarangController: Object.assign(GolonganBarangController, GolonganBarangController),
     IndustriFarmasiController: Object.assign(IndustriFarmasiController, IndustriFarmasiController),

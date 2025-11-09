@@ -347,53 +347,6 @@ showPenjualanPerJenis.head = (args: { kdjns: string | number } | [kdjns: string 
 })
 
 /**
-<<<<<<< HEAD
-* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
-* @route '/farmasi/set-harga-obat/json'
-*/
-export const getPercentageData = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: getPercentageData.url(options),
-    method: 'get',
-})
-
-getPercentageData.definition = {
-    methods: ["get","head"],
-    url: '/farmasi/set-harga-obat/json',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
-* @route '/farmasi/set-harga-obat/json'
-*/
-getPercentageData.url = (options?: RouteQueryOptions) => {
-    return getPercentageData.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
-* @route '/farmasi/set-harga-obat/json'
-*/
-getPercentageData.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: getPercentageData.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
-* @route '/farmasi/set-harga-obat/json'
-*/
-getPercentageData.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: getPercentageData.url(options),
-    method: 'head',
-})
-
-/**
-=======
->>>>>>> main
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::index
 * @see app/Http/Controllers/Farmasi/SetHargaObatController.php:18
 * @route '/farmasi/set-harga-obat'
@@ -591,10 +544,6 @@ destroyPenjualanPerJenis.delete = (args: { kdjns: string | number } | [kdjns: st
     method: 'delete',
 })
 
-<<<<<<< HEAD
-const SetHargaObatController = { storePenjualanPerBarang, showPenjualanPerBarang, destroyPenjualanPerBarang, showPenjualanUmum, showPenjualanPerJenis, getPercentageData, index, update, updatePenjualanUmum, storePenjualanPerJenis, destroyPenjualanPerJenis }
-=======
 const SetHargaObatController = { getPercentageData, storePenjualanPerBarang, showPenjualanPerBarang, destroyPenjualanPerBarang, showPenjualanUmum, showPenjualanPerJenis, index, update, updatePenjualanUmum, storePenjualanPerJenis, destroyPenjualanPerJenis }
->>>>>>> main
 
 export default SetHargaObatController

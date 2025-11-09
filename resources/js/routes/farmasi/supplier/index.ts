@@ -1,14 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:287
-=======
-* @see routes/web.php:300
->>>>>>> main
-=======
 * @see routes/web.php:331
->>>>>>> main
 * @route '/farmasi/supplier'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -22,15 +14,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:287
-=======
-* @see routes/web.php:300
->>>>>>> main
-=======
 * @see routes/web.php:331
->>>>>>> main
 * @route '/farmasi/supplier'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -38,15 +22,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:287
-=======
-* @see routes/web.php:300
->>>>>>> main
-=======
 * @see routes/web.php:331
->>>>>>> main
 * @route '/farmasi/supplier'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -55,15 +31,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:287
-=======
-* @see routes/web.php:300
->>>>>>> main
-=======
 * @see routes/web.php:331
->>>>>>> main
 * @route '/farmasi/supplier'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -1,5 +1,4 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../../wayfinder'
-import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\API\MenuSearchController::search
 * @see app/Http/Controllers/API/MenuSearchController.php:15

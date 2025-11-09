@@ -367,97 +367,11 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('Pcare/Menu');
         })->name('index');
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-    // Keuangan routes
-    Route::prefix('keuangan')->name('keuangan.')->group(function () {
-        // Landing page for Keuangan module
-        Route::get('/', function () {
-            return Inertia::render('keuangan/Index');
-        })->name('index');
-
-        // Dashboard & Analitik page
-        Route::get('/dashboard', function () {
-            return Inertia::render('keuangan/Dashboard');
-        })->name('dashboard');
-
-        // Laporan Keuangan
-        Route::get('/laporan-keuangan', function () {
-            return Inertia::render('keuangan/LaporanKeuangan');
-        })->name('laporan-keuangan');
-
-        // Kas & Bank
-        Route::get('/kas-bank', function () {
-            return Inertia::render('keuangan/KasBank');
-        })->name('kas-bank');
-
-        // Piutang
-        Route::get('/piutang', function () {
-            return Inertia::render('keuangan/Piutang');
-        })->name('piutang');
-
-        // Hutang
-        Route::get('/hutang', function () {
-            return Inertia::render('keuangan/Hutang');
-        })->name('hutang');
-
-        // Jurnal Umum
-        Route::get('/jurnal-umum', function () {
-            return Inertia::render('keuangan/JurnalUmum');
-        })->name('jurnal-umum');
-
-        // Buku Besar
-        Route::get('/buku-besar', function () {
-            return Inertia::render('keuangan/BukuBesar');
-        })->name('buku-besar');
-
-        // Neraca
-        Route::get('/neraca', function () {
-            return Inertia::render('keuangan/Neraca');
-        })->name('neraca');
-
-        // Laba Rugi
-        Route::get('/laba-rugi', function () {
-            return Inertia::render('keuangan/LabaRugi');
-        })->name('laba-rugi');
-
-        // Additional routes for financial module
-        Route::get('/chart-accounts', function () {
-            return Inertia::render('keuangan/ChartAccounts');
-        })->name('chart-accounts');
-
-        Route::get('/mata-uang', function () {
-            return Inertia::render('keuangan/MataUang');
-        })->name('mata-uang');
-
-        Route::get('/pajak', function () {
-            return Inertia::render('keuangan/Pajak');
-        })->name('pajak');
-
-        Route::get('/kas-masuk', function () {
-            return Inertia::render('keuangan/KasMasuk');
-        })->name('kas-masuk');
-
-        Route::get('/kas-keluar', function () {
-            return Inertia::render('keuangan/KasKeluar');
-        })->name('kas-keluar');
-
-        Route::get('/arus-kas', function () {
-            return Inertia::render('keuangan/ArusKas');
-        })->name('arus-kas');
-
-        Route::get('/laporan-piutang', function () {
-            return Inertia::render('keuangan/LaporanPiutang');
-        })->name('laporan-piutang');
-    });
-
     Route::middleware(['auth'])->group(function () {
         Route::get('/penjab', [\App\Http\Controllers\PenjabController::class, 'index'])->name('penjab.index');
         Route::post('/penjab', [\App\Http\Controllers\PenjabController::class, 'store'])->name('penjab.store');
         Route::put('/penjab/{kd_pj}', [\App\Http\Controllers\PenjabController::class, 'update'])->name('penjab.update');
         Route::patch('/penjab/{kd_pj}/toggle-status', [\App\Http\Controllers\PenjabController::class, 'toggleStatus'])->name('penjab.toggle-status');
-=======
-=======
         // Mapping Poli PCare page (Inertia)
         Route::get('/mapping/poli', function () {
             return Inertia::render('Pcare/MappingPoliPcare');
@@ -473,12 +387,10 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('Pcare/MappingObatPcare');
         })->name('mapping.obat');
 
->>>>>>> main
         // Referensi Diagnosa page (Inertia)
         Route::get('/referensi/diagnosa', function () {
             return Inertia::render('Pcare/ReferensiPcare/ReferensiDiagnosa');
         })->name('referensi.diagnosa');
->>>>>>> main
 
         // Referensi Dokter page (Inertia)
         Route::get('/referensi/dokter', function () {
@@ -690,6 +602,9 @@ Route::middleware('auth')->group(function () {
             ->where('noKartu', '.*')
             ->name('kelompok.peserta.delete.api');
 
+        // End of authenticated PCare routes
+    });
+
         // Setting Bridging BPJS PCare (Inertia form + CRUD)
         Route::get('/setting', [\App\Http\Controllers\Pcare\SettingBridgingBpjsController::class, 'index'])
             ->name('setting.index');
@@ -699,12 +614,94 @@ Route::middleware('auth')->group(function () {
             ->name('setting.destroy');
 
         // Setting Bridging Mobile JKN (Inertia form + CRUD)
-        Route::get('/setting-mobilejkn', [\App\Http\Controllers\Pcare\SettingBridgingMobileJknController::class, 'index'])
+    Route::get('/setting-mobilejkn', [\App\Http\Controllers\Pcare\SettingBridgingMobileJknController::class, 'index'])
             ->name('setting.mobilejkn.index');
         Route::post('/setting-mobilejkn', [\App\Http\Controllers\Pcare\SettingBridgingMobileJknController::class, 'store'])
             ->name('setting.mobilejkn.store');
         Route::delete('/setting-mobilejkn', [\App\Http\Controllers\Pcare\SettingBridgingMobileJknController::class, 'destroy'])
             ->name('setting.mobilejkn.destroy');
+    });
+
+    // Keuangan routes (top-level)
+    Route::prefix('keuangan')->name('keuangan.')->group(function () {
+        // Landing page for Keuangan module
+        Route::get('/', function () {
+            return Inertia::render('keuangan/Index');
+        })->name('index');
+
+        // Dashboard & Analitik page
+        Route::get('/dashboard', function () {
+            return Inertia::render('keuangan/Dashboard');
+        })->name('dashboard');
+
+        // Laporan Keuangan
+        Route::get('/laporan-keuangan', function () {
+            return Inertia::render('keuangan/LaporanKeuangan');
+        })->name('laporan-keuangan');
+
+        // Kas & Bank
+        Route::get('/kas-bank', function () {
+            return Inertia::render('keuangan/KasBank');
+        })->name('kas-bank');
+
+        // Piutang
+        Route::get('/piutang', function () {
+            return Inertia::render('keuangan/Piutang');
+        })->name('piutang');
+
+        // Hutang
+        Route::get('/hutang', function () {
+            return Inertia::render('keuangan/Hutang');
+        })->name('hutang');
+
+        // Jurnal Umum
+        Route::get('/jurnal-umum', function () {
+            return Inertia::render('keuangan/JurnalUmum');
+        })->name('jurnal-umum');
+
+        // Buku Besar
+        Route::get('/buku-besar', function () {
+            return Inertia::render('keuangan/BukuBesar');
+        })->name('buku-besar');
+
+        // Neraca
+        Route::get('/neraca', function () {
+            return Inertia::render('keuangan/Neraca');
+        })->name('neraca');
+
+        // Laba Rugi
+        Route::get('/laba-rugi', function () {
+            return Inertia::render('keuangan/LabaRugi');
+        })->name('laba-rugi');
+
+        // Additional routes for financial module
+        Route::get('/chart-accounts', function () {
+            return Inertia::render('keuangan/ChartAccounts');
+        })->name('chart-accounts');
+
+        Route::get('/mata-uang', function () {
+            return Inertia::render('keuangan/MataUang');
+        })->name('mata-uang');
+
+        Route::get('/pajak', function () {
+            return Inertia::render('keuangan/Pajak');
+        })->name('pajak');
+
+        Route::get('/kas-masuk', function () {
+            return Inertia::render('keuangan/KasMasuk');
+        })->name('kas-masuk');
+
+        Route::get('/kas-keluar', function () {
+            return Inertia::render('keuangan/KasKeluar');
+        })->name('kas-keluar');
+
+        Route::get('/arus-kas', function () {
+            return Inertia::render('keuangan/ArusKas');
+        })->name('arus-kas');
+
+        Route::get('/laporan-piutang', function () {
+            return Inertia::render('keuangan/LaporanPiutang');
+        })->name('laporan-piutang');
     });
 
     // Penjab & Poliklinik routes
@@ -721,29 +718,27 @@ Route::middleware('auth')->group(function () {
 
 });
 // Routes for Set Harga Obat (Farmasi)
-use App\Http\Controllers\Farmasi\SetHargaObatController;
 
 // Pengaturan Harga Obat
-Route::get('/farmasi/set-harga-obat', [SetHargaObatController::class, 'index'])
+Route::get('/farmasi/set-harga-obat', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'index'])
     ->name('farmasi.set-harga-obat');
-Route::post('/farmasi/set-harga-obat', [SetHargaObatController::class, 'update'])
+Route::post('/farmasi/set-harga-obat', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'update'])
     ->name('set-harga-obat.update');
 
 // Pengaturan Harga Umum (setpenjualanumum)
-Route::post('/farmasi/set-penjualan-umum', [SetHargaObatController::class, 'updatePenjualanUmum'])
+Route::post('/farmasi/set-penjualan-umum', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'updatePenjualanUmum'])
     ->name('set-penjualan-umum.update');
 
 // Pengaturan Harga Per Jenis (setpenjualan)
-Route::post('/farmasi/set-penjualan', [SetHargaObatController::class, 'storePenjualanPerJenis'])
+Route::post('/farmasi/set-penjualan', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'storePenjualanPerJenis'])
     ->name('set-penjualan.store');
 // Hapus pengaturan harga per jenis
-Route::delete('/farmasi/set-penjualan/{kdjns}', [SetHargaObatController::class, 'destroyPenjualanPerJenis'])
+Route::delete('/farmasi/set-penjualan/{kdjns}', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'destroyPenjualanPerJenis'])
     ->name('set-penjualan.destroy');
 
 // Settings routes
-use App\Http\Controllers\SettingsController;
 Route::middleware(['auth'])->group(function () {
-    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
-    Route::get('/settings/active', [SettingsController::class, 'active'])->name('settings.active');
-    Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
+    Route::get('/settings', [\App\Http\Controllers\SettingsController::class, 'index'])->name('settings.index');
+    Route::get('/settings/active', [\App\Http\Controllers\SettingsController::class, 'active'])->name('settings.active');
+    Route::put('/settings', [\App\Http\Controllers\SettingsController::class, 'update'])->name('settings.update');
 });

@@ -77,11 +77,6 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     method: 'put',
 })
 
-<<<<<<< HEAD
-const profile = {
-    show: Object.assign(show, show),
-    update: Object.assign(update, update),
-=======
 /**
 * @see routes/web.php:158
 * @route '/profile/menu'
@@ -126,7 +121,6 @@ const profile = {
     show: Object.assign(show, show),
     update: Object.assign(update, update),
     menu: Object.assign(menu, menu),
->>>>>>> main
 }
 
 export default profile
