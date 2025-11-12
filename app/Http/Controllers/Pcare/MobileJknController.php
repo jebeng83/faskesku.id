@@ -157,8 +157,30 @@ class MobileJknController extends Controller
                 ->orderBy('jam_mulai')
                 ->first();
 
-            $jamMulai = $jadwal?->jam_mulai ?: '08:00';
-            $jamSelesai = $jadwal?->jam_selesai ?: '16:00';
+            // Normalisasi format jam ke HH:mm (tanpa detik) sesuai spesifikasi Mobile JKN
+            $rawJamMulai = $jadwal?->jam_mulai ?: '08:00';
+            $rawJamSelesai = $jadwal?->jam_selesai ?: '16:00';
+            $formatJam = function ($time) {
+                // Terima input seperti '07:30', '07:30:00', bahkan '7:30'
+                if (!is_string($time)) {
+                    return '08:00';
+                }
+                // Ambil hanya HH:mm di depan
+                // 1) Jika ada detik, buang (07:30:00 => 07:30)
+                $time = substr($time, 0, 5);
+                // 2) Pastikan ada leading zero untuk jam satu digit (7:30 => 07:30)
+                if (preg_match('/^\d:\d{2}$/', $time)) {
+                    $time = '0' . $time;
+                }
+                // Validasi sederhana HH:mm
+                if (!preg_match('/^\d{2}:\d{2}$/', $time)) {
+                    return '08:00';
+                }
+                return $time;
+            };
+
+            $jamMulai = $formatJam($rawJamMulai);
+            $jamSelesai = $formatJam($rawJamSelesai);
             $jamPraktek = $jamMulai . '-' . $jamSelesai;
 
             // Nomor antrean dan angka antrean: gunakan no_reg bila tersedia; jika tidak, coba ambil dari reg_periksa hari ini
@@ -176,17 +198,30 @@ class MobileJknController extends Controller
                 $angkaAntrean = (int) preg_replace('/\D+/', '', $nomorAntrean);
             }
 
+            // Sanitasi nama agar tidak ada newline/tabs atau spasi berlebih yang bisa menyebabkan mismatch di sisi BPJS
+            $sanitizeName = function ($name) {
+                $name = (string) $name;
+                // Ganti semua whitespace berlebih menjadi satu spasi
+                $name = preg_replace('/\s+/u', ' ', $name);
+                $name = trim($name);
+                // Hilangkan spasi di sekitar koma: " ," atau ", " -> ","
+                $name = preg_replace('/\s*,\s*/', ',', $name);
+                return $name;
+            };
+            $namaDokterPcare = $sanitizeName($mapDokter->nm_dokter_pcare ?? '');
+            $namaPoliPcare = $sanitizeName($mapPoli->nm_poli_pcare ?? '');
+
             // Bangun payload sesuai katalog Mobile JKN
             $payload = [
                 'nomorkartu' => (string) ($pasien->no_peserta ?? ''),
                 'nik' => (string) ($pasien->no_ktp ?? ''),
                 'nohp' => (string) ($pasien->no_tlp ?? ''),
                 'kodepoli' => (string) ($mapPoli->kd_poli_pcare ?? ''),
-                'namapoli' => (string) ($mapPoli->nm_poli_pcare ?? ''),
+                'namapoli' => $namaPoliPcare,
                 'norm' => (string) ($pasien->no_rkm_medis ?? ''),
                 'tanggalperiksa' => $tanggalPeriksa,
                 'kodedokter' => is_numeric($mapDokter->kd_dokter_pcare ?? '') ? (int) $mapDokter->kd_dokter_pcare : (string) ($mapDokter->kd_dokter_pcare ?? ''),
-                'namadokter' => (string) ($mapDokter->nm_dokter_pcare ?? ''),
+                'namadokter' => $namaDokterPcare,
                 'jampraktek' => $jamPraktek,
                 'nomorantrean' => $nomorAntrean ?: '',
                 'angkaantrean' => $angkaAntrean ?? null,

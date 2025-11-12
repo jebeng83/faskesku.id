@@ -213,9 +213,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                 <h1 className="text-3xl font-bold mb-2">
                                     Data Rawat Jalan
                                 </h1>
-                                <p className="text-blue-100 text-lg">
-                                    Kelola data registrasi dan kunjungan pasien rawat jalan
-                                </p>
+
                             </div>
                             <Link
                                 href={route('rawat-jalan.create')}

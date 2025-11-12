@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "@inertiajs/react";
 import Modal from "./Modal";
 import Alert from "./Alert";
@@ -13,6 +13,9 @@ export default function PenjabCreateModal({ isOpen, onClose, onSuccess }) {
 		attn: "",
 		status: "1",
 	});
+
+	// Info kode terakhir & kode berikutnya (format A01)
+	const [codeInfo, setCodeInfo] = useState({ last_number: null, last_code: null, next_code: null });
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [showAlert, setShowAlert] = useState(false);
@@ -162,12 +165,38 @@ export default function PenjabCreateModal({ isOpen, onClose, onSuccess }) {
 		onClose();
 	};
 
+	// Saat modal dibuka, ambil kode berikutnya dan isi otomatis field kd_pj
+	useEffect(() => {
+		const loadNextCode = async () => {
+			try {
+				const res = await fetch(`/api/penjab/next-code?prefix=A`);
+				if (!res.ok) return;
+				const json = await res.json();
+				setCodeInfo({
+					last_number: json.last_number,
+					last_code: json.last_code,
+					next_code: json.next_code,
+				});
+				if (json?.next_code) {
+					setData("kd_pj", json.next_code);
+				}
+			} catch (e) {
+				// abaikan error—pengguna masih bisa mengisi manual
+			}
+		};
+
+		if (isOpen) {
+			loadNextCode();
+		}
+	}, [isOpen]);
+
 	return (
 		<Modal
-			isOpen={isOpen}
+			show={isOpen}
 			onClose={handleClose}
 			title="Tambah Penanggung Jawab"
 			size="lg"
+			zIndex={10001}
 		>
 			<form onSubmit={handleSubmit} className="space-y-6">
 				{/* Basic Information */}
@@ -180,18 +209,23 @@ export default function PenjabCreateModal({ isOpen, onClose, onSuccess }) {
 							<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
 								Kode Penanggung Jawab *
 							</label>
-							<input
-								type="text"
-								value={data.kd_pj}
-								onChange={(e) => setData("kd_pj", e.target.value.toUpperCase())}
-								className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-								placeholder="Contoh: BPJS, UMUM"
-								maxLength="10"
-							/>
-							{errors.kd_pj && (
-								<p className="mt-1 text-sm text-red-600">{errors.kd_pj}</p>
-							)}
-						</div>
+					<input
+						type="text"
+						value={data.kd_pj}
+						onChange={(e) => setData("kd_pj", e.target.value.toUpperCase())}
+						className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+						placeholder="Contoh: A01"
+						maxLength="10"
+					/>
+					{codeInfo?.last_number !== null && (
+						<p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+							Nomor terakhir: {String(codeInfo.last_number).padStart(2, "0")} {codeInfo.last_code ? `(Kode terakhir: ${codeInfo.last_code})` : ""}
+						</p>
+					)}
+					{errors.kd_pj && (
+						<p className="mt-1 text-sm text-red-600">{errors.kd_pj}</p>
+					)}
+				</div>
 
 						<div>
 							<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

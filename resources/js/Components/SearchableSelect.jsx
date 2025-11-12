@@ -106,7 +106,7 @@ const SearchableSelect = ({
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`w-full h-11 px-3 text-left border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 flex justify-between items-center ${
+                className={`w-full px-3 py-2 text-sm text-left border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 flex justify-between items-center ${
                     error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                 } ${className}`}
             >

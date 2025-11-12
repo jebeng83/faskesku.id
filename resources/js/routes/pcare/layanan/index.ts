@@ -39,8 +39,49 @@ cekPesertaNik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
     method: 'head',
 })
 
+/**
+* @see routes/web.php:476
+* @route '/pcare/layanan'
+*/
+export const pcare = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: pcare.url(options),
+    method: 'get',
+})
+
+pcare.definition = {
+    methods: ["get","head"],
+    url: '/pcare/layanan',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:476
+* @route '/pcare/layanan'
+*/
+pcare.url = (options?: RouteQueryOptions) => {
+    return pcare.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:476
+* @route '/pcare/layanan'
+*/
+pcare.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: pcare.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:476
+* @route '/pcare/layanan'
+*/
+pcare.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: pcare.url(options),
+    method: 'head',
+})
+
 const layanan = {
     cekPesertaNik: Object.assign(cekPesertaNik, cekPesertaNik),
+    pcare: Object.assign(pcare, pcare),
 }
 
 export default layanan

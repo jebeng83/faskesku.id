@@ -22,6 +22,7 @@ use App\Http\Controllers\DataBarangController;
 use App\Http\Controllers\GudangBarangController;
 use App\Http\Controllers\Farmasi\SetHargaObatController;
 use App\Http\Controllers\Pcare\PcareController;
+use App\Http\Controllers\Pcare\PcareKunjunganController;
 use App\Http\Controllers\Pcare\MobileJknController;
 use App\Http\Controllers\JadwalController;
 
@@ -29,6 +30,7 @@ Route::post('/employees', [EmployeeController::class, 'store'])->name('api.emplo
 Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('api.employees.destroy');
 
 Route::get('/penjab', [PenjabController::class, 'index'])->name('api.penjab.index');
+Route::get('/penjab/next-code', [PenjabController::class, 'nextCode'])->name('api.penjab.next-code');
 Route::post('/penjab', [PenjabController::class, 'store'])->name('api.penjab.store');
 
 // Pasien describe endpoint
@@ -190,6 +192,16 @@ Route::prefix('pcare')->group(function () {
     Route::get('/spesialis/rujuk/subspesialis/{kdSubSpesialis}/sarana/{kdSarana}/tglEstRujuk/{tglEstRujuk}', [PcareController::class, 'getFaskesRujukanSubSpesialis'])->name('api.pcare.faskes-rujukan.subspesialis');
     Route::get('/peserta/{noka}/{tglPelayanan}', [PcareController::class, 'pesertaByNoKartu'])->name('api.pcare.peserta-nokartu');
     Route::post('/kunjungan', [PcareController::class, 'daftarKunjungan'])->name('api.pcare.kunjungan.store');
+    // Add Data Pendaftaran (PCare)
+    Route::post('/pendaftaran', [PcareController::class, 'addPendaftaran'])->name('api.pcare.pendaftaran.store');
+    // Get latest pendaftaran by nomor rawat
+    Route::get('/pendaftaran/rawat/{no_rawat}', [PcareController::class, 'getPendaftaranByRawat'])
+        ->where('no_rawat', '.*')
+        ->name('api.pcare.pendaftaran.by-rawat');
+    // Preview payload kunjungan by nomor rawat (without sending)
+    Route::get('/kunjungan/preview/{no_rawat}', [PcareKunjunganController::class, 'preview'])
+        ->where('no_rawat', '.*')
+        ->name('api.pcare.kunjungan.preview');
 });
 
 // Mobile JKN API Routes

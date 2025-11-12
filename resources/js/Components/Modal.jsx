@@ -1,12 +1,13 @@
 import React, { useEffect } from "react";
 
 export default function Modal({
-	show = false,
-	onClose,
-	title,
-	children,
-	size = "md",
-	className = "",
+    show = false,
+    onClose,
+    title,
+    children,
+    size = "md",
+    className = "",
+    zIndex = 50,
 }) {
 	useEffect(() => {
 		const handleEscape = (e) => {
@@ -26,7 +27,7 @@ export default function Modal({
 		};
 	}, [show, onClose]);
 
-	if (!show) return null;
+    if (!show) return null;
 
 	const sizeClasses = {
 		sm: "max-w-md",
@@ -36,13 +37,13 @@ export default function Modal({
 		full: "max-w-full mx-4",
 	};
 
-	return (
-		<div className="fixed inset-0 z-50 overflow-y-auto">
-			{/* Backdrop */}
-			<div
-				className="fixed inset-0 bg-black/50 transition-opacity"
-				onClick={onClose}
-			/>
+    return (
+        <div className="fixed inset-0 overflow-y-auto" style={{ zIndex }}>
+            {/* Backdrop */}
+            <div
+                className="fixed inset-0 bg-black/50 transition-opacity"
+                onClick={onClose}
+            />
 
 			{/* Modal */}
 			<div className="flex min-h-full items-center justify-center p-4">

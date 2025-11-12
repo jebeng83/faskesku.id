@@ -172,7 +172,7 @@ export default function EmployeeCreateModal({ isOpen, onClose, onSuccess }) {
 
 	return (
 		<Modal
-			isOpen={isOpen}
+			show={isOpen}
 			onClose={handleClose}
 			title="Tambah Pegawai Baru"
 			size="lg"
