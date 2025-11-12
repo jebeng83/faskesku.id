@@ -2,12 +2,17 @@ import axios from "axios";
 window.axios = axios;
 
 window.axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
+// Pastikan cookie sesi dikirim pada request XHR antar port (mis. Vite dev server -> Laravel)
+// Ini membantu mencegah 419 (CSRF token mismatch) akibat cookie sesi tidak terkirim.
+window.axios.defaults.withCredentials = true;
 
 // Get CSRF token from meta tag
 let token = document.head.querySelector('meta[name="csrf-token"]');
 
 if (token) {
     window.axios.defaults.headers.common["X-CSRF-TOKEN"] = token.content;
+    // Opsi: jejak ringan untuk memastikan token terpasang
+    // console.debug("Axios CSRF token set", token.content?.slice(0, 10) + "...");
 } else {
     console.error(
         "CSRF token not found: https://laravel.com/docs/csrf#csrf-x-csrf-token"

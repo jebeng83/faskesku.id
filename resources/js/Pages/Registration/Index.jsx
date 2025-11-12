@@ -15,6 +15,7 @@ import {
 import axios from "axios";
 import PatientCreateModal from "@/Components/PatientCreateModal";
 import PatientEditModal from "@/Components/PatientEditModal";
+import PenjabQuickCreateModal from "@/Components/PenjabQuickCreateModal";
 
 export default function Registration({
     auth,
@@ -74,6 +75,17 @@ export default function Registration({
         biaya_reg: 0,
         has_registered: false,
     });
+
+    // Daftar penjamin lokal (agar bisa di-update setelah tambah penjab tanpa reload penuh)
+    const [penjabsList, setPenjabsList] = useState(penjabs || []);
+    useEffect(() => {
+        setPenjabsList(penjabs || []);
+    }, [penjabs]);
+
+    // Modal tambah penjab cepat
+    const [isPenjabCreateOpen, setIsPenjabCreateOpen] = useState(false);
+    const openPenjabCreate = () => setIsPenjabCreateOpen(true);
+    const closePenjabCreate = () => setIsPenjabCreateOpen(false);
 
     // BPJS PCare membership state
     const [bpjsNik, setBpjsNik] = useState("");
@@ -153,6 +165,37 @@ export default function Registration({
         router.get(url, { t: token }, { preserveScroll: true });
     };
 
+    // Buka halaman Layanan PCare (Inertia page)
+    const openLayananPcare = (patient) => {
+        try {
+            // Gunakan Ziggy route jika tersedia; fallback ke path hardcode jika tidak
+            let url = "/pcare/layanan";
+            try {
+                url = route("layanan.pcare");
+            } catch (_) {}
+            // Kirim NIK dan/atau No. Kartu (BPJS) sebagai query agar halaman Layanan PCare otomatis terisi
+            const nik = sanitizeNik(patient?.no_ktp || "");
+            const noka = String(patient?.no_peserta || "").replace(/[^0-9]/g, "");
+            const query = {};
+            if (nik) query.nik = nik;
+            if (noka) query.noka = noka;
+            // Tambahkan preferensi mode pencarian agar form langsung menampilkan field yang sesuai
+            if (noka) {
+                query.mode = "noka";
+            } else if (nik) {
+                query.mode = "nik";
+            }
+            // Simpan prefill ke localStorage sebagai fallback bila user membuka via sidebar tanpa query
+            try {
+                const prefill = { mode: query.mode || '', nik: nik || '', noka: noka || '', ts: Date.now() };
+                localStorage.setItem('pcarePrefill', JSON.stringify(prefill));
+            } catch (_) {}
+            router.get(url, query, { preserveScroll: true });
+        } catch (e) {
+            console.error("Gagal membuka Layanan PCare:", e);
+        }
+    };
+
     // Hanya kirim antrean ke Mobile JKN bila jenis bayar termasuk BPJ / PBI
     const isJenisBayarAllowedForAntrean = (kd_pj) => {
         const jenis = resolveJenisBayarFromKdPj(kd_pj);
@@ -211,13 +254,15 @@ export default function Registration({
                 }
             }
 
-            // Simpan filter untuk halaman Rawat Jalan dan navigasi
-            setRawatJalanFiltersForNavigation(reg);
-            let url = "/rawat-jalan";
+            // Setelah memanggil antrean, langsung buka halaman Rawat Jalan Lanjutan sesuai permintaan
             try {
-                url = route("rawat-jalan.index");
-            } catch (_) {}
-            router.get(url, {}, { preserveScroll: true });
+                goToLanjutan(reg.no_rawat, reg.no_rkm_medis);
+            } catch (e) {
+                // Fallback: jika terjadi error saat konstruksi token atau route ziggy tidak tersedia,
+                // tetap arahkan ke laman /rawat-jalan/lanjutan menggunakan path hardcode
+                let url = "/rawat-jalan/lanjutan";
+                router.get(url, { t: btoa(JSON.stringify({ no_rawat: reg.no_rawat, no_rkm_medis: reg.no_rkm_medis })) }, { preserveScroll: true });
+            }
         } catch (e) {
             console.error(
                 "Error saat panggil antrean dan buka Rawat Jalan:",
@@ -307,9 +352,15 @@ export default function Registration({
         // Initialize BPJS check by default using patient's NIK if available
         try {
             const nik = sanitizeNik(patient?.no_ktp || "");
+            const noka = String(patient?.no_peserta || "").replace(/[^0-9]/g, "");
             setBpjsNik(nik);
             setBpjsError(null);
             setBpjsData(null);
+            // Simpan prefill ke localStorage agar Layanan PCare bisa otomatis terisi meski dibuka via sidebar
+            try {
+                const prefill = { mode: (noka ? 'noka' : (nik ? 'nik' : '')), nik: nik || '', noka: noka || '', ts: Date.now() };
+                localStorage.setItem('pcarePrefill', JSON.stringify(prefill));
+            } catch (_) {}
             if (nik) {
                 // Fire and forget; no need to await before opening modal
                 fetchBpjsByNik(nik);
@@ -354,9 +405,19 @@ export default function Registration({
         setIsSubmitting(true);
 
         try {
+            // Gunakan helper route Ziggy agar URL selalu benar, dan sertakan CSRF header eksplisit
+            const url = route('registration.register-patient', selectedPatient.no_rkm_medis);
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
             const response = await axios.post(
-                `/registration/${selectedPatient.no_rkm_medis}/register`,
-                formData
+                url,
+                formData,
+                {
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                    },
+                    withCredentials: true,
+                }
             );
 
             if (response.data.success) {
@@ -766,11 +827,9 @@ export default function Registration({
             >
                 <div>
                     <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
-                        Pendaftaran Pasien ke Poliklinik
+                        Registrasi Pasien
                     </h1>
-                    <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
-                        Sistem pendaftaran pasien ke poliklinik
-                    </p>
+                    
                 </div>
             </motion.div>
 
@@ -1020,10 +1079,10 @@ export default function Registration({
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
             >
-                <div className="flex flex-col lg:flex-row min-h-[600px] lg:h-[800px]">
+                <div className="flex flex-col lg:flex-row items-stretch min-h-0">
                     {/* Left Panel - Patient Search (Mobile: Full Width, Desktop: 40%) */}
                     <motion.div
-                        className="w-full lg:w-2/5 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700 p-4 lg:p-6"
+                        className="w-full lg:w-2/5 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700 px-4 lg:px-6 pt-4 lg:pt-6 pb-0"
                         initial={{ opacity: 0, x: -50 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.6, delay: 0.3 }}
@@ -1182,18 +1241,26 @@ export default function Registration({
                                                                   }}
                                                               >
                                                                   <div className="flex justify-between items-start">
-                                                                      <div className="flex-1">
-                                                                          <h4 className="font-medium text-gray-900 dark:text-white">
-                                                                              {
-                                                                                  patient.nm_pasien
-                                                                              }
-                                                                          </h4>
-                                                                          <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
-                                                                              RM:{" "}
-                                                                              {
-                                                                                  patient.no_rkm_medis
-                                                                              }
-                                                                          </p>
+                                                          <div className="flex-1">
+                                                                  <h4 className="font-medium text-gray-900 dark:text-white">
+                                                                      <button
+                                                                          type="button"
+                                                                          className="text-blue-600 hover:text-blue-700 hover:underline"
+                                                                          title="Buka Layanan PCare"
+                                                                          onClick={(e) => {
+                                                                              e.stopPropagation();
+                                                                              openLayananPcare(patient);
+                                                                          }}
+                                                                      >
+                                                                          {patient.nm_pasien}
+                                                                      </button>
+                                                                  </h4>
+                                                                  <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
+                                                                      RM:{" "}
+                                                                      {
+                                                                          patient.no_rkm_medis
+                                                                      }
+                                                                  </p>
                                                                           {patient.no_ktp && (
                                                                               <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
                                                                                   KTP:{" "}
@@ -1321,25 +1388,12 @@ export default function Registration({
 
                     {/* Right Panel - Registration List (Mobile: Full Width, Desktop: 60%) */}
                     <motion.div
-                        className="w-full lg:w-3/5 p-4 lg:p-6"
+                        className="w-full lg:w-3/5 px-4 lg:px-6 pt-4 lg:pt-6 pb-3"
                         initial={{ opacity: 0, x: 50 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.6, delay: 0.4 }}
                     >
                         <div className="h-full flex flex-col">
-                            <motion.div
-                                className="mb-4 lg:mb-6"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ duration: 0.5, delay: 0.7 }}
-                            >
-                                <h3 className="text-base lg:text-lg font-semibold text-gray-900 dark:text-white mb-3 lg:mb-4">
-                                    Registrasi Periksa
-                                </h3>
-
-                                {/* Filter Accordion dipindahkan ke atas Datatable Registrasi */}
-                            </motion.div>
-
                             {/* Inline Registration Form (replaces list + pagination) */}
                             <div className="flex-1 overflow-y-auto">
                                 {!selectedPatient ? (
@@ -1562,7 +1616,7 @@ export default function Registration({
                                             transition={{ duration: 0.3 }}
                                         >
                                             <motion.div
-                                                className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4"
+                                                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4"
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
                                                 transition={{ duration: 0.2, delay: 0.1 }}
@@ -1608,19 +1662,49 @@ export default function Registration({
                                                 {/* Penanggung Jawab */}
                                                 <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: 0.3 }}>
                                                     <label className="block text-xs lg:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Penanggung Jawab *</label>
+                                                    <div className="flex items-center gap-2">
+                                                        <select
+                                                            name="kd_pj"
+                                                            value={formData.kd_pj}
+                                                            onChange={handleFormChange}
+                                                            required
+                                                            className="flex-1 w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                                        >
+                                                            <option value="">Pilih Penanggung Jawab</option>
+                                                            {penjabsList?.map((penjab) => (
+                                                                <option key={penjab.kd_pj} value={penjab.kd_pj}>
+                                                                    {penjab.png_jawab}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                        <button
+                                                            type="button"
+                                                            onClick={openPenjabCreate}
+                                                            className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md bg-black text-white hover:bg-gray-800"
+                                                        >
+                                                           +
+                                                        </button>
+                                                    </div>
+                                                </motion.div>
+
+                                                {/* Hubungan Penanggung Jawab */}
+                                                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: 0.35 }}>
+                                                    <label className="block text-xs lg:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hubungan *</label>
                                                     <select
-                                                        name="kd_pj"
-                                                        value={formData.kd_pj}
+                                                        name="hubunganpj"
+                                                        value={formData.hubunganpj}
                                                         onChange={handleFormChange}
                                                         required
-                                                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                                     >
-                                                        <option value="">Pilih Penanggung Jawab</option>
-                                                        {penjabs?.map((penjab) => (
-                                                            <option key={penjab.kd_pj} value={penjab.kd_pj}>
-                                                                {penjab.png_jawab}
-                                                            </option>
-                                                        ))}
+                                                        <option value="DIRI SENDIRI">Diri Sendiri</option>
+                                                        <option value="AYAH">Ayah</option>
+                                                        <option value="IBU">Ibu</option>
+                                                        <option value="ISTRI">Istri</option>
+                                                        <option value="SUAMI">Suami</option>
+                                                        <option value="SAUDARA">Saudara</option>
+                                                        <option value="ANAK">Anak</option>
+                                                        <option value="LAIN-LAIN">Lain-lain</option>
                                                     </select>
                                                 </motion.div>
                                             </motion.div>
@@ -1649,52 +1733,36 @@ export default function Registration({
                                                 </div>
                                             )}
 
-                                            {/* Nama Penanggung Jawab */}
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Penanggung Jawab *</label>
-                                                <input
-                                                    type="text"
-                                                    name="p_jawab"
-                                                    value={formData.p_jawab}
-                                                    onChange={handleFormChange}
-                                                    required
-                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                />
+                                            {/* Nama & Alamat Penanggung Jawab - single row 1:3 */}
+                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 lg:gap-4 items-start">
+                                                {/* Nama Penanggung Jawab */}
+                                                <div className="md:col-span-1">
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Penanggung Jawab *</label>
+                                                    <input
+                                                        type="text"
+                                                        name="p_jawab"
+                                                        value={formData.p_jawab}
+                                                        onChange={handleFormChange}
+                                                        required
+                                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    />
+                                                </div>
+
+                                                {/* Alamat Penanggung Jawab */}
+                                                <div className="md:col-span-3">
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Alamat Penanggung Jawab *</label>
+                                                    <textarea
+                                                        name="almt_pj"
+                                                        value={formData.almt_pj}
+                                                        onChange={handleFormChange}
+                                                        required
+                                                        rows={3}
+                                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    />
+                                                </div>
                                             </div>
 
-                                            {/* Alamat Penanggung Jawab */}
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Alamat Penanggung Jawab *</label>
-                                                <textarea
-                                                    name="almt_pj"
-                                                    value={formData.almt_pj}
-                                                    onChange={handleFormChange}
-                                                    required
-                                                    rows={3}
-                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                />
-                                            </div>
-
-                                            {/* Hubungan Penanggung Jawab */}
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hubungan *</label>
-                                                <select
-                                                    name="hubunganpj"
-                                                    value={formData.hubunganpj}
-                                                    onChange={handleFormChange}
-                                                    required
-                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                >
-                                                    <option value="DIRI SENDIRI">Diri Sendiri</option>
-                                                    <option value="AYAH">Ayah</option>
-                                                    <option value="IBU">Ibu</option>
-                                                    <option value="ISTRI">Istri</option>
-                                                    <option value="SUAMI">Suami</option>
-                                                    <option value="SAUDARA">Saudara</option>
-                                                    <option value="ANAK">Anak</option>
-                                                    <option value="LAIN-LAIN">Lain-lain</option>
-                                                </select>
-                                            </div>
+                                            
 
                                             <motion.div
                                                 className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4"
@@ -1746,7 +1814,7 @@ export default function Registration({
                 <div className="p-4 lg:p-6">
                     <div className="flex items-center justify-between mb-4 lg:mb-6">
                         <h3 className="text-base lg:text-lg font-semibold text-gray-900 dark:text-white">
-                            Datatable Registrasi (reg_periksa)
+                            Data Registrasi
                         </h3>
                         <div className="flex items-center gap-2">
                             <label className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
@@ -2120,12 +2188,11 @@ export default function Registration({
                                                 <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
                                                     <button
                                                         type="button"
-                                                        title="Buka halaman Rawat Jalan / Lanjutan"
+                                                        title="Buka halaman Rawat Jalan / Lanjutan dan panggil antrean otomatis"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            handleCallAntreanAndOpenRawatJalan(
-                                                                reg
-                                                            );
+                                                            // Otomatis panggil antrean (status=1/Hadir) ke Mobile JKN, lalu buka halaman Rawat Jalan
+                                                            handleCallAntreanAndOpenRawatJalan(reg);
                                                         }}
                                                         className="text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
                                                     >
@@ -2133,7 +2200,17 @@ export default function Registration({
                                                     </button>
                                                 </td>
                                                 <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
-                                                    {reg.pasien?.nm_pasien}
+                                                    <button
+                                                        type="button"
+                                                        className="text-blue-600 hover:text-blue-700 hover:underline"
+                                                        title="Buka Layanan PCare"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            openLayananPcare(reg.pasien);
+                                                        }}
+                                                    >
+                                                        {reg.pasien?.nm_pasien}
+                                                    </button>
                                                 </td>
                                                 <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
                                                     {reg.no_rkm_medis}
@@ -2748,28 +2825,35 @@ export default function Registration({
                                                 delay: 0.6,
                                             }}
                                         >
-                                            <label className="block text-xs lg:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                Penanggung Jawab *
-                                            </label>
-                                            <select
-                                                name="kd_pj"
-                                                value={formData.kd_pj}
-                                                onChange={handleFormChange}
-                                                required
-                                                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
-                                            >
-                                                <option value="">
-                                                    Pilih Penanggung Jawab
-                                                </option>
-                                                {penjabs?.map((penjab) => (
-                                                    <option
-                                                        key={penjab.kd_pj}
-                                                        value={penjab.kd_pj}
-                                                    >
-                                                        {penjab.png_jawab}
+                                            <label className="block text-xs lg:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Penanggung Jawab *</label>
+                                            <div className="flex items-center gap-2">
+                                                <select
+                                                    name="kd_pj"
+                                                    value={formData.kd_pj}
+                                                    onChange={handleFormChange}
+                                                    required
+                                                    className="flex-1 w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                                >
+                                                    <option value="">
+                                                        Pilih Penanggung Jawab
                                                     </option>
-                                                ))}
-                                            </select>
+                                                    {penjabsList?.map((penjab) => (
+                                                        <option
+                                                            key={penjab.kd_pj}
+                                                            value={penjab.kd_pj}
+                                                        >
+                                                            {penjab.png_jawab}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <button
+                                                    type="button"
+                                                    onClick={openPenjabCreate}
+                                                    className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md bg-black text-white hover:bg-gray-800"
+                                                >
+                                                    +
+                                                </button>
+                                            </div>
                                         </motion.div>
                                     </motion.div>
 
@@ -3405,6 +3489,20 @@ export default function Registration({
                 onClose={closeEditModal}
                 patient={editPatient || selectedPatient}
                 onSuccess={handleEditSuccess}
+            />
+
+            {/* Quick Create Penjab Modal */}
+            <PenjabQuickCreateModal
+                isOpen={isPenjabCreateOpen}
+                onClose={closePenjabCreate}
+                onCreated={(newItem) => {
+                    setPenjabsList((prev) => {
+                        const exists = prev.some((p) => String(p.kd_pj) === String(newItem.kd_pj));
+                        if (exists) return prev;
+                        return [...prev, newItem];
+                    });
+                    setFormData((prev) => ({ ...prev, kd_pj: newItem.kd_pj }));
+                }}
             />
         </AppLayout>
     );

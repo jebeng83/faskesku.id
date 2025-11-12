@@ -1,38 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::store
-* @see app/Http/Controllers/Pcare/PcareController.php:204
-* @route '/api/pcare/kunjungan'
-*/
-export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: store.url(options),
-    method: 'post',
-})
-
-store.definition = {
-    methods: ["post"],
-    url: '/api/pcare/kunjungan',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::store
-* @see app/Http/Controllers/Pcare/PcareController.php:204
-* @route '/api/pcare/kunjungan'
-*/
-store.url = (options?: RouteQueryOptions) => {
-    return store.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::store
-* @see app/Http/Controllers/Pcare/PcareController.php:204
-* @route '/api/pcare/kunjungan'
-*/
-store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: store.url(options),
-    method: 'post',
-})
-
+import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Pcare\PcareKunjunganController::preview
 * @see app/Http/Controllers/Pcare/PcareKunjunganController.php:209
@@ -95,9 +61,6 @@ preview.head = (args: { no_rawat: string | number } | [no_rawat: string | number
     method: 'head',
 })
 
-const kunjungan = {
-    store: Object.assign(store, store),
-    preview: Object.assign(preview, preview),
-}
+const PcareKunjunganController = { preview }
 
-export default kunjungan
+export default PcareKunjunganController

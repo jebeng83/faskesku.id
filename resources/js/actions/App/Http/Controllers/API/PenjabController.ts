@@ -44,8 +44,52 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
+* @see \App\Http\Controllers\API\PenjabController::nextCode
+* @see app/Http/Controllers/API/PenjabController.php:28
+* @route '/api/penjab/next-code'
+*/
+export const nextCode = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: nextCode.url(options),
+    method: 'get',
+})
+
+nextCode.definition = {
+    methods: ["get","head"],
+    url: '/api/penjab/next-code',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\API\PenjabController::nextCode
+* @see app/Http/Controllers/API/PenjabController.php:28
+* @route '/api/penjab/next-code'
+*/
+nextCode.url = (options?: RouteQueryOptions) => {
+    return nextCode.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\API\PenjabController::nextCode
+* @see app/Http/Controllers/API/PenjabController.php:28
+* @route '/api/penjab/next-code'
+*/
+nextCode.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: nextCode.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\API\PenjabController::nextCode
+* @see app/Http/Controllers/API/PenjabController.php:28
+* @route '/api/penjab/next-code'
+*/
+nextCode.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: nextCode.url(options),
+    method: 'head',
+})
+
+/**
 * @see \App\Http\Controllers\API\PenjabController::store
-* @see app/Http/Controllers/API/PenjabController.php:24
+* @see app/Http/Controllers/API/PenjabController.php:62
 * @route '/api/penjab'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +104,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\API\PenjabController::store
-* @see app/Http/Controllers/API/PenjabController.php:24
+* @see app/Http/Controllers/API/PenjabController.php:62
 * @route '/api/penjab'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -69,7 +113,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\PenjabController::store
-* @see app/Http/Controllers/API/PenjabController.php:24
+* @see app/Http/Controllers/API/PenjabController.php:62
 * @route '/api/penjab'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -77,6 +121,6 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     method: 'post',
 })
 
-const PenjabController = { index, store }
+const PenjabController = { index, nextCode, store }
 
 export default PenjabController

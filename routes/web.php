@@ -472,6 +472,11 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('Pcare/LayananPcare/CekPesertaPcareNik');
         })->name('layanan.cek-peserta-nik');
 
+        // Layanan PCare: Form terpadu (3 card: Peserta+SOAP, Kunjungan, Rujukan)
+        Route::get('/layanan', function () {
+            return Inertia::render('Pcare/LayananPcare/LayananPcare');
+        })->name('layanan.pcare');
+
         // Kegiatan Kelompok - Club Prolanis (Inertia page)
         Route::get('/kelompok/club-prolanis', function () {
             return Inertia::render('Pcare/KegiatanKelompok/ClubProlanis');
