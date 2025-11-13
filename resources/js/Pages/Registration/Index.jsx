@@ -1243,17 +1243,7 @@ export default function Registration({
                                                                   <div className="flex justify-between items-start">
                                                           <div className="flex-1">
                                                                   <h4 className="font-medium text-gray-900 dark:text-white">
-                                                                      <button
-                                                                          type="button"
-                                                                          className="text-blue-600 hover:text-blue-700 hover:underline"
-                                                                          title="Buka Layanan PCare"
-                                                                          onClick={(e) => {
-                                                                              e.stopPropagation();
-                                                                              openLayananPcare(patient);
-                                                                          }}
-                                                                      >
-                                                                          {patient.nm_pasien}
-                                                                      </button>
+                                                                      {patient.nm_pasien}
                                                                   </h4>
                                                                   <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
                                                                       RM:{" "}
@@ -2200,17 +2190,7 @@ export default function Registration({
                                                     </button>
                                                 </td>
                                                 <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
-                                                    <button
-                                                        type="button"
-                                                        className="text-blue-600 hover:text-blue-700 hover:underline"
-                                                        title="Buka Layanan PCare"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            openLayananPcare(reg.pasien);
-                                                        }}
-                                                    >
-                                                        {reg.pasien?.nm_pasien}
-                                                    </button>
+                                                    {reg.pasien?.nm_pasien}
                                                 </td>
                                                 <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
                                                     {reg.no_rkm_medis}

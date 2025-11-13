@@ -1,42 +1,8 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
-* @see \App\Http\Controllers\Pcare\PcareController::store
-* @see app/Http/Controllers/Pcare/PcareController.php:1046
-* @route '/api/pcare/pendaftaran'
-*/
-export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: store.url(options),
-    method: 'post',
-})
-
-store.definition = {
-    methods: ["post"],
-    url: '/api/pcare/pendaftaran',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::store
-* @see app/Http/Controllers/Pcare/PcareController.php:1046
-* @route '/api/pcare/pendaftaran'
-*/
-store.url = (options?: RouteQueryOptions) => {
-    return store.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::store
-* @see app/Http/Controllers/Pcare/PcareController.php:1046
-* @route '/api/pcare/pendaftaran'
-*/
-store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: store.url(options),
-    method: 'post',
-})
-
-/**
 * @see \App\Http\Controllers\Pcare\PcareController::byRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:1003
-* @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
+* @see app/Http/Controllers/Pcare/PcareController.php:889
+* @route '/api/pcare/rujuk-subspesialis/rawat/{no_rawat}'
 */
 export const byRawat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: byRawat.url(args, options),
@@ -45,13 +11,13 @@ export const byRawat = (args: { no_rawat: string | number } | [no_rawat: string 
 
 byRawat.definition = {
     methods: ["get","head"],
-    url: '/api/pcare/pendaftaran/rawat/{no_rawat}',
+    url: '/api/pcare/rujuk-subspesialis/rawat/{no_rawat}',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::byRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:1003
-* @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
+* @see app/Http/Controllers/Pcare/PcareController.php:889
+* @route '/api/pcare/rujuk-subspesialis/rawat/{no_rawat}'
 */
 byRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
@@ -77,8 +43,8 @@ byRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::byRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:1003
-* @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
+* @see app/Http/Controllers/Pcare/PcareController.php:889
+* @route '/api/pcare/rujuk-subspesialis/rawat/{no_rawat}'
 */
 byRawat.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: byRawat.url(args, options),
@@ -87,17 +53,16 @@ byRawat.get = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::byRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:1003
-* @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
+* @see app/Http/Controllers/Pcare/PcareController.php:889
+* @route '/api/pcare/rujuk-subspesialis/rawat/{no_rawat}'
 */
 byRawat.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: byRawat.url(args, options),
     method: 'head',
 })
 
-const pendaftaran = {
-    store: Object.assign(store, store),
+const rujukSubspesialis = {
     byRawat: Object.assign(byRawat, byRawat),
 }
 
-export default pendaftaran
+export default rujukSubspesialis

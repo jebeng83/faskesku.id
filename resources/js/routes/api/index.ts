@@ -13,6 +13,7 @@ import users from './users'
 import menus from './menus'
 import obat from './obat'
 import resep from './resep'
+import rawatJalan from './rawat-jalan'
 import dokter from './dokter'
 import permintaanLab from './permintaan-lab'
 import radiologiTests from './radiologi-tests'
@@ -175,6 +176,7 @@ const api = {
     menus: Object.assign(menus, menus),
     obat: Object.assign(obat, obat),
     resep: Object.assign(resep, resep),
+    rawatJalan: Object.assign(rawatJalan, rawatJalan),
     dokter: Object.assign(dokter, dokter),
     labTests: Object.assign(labTests, labTests),
     permintaanLab: Object.assign(permintaanLab, permintaanLab),

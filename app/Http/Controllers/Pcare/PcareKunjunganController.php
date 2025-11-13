@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Pcare;
 use App\Http\Controllers\Controller;
 use App\Traits\BpjsTraits;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -32,6 +31,101 @@ class PcareKunjunganController extends Controller
     }
 
     /**
+     * Kirim Kunjungan PCare dari payload UI.
+     * Endpoint: POST /api/pcare/kunjungan
+     * Menerima body JSON sesuai katalog PCare, lalu diteruskan ke BPJS dengan Content-Type: text/plain.
+     * Mengembalikan response yang sudah di-decrypt/decompress jika diperlukan.
+     */
+    public function store(Request $request)
+    {
+        // Ambil payload mentah dari frontend
+        $payload = $request->all();
+
+        // Normalisasi kdTacc: Sesuai Ref_TACC BPJS, nilai valid adalah -1, 1, 2, 3, 4
+        // UI kadang mengirim 0 (dari konversi -1) atau -1 untuk "Tanpa TACC"
+        // API BPJS menerima -1 untuk "Tanpa TACC", bukan 0
+        try {
+            if (array_key_exists('kdTacc', $payload)) {
+                $v = $payload['kdTacc'];
+                // Konversi 0, -1, '-1', '', null menjadi -1 (Tanpa TACC)
+                if ($v === 0 || $v === -1 || $v === '0' || $v === '-1' || $v === '' || $v === null) {
+                    $payload['kdTacc'] = -1;
+                    $payload['alasanTacc'] = null;
+                }
+            }
+        } catch (\Throwable $e) {
+            // abaikan jika normalisasi gagal
+        }
+
+        // Jika tglDaftar dari UI berformat YYYY-MM-DD, konversi ke dd-mm-YYYY sesuai katalog
+        try {
+            if (! empty($payload['tglDaftar']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $payload['tglDaftar'])) {
+                $dt = new \DateTime($payload['tglDaftar']);
+                $payload['tglDaftar'] = $dt->format('d-m-Y');
+            }
+        } catch (\Throwable $e) {
+        }
+
+        // Kirim ke PCare
+        $result = $this->pcareRequest('POST', 'kunjungan/v1', [], $payload, [
+            'Content-Type' => 'text/plain',
+        ]);
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        // Upsert status ke DB bila tersedia nomor rawat dalam payload
+        try {
+            $noRawat = trim((string) ($payload['no_rawat'] ?? ''));
+            if ($noRawat !== '') {
+                $status = ($response->status() === 201) ? 'Terkirim' : 'Gagal';
+                // Ambil noKunjungan dari beberapa variasi struktur response
+                $noKunjungan = null;
+                if (is_array($processed)) {
+                    if (isset($processed['response'])) {
+                        $r = $processed['response'];
+                        if (is_array($r)) {
+                            if (isset($r['noKunjungan'])) {
+                                $noKunjungan = (string) $r['noKunjungan'];
+                            } elseif (isset($r[0]) && is_array($r[0]) && isset($r[0]['noKunjungan'])) {
+                                $noKunjungan = (string) $r[0]['noKunjungan'];
+                            } elseif (($r['field'] ?? '') === 'noKunjungan' && ! empty($r['message'])) {
+                                $noKunjungan = (string) $r['message'];
+                            }
+                        }
+                    } elseif (isset($processed['noKunjungan'])) {
+                        $noKunjungan = (string) $processed['noKunjungan'];
+                    }
+                }
+
+                // Simpan status dan respon mentah ke reg_periksa (penyesuaian kolom bila ada)
+                try {
+                    DB::table('reg_periksa')
+                        ->where('no_rawat', $noRawat)
+                        ->update([
+                            'status_pcare' => $status,
+                            'response_pcare' => is_array($processed) ? json_encode($processed) : (string) $processed,
+                            'updated_at' => now(),
+                        ]);
+                } catch (\Throwable $e) {
+                    Log::warning('Gagal update status_pcare di reg_periksa', ['no_rawat' => $noRawat, 'error' => $e->getMessage()]);
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::error('Gagal menyimpan data kunjungan ke DB', ['error' => $e->getMessage()]);
+        }
+
+        // Kembalikan hasil sesuai HTTP status asli dari PCare
+        if (is_array($processed)) {
+            return response()->json($processed, $response->status());
+        }
+
+        // Fallback: bila processed bukan array (decrypt gagal atau bukan wrapper JSON)
+        return response($processed, $response->status())
+            ->header('Content-Type', 'application/json');
+    }
+
+    /**
      * Tampilkan data kunjungan dari DB berdasarkan nomor rawat.
      */
     public function show(string $noRawat)
@@ -39,7 +133,7 @@ class PcareKunjunganController extends Controller
         try {
             $kunjungan = $this->getKunjunganData($noRawat);
 
-            if (!$kunjungan) {
+            if (! $kunjungan) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Data kunjungan tidak ditemukan',
@@ -51,7 +145,7 @@ class PcareKunjunganController extends Controller
                 'data' => $kunjungan,
             ]);
         } catch (\Throwable $e) {
-            Log::error('Error getting kunjungan data: ' . $e->getMessage(), [
+            Log::error('Error getting kunjungan data: '.$e->getMessage(), [
                 'noRawat' => $noRawat,
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
@@ -59,7 +153,7 @@ class PcareKunjunganController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Internal server error: ' . $e->getMessage(),
+                'message' => 'Internal server error: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -76,7 +170,7 @@ class PcareKunjunganController extends Controller
             ]);
 
             $kunjungan = $this->getKunjunganData($noRawat);
-            if (!$kunjungan) {
+            if (! $kunjungan) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Data kunjungan tidak ditemukan',
@@ -104,13 +198,14 @@ class PcareKunjunganController extends Controller
             }
 
             $errorMessage = $response['message'] ?? 'Gagal mengirim data ke BPJS PCare';
+
             return response()->json([
                 'success' => false,
                 'message' => $errorMessage,
                 'data' => $response,
             ], 400);
         } catch (\Throwable $e) {
-            Log::error('Error kirim ulang kunjungan: ' . $e->getMessage(), [
+            Log::error('Error kirim ulang kunjungan: '.$e->getMessage(), [
                 'noRawat' => $noRawat,
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
@@ -118,7 +213,7 @@ class PcareKunjunganController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Internal server error: ' . $e->getMessage(),
+                'message' => 'Internal server error: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -143,13 +238,14 @@ class PcareKunjunganController extends Controller
             foreach ($request->no_rawat as $noRawat) {
                 try {
                     $kunjungan = $this->getKunjunganData($noRawat);
-                    if (!$kunjungan) {
+                    if (! $kunjungan) {
                         $results[] = [
                             'no_rawat' => $noRawat,
                             'success' => false,
                             'message' => 'Data tidak ditemukan',
                         ];
                         $failCount++;
+
                         continue;
                     }
 
@@ -177,7 +273,7 @@ class PcareKunjunganController extends Controller
                     $results[] = [
                         'no_rawat' => $noRawat,
                         'success' => false,
-                        'message' => 'Error: ' . $e->getMessage(),
+                        'message' => 'Error: '.$e->getMessage(),
                     ];
                     $failCount++;
                 }
@@ -194,10 +290,11 @@ class PcareKunjunganController extends Controller
                 'results' => $results,
             ]);
         } catch (\Throwable $e) {
-            Log::error('Error kirim ulang batch: ' . $e->getMessage());
+            Log::error('Error kirim ulang batch: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Internal server error: ' . $e->getMessage(),
+                'message' => 'Internal server error: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -210,7 +307,7 @@ class PcareKunjunganController extends Controller
     {
         try {
             $kunjungan = $this->getKunjunganData($noRawat);
-            if (!$kunjungan) {
+            if (! $kunjungan) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Data kunjungan tidak ditemukan',
@@ -218,6 +315,7 @@ class PcareKunjunganController extends Controller
             }
 
             $payload = $this->preparePcareKunjunganData($kunjungan);
+
             return response()->json([
                 'success' => true,
                 'payload' => $payload,
@@ -225,7 +323,7 @@ class PcareKunjunganController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Internal server error: ' . $e->getMessage(),
+                'message' => 'Internal server error: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -257,7 +355,8 @@ class PcareKunjunganController extends Controller
 
             return $kunjungan;
         } catch (\Throwable $e) {
-            Log::error('Error getting kunjungan from database: ' . $e->getMessage());
+            Log::error('Error getting kunjungan from database: '.$e->getMessage());
+
             return null;
         }
     }
@@ -293,7 +392,7 @@ class PcareKunjunganController extends Controller
         // Parse tensi menjadi sistole/diastole
         $sistole = 120;
         $diastole = 80;
-        if ($pemeriksaanData && !empty($pemeriksaanData->tensi) && strpos($pemeriksaanData->tensi, '/') !== false) {
+        if ($pemeriksaanData && ! empty($pemeriksaanData->tensi) && strpos($pemeriksaanData->tensi, '/') !== false) {
             $tensiParts = explode('/', $pemeriksaanData->tensi);
             $sistole = (int) trim($tensiParts[0]) ?: 120;
             $diastole = (int) trim($tensiParts[1]) ?: 80;
@@ -311,7 +410,7 @@ class PcareKunjunganController extends Controller
         if ($terapiObatData->isNotEmpty()) {
             $terapiObatArray = [];
             foreach ($terapiObatData as $obat) {
-                $terapiObatArray[] = $obat->nama_brng . ' ' . $obat->jml . ' [' . $obat->aturan_pakai . ']';
+                $terapiObatArray[] = $obat->nama_brng.' '.$obat->jml.' ['.$obat->aturan_pakai.']';
             }
             $terapiObatString = implode(', ', $terapiObatArray);
         }
@@ -340,7 +439,7 @@ class PcareKunjunganController extends Controller
             'kdPoliRujukInternal' => null,
             // rujuLanjut dapat diisi dari request bila ada; default null
             'rujukLanjut' => null,
-            'kdTacc' => 0,
+            'kdTacc' => -1, // Sesuai Ref_TACC: -1 = "Tanpa TACC"
             'alasanTacc' => null,
             'anamnesa' => (string) ($pemeriksaanData->keluhan ?? 'Tidak Ada'),
             'alergiMakan' => '00',
@@ -360,9 +459,9 @@ class PcareKunjunganController extends Controller
     private function sendKunjunganToPcare(array $data): array
     {
         try {
-            Log::info('Sending kunjungan to PCare', ['payload_preview' => array_intersect_key($data, array_flip(['noKartu','tglDaftar','kdPoli','kdDokter','kdDiag1']))]);
+            Log::info('Sending kunjungan to PCare', ['payload_preview' => array_intersect_key($data, array_flip(['noKartu', 'tglDaftar', 'kdPoli', 'kdDokter', 'kdDiag1']))]);
 
-            $result = $this->pcareRequest('POST', 'kunjungan', [], $data, [
+            $result = $this->pcareRequest('POST', 'kunjungan/v1', [], $data, [
                 'Content-Type' => 'text/plain',
             ]);
             $response = $result['response'];
@@ -416,16 +515,18 @@ class PcareKunjunganController extends Controller
             }
 
             Log::error('PCare response invalid', ['body_excerpt' => substr($response->body() ?? '', 0, 500)]);
+
             return [
                 'success' => false,
                 'message' => 'Response invalid atau tidak sesuai format PCare',
                 'status' => $response->status(),
             ];
         } catch (\Throwable $e) {
-            Log::error('Error sending to PCare: ' . $e->getMessage());
+            Log::error('Error sending to PCare: '.$e->getMessage());
+
             return [
                 'success' => false,
-                'message' => 'Error: ' . $e->getMessage(),
+                'message' => 'Error: '.$e->getMessage(),
             ];
         }
     }
@@ -444,7 +545,7 @@ class PcareKunjunganController extends Controller
                     'updated_at' => now(),
                 ]);
         } catch (\Throwable $e) {
-            Log::error('Error updating kunjungan status: ' . $e->getMessage());
+            Log::error('Error updating kunjungan status: '.$e->getMessage());
         }
     }
 }

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) {
     const [query, setQuery] = useState('');
@@ -6,20 +6,59 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) 
     const [selected, setSelected] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // TODO: Ganti dengan pencarian ICD dari API bila tersedia
-    const mockIcd = useMemo(() => [
-        { kode: 'A09', nama: 'Diare dan gastroenteritis' },
-        { kode: 'I10', nama: 'Hipertensi esensial' },
-        { kode: 'E11', nama: 'Diabetes mellitus tipe 2' },
-        { kode: 'J06', nama: 'Infeksi saluran napas atas akut' },
-    ], []);
+    // Data hasil pencarian dari endpoint PCare
+    const [results, setResults] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [errorMsg, setErrorMsg] = useState('');
+    const [saveStatus, setSaveStatus] = useState(null); // { type: 'success'|'error', message: string }
 
-    const filtered = useMemo(() => {
-        const q = query.toLowerCase();
-        return mockIcd.filter((d) => d.kode.toLowerCase().includes(q) || d.nama.toLowerCase().includes(q)).slice(0, 10);
-    }, [query, mockIcd]);
+    // Fetch diagnosa dari API PCare saat mengetik (debounce sederhana)
+    useEffect(() => {
+        const handle = setTimeout(async () => {
+            try {
+                setLoading(true);
+                setErrorMsg('');
+                const params = new URLSearchParams({ q: query, start: 0, limit: 25 });
+                const res = await fetch(`/api/pcare/diagnosa?${params.toString()}`, { headers: { Accept: 'application/json' } });
+                const json = await res.json();
+                const list = json?.response?.list || json?.list || json?.data || [];
+                const mapped = list.map((it) => ({ kode: it?.kdDiag || it?.kode || '', nama: it?.nmDiag || it?.nama || '' }));
+                setResults(mapped);
+            } catch (e) {
+                setErrorMsg(e?.message || 'Gagal memuat data diagnosa');
+                setResults([]);
+            } finally {
+                setLoading(false);
+            }
+        }, 350);
+
+        return () => clearTimeout(handle);
+    }, [query]);
+
+    // Load diagnosa yang sudah tersimpan dari backend saat komponen mount atau noRawat berubah
+    useEffect(() => {
+        const loadSavedDiagnosa = async () => {
+            if (!noRawat) return;
+            try {
+                setSaveStatus(null);
+                const params = new URLSearchParams({ no_rawat: noRawat });
+                const res = await fetch(`/api/rawat-jalan/diagnosa?${params.toString()}`, { headers: { Accept: 'application/json' } });
+                const json = await res.json();
+                const list = json?.data || [];
+                // Map ke struktur lokal: { kode, nama, type }
+                const mapped = list.map((it) => ({ kode: it.kode, nama: it.nama, type: it.type }));
+                setSelected(mapped);
+            } catch (e) {
+                // Abaikan error muat awal; tampilkan daftar kosong
+                console.warn('Gagal memuat diagnosa tersimpan:', e?.message);
+            }
+        };
+        loadSavedDiagnosa();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [noRawat]);
 
     const addDiagnosis = (diag) => {
+        if (!diag?.kode) return;
         if (selected.find((s) => s.kode === diag.kode)) return;
         setSelected((prev) => [...prev, { ...diag, type }]);
     };
@@ -32,10 +71,23 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) 
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            // TODO: Integrasikan ke endpoint diagnosa
-            // await axios.post(route('diagnosa.store'), { list: selected, no_rawat: noRawat, t: token });
-            console.log('Submit Diagnosa', { token, noRkmMedis, noRawat, selected });
-            setSelected([]);
+            setSaveStatus(null);
+            // Kirim ke endpoint API untuk menyimpan diagnosa pasien
+            const res = await fetch('/api/rawat-jalan/diagnosa', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify({ no_rawat: noRawat, list: selected }),
+            });
+            const json = await res.json();
+            if (!res.ok) {
+                throw new Error(json?.message || 'Gagal menyimpan diagnosa');
+            }
+            const list = json?.data || [];
+            const mapped = list.map((it) => ({ kode: it.kode, nama: it.nama, type: it.type }));
+            setSelected(mapped);
+            setSaveStatus({ type: 'success', message: 'Diagnosa berhasil disimpan' });
+        } catch (e) {
+            setSaveStatus({ type: 'error', message: e?.message || 'Gagal menyimpan diagnosa' });
         } finally {
             setIsSubmitting(false);
         }
@@ -57,6 +109,15 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) 
                 </div>
             </div>
             <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-6">
+                {saveStatus?.message && (
+                    <div className={`px-4 py-2 rounded-md border text-sm ${
+                        saveStatus.type === 'success'
+                            ? 'bg-green-50 text-green-700 border-green-200'
+                            : 'bg-red-50 text-red-700 border-red-200'
+                    }`}>
+                        {saveStatus.message}
+                    </div>
+                )}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                     <div className="lg:col-span-7">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -102,21 +163,25 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) 
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <h4 className="text-sm font-medium text-gray-900 dark:text-white">Hasil Pencarian</h4>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">{filtered.length} hasil ditemukan</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">{results.length} hasil ditemukan</span>
                         </div>
-                        {filtered.length > 0 ? (
+                        {loading ? (
+                            <div className="px-4 py-6 text-sm text-gray-500 dark:text-gray-400">Memuat…</div>
+                        ) : errorMsg ? (
+                            <div className="px-4 py-6 text-sm text-red-600 dark:text-red-400">{errorMsg}</div>
+                        ) : results.length > 0 ? (
                             <div className="bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600 rounded-lg divide-y divide-gray-200 dark:divide-gray-600 max-h-64 overflow-y-auto">
-                                {filtered.map((d) => {
+                                {results.map((d) => {
                                     const isSelected = selected.find((s) => s.kode === d.kode);
                                     return (
-                                        <button 
-                                            key={d.kode} 
-                                            type="button" 
-                                            onClick={() => addDiagnosis(d)} 
+                                        <button
+                                            key={d.kode}
+                                            type="button"
+                                            onClick={() => addDiagnosis(d)}
                                             disabled={isSelected}
                                             className={`w-full text-left px-4 py-3 transition-colors ${
-                                                isSelected 
-                                                    ? 'bg-green-50 dark:bg-green-900/20 cursor-not-allowed' 
+                                                isSelected
+                                                    ? 'bg-green-50 dark:bg-green-900/20 cursor-not-allowed'
                                                     : 'hover:bg-white dark:hover:bg-gray-600/50 cursor-pointer'
                                             }`}
                                         >

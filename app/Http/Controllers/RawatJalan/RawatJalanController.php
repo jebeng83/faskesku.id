@@ -599,6 +599,120 @@ class RawatJalanController extends Controller
     }
 
     /**
+     * Ambil daftar diagnosa pasien (ICD-10) untuk no_rawat tertentu.
+     * Sumber: tabel diagnosa_pasien bergabung dengan penyakit untuk nama.
+     * Response: { data: [{ kode, nama, prioritas, type }] }
+     */
+    public function getDiagnosaPasien(Request $request)
+    {
+        $validated = $request->validate([
+            'no_rawat' => 'required|string|max:17',
+        ]);
+
+        $rows = DB::table('diagnosa_pasien')
+            ->join('penyakit', 'diagnosa_pasien.kd_penyakit', '=', 'penyakit.kd_penyakit')
+            ->where('diagnosa_pasien.no_rawat', $validated['no_rawat'])
+            ->orderBy('diagnosa_pasien.prioritas')
+            ->get(['diagnosa_pasien.kd_penyakit', 'penyakit.nm_penyakit', 'diagnosa_pasien.prioritas']);
+
+        $data = $rows->map(function ($row) {
+            $type = ((string)$row->prioritas === '1') ? 'utama' : 'sekunder';
+            return [
+                'kode' => $row->kd_penyakit,
+                'nama' => $row->nm_penyakit,
+                'prioritas' => (string)$row->prioritas,
+                'type' => $type,
+            ];
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
+    /**
+     * Simpan daftar diagnosa pasien (ICD-10) untuk no_rawat tertentu.
+     * - Menghapus diagnosa sebelumnya dan menulis ulang berdasarkan urutan input.
+     * - Memastikan hanya ada satu diagnosa utama (prioritas = 1).
+     * - Diagnosa sekunder akan diberi prioritas 2 dan 3 sesuai urutan.
+     * Request: { no_rawat: string, list: [{ kode: string, type: 'utama'|'sekunder' }] }
+     */
+    public function storeDiagnosaPasien(Request $request)
+    {
+        $validated = $request->validate([
+            'no_rawat' => 'required|string|max:17',
+            'list' => 'required|array|min:1|max:3',
+            'list.*.kode' => 'required|string|max:10',
+            'list.*.type' => 'required|in:utama,sekunder',
+        ]);
+
+        $no_rawat = $validated['no_rawat'];
+        $list = collect($validated['list']);
+
+        // Susun ulang: pastikan utama di posisi pertama, sisanya sekunder urut sesuai input
+        $utama = $list->firstWhere('type', 'utama');
+        $sekunder = $list->filter(fn ($it) => ($it['type'] ?? '') === 'sekunder');
+        $ordered = collect([]);
+        if ($utama) {
+            $ordered->push($utama);
+        }
+        foreach ($sekunder as $it) {
+            $ordered->push($it);
+        }
+
+        // Batasi maksimal 3 diagnosa
+        $ordered = $ordered->take(3)->values();
+
+        DB::beginTransaction();
+        try {
+            // Hapus diagnosa lama
+            DB::table('diagnosa_pasien')->where('no_rawat', $no_rawat)->delete();
+
+            // Tulis diagnosa baru dengan prioritas 1..3 dan status Ralan (bila kolom tersedia)
+            $prioritas = 1;
+            foreach ($ordered as $item) {
+                $row = [
+                    'no_rawat' => $no_rawat,
+                    'kd_penyakit' => $item['kode'],
+                    'prioritas' => (string)$prioritas,
+                ];
+
+                // Beberapa skema memiliki kolom 'status' (Ralan/Ranap). Sertakan bila ada.
+                // Kita tidak dapat mendeteksi skema di sini, jadi gunakan try-catch pada insert, dan ulang tanpa status bila gagal.
+                try {
+                    DB::table('diagnosa_pasien')->insert(array_merge($row, ['status' => 'Ralan']));
+                } catch (\Throwable $e) {
+                    DB::table('diagnosa_pasien')->insert($row);
+                }
+
+                $prioritas++;
+            }
+
+            DB::commit();
+
+            // Kembalikan daftar terbaru untuk ditampilkan di UI
+            $rows = DB::table('diagnosa_pasien')
+                ->join('penyakit', 'diagnosa_pasien.kd_penyakit', '=', 'penyakit.kd_penyakit')
+                ->where('diagnosa_pasien.no_rawat', $no_rawat)
+                ->orderBy('diagnosa_pasien.prioritas')
+                ->get(['diagnosa_pasien.kd_penyakit', 'penyakit.nm_penyakit', 'diagnosa_pasien.prioritas']);
+
+            $data = $rows->map(function ($row) {
+                $type = ((string)$row->prioritas === '1') ? 'utama' : 'sekunder';
+                return [
+                    'kode' => $row->kd_penyakit,
+                    'nama' => $row->nm_penyakit,
+                    'prioritas' => (string)$row->prioritas,
+                    'type' => $type,
+                ];
+            });
+
+            return response()->json(['message' => 'Diagnosa tersimpan', 'data' => $data]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Gagal menyimpan diagnosa', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
      * Pencarian pegawai (petugas) untuk dropdown: q by nama/nik
      */
     public function searchPegawai(Request $request)
