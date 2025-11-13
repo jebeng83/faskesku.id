@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::subspesialis
-* @see app/Http/Controllers/Pcare/PcareController.php:738
+* @see app/Http/Controllers/Pcare/PcareController.php:1568
 * @route '/api/pcare/spesialis/rujuk/subspesialis/{kdSubSpesialis}/sarana/{kdSarana}/tglEstRujuk/{tglEstRujuk}'
 */
 export const subspesialis = (args: { kdSubSpesialis: string | number, kdSarana: string | number, tglEstRujuk: string | number } | [kdSubSpesialis: string | number, kdSarana: string | number, tglEstRujuk: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ subspesialis.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::subspesialis
-* @see app/Http/Controllers/Pcare/PcareController.php:738
+* @see app/Http/Controllers/Pcare/PcareController.php:1568
 * @route '/api/pcare/spesialis/rujuk/subspesialis/{kdSubSpesialis}/sarana/{kdSarana}/tglEstRujuk/{tglEstRujuk}'
 */
 subspesialis.url = (args: { kdSubSpesialis: string | number, kdSarana: string | number, tglEstRujuk: string | number } | [kdSubSpesialis: string | number, kdSarana: string | number, tglEstRujuk: string | number ], options?: RouteQueryOptions) => {
@@ -45,7 +45,7 @@ subspesialis.url = (args: { kdSubSpesialis: string | number, kdSarana: string | 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::subspesialis
-* @see app/Http/Controllers/Pcare/PcareController.php:738
+* @see app/Http/Controllers/Pcare/PcareController.php:1568
 * @route '/api/pcare/spesialis/rujuk/subspesialis/{kdSubSpesialis}/sarana/{kdSarana}/tglEstRujuk/{tglEstRujuk}'
 */
 subspesialis.get = (args: { kdSubSpesialis: string | number, kdSarana: string | number, tglEstRujuk: string | number } | [kdSubSpesialis: string | number, kdSarana: string | number, tglEstRujuk: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -55,7 +55,7 @@ subspesialis.get = (args: { kdSubSpesialis: string | number, kdSarana: string | 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::subspesialis
-* @see app/Http/Controllers/Pcare/PcareController.php:738
+* @see app/Http/Controllers/Pcare/PcareController.php:1568
 * @route '/api/pcare/spesialis/rujuk/subspesialis/{kdSubSpesialis}/sarana/{kdSarana}/tglEstRujuk/{tglEstRujuk}'
 */
 subspesialis.head = (args: { kdSubSpesialis: string | number, kdSarana: string | number, tglEstRujuk: string | number } | [kdSubSpesialis: string | number, kdSarana: string | number, tglEstRujuk: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({

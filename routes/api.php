@@ -10,6 +10,7 @@ use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RawatJalan\ObatController;
 use App\Http\Controllers\RawatJalan\ResepController;
+use App\Http\Controllers\RawatJalan\RawatJalanController;
 use App\Http\Controllers\API\DokterController;
 use App\Http\Controllers\API\PatientController as ApiPatientController;
 use App\Http\Controllers\API\ReferenceController;
@@ -114,6 +115,10 @@ Route::get('/resep/pasien/{no_rkm_medis}', [ResepController::class, 'getByNoRkmM
 Route::get('/resep/{no_resep}', [ResepController::class, 'getResep'])->name('api.resep.get');
 Route::delete('/resep/{no_resep}', [ResepController::class, 'destroy'])->where('no_resep', '.*')->name('api.resep.delete');
 
+// API routes untuk diagnosa pasien (Rawat Jalan)
+Route::get('/rawat-jalan/diagnosa', [RawatJalanController::class, 'getDiagnosaPasien'])->name('api.rawat-jalan.diagnosa.index');
+Route::post('/rawat-jalan/diagnosa', [RawatJalanController::class, 'storeDiagnosaPasien'])->name('api.rawat-jalan.diagnosa.store');
+
 // API routes untuk dokter
 Route::get('/dokter', [DokterController::class, 'index'])->name('api.dokter.index');
 Route::get('/dokter/{kd_dokter}', [DokterController::class, 'show'])->name('api.dokter.show');
@@ -176,6 +181,8 @@ Route::prefix('pcare')->group(function () {
         ->where('endpoint','.*')
         ->name('api.pcare.proxy');
     Route::get('/dokter', [PcareController::class, 'getDokter'])->name('api.pcare.dokter');
+    // Referensi Diagnosa (PCare)
+    Route::get('/diagnosa', [PcareController::class, 'getDiagnosa'])->name('api.pcare.diagnosa');
     Route::get('/faskes', [PcareController::class, 'getFaskes'])->name('api.pcare.faskes');
     Route::get('/poli', [PcareController::class, 'getPoli'])->name('api.pcare.poli');
     Route::get('/kesadaran', [PcareController::class, 'getKesadaran'])->name('api.pcare.kesadaran');
@@ -191,7 +198,7 @@ Route::prefix('pcare')->group(function () {
     Route::get('/statuspulang', [PcareController::class, 'getStatusPulang'])->name('api.pcare.statuspulang');
     Route::get('/spesialis/rujuk/subspesialis/{kdSubSpesialis}/sarana/{kdSarana}/tglEstRujuk/{tglEstRujuk}', [PcareController::class, 'getFaskesRujukanSubSpesialis'])->name('api.pcare.faskes-rujukan.subspesialis');
     Route::get('/peserta/{noka}/{tglPelayanan}', [PcareController::class, 'pesertaByNoKartu'])->name('api.pcare.peserta-nokartu');
-    Route::post('/kunjungan', [PcareController::class, 'daftarKunjungan'])->name('api.pcare.kunjungan.store');
+    Route::post('/kunjungan', [PcareKunjunganController::class, 'store'])->name('api.pcare.kunjungan.store');
     // Add Data Pendaftaran (PCare)
     Route::post('/pendaftaran', [PcareController::class, 'addPendaftaran'])->name('api.pcare.pendaftaran.store');
     // Get latest pendaftaran by nomor rawat
@@ -202,6 +209,13 @@ Route::prefix('pcare')->group(function () {
     Route::get('/kunjungan/preview/{no_rawat}', [PcareKunjunganController::class, 'preview'])
         ->where('no_rawat', '.*')
         ->name('api.pcare.kunjungan.preview');
+    // Get rujukan subspesialis by nomor rawat
+    Route::get('/rujuk-subspesialis/rawat/{no_rawat}', [PcareController::class, 'getRujukanSubspesialisByRawat'])
+        ->where('no_rawat', '.*')
+        ->name('api.pcare.rujuk-subspesialis.by-rawat');
+    // Get kabupaten config
+    Route::get('/config/kabupaten', [PcareController::class, 'getKabupatenConfig'])
+        ->name('api.pcare.config.kabupaten');
 });
 
 // Mobile JKN API Routes

@@ -48,7 +48,8 @@ export default function LayananPcare() {
   const [kdDokter, setKdDokter] = useState('');
   const [kdPoli, setKdPoli] = useState('');
   const [kdSadar, setKdSadar] = useState('');
-  const [kdStatusPulang, setKdStatusPulang] = useState('');
+  const [kdStatusPulang, setKdStatusPulang] = useState(''); // default hidden; card Rujukan akan otomatis terbuka saat memilih kode 4
+  const [nmStatusPulang, setNmStatusPulang] = useState(''); // label otomatis dari referensi Status Pulang
   const [kdPrognosa, setKdPrognosa] = useState('');
   const [kdDiag1, setKdDiag1] = useState('');
   const [kdDiag2, setKdDiag2] = useState('');
@@ -68,14 +69,7 @@ export default function LayananPcare() {
   const [faskesError, setFaskesError] = useState(null);
 
   // Referensi options
-  const [dokterOptions, setDokterOptions] = useState([]);
-  const [poliOptions, setPoliOptions] = useState([]);
-  const [diagOptions, setDiagOptions] = useState([]);
-  const [kesadaranOptions, setKesadaranOptions] = useState([]);
-  const [statusPulangOptions, setStatusPulangOptions] = useState([]);
-  const [prognosaOptions, setPrognosaOptions] = useState([]);
-  const [subSpesialisOptions, setSubSpesialisOptions] = useState([]);
-  const [saranaOptions, setSaranaOptions] = useState([]);
+  // Pilihan referensi akan diambil langsung oleh SearchableSelect dari ReferensiPcare
 
   // Fetch peserta by NIK atau No Kartu
   // Dapat menerima override parameter agar bisa dipanggil segera setelah prefill dari query string
@@ -212,70 +206,7 @@ export default function LayananPcare() {
     }
   }, [initializedFromQuery]);
 
-  // Fetch referensi awal (dokter, poli, kesadaran, prognosa, status pulang)
-  useEffect(() => {
-    const loadInitRefs = async () => {
-      try {
-        // Catatan: sebagian endpoint referensi berada di routes/web.php (/pcare/api/*)
-        // dan sebagian lagi berada di routes/api.php (/api/pcare/*).
-        // Untuk menghindari 404, gunakan path yang sesuai dengan definisi route.
-        const [dokterRes, poliRes, kesRes, progRes, statRes] = await Promise.all([
-          fetch('/pcare/api/dokter?start=0&limit=100'), // web.php
-          fetch('/pcare/api/poli?start=0&limit=200'),    // web.php
-          fetch('/api/pcare/kesadaran'),                 // api.php
-          fetch('/api/pcare/prognosa'),                  // api.php
-          fetch('/api/pcare/statuspulang'),              // api.php
-        ]);
-        const dokterJson = await dokterRes.json();
-        const poliJson = await poliRes.json();
-        const kesJson = await kesRes.json();
-        const progJson = await progRes.json();
-        const statJson = await statRes.json();
-        const listOrData = (obj) => obj?.response?.list || obj?.list || obj?.data || [];
-        setDokterOptions(listOrData(dokterJson).map((it) => ({ value: it?.kdDokter || it?.kdProvider || it?.kode || '', label: it?.nmDokter || it?.nmProvider || it?.nama || '' })));
-        setPoliOptions(listOrData(poliJson).map((it) => ({ value: it?.kdPoli || it?.kode || '', label: it?.nmPoli || it?.nama || '' })));
-        setKesadaranOptions(listOrData(kesJson).map((it) => ({ value: it?.kdSadar || it?.kode || '', label: it?.nmSadar || it?.nama || '' })));
-        setPrognosaOptions(listOrData(progJson).map((it) => ({ value: it?.kdPrognosa || it?.kode || '', label: it?.nmPrognosa || it?.nama || '' })));
-        setStatusPulangOptions(listOrData(statJson).map((it) => ({ value: it?.kdStatusPulang || it?.kode || '', label: it?.nmStatusPulang || it?.nama || '' })));
-      } catch (_) {}
-    };
-    loadInitRefs();
-  }, []);
-
-  // Fetch referensi rujukan (subspesialis, sarana)
-  useEffect(() => {
-    const loadRujukRefs = async () => {
-      try {
-        const [subRes, sarRes] = await Promise.all([
-          fetch('/api/pcare/spesialis/subspesialis?start=0&limit=100'), // api.php
-          fetch('/api/pcare/spesialis/sarana?start=0&limit=100'),       // api.php
-        ]);
-        const subJson = await subRes.json();
-        const sarJson = await sarRes.json();
-        const listOrData = (obj) => obj?.response?.list || obj?.list || obj?.data || [];
-        setSubSpesialisOptions(listOrData(subJson).map((it) => ({ value: it?.kdSubSpesialis || it?.kode || '', label: it?.nmSubSpesialis || it?.nama || '' })));
-        setSaranaOptions(listOrData(sarJson).map((it) => ({ value: it?.kdSarana || it?.kode || '', label: it?.nmSarana || it?.nama || '' })));
-      } catch (_) {}
-    };
-    loadRujukRefs();
-  }, []);
-
-  // Fetch diagnosa berdasarkan keyword (client-side filter untuk SearchableSelect)
-  const loadDiagnosa = async (q = '-') => {
-    try {
-      const params = new URLSearchParams({ q, start: 0, limit: 25 });
-      const res = await fetch(`/pcare/api/diagnosa?${params.toString()}`);
-      const json = await res.json();
-      const list = json?.response?.list || json?.list || json?.data || [];
-      const opts = list.map((it) => ({ value: it?.kdDiag || it?.kode || '', label: `${it?.kdDiag || it?.kode || ''} — ${it?.nmDiag || it?.nama || ''}` }));
-      setDiagOptions(opts);
-    } catch (_) {}
-  };
-
-  useEffect(() => {
-    // Prefetch default diagnosa list
-    loadDiagnosa('-');
-  }, []);
+  // Tidak perlu prefetch manual; SearchableSelect akan memuat referensi saat dibuka.
 
   // Load Faskes Rujukan berdasarkan subspesialis + sarana + tanggal estimasi
   const loadFaskesRujukan = async () => {
@@ -341,6 +272,7 @@ export default function LayananPcare() {
         lingkarPerut: String(lingkarPerut || ''),
         suhu: String(suhu || ''),
         kdStatusPulang: String(kdStatusPulang || ''),
+        nmStatusPulang: String(nmStatusPulang || ''),
         tglPulang: tglPulang ? toDdMmYy(tglPulang) : '',
         kdDokter: String(kdDokter),
         kdDiag1: String(kdDiag1),
@@ -352,12 +284,17 @@ export default function LayananPcare() {
         alasanTacc: '',
       };
 
+      // nmStatusPulang diisi dari referensi yang dipilih melalui onSelect
+
       if (rujukAktif && kdSubSpesialis && kdSarana && tglEstRujuk && kdFaskesRujuk) {
         payload.rujukLanjut = {
-          kdSubSpesialis: String(kdSubSpesialis),
-          kdSarana: String(kdSarana),
-          kdProvider: String(kdFaskesRujuk),
+          kdppk: String(kdFaskesRujuk),
           tglEstRujuk: toDdMmYy(tglEstRujuk),
+          subSpesialis: {
+            kdSubSpesialis1: String(kdSubSpesialis),
+            kdSarana: String(kdSarana),
+          },
+          khusus: null,
         };
       }
 
@@ -381,6 +318,21 @@ export default function LayananPcare() {
       setKirimLoading(false);
     }
   };
+
+  // Logic baru: otomatis buka/tutup card Rujukan berdasarkan Status Pulang
+  useEffect(() => {
+    const active = String(kdStatusPulang) === '4';
+    setRujukAktif(active);
+    if (!active) {
+      // Reset isian rujukan saat ditutup
+      setKdSubSpesialis('');
+      setKdSarana('');
+      setTglEstRujuk('');
+      setKdFaskesRujuk('');
+      setFaskesOptions([]);
+      setFaskesError(null);
+    }
+  }, [kdStatusPulang]);
 
   return (
     <div className="p-4">
@@ -549,26 +501,35 @@ export default function LayananPcare() {
           <div className="mt-3 grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="rounded-lg border border-slate-200 p-3">
               <div className="text-xs text-slate-500 mb-1">Dokter</div>
-              <SearchableSelect options={dokterOptions} value={kdDokter} onChange={setKdDokter} placeholder="Pilih dokter" />
+              <SearchableSelect source="dokter" value={kdDokter} onChange={setKdDokter} placeholder="Pilih dokter" />
               <div className="mt-3 text-xs text-slate-500 mb-1">Poli</div>
-              <SearchableSelect options={poliOptions} value={kdPoli} onChange={setKdPoli} placeholder="Pilih poli" />
+              <SearchableSelect source="poli" value={kdPoli} onChange={setKdPoli} placeholder="Pilih poli" />
               <div className="mt-3 text-xs text-slate-500 mb-1">Kesadaran</div>
-              <SearchableSelect options={kesadaranOptions} value={kdSadar} onChange={setKdSadar} placeholder="Pilih kesadaran" />
+              <SearchableSelect source="kesadaran" value={kdSadar} onChange={setKdSadar} placeholder="Pilih kesadaran" />
               <div className="mt-3 text-xs text-slate-500 mb-1">Status Pulang</div>
-              <SearchableSelect options={statusPulangOptions} value={kdStatusPulang} onChange={setKdStatusPulang} placeholder="Pilih status pulang" />
+              <SearchableSelect 
+                source="statuspulang" 
+                value={kdStatusPulang} 
+                onChange={(val) => { 
+                  setKdStatusPulang(val); 
+                  if (!val) setNmStatusPulang(''); 
+                }} 
+                onSelect={(opt) => { 
+                  const label = typeof opt === 'string' ? opt : (opt?.label ?? ''); 
+                  setNmStatusPulang(label); 
+                }} 
+                placeholder="Pilih status pulang" 
+              />
               <div className="mt-3 text-xs text-slate-500 mb-1">Prognosa</div>
-              <SearchableSelect options={prognosaOptions} value={kdPrognosa} onChange={setKdPrognosa} placeholder="Pilih prognosa" />
+              <SearchableSelect source="prognosa" value={kdPrognosa} onChange={setKdPrognosa} placeholder="Pilih prognosa" />
             </div>
             <div className="rounded-lg border border-slate-200 p-3">
               <div className="text-xs text-slate-500 mb-1">Diagnosa Utama</div>
               <div className="grid grid-cols-1 gap-2">
-                <div className="flex gap-2">
-                  <input className="flex-1 rounded-md border-slate-300 text-sm" placeholder="Cari diagnosa (ICD-10)" onChange={(e) => loadDiagnosa(e.target.value)} />
-                </div>
-                <SearchableSelect options={diagOptions} value={kdDiag1} onChange={setKdDiag1} placeholder="Pilih diagnosa utama" />
+                <SearchableSelect source="diagnosa" value={kdDiag1} onChange={setKdDiag1} placeholder="Pilih diagnosa utama" />
                 <div className="mt-2 text-xs text-slate-500 mb-1">Diagnosa Sekunder (Opsional)</div>
-                <SearchableSelect options={diagOptions} value={kdDiag2} onChange={setKdDiag2} placeholder="Diagnosa 2 (opsional)" />
-                <SearchableSelect options={diagOptions} value={kdDiag3} onChange={setKdDiag3} placeholder="Diagnosa 3 (opsional)" />
+                <SearchableSelect source="diagnosa" value={kdDiag2} onChange={setKdDiag2} placeholder="Diagnosa 2 (opsional)" />
+                <SearchableSelect source="diagnosa" value={kdDiag3} onChange={setKdDiag3} placeholder="Diagnosa 3 (opsional)" />
               </div>
             </div>
           </div>
@@ -596,21 +557,17 @@ export default function LayananPcare() {
         <div className="flex items-center justify-between">
           <div>
             <div className="text-sm font-semibold text-slate-800">Rujukan PCare</div>
-            <div className="text-xs text-slate-500">Centang untuk menambahkan data rujukan ke payload kunjungan.</div>
+            <div className="text-xs text-slate-500">Rujukan otomatis terbuka ketika Status Pulang = 4 (Rujuk Vertikal).</div>
           </div>
-          <label className="inline-flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={rujukAktif} onChange={(e) => setRujukAktif(e.target.checked)} />
-            Aktifkan
-          </label>
         </div>
 
         {rujukAktif && (
           <div className="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="rounded-lg border border-slate-200 p-3">
               <div className="text-xs text-slate-500 mb-1">Subspesialis</div>
-              <SearchableSelect options={subSpesialisOptions} value={kdSubSpesialis} onChange={setKdSubSpesialis} placeholder="Pilih subspesialis" />
+              <SearchableSelect source="subspesialis" value={kdSubSpesialis} onChange={setKdSubSpesialis} placeholder="Pilih subspesialis" />
               <div className="mt-3 text-xs text-slate-500 mb-1">Sarana</div>
-              <SearchableSelect options={saranaOptions} value={kdSarana} onChange={setKdSarana} placeholder="Pilih sarana" />
+              <SearchableSelect source="sarana" value={kdSarana} onChange={setKdSarana} placeholder="Pilih sarana" />
               <div className="mt-3 text-xs text-slate-500 mb-1">Tanggal Estimasi Rujuk</div>
               <input type="date" value={tglEstRujuk} onChange={(e) => setTglEstRujuk(e.target.value)} className="mt-1 w-full rounded-md border-slate-300 text-sm" />
             </div>
