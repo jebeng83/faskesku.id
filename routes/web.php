@@ -654,6 +654,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/prerequisites/practitioner', function () {
             return Inertia::render('SatuSehat/Prerequisites/Practitioner');
         })->name('prerequisites.practitioner');
+        Route::get('/prerequisites/patient', function () {
+            return Inertia::render('SatuSehat/Prerequisites/Patient');
+        })->name('prerequisites.patient');
     });
 
 });

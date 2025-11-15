@@ -199,12 +199,53 @@ practitioner.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+/**
+* @see routes/web.php:657
+* @route '/satusehat/prerequisites/patient'
+*/
+export const patient = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: patient.url(options),
+    method: 'get',
+})
+
+patient.definition = {
+    methods: ["get","head"],
+    url: '/satusehat/prerequisites/patient',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:657
+* @route '/satusehat/prerequisites/patient'
+*/
+patient.url = (options?: RouteQueryOptions) => {
+    return patient.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:657
+* @route '/satusehat/prerequisites/patient'
+*/
+patient.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: patient.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:657
+* @route '/satusehat/prerequisites/patient'
+*/
+patient.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: patient.url(options),
+    method: 'head',
+})
+
 const prerequisites = {
     organization: Object.assign(organization, organization),
     location: Object.assign(location, location),
     location_ranap: Object.assign(location_ranap, location_ranap),
     location_farmasi: Object.assign(location_farmasi, location_farmasi),
     practitioner: Object.assign(practitioner, practitioner),
+    patient: Object.assign(patient, patient),
 }
 
 export default prerequisites

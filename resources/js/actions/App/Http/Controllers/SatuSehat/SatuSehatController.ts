@@ -456,6 +456,50 @@ practitionerSearch.head = (options?: RouteQueryOptions): RouteDefinition<'head'>
 })
 
 /**
+* @see \App\Http\Controllers\SatuSehat\SatuSehatController::patientSearch
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1688
+* @route '/api/satusehat/patient'
+*/
+export const patientSearch = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: patientSearch.url(options),
+    method: 'get',
+})
+
+patientSearch.definition = {
+    methods: ["get","head"],
+    url: '/api/satusehat/patient',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\SatuSehat\SatuSehatController::patientSearch
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1688
+* @route '/api/satusehat/patient'
+*/
+patientSearch.url = (options?: RouteQueryOptions) => {
+    return patientSearch.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\SatuSehat\SatuSehatController::patientSearch
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1688
+* @route '/api/satusehat/patient'
+*/
+patientSearch.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: patientSearch.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\SatuSehat\SatuSehatController::patientSearch
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1688
+* @route '/api/satusehat/patient'
+*/
+patientSearch.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: patientSearch.url(options),
+    method: 'head',
+})
+
+/**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingDepartemenIndex
 * @see app/Http/Controllers/SatuSehat/SatuSehatController.php:368
 * @route '/api/satusehat/mapping/departemen'
@@ -1340,6 +1384,6 @@ getResource.head = (args: { resource: string | number, id: string | number } | [
     method: 'head',
 })
 
-const SatuSehatController = { token, tokenDebug, metadata, organization, organizationSubunits, organizationUpdate, locationSearch, locationPatch, coordinates, practitionerSearch, mappingDepartemenIndex, mappingDepartemenStore, mappingDepartemenUpdate, mappingDepartemenDestroy, mappingLokasiIndex, mappingLokasiStore, mappingLokasiUpdate, mappingLokasiDestroy, mappingLokasiRanapIndex, mappingLokasiRanapStore, mappingLokasiRanapUpdate, mappingLokasiRanapDestroy, kamarList, mappingLokasiFarmasiIndex, mappingLokasiFarmasiStore, mappingLokasiFarmasiUpdate, mappingLokasiFarmasiDestroy, createResource, getResource }
+const SatuSehatController = { token, tokenDebug, metadata, organization, organizationSubunits, organizationUpdate, locationSearch, locationPatch, coordinates, practitionerSearch, patientSearch, mappingDepartemenIndex, mappingDepartemenStore, mappingDepartemenUpdate, mappingDepartemenDestroy, mappingLokasiIndex, mappingLokasiStore, mappingLokasiUpdate, mappingLokasiDestroy, mappingLokasiRanapIndex, mappingLokasiRanapStore, mappingLokasiRanapUpdate, mappingLokasiRanapDestroy, kamarList, mappingLokasiFarmasiIndex, mappingLokasiFarmasiStore, mappingLokasiFarmasiUpdate, mappingLokasiFarmasiDestroy, createResource, getResource }
 
 export default SatuSehatController
