@@ -28,6 +28,7 @@ use App\Http\Controllers\RawatJalan\ObatController;
 use App\Http\Controllers\RawatJalan\RawatJalanController;
 use App\Http\Controllers\RawatJalan\ResepController;
 use App\Http\Controllers\SatuSehat\SatuSehatController;
+use App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/employees', [EmployeeController::class, 'store'])->name('api.employees.store');
@@ -248,6 +249,18 @@ Route::prefix('satusehat')->group(function () {
     Route::get('/practitioner', [SatuSehatController::class, 'practitionerSearch'])->name('api.satusehat.practitioner.search');
     // Patient search by NIK
     Route::get('/patient', [SatuSehatController::class, 'patientSearch'])->name('api.satusehat.patient.search');
+    Route::prefix('rajal')->group(function () {
+        Route::post('/encounter', [SatuSehatRajalController::class, 'createEncounter'])->name('api.satusehat.rajal.encounter.create');
+        Route::put('/encounter/by-rawat/{no_rawat}', [SatuSehatRajalController::class, 'updateEncounterByRawat'])->where('no_rawat', '.*')->name('api.satusehat.rajal.encounter.update-by-rawat');
+        Route::get('/encounter/id-by-rawat/{no_rawat}', [SatuSehatRajalController::class, 'encounterIdByRawat'])->where('no_rawat', '.*')->name('api.satusehat.rajal.encounter.id-by-rawat');
+        Route::get('/encounter/describe', [SatuSehatRajalController::class, 'encounterTableDescribe'])->name('api.satusehat.rajal.encounter.describe');
+        Route::get('/diagnosa/describe', [SatuSehatRajalController::class, 'diagnosaPasienDescribe'])->name('api.satusehat.rajal.diagnosa.describe');
+        Route::post('/condition', [SatuSehatRajalController::class, 'createCondition'])->name('api.satusehat.rajal.condition.create');
+        Route::post('/observation', [SatuSehatRajalController::class, 'createObservation'])->name('api.satusehat.rajal.observation.create');
+        Route::post('/procedure', [SatuSehatRajalController::class, 'createProcedure'])->name('api.satusehat.rajal.procedure.create');
+        Route::post('/composition', [SatuSehatRajalController::class, 'createComposition'])->name('api.satusehat.rajal.composition.create');
+        Route::post('/bundle', [SatuSehatRajalController::class, 'createBundle'])->name('api.satusehat.rajal.bundle.create');
+    });
     // CRUD Mapping Departemen ↔ Organization Subunit
     Route::get('/mapping/departemen', [SatuSehatController::class, 'mappingDepartemenIndex'])->name('api.satusehat.mapping.departemen.index');
     Route::post('/mapping/departemen', [SatuSehatController::class, 'mappingDepartemenStore'])->name('api.satusehat.mapping.departemen.store');

@@ -6,7 +6,10 @@ import AppLayout from "@/Layouts/AppLayout";
 
 // Menu SatuSehat
 // Fokus ke menu yang sudah tersedia (Prerequisites)
-const tabs = [{ key: "prereq", label: "Prerequisites" }];
+const tabs = [
+    { key: "prereq", label: "Prerequisites" },
+    { key: "interop", label: "Interoperabilitas" },
+];
 
 const cardVariants = {
     hidden: { opacity: 0, y: 16, scale: 0.98 },
@@ -131,6 +134,26 @@ const cardsByTab = {
                 >
                     <circle cx="12" cy="8" r="3" />
                     <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+                </svg>
+            ),
+        },
+    ],
+    interop: [
+        {
+            key: "encounter-ralan",
+            title: "Encounter",
+            desc: "Kirim Encounter Rajal",
+            href: route("satusehat.interoperabilitas.rajal.encounter"),
+            gradient: "from-indigo-500 to-blue-600",
+            icon: (
+                <svg
+                    viewBox="0 0 24 24"
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                >
+                    <path d="M12 6v12M6 12h12" />
                 </svg>
             ),
         },

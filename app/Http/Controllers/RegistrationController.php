@@ -188,8 +188,16 @@ class RegistrationController extends Controller
     public function getRegistrations(Request $request)
     {
         $query = RegPeriksa::with([
-            'pasien:no_rkm_medis,nm_pasien,jk,umur,alamat',
-            'dokter:kd_dokter,nm_dokter',
+            'pasien' => function($q) {
+                $q->select('no_rkm_medis','nm_pasien','jk','umur','alamat','no_ktp');
+            },
+            'dokter' => function($q) {
+                $q->select('kd_dokter','nm_dokter')->with([
+                    'pegawai' => function($p) {
+                        $p->select('nik','no_ktp','departemen');
+                    }
+                ]);
+            },
             'poliklinik:kd_poli,nm_poli',
             'penjab:kd_pj,png_jawab'
         ]);
