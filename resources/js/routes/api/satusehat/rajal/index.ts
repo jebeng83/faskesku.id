@@ -5,6 +5,7 @@ import observation from './observation'
 import procedure from './procedure'
 import composition from './composition'
 import bundle from './bundle'
+import pipeline from './pipeline'
 
 const rajal = {
     encounter: Object.assign(encounter, encounter),
@@ -14,6 +15,7 @@ const rajal = {
     procedure: Object.assign(procedure, procedure),
     composition: Object.assign(composition, composition),
     bundle: Object.assign(bundle, bundle),
+    pipeline: Object.assign(pipeline, pipeline),
 }
 
 export default rajal
