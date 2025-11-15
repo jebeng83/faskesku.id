@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, usePage } from "@inertiajs/react";
+import { Link, usePage, router } from "@inertiajs/react";
 import { ChevronDownIcon, ChevronRightIcon, Bars3Icon, ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 import { route } from "ziggy-js";
@@ -207,6 +207,19 @@ export default function SidebarMenu({
                 return "/farmasi";
             }
         }
+        // Special case: Bridging root menu should open SATUSEHAT menu page
+        // This helps when the sidebar has a generic "Bridging" menu without a direct URL
+        if (
+            (menu.slug && menu.slug.replace(/\s+/g, "-").toLowerCase() === "bridging") ||
+            (menu.name && menu.name.replace(/\s+/g, "-").toLowerCase().includes("bridging"))
+        ) {
+            try {
+                return route("satusehat.index", {}, false);
+            } catch (error) {
+                console.warn("Route satusehat.index not found, falling back to /satusehat");
+                return "/satusehat";
+            }
+        }
         // Special case: PCare root menu should navigate directly to PCare Index
         if (
             (menu.slug && (menu.slug === "pcare" || menu.slug === "bridging-pcare")) ||
@@ -347,6 +360,10 @@ export default function SidebarMenu({
 		const isExpanded = expandedMenus.has(menu.id);
 		const isActive = isMenuActive(menu);
 		const menuUrl = getMenuUrl(menu);
+        const isBridgingRoot = (
+            (menu.slug && menu.slug.replace(/\s+/g, "-").toLowerCase() === "bridging") ||
+            (menu.name && menu.name.replace(/\s+/g, "-").toLowerCase().includes("bridging"))
+        ) && !(menu.name && menu.name.toLowerCase().includes("pcare"));
 
 		if (collapsed) {
 			// In collapsed mode, only render top-level icons (handled in renderCollapsed)
@@ -365,7 +382,14 @@ export default function SidebarMenu({
 				>
                     {hasChildren ? (
                         <motion.button
-                            onClick={() => toggleExpanded(menu.id)}
+                            onClick={() => {
+                                if (isBridgingRoot && menuUrl && menuUrl !== "#") {
+                                    // Navigasi langsung ke halaman SATUSEHAT ketika klik menu Bridging
+                                    router.visit(menuUrl);
+                                    return;
+                                }
+                                toggleExpanded(menu.id);
+                            }}
                             className={`relative w-full flex items-center px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 group ${
                                 (isActive || isExpanded)
                                     ? "text-blue-600 dark:text-blue-500"

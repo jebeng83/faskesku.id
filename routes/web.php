@@ -1,32 +1,32 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\PatientController;
+use App\Http\Controllers\DaftarTarifController;
+use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\EmployeeController;
-use App\Http\Controllers\RegPeriksaController;
-use App\Http\Controllers\RawatJalan\RawatJalanController;
-use App\Http\Controllers\RawatJalan\ObatController;
-use App\Http\Controllers\RawatJalan\ResepController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\MenuController;
-use App\Http\Controllers\RawatInapController;
+use App\Http\Controllers\Farmasi\DataSuplierController;
+use App\Http\Controllers\Farmasi\IndustriFarmasiController;
 use App\Http\Controllers\IGDController;
 use App\Http\Controllers\KamarOperasiController;
-use App\Http\Controllers\LaboratoriumController;
-use App\Http\Controllers\RadiologiController;
-use App\Http\Controllers\RehabilitasiMedikController;
-use App\Http\Controllers\Farmasi\IndustriFarmasiController;
-use App\Http\Controllers\Farmasi\DataSuplierController;
-use App\Http\Controllers\setting\SettingController;
-use App\Http\Controllers\DoctorController;
-use App\Http\Controllers\SpesialisController;
-use App\Http\Controllers\DaftarTarifController;
-use App\Http\Controllers\RegistrationController;
-use App\Http\Controllers\TarifTindakanController;
 use App\Http\Controllers\KategoriPerawatanController;
+use App\Http\Controllers\LaboratoriumController;
+use App\Http\Controllers\MenuController;
+use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PermintaanLabController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RadiologiController;
+use App\Http\Controllers\RawatInapController;
+use App\Http\Controllers\RawatJalan\ObatController;
+use App\Http\Controllers\RawatJalan\RawatJalanController;
+use App\Http\Controllers\RawatJalan\ResepController;
+use App\Http\Controllers\RegistrationController;
+use App\Http\Controllers\RegPeriksaController;
+use App\Http\Controllers\RehabilitasiMedikController;
+use App\Http\Controllers\setting\SettingController;
+use App\Http\Controllers\SpesialisController;
+use App\Http\Controllers\TarifTindakanController;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -107,7 +107,6 @@ Route::middleware('auth')->group(function () {
     // Route::post('/premium-modules/{premiumModule}/deactivate', [PremiumModuleController::class, 'deactivate'])->name('premium-modules.deactivate');
     // Route::get('/premium-modules/{premiumModule}/status', [PremiumModuleController::class, 'status'])->name('premium-modules.status');
     // Route::post('/premium-modules/validate-license', [PremiumModuleController::class, 'validateLicense'])->name('premium-modules.validate-license');
-
 
     Route::get('rawat-jalan/lanjutan', [RawatJalanController::class, 'lanjutan'])->name('rawat-jalan.lanjutan');
     Route::get('rawat-jalan/riwayat', [RawatJalanController::class, 'riwayat'])->name('rawat-jalan.riwayat');
@@ -630,6 +629,26 @@ Route::middleware('auth')->group(function () {
     Route::post('/poliklinik', [\App\Http\Controllers\PoliklinikController::class, 'store'])->name('poliklinik.store');
     Route::put('/poliklinik/{kd_poli}', [\App\Http\Controllers\PoliklinikController::class, 'update'])->name('poliklinik.update');
     Route::patch('/poliklinik/{kd_poli}/toggle-status', [\App\Http\Controllers\PoliklinikController::class, 'toggleStatus'])->name('poliklinik.toggle-status');
+
+    // SATUSEHAT routes (Inertia pages)
+    Route::prefix('satusehat')->name('satusehat.')->group(function () {
+        // Halaman utama modul SATUSEHAT
+        Route::get('/', function () {
+            return Inertia::render('SatuSehat/MenuSatuSehat');
+        })->name('index');
+        // Prasyarat: halaman pemetaan Organization Subunits
+        Route::get('/prerequisites/organization', function () {
+            return Inertia::render('SatuSehat/Prerequisites/SatuSehatOrganization');
+        })->name('prerequisites.organization');
+        // Prasyarat: halaman pemetaan Location (Poliklinik ↔ SATUSEHAT Location)
+        Route::get('/prerequisites/location', function () {
+            return Inertia::render('SatuSehat/Prerequisites/SatuSehatLocation');
+        })->name('prerequisites.location');
+        // Prasyarat: halaman pemetaan Location Ranap (Bangsal ↔ SATUSEHAT Location)
+        Route::get('/prerequisites/location-ranap', function () {
+            return Inertia::render('SatuSehat/Prerequisites/SatuSehatLocationRanap');
+        })->name('prerequisites.location_ranap');
+    });
 
 });
 // Routes for Set Harga Obat (Farmasi)

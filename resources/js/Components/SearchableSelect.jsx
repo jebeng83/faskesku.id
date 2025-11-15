@@ -3,6 +3,25 @@ import { createPortal } from 'react-dom';
 
 // Konfigurasi sumber referensi PCare agar SearchableSelect bisa memuat opsi secara remote
 const REFERENSI_CONFIG = {
+    // Sumber lokal: departemen (untuk mapping ke SATUSEHAT Organization)
+    // Endpoint: GET /api/departemen
+    // Mendukung pencarian dengan parameter q, serta pagination start & limit
+    departemen: {
+        supportsSearch: true,
+        defaultParams: { start: 0, limit: 25, q: '' },
+        buildUrl: ({ q = '', start = 0, limit = 25 } = {}) => {
+            const params = new URLSearchParams({ q, start, limit });
+            return `/api/departemen?${params.toString()}`;
+        },
+        parse: (json) => {
+            const list = json?.list || json?.data || [];
+            return list.map((it) => {
+                const value = it?.dep_id || '';
+                const name = it?.nama || '';
+                return { value, label: `${value} — ${name}` };
+            });
+        },
+    },
     diagnosa: {
         supportsSearch: true,
         // Selaraskan dengan ReferensiDiagnosa.jsx: gunakan q kosong untuk load awal
@@ -140,6 +159,73 @@ const REFERENSI_CONFIG = {
         parse: (json) => {
             const list = json?.response?.list || json?.list || json?.data || [];
             return list.map((it) => ({ value: it?.kdAlergi || it?.kode || '', label: it?.nmAlergi || it?.nama || '' }));
+        },
+    },
+    // ===== Tambahan sumber lokal untuk kebutuhan SATUSEHAT Location mapping =====
+    // Sumber: tabel poliklinik lokal
+    // Endpoint: GET /api/poliklinik (mendukung q/start/limit)
+    poliklinik: {
+        supportsSearch: true,
+        defaultParams: { start: 0, limit: 25, q: '' },
+        buildUrl: ({ q = '', start = 0, limit = 25 } = {}) => {
+            const params = new URLSearchParams({ q, start, limit });
+            return `/api/poliklinik?${params.toString()}`;
+        },
+        parse: (json) => {
+            const list = json?.list || json?.data || [];
+            return list.map((it) => ({
+                value: it?.kd_poli || '',
+                label: `${it?.kd_poli ?? ''} — ${it?.nm_poli ?? ''}`.trim(),
+            }));
+        },
+    },
+    // Sumber: subunit Organization SATUSEHAT (anak dari Organization induk pada .env)
+    // Endpoint: GET /api/satusehat/organization/subunits?limit=200&map=1
+    // Catatan: endpoint tidak mendukung pencarian q, jadi muat semua lalu filter lokal
+    satusehat_org_subunit: {
+        supportsSearch: false,
+        defaultParams: { limit: 200, map: 1 },
+        buildUrl: ({ limit = 200, map = 1 } = {}) => {
+            const params = new URLSearchParams({ limit: String(limit), map: String(map) });
+            return `/api/satusehat/organization/subunits?${params.toString()}`;
+        },
+        parse: (json) => {
+            const list = json?.subunits || [];
+            return list.map((it) => ({
+                value: it?.id || '',
+                label: `${it?.code ?? '-'} — ${it?.name ?? '-'}`,
+            }));
+        },
+    },
+    // Sumber: daftar Bangsal (lokasi rawat inap) dari sistem lokal
+    // Endpoint: GET /api/opname/lokasi (mengembalikan { success, data: [{ kd_bangsal, nm_bangsal }] })
+    bangsal: {
+        supportsSearch: false,
+        defaultParams: {},
+        buildUrl: () => '/api/opname/lokasi',
+        parse: (json) => {
+            const rows = Array.isArray(json?.data) ? json.data : [];
+            return rows.map((r) => ({
+                value: r?.kd_bangsal || '',
+                label: `${r?.kd_bangsal ?? ''} — ${r?.nm_bangsal ?? ''}`.trim(),
+            }));
+        },
+    },
+    // Sumber: daftar Kamar rawat inap dari sistem lokal
+    // Endpoint: GET /api/ranap/kamar (mengembalikan { ok, list: [{ kd_kamar, nm_kamar, kd_bangsal, nm_bangsal }] })
+    kamar: {
+        supportsSearch: true,
+        defaultParams: { start: 0, limit: 25, q: '' },
+        buildUrl: ({ q = '', start = 0, limit = 25 } = {}) => {
+            const params = new URLSearchParams({ q, start, limit });
+            return `/api/satusehat/ranap/kamar?${params.toString()}`;
+        },
+        parse: (json) => {
+            const list = json?.list || json?.data || [];
+            return list.map((it) => ({
+                value: it?.kd_kamar || '',
+                label: `${it?.kd_kamar ?? ''}${it?.nm_bangsal ? ' — Bangsal: ' + it.nm_bangsal : ''}`.trim(),
+            }));
         },
     },
 };
