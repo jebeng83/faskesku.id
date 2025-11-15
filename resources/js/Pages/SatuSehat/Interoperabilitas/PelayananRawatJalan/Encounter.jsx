@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import AppLayout from "@/Layouts/AppLayout";
 import ResponsiveTable from "@/Components/ResponsiveTable";
 import axios from "axios";
+import Toaster from "@/Components/ui/Toaster";
 
 function dateToYmd(d) {
   const y = d.getFullYear();
@@ -29,6 +30,27 @@ export default function Encounter() {
   const [resolvingIhs, setResolvingIhs] = useState(false);
   const [postingEncounter, setPostingEncounter] = useState(false);
   const [updatingEncounter, setUpdatingEncounter] = useState(false);
+
+  const [toasts, setToasts] = useState([]);
+  const addToast = (type = "info", title = "", message = "", duration = 4000) => {
+    const id = `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    setToasts((prev) => [...prev, { id, type, title, message, duration }]);
+  };
+  const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id));
+
+  const formatError = (err, fallback = "Terjadi kesalahan") => {
+    const status = err?.response?.status;
+    const data = err?.response?.data || {};
+    let detail = data?.detail || data?.message || err?.message || fallback;
+    const parts = [];
+    if (data?.code) parts.push(`Kode ${data.code}`);
+    if (data?.no_rawat) parts.push(`No. Rawat ${data.no_rawat}`);
+    if (data?.nip) parts.push(`NIP ${data.nip}`);
+    if (data?.nik) parts.push(`NIK ${data.nik}`);
+    if (status) parts.push(`Status ${status}`);
+    if (parts.length) detail = `${detail} (${parts.join(", ")})`;
+    return detail;
+  };
 
   useEffect(() => {
     axios
@@ -283,6 +305,13 @@ export default function Encounter() {
           const id = rPut?.data?.resource?.id || rPut?.data?.resource?.resource?.id || cur.enc1_id;
           next[idx] = { ...cur, enc2_id: id };
           setRows(next.slice());
+          try {
+            await axios.post(`/api/satusehat/rajal/pipeline/by-rawat/${encodeURIComponent(cur.no_rawat)}`, {
+              tz_offset: "+07:00",
+            });
+          } catch (e) {
+            addToast("error", "Pipeline gagal", formatError(e));
+          }
         } catch (_) {}
       }
     } finally {
@@ -334,6 +363,13 @@ export default function Encounter() {
       const nxt = rows.slice();
       nxt[rowIndex] = { ...cur, enc2_id: id };
       setRows(nxt);
+      try {
+        await axios.post(`/api/satusehat/rajal/pipeline/by-rawat/${encodeURIComponent(cur.no_rawat)}`, {
+          tz_offset: "+07:00",
+        });
+      } catch (e) {
+        addToast("error", "Pipeline gagal", formatError(e));
+      }
     } catch (_) {}
   }
 
@@ -402,6 +438,7 @@ export default function Encounter() {
           <ResponsiveTable columns={columns} data={rows} keyField="key" className="min-w-full" />
         </div>
       </div>
+      <Toaster toasts={toasts} onRemove={removeToast} />
     </AppLayout>
   );
 }
