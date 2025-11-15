@@ -1290,6 +1290,255 @@ class SatuSehatController extends Controller
         return response()->json(['ok' => true, 'message' => 'Mapping ranap dihapus']);
     }
 
+    public function mappingLokasiFarmasiIndex(\Illuminate\Http\Request $request)
+    {
+        $start = max(0, (int) $request->query('start', 0));
+        $limit = max(1, min(500, (int) $request->query('limit', 50)));
+        $q = trim((string) $request->query('q', ''));
+        $b = \Illuminate\Support\Facades\DB::table('bangsal as b')
+            ->leftJoin('kamar as k', 'k.kd_bangsal', '=', 'b.kd_bangsal')
+            ->leftJoin('satu_sehat_mapping_lokasi_ranap as m', 'm.kd_kamar', '=', 'k.kd_kamar')
+            ->select(
+                'b.kd_bangsal',
+                'b.nm_bangsal',
+                \Illuminate\Support\Facades\DB::raw('MIN(m.id_organisasi_satusehat) as id_organisasi_satusehat'),
+                \Illuminate\Support\Facades\DB::raw('MIN(m.id_lokasi_satusehat) as id_lokasi_satusehat'),
+                \Illuminate\Support\Facades\DB::raw('MIN(m.longitude) as longitude'),
+                \Illuminate\Support\Facades\DB::raw('MIN(m.latitude) as latitude'),
+                \Illuminate\Support\Facades\DB::raw('MIN(m.altittude) as altittude')
+            )
+            ->groupBy('b.kd_bangsal', 'b.nm_bangsal');
+        if ($q !== '') {
+            $b->where(function ($w) use ($q) {
+                $w->where('b.kd_bangsal', 'like', "%{$q}%")
+                  ->orWhere('b.nm_bangsal', 'like', "%{$q}%");
+            });
+        }
+        $total = (clone $b)->get()->count();
+        $rows = $b->orderBy('b.kd_bangsal')->offset($start)->limit($limit)->get();
+        return response()->json([
+            'ok' => true,
+            'total' => $total,
+            'start' => $start,
+            'limit' => $limit,
+            'list' => $rows,
+        ]);
+    }
+
+    public function mappingLokasiFarmasiStore(\Illuminate\Http\Request $request)
+    {
+        $data = $request->validate([
+            'kd_bangsal' => ['required', 'string', 'max:15'],
+            'id_organisasi_satusehat' => ['required', 'string', 'max:40'],
+            'id_lokasi_satusehat' => ['nullable', 'string', 'max:40'],
+            'longitude' => ['nullable', 'string', 'max:30'],
+            'latitude' => ['nullable', 'string', 'max:30'],
+            'altittude' => ['nullable', 'string', 'max:30'],
+            'create_if_missing' => ['sometimes', 'boolean'],
+        ], [
+            'kd_bangsal.required' => 'Kode bangsal wajib diisi.',
+            'id_organisasi_satusehat.required' => 'ID Organization SATUSEHAT wajib diisi.',
+        ]);
+
+        $bangsal = \Illuminate\Support\Facades\DB::table('bangsal')->where('kd_bangsal', $data['kd_bangsal'])->first();
+        if (!$bangsal) {
+            return response()->json(['ok' => false, 'message' => 'Bangsal tidak ditemukan'], 404);
+        }
+
+        $longitude = $data['longitude'] ?? (string) env('LONGITUDE', '');
+        $latitude = $data['latitude'] ?? (string) env('LATITUDE', '');
+        $altittude = $data['altittude'] ?? (string) env('ALTITUDE', '');
+
+        $locationId = $data['id_lokasi_satusehat'] ?? null;
+        $created = null;
+
+        if (!$locationId) {
+            $queries = [
+                ['name' => $bangsal->nm_bangsal, 'organization' => 'Organization/' . $data['id_organisasi_satusehat']],
+                ['identifier' => $data['kd_bangsal'], 'organization' => 'Organization/' . $data['id_organisasi_satusehat']],
+            ];
+            foreach ($queries as $q) {
+                $res = $this->satusehatRequest('GET', 'Location', null, ['query' => $q]);
+                if ($res['ok'] && isset(($res['json']['entry'] ?? [])[0]['resource']['id'])) {
+                    $locationId = $res['json']['entry'][0]['resource']['id'];
+                    break;
+                }
+            }
+        }
+
+        if (!$locationId && ($data['create_if_missing'] ?? false)) {
+            $payload = [
+                'resourceType' => 'Location',
+                'status' => 'active',
+                'name' => $bangsal->nm_bangsal,
+                'identifier' => [[
+                    'system' => 'http://sys-ids.kemkes.go.id/location',
+                    'value' => $data['kd_bangsal'],
+                ]],
+                'managingOrganization' => [
+                    'reference' => 'Organization/' . $data['id_organisasi_satusehat'],
+                ],
+            ];
+            $position = [];
+            if (!empty($longitude) && is_numeric($longitude)) { $position['longitude'] = (float) $longitude; }
+            if (!empty($latitude) && is_numeric($latitude)) { $position['latitude'] = (float) $latitude; }
+            if (!empty($altittude) && is_numeric($altittude)) { $position['altitude'] = (float) $altittude; }
+            if (!empty($position['longitude']) && !empty($position['latitude'])) { $payload['position'] = $position; }
+            $res = $this->satusehatRequest('POST', 'Location', $payload, ['prefer_representation' => true]);
+            if (!$res['ok']) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => 'Gagal membuat Location di SATUSEHAT',
+                    'status' => $res['status'],
+                    'error' => $res['error'],
+                    'body' => $res['body'] ?? null,
+                ], $res['status'] ?: 400);
+            }
+            $created = $res['json'] ?? null;
+            $locationId = $created['id'] ?? null;
+        }
+
+        if (!$locationId) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Tidak menemukan atau membuat Location untuk bangsal ini. Berikan id_lokasi_satusehat atau set create_if_missing=true.',
+            ], 422);
+        }
+
+        $departemenMapping = \App\Models\SatuSehatDepartemenMapping::where('id_organisasi_satusehat', $data['id_organisasi_satusehat'])->first();
+        if (!$departemenMapping) {
+            $depId = null;
+            $unmapped = \Illuminate\Support\Facades\DB::table('departemen as d')
+                ->leftJoin('satu_sehat_mapping_departemen as m', 'm.dep_id', '=', 'd.dep_id')
+                ->whereNull('m.id_organisasi_satusehat')
+                ->select('d.dep_id')
+                ->orderBy('d.dep_id')
+                ->first();
+            if ($unmapped) { $depId = $unmapped->dep_id; }
+            else {
+                $existingMapping = \App\Models\SatuSehatDepartemenMapping::select('dep_id')->first();
+                if ($existingMapping) { $depId = $existingMapping->dep_id; }
+                else {
+                    $firstDept = \Illuminate\Support\Facades\DB::table('departemen')->select('dep_id')->orderBy('dep_id')->first();
+                    if ($firstDept) { $depId = $firstDept->dep_id; }
+                }
+            }
+            if (!$depId) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => 'Mapping departemen belum ada untuk Organization ID ini dan tidak ada data departemen. Silakan buat mapping departemen terlebih dahulu.',
+                    'id_organisasi_satusehat' => $data['id_organisasi_satusehat'],
+                ], 422);
+            }
+            \App\Models\SatuSehatDepartemenMapping::updateOrCreate(
+                ['dep_id' => $depId],
+                ['id_organisasi_satusehat' => $data['id_organisasi_satusehat']]
+            );
+        }
+
+        $kamarList = \Illuminate\Support\Facades\DB::table('kamar')->where('kd_bangsal', $data['kd_bangsal'])->pluck('kd_kamar')->all();
+        foreach ($kamarList as $kk) {
+            \App\Models\SatuSehatMappingLokasiRanap::updateOrCreate(
+                ['kd_kamar' => $kk],
+                [
+                    'id_organisasi_satusehat' => $data['id_organisasi_satusehat'],
+                    'id_lokasi_satusehat' => $locationId,
+                    'longitude' => $longitude,
+                    'latitude' => $latitude,
+                    'altittude' => $altittude,
+                ]
+            );
+        }
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Mapping lokasi farmasi tersimpan',
+            'kd_bangsal' => $data['kd_bangsal'],
+            'id_lokasi_satusehat' => $locationId,
+            'created_resource' => $created,
+        ], 201);
+    }
+
+    public function mappingLokasiFarmasiUpdate(\Illuminate\Http\Request $request, string $kd_bangsal)
+    {
+        $data = $request->validate([
+            'id_organisasi_satusehat' => ['required', 'string', 'max:40'],
+            'id_lokasi_satusehat' => ['required', 'string', 'max:40'],
+            'longitude' => ['nullable', 'string', 'max:30'],
+            'latitude' => ['nullable', 'string', 'max:30'],
+            'altittude' => ['nullable', 'string', 'max:30'],
+            'name' => ['nullable', 'string', 'max:100'],
+            'active' => ['nullable', 'boolean'],
+        ]);
+
+        $m = \Illuminate\Support\Facades\DB::table('satu_sehat_mapping_lokasi_ranap as m')
+            ->leftJoin('kamar as k', 'k.kd_kamar', '=', 'm.kd_kamar')
+            ->where('k.kd_bangsal', $kd_bangsal)
+            ->select('m.*')
+            ->first();
+        if (!$m) {
+            return response()->json(['ok' => false, 'message' => 'Mapping belum ada untuk kd_bangsal ini'], 404);
+        }
+
+        $read = $this->satusehatRequest('GET', 'Location/' . $data['id_lokasi_satusehat']);
+        if (!$read['ok'] || !is_array($read['json'] ?? null)) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Location tidak ditemukan atau tidak dapat dibaca dari SATUSEHAT',
+                'status' => $read['status'],
+                'error' => $read['error'],
+            ], $read['status'] ?: 404);
+        }
+
+        $payload = $read['json'];
+        $payload['resourceType'] = 'Location';
+        $payload['id'] = $data['id_lokasi_satusehat'];
+        if (array_key_exists('name', $data) && $data['name'] !== null) { $payload['name'] = $data['name']; }
+        if (array_key_exists('active', $data)) { $payload['status'] = $data['active'] ? 'active' : 'inactive'; }
+        if (!isset($payload['position']) || !is_array($payload['position'])) { $payload['position'] = []; }
+        if (array_key_exists('longitude', $data) && $data['longitude'] !== null && $data['longitude'] !== '') { if (is_numeric($data['longitude'])) { $payload['position']['longitude'] = (float) $data['longitude']; } }
+        if (array_key_exists('latitude', $data) && $data['latitude'] !== null && $data['latitude'] !== '') { if (is_numeric($data['latitude'])) { $payload['position']['latitude'] = (float) $data['latitude']; } }
+        if (array_key_exists('altittude', $data) && $data['altittude'] !== null && $data['altittude'] !== '') { if (is_numeric($data['altittude'])) { $payload['position']['altitude'] = (float) $data['altittude']; } }
+        $payload['managingOrganization'] = [ 'reference' => 'Organization/' . $data['id_organisasi_satusehat'] ];
+
+        $update = $this->satusehatRequest('PUT', 'Location/' . $data['id_lokasi_satusehat'], $payload, ['prefer_representation' => true]);
+        if (!$update['ok']) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Gagal memperbarui Location di SATUSEHAT',
+                'status' => $update['status'],
+                'error' => $update['error'],
+                'body' => $update['body'] ?? null,
+            ], $update['status'] ?: 400);
+        }
+
+        $kamarIds = \Illuminate\Support\Facades\DB::table('kamar')->where('kd_bangsal', $kd_bangsal)->pluck('kd_kamar')->all();
+        foreach ($kamarIds as $kk) {
+            $updateData = [
+                'id_organisasi_satusehat' => $data['id_organisasi_satusehat'],
+                'id_lokasi_satusehat' => $data['id_lokasi_satusehat'],
+            ];
+            if (array_key_exists('longitude', $data) && $data['longitude'] !== null && $data['longitude'] !== '') { $updateData['longitude'] = $data['longitude']; }
+            if (array_key_exists('latitude', $data) && $data['latitude'] !== null && $data['latitude'] !== '') { $updateData['latitude'] = $data['latitude']; }
+            if (array_key_exists('altittude', $data) && $data['altittude'] !== null && $data['altittude'] !== '') { $updateData['altittude'] = $data['altittude']; }
+            \App\Models\SatuSehatMappingLokasiRanap::updateOrCreate(['kd_kamar' => $kk], $updateData);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Location & mapping farmasi diperbarui',
+            'resource' => $update['json'] ?? null,
+        ]);
+    }
+
+    public function mappingLokasiFarmasiDestroy(string $kd_bangsal)
+    {
+        $kamarIds = \Illuminate\Support\Facades\DB::table('kamar')->where('kd_bangsal', $kd_bangsal)->pluck('kd_kamar')->all();
+        if (empty($kamarIds)) { return response()->json(['ok' => false, 'message' => 'Bangsal tidak memiliki kamar atau tidak ditemukan'], 404); }
+        \App\Models\SatuSehatMappingLokasiRanap::whereIn('kd_kamar', $kamarIds)->delete();
+        return response()->json(['ok' => true, 'message' => 'Mapping farmasi dihapus']);
+    }
+
     /**
      * Referensi daftar kamar untuk pemetaan ranap
      * Endpoint: GET /api/ranap/kamar
@@ -1380,6 +1629,59 @@ class SatuSehatController extends Controller
             'ok' => true,
             'message' => 'Location berhasil diperbarui (PATCH)',
             'resource' => $res['json'] ?? null,
+        ]);
+    }
+
+    public function practitionerSearch(\Illuminate\Http\Request $request)
+    {
+        $nik = trim((string) $request->query('nik', ''));
+        if ($nik === '') {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Parameter nik wajib diisi',
+            ], 422);
+        }
+        $query = [
+            'identifier' => 'https://fhir.kemkes.go.id/id/nik|' . $nik,
+        ];
+        $res = $this->satusehatRequest('GET', 'Practitioner', null, ['query' => $query]);
+        if (!$res['ok']) {
+            return response()->json([
+                'ok' => false,
+                'status' => $res['status'],
+                'error' => $res['error'],
+                'body' => $res['body'] ?? null,
+                'message' => 'Gagal mencari Practitioner di SATUSEHAT',
+            ], $res['status'] ?: 400);
+        }
+        $json = $res['json'] ?? [];
+        $entries = is_array($json['entry'] ?? null) ? $json['entry'] : [];
+        $items = [];
+        foreach ($entries as $entry) {
+            $r = $entry['resource'] ?? [];
+            if (($r['resourceType'] ?? '') !== 'Practitioner') { continue; }
+            $nameArr = is_array($r['name'] ?? null) ? $r['name'] : [];
+            $displayName = null;
+            if (!empty($nameArr)) {
+                $n = $nameArr[0];
+                $displayName = $n['text'] ?? trim(($n['prefix'][0] ?? '') . ' ' . implode(' ', (array) ($n['given'] ?? [])) . ' ' . ($n['family'] ?? ''));
+            }
+            $items[] = [
+                'id' => $r['id'] ?? null,
+                'name' => $displayName,
+                'gender' => $r['gender'] ?? null,
+                'birthDate' => $r['birthDate'] ?? null,
+                'identifier' => $r['identifier'] ?? [],
+                'telecom' => $r['telecom'] ?? [],
+                'address' => $r['address'] ?? [],
+                'qualification' => $r['qualification'] ?? [],
+            ];
+        }
+        return response()->json([
+            'ok' => true,
+            'total' => $json['total'] ?? count($items),
+            'list' => $items,
+            'bundle' => $json,
         ]);
     }
 }

@@ -2,6 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefa
 import organization578ad3 from './organization'
 import location from './location'
 import config from './config'
+import practitioner from './practitioner'
 import mapping from './mapping'
 import ranap from './ranap'
 /**
@@ -300,6 +301,7 @@ const satusehat = {
     organization: Object.assign(organization, organization578ad3),
     location: Object.assign(location, location),
     config: Object.assign(config, config),
+    practitioner: Object.assign(practitioner, practitioner),
     mapping: Object.assign(mapping, mapping),
     ranap: Object.assign(ranap, ranap),
     create: Object.assign(create, create),

@@ -648,6 +648,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/prerequisites/location-ranap', function () {
             return Inertia::render('SatuSehat/Prerequisites/SatuSehatLocationRanap');
         })->name('prerequisites.location_ranap');
+        Route::get('/prerequisites/location-farmasi', function () {
+            return Inertia::render('SatuSehat/Prerequisites/SatuSehatLocationFarmasi');
+        })->name('prerequisites.location_farmasi');
+        Route::get('/prerequisites/practitioner', function () {
+            return Inertia::render('SatuSehat/Prerequisites/Practitioner');
+        })->name('prerequisites.practitioner');
     });
 
 });
