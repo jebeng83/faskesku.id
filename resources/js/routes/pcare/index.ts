@@ -11,7 +11,7 @@ import tindakan from './tindakan'
 import peserta from './peserta'
 import setting from './setting'
 /**
-* @see routes/web.php:366
+* @see routes/web.php:365
 * @route '/pcare'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -25,7 +25,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:366
+* @see routes/web.php:365
 * @route '/pcare'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -33,7 +33,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:366
+* @see routes/web.php:365
 * @route '/pcare'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -42,7 +42,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:366
+* @see routes/web.php:365
 * @route '/pcare'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Menu;
+use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 
 class MenuSeeder extends Seeder
@@ -41,7 +40,7 @@ class MenuSeeder extends Seeder
             'url' => route('dashboard'),
             'sort_order' => 1,
             'is_active' => true,
-            'description' => 'Halaman utama aplikasi'
+            'description' => 'Halaman utama aplikasi',
         ]);
 
         $masterData = Menu::create([
@@ -52,7 +51,7 @@ class MenuSeeder extends Seeder
             'url' => route('master-data.index'),
             'sort_order' => 2,
             'is_active' => true,
-            'description' => 'Pengelolaan data master sistem'
+            'description' => 'Pengelolaan data master sistem',
         ]);
 
         $registration = Menu::create([
@@ -61,7 +60,7 @@ class MenuSeeder extends Seeder
             'icon' => 'fas fa-clipboard-list',
             'sort_order' => 3,
             'is_active' => true,
-            'description' => 'Modul registrasi pasien dan pemeriksaan'
+            'description' => 'Modul registrasi pasien dan pemeriksaan',
         ]);
 
         $rawatJalan = Menu::create([
@@ -70,7 +69,7 @@ class MenuSeeder extends Seeder
             'icon' => 'fas fa-hospital',
             'sort_order' => 4,
             'is_active' => true,
-            'description' => 'Modul pelayanan rawat jalan'
+            'description' => 'Modul pelayanan rawat jalan',
         ]);
 
         $reports = Menu::create([
@@ -79,7 +78,7 @@ class MenuSeeder extends Seeder
             'icon' => 'fas fa-chart-bar',
             'sort_order' => 5,
             'is_active' => true,
-            'description' => 'Laporan dan statistik sistem'
+            'description' => 'Laporan dan statistik sistem',
         ]);
 
         $administration = Menu::create([
@@ -88,7 +87,7 @@ class MenuSeeder extends Seeder
             'icon' => 'fas fa-cogs',
             'sort_order' => 6,
             'is_active' => true,
-            'description' => 'Pengaturan sistem dan administrasi'
+            'description' => 'Pengaturan sistem dan administrasi',
         ]);
 
         // Farmasi root menu -> navigates directly to Farmasi Index
@@ -100,7 +99,7 @@ class MenuSeeder extends Seeder
             'url' => route('farmasi.index'),
             'sort_order' => 7,
             'is_active' => true,
-            'description' => 'Modul farmasi dan pengelolaan obat'
+            'description' => 'Modul farmasi dan pengelolaan obat',
         ]);
 
         // Bridging PCare root menu -> navigates to PCare Menu page
@@ -112,7 +111,20 @@ class MenuSeeder extends Seeder
             'url' => route('pcare.index'),
             'sort_order' => 8,
             'is_active' => true,
-            'description' => 'Bridging ke layanan PCare BPJS'
+            'description' => 'Bridging ke layanan PCare BPJS',
+        ]);
+
+        // SATUSEHAT root menu -> navigates to SATUSEHAT Menu page
+        $satusehat = Menu::create([
+            'name' => 'SatuSehat',
+            'slug' => 'satusehat',
+            'icon' => 'fas fa-heartbeat',
+            'route' => 'satusehat.index',
+            'url' => route('satusehat.index'),
+            'sort_order' => 9,
+            'is_active' => true,
+            'permission_name' => 'satusehat.index',
+            'description' => 'Modul integrasi SATUSEHAT (Kemenkes)',
         ]);
 
         // Master Data sub-menus
@@ -126,7 +138,7 @@ class MenuSeeder extends Seeder
             'sort_order' => 1,
             'is_active' => true,
             'permission_name' => 'patient.view',
-            'description' => 'Pengelolaan data pasien'
+            'description' => 'Pengelolaan data pasien',
         ]);
 
         Menu::create([
@@ -139,7 +151,7 @@ class MenuSeeder extends Seeder
             'sort_order' => 2,
             'is_active' => true,
             'permission_name' => 'employee.view',
-            'description' => 'Pengelolaan data pegawai'
+            'description' => 'Pengelolaan data pegawai',
         ]);
 
         Menu::create([
@@ -151,7 +163,7 @@ class MenuSeeder extends Seeder
             'sort_order' => 3,
             'is_active' => true,
             'permission_name' => 'view-doctors',
-            'description' => 'Pengelolaan data dokter'
+            'description' => 'Pengelolaan data dokter',
         ]);
 
         Menu::create([
@@ -163,7 +175,7 @@ class MenuSeeder extends Seeder
             'sort_order' => 4,
             'is_active' => true,
             'permission_name' => 'view-spesialis',
-            'description' => 'Pengelolaan data spesialis medis'
+            'description' => 'Pengelolaan data spesialis medis',
         ]);
 
         Menu::create([
@@ -176,7 +188,7 @@ class MenuSeeder extends Seeder
             'sort_order' => 5,
             'is_active' => true,
             'permission_name' => 'penjab.view',
-            'description' => 'Pengelolaan data penjamin (asuransi)'
+            'description' => 'Pengelolaan data penjamin (asuransi)',
         ]);
 
         Menu::create([
@@ -189,7 +201,7 @@ class MenuSeeder extends Seeder
             'sort_order' => 6,
             'is_active' => true,
             'permission_name' => 'poliklinik.view',
-            'description' => 'Pengelolaan data poliklinik dan tarif registrasi'
+            'description' => 'Pengelolaan data poliklinik dan tarif registrasi',
         ]);
 
         // Jadwal Dokter (Master Data)
@@ -203,7 +215,7 @@ class MenuSeeder extends Seeder
             'sort_order' => 7,
             'is_active' => true,
             'permission_name' => 'jadwal.index',
-            'description' => 'Pengaturan jadwal praktik dokter per poliklinik'
+            'description' => 'Pengaturan jadwal praktik dokter per poliklinik',
         ]);
 
         // Registration sub-menus
@@ -216,7 +228,7 @@ class MenuSeeder extends Seeder
             'sort_order' => 1,
             'is_active' => true,
             'permission_name' => 'registration.view',
-            'description' => 'Pendaftaran pasien ke poliklinik'
+            'description' => 'Pendaftaran pasien ke poliklinik',
         ]);
 
         Menu::create([
@@ -228,7 +240,7 @@ class MenuSeeder extends Seeder
             'sort_order' => 2,
             'is_active' => true,
             'permission_name' => 'reg-periksa.view',
-            'description' => 'Registrasi pemeriksaan pasien'
+            'description' => 'Registrasi pemeriksaan pasien',
         ]);
 
         // Administration sub-menus
@@ -241,7 +253,7 @@ class MenuSeeder extends Seeder
             'sort_order' => 1,
             'is_active' => true,
             'permission_name' => 'user.view',
-            'description' => 'Pengelolaan pengguna sistem'
+            'description' => 'Pengelolaan pengguna sistem',
         ]);
 
         Menu::create([
@@ -253,7 +265,7 @@ class MenuSeeder extends Seeder
             'sort_order' => 2,
             'is_active' => true,
             'permission_name' => 'permission.view',
-            'description' => 'Pengelolaan hak akses sistem'
+            'description' => 'Pengelolaan hak akses sistem',
         ]);
 
         Menu::create([
@@ -266,7 +278,7 @@ class MenuSeeder extends Seeder
             'sort_order' => 3,
             'is_active' => true,
             'permission_name' => 'menu.view',
-            'description' => 'Pengelolaan struktur menu sidebar'
+            'description' => 'Pengelolaan struktur menu sidebar',
         ]);
 
         // Note: Farmasi submenu entries are intentionally omitted to keep sidebar clean.
@@ -279,7 +291,7 @@ class MenuSeeder extends Seeder
             'route' => 'profile.show',
             'sort_order' => 99,
             'is_active' => true,
-            'description' => 'Profil pengguna'
+            'description' => 'Profil pengguna',
         ]);
 
         $this->command->info('Menu seeder completed successfully!');

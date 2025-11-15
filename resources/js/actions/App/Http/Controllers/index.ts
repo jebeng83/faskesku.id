@@ -9,8 +9,11 @@ import BarangController from './BarangController'
 import DataBarangController from './DataBarangController'
 import Farmasi from './Farmasi'
 import GudangBarangController from './GudangBarangController'
+import DepartemenController from './DepartemenController'
 import Pcare from './Pcare'
+import SatuSehat from './SatuSehat'
 import JadwalController from './JadwalController'
+import PoliklinikController from './PoliklinikController'
 import AuthController from './AuthController'
 import PatientController from './PatientController'
 import RegistrationController from './RegistrationController'
@@ -30,7 +33,6 @@ import KategoriPerawatanController from './KategoriPerawatanController'
 import DaftarTarifController from './DaftarTarifController'
 import TarifTindakanController from './TarifTindakanController'
 import PenjabController from './PenjabController'
-import PoliklinikController from './PoliklinikController'
 
 const Controllers = {
     API: Object.assign(API, API),
@@ -44,8 +46,11 @@ const Controllers = {
     DataBarangController: Object.assign(DataBarangController, DataBarangController),
     Farmasi: Object.assign(Farmasi, Farmasi),
     GudangBarangController: Object.assign(GudangBarangController, GudangBarangController),
+    DepartemenController: Object.assign(DepartemenController, DepartemenController),
     Pcare: Object.assign(Pcare, Pcare),
+    SatuSehat: Object.assign(SatuSehat, SatuSehat),
     JadwalController: Object.assign(JadwalController, JadwalController),
+    PoliklinikController: Object.assign(PoliklinikController, PoliklinikController),
     AuthController: Object.assign(AuthController, AuthController),
     PatientController: Object.assign(PatientController, PatientController),
     RegistrationController: Object.assign(RegistrationController, RegistrationController),
@@ -65,7 +70,6 @@ const Controllers = {
     DaftarTarifController: Object.assign(DaftarTarifController, DaftarTarifController),
     TarifTindakanController: Object.assign(TarifTindakanController, TarifTindakanController),
     PenjabController: Object.assign(PenjabController, PenjabController),
-    PoliklinikController: Object.assign(PoliklinikController, PoliklinikController),
 }
 
 export default Controllers

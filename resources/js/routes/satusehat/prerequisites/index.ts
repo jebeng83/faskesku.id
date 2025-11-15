@@ -1,0 +1,128 @@
+import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
+/**
+* @see routes/web.php:640
+* @route '/satusehat/prerequisites/organization'
+*/
+export const organization = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: organization.url(options),
+    method: 'get',
+})
+
+organization.definition = {
+    methods: ["get","head"],
+    url: '/satusehat/prerequisites/organization',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:640
+* @route '/satusehat/prerequisites/organization'
+*/
+organization.url = (options?: RouteQueryOptions) => {
+    return organization.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:640
+* @route '/satusehat/prerequisites/organization'
+*/
+organization.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: organization.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:640
+* @route '/satusehat/prerequisites/organization'
+*/
+organization.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: organization.url(options),
+    method: 'head',
+})
+
+/**
+* @see routes/web.php:644
+* @route '/satusehat/prerequisites/location'
+*/
+export const location = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: location.url(options),
+    method: 'get',
+})
+
+location.definition = {
+    methods: ["get","head"],
+    url: '/satusehat/prerequisites/location',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:644
+* @route '/satusehat/prerequisites/location'
+*/
+location.url = (options?: RouteQueryOptions) => {
+    return location.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:644
+* @route '/satusehat/prerequisites/location'
+*/
+location.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: location.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:644
+* @route '/satusehat/prerequisites/location'
+*/
+location.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: location.url(options),
+    method: 'head',
+})
+
+/**
+* @see routes/web.php:648
+* @route '/satusehat/prerequisites/location-ranap'
+*/
+export const location_ranap = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: location_ranap.url(options),
+    method: 'get',
+})
+
+location_ranap.definition = {
+    methods: ["get","head"],
+    url: '/satusehat/prerequisites/location-ranap',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:648
+* @route '/satusehat/prerequisites/location-ranap'
+*/
+location_ranap.url = (options?: RouteQueryOptions) => {
+    return location_ranap.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:648
+* @route '/satusehat/prerequisites/location-ranap'
+*/
+location_ranap.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: location_ranap.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:648
+* @route '/satusehat/prerequisites/location-ranap'
+*/
+location_ranap.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: location_ranap.url(options),
+    method: 'head',
+})
+
+const prerequisites = {
+    organization: Object.assign(organization, organization),
+    location: Object.assign(location, location),
+    location_ranap: Object.assign(location_ranap, location_ranap),
+}
+
+export default prerequisites
