@@ -35,9 +35,4 @@ handle.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 const FileUploadController = { handle }
 
-export default FileUploadController    method: 'post',
-})
-
-const FileUploadController = { handle }
-
 export default FileUploadController

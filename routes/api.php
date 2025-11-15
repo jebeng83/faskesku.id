@@ -246,6 +246,8 @@ Route::prefix('satusehat')->group(function () {
     Route::get('/config/coordinates', [SatuSehatController::class, 'coordinates'])->name('api.satusehat.config.coordinates');
     // Practitioner search by NIK
     Route::get('/practitioner', [SatuSehatController::class, 'practitionerSearch'])->name('api.satusehat.practitioner.search');
+    // Patient search by NIK
+    Route::get('/patient', [SatuSehatController::class, 'patientSearch'])->name('api.satusehat.patient.search');
     // CRUD Mapping Departemen ↔ Organization Subunit
     Route::get('/mapping/departemen', [SatuSehatController::class, 'mappingDepartemenIndex'])->name('api.satusehat.mapping.departemen.index');
     Route::post('/mapping/departemen', [SatuSehatController::class, 'mappingDepartemenStore'])->name('api.satusehat.mapping.departemen.store');

@@ -115,6 +115,25 @@ const cardsByTab = {
                 </svg>
             ),
         },
+        {
+            key: "patient",
+            title: "Referensi Pasien",
+            desc: "Cari Pasien (berdasarkan NIK)",
+            href: route("satusehat.prerequisites.patient"),
+            gradient: "from-amber-500 to-orange-600",
+            icon: (
+                <svg
+                    viewBox="0 0 24 24"
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                >
+                    <circle cx="12" cy="8" r="3" />
+                    <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+                </svg>
+            ),
+        },
     ],
 };
 

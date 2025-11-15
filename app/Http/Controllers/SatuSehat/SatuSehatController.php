@@ -1684,4 +1684,56 @@ class SatuSehatController extends Controller
             'bundle' => $json,
         ]);
     }
+
+    public function patientSearch(\Illuminate\Http\Request $request)
+    {
+        $nik = trim((string) $request->query('nik', ''));
+        if ($nik === '') {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Parameter nik wajib diisi',
+            ], 422);
+        }
+        $query = [
+            'identifier' => 'https://fhir.kemkes.go.id/id/nik|' . $nik,
+        ];
+        $res = $this->satusehatRequest('GET', 'Patient', null, ['query' => $query]);
+        if (!$res['ok']) {
+            return response()->json([
+                'ok' => false,
+                'status' => $res['status'],
+                'error' => $res['error'],
+                'body' => $res['body'] ?? null,
+                'message' => 'Gagal mencari Patient di SATUSEHAT',
+            ], $res['status'] ?: 400);
+        }
+        $json = $res['json'] ?? [];
+        $entries = is_array($json['entry'] ?? null) ? $json['entry'] : [];
+        $items = [];
+        foreach ($entries as $entry) {
+            $r = $entry['resource'] ?? [];
+            if (($r['resourceType'] ?? '') !== 'Patient') { continue; }
+            $nameArr = is_array($r['name'] ?? null) ? $r['name'] : [];
+            $displayName = null;
+            if (!empty($nameArr)) {
+                $n = $nameArr[0];
+                $displayName = $n['text'] ?? trim(($n['prefix'][0] ?? '') . ' ' . implode(' ', (array) ($n['given'] ?? [])) . ' ' . ($n['family'] ?? ''));
+            }
+            $items[] = [
+                'id' => $r['id'] ?? null,
+                'name' => $displayName,
+                'gender' => $r['gender'] ?? null,
+                'birthDate' => $r['birthDate'] ?? null,
+                'identifier' => $r['identifier'] ?? [],
+                'telecom' => $r['telecom'] ?? [],
+                'address' => $r['address'] ?? [],
+            ];
+        }
+        return response()->json([
+            'ok' => true,
+            'total' => $json['total'] ?? count($items),
+            'list' => $items,
+            'bundle' => $json,
+        ]);
+    }
 }

@@ -3,6 +3,7 @@ import organization578ad3 from './organization'
 import location from './location'
 import config from './config'
 import practitioner from './practitioner'
+import patient from './patient'
 import mapping from './mapping'
 import ranap from './ranap'
 /**
@@ -302,6 +303,7 @@ const satusehat = {
     location: Object.assign(location, location),
     config: Object.assign(config, config),
     practitioner: Object.assign(practitioner, practitioner),
+    patient: Object.assign(patient, patient),
     mapping: Object.assign(mapping, mapping),
     ranap: Object.assign(ranap, ranap),
     create: Object.assign(create, create),
