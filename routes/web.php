@@ -657,6 +657,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/prerequisites/patient', function () {
             return Inertia::render('SatuSehat/Prerequisites/Patient');
         })->name('prerequisites.patient');
+        Route::get('/interoperabilitas/rajal/encounter', function () {
+            return Inertia::render('SatuSehat/Interoperabilitas/PelayananRawatJalan/Encounter');
+        })->name('interoperabilitas.rajal.encounter');
     });
 
 });

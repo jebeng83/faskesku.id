@@ -262,3 +262,271 @@ Catatan:
 ```
 
 Gunakan endpoint `GET /api/satusehat/organization/subunits?map=1` untuk mendapatkan `subunit-uuid` dan `kode→nama` sebelum menyusun payload Encounter/Observation.
+
+---
+
+## Pelayanan Rawat Jalan (RME) — Endpoint Internal
+
+### Referensi
+- Katalog RME Rawat Jalan: https://satusehat.kemkes.go.id/platform/docs/id/interoperability/rme-rawat-jalan/
+- Postman Collection: https://www.postman.com/satusehat/satusehat-public/collection/rg5r4qz/01-pelayanan-rawat-jalan
+
+### Ikhtisar Arsitektur
+- Endpoint internal disediakan untuk memetakan alur RME Rawat Jalan ke FHIR Indonesia, memanfaatkan helper di `app/Traits/SatuSehatTraits.php:205`.
+- Controller: `app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php`
+  - Encounter: `createEncounter` di `app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:18`
+  - Condition: `createCondition` di `app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:83`
+  - Observation: `createObservation` di `app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:158`
+  - Procedure: `createProcedure` di `app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:293`
+  - Composition: `createComposition` di `app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:356`
+  - Bundle: `createBundle` di `app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:446`
+
+### Konfigurasi & Prasyarat
+- `.env` wajib berisi kredensial dan base URL:
+  - `SATUSEHAT_AUTH`, `SATUSEHAT_FHIR`, `SATUSEHAT_CLIENT_ID`, `SATUSEHAT_CLIENT_SECRET`, `SATUSEHAT_ORG_ID`
+- Reference Organization untuk `serviceProvider` diambil via `satusehatOrganizationReference()` (`app/Traits/SatuSehatTraits.php:66`).
+
+### Daftar Endpoint Internal
+
+1) `POST /api/satusehat/rajal/encounter`
+- Tujuan: Buat Encounter rawat jalan (`class.code = AMB`).
+- Parameter ringkas:
+  - Wajib: `patient_id`, `practitioner_id`, `location_id`
+  - Opsi: `status` (default `in-progress`), `class_code` (default `AMB`), `start`, `end`
+- Contoh body ringkas:
+```json
+{
+  "patient_id": "<patient-uuid>",
+  "practitioner_id": "<prac-uuid>",
+  "location_id": "<loc-uuid>",
+  "start": "2025-11-15T09:00:00+07:00"
+}
+```
+- Alternatif: kirim `resource` FHIR lengkap.
+
+2) `POST /api/satusehat/rajal/condition`
+- Tujuan: Buat diagnosa Encounter (`category=encounter-diagnosis`).
+- Parameter ringkas:
+  - Wajib: `patient_id`, `encounter_id`, `icd10`
+  - Opsi: `practitioner_id`, `display`, `clinical_status` (default `active`), `recorded_date`, `onset_date_time`
+- Contoh body ringkas:
+```json
+{
+  "patient_id": "<patient-uuid>",
+  "encounter_id": "<enc-uuid>",
+  "icd10": "J06.9",
+  "display": "ISPA"
+}
+```
+
+3) `POST /api/satusehat/rajal/observation`
+- Tujuan: Buat Observation vital signs.
+- Parameter ringkas:
+  - Wajib: `type`, `patient_id`, `encounter_id`
+  - Opsi: `effectiveDateTime`, `status` (default `final`)
+- Nilai per `type`:
+  - `temperature`: `value` (Cel)
+  - `heart_rate`: `value` (/min)
+  - `respiratory_rate`: `value` (/min)
+  - `spo2`: `value` (%)
+  - `height`: `value` (cm)
+  - `weight`: `value` (kg)
+  - `blood_pressure`: `systolic_value`, `diastolic_value` (mmHg)
+- Contoh tensi:
+```json
+{
+  "type": "blood_pressure",
+  "patient_id": "<patient-uuid>",
+  "encounter_id": "<enc-uuid>",
+  "systolic_value": 120,
+  "diastolic_value": 80
+}
+```
+
+4) `POST /api/satusehat/rajal/procedure`
+- Tujuan: Buat Procedure (tindakan).
+- Parameter ringkas:
+  - Wajib: `patient_id`, `encounter_id`, `code_system`, `code`
+  - Opsi: `display`, `status` (default `completed`), `performedDateTime`, `practitioner_id`
+- Contoh:
+```json
+{
+  "patient_id": "<patient-uuid>",
+  "encounter_id": "<enc-uuid>",
+  "code_system": "http://snomed.info/sct",
+  "code": "80146002",
+  "display": "Suturing"
+}
+```
+
+5) `POST /api/satusehat/rajal/composition`
+- Tujuan: Buat Composition (Outpatient Note; SOAP: Subjective/Objective/Assessment/Plan).
+- Parameter ringkas:
+  - Wajib: `patient_id`, `encounter_id`, `practitioner_id`
+  - Opsi: `title` (default "RME Rawat Jalan"), `date`, `subjective_text`, `objective_text`, `assessment_text`, `plan_text`
+  - Opsi referensi section: `subjective_refs`, `objective_refs`, `assessment_refs`, `plan_refs` (array referensi `ResourceType/{id}`)
+- Contoh:
+```json
+{
+  "patient_id": "<patient-uuid>",
+  "encounter_id": "<enc-uuid>",
+  "practitioner_id": "<prac-uuid>",
+  "subjective_text": "Keluhan utama batuk pilek...",
+  "objective_refs": ["Observation/<obs-hr>", "Observation/<obs-bp>"]
+}
+```
+
+6) `POST /api/satusehat/rajal/bundle`
+- Tujuan: Kirim `Bundle` tipe `transaction` untuk beberapa resource sekaligus.
+- Parameter ringkas:
+  - Wajib: `entries` (array entry FHIR dengan `request.method` dan `request.url`)
+  - Opsi: `type` (default `transaction`)
+- Contoh (skema):
+```json
+{
+  "entries": [
+    {
+      "resource": { "resourceType": "Encounter", "status": "in-progress", ... },
+      "request": { "method": "POST", "url": "Encounter" }
+    },
+    {
+      "resource": { "resourceType": "Observation", ... },
+      "request": { "method": "POST", "url": "Observation" }
+    }
+  ]
+}
+```
+
+### Pola Response
+- Semua endpoint internal mengembalikan bentuk:
+```json
+{ "ok": true, "status": 201, "resource": { "resourceType": "...", "id": "..." } }
+```
+- Untuk `bundle`:
+```json
+{ "ok": true, "status": 200, "bundle": { "resourceType": "Bundle", "type": "transaction-response", "entry": [ ... ] } }
+```
+
+### Tips Pengembangan
+- Gunakan `Prefer: return=representation` untuk memperoleh representasi resource langsung ketika `POST` (sudah diaktifkan di controller internal).
+- Pastikan `valueQuantity` bertipe number; hindari string untuk decimal (lihat encoder di `app/Traits/SatuSehatTraits.php:247`).
+- Pakai `satusehatOrganizationReference()` untuk mengisi `serviceProvider` (induk/subunit) sesuai konteks organisasi (`app/Traits/SatuSehatTraits.php:66`).
+- Mapping kode harus sesuai katalog (LOINC untuk vital signs, ICD-10 untuk diagnosa, SNOMED untuk sebagian tindakan).
+
+### Alur Contoh (Langkah)
+- Buat Encounter → kirim Observation vital signs → buat Condition (diagnosa) → buat Procedure (tindakan) → buat Composition (SOAP) → opsional: kirim Bundle transaksi.
+
+### Rujukan Kode
+- `app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:18` (Encounter)
+- `app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:83` (Condition)
+- `app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:158` (Observation)
+- `app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:293` (Procedure)
+- `app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:356` (Composition)
+- `app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:446` (Bundle)
+
+### Alur Berbasis no_rawat (Primary Key)
+- Gunakan `reg_periksa.no_rawat` sebagai kunci utama untuk mengorkestrasi alur Rajal: resolve identitas pasien, dokter, poliklinik, waktu pendaftaran dan waktu pemeriksaan.
+- Endpoint update Encounter internal berbasiskan `no_rawat`: `PUT /api/satusehat/rajal/encounter/by-rawat/{no_rawat}` (route di `routes/api.php:253`, handler di `app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:481`).
+
+#### Relasi Data Lokal (describe)
+- reg_periksa:
+  - Kunci: `no_rawat`
+  - Field terkait: `no_rkm_medis`, `kd_dokter`, `kd_poli`, `tgl_registrasi`, `jam_reg`
+  - Relasi model: `poliklinik()` dan `dokter()` di `app/Models/RegPeriksa.php:66`
+- pasien:
+  - Kunci: `no_rkm_medis` (relasi dari reg_periksa)
+  - NIK (`no_ktp`) dipakai untuk search/resolve Patient di SATUSEHAT
+  - Describe: `GET /api/pasien/describe` di `app/Http/Controllers/API/PatientController.php:12`
+- poliklinik:
+  - Kunci: `kd_poli` (relasi dari reg_periksa)
+  - Dipetakan ke SATUSEHAT `Location` via mapping lokasi ralan (`mappingLokasiIndex` di `app/Http/Controllers/SatuSehat/SatuSehatController.php:679`)
+- dokter:
+  - Kunci: `kd_dokter` (relasi dari reg_periksa)
+  - NIK dipakai untuk search/resolve Practitioner di SATUSEHAT (`practitionerSearch` di `app/Http/Controllers/SatuSehat/SatuSehatController.php:1635`)
+- pemeriksaan_ralan:
+  - Kunci relasi: `no_rawat`
+  - Field waktu layanan: `tgl_perawatan`, `jam_rawat`
+  - Data SOAP & vital: `keluhan`, `pemeriksaan`, `penilaian`, `rtl`, `tensi`, `nadi`, `respirasi`, `suhu_tubuh`, `tinggi`, `berat`, `spo2`
+  - Akses contoh: `pemeriksaanRalan()` di `app/Http/Controllers/RawatJalan/RawatJalanController.php:317`
+
+#### Ringkasan Payload (minimum) per Endpoint
+- Encounter (POST saat pendaftaran)
+```json
+{
+  "patient_id": "<patient-uuid>",
+  "practitioner_id": "<prac-uuid>",
+  "location_id": "<loc-uuid>",
+  "start": "2025-11-15T08:30:00+07:00"
+}
+```
+- Observation (contoh tensi)
+```json
+{
+  "type": "blood_pressure",
+  "patient_id": "<patient-uuid>",
+  "encounter_id": "<enc-uuid>",
+  "effectiveDateTime": "2025-11-15T09:10:00+07:00",
+  "systolic_value": 120,
+  "diastolic_value": 80
+}
+```
+- Condition (ICD-10 utama)
+```json
+{
+  "patient_id": "<patient-uuid>",
+  "encounter_id": "<enc-uuid>",
+  "icd10": "J06.9",
+  "display": "ISPA"
+}
+```
+- Procedure (SNOMED)
+```json
+{
+  "patient_id": "<patient-uuid>",
+  "encounter_id": "<enc-uuid>",
+  "code_system": "http://snomed.info/sct",
+  "code": "80146002",
+  "display": "Suturing",
+  "performedDateTime": "2025-11-15T09:20:00+07:00",
+  "practitioner_id": "<prac-uuid>"
+}
+```
+- Composition (SOAP)
+```json
+{
+  "patient_id": "<patient-uuid>",
+  "encounter_id": "<enc-uuid>",
+  "practitioner_id": "<prac-uuid>",
+  "title": "RME Rawat Jalan",
+  "date": "2025-11-15T09:25:00+07:00",
+  "subjective_text": "Keluhan...",
+  "objective_text": "Pemeriksaan...",
+  "assessment_text": "Penilaian...",
+  "plan_text": "RTL..."
+}
+```
+- Bundle (transaction, skema ringkas)
+```json
+{
+  "type": "transaction",
+  "entries": [
+    { "request": { "method": "POST", "url": "Encounter" }, "resource": { "resourceType": "Encounter", "status": "in-progress", "subject": { "reference": "Patient/<patient-uuid>" }, "participant": [{ "individual": { "reference": "Practitioner/<prac-uuid>" } }], "location": [{ "location": { "reference": "Location/<loc-uuid>" } }], "period": { "start": "2025-11-15T08:30:00+07:00" } } },
+    { "request": { "method": "POST", "url": "Observation" }, "resource": { "resourceType": "Observation", "status": "final", "category": [{ "coding": [{ "system": "http://terminology.hl7.org/CodeSystem/observation-category", "code": "vital-signs" }] }], "code": { "coding": [{ "system": "http://loinc.org", "code": "85354-9" }] }, "subject": { "reference": "Patient/<patient-uuid>" }, "encounter": { "reference": "Encounter/<temp-enc-id>" }, "effectiveDateTime": "2025-11-15T09:10:00+07:00", "component": [{ "code": { "coding": [{ "system": "http://loinc.org", "code": "8480-6" }] }, "valueQuantity": { "value": 120, "unit": "mmHg", "system": "http://unitsofmeasure.org", "code": "mm[Hg]" } }, { "code": { "coding": [{ "system": "http://loinc.org", "code": "8462-4" }] }, "valueQuantity": { "value": 80, "unit": "mmHg", "system": "http://unitsofmeasure.org", "code": "mm[Hg]" } }] } }
+  ]
+}
+```
+
+#### Encounter PUT Internal (by no_rawat)
+- Endpoint: `PUT /api/satusehat/rajal/encounter/by-rawat/{no_rawat}`
+- Body minimal:
+```json
+{
+  "encounter_id": "<enc-uuid>",
+  "status": "finished",
+  "tz_offset": "+07:00"
+}
+```
+- Perilaku:
+  - Ambil `tgl_perawatan` dan `jam_rawat` terakhir dari `pemeriksaan_ralan` untuk `no_rawat` terkait, susun `period.end` dengan timezone offset.
+  - Baca Encounter dari FHIR, set `status` dan `period.end`, lakukan PUT ke FHIR.
+  - Handler: `app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:481`

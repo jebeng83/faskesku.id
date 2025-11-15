@@ -1,5 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 import prerequisites from './prerequisites'
+import interoperabilitas from './interoperabilitas'
 /**
 * @see routes/web.php:636
 * @route '/satusehat'
@@ -43,6 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 const satusehat = {
     index: Object.assign(index, index),
     prerequisites: Object.assign(prerequisites, prerequisites),
+    interoperabilitas: Object.assign(interoperabilitas, interoperabilitas),
 }
 
 export default satusehat

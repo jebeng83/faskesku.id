@@ -259,7 +259,7 @@ getRegistrations.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =
 
 /**
 * @see \App\Http\Controllers\RegistrationController::cancelRegistration
-* @see app/Http/Controllers/RegistrationController.php:254
+* @see app/Http/Controllers/RegistrationController.php:262
 * @route '/registration/cancel'
 */
 export const cancelRegistration = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -274,7 +274,7 @@ cancelRegistration.definition = {
 
 /**
 * @see \App\Http\Controllers\RegistrationController::cancelRegistration
-* @see app/Http/Controllers/RegistrationController.php:254
+* @see app/Http/Controllers/RegistrationController.php:262
 * @route '/registration/cancel'
 */
 cancelRegistration.url = (options?: RouteQueryOptions) => {
@@ -283,7 +283,7 @@ cancelRegistration.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RegistrationController::cancelRegistration
-* @see app/Http/Controllers/RegistrationController.php:254
+* @see app/Http/Controllers/RegistrationController.php:262
 * @route '/registration/cancel'
 */
 cancelRegistration.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
