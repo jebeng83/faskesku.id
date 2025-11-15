@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::kamar
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1301
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1550
 * @route '/api/satusehat/ranap/kamar'
 */
 export const kamar = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ kamar.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::kamar
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1301
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1550
 * @route '/api/satusehat/ranap/kamar'
 */
 kamar.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ kamar.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::kamar
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1301
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1550
 * @route '/api/satusehat/ranap/kamar'
 */
 kamar.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ kamar.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::kamar
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1301
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1550
 * @route '/api/satusehat/ranap/kamar'
 */
 kamar.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

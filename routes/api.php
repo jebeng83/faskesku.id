@@ -244,6 +244,8 @@ Route::prefix('satusehat')->group(function () {
     Route::patch('/location/{id}', [SatuSehatController::class, 'locationPatch'])->name('api.satusehat.location.patch');
     // Coordinates config from .env
     Route::get('/config/coordinates', [SatuSehatController::class, 'coordinates'])->name('api.satusehat.config.coordinates');
+    // Practitioner search by NIK
+    Route::get('/practitioner', [SatuSehatController::class, 'practitionerSearch'])->name('api.satusehat.practitioner.search');
     // CRUD Mapping Departemen ↔ Organization Subunit
     Route::get('/mapping/departemen', [SatuSehatController::class, 'mappingDepartemenIndex'])->name('api.satusehat.mapping.departemen.index');
     Route::post('/mapping/departemen', [SatuSehatController::class, 'mappingDepartemenStore'])->name('api.satusehat.mapping.departemen.store');
@@ -261,6 +263,11 @@ Route::put('/mapping/lokasi-ranap/{kd_kamar}', [SatuSehatController::class, 'map
 Route::delete('/mapping/lokasi-ranap/{kd_kamar}', [SatuSehatController::class, 'mappingLokasiRanapDestroy'])->name('api.satusehat.mapping.lokasi_ranap.destroy');
 // Referensi Kamar (untuk dropdown/select)
 Route::get('/ranap/kamar', [SatuSehatController::class, 'kamarList'])->name('api.satusehat.ranap.kamar');
+    // CRUD Mapping Lokasi Farmasi (Bangsal ↔ SATUSEHAT Location)
+    Route::get('/mapping/lokasi-farmasi', [SatuSehatController::class, 'mappingLokasiFarmasiIndex'])->name('api.satusehat.mapping.lokasi_farmasi.index');
+    Route::post('/mapping/lokasi-farmasi', [SatuSehatController::class, 'mappingLokasiFarmasiStore'])->name('api.satusehat.mapping.lokasi_farmasi.store');
+    Route::put('/mapping/lokasi-farmasi/{kd_bangsal}', [SatuSehatController::class, 'mappingLokasiFarmasiUpdate'])->name('api.satusehat.mapping.lokasi_farmasi.update');
+    Route::delete('/mapping/lokasi-farmasi/{kd_bangsal}', [SatuSehatController::class, 'mappingLokasiFarmasiDestroy'])->name('api.satusehat.mapping.lokasi_farmasi.destroy');
     // Generic resource relay
     // Batasi hanya ke resource FHIR umum agar tidak bentrok dengan endpoint khusus
     Route::post('/{resource}', [SatuSehatController::class, 'createResource'])
