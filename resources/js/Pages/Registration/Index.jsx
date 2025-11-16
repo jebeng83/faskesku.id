@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Head, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import AppLayout from "@/Layouts/AppLayout";
+import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     ArrowPathIcon,
@@ -815,7 +815,7 @@ export default function Registration({
     };
 
     return (
-        <AppLayout title="Pendaftaran Pasien">
+        <LanjutanRegistrasiLayout title="Pendaftaran Pasien" menuConfig={{ activeTab: "registrasi" }}>
             <Head title="Pendaftaran Pasien" />
 
             {/* Header */}
@@ -3484,6 +3484,6 @@ export default function Registration({
                     setFormData((prev) => ({ ...prev, kd_pj: newItem.kd_pj }));
                 }}
             />
-        </AppLayout>
+        </LanjutanRegistrasiLayout>
     );
 }

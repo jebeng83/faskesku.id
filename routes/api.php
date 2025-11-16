@@ -260,6 +260,9 @@ Route::prefix('satusehat')->group(function () {
         Route::post('/procedure', [SatuSehatRajalController::class, 'createProcedure'])->name('api.satusehat.rajal.procedure.create');
         Route::post('/composition', [SatuSehatRajalController::class, 'createComposition'])->name('api.satusehat.rajal.composition.create');
         Route::post('/bundle', [SatuSehatRajalController::class, 'createBundle'])->name('api.satusehat.rajal.bundle.create');
+        Route::post('/pipeline/by-rawat/{no_rawat}', [SatuSehatRajalController::class, 'pipelineByRawat'])
+            ->where('no_rawat', '.*')
+            ->name('api.satusehat.rajal.pipeline.by-rawat');
     });
     // CRUD Mapping Departemen ↔ Organization Subunit
     Route::get('/mapping/departemen', [SatuSehatController::class, 'mappingDepartemenIndex'])->name('api.satusehat.mapping.departemen.index');

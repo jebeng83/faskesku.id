@@ -405,6 +405,58 @@ createBundle.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     method: 'post',
 })
 
-const SatuSehatRajalController = { createEncounter, updateEncounterByRawat, encounterIdByRawat, encounterTableDescribe, diagnosaPasienDescribe, createCondition, createObservation, createProcedure, createComposition, createBundle }
+/**
+* @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::pipelineByRawat
+* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:752
+* @route '/api/satusehat/rajal/pipeline/by-rawat/{no_rawat}'
+*/
+export const pipelineByRawat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: pipelineByRawat.url(args, options),
+    method: 'post',
+})
+
+pipelineByRawat.definition = {
+    methods: ["post"],
+    url: '/api/satusehat/rajal/pipeline/by-rawat/{no_rawat}',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::pipelineByRawat
+* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:752
+* @route '/api/satusehat/rajal/pipeline/by-rawat/{no_rawat}'
+*/
+pipelineByRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { no_rawat: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            no_rawat: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        no_rawat: args.no_rawat,
+    }
+
+    return pipelineByRawat.definition.url
+            .replace('{no_rawat}', parsedArgs.no_rawat.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::pipelineByRawat
+* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:752
+* @route '/api/satusehat/rajal/pipeline/by-rawat/{no_rawat}'
+*/
+pipelineByRawat.post = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: pipelineByRawat.url(args, options),
+    method: 'post',
+})
+
+const SatuSehatRajalController = { createEncounter, updateEncounterByRawat, encounterIdByRawat, encounterTableDescribe, diagnosaPasienDescribe, createCondition, createObservation, createProcedure, createComposition, createBundle, pipelineByRawat }
 
 export default SatuSehatRajalController

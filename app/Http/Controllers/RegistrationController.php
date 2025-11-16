@@ -11,6 +11,7 @@ use App\Models\Wilayah;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class RegistrationController extends Controller
 {
@@ -289,6 +290,80 @@ class RegistrationController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Registrasi berhasil dibatalkan'
+        ]);
+    }
+
+    /**
+     * Statistik kunjungan poli per bulan (top N poli dalam setahun)
+     * Response shape:
+     * {
+     *   success: true,
+     *   data: {
+     *     year: 2025,
+     *     months: ["Jan","Feb",...],
+     *     series: [ { kd_poli, nm_poli, data: [12 angka], total: n } ],
+     *     max: 123
+     *   }
+     * }
+     */
+    public function poliMonthlyStats(Request $request)
+    {
+        $year = (int) ($request->get('year') ?? date('Y'));
+        $limit = (int) ($request->get('limit') ?? 5);
+        if ($limit < 1) { $limit = 5; }
+
+        // Ambil agregasi jumlah per bulan per poli
+        $rows = DB::table('reg_periksa')
+            ->join('poliklinik', 'poliklinik.kd_poli', '=', 'reg_periksa.kd_poli')
+            ->selectRaw('MONTH(reg_periksa.tgl_registrasi) as month, reg_periksa.kd_poli as kd_poli, poliklinik.nm_poli as nm_poli, COUNT(*) as total')
+            ->whereYear('reg_periksa.tgl_registrasi', $year)
+            ->groupBy('month', 'reg_periksa.kd_poli', 'poliklinik.nm_poli')
+            ->get();
+
+        $months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+
+        // Susun data per poli
+        $seriesMap = [];
+        foreach ($rows as $r) {
+            $kp = $r->kd_poli;
+            if (!isset($seriesMap[$kp])) {
+                $seriesMap[$kp] = [
+                    'kd_poli' => $kp,
+                    'nm_poli' => $r->nm_poli,
+                    'data' => array_fill(0, 12, 0),
+                    'total' => 0,
+                ];
+            }
+            $idx = max(0, min(11, ((int) $r->month) - 1));
+            $seriesMap[$kp]['data'][$idx] = (int) $r->total;
+            $seriesMap[$kp]['total'] += (int) $r->total;
+        }
+
+        $series = array_values($seriesMap);
+        // Urutkan berdasarkan total tertinggi dan ambil top N
+        usort($series, function ($a, $b) {
+            return $b['total'] <=> $a['total'];
+        });
+        if ($limit > 0 && count($series) > $limit) {
+            $series = array_slice($series, 0, $limit);
+        }
+
+        // Hitung nilai maksimum untuk skala chart
+        $max = 0;
+        foreach ($series as $s) {
+            foreach ($s['data'] as $val) {
+                if ($val > $max) { $max = $val; }
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'year' => $year,
+                'months' => $months,
+                'series' => $series,
+                'max' => $max,
+            ],
         ]);
     }
 }

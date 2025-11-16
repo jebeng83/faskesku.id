@@ -47,6 +47,50 @@ lanjutan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:21
+* @route '/rawat-jalan'
+*/
+export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index.url(options),
+    method: 'get',
+})
+
+index.definition = {
+    methods: ["get","head"],
+    url: '/rawat-jalan',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:21
+* @route '/rawat-jalan'
+*/
+index.url = (options?: RouteQueryOptions) => {
+    return index.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:21
+* @route '/rawat-jalan'
+*/
+index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:21
+* @route '/rawat-jalan'
+*/
+index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: index.url(options),
+    method: 'head',
+})
+
+/**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::riwayat
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:248
 * @route '/rawat-jalan/riwayat'
@@ -533,50 +577,6 @@ suratSakit.head = (args: { no_rawat: string | number } | [no_rawat: string | num
 })
 
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:21
-* @route '/rawat-jalan'
-*/
-export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: index.url(options),
-    method: 'get',
-})
-
-index.definition = {
-    methods: ["get","head"],
-    url: '/rawat-jalan',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:21
-* @route '/rawat-jalan'
-*/
-index.url = (options?: RouteQueryOptions) => {
-    return index.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:21
-* @route '/rawat-jalan'
-*/
-index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: index.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:21
-* @route '/rawat-jalan'
-*/
-index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: index.url(options),
-    method: 'head',
-})
-
-/**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::create
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:122
 * @route '/rawat-jalan/create'
@@ -894,6 +894,7 @@ destroy.delete = (args: { rawat_jalan: string | number } | [rawat_jalan: string 
 
 const rawatJalan = {
     lanjutan: Object.assign(lanjutan, lanjutan),
+    index: Object.assign(index, index),
     riwayat: Object.assign(riwayat, riwayat),
     riwayatPemeriksaan: Object.assign(riwayatPemeriksaan, riwayatPemeriksaan),
     pemeriksaanRalan: Object.assign(pemeriksaanRalan, pemeriksaanRalanC19e15),
@@ -903,7 +904,6 @@ const rawatJalan = {
     statistics: Object.assign(statistics, statistics),
     suratSehat: Object.assign(suratSehat, suratSehat47d9f7),
     suratSakit: Object.assign(suratSakit, suratSakit4a9f0c),
-    index: Object.assign(index, index),
     create: Object.assign(create, create),
     store: Object.assign(store, store),
     show: Object.assign(show, show),

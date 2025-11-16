@@ -71,7 +71,8 @@ class AuthController extends Controller
         if ($user && \Illuminate\Support\Facades\Hash::check($credentials['password'], $user->password)) {
             Auth::login($user, $request->boolean('remember'));
             $request->session()->regenerate();
-            return redirect()->intended('/');
+            // Setelah login, arahkan ke Dashboard
+            return redirect()->route('dashboard');
         }
 
         return back()->withErrors([
