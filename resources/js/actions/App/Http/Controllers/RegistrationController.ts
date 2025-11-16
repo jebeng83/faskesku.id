@@ -141,7 +141,7 @@ searchPatients.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => 
 * @see app/Http/Controllers/RegistrationController.php:66
 * @route '/registration/{patient}/register'
 */
-export const registerPatient = (args: { patient: string | { no_rkm_medis: string } } | [patient: string | { no_rkm_medis: string } ] | string | { no_rkm_medis: string }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const registerPatient = (args: { patient: string | number | { no_rkm_medis: string | number } } | [patient: string | number | { no_rkm_medis: string | number } ] | string | number | { no_rkm_medis: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: registerPatient.url(args, options),
     method: 'post',
 })
@@ -156,7 +156,7 @@ registerPatient.definition = {
 * @see app/Http/Controllers/RegistrationController.php:66
 * @route '/registration/{patient}/register'
 */
-registerPatient.url = (args: { patient: string | { no_rkm_medis: string } } | [patient: string | { no_rkm_medis: string } ] | string | { no_rkm_medis: string }, options?: RouteQueryOptions) => {
+registerPatient.url = (args: { patient: string | number | { no_rkm_medis: string | number } } | [patient: string | number | { no_rkm_medis: string | number } ] | string | number | { no_rkm_medis: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { patient: args }
     }
@@ -189,7 +189,7 @@ registerPatient.url = (args: { patient: string | { no_rkm_medis: string } } | [p
 * @see app/Http/Controllers/RegistrationController.php:66
 * @route '/registration/{patient}/register'
 */
-registerPatient.post = (args: { patient: string | { no_rkm_medis: string } } | [patient: string | { no_rkm_medis: string } ] | string | { no_rkm_medis: string }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+registerPatient.post = (args: { patient: string | number | { no_rkm_medis: string | number } } | [patient: string | number | { no_rkm_medis: string | number } ] | string | number | { no_rkm_medis: string | number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: registerPatient.url(args, options),
     method: 'post',
 })
@@ -199,7 +199,7 @@ registerPatient.post = (args: { patient: string | { no_rkm_medis: string } } | [
 * @see app/Http/Controllers/RegistrationController.php:146
 * @route '/registration/{patient}/check-poli-status'
 */
-export const checkPatientPoliStatus = (args: { patient: string | { no_rkm_medis: string } } | [patient: string | { no_rkm_medis: string } ] | string | { no_rkm_medis: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const checkPatientPoliStatus = (args: { patient: string | number | { no_rkm_medis: string | number } } | [patient: string | number | { no_rkm_medis: string | number } ] | string | number | { no_rkm_medis: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: checkPatientPoliStatus.url(args, options),
     method: 'get',
 })
@@ -214,7 +214,7 @@ checkPatientPoliStatus.definition = {
 * @see app/Http/Controllers/RegistrationController.php:146
 * @route '/registration/{patient}/check-poli-status'
 */
-checkPatientPoliStatus.url = (args: { patient: string | { no_rkm_medis: string } } | [patient: string | { no_rkm_medis: string } ] | string | { no_rkm_medis: string }, options?: RouteQueryOptions) => {
+checkPatientPoliStatus.url = (args: { patient: string | number | { no_rkm_medis: string | number } } | [patient: string | number | { no_rkm_medis: string | number } ] | string | number | { no_rkm_medis: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { patient: args }
     }
@@ -247,7 +247,7 @@ checkPatientPoliStatus.url = (args: { patient: string | { no_rkm_medis: string }
 * @see app/Http/Controllers/RegistrationController.php:146
 * @route '/registration/{patient}/check-poli-status'
 */
-checkPatientPoliStatus.get = (args: { patient: string | { no_rkm_medis: string } } | [patient: string | { no_rkm_medis: string } ] | string | { no_rkm_medis: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+checkPatientPoliStatus.get = (args: { patient: string | number | { no_rkm_medis: string | number } } | [patient: string | number | { no_rkm_medis: string | number } ] | string | number | { no_rkm_medis: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: checkPatientPoliStatus.url(args, options),
     method: 'get',
 })
@@ -257,7 +257,7 @@ checkPatientPoliStatus.get = (args: { patient: string | { no_rkm_medis: string }
 * @see app/Http/Controllers/RegistrationController.php:146
 * @route '/registration/{patient}/check-poli-status'
 */
-checkPatientPoliStatus.head = (args: { patient: string | { no_rkm_medis: string } } | [patient: string | { no_rkm_medis: string } ] | string | { no_rkm_medis: string }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+checkPatientPoliStatus.head = (args: { patient: string | number | { no_rkm_medis: string | number } } | [patient: string | number | { no_rkm_medis: string | number } ] | string | number | { no_rkm_medis: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: checkPatientPoliStatus.url(args, options),
     method: 'head',
 })
