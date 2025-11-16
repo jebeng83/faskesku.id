@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Head, usePage, router } from "@inertiajs/react";
-import AppLayout from "@/Layouts/AppLayout";
+import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function PoliklinikIndex() {
@@ -56,11 +56,11 @@ export default function PoliklinikIndex() {
 		}).format(amount);
 	};
 
-	return (
-		<AppLayout title="Manajemen Poliklinik">
-			<Head title="Manajemen Poliklinik" />
+  return (
+    <LanjutanRegistrasiLayout title="Registrasi Pasien" menuConfig={{ activeTab: "poliklinik" }}>
+      <Head title="Manajemen Poliklinik" />
 
-			<div className="space-y-4">
+      <div className="space-y-4">
 				{/* Header */}
 				<div className="flex items-center justify-between">
 					<div>
@@ -202,9 +202,9 @@ export default function PoliklinikIndex() {
 
 				<CreateModal isOpen={isCreateOpen} onClose={closeCreate} />
 				<EditModal isOpen={isEditOpen} onClose={closeEdit} item={editing} />
-			</div>
-		</AppLayout>
-	);
+      </div>
+    </LanjutanRegistrasiLayout>
+  );
 }
 
 function CreateModal({ isOpen, onClose }) {
