@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useDeferredValue, useMemo, useState } from "react";
 import { Head, Link } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
 import { route } from "ziggy-js";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   Squares2X2Icon,
   ClipboardDocumentListIcon,
@@ -140,14 +140,26 @@ const items = [
 
 export default function MenuUtamaMasterData() {
   const [search, setSearch] = useState("");
-  const filteredItems = items.filter((item) => {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return (
-      item.title.toLowerCase().includes(q) ||
-      (item.description || "").toLowerCase().includes(q)
+  const deferredSearch = useDeferredValue(search);
+  const shouldReduceMotion = useReducedMotion();
+
+  const filteredItems = useMemo(() => {
+    if (!deferredSearch) return items;
+    const q = deferredSearch.toLowerCase();
+    return items.filter(
+      (item) =>
+        item.title.toLowerCase().includes(q) ||
+        (item.description || "").toLowerCase().includes(q)
     );
-  });
+  }, [deferredSearch]);
+
+  const motionGridProps = shouldReduceMotion
+    ? {}
+    : {
+        variants: containerVariants,
+        initial: "hidden",
+        animate: "visible",
+      };
   return (
     <AppLayout title="Master Data">
       <Head title="Master Data" />
@@ -198,14 +210,17 @@ export default function MenuUtamaMasterData() {
         {/* Grid of Cards */}
         <motion.div
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
+          {...motionGridProps}
         >
           {filteredItems.map((item, idx) => (
-            <motion.div key={idx} variants={cardVariants} whileHover="hover">
+            <motion.div
+              key={idx}
+              variants={shouldReduceMotion ? undefined : cardVariants}
+              whileHover={shouldReduceMotion ? undefined : "hover"}
+            >
               <Link
                 href={item.href}
+                prefetch="true"
                 className="block rounded-xl border border-gray-200 dark:border-gray-800 bg-white/90 dark:bg-gray-900/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="p-5">

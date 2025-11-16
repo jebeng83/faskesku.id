@@ -45,7 +45,7 @@ login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\AuthController::logout
-* @see app/Http/Controllers/AuthController.php:82
+* @see app/Http/Controllers/AuthController.php:83
 * @route '/logout'
 */
 export const logout = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +60,7 @@ logout.definition = {
 
 /**
 * @see \App\Http\Controllers\AuthController::logout
-* @see app/Http/Controllers/AuthController.php:82
+* @see app/Http/Controllers/AuthController.php:83
 * @route '/logout'
 */
 logout.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ logout.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuthController::logout
-* @see app/Http/Controllers/AuthController.php:82
+* @see app/Http/Controllers/AuthController.php:83
 * @route '/logout'
 */
 logout.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -78,7 +78,7 @@ logout.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
-* @see routes/web.php:51
+* @see routes/web.php:50
 * @route '/'
 */
 export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -88,11 +88,11 @@ export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> =
 
 dashboard.definition = {
     methods: ["get","head"],
-    url: '/',
+    url: '/dashboard',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:51
+* @see routes/web.php:50
 * @route '/'
 */
 dashboard.url = (options?: RouteQueryOptions) => {
@@ -100,7 +100,7 @@ dashboard.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:51
+* @see routes/web.php:50
 * @route '/'
 */
 dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -109,11 +109,51 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:51
+* @see routes/web.php:50
 * @route '/'
 */
 dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: dashboard.url(options),
+    method: 'head',
+})
+
+/**
+* @see routes/web.php:706
+* @route '/landing'
+*/
+export const landing = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: landing.url(options),
+    method: 'get',
+})
+
+landing.definition = {
+    methods: ["get","head"],
+    url: '/landing',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:706
+* @route '/landing'
+*/
+landing.url = (options?: RouteQueryOptions) => {
+    return landing.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:706
+* @route '/landing'
+*/
+landing.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: landing.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:706
+* @route '/landing'
+*/
+landing.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: landing.url(options),
     method: 'head',
 })
 

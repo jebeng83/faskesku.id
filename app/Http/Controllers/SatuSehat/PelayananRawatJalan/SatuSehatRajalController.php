@@ -748,4 +748,340 @@ class SatuSehatRajalController extends Controller
             'count' => $count,
         ]);
     }
+
+    public function pipelineByRawat(Request $request, string $no_rawat)
+    {
+        $tz = trim((string) $request->input('tz_offset', '+07:00'));
+
+        $encounterId = '';
+        $local = FacadesDB::table('satu_sehat_encounter')->where('no_rawat', $no_rawat)->first(['id_encounter_2', 'id_encounter']);
+        if ($local) {
+            $encounterId = (string) ($local->id_encounter_2 ?: $local->id_encounter ?: '');
+        }
+        if ($encounterId === '') {
+            $orgIhs = $this->satusehatOrganizationId();
+            if ($orgIhs !== '') {
+                $system = 'http://sys-ids.kemkes.go.id/encounter/' . $orgIhs;
+                $identifierToken = $system . '|' . $no_rawat;
+                $look = $this->satusehatRequest('GET', 'Encounter', null, [ 'query' => [ 'identifier' => $identifierToken ] ]);
+                if ($look['ok'] && isset(($look['json']['entry'] ?? [])[0]['resource']['id'])) {
+                    $encounterId = (string) $look['json']['entry'][0]['resource']['id'];
+                }
+            }
+        }
+        if ($encounterId === '') {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Encounter ID tidak ditemukan untuk no_rawat ini',
+            ], 404);
+        }
+
+        $encRead = $this->satusehatRequest('GET', 'Encounter/' . $encounterId);
+        if (! $encRead['ok'] || ! is_array($encRead['json'] ?? null)) {
+            return response()->json([
+                'ok' => false,
+                'status' => $encRead['status'],
+                'error' => $encRead['error'],
+                'body' => $encRead['body'] ?? null,
+            ], $encRead['status'] ?: 400);
+        }
+        $encPayload = $encRead['json'];
+        $patientRef = (string) ($encPayload['subject']['reference'] ?? '');
+        $patientId = '';
+        if (strpos($patientRef, 'Patient/') === 0) { $patientId = substr($patientRef, strlen('Patient/')); }
+        $pracRef = '';
+        if (is_array($encPayload['participant'] ?? null) && isset($encPayload['participant'][0]['individual']['reference'])) {
+            $pracRef = (string) $encPayload['participant'][0]['individual']['reference'];
+        }
+        $practitionerId = '';
+        if (strpos($pracRef, 'Practitioner/') === 0) { $practitionerId = substr($pracRef, strlen('Practitioner/')); }
+        $orgRefRoot = $this->orgRef();
+        if ($patientId === '') {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Patient ID tidak ditemukan dari Encounter',
+            ], 422);
+        }
+
+        $pem = DB::table('pemeriksaan_ralan')
+            ->where('no_rawat', $no_rawat)
+            ->orderByDesc('tgl_perawatan')
+            ->orderByDesc('jam_rawat')
+            ->first(['tgl_perawatan','jam_rawat','keluhan','pemeriksaan','nadi','tinggi','berat','kesadaran','penilaian','instruksi','alergi']);
+
+        $eff = '';
+        if ($pem && !empty($pem->tgl_perawatan) && !empty($pem->jam_rawat)) {
+            $eff = ((string) $pem->tgl_perawatan . 'T' . (string) $pem->jam_rawat . $tz);
+        } else {
+            $reg = FacadesDB::table('reg_periksa')->where('no_rawat', $no_rawat)->first(['tgl_registrasi','jam_reg']);
+            if ($reg && !empty($reg->tgl_registrasi) && !empty($reg->jam_reg)) {
+                $eff = ((string) $reg->tgl_registrasi . 'T' . (string) $reg->jam_reg . $tz);
+            }
+        }
+
+        $practitionerIdLocal = '';
+        $petugas = FacadesDB::table('pemeriksaan_ralan')
+            ->join('pegawai', 'pemeriksaan_ralan.nip', '=', 'pegawai.nik')
+            ->where('pemeriksaan_ralan.no_rawat', $no_rawat)
+            ->orderByDesc('pemeriksaan_ralan.tgl_perawatan')
+            ->orderByDesc('pemeriksaan_ralan.jam_rawat')
+            ->first(['pegawai.no_ktp', 'pemeriksaan_ralan.nip']);
+        $nikRaw = '';
+        if ($petugas && !empty($petugas->no_ktp)) { $nikRaw = (string) $petugas->no_ktp; }
+        $nik = preg_replace('/\D/', '', $nikRaw);
+        $detail = '';
+        if (! $petugas) {
+            $detail = 'Petugas pemeriksaan tidak ditemukan untuk no_rawat ini';
+        } elseif ($nikRaw === '' || $nik === '') {
+            $detail = 'NIK petugas kosong';
+        } elseif (strlen($nik) !== 16) {
+            $detail = 'NIK petugas tidak 16 digit';
+        } else {
+            $lookPr = $this->satusehatRequest('GET', 'Practitioner', null, [ 'query' => [ 'identifier' => 'https://fhir.kemkes.go.id/id/nik|' . $nik ] ]);
+            if ($lookPr['ok'] && isset(($lookPr['json']['entry'] ?? [])[0]['resource']['id'])) {
+                $practitionerIdLocal = (string) $lookPr['json']['entry'][0]['resource']['id'];
+            } else {
+                $detail = 'Practitioner tidak ditemukan di SATUSEHAT untuk NIK ' . $nik;
+            }
+        }
+        if ($practitionerIdLocal === '') {
+            return response()->json([
+                'ok' => false,
+                'code' => 'PRACTITIONER_REQUIRED',
+                'message' => 'Performer wajib Practitioner dari petugas pemeriksaan',
+                'detail' => $detail,
+                'no_rawat' => $no_rawat,
+                'nip' => $petugas->nip ?? null,
+                'nik' => $nik ?: null,
+            ], 422);
+        }
+        $practitionerId = $practitionerIdLocal;
+
+        $createdObs = [];
+        if ($pem && is_numeric($pem->nadi) && (float) $pem->nadi > 0) {
+            $body = [
+                'resourceType' => 'Observation',
+                'status' => 'final',
+                'category' => [[ 'coding' => [[ 'system' => 'http://terminology.hl7.org/CodeSystem/observation-category', 'code' => 'vital-signs' ]] ]],
+                'code' => ['coding' => [[ 'system' => 'http://loinc.org', 'code' => '8867-4', 'display' => 'Heart rate' ]]],
+                'subject' => ['reference' => 'Patient/' . $patientId],
+                'encounter' => ['reference' => 'Encounter/' . $encounterId],
+                'valueQuantity' => [ 'value' => (float) $pem->nadi, 'unit' => '/min', 'system' => 'http://unitsofmeasure.org', 'code' => '/min' ],
+                'performer' => [[ 'reference' => 'Practitioner/' . $practitionerId ]],
+            ];
+            if ($eff !== '') { $body['effectiveDateTime'] = $eff; }
+            $res = $this->satusehatRequest('POST', 'Observation', $body, [ 'prefer_representation' => true ]);
+            if ($res['ok'] && is_array($res['json'] ?? null)) { $createdObs[] = (string) ($res['json']['id'] ?? ''); Log::channel('daily')->info('[SATUSEHAT][Observation] heart_rate', ['no_rawat' => $no_rawat, 'id' => $res['json']['id'] ?? null]); }
+        }
+        if ($pem && is_numeric($pem->tinggi) && (float) $pem->tinggi > 0) {
+            $body = [
+                'resourceType' => 'Observation',
+                'status' => 'final',
+                'category' => [[ 'coding' => [[ 'system' => 'http://terminology.hl7.org/CodeSystem/observation-category', 'code' => 'vital-signs' ]] ]],
+                'code' => ['coding' => [[ 'system' => 'http://loinc.org', 'code' => '8302-2', 'display' => 'Body height' ]]],
+                'subject' => ['reference' => 'Patient/' . $patientId],
+                'encounter' => ['reference' => 'Encounter/' . $encounterId],
+                'valueQuantity' => [ 'value' => (float) $pem->tinggi, 'unit' => 'cm', 'system' => 'http://unitsofmeasure.org', 'code' => 'cm' ],
+                'performer' => [[ 'reference' => 'Practitioner/' . $practitionerId ]],
+            ];
+            if ($eff !== '') { $body['effectiveDateTime'] = $eff; }
+            $res = $this->satusehatRequest('POST', 'Observation', $body, [ 'prefer_representation' => true ]);
+            if ($res['ok'] && is_array($res['json'] ?? null)) { $createdObs[] = (string) ($res['json']['id'] ?? ''); Log::channel('daily')->info('[SATUSEHAT][Observation] height', ['no_rawat' => $no_rawat, 'id' => $res['json']['id'] ?? null]); }
+        }
+        if ($pem && is_numeric($pem->berat) && (float) $pem->berat > 0) {
+            $body = [
+                'resourceType' => 'Observation',
+                'status' => 'final',
+                'category' => [[ 'coding' => [[ 'system' => 'http://terminology.hl7.org/CodeSystem/observation-category', 'code' => 'vital-signs' ]] ]],
+                'code' => ['coding' => [[ 'system' => 'http://loinc.org', 'code' => '29463-7', 'display' => 'Body weight' ]]],
+                'subject' => ['reference' => 'Patient/' . $patientId],
+                'encounter' => ['reference' => 'Encounter/' . $encounterId],
+                'valueQuantity' => [ 'value' => (float) $pem->berat, 'unit' => 'kg', 'system' => 'http://unitsofmeasure.org', 'code' => 'kg' ],
+                'performer' => [[ 'reference' => 'Practitioner/' . $practitionerId ]],
+            ];
+            if ($eff !== '') { $body['effectiveDateTime'] = $eff; }
+            $res = $this->satusehatRequest('POST', 'Observation', $body, [ 'prefer_representation' => true ]);
+            if ($res['ok'] && is_array($res['json'] ?? null)) { $createdObs[] = (string) ($res['json']['id'] ?? ''); Log::channel('daily')->info('[SATUSEHAT][Observation] weight', ['no_rawat' => $no_rawat, 'id' => $res['json']['id'] ?? null]); }
+        }
+        if ($pem && !empty($pem->kesadaran)) {
+            $body = [
+                'resourceType' => 'Observation',
+                'status' => 'final',
+                'category' => [[ 'coding' => [[ 'system' => 'http://terminology.hl7.org/CodeSystem/observation-category', 'code' => 'vital-signs' ]] ]],
+                'code' => ['coding' => [[ 'system' => 'http://snomed.info/sct', 'code' => '110444000', 'display' => 'Level of consciousness' ]], 'text' => 'Consciousness'],
+                'subject' => ['reference' => 'Patient/' . $patientId],
+                'encounter' => ['reference' => 'Encounter/' . $encounterId],
+                'valueString' => trim((string) $pem->kesadaran),
+                'performer' => [[ 'reference' => 'Practitioner/' . $practitionerId ]],
+            ];
+            if ($eff !== '') { $body['effectiveDateTime'] = $eff; }
+            $res = $this->satusehatRequest('POST', 'Observation', $body, [ 'prefer_representation' => true ]);
+            if ($res['ok'] && is_array($res['json'] ?? null)) { $createdObs[] = (string) ($res['json']['id'] ?? ''); Log::channel('daily')->info('[SATUSEHAT][Observation] consciousness', ['no_rawat' => $no_rawat, 'id' => $res['json']['id'] ?? null]); }
+        }
+
+        $createdCond = [];
+        if ($pem && !empty($pem->keluhan)) {
+            $body = [
+                'resourceType' => 'Condition',
+                'clinicalStatus' => [ 'coding' => [[ 'system' => 'http://terminology.hl7.org/CodeSystem/condition-clinical', 'code' => 'active' ]] ],
+                'category' => [[ 'coding' => [[ 'system' => 'http://terminology.hl7.org/CodeSystem/condition-category', 'code' => 'encounter-diagnosis' ]] ]],
+                'code' => [ 'coding' => [[ 'system' => 'http://snomed.info/sct', 'code' => '404684003', 'display' => 'Clinical finding' ]], 'text' => trim((string) $pem->keluhan) ],
+                'subject' => [ 'reference' => 'Patient/' . $patientId ],
+                'encounter' => [ 'reference' => 'Encounter/' . $encounterId ],
+            ];
+            if ($practitionerId !== '') { $body['asserter'] = [ 'reference' => 'Practitioner/' . $practitionerId ]; }
+            $res = $this->satusehatRequest('POST', 'Condition', $body, [ 'prefer_representation' => true ]);
+            if ($res['ok'] && is_array($res['json'] ?? null)) { $createdCond[] = (string) ($res['json']['id'] ?? ''); Log::channel('daily')->info('[SATUSEHAT][Condition] keluhan', ['no_rawat' => $no_rawat, 'id' => $res['json']['id'] ?? null]); }
+        }
+        if ($pem && !empty($pem->pemeriksaan)) {
+            $body = [
+                'resourceType' => 'Condition',
+                'clinicalStatus' => [ 'coding' => [[ 'system' => 'http://terminology.hl7.org/CodeSystem/condition-clinical', 'code' => 'active' ]] ],
+                'category' => [[ 'coding' => [[ 'system' => 'http://terminology.hl7.org/CodeSystem/condition-category', 'code' => 'encounter-diagnosis' ]] ]],
+                'code' => [ 'coding' => [[ 'system' => 'http://snomed.info/sct', 'code' => '404684003', 'display' => 'Clinical finding' ]], 'text' => trim((string) $pem->pemeriksaan) ],
+                'subject' => [ 'reference' => 'Patient/' . $patientId ],
+                'encounter' => [ 'reference' => 'Encounter/' . $encounterId ],
+            ];
+            if ($practitionerId !== '') { $body['asserter'] = [ 'reference' => 'Practitioner/' . $practitionerId ]; }
+            $res = $this->satusehatRequest('POST', 'Condition', $body, [ 'prefer_representation' => true ]);
+            if ($res['ok'] && is_array($res['json'] ?? null)) { $createdCond[] = (string) ($res['json']['id'] ?? ''); Log::channel('daily')->info('[SATUSEHAT][Condition] pemeriksaan', ['no_rawat' => $no_rawat, 'id' => $res['json']['id'] ?? null]); }
+        }
+
+        $allergyId = '';
+        if ($pem && !empty($pem->alergi)) {
+            $body = [
+                'resourceType' => 'AllergyIntolerance',
+                'clinicalStatus' => [ 'coding' => [[ 'system' => 'http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical', 'code' => 'active' ]] ],
+                'verificationStatus' => [ 'coding' => [[ 'system' => 'http://terminology.hl7.org/CodeSystem/allergyintolerance-verification', 'code' => 'confirmed' ]] ],
+                'type' => 'allergy',
+                'category' => ['medication'],
+                'code' => [ 'coding' => [[ 'system' => 'http://snomed.info/sct', 'code' => '416098002', 'display' => 'Drug allergy' ]], 'text' => trim((string) $pem->alergi) ],
+                'patient' => [ 'reference' => 'Patient/' . $patientId ],
+                'encounter' => [ 'reference' => 'Encounter/' . $encounterId ],
+                'recorder' => $practitionerId !== '' ? [ 'reference' => 'Practitioner/' . $practitionerId ] : [ 'reference' => 'Patient/' . $patientId ],
+            ];
+            if ($eff !== '') { $body['recordedDate'] = $eff; }
+            $res = $this->satusehatRequest('POST', 'AllergyIntolerance', $body, [ 'prefer_representation' => true ]);
+            if ($res['ok'] && is_array($res['json'] ?? null)) { $allergyId = (string) ($res['json']['id'] ?? ''); Log::channel('daily')->info('[SATUSEHAT][AllergyIntolerance] created', ['no_rawat' => $no_rawat, 'id' => $res['json']['id'] ?? null]); }
+        }
+
+        $procId = '';
+        $rujuk = FacadesDB::table('pcare_rujuk_subspesialis')->where('no_rawat', $no_rawat)->orderByDesc('tglDaftar')->first(['noKunjungan']);
+        if ($rujuk && !empty($rujuk->noKunjungan)) {
+            $body = [
+                'resourceType' => 'Procedure',
+                'status' => 'completed',
+                'code' => [ 'text' => 'Rujukan Subspesialis' ],
+                'subject' => ['reference' => 'Patient/' . $patientId],
+                'encounter' => ['reference' => 'Encounter/' . $encounterId],
+                'identifier' => [[ 'system' => 'http://pcare.bpjs.go.id/rujukan/noKunjungan', 'value' => (string) $rujuk->noKunjungan ]],
+            ];
+            if ($practitionerId !== '') { $body['performer'] = [[ 'actor' => ['reference' => 'Practitioner/' . $practitionerId] ]]; }
+            if ($eff !== '') { $body['performedDateTime'] = $eff; }
+            $res = $this->satusehatRequest('POST', 'Procedure', $body, [ 'prefer_representation' => true ]);
+            if ($res['ok'] && is_array($res['json'] ?? null)) { $procId = (string) ($res['json']['id'] ?? ''); Log::channel('daily')->info('[SATUSEHAT][Procedure] rujukan', ['no_rawat' => $no_rawat, 'id' => $res['json']['id'] ?? null]); }
+        }
+
+        $dx1 = FacadesDB::table('diagnosa_pasien')->where('no_rawat', $no_rawat)->where('prioritas', 1)->orderBy('prioritas', 'asc')->first(['kd_penyakit']);
+        $dx2 = FacadesDB::table('diagnosa_pasien')->where('no_rawat', $no_rawat)->where('prioritas', 2)->orderBy('prioritas', 'asc')->first(['kd_penyakit']);
+        $dx1Text = $dx1 ? (string) ($dx1->kd_penyakit ?? '') : '';
+        $dx2Text = $dx2 ? (string) ($dx2->kd_penyakit ?? '') : '';
+
+        $subjectiveText = $pem ? trim((string) $pem->keluhan) : '';
+        $objectiveTextParts = [];
+        if ($pem && is_numeric($pem->nadi)) { $objectiveTextParts[] = 'Nadi: ' . (string) $pem->nadi . ' /min'; }
+        if ($pem && is_numeric($pem->tinggi)) { $objectiveTextParts[] = 'Tinggi: ' . (string) $pem->tinggi . ' cm'; }
+        if ($pem && is_numeric($pem->berat)) { $objectiveTextParts[] = 'Berat: ' . (string) $pem->berat . ' kg'; }
+        if ($pem && !empty($pem->kesadaran)) { $objectiveTextParts[] = 'Kesadaran: ' . trim((string) $pem->kesadaran); }
+        $objectiveText = implode('; ', $objectiveTextParts);
+        $assessmentTextParts = [];
+        if ($dx1Text !== '') { $assessmentTextParts[] = 'Diagnosa Primer: ' . $dx1Text; }
+        if ($dx2Text !== '') { $assessmentTextParts[] = 'Diagnosa Sekunder: ' . $dx2Text; }
+        $assessmentText = implode('; ', $assessmentTextParts);
+        $planTextParts = [];
+        if ($pem && !empty($pem->penilaian)) { $planTextParts[] = 'Rencana: ' . trim((string) $pem->penilaian); }
+        if ($pem && !empty($pem->instruksi)) { $planTextParts[] = 'Instruksi: ' . trim((string) $pem->instruksi); }
+        $planText = implode('; ', $planTextParts);
+
+        $subjectiveRefs = [];
+        $objectiveRefs = [];
+        $assessmentRefs = [];
+        $planRefs = [];
+        foreach ($createdObs as $oid) { if ($oid !== '') { $objectiveRefs[] = 'Observation/' . $oid; } }
+        foreach ($createdCond as $cid) { if ($cid !== '') { $assessmentRefs[] = 'Condition/' . $cid; } }
+        if ($procId !== '') { $planRefs[] = 'Procedure/' . $procId; }
+        if ($allergyId !== '') { $objectiveRefs[] = 'AllergyIntolerance/' . $allergyId; }
+
+        $compBody = [
+            'resourceType' => 'Composition',
+            'status' => 'final',
+            'type' => [ 'coding' => [[ 'system' => 'http://loinc.org', 'code' => '11506-3', 'display' => 'Progress note' ]] ],
+            'title' => 'RME Rawat Jalan',
+            'subject' => ['reference' => 'Patient/' . $patientId],
+            'encounter' => ['reference' => 'Encounter/' . $encounterId],
+            'author' => $practitionerId !== '' ? [[ 'reference' => 'Practitioner/' . $practitionerId ]] : [],
+            'section' => [],
+        ];
+        if ($eff !== '') { $compBody['date'] = $eff; }
+        if ($subjectiveText !== '' || !empty($subjectiveRefs)) { $sec = ['title' => 'Subjective']; if ($subjectiveText !== '') { $sec['text'] = ['status' => 'generated', 'div' => $subjectiveText]; } if (!empty($subjectiveRefs)) { $sec['entry'] = array_map(fn($r) => ['reference' => $r], $subjectiveRefs); } $compBody['section'][] = $sec; }
+        if ($objectiveText !== '' || !empty($objectiveRefs)) { $sec = ['title' => 'Objective']; if ($objectiveText !== '') { $sec['text'] = ['status' => 'generated', 'div' => $objectiveText]; } if (!empty($objectiveRefs)) { $sec['entry'] = array_map(fn($r) => ['reference' => $r], $objectiveRefs); } $compBody['section'][] = $sec; }
+        if ($assessmentText !== '' || !empty($assessmentRefs)) { $sec = ['title' => 'Assessment']; if ($assessmentText !== '') { $sec['text'] = ['status' => 'generated', 'div' => $assessmentText]; } if (!empty($assessmentRefs)) { $sec['entry'] = array_map(fn($r) => ['reference' => $r], $assessmentRefs); } $compBody['section'][] = $sec; }
+        if ($planText !== '' || !empty($planRefs)) { $sec = ['title' => 'Plan']; if ($planText !== '') { $sec['text'] = ['status' => 'generated', 'div' => $planText]; } if (!empty($planRefs)) { $sec['entry'] = array_map(fn($r) => ['reference' => $r], $planRefs); } $compBody['section'][] = $sec; }
+
+        $compRes = $this->satusehatRequest('POST', 'Composition', $compBody, [ 'prefer_representation' => true ]);
+        if (! $compRes['ok']) {
+            return response()->json([
+                'ok' => false,
+                'status' => $compRes['status'],
+                'error' => $compRes['error'],
+                'body' => $compRes['body'] ?? null,
+            ], $compRes['status'] ?: 400);
+        }
+        $compId = is_array($compRes['json'] ?? null) ? (string) ($compRes['json']['id'] ?? '') : '';
+        if ($compId !== '') { Log::channel('daily')->info('[SATUSEHAT][Composition] created', ['no_rawat' => $no_rawat, 'id' => $compId]); }
+
+        $entries = [];
+        $compRead = $this->satusehatRequest('GET', 'Composition/' . $compId);
+        if ($compRead['ok'] && is_array($compRead['json'] ?? null)) {
+            $entries[] = [ 'fullUrl' => 'Composition/' . $compId, 'resource' => $compRead['json'] ];
+        }
+        foreach ($createdObs as $oid) {
+            if ($oid === '') { continue; }
+            $r = $this->satusehatRequest('GET', 'Observation/' . $oid);
+            if ($r['ok'] && is_array($r['json'] ?? null)) { $entries[] = [ 'fullUrl' => 'Observation/' . $oid, 'resource' => $r['json'] ]; }
+        }
+        foreach ($createdCond as $cid) {
+            if ($cid === '') { continue; }
+            $r = $this->satusehatRequest('GET', 'Condition/' . $cid);
+            if ($r['ok'] && is_array($r['json'] ?? null)) { $entries[] = [ 'fullUrl' => 'Condition/' . $cid, 'resource' => $r['json'] ]; }
+        }
+        if ($procId !== '') {
+            $r = $this->satusehatRequest('GET', 'Procedure/' . $procId);
+            if ($r['ok'] && is_array($r['json'] ?? null)) { $entries[] = [ 'fullUrl' => 'Procedure/' . $procId, 'resource' => $r['json'] ]; }
+        }
+        if ($allergyId !== '') {
+            $r = $this->satusehatRequest('GET', 'AllergyIntolerance/' . $allergyId);
+            if ($r['ok'] && is_array($r['json'] ?? null)) { $entries[] = [ 'fullUrl' => 'AllergyIntolerance/' . $allergyId, 'resource' => $r['json'] ]; }
+        }
+
+        $bundleId = '';
+        if (!empty($entries)) {
+            $bundleBody = [ 'resourceType' => 'Bundle', 'type' => 'document', 'entry' => $entries ];
+            $bRes = $this->satusehatRequest('POST', 'Bundle', $bundleBody, [ 'prefer_representation' => true ]);
+            if ($bRes['ok'] && is_array($bRes['json'] ?? null)) { $bundleId = (string) ($bRes['json']['id'] ?? ''); Log::channel('daily')->info('[SATUSEHAT][Bundle] document created', ['no_rawat' => $no_rawat, 'id' => $bundleId]); }
+        }
+
+        return response()->json([
+            'ok' => true,
+            'encounter_id' => $encounterId,
+            'patient_id' => $patientId,
+            'practitioner_id' => $practitionerId,
+            'observations' => $createdObs,
+            'conditions' => $createdCond,
+            'procedure_id' => $procId,
+            'allergy_intolerance_id' => $allergyId,
+            'composition_id' => $compId,
+            'bundle_id' => $bundleId,
+        ]);
+    }
 }
