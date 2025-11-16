@@ -29,6 +29,22 @@ const resolveRouteUrl = (routeName, absolute = false) => {
     return null;
 };
 
+// Menentukan apakah sebuah menu dianggap "aktif/terlihat" berdasarkan beberapa kemungkinan kolom status
+const isMenuEnabled = (menu) => {
+    if (!menu || typeof menu !== "object") return false;
+    // Jika ada salah satu kolom status dan nilainya false/0, anggap tidak aktif
+    const flags = ["active", "is_active", "enabled", "status"];
+    for (const key of flags) {
+        if (Object.prototype.hasOwnProperty.call(menu, key)) {
+            const val = menu[key];
+            if (val === false || val === 0 || val === "0" || val === "inactive" || val === "disabled") {
+                return false;
+            }
+        }
+    }
+    return true;
+};
+
 export default function SidebarMenu({
     collapsed = false,
     title = "Faskesku",
@@ -360,7 +376,9 @@ export default function SidebarMenu({
 	};
 
 	const renderMenuItem = (menu, level = 0) => {
-		const children = menu.active_children_recursive || menu.children || [];
+		const rawChildren = menu.active_children_recursive || menu.children || [];
+        // Tampilkan dropdown hanya untuk anak-anak yang benar-benar aktif/terlihat
+        const children = (rawChildren || []).filter(isMenuEnabled);
 		const hasChildren = children && children.length > 0;
 		const isExpanded = expandedMenus.has(menu.id);
 		const isActive = isMenuActive(menu);

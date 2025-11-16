@@ -9,6 +9,7 @@ use App\Models\RawatJlPr;
 use App\Models\RegPeriksa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -19,8 +20,93 @@ class PembayaranController extends Controller
         return Inertia::render('Pembayaran/Index');
     }
 
-    public function ralan(Request $request): Response
+    public function ralan(Request $request): Response|JsonResponse
     {
+        // Jika diminta JSON eksplisit via query (untuk konsumsi dari halaman index tabbed)
+        // Catatan: Jangan gunakan wantsJson agar tidak mengganggu permintaan Inertia (X-Inertia)
+        if ($request->boolean('json')) {
+            $q = trim((string) $request->input('q', ''));
+            $startDateInput = $request->input('start_date');
+            $endDateInput = $request->input('end_date');
+
+            $startDate = $startDateInput ? Carbon::parse($startDateInput) : Carbon::today()->subDays(6);
+            $endDate = $endDateInput ? Carbon::parse($endDateInput) : Carbon::today();
+
+            if ($startDate->greaterThan($endDate)) {
+                [$startDate, $endDate] = [$endDate, $startDate];
+            }
+
+            $registrations = RegPeriksa::with([
+                'patient:no_rkm_medis,nm_pasien,alamat,no_tlp',
+                'penjab:kd_pj,png_jawab',
+            ])
+                ->where('status_lanjut', 'Ralan')
+                ->whereBetween('tgl_registrasi', [$startDate->toDateString(), $endDate->toDateString()])
+                ->when($q !== '', function ($query) use ($q) {
+                    $like = '%'.str_replace(' ', '%', $q).'%';
+                    $query
+                        ->where(function ($inner) use ($like, $q) {
+                            $inner->where('no_rawat', 'like', $like)
+                                ->orWhere('no_rkm_medis', 'like', $like)
+                                ->orWhereHas('patient', function ($p) use ($like) {
+                                    $p->where('nm_pasien', 'like', $like);
+                                });
+                        });
+                })
+                ->orderByDesc('tgl_registrasi')
+                ->orderByDesc('jam_reg')
+                ->limit(400)
+                ->get();
+
+            $groups = $registrations
+                ->groupBy('tgl_registrasi')
+                ->map(function ($items, $date) {
+                    $carbonDate = Carbon::parse($date);
+
+                    return [
+                        'tanggal' => $date,
+                        'display_tanggal' => $carbonDate->translatedFormat('d M Y'),
+                        'items' => $items->map(function (RegPeriksa $reg) use ($date) {
+                            return [
+                                'no_rawat' => $reg->no_rawat,
+                                'no_rkm_medis' => $reg->no_rkm_medis,
+                                'pasien' => $reg->patient->nm_pasien ?? '-',
+                                'penjamin' => $reg->penjab->png_jawab ?? $reg->kd_pj,
+                                'total' => (float) $reg->biaya_reg,
+                                'status_bayar' => $reg->status_bayar ?? '-',
+                                'status' => $reg->stts ?? '-',
+                                'jam_reg' => $reg->jam_reg,
+                                'tanggal' => $date,
+                            ];
+                        })->values(),
+                    ];
+                })
+                ->sortKeysDesc()
+                ->values()
+                ->toArray();
+
+            $stats = [
+                'menunggu_pembayaran' => $registrations->where('status_bayar', 'Belum Bayar')->count(),
+                'menunggu_penjamin' => $registrations->filter(function ($reg) {
+                    return $reg->status_bayar === 'Belum Bayar' && ($reg->kd_pj ?? '') !== 'UMUM';
+                })->count(),
+                'dalam_proses_kasir' => $registrations->whereIn('stts', ['Belum', 'Berkas Diterima'])->count(),
+                'selesai_hari_ini' => $registrations->filter(function ($reg) {
+                    return ($reg->status_bayar === 'Sudah Bayar') && $reg->tgl_registrasi === Carbon::today()->toDateString();
+                })->count(),
+            ];
+
+            return response()->json([
+                'groups' => $groups,
+                'stats' => $stats,
+                'filters' => [
+                    'start_date' => $startDate->toDateString(),
+                    'end_date' => $endDate->toDateString(),
+                    'q' => $q,
+                ],
+            ]);
+        }
+
         $startDateInput = $request->input('start_date');
         $endDateInput = $request->input('end_date');
 
@@ -242,8 +328,30 @@ class PembayaranController extends Controller
         ]);
     }
 
-    public function ranap(): Response
+    public function ranap(Request $request): Response|JsonResponse
     {
+        // Sediakan JSON sederhana agar bisa ditampilkan dari tab Index
+        // Catatan: Jangan gunakan wantsJson agar tidak mengganggu permintaan Inertia (X-Inertia)
+        if ($request->boolean('json')) {
+            $summary = [
+                ['label' => 'Pasien Dirawat', 'value' => 54, 'desc' => 'Dengan tagihan aktif'],
+                ['label' => 'Butuh Verifikasi', 'value' => 12, 'desc' => 'Menunggu konfirmasi penjamin'],
+                ['label' => 'Siap Discharge', 'value' => 7, 'desc' => 'Menunggu proses kasir'],
+                ['label' => 'Lunas Minggu Ini', 'value' => 39, 'desc' => 'Sudah diterbitkan kwitansi'],
+            ];
+
+            $rows = [
+                ['pasien' => 'Arum Setyani', 'ranjang' => 'VIP-102', 'penjamin' => 'BPJS', 'total' => 'Rp 12.450.000', 'status' => 'Menunggu Penjamin'],
+                ['pasien' => 'Bagus Priyanto', 'ranjang' => 'Kelas 1-14B', 'penjamin' => 'Umum', 'total' => 'Rp 6.820.000', 'status' => 'Kasir'],
+                ['pasien' => 'Clara Hapsari', 'ranjang' => 'Kelas 2-21C', 'penjamin' => 'Perusahaan', 'total' => 'Rp 9.120.000', 'status' => 'Resume'],
+            ];
+
+            return response()->json([
+                'summary' => $summary,
+                'rows' => $rows,
+            ]);
+        }
+
         return Inertia::render('Pembayaran/Ranap');
     }
 }
