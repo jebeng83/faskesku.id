@@ -483,7 +483,7 @@ export default function SidebarMenu({
 								<div className="relative z-10 flex items-center">
 									{menu.icon && (
 										<i
-											className={`${menu.icon} mr-3 flex-shrink-0 h-5````````1 w-5`}
+											className={`${menu.icon} mr-3 flex-shrink-0 h-5 w-5`}
 										></i>
 									)}
 									{menu.name}

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Head, Link, usePage } from "@inertiajs/react";
 import { motion } from "framer-motion";
-import { Sparkles, ArrowRight, ShieldCheck, Activity, ClipboardList, Bell, CheckCircle2, Clock4, UserPlus, Search, FlaskConical, Radiation, Ambulance, Pill, Stethoscope, Bed, LogOut } from "lucide-react";
+import { Sparkles, ArrowRight, ShieldCheck, Activity, ClipboardList, Bell, CheckCircle2, Clock4, UserPlus, Search, FlaskConical, Radiation, Ambulance, Pill, Stethoscope, Bed, LogOut, CreditCard } from "lucide-react";
 import { route } from "ziggy-js";
 
 // Stats akan dibuat dinamis di dalam komponen menggunakan data dari endpoint
@@ -11,6 +11,7 @@ const quickLinks = [
   { title: "Monitoring Satusehat", description: "Pantau status FHIR & Encounter", href: "/satusehat/monitoring" },
   { title: "PCare & Rujukan", description: "Sinkron data PCare dan status rujukan", href: "/pcare" },
   { title: "Rawat Jalan", description: "Kelola pemeriksaan & SOAP RME", href: "/rawat-jalan" },
+  { title: "Pembayaran", description: "Kelola pembayaran Ralan & Ranap", href: "/pembayaran" },
 ];
 
 const timeline = [
@@ -194,6 +195,7 @@ export default function Dashboard() {
       { key: "farmasi", label: "Farmasi", href: safeRoute("farmasi.index"), icon: <Pill className="w-5 h-5" /> },
       { key: "rajal", label: "Rawat Jalan", href: safeRoute("rawat-jalan.index"), icon: <Stethoscope className="w-5 h-5" /> },
       { key: "ranap", label: "Rawat Inap", href: safeRoute("rawat-inap.index"), icon: <Bed className="w-5 h-5" /> },
+      { key: "pay", label: "Pembayaran", href: safeRoute("pembayaran.index"), icon: <CreditCard className="w-5 h-5" /> },
     ], []
   );
 
