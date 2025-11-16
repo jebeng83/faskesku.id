@@ -42,6 +42,18 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 
 // Note: API routes telah dipindahkan ke routes/api.php
 
+// Root route: arahkan ke dashboard jika sudah login, jika belum arahkan ke halaman login
+Route::get('/', function () {
+    return Auth::check()
+        ? redirect()->route('dashboard')
+        : redirect()->route('login');
+});
+
+// Kompatibilitas: redirect /landing ke dashboard
+Route::get('/landing', function () {
+    return redirect()->route('dashboard');
+})->name('landing');
+
 // API routes that don't require authentication
 Route::get('/api/lab-tests', [PermintaanLabController::class, 'getLabTests'])->name('api.lab-tests');
 
