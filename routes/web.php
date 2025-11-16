@@ -709,17 +709,3 @@ Route::post('/farmasi/set-penjualan', [SetHargaObatController::class, 'storePenj
 // Hapus pengaturan harga per jenis
 Route::delete('/farmasi/set-penjualan/{kdjns}', [SetHargaObatController::class, 'destroyPenjualanPerJenis'])
     ->name('set-penjualan.destroy');
-<<<<<<< HEAD
-=======
-// Root route: arahkan ke dashboard jika sudah login, jika belum arahkan ke halaman login
-Route::get('/', function () {
-    return Auth::check()
-        ? redirect()->route('dashboard')
-        : redirect()->route('login');
-});
-
-// Hapus route Landing; jika ada akses ke /landing, redirect ke dashboard
-Route::get('/landing', function () {
-    return redirect()->route('dashboard');
-})->name('landing');
->>>>>>> origin/main
