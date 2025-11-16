@@ -126,7 +126,6 @@ Route::middleware('auth')->group(function () {
     // Pembayaran module routes
     Route::prefix('pembayaran')
         ->name('pembayaran.')
-        ->middleware('menu.permission')
         ->group(function () {
             Route::get('/', [PembayaranController::class, 'index'])->name('index');
             Route::get('/ralan', [PembayaranController::class, 'ralan'])->name('ralan');
