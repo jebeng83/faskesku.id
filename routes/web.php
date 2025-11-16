@@ -12,6 +12,7 @@ use App\Http\Controllers\KategoriPerawatanController;
 use App\Http\Controllers\LaboratoriumController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PatientController;
+use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\PermintaanLabController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RadiologiController;
@@ -99,6 +100,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/users', function () {
         return Inertia::render('Users/Index');
     })->name('users.index');
+
+    // Pembayaran module routes
+    Route::prefix('pembayaran')
+        ->name('pembayaran.')
+        ->middleware('menu.permission')
+        ->group(function () {
+            Route::get('/', [PembayaranController::class, 'index'])->name('index');
+            Route::get('/ralan', [PembayaranController::class, 'ralan'])->name('ralan');
+            Route::get('/ralan/{no_rawat}', [PembayaranController::class, 'ralanDetail'])
+                ->where('no_rawat', '.*')
+                ->name('ralan.detail');
+            Route::get('/ranap', [PembayaranController::class, 'ranap'])->name('ranap');
+        });
 
     // Premium Module routes
     // Route::resource('premium-modules', PremiumModuleController::class);

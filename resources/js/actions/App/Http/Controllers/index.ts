@@ -21,6 +21,7 @@ import EmployeeController from './EmployeeController'
 import DoctorController from './DoctorController'
 import SpesialisController from './SpesialisController'
 import RegPeriksaController from './RegPeriksaController'
+import PembayaranController from './PembayaranController'
 import ProfileController from './ProfileController'
 import setting from './setting'
 import RawatInapController from './RawatInapController'
@@ -58,6 +59,7 @@ const Controllers = {
     DoctorController: Object.assign(DoctorController, DoctorController),
     SpesialisController: Object.assign(SpesialisController, SpesialisController),
     RegPeriksaController: Object.assign(RegPeriksaController, RegPeriksaController),
+    PembayaranController: Object.assign(PembayaranController, PembayaranController),
     ProfileController: Object.assign(ProfileController, ProfileController),
     setting: Object.assign(setting, setting),
     RawatInapController: Object.assign(RawatInapController, RawatInapController),

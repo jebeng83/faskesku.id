@@ -34,7 +34,12 @@ export default function SidebarMenu({
     title = "Faskesku",
     onToggle,
 }) {
-    const { menu_hierarchy, current_menu } = usePage().props;
+    const { menu_hierarchy = [], current_menu } = usePage().props;
+    const normalizedMenus = Array.isArray(menu_hierarchy)
+        ? menu_hierarchy
+        : menu_hierarchy && typeof menu_hierarchy === "object"
+            ? Object.values(menu_hierarchy)
+            : [];
     const [expandedMenus, setExpandedMenus] = useState(new Set());
     // Drawer state untuk mobile (efek slide-in + overlay)
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -86,7 +91,7 @@ export default function SidebarMenu({
 
 	// Auto-expand menus that have active children
 	useEffect(() => {
-		if (!menu_hierarchy || !current_menu) return;
+		if (!normalizedMenus.length || !current_menu) return;
 
 		const findParentMenus = (menus, targetMenuId, parentIds = []) => {
 			for (const menu of menus) {
@@ -107,11 +112,11 @@ export default function SidebarMenu({
 			return [];
 		};
 
-		const parentIds = findParentMenus(menu_hierarchy, current_menu.id);
+		const parentIds = findParentMenus(normalizedMenus, current_menu.id);
 		if (parentIds.length > 0) {
 			setExpandedMenus(new Set(parentIds));
 		}
-	}, [menu_hierarchy, current_menu]);
+	}, [normalizedMenus, current_menu]);
 
 	const toggleExpanded = (menuId) => {
 		const newExpanded = new Set(expandedMenus);
@@ -478,7 +483,7 @@ export default function SidebarMenu({
 								<div className="relative z-10 flex items-center">
 									{menu.icon && (
 										<i
-											className={`${menu.icon} mr-3 flex-shrink-0 h-5 w-5`}
+											className={`${menu.icon} mr-3 flex-shrink-0 h-5````````1 w-5`}
 										></i>
 									)}
 									{menu.name}
@@ -511,7 +516,7 @@ export default function SidebarMenu({
 		);
 	};
 
-	if (!menu_hierarchy || menu_hierarchy.length === 0) {
+	if (!normalizedMenus || normalizedMenus.length === 0) {
 		return (
 			<div className="px-4 py-8 text-center text-gray-500">
 				<p className="text-sm">Tidak ada menu yang tersedia</p>
@@ -546,7 +551,7 @@ export default function SidebarMenu({
                                 </div>
                             </div>
                         </div>
-                        <nav className="px-1 pb-2 flex-1">{renderCollapsed(menu_hierarchy)}</nav>
+                        <nav className="px-1 pb-2 flex-1">{renderCollapsed(normalizedMenus)}</nav>
                     </>
                 ) : (
                     <>
@@ -564,7 +569,7 @@ export default function SidebarMenu({
                         </div>
                         <motion.nav className="px-4 py-4 pb-4 space-y-1 flex-1" variants={listVariants} initial="hidden" animate="show">
                             <motion.ul className="space-y-1" variants={listVariants}>
-                                {menu_hierarchy.map((menu) => renderMenuItem(menu))}
+                                {normalizedMenus.map((menu) => renderMenuItem(menu))}
                             </motion.ul>
                         </motion.nav>
                     </>
@@ -614,7 +619,7 @@ export default function SidebarMenu({
                                 </div>
                                 <motion.nav className="px-4 py-4 pb-4 space-y-1 flex-1 overflow-y-auto" variants={listVariants} initial="hidden" animate="show">
                                     <motion.ul className="space-y-1" variants={listVariants}>
-                                        {menu_hierarchy.map((menu) => renderMenuItem(menu))}
+                                {normalizedMenus.map((menu) => renderMenuItem(menu))}
                                     </motion.ul>
                                 </motion.nav>
                             </div>
