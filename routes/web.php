@@ -72,6 +72,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/master-data', function () {
         return Inertia::render('MasterData/MenuUtama');
     })->name('master-data.index');
+    // Backward-compatible aliases to fix mismatched DB menu URLs
+    Route::get('/masterdata', function () {
+        return redirect()->route('master-data.index');
+    })->name('masterdata.alias');
+    Route::get('/master', function () {
+        return redirect()->route('master-data.index');
+    })->name('master.alias');
 
     // Master Data - Jadwal Dokter (Inertia)
     Route::get('/master-data/jadwal', [\App\Http\Controllers\JadwalController::class, 'index'])
