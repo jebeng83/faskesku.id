@@ -122,6 +122,50 @@ lanjutan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:21
+* @route '/rawat-jalan'
+*/
+export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index.url(options),
+    method: 'get',
+})
+
+index.definition = {
+    methods: ["get","head"],
+    url: '/rawat-jalan',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:21
+* @route '/rawat-jalan'
+*/
+index.url = (options?: RouteQueryOptions) => {
+    return index.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:21
+* @route '/rawat-jalan'
+*/
+index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:21
+* @route '/rawat-jalan'
+*/
+index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: index.url(options),
+    method: 'head',
+})
+
+/**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::riwayat
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:248
 * @route '/rawat-jalan/riwayat'
@@ -822,50 +866,6 @@ storeSuratSakit.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =>
 })
 
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:21
-* @route '/rawat-jalan'
-*/
-export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: index.url(options),
-    method: 'get',
-})
-
-index.definition = {
-    methods: ["get","head"],
-    url: '/rawat-jalan',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:21
-* @route '/rawat-jalan'
-*/
-index.url = (options?: RouteQueryOptions) => {
-    return index.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:21
-* @route '/rawat-jalan'
-*/
-index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: index.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:21
-* @route '/rawat-jalan'
-*/
-index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: index.url(options),
-    method: 'head',
-})
-
-/**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::create
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:122
 * @route '/rawat-jalan/create'
@@ -1181,6 +1181,6 @@ destroy.delete = (args: { rawat_jalan: string | number } | [rawat_jalan: string 
     method: 'delete',
 })
 
-const RawatJalanController = { getDiagnosaPasien, storeDiagnosaPasien, lanjutan, riwayat, getRiwayatPemeriksaan, pemeriksaanRalan, storePemeriksaanRalan, deletePemeriksaanRalan, updatePemeriksaanRalan, getobatRalanPublic, getPemeriksaanLabPublic, getRadiologiPublic, searchPegawai, getStatistics, suratSehat, storeSuratSehat, suratSakit, storeSuratSakit, index, create, store, show, edit, update, destroy }
+const RawatJalanController = { getDiagnosaPasien, storeDiagnosaPasien, lanjutan, index, riwayat, getRiwayatPemeriksaan, pemeriksaanRalan, storePemeriksaanRalan, deletePemeriksaanRalan, updatePemeriksaanRalan, getobatRalanPublic, getPemeriksaanLabPublic, getRadiologiPublic, searchPegawai, getStatistics, suratSehat, storeSuratSehat, suratSakit, storeSuratSakit, create, store, show, edit, update, destroy }
 
 export default RawatJalanController
