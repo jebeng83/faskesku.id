@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Head, Link, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import AppLayout from "@/Layouts/AppLayout";
+import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
 import Alert from "@/Components/Alert";
 
 export default function Index({
@@ -195,11 +195,14 @@ export default function Index({
 		};
 	}, [openDropdown]);
 
-	return (
-		<AppLayout>
-			<Head title="Data Pasien" />
+    return (
+        <LanjutanRegistrasiLayout
+            title="Registrasi Pasien"
+            menuConfig={{ activeTab: "pasien" }}
+        >
+            <Head title="Data Pasien" />
 
-			<div className="space-y-6 -mt-6 -mx-6 p-6">
+            <div className="space-y-6">
 				{/* Header */}
 				<div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
 					<div className="p-6">
@@ -737,6 +740,6 @@ export default function Index({
 				autoCloseDelay={alertConfig.autoCloseDelay}
 				onClose={() => setShowAlert(false)}
 			/>
-		</AppLayout>
-	);
+        </LanjutanRegistrasiLayout>
+    );
 }
