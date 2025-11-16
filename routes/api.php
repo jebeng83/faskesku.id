@@ -27,6 +27,7 @@ use App\Http\Controllers\PoliklinikController;
 use App\Http\Controllers\RawatJalan\ObatController;
 use App\Http\Controllers\RawatJalan\RawatJalanController;
 use App\Http\Controllers\RawatJalan\ResepController;
+use App\Http\Controllers\PembayaranController as KasirPembayaranController;
 use App\Http\Controllers\SatuSehat\SatuSehatController;
 use App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController;
 use Illuminate\Support\Facades\Route;
@@ -157,9 +158,14 @@ Route::prefix('pembelian')->group(function () {
     Route::get('/supplier', [PembelianController::class, 'getSupplier'])->name('api.pembelian.supplier');
     Route::get('/petugas', [PembelianController::class, 'getPetugas'])->name('api.pembelian.petugas');
     Route::get('/lokasi', [PembelianController::class, 'getLokasi'])->name('api.pembelian.lokasi');
-    Route::get('/akun-bayar', [PembelianController::class, 'getAkunBayar'])->name('api.pembelian.akun-bayar');
     Route::get('/generate-no-faktur', [PembelianController::class, 'generateNoFaktur'])->name('api.pembelian.generate-no-faktur');
     Route::post('/store', [PembelianController::class, 'store'])->name('api.pembelian.store');
+});
+
+// Kasir - Pembayaran API Routes
+Route::prefix('pembayaran')->group(function () {
+    Route::get('/akun-bayar', [KasirPembayaranController::class, 'getAkunBayar'])->name('api.pembayaran.akun-bayar');
+    Route::get('/akun-piutang', [KasirPembayaranController::class, 'getAkunPiutang'])->name('api.pembayaran.akun-piutang');
 });
 
 // Barang search endpoint (used by Pembelian Obat page)

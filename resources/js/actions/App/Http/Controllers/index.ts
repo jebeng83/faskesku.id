@@ -5,6 +5,7 @@ import RawatJalan from './RawatJalan'
 import PermintaanRadiologiController from './PermintaanRadiologiController'
 import OpnameController from './OpnameController'
 import PembelianController from './PembelianController'
+import PembayaranController from './PembayaranController'
 import BarangController from './BarangController'
 import DataBarangController from './DataBarangController'
 import Farmasi from './Farmasi'
@@ -21,7 +22,6 @@ import EmployeeController from './EmployeeController'
 import DoctorController from './DoctorController'
 import SpesialisController from './SpesialisController'
 import RegPeriksaController from './RegPeriksaController'
-import PembayaranController from './PembayaranController'
 import ProfileController from './ProfileController'
 import setting from './setting'
 import RawatInapController from './RawatInapController'
@@ -43,6 +43,7 @@ const Controllers = {
     PermintaanRadiologiController: Object.assign(PermintaanRadiologiController, PermintaanRadiologiController),
     OpnameController: Object.assign(OpnameController, OpnameController),
     PembelianController: Object.assign(PembelianController, PembelianController),
+    PembayaranController: Object.assign(PembayaranController, PembayaranController),
     BarangController: Object.assign(BarangController, BarangController),
     DataBarangController: Object.assign(DataBarangController, DataBarangController),
     Farmasi: Object.assign(Farmasi, Farmasi),
@@ -59,7 +60,6 @@ const Controllers = {
     DoctorController: Object.assign(DoctorController, DoctorController),
     SpesialisController: Object.assign(SpesialisController, SpesialisController),
     RegPeriksaController: Object.assign(RegPeriksaController, RegPeriksaController),
-    PembayaranController: Object.assign(PembayaranController, PembayaranController),
     ProfileController: Object.assign(ProfileController, ProfileController),
     setting: Object.assign(setting, setting),
     RawatInapController: Object.assign(RawatInapController, RawatInapController),

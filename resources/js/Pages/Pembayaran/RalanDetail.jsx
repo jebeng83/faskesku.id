@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import AppLayout from "@/Layouts/AppLayout";
@@ -58,6 +58,82 @@ export default function RalanDetail({
 }) {
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState("cash");
+    const [akunBayarOptions, setAkunBayarOptions] = useState([]);
+    const [selectedAkunBayar, setSelectedAkunBayar] = useState("");
+    const [isLoadingAkunBayar, setIsLoadingAkunBayar] = useState(false);
+    const [akunPiutangOptions, setAkunPiutangOptions] = useState([]);
+    const [selectedAkunPiutang, setSelectedAkunPiutang] = useState("");
+    const [isLoadingAkunPiutang, setIsLoadingAkunPiutang] = useState(false);
+    const [isConfirmingPayment, setIsConfirmingPayment] = useState(false);
+    const [paymentAmount, setPaymentAmount] = useState("");
+
+    // Ambil data akun bayar saat modal dibuka untuk metode tunai
+    useEffect(() => {
+        const shouldFetch = showPaymentModal && paymentMethod === "cash" && akunBayarOptions.length === 0;
+        if (!shouldFetch) {
+            return;
+        }
+        let isCancelled = false;
+        (async () => {
+            try {
+                setIsLoadingAkunBayar(true);
+                const res = await fetch("/api/pembayaran/akun-bayar");
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}`);
+                }
+                const json = await res.json();
+                if (!isCancelled && json?.success && Array.isArray(json?.data)) {
+                    setAkunBayarOptions(json.data);
+                }
+            } catch (e) {
+                console.error("Gagal memuat akun bayar:", e);
+            } finally {
+                if (!isCancelled) setIsLoadingAkunBayar(false);
+            }
+        })();
+        return () => {
+            isCancelled = true;
+        };
+    }, [showPaymentModal, paymentMethod, akunBayarOptions.length]);
+
+    // Ambil data akun piutang saat modal dibuka untuk metode piutang
+    useEffect(() => {
+        const shouldFetch = showPaymentModal && paymentMethod === "piutang" && akunPiutangOptions.length === 0;
+        if (!shouldFetch) {
+            return;
+        }
+        let isCancelled = false;
+        (async () => {
+            try {
+                setIsLoadingAkunPiutang(true);
+                const res = await fetch("/api/pembayaran/akun-piutang");
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}`);
+                }
+                const json = await res.json();
+                if (!isCancelled && json?.success && Array.isArray(json?.data)) {
+                    setAkunPiutangOptions(json.data);
+                }
+            } catch (e) {
+                console.error("Gagal memuat akun piutang:", e);
+            } finally {
+                if (!isCancelled) setIsLoadingAkunPiutang(false);
+            }
+        })();
+        return () => {
+            isCancelled = true;
+        };
+    }, [showPaymentModal, paymentMethod, akunPiutangOptions.length]);
+
+    // Reset pilihan saat ganti metode
+    useEffect(() => {
+        if (!showPaymentModal) return;
+        if (paymentMethod === "cash") {
+            setSelectedAkunPiutang("");
+        } else if (paymentMethod === "piutang") {
+            setSelectedAkunBayar("");
+        }
+    }, [paymentMethod, showPaymentModal]);
 
     if (!reg_periksa) {
         return (
@@ -75,6 +151,7 @@ export default function RalanDetail({
     const totalTindakan = tindakan_summary?.jumlah_tindakan ?? 0;
     const totalBiaya =
         tindakan_summary?.grand_total ?? tindakan_kategori.reduce((sum, item) => sum + (item.total_biaya ?? 0), 0);
+    const totalPembayaran = (totalBiaya ?? 0) + (reg_periksa?.biaya_reg ?? 0);
 
     return (
         <>
@@ -237,6 +314,7 @@ export default function RalanDetail({
                             </button>
                         </div>
 
+                        {!isConfirmingPayment && (
                         <div className="space-y-3">
                             <label className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
                                 <input
@@ -270,23 +348,164 @@ export default function RalanDetail({
                                 </div>
                             </label>
                         </div>
+                        )}
+
+                        {/* Pilih akun bayar (khusus tunai) */}
+                        {!isConfirmingPayment && paymentMethod === "cash" && (
+                            <div className="mt-4">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Akun Bayar
+                                </label>
+                                <select
+                                    value={selectedAkunBayar}
+                                    onChange={(e) => setSelectedAkunBayar(e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="">Pilih Akun Bayar</option>
+                                    {akunBayarOptions.map((akun, idx) => (
+                                        <option key={`${akun.kd_rek}-${idx}`} value={akun.kd_rek}>
+                                            {akun.kd_rek} - {akun.nama_bayar}
+                                        </option>
+                                    ))}
+                                </select>
+                                {isLoadingAkunBayar && (
+                                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                        Memuat pilihan akun bayar...
+                                    </p>
+                                )}
+                                {!isLoadingAkunBayar && akunBayarOptions.length === 0 && (
+                                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                        Tidak ada data akun bayar.
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Pilih akun piutang (khusus piutang/penjamin) */}
+                        {!isConfirmingPayment && paymentMethod === "piutang" && (
+                            <div className="mt-4">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Akun Piutang / Penjamin
+                                </label>
+                                <select
+                                    value={selectedAkunPiutang}
+                                    onChange={(e) => setSelectedAkunPiutang(e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="">Pilih Akun Piutang</option>
+                                    {akunPiutangOptions.map((akun, idx) => (
+                                        <option key={`${akun.kd_rek}-${idx}`} value={akun.kd_rek}>
+                                            {akun.kd_rek} - {(akun.nama_piutang || akun.nama_bayar || akun.nm_rek || "Akun")}
+                                        </option>
+                                    ))}
+                                </select>
+                                {isLoadingAkunPiutang && (
+                                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                        Memuat pilihan akun piutang...
+                                    </p>
+                                )}
+                                {!isLoadingAkunPiutang && akunPiutangOptions.length === 0 && (
+                                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                        Tidak ada data akun piutang.
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Langkah konfirmasi pembayaran: tampilkan total dan input nominal */}
+                        {isConfirmingPayment && (
+                            <div className="mt-2 space-y-4">
+                                <div className="rounded-lg border border-gray-200 dark:border-gray-800 p-4">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-gray-600 dark:text-gray-300">Total Pembayaran</span>
+                                        <span className="text-base font-semibold text-gray-900 dark:text-white">
+                                            {formatCurrency(totalPembayaran)}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Nominal Dibayarkan
+                                    </label>
+                                    <input
+                                        type="number"
+                                        inputMode="decimal"
+                                        min="0"
+                                        step="100"
+                                        value={paymentAmount}
+                                        onChange={(e) => setPaymentAmount(e.target.value)}
+                                        placeholder="Masukkan nominal pembayaran"
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        Minimal sebesar total pembayaran atau sesuai kebijakan kasir.
+                                    </p>
+                                    {/* Tampilkan kembalian jika ada */}
+                                    {Number(paymentAmount || 0) > Number(totalPembayaran || 0) && (
+                                        <div className="mt-3 rounded-md bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-3">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm font-medium text-green-700 dark:text-green-300">Kembalian</span>
+                                                <span className="text-sm font-semibold text-green-800 dark:text-green-200">
+                                                    {formatCurrency(Number(paymentAmount || 0) - Number(totalPembayaran || 0))}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {/* Opsional: informasi jika kurang dari total */}
+                                    {Number(paymentAmount || 0) > 0 && Number(paymentAmount || 0) < Number(totalPembayaran || 0) && (
+                                        <p className="mt-2 text-xs text-amber-600 dark:text-amber-300">
+                                            Nominal kurang dari total, akan tercatat sebagai sisa tagihan/piutang.
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        )}
 
                         <div className="mt-6 flex justify-end gap-3">
                             <button
-                                onClick={() => setShowPaymentModal(false)}
+                                onClick={() => {
+                                    if (isConfirmingPayment) {
+                                        setIsConfirmingPayment(false);
+                                        return;
+                                    }
+                                    setShowPaymentModal(false);
+                                }}
                                 className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800"
                             >
-                                Batal
+                                {isConfirmingPayment ? "Kembali" : "Batal"}
                             </button>
                             <button
                                 type="button"
                                 className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition"
                                 onClick={() => {
-                                    // Placeholder aksi bayar
+                                    if (!isConfirmingPayment) {
+                                        // Validasi awal sebelum masuk ke langkah konfirmasi
+                                        if (paymentMethod === "cash" && akunBayarOptions.length > 0 && !selectedAkunBayar) {
+                                            alert("Silakan pilih Akun Bayar terlebih dahulu.");
+                                            return;
+                                        }
+                                        if (paymentMethod === "piutang" && akunPiutangOptions.length > 0 && !selectedAkunPiutang) {
+                                            alert("Silakan pilih Akun Piutang terlebih dahulu.");
+                                            return;
+                                        }
+                                        // Set default nominal = total pembayaran
+                                        setPaymentAmount(String(totalPembayaran || ""));
+                                        setIsConfirmingPayment(true);
+                                        return;
+                                    }
+                                    // Validasi nominal pada langkah konfirmasi
+                                    const amount = Number(paymentAmount || 0);
+                                    if (Number.isNaN(amount) || amount <= 0) {
+                                        alert("Nominal pembayaran tidak valid.");
+                                        return;
+                                    }
+                                    // TODO: Kirim data pembayaran ke backend: paymentMethod, selectedAkunBayar, totalPembayaran, paymentAmount
+                                    // Sementara tutup modal
+                                    setIsConfirmingPayment(false);
                                     setShowPaymentModal(false);
                                 }}
                             >
-                                Bayar
+                                {isConfirmingPayment ? "Konfirmasi Bayar" : "Bayar"}
                             </button>
                         </div>
                     </div>

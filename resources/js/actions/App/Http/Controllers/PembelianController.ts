@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\PembelianController::getSupplier
-* @see app/Http/Controllers/PembelianController.php:43
+* @see app/Http/Controllers/PembelianController.php:25
 * @route '/api/pembelian/supplier'
 */
 export const getSupplier = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ getSupplier.definition = {
 
 /**
 * @see \App\Http\Controllers\PembelianController::getSupplier
-* @see app/Http/Controllers/PembelianController.php:43
+* @see app/Http/Controllers/PembelianController.php:25
 * @route '/api/pembelian/supplier'
 */
 getSupplier.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ getSupplier.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PembelianController::getSupplier
-* @see app/Http/Controllers/PembelianController.php:43
+* @see app/Http/Controllers/PembelianController.php:25
 * @route '/api/pembelian/supplier'
 */
 getSupplier.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ getSupplier.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PembelianController::getSupplier
-* @see app/Http/Controllers/PembelianController.php:43
+* @see app/Http/Controllers/PembelianController.php:25
 * @route '/api/pembelian/supplier'
 */
 getSupplier.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ getSupplier.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\PembelianController::getPetugas
-* @see app/Http/Controllers/PembelianController.php:66
+* @see app/Http/Controllers/PembelianController.php:48
 * @route '/api/pembelian/petugas'
 */
 export const getPetugas = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,7 +60,7 @@ getPetugas.definition = {
 
 /**
 * @see \App\Http\Controllers\PembelianController::getPetugas
-* @see app/Http/Controllers/PembelianController.php:66
+* @see app/Http/Controllers/PembelianController.php:48
 * @route '/api/pembelian/petugas'
 */
 getPetugas.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ getPetugas.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PembelianController::getPetugas
-* @see app/Http/Controllers/PembelianController.php:66
+* @see app/Http/Controllers/PembelianController.php:48
 * @route '/api/pembelian/petugas'
 */
 getPetugas.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -79,7 +79,7 @@ getPetugas.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PembelianController::getPetugas
-* @see app/Http/Controllers/PembelianController.php:66
+* @see app/Http/Controllers/PembelianController.php:48
 * @route '/api/pembelian/petugas'
 */
 getPetugas.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -89,7 +89,7 @@ getPetugas.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\PembelianController::getLokasi
-* @see app/Http/Controllers/PembelianController.php:96
+* @see app/Http/Controllers/PembelianController.php:78
 * @route '/api/pembelian/lokasi'
 */
 export const getLokasi = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -104,7 +104,7 @@ getLokasi.definition = {
 
 /**
 * @see \App\Http\Controllers\PembelianController::getLokasi
-* @see app/Http/Controllers/PembelianController.php:96
+* @see app/Http/Controllers/PembelianController.php:78
 * @route '/api/pembelian/lokasi'
 */
 getLokasi.url = (options?: RouteQueryOptions) => {
@@ -113,7 +113,7 @@ getLokasi.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PembelianController::getLokasi
-* @see app/Http/Controllers/PembelianController.php:96
+* @see app/Http/Controllers/PembelianController.php:78
 * @route '/api/pembelian/lokasi'
 */
 getLokasi.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -123,7 +123,7 @@ getLokasi.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PembelianController::getLokasi
-* @see app/Http/Controllers/PembelianController.php:96
+* @see app/Http/Controllers/PembelianController.php:78
 * @route '/api/pembelian/lokasi'
 */
 getLokasi.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -132,52 +132,8 @@ getLokasi.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\PembelianController::getAkunBayar
-* @see app/Http/Controllers/PembelianController.php:15
-* @route '/api/pembelian/akun-bayar'
-*/
-export const getAkunBayar = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: getAkunBayar.url(options),
-    method: 'get',
-})
-
-getAkunBayar.definition = {
-    methods: ["get","head"],
-    url: '/api/pembelian/akun-bayar',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\PembelianController::getAkunBayar
-* @see app/Http/Controllers/PembelianController.php:15
-* @route '/api/pembelian/akun-bayar'
-*/
-getAkunBayar.url = (options?: RouteQueryOptions) => {
-    return getAkunBayar.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\PembelianController::getAkunBayar
-* @see app/Http/Controllers/PembelianController.php:15
-* @route '/api/pembelian/akun-bayar'
-*/
-getAkunBayar.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: getAkunBayar.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\PembelianController::getAkunBayar
-* @see app/Http/Controllers/PembelianController.php:15
-* @route '/api/pembelian/akun-bayar'
-*/
-getAkunBayar.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: getAkunBayar.url(options),
-    method: 'head',
-})
-
-/**
 * @see \App\Http\Controllers\PembelianController::generateNoFaktur
-* @see app/Http/Controllers/PembelianController.php:241
+* @see app/Http/Controllers/PembelianController.php:223
 * @route '/api/pembelian/generate-no-faktur'
 */
 export const generateNoFaktur = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -192,7 +148,7 @@ generateNoFaktur.definition = {
 
 /**
 * @see \App\Http\Controllers\PembelianController::generateNoFaktur
-* @see app/Http/Controllers/PembelianController.php:241
+* @see app/Http/Controllers/PembelianController.php:223
 * @route '/api/pembelian/generate-no-faktur'
 */
 generateNoFaktur.url = (options?: RouteQueryOptions) => {
@@ -201,7 +157,7 @@ generateNoFaktur.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PembelianController::generateNoFaktur
-* @see app/Http/Controllers/PembelianController.php:241
+* @see app/Http/Controllers/PembelianController.php:223
 * @route '/api/pembelian/generate-no-faktur'
 */
 generateNoFaktur.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -211,7 +167,7 @@ generateNoFaktur.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => 
 
 /**
 * @see \App\Http\Controllers\PembelianController::generateNoFaktur
-* @see app/Http/Controllers/PembelianController.php:241
+* @see app/Http/Controllers/PembelianController.php:223
 * @route '/api/pembelian/generate-no-faktur'
 */
 generateNoFaktur.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -221,7 +177,7 @@ generateNoFaktur.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =
 
 /**
 * @see \App\Http\Controllers\PembelianController::store
-* @see app/Http/Controllers/PembelianController.php:119
+* @see app/Http/Controllers/PembelianController.php:101
 * @route '/api/pembelian/store'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -236,7 +192,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\PembelianController::store
-* @see app/Http/Controllers/PembelianController.php:119
+* @see app/Http/Controllers/PembelianController.php:101
 * @route '/api/pembelian/store'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -245,7 +201,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PembelianController::store
-* @see app/Http/Controllers/PembelianController.php:119
+* @see app/Http/Controllers/PembelianController.php:101
 * @route '/api/pembelian/store'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -253,6 +209,6 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     method: 'post',
 })
 
-const PembelianController = { getSupplier, getPetugas, getLokasi, getAkunBayar, generateNoFaktur, store }
+const PembelianController = { getSupplier, getPetugas, getLokasi, generateNoFaktur, store }
 
 export default PembelianController

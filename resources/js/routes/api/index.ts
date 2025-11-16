@@ -20,6 +20,7 @@ import radiologiTests from './radiologi-tests'
 import permintaanRadiologi from './permintaan-radiologi'
 import opname from './opname'
 import pembelian from './pembelian'
+import pembayaran from './pembayaran'
 import barang from './barang'
 import databarang from './databarang'
 import gudangbarang from './gudangbarang'
@@ -187,6 +188,7 @@ const api = {
     permintaanRadiologi: Object.assign(permintaanRadiologi, permintaanRadiologi),
     opname: Object.assign(opname, opname),
     pembelian: Object.assign(pembelian, pembelian),
+    pembayaran: Object.assign(pembayaran, pembayaran),
     barang: Object.assign(barang, barang),
     databarang: Object.assign(databarang, databarang),
     setHargaObat: Object.assign(setHargaObat, setHargaObat),

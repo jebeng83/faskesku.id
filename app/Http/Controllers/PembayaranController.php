@@ -10,11 +10,105 @@ use App\Models\RegPeriksa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class PembayaranController extends Controller
 {
+    /**
+     * Ambil daftar akun bayar untuk dropdown pada pembayaran tunai.
+     */
+    public function getAkunBayar(): JsonResponse
+    {
+        try {
+            $akunBayar = DB::table('akun_bayar')
+                ->leftJoin('rekening', 'akun_bayar.kd_rek', '=', 'rekening.kd_rek')
+                ->select(
+                    'akun_bayar.kd_rek',
+                    'akun_bayar.nama_bayar',
+                    'rekening.nm_rek'
+                )
+                ->orderBy('akun_bayar.nama_bayar')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $akunBayar,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching akun bayar: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Ambil daftar akun piutang/penjamin untuk dropdown pada pembayaran piutang.
+     */
+    public function getAkunPiutang(): JsonResponse
+    {
+        try {
+            $akunPiutang = collect();
+
+            if (Schema::hasTable('akun_piutang')) {
+                // Coba kolom umum di akun_piutang
+                $columns = DB::getSchemaBuilder()->getColumnListing('akun_piutang');
+                $hasNamaPiutang = in_array('nama_piutang', $columns, true);
+                $hasKdRek = in_array('kd_rek', $columns, true);
+
+                $query = DB::table('akun_piutang');
+                if ($hasKdRek && Schema::hasTable('rekening')) {
+                    $query = $query->leftJoin('rekening', 'akun_piutang.kd_rek', '=', 'rekening.kd_rek');
+                }
+
+                if ($hasKdRek && $hasNamaPiutang) {
+                    $query = $query->select('akun_piutang.kd_rek', 'akun_piutang.nama_piutang');
+                } elseif ($hasKdRek) {
+                    // Fallback ke nm_rek jika nama_piutang tidak ada
+                    $query = $query->select(
+                        'akun_piutang.kd_rek',
+                        DB::raw("COALESCE(akun_piutang.nama_bayar, rekening.nm_rek, 'Piutang') as nama_piutang")
+                    );
+                } else {
+                    // Jika tidak ada kd_rek, ambil nama saja (jarang terjadi), beri kd_rek null
+                    $query = $query->select(
+                        DB::raw('NULL as kd_rek'),
+                        DB::raw("COALESCE(akun_piutang.nama_piutang, akun_piutang.nama_bayar, 'Piutang') as nama_piutang")
+                    );
+                }
+
+                $akunPiutang = $query->orderBy('nama_piutang')->get();
+            }
+
+            // Fallback tambahan: gunakan rekening yang mengandung kata 'piutang'
+            if ($akunPiutang->isEmpty() && Schema::hasTable('rekening')) {
+                $rekeningPiutang = DB::table('rekening')
+                    ->select('kd_rek', DB::raw("nm_rek as nama_piutang"))
+                    ->where(function ($q) {
+                        $q->where('nm_rek', 'like', '%piutang%')
+                          ->orWhere('kd_rek', 'like', '%PIUT%');
+                    })
+                    ->orderBy('nm_rek')
+                    ->limit(200)
+                    ->get();
+                $akunPiutang = $rekeningPiutang;
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $akunPiutang,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching akun piutang: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function index(): Response
     {
         return Inertia::render('Pembayaran/Index');

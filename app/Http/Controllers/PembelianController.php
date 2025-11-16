@@ -12,30 +12,12 @@ class PembelianController extends Controller
     /**
      * Get dropdown data for akun bayar
      */
-    public function getAkunBayar()
-    {
-        try {
-            $akunBayar = DB::table('akun_bayar')
-                ->leftJoin('rekening', 'akun_bayar.kd_rek', '=', 'rekening.kd_rek')
-                ->select(
-                    'akun_bayar.kd_rek', 
-                    'akun_bayar.nama_bayar',
-                    'rekening.nm_rek'
-                )
-                ->orderBy('akun_bayar.nama_bayar')
-                ->get();
+    // getAkunBayar di-nonaktifkan untuk saat ini; akan dipindah ke bagian Pembayaran
 
-            return response()->json([
-                'success' => true,
-                'data' => $akunBayar
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error fetching akun bayar: ' . $e->getMessage()
-            ], 500);
-        }
-    }
+    /**
+     * Get dropdown data for akun piutang / penjamin
+     */
+    // getAkunPiutang di-nonaktifkan untuk saat ini; akan dipindah ke bagian Pembayaran
 
     /**
      * Get dropdown data for supplier
