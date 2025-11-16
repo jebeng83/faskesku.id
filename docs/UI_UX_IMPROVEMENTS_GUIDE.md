@@ -2,9 +2,48 @@
 
 ## Ringkasan
 
-Dokumen ini menjelaskan pola dan teknik yang digunakan untuk memperbaiki tampilan komponen SATUSEHAT menggunakan React, Tailwind CSS, dan Framer Motion. Panduan ini dapat digunakan sebagai referensi untuk memperbaiki menu lainnya agar memiliki konsistensi desain yang sama.
+Dokumen ini menjelaskan pola dan teknik UI/UX modern berbasis React + Tailwind CSS + Framer Motion yang bersifat **global** untuk seluruh aplikasi (SATUSEHAT, RME, Farmasi, PCare, dll). Gunakan panduan ini sebagai acuan desain agar setiap modul memiliki bahasa visual yang sama—ringan, profesional, dan elegan.
 
 **File Referensi:** `resources/js/Pages/SatuSehat/Prerequisites/SatuSehatOrganization.jsx`
+
+---
+
+## 0. Strategi UI/UX Global
+
+### 0.1 Bahasa Desain
+- **Identitas:** gunakan kombinasi glassmorphism + gradient lembut dengan aksen biru/indigo/purple untuk semua modul.
+- **Komponen Reusable:** ekstrak pola utama (Card, SectionHeader, DataTable, Modal, Toast, Form Field) ke library internal agar konsisten.
+- **Dark Mode:** tiap komponen wajib mendukung `dark:` utilitas Tailwind dan theme switcher global.
+
+### 0.2 Grid & Layout
+- **Grid 12 kolom** (container max-w-7xl) untuk desktop; `gap-6` antar section.
+- **Responsive**: mobile-first, gunakan `sm/md/lg` breakpoint standar Tailwind. Tabel besar di-break menjadi card stack saat < md.
+- **Spacing**: gunakan skala `space-4/6/8/12` agar konsisten antar modul.
+
+### 0.3 Typography & Iconography
+- Heading: `text-2xl/3xl/4xl` (font-bold). Body: `text-sm/ base`. Helper: `text-xs`.
+- Gunakan `lucide-react` sebagai sumber icon tunggal. Set ukuran default 16px, gunakan gradient badge saat diperlukan.
+
+### 0.4 Interaksi
+- Gunakan **Framer Motion** untuk micro-interactions yang konsisten (stagger container, hover animate, modal transitions).
+- Gunakan `prefers-reduced-motion` fallback untuk pengguna dengan sensitivitas animasi.
+
+### 0.5 State Management UX
+- **Loading**: skeleton loader atau pulse card.  
+- **Empty**: icon state + call-to-action.  
+- **Error**: format “Apa yang terjadi — Penyebab — Langkah berikut”.
+- **Toast**: satu komponen global dengan varian success/info/warning/error.
+
+### 0.6 Accessibility & Internationalization
+- Pastikan kontras warna min. 4.5:1.  
+- Tambahkan `aria-label` pada tombol ikon.  
+- Siapkan struktur i18n (JSON) agar teks mudah dialihbahasakan jika diperlukan.
+
+### 0.7 Performance
+- Gunakan dynamic import / lazy load untuk modul berat.  
+- Cache data dengan React Query / SWR untuk navigasi instan antar halaman.  
+- Optimalkan gambar/icon (SVG inline).  
+- Audit bundel dengan `npm run build --analyze` secara berkala.
 
 ---
 
@@ -664,17 +703,71 @@ Saat membuat menu baru, pastikan:
 
 ---
 
-## 15. Contoh Implementasi Lengkap
+## 15. Rekomendasi UI/UX Terbaik
+
+Gunakan rekomendasi berikut agar seluruh menu terasa ringan, profesional, dan elegan:
+
+1. **Design System Konsisten**
+   - Ekstrak pola pada panduan ini ke komponen reusable (Card, SectionHeader, Modal, DataTable).
+   - Buat Storybook/Docs internal agar tim lain dapat reuse dengan cepat.
+
+2. **Micro Interaction + Feedback**
+   - Gunakan Framer Motion `layoutId` untuk transisi antar state (modal detail, card expand).
+   - Berikan indikator status real-time (success/error/warning) pada aksi penting (POST FHIR, mapping).
+
+3. **Observability UI**
+   - Sertakan komponen “status pill” untuk menunjukkan koneksi SATUSEHAT (token TTL, last sync) pada header halaman.
+   - Tambah “activity timeline” singkat untuk menunjukkan riwayat request.
+
+4. **Mobile-First Enhancements**
+   - Gunakan bottom sheet atau bottom navigation untuk menu penting di layar kecil.
+   - Tabel besar di-break menjadi kartu stacked dengan summary + CTA jelas.
+
+5. **Accessibility**
+   - Terapkan `aria-label` pada tombol ikon, dan `prefers-reduced-motion` untuk mematikan animasi jika user memilih.
+   - Pastikan kontras warna memenuhi WCAG (min 4.5:1).
+
+6. **Form Experience**
+   - Tambah inline validation + helper text. Gunakan skeleton/pulse saat loading untuk mengurangi perceived wait.
+   - Simpan state sementara (autosave) untuk form panjang agar user tidak kehilangan data.
+
+7. **Global Theming**
+   - Tambah theme switcher (Light / Dark / System) yang mudah diakses.
+   - Gunakan CSS custom properties untuk warna inti agar mudah diubah pada level root.
+
+8. **Performance UX**
+   - Implementasikan lazy loading + code splitting untuk halaman berat.
+   - Gunakan React Query / SWR untuk caching data API sehingga navigasi ulang terasa instan.
+
+9. **Error & Empty-State UX**
+   - Gunakan format “What happened + Why + What to do next” pada error card.
+   - Sediakan tombol ulangi (retry) atau link ke dokumentasi relevan.
+
+10. **Documentation Hooks**
+    - Cantumkan link cepat ke `SATUSEHAT_INTEGRATION_GUIDE.md` / `SATUSEHAT_INTEGRATION_NOTES.md` di modal error teknis agar tim ops/dev bisa langsung troubleshooting.
+
+Checklist singkat sebelum rilis UI:
+- [ ] Theme konsisten (color, spacing, typography)
+- [ ] Responsif + mobile gestures nyaman
+- [ ] Loading/empty/error states informatif
+- [ ] Feedback cepat (toast, inline status, progress)
+- [ ] Aksesibilitas minimal (keyboard + screen reader)
+- [ ] Data berat menggunakan virtualized list atau pagination
+
+---
+
+## 16. Contoh Implementasi Lengkap
 
 Lihat file berikut sebagai referensi:
 - `resources/js/Pages/SatuSehat/Prerequisites/SatuSehatOrganization.jsx`
 - `resources/js/Pages/SatuSehat/Prerequisites/SatuSehatLocation.jsx`
+- `resources/js/Pages/Dashboard.jsx` (single-page welcome)
 
-Kedua file ini mengimplementasikan semua pola yang dijelaskan di atas.
+Ketiganya mengimplementasikan pola glassmorphism, animasi Framer Motion, dan dark mode sesuai panduan.
 
 ---
 
-## 16. Troubleshooting
+## 17. Troubleshooting
 
 ### 16.1 Animasi tidak smooth
 - Pastikan menggunakan `ease` yang tepat
@@ -693,7 +786,7 @@ Kedua file ini mengimplementasikan semua pola yang dijelaskan di atas.
 
 ---
 
-## 17. Referensi
+## 18. Referensi
 
 - [Framer Motion Documentation](https://www.framer.com/motion/)
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
@@ -704,4 +797,46 @@ Kedua file ini mengimplementasikan semua pola yang dijelaskan di atas.
 
 **Terakhir Diupdate:** 2025-11-14
 **Versi:** 1.0.0
+## Poliklinik Monthly Chart – Styling Patterns
+
+Tujuan: membuat grafik bar kunjungan poli per bulan yang elegan, modern, informatif, dan tetap ringan tanpa library eksternal.
+
+Prinsip desain utama:
+1) Kejelasan data: grid halus, label sumbu jelas, angka mudah dibaca.
+2) Hierarki visual: warna/kontras terkontrol, gunakan gradient lembut dan bayangan tipis.
+3) Interaksi bermakna: tooltip saat hover, label nilai yang tidak berlebihan.
+4) Aksesibilitas: gunakan aria-label, kontras yang cukup, dukungan dark mode.
+
+Komponen dan pola yang digunakan:
+- Legend modern: bullet berwarna dengan gradient dan ring tipis; nama poli ditampilkan bersebelahan.
+- Grid sumbu-Y: garis putus-putus (dashed) dengan 4 level + baseline, warna abu ringan untuk minim distraksi.
+- Label sumbu-Y: angka pada sisi kiri dengan skala dinamis mengikuti nilai maksimum.
+- Batang (bar):
+  - Bentuk rounded kecil (rounded-md) untuk nuansa modern.
+  - Gradient vertikal (bg-gradient-to-t) agar batang terlihat hidup namun tidak mencolok.
+  - Ring tipis (ring-1) untuk memisahkan batang dari latar belakang.
+  - Transisi halus (CSS transition height) saat grafis dirender pertama kali.
+  - Label nilai kecil (font-mono 10px) muncul ketika tinggi batang memadai agar tidak menabrak layout.
+- Tooltip saat hover: menampilkan bulan, nama poli, jumlah kunjungan, dan persentase kontribusi pada bulan tersebut.
+- Panel ringkasan: total semua poli + daftar top poli dengan progress bar, menampilkan persentase kontribusi terhadap total tahunan.
+
+Dark mode:
+- Gunakan pasangan warna tailwind yang konsisten: teks abu diubah ke dark:text-gray-300/400, border ke dark:border-gray-800, latar panel ke dark:bg-gray-800/60.
+
+Kode ringkas (pattern inti untuk batang):
+
+```
+<div
+  className={`w-full bg-gradient-to-t from-blue-500 to-blue-600 rounded-md shadow-sm ring-1 border-blue-600/40`}
+  style={{ height: mounted ? h : 0, transition: "height 600ms cubic-bezier(0.22, 1, 0.36, 1)" }}
+  aria-label={`${namaPoli} ${bulan}: ${nilai}`}
+/>
+```
+
+Tips performa:
+- Hindari kalkulasi berat di render, precompute total per bulan dan nilai maksimum di luar map batang.
+- Batasi jumlah bulan yang ditampilkan dengan parameter `limit` dari backend untuk menjaga keterbacaan.
+
+Catatan pengembangan:
+- Jika ingin animasi lebih kompleks, dapat mempertimbangkan framer-motion. Namun saat ini kita memakai CSS transition untuk menjaga footprint bundle tetap ringan.
 

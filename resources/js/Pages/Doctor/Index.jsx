@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Head } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
-import AppLayout from "@/Layouts/AppLayout";
+import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
 import DoctorModal from "@/Components/DoctorModal";
 import DoctorDetail from "@/Components/DoctorDetail";
 import {
@@ -104,39 +104,42 @@ export default function Index({ doctors, availableEmployees, spesialisList }) {
 		setSelectedDoctor(doctor);
 	};
 
-	return (
-		<AppLayout>
-			<Head title="Manajemen Dokter" />
+  return (
+    <LanjutanRegistrasiLayout
+      title="Registrasi Pasien"
+      menuConfig={{ activeTab: "dokter" }}
+    >
+      <Head title="Manajemen Dokter" />
 
-			<div className="space-y-6 -mt-6 -mx-6 p-6">
-				{/* Header */}
-				<div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-					<div className="p-6">
-						<motion.div
-							initial={{ opacity: 0, y: -20 }}
-							animate={{ opacity: 1, y: 0 }}
-							className="flex justify-between items-center"
-						>
-							<div>
-								<h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-									Manajemen Dokter
-								</h2>
-								<p className="text-gray-600 dark:text-gray-400 mt-1">
-									Kelola data dokter rumah sakit
-								</p>
-							</div>
-							<motion.button
-								whileHover={{ scale: 1.05 }}
-								whileTap={{ scale: 0.95 }}
-								onClick={handleCreate}
-								className="bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-900 hover:to-black text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 shadow-md hover:shadow-lg font-medium text-sm whitespace-nowrap transform hover:scale-105"
-							>
-								<PlusIcon className="h-5 w-5" />
-								Tambah Dokter
-							</motion.button>
-						</motion.div>
-					</div>
-				</div>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+          <div className="p-6">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex justify-between items-center"
+            >
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Manajemen Dokter
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400 mt-1">
+                  Kelola data dokter rumah sakit
+                </p>
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleCreate}
+                className="bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-900 hover:to-black text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 shadow-md hover:shadow-lg font-medium text-sm whitespace-nowrap transform hover:scale-105"
+              >
+                <PlusIcon className="h-5 w-5" />
+                Tambah Dokter
+              </motion.button>
+            </motion.div>
+          </div>
+        </div>
 
 				<motion.div
 					variants={containerVariants}
@@ -264,19 +267,19 @@ export default function Index({ doctors, availableEmployees, spesialisList }) {
 				</motion.div>
 			</div>
 
-			{/* Modal */}
-			<AnimatePresence>
-				{showModal && (
-					<DoctorModal
-						show={showModal}
-						onClose={() => setShowModal(false)}
-						mode={modalMode}
-						doctor={modalMode === "edit" ? selectedDoctor : null}
-						availableEmployees={availableEmployees}
-						spesialisList={spesialisList}
-					/>
-				)}
-			</AnimatePresence>
-		</AppLayout>
-	);
+      {/* Modal */}
+      <AnimatePresence>
+        {showModal && (
+          <DoctorModal
+            show={showModal}
+            onClose={() => setShowModal(false)}
+            mode={modalMode}
+            doctor={modalMode === "edit" ? selectedDoctor : null}
+            availableEmployees={availableEmployees}
+            spesialisList={spesialisList}
+          />
+        )}
+      </AnimatePresence>
+    </LanjutanRegistrasiLayout>
+  );
 }

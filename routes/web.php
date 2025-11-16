@@ -28,6 +28,10 @@ use App\Http\Controllers\SpesialisController;
 use App\Http\Controllers\TarifTindakanController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use App\Http\Controllers\Farmasi\SetHargaObatController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -48,7 +52,7 @@ Route::middleware('auth')->prefix('api')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/', function () {
+    Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
@@ -71,10 +75,16 @@ Route::middleware('auth')->group(function () {
 
     // Registration routes
     Route::get('/registration', [RegistrationController::class, 'index'])->name('registration.index')->middleware('menu.permission');
+    // Registration Lanjutan: arahkan ke halaman Index agar konsisten
+    Route::get('/registration/lanjutan', [RegistrationController::class, 'index'])
+        ->name('registration.lanjutan')
+        ->middleware('menu.permission');
     Route::get('/registration/search-patients', [RegistrationController::class, 'searchPatients'])->name('registration.search-patients');
     Route::post('/registration/{patient}/register', [RegistrationController::class, 'registerPatient'])->name('registration.register-patient');
     Route::get('/registration/{patient}/check-poli-status', [RegistrationController::class, 'checkPatientPoliStatus'])->name('registration.check-poli-status');
     Route::get('/registration/get-registrations', [RegistrationController::class, 'getRegistrations'])->name('registration.get-registrations');
+    // Statistik kunjungan poli per bulan (untuk Dashboard)
+    Route::get('/registration/poli-monthly-stats', [RegistrationController::class, 'poliMonthlyStats'])->name('registration.poli-monthly-stats');
     Route::post('/registration/cancel', [RegistrationController::class, 'cancelRegistration'])->name('registration.cancel');
 
     // Employee routes
@@ -123,6 +133,10 @@ Route::middleware('auth')->group(function () {
     // Route::post('/premium-modules/validate-license', [PremiumModuleController::class, 'validateLicense'])->name('premium-modules.validate-license');
 
     Route::get('rawat-jalan/lanjutan', [RawatJalanController::class, 'lanjutan'])->name('rawat-jalan.lanjutan');
+    // Rawat Jalan landing/index page (Inertia)
+    Route::get('rawat-jalan', function () {
+        return Inertia::render('RawatJalan/Index');
+    })->name('rawat-jalan.index');
     Route::get('rawat-jalan/riwayat', [RawatJalanController::class, 'riwayat'])->name('rawat-jalan.riwayat');
     Route::get('rawat-jalan/riwayat-pemeriksaan', [RawatJalanController::class, 'getRiwayatPemeriksaan'])->name('rawat-jalan.riwayat-pemeriksaan');
     Route::get('rawat-jalan/pemeriksaan-ralan', [RawatJalanController::class, 'pemeriksaanRalan'])->name('rawat-jalan.pemeriksaan-ralan');
@@ -678,7 +692,6 @@ Route::middleware('auth')->group(function () {
 
 });
 // Routes for Set Harga Obat (Farmasi)
-use App\Http\Controllers\Farmasi\SetHargaObatController;
 
 // Pengaturan Harga Obat
 Route::get('/farmasi/set-harga-obat', [SetHargaObatController::class, 'index'])
@@ -696,3 +709,17 @@ Route::post('/farmasi/set-penjualan', [SetHargaObatController::class, 'storePenj
 // Hapus pengaturan harga per jenis
 Route::delete('/farmasi/set-penjualan/{kdjns}', [SetHargaObatController::class, 'destroyPenjualanPerJenis'])
     ->name('set-penjualan.destroy');
+<<<<<<< HEAD
+=======
+// Root route: arahkan ke dashboard jika sudah login, jika belum arahkan ke halaman login
+Route::get('/', function () {
+    return Auth::check()
+        ? redirect()->route('dashboard')
+        : redirect()->route('login');
+});
+
+// Hapus route Landing; jika ada akses ke /landing, redirect ke dashboard
+Route::get('/landing', function () {
+    return redirect()->route('dashboard');
+})->name('landing');
+>>>>>>> origin/main
