@@ -108,7 +108,7 @@ class PermissionSeeder extends Seeder
             'delete-penjab',
             'penjab.index',
             'penjab.view',
-            
+
             // Poliklinik permissions
             'view-poliklinik',
             'create-poliklinik',
@@ -116,11 +116,13 @@ class PermissionSeeder extends Seeder
             'delete-poliklinik',
             'poliklinik.index',
             'poliklinik.view',
-            
+
             // Farmasi module landing permission
             'farmasi.index',
             // Bridging PCare landing permission
             'pcare.index',
+            // SATUSEHAT landing permission
+            'satusehat.index',
 
             // Jadwal permissions
             'view-jadwal',

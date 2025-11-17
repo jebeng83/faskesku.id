@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Poliklinik;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 
 class PoliklinikController extends Controller
 {
@@ -26,6 +26,36 @@ class PoliklinikController extends Controller
             'filters' => [
                 'search' => $search,
             ],
+        ]);
+    }
+
+    /**
+     * API: List poliklinik untuk kebutuhan komponen SearchableSelect.
+     * Endpoint: GET /api/poliklinik?start=0&limit=25&q=
+     */
+    public function apiIndex(Request $request)
+    {
+        $start = max(0, (int) $request->query('start', 0));
+        $limit = max(1, min(500, (int) $request->query('limit', 25)));
+        $q = trim((string) $request->query('q', ''));
+
+        $builder = Poliklinik::query()->select(['kd_poli', 'nm_poli']);
+        if ($q !== '') {
+            $builder->where(function ($w) use ($q) {
+                $w->where('kd_poli', 'like', "%{$q}%")
+                    ->orWhere('nm_poli', 'like', "%{$q}%");
+            });
+        }
+
+        $total = (clone $builder)->count();
+        $rows = $builder->orderBy('kd_poli')->offset($start)->limit($limit)->get();
+
+        return response()->json([
+            'ok' => true,
+            'total' => $total,
+            'start' => $start,
+            'limit' => $limit,
+            'list' => $rows,
         ]);
     }
 

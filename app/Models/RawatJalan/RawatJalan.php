@@ -57,6 +57,18 @@ class RawatJalan extends Model
         return $this->belongsTo(\App\Models\Dokter::class, 'kd_dokter', 'kd_dokter');
     }
 
+    // Relasi dengan model Poliklinik
+    public function poliklinik()
+    {
+        return $this->belongsTo(\App\Models\Poliklinik::class, 'kd_poli', 'kd_poli');
+    }
+
+    // Relasi dengan model Penjab (penjamin)
+    public function penjab()
+    {
+        return $this->belongsTo(\App\Models\Penjab::class, 'kd_pj', 'kd_pj');
+    }
+
     // Scope untuk filter status
     public function scopeStatus($query, $status)
     {

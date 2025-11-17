@@ -53,4 +53,9 @@ class Dokter extends Model
     {
         return $this->kd_dokter . ' - ' . $this->nm_dokter;
     }
+
+    public function pegawai()
+    {
+        return $this->belongsTo(Employee::class, 'kd_dokter', 'nik');
+    }
 }

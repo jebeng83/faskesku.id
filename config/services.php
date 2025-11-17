@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    // SATUSEHAT integration endpoints
+    'satusehat' => [
+        'env' => env('SATUSEHAT_ENV', 'DEV'),
+        'auth' => env('SATUSEHAT_AUTH', ''),
+        'fhir' => env('SATUSEHAT_FHIR', ''),
+        'client_id' => env('SATUSEHAT_CLIENT_ID', ''),
+        'client_secret' => env('SATUSEHAT_CLIENT_SECRET', ''),
+        'organization_id' => env('SATUSEHAT_ORG_ID', ''),
+    ],
+
 ];

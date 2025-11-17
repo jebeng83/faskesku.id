@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('kategori_perawatan')) {
+            return;
+        }
+
         Schema::create('kategori_perawatan', function (Blueprint $table) {
             $table->char('kd_kategori', 5)->primary();
             $table->string('nm_kategori', 30)->nullable();
-            
-            // Add index for nm_kategori
             $table->index('nm_kategori');
         });
     }

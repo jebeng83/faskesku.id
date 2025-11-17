@@ -2,17 +2,83 @@ import axios from "axios";
 window.axios = axios;
 
 window.axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
+// Pastikan cookie sesi dikirim pada request XHR antar port (mis. Vite dev server -> Laravel)
+// Ini membantu mencegah 419 (CSRF token mismatch) akibat cookie sesi tidak terkirim.
+window.axios.defaults.withCredentials = true;
 
 // Get CSRF token from meta tag
 let token = document.head.querySelector('meta[name="csrf-token"]');
 
 if (token) {
     window.axios.defaults.headers.common["X-CSRF-TOKEN"] = token.content;
+    // Opsi: jejak ringan untuk memastikan token terpasang
+    // console.debug("Axios CSRF token set", token.content?.slice(0, 10) + "...");
 } else {
     console.error(
         "CSRF token not found: https://laravel.com/docs/csrf#csrf-x-csrf-token"
     );
 }
+
+// Inject CSRF header untuk semua request fetch same-origin yang berpotensi mengubah state
+// (POST, PUT, PATCH, DELETE). Ini memastikan Inertia router (yang menggunakan fetch)
+// dan pemanggilan fetch manual selalu menyertakan token CSRF.
+(() => {
+    const metaToken = document.head.querySelector('meta[name="csrf-token"]');
+    const csrfToken = metaToken ? metaToken.getAttribute('content') : null;
+    if (!csrfToken) return; // sudah ada console.error di atas
+
+    const origFetch = window.fetch ? window.fetch.bind(window) : null;
+    if (!origFetch) return;
+
+    const needsCsrf = (method) => {
+        const m = (method || 'GET').toUpperCase();
+        return m === 'POST' || m === 'PUT' || m === 'PATCH' || m === 'DELETE';
+    };
+
+    const isSameOrigin = (input) => {
+        try {
+            if (typeof input === 'string') {
+                // Relative path => same-origin
+                if (input.startsWith('/')) return true;
+                const url = new URL(input, window.location.href);
+                return url.origin === window.location.origin;
+            }
+            if (input instanceof Request) {
+                const url = new URL(input.url, window.location.href);
+                return url.origin === window.location.origin;
+            }
+        } catch (_) {}
+        return false;
+    };
+
+    window.fetch = async (input, init = {}) => {
+        try {
+            if (isSameOrigin(input) && needsCsrf(init.method)) {
+                // Normalisasi headers
+                const headers = new Headers(init.headers || {});
+                if (!headers.has('X-CSRF-TOKEN')) {
+                    headers.set('X-CSRF-TOKEN', csrfToken);
+                }
+                if (!headers.has('X-Requested-With')) {
+                    headers.set('X-Requested-With', 'XMLHttpRequest');
+                }
+                if (!headers.has('Accept')) {
+                    headers.set('Accept', 'application/json');
+                }
+                init.headers = headers;
+
+                // Pastikan cookie sesi terkirim
+                if (!init.credentials) {
+                    init.credentials = 'same-origin';
+                }
+            }
+        } catch (e) {
+            // Jangan blokir request bila terjadi error pada wrapper
+            console.warn('CSRF fetch wrapper warning:', e?.message || e);
+        }
+        return origFetch(input, init);
+    };
+})();
 
 // --- BPJS Debug Interceptors ---
 // Mencatat setiap request/response/error ke endpoint /pcare/api/* di console

@@ -1,5 +1,49 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
+* @see \App\Http\Controllers\PoliklinikController::apiIndex
+* @see app/Http/Controllers/PoliklinikController.php:36
+* @route '/api/poliklinik'
+*/
+export const apiIndex = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: apiIndex.url(options),
+    method: 'get',
+})
+
+apiIndex.definition = {
+    methods: ["get","head"],
+    url: '/api/poliklinik',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\PoliklinikController::apiIndex
+* @see app/Http/Controllers/PoliklinikController.php:36
+* @route '/api/poliklinik'
+*/
+apiIndex.url = (options?: RouteQueryOptions) => {
+    return apiIndex.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PoliklinikController::apiIndex
+* @see app/Http/Controllers/PoliklinikController.php:36
+* @route '/api/poliklinik'
+*/
+apiIndex.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: apiIndex.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\PoliklinikController::apiIndex
+* @see app/Http/Controllers/PoliklinikController.php:36
+* @route '/api/poliklinik'
+*/
+apiIndex.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: apiIndex.url(options),
+    method: 'head',
+})
+
+/**
 * @see \App\Http\Controllers\PoliklinikController::index
 * @see app/Http/Controllers/PoliklinikController.php:12
 * @route '/poliklinik'
@@ -45,7 +89,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\PoliklinikController::store
-* @see app/Http/Controllers/PoliklinikController.php:32
+* @see app/Http/Controllers/PoliklinikController.php:62
 * @route '/poliklinik'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +104,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\PoliklinikController::store
-* @see app/Http/Controllers/PoliklinikController.php:32
+* @see app/Http/Controllers/PoliklinikController.php:62
 * @route '/poliklinik'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -69,7 +113,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PoliklinikController::store
-* @see app/Http/Controllers/PoliklinikController.php:32
+* @see app/Http/Controllers/PoliklinikController.php:62
 * @route '/poliklinik'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -79,7 +123,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\PoliklinikController::update
-* @see app/Http/Controllers/PoliklinikController.php:58
+* @see app/Http/Controllers/PoliklinikController.php:88
 * @route '/poliklinik/{kd_poli}'
 */
 export const update = (args: { kd_poli: string | number } | [kd_poli: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -94,7 +138,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\PoliklinikController::update
-* @see app/Http/Controllers/PoliklinikController.php:58
+* @see app/Http/Controllers/PoliklinikController.php:88
 * @route '/poliklinik/{kd_poli}'
 */
 update.url = (args: { kd_poli: string | number } | [kd_poli: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -121,7 +165,7 @@ update.url = (args: { kd_poli: string | number } | [kd_poli: string | number ] |
 
 /**
 * @see \App\Http\Controllers\PoliklinikController::update
-* @see app/Http/Controllers/PoliklinikController.php:58
+* @see app/Http/Controllers/PoliklinikController.php:88
 * @route '/poliklinik/{kd_poli}'
 */
 update.put = (args: { kd_poli: string | number } | [kd_poli: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -131,7 +175,7 @@ update.put = (args: { kd_poli: string | number } | [kd_poli: string | number ] |
 
 /**
 * @see \App\Http\Controllers\PoliklinikController::toggleStatus
-* @see app/Http/Controllers/PoliklinikController.php:82
+* @see app/Http/Controllers/PoliklinikController.php:112
 * @route '/poliklinik/{kd_poli}/toggle-status'
 */
 export const toggleStatus = (args: { kd_poli: string | number } | [kd_poli: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -146,7 +190,7 @@ toggleStatus.definition = {
 
 /**
 * @see \App\Http\Controllers\PoliklinikController::toggleStatus
-* @see app/Http/Controllers/PoliklinikController.php:82
+* @see app/Http/Controllers/PoliklinikController.php:112
 * @route '/poliklinik/{kd_poli}/toggle-status'
 */
 toggleStatus.url = (args: { kd_poli: string | number } | [kd_poli: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -173,7 +217,7 @@ toggleStatus.url = (args: { kd_poli: string | number } | [kd_poli: string | numb
 
 /**
 * @see \App\Http\Controllers\PoliklinikController::toggleStatus
-* @see app/Http/Controllers/PoliklinikController.php:82
+* @see app/Http/Controllers/PoliklinikController.php:112
 * @route '/poliklinik/{kd_poli}/toggle-status'
 */
 toggleStatus.patch = (args: { kd_poli: string | number } | [kd_poli: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -181,6 +225,6 @@ toggleStatus.patch = (args: { kd_poli: string | number } | [kd_poli: string | nu
     method: 'patch',
 })
 
-const PoliklinikController = { index, store, update, toggleStatus }
+const PoliklinikController = { apiIndex, index, store, update, toggleStatus }
 
 export default PoliklinikController

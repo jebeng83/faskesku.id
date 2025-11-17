@@ -19,16 +19,21 @@ trait BpjsTraits
     {
         // Ambil satu baris konfigurasi dari tabel setting_bridging_bpjs
         $row = DB::table('setting_bridging_bpjs')->first();
+        // Fallback tambahan: beberapa instalasi menyimpan kode_ppk pada tabel 'setting'
+        $setting = DB::table('setting')->first();
     
         return [
             // Gunakan config() agar nilai dari .env tetap tersedia saat config di-cache
             'base_url' => config('bpjs.pcare.base_url'),
             'cons_id' => $row?->cons_id_pcare ?? config('bpjs.pcare.cons_id'),
             'cons_pwd' => $row?->secretkey_pcare ?? config('bpjs.pcare.cons_pwd'),
-            'user_key' => $row?->userkey_pcare ?? config('bpjs.pcare.user_key'),
+            // Wajib ambil dari DB sesuai instruksi: setting_bridging_bpjs.userkey_pcare
+            // Tanpa fallback ke env untuk mencegah ketidaksesuaian konfigurasi saat runtime
+            'user_key' => (string) ($row?->userkey_pcare ?? ''),
             'user' => $row?->user_pcare ?? config('bpjs.pcare.user'),
             'pass' => $row?->pass_pcare ?? config('bpjs.pcare.pass'),
-            'kode_ppk' => config('bpjs.pcare.kode_ppk'),
+            // kode_ppk diutamakan dari config; jika null, fallback ke tabel 'setting'
+            'kode_ppk' => config('bpjs.pcare.kode_ppk') ?: ($setting->kode_ppk ?? null),
             'app_code' => config('bpjs.pcare.app_code'),
         ];
     }
@@ -294,11 +299,27 @@ trait BpjsTraits
             'body_preview' => $bodyPreview,
         ]);
 
-        $request = Http::withHeaders($headers);
-
+        // Build HTTP client with optional timeouts and DNS fallback
+        $httpOptions = [];
+        // Query params
         if (!empty($query)) {
-            $request = $request->withOptions(['query' => $query]);
+            $httpOptions['query'] = $query;
         }
+        // Timeouts (optional, configurable via env)
+        $connectTimeout = (int) env('BPJS_HTTP_CONNECT_TIMEOUT', 10);
+        $timeout = (int) env('BPJS_HTTP_TIMEOUT', 30);
+        $httpOptions['connect_timeout'] = $connectTimeout;
+        $httpOptions['timeout'] = $timeout;
+        // Optional forced DNS resolve to mitigate local DNS issues
+        $forceResolve = env('BPJS_MOBILEJKN_FORCE_RESOLVE');
+        if (!empty($forceResolve)) {
+            // Example value: apijkn.bpjs-kesehatan.go.id:443:118.97.79.198
+            $httpOptions['curl'] = [CURLOPT_RESOLVE => [$forceResolve]];
+            Log::channel('bpjs')->warning('MobileJKN using CURLOPT_RESOLVE fallback', [
+                'resolve' => $forceResolve,
+            ]);
+        }
+        $request = Http::withHeaders($headers)->withOptions($httpOptions);
 
         switch (strtoupper($method)) {
             case 'GET':

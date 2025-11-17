@@ -1,32 +1,37 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\PatientController;
+use App\Http\Controllers\DaftarTarifController;
+use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\EmployeeController;
-use App\Http\Controllers\RegPeriksaController;
-use App\Http\Controllers\RawatJalan\RawatJalanController;
-use App\Http\Controllers\RawatJalan\ObatController;
-use App\Http\Controllers\RawatJalan\ResepController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\MenuController;
-use App\Http\Controllers\RawatInapController;
+use App\Http\Controllers\Farmasi\DataSuplierController;
+use App\Http\Controllers\Farmasi\IndustriFarmasiController;
 use App\Http\Controllers\IGDController;
 use App\Http\Controllers\KamarOperasiController;
-use App\Http\Controllers\LaboratoriumController;
-use App\Http\Controllers\RadiologiController;
-use App\Http\Controllers\RehabilitasiMedikController;
-use App\Http\Controllers\Farmasi\IndustriFarmasiController;
-use App\Http\Controllers\Farmasi\DataSuplierController;
-use App\Http\Controllers\setting\SettingController;
-use App\Http\Controllers\DoctorController;
-use App\Http\Controllers\SpesialisController;
-use App\Http\Controllers\DaftarTarifController;
-use App\Http\Controllers\RegistrationController;
-use App\Http\Controllers\TarifTindakanController;
 use App\Http\Controllers\KategoriPerawatanController;
+use App\Http\Controllers\LaboratoriumController;
+use App\Http\Controllers\MenuController;
+use App\Http\Controllers\PatientController;
+use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\PermintaanLabController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RadiologiController;
+use App\Http\Controllers\RawatInapController;
+use App\Http\Controllers\RawatJalan\ObatController;
+use App\Http\Controllers\RawatJalan\RawatJalanController;
+use App\Http\Controllers\RawatJalan\ResepController;
+use App\Http\Controllers\RegistrationController;
+use App\Http\Controllers\RegPeriksaController;
+use App\Http\Controllers\RehabilitasiMedikController;
+use App\Http\Controllers\setting\SettingController;
+use App\Http\Controllers\SpesialisController;
+use App\Http\Controllers\TarifTindakanController;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use App\Http\Controllers\Farmasi\SetHargaObatController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -36,6 +41,18 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
 // Note: API routes telah dipindahkan ke routes/api.php
+
+// Root route: arahkan ke dashboard jika sudah login, jika belum arahkan ke halaman login
+Route::get('/', function () {
+    return Auth::check()
+        ? redirect()->route('dashboard')
+        : redirect()->route('login');
+});
+
+// Kompatibilitas: redirect /landing ke dashboard
+Route::get('/landing', function () {
+    return redirect()->route('dashboard');
+})->name('landing');
 
 // API routes that don't require authentication
 Route::get('/api/lab-tests', [PermintaanLabController::class, 'getLabTests'])->name('api.lab-tests');
@@ -47,7 +64,7 @@ Route::middleware('auth')->prefix('api')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/', function () {
+    Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
@@ -55,6 +72,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/master-data', function () {
         return Inertia::render('MasterData/MenuUtama');
     })->name('master-data.index');
+    // Backward-compatible aliases to fix mismatched DB menu URLs
+    Route::get('/masterdata', function () {
+        return redirect()->route('master-data.index');
+    })->name('masterdata.alias');
+    Route::get('/master', function () {
+        return redirect()->route('master-data.index');
+    })->name('master.alias');
 
     // Master Data - Jadwal Dokter (Inertia)
     Route::get('/master-data/jadwal', [\App\Http\Controllers\JadwalController::class, 'index'])
@@ -70,10 +94,16 @@ Route::middleware('auth')->group(function () {
 
     // Registration routes
     Route::get('/registration', [RegistrationController::class, 'index'])->name('registration.index')->middleware('menu.permission');
+    // Registration Lanjutan: arahkan ke halaman Index agar konsisten
+    Route::get('/registration/lanjutan', [RegistrationController::class, 'index'])
+        ->name('registration.lanjutan')
+        ->middleware('menu.permission');
     Route::get('/registration/search-patients', [RegistrationController::class, 'searchPatients'])->name('registration.search-patients');
     Route::post('/registration/{patient}/register', [RegistrationController::class, 'registerPatient'])->name('registration.register-patient');
     Route::get('/registration/{patient}/check-poli-status', [RegistrationController::class, 'checkPatientPoliStatus'])->name('registration.check-poli-status');
     Route::get('/registration/get-registrations', [RegistrationController::class, 'getRegistrations'])->name('registration.get-registrations');
+    // Statistik kunjungan poli per bulan (untuk Dashboard)
+    Route::get('/registration/poli-monthly-stats', [RegistrationController::class, 'poliMonthlyStats'])->name('registration.poli-monthly-stats');
     Route::post('/registration/cancel', [RegistrationController::class, 'cancelRegistration'])->name('registration.cancel');
 
     // Employee routes
@@ -100,6 +130,19 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('Users/Index');
     })->name('users.index');
 
+    // Pembayaran module routes
+    Route::prefix('pembayaran')
+        ->name('pembayaran.')
+        ->middleware('menu.permission')
+        ->group(function () {
+            Route::get('/', [PembayaranController::class, 'index'])->name('index');
+            Route::get('/ralan', [PembayaranController::class, 'ralan'])->name('ralan');
+            Route::get('/ralan/{no_rawat}', [PembayaranController::class, 'ralanDetail'])
+                ->where('no_rawat', '.*')
+                ->name('ralan.detail');
+            Route::get('/ranap', [PembayaranController::class, 'ranap'])->name('ranap');
+        });
+
     // Premium Module routes
     // Route::resource('premium-modules', PremiumModuleController::class);
     // Route::post('/premium-modules/{premiumModule}/generate-license', [PremiumModuleController::class, 'generateLicense'])->name('premium-modules.generate-license');
@@ -108,8 +151,11 @@ Route::middleware('auth')->group(function () {
     // Route::get('/premium-modules/{premiumModule}/status', [PremiumModuleController::class, 'status'])->name('premium-modules.status');
     // Route::post('/premium-modules/validate-license', [PremiumModuleController::class, 'validateLicense'])->name('premium-modules.validate-license');
 
-
     Route::get('rawat-jalan/lanjutan', [RawatJalanController::class, 'lanjutan'])->name('rawat-jalan.lanjutan');
+    // Rawat Jalan landing/index page (Inertia)
+    Route::get('rawat-jalan', function () {
+        return Inertia::render('RawatJalan/Index');
+    })->name('rawat-jalan.index');
     Route::get('rawat-jalan/riwayat', [RawatJalanController::class, 'riwayat'])->name('rawat-jalan.riwayat');
     Route::get('rawat-jalan/riwayat-pemeriksaan', [RawatJalanController::class, 'getRiwayatPemeriksaan'])->name('rawat-jalan.riwayat-pemeriksaan');
     Route::get('rawat-jalan/pemeriksaan-ralan', [RawatJalanController::class, 'pemeriksaanRalan'])->name('rawat-jalan.pemeriksaan-ralan');
@@ -477,6 +523,11 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('Pcare/LayananPcare/CekPesertaPcareNik');
         })->name('layanan.cek-peserta-nik');
 
+        // Layanan PCare: Form terpadu (3 card: Peserta+SOAP, Kunjungan, Rujukan)
+        Route::get('/layanan', function () {
+            return Inertia::render('Pcare/LayananPcare/LayananPcare');
+        })->name('layanan.pcare');
+
         // Kegiatan Kelompok - Club Prolanis (Inertia page)
         Route::get('/kelompok/club-prolanis', function () {
             return Inertia::render('Pcare/KegiatanKelompok/ClubProlanis');
@@ -552,6 +603,9 @@ Route::middleware('auth')->group(function () {
         // API: Get Peserta by NIK dari BPJS PCare
         Route::get('/api/peserta/nik', [\App\Http\Controllers\Pcare\PcareController::class, 'pesertaByNik'])
             ->name('peserta.nik.api');
+        // API: Kirim Kunjungan Sehat ke BPJS PCare (POST)
+        Route::post('/api/kunjungan-sehat', [\App\Http\Controllers\Pcare\PcareController::class, 'kirimKunjunganSehat'])
+            ->name('kunjungan.sehat.api');
 
         // API: Get Peserta by No. Kartu (versi sederhana — tanpa tanggal pelayanan)
         Route::get('/api/peserta/{noka}', [\App\Http\Controllers\Pcare\PcareController::class, 'getPeserta'])
@@ -715,6 +769,38 @@ Route::middleware('auth')->group(function () {
     Route::post('/poliklinik', [\App\Http\Controllers\PoliklinikController::class, 'store'])->name('poliklinik.store');
     Route::put('/poliklinik/{kd_poli}', [\App\Http\Controllers\PoliklinikController::class, 'update'])->name('poliklinik.update');
     Route::patch('/poliklinik/{kd_poli}/toggle-status', [\App\Http\Controllers\PoliklinikController::class, 'toggleStatus'])->name('poliklinik.toggle-status');
+
+    // SATUSEHAT routes (Inertia pages)
+    Route::prefix('satusehat')->name('satusehat.')->group(function () {
+        // Halaman utama modul SATUSEHAT
+        Route::get('/', function () {
+            return Inertia::render('SatuSehat/MenuSatuSehat');
+        })->name('index');
+        // Prasyarat: halaman pemetaan Organization Subunits
+        Route::get('/prerequisites/organization', function () {
+            return Inertia::render('SatuSehat/Prerequisites/SatuSehatOrganization');
+        })->name('prerequisites.organization');
+        // Prasyarat: halaman pemetaan Location (Poliklinik ↔ SATUSEHAT Location)
+        Route::get('/prerequisites/location', function () {
+            return Inertia::render('SatuSehat/Prerequisites/SatuSehatLocation');
+        })->name('prerequisites.location');
+        // Prasyarat: halaman pemetaan Location Ranap (Bangsal ↔ SATUSEHAT Location)
+        Route::get('/prerequisites/location-ranap', function () {
+            return Inertia::render('SatuSehat/Prerequisites/SatuSehatLocationRanap');
+        })->name('prerequisites.location_ranap');
+        Route::get('/prerequisites/location-farmasi', function () {
+            return Inertia::render('SatuSehat/Prerequisites/SatuSehatLocationFarmasi');
+        })->name('prerequisites.location_farmasi');
+        Route::get('/prerequisites/practitioner', function () {
+            return Inertia::render('SatuSehat/Prerequisites/Practitioner');
+        })->name('prerequisites.practitioner');
+        Route::get('/prerequisites/patient', function () {
+            return Inertia::render('SatuSehat/Prerequisites/Patient');
+        })->name('prerequisites.patient');
+        Route::get('/interoperabilitas/rajal/encounter', function () {
+            return Inertia::render('SatuSehat/Interoperabilitas/PelayananRawatJalan/Encounter');
+        })->name('interoperabilitas.rajal.encounter');
+    });
 
 });
 // Routes for Set Harga Obat (Farmasi)

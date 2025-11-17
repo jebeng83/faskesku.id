@@ -1,35 +1,45 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\API\DokterController;
 use App\Http\Controllers\API\EmployeeController;
+use App\Http\Controllers\API\PatientController as ApiPatientController;
 use App\Http\Controllers\API\PenjabController;
-use App\Http\Controllers\API\WilayahController;
 use App\Http\Controllers\API\PermissionController;
+use App\Http\Controllers\API\ReferenceController;
 use App\Http\Controllers\API\RegPeriksaController;
 use App\Http\Controllers\API\UserController;
-use App\Http\Controllers\MenuController;
-use App\Http\Controllers\RawatJalan\ObatController;
-use App\Http\Controllers\RawatJalan\ResepController;
-use App\Http\Controllers\API\DokterController;
-use App\Http\Controllers\API\PatientController as ApiPatientController;
-use App\Http\Controllers\API\ReferenceController;
-use App\Http\Controllers\PermintaanLabController;
-use App\Http\Controllers\PermintaanRadiologiController;
-use App\Http\Controllers\OpnameController;
-use App\Http\Controllers\PembelianController;
+use App\Http\Controllers\API\WilayahController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\DataBarangController;
-use App\Http\Controllers\GudangBarangController;
+use App\Http\Controllers\DepartemenController;
 use App\Http\Controllers\Farmasi\SetHargaObatController;
-use App\Http\Controllers\Pcare\PcareController;
-use App\Http\Controllers\Pcare\MobileJknController;
+use App\Http\Controllers\GudangBarangController;
 use App\Http\Controllers\JadwalController;
+<<<<<<< HEAD
 use App\Http\Controllers\SettingsController;
+=======
+use App\Http\Controllers\MenuController;
+use App\Http\Controllers\OpnameController;
+use App\Http\Controllers\Pcare\MobileJknController;
+use App\Http\Controllers\Pcare\PcareController;
+use App\Http\Controllers\Pcare\PcareKunjunganController;
+use App\Http\Controllers\PembelianController;
+use App\Http\Controllers\PermintaanLabController;
+use App\Http\Controllers\PermintaanRadiologiController;
+use App\Http\Controllers\PoliklinikController;
+use App\Http\Controllers\RawatJalan\ObatController;
+use App\Http\Controllers\RawatJalan\RawatJalanController;
+use App\Http\Controllers\RawatJalan\ResepController;
+use App\Http\Controllers\SatuSehat\SatuSehatController;
+use App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController;
+use Illuminate\Support\Facades\Route;
+>>>>>>> main
 
 Route::post('/employees', [EmployeeController::class, 'store'])->name('api.employees.store');
 Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('api.employees.destroy');
 
 Route::get('/penjab', [PenjabController::class, 'index'])->name('api.penjab.index');
+Route::get('/penjab/next-code', [PenjabController::class, 'nextCode'])->name('api.penjab.next-code');
 Route::post('/penjab', [PenjabController::class, 'store'])->name('api.penjab.store');
 
 // Pasien describe endpoint
@@ -113,6 +123,10 @@ Route::get('/resep/pasien/{no_rkm_medis}', [ResepController::class, 'getByNoRkmM
 Route::get('/resep/{no_resep}', [ResepController::class, 'getResep'])->name('api.resep.get');
 Route::delete('/resep/{no_resep}', [ResepController::class, 'destroy'])->where('no_resep', '.*')->name('api.resep.delete');
 
+// API routes untuk diagnosa pasien (Rawat Jalan)
+Route::get('/rawat-jalan/diagnosa', [RawatJalanController::class, 'getDiagnosaPasien'])->name('api.rawat-jalan.diagnosa.index');
+Route::post('/rawat-jalan/diagnosa', [RawatJalanController::class, 'storeDiagnosaPasien'])->name('api.rawat-jalan.diagnosa.store');
+
 // API routes untuk dokter
 Route::get('/dokter', [DokterController::class, 'index'])->name('api.dokter.index');
 Route::get('/dokter/{kd_dokter}', [DokterController::class, 'show'])->name('api.dokter.show');
@@ -171,12 +185,17 @@ Route::get('/set-harga-obat', [SetHargaObatController::class, 'getPercentageData
 // Gudang Barang stock update
 Route::post('/gudangbarang/update-stok', [GudangBarangController::class, 'updateStok'])->name('api.gudangbarang.update-stok');
 
+// Departemen lookup (untuk mapping SATUSEHAT)
+Route::get('/departemen', [DepartemenController::class, 'index'])->name('api.departemen.index');
+
 Route::prefix('pcare')->group(function () {
     Route::get('/ping', [PcareController::class, 'ping'])->name('api.pcare.ping');
-    Route::match(['get','post','put','delete'], '/proxy/{endpoint}', [PcareController::class, 'proxy'])
-        ->where('endpoint','.*')
+    Route::match(['get', 'post', 'put', 'delete'], '/proxy/{endpoint}', [PcareController::class, 'proxy'])
+        ->where('endpoint', '.*')
         ->name('api.pcare.proxy');
     Route::get('/dokter', [PcareController::class, 'getDokter'])->name('api.pcare.dokter');
+    // Referensi Diagnosa (PCare)
+    Route::get('/diagnosa', [PcareController::class, 'getDiagnosa'])->name('api.pcare.diagnosa');
     Route::get('/faskes', [PcareController::class, 'getFaskes'])->name('api.pcare.faskes');
     Route::get('/poli', [PcareController::class, 'getPoli'])->name('api.pcare.poli');
     Route::get('/kesadaran', [PcareController::class, 'getKesadaran'])->name('api.pcare.kesadaran');
@@ -192,7 +211,95 @@ Route::prefix('pcare')->group(function () {
     Route::get('/statuspulang', [PcareController::class, 'getStatusPulang'])->name('api.pcare.statuspulang');
     Route::get('/spesialis/rujuk/subspesialis/{kdSubSpesialis}/sarana/{kdSarana}/tglEstRujuk/{tglEstRujuk}', [PcareController::class, 'getFaskesRujukanSubSpesialis'])->name('api.pcare.faskes-rujukan.subspesialis');
     Route::get('/peserta/{noka}/{tglPelayanan}', [PcareController::class, 'pesertaByNoKartu'])->name('api.pcare.peserta-nokartu');
-    Route::post('/kunjungan', [PcareController::class, 'daftarKunjungan'])->name('api.pcare.kunjungan.store');
+    Route::post('/kunjungan', [PcareKunjunganController::class, 'store'])->name('api.pcare.kunjungan.store');
+    // Add Data Pendaftaran (PCare)
+    Route::post('/pendaftaran', [PcareController::class, 'addPendaftaran'])->name('api.pcare.pendaftaran.store');
+    // Get latest pendaftaran by nomor rawat
+    Route::get('/pendaftaran/rawat/{no_rawat}', [PcareController::class, 'getPendaftaranByRawat'])
+        ->where('no_rawat', '.*')
+        ->name('api.pcare.pendaftaran.by-rawat');
+    // Preview payload kunjungan by nomor rawat (without sending)
+    Route::get('/kunjungan/preview/{no_rawat}', [PcareKunjunganController::class, 'preview'])
+        ->where('no_rawat', '.*')
+        ->name('api.pcare.kunjungan.preview');
+    // Get rujukan subspesialis by nomor rawat
+    Route::get('/rujuk-subspesialis/rawat/{no_rawat}', [PcareController::class, 'getRujukanSubspesialisByRawat'])
+        ->where('no_rawat', '.*')
+        ->name('api.pcare.rujuk-subspesialis.by-rawat');
+    // Get kabupaten config
+    Route::get('/config/kabupaten', [PcareController::class, 'getKabupatenConfig'])
+        ->name('api.pcare.config.kabupaten');
+});
+
+// SATUSEHAT FHIR API relay endpoints
+Route::prefix('satusehat')->group(function () {
+    // Token (debug only, protect this route on production)
+    Route::get('/token', [SatuSehatController::class, 'token'])->name('api.satusehat.token');
+    // Token debug (menampilkan status & body error, tanpa mengekspos kredensial)
+    Route::get('/token-debug', [SatuSehatController::class, 'tokenDebug'])->name('api.satusehat.token-debug');
+    // CapabilityStatement
+    Route::get('/metadata', [SatuSehatController::class, 'metadata'])->name('api.satusehat.metadata');
+    // Get Organization by ID from .env
+    Route::get('/organization', [SatuSehatController::class, 'organization'])->name('api.satusehat.organization');
+    // List sub-organizations (unit/departemen) di bawah Organization induk
+    Route::get('/organization/subunits', [SatuSehatController::class, 'organizationSubunits'])->name('api.satusehat.organization.subunits');
+    // Update Organization di SATUSEHAT (PUT Organization/:id)
+    Route::put('/organization/{id}', [SatuSehatController::class, 'organizationUpdate'])->name('api.satusehat.organization.update');
+    // Location search (FHIR Location with optional filters: identifier, name, organization)
+    Route::get('/location', [SatuSehatController::class, 'locationSearch'])->name('api.satusehat.location.search');
+    // PATCH Location untuk update sebagian (sesuai katalog SATUSEHAT)
+    Route::patch('/location/{id}', [SatuSehatController::class, 'locationPatch'])->name('api.satusehat.location.patch');
+    // Coordinates config from .env
+    Route::get('/config/coordinates', [SatuSehatController::class, 'coordinates'])->name('api.satusehat.config.coordinates');
+    // Practitioner search by NIK
+    Route::get('/practitioner', [SatuSehatController::class, 'practitionerSearch'])->name('api.satusehat.practitioner.search');
+    // Patient search by NIK
+    Route::get('/patient', [SatuSehatController::class, 'patientSearch'])->name('api.satusehat.patient.search');
+    Route::prefix('rajal')->group(function () {
+        Route::post('/encounter', [SatuSehatRajalController::class, 'createEncounter'])->name('api.satusehat.rajal.encounter.create');
+        Route::put('/encounter/by-rawat/{no_rawat}', [SatuSehatRajalController::class, 'updateEncounterByRawat'])->where('no_rawat', '.*')->name('api.satusehat.rajal.encounter.update-by-rawat');
+        Route::get('/encounter/id-by-rawat/{no_rawat}', [SatuSehatRajalController::class, 'encounterIdByRawat'])->where('no_rawat', '.*')->name('api.satusehat.rajal.encounter.id-by-rawat');
+        Route::get('/encounter/describe', [SatuSehatRajalController::class, 'encounterTableDescribe'])->name('api.satusehat.rajal.encounter.describe');
+        Route::get('/diagnosa/describe', [SatuSehatRajalController::class, 'diagnosaPasienDescribe'])->name('api.satusehat.rajal.diagnosa.describe');
+        Route::post('/condition', [SatuSehatRajalController::class, 'createCondition'])->name('api.satusehat.rajal.condition.create');
+        Route::post('/observation', [SatuSehatRajalController::class, 'createObservation'])->name('api.satusehat.rajal.observation.create');
+        Route::post('/procedure', [SatuSehatRajalController::class, 'createProcedure'])->name('api.satusehat.rajal.procedure.create');
+        Route::post('/composition', [SatuSehatRajalController::class, 'createComposition'])->name('api.satusehat.rajal.composition.create');
+        Route::post('/bundle', [SatuSehatRajalController::class, 'createBundle'])->name('api.satusehat.rajal.bundle.create');
+        Route::post('/pipeline/by-rawat/{no_rawat}', [SatuSehatRajalController::class, 'pipelineByRawat'])
+            ->where('no_rawat', '.*')
+            ->name('api.satusehat.rajal.pipeline.by-rawat');
+    });
+    // CRUD Mapping Departemen ↔ Organization Subunit
+    Route::get('/mapping/departemen', [SatuSehatController::class, 'mappingDepartemenIndex'])->name('api.satusehat.mapping.departemen.index');
+    Route::post('/mapping/departemen', [SatuSehatController::class, 'mappingDepartemenStore'])->name('api.satusehat.mapping.departemen.store');
+    Route::put('/mapping/departemen/{dep_id}', [SatuSehatController::class, 'mappingDepartemenUpdate'])->name('api.satusehat.mapping.departemen.update');
+    Route::delete('/mapping/departemen/{dep_id}', [SatuSehatController::class, 'mappingDepartemenDestroy'])->name('api.satusehat.mapping.departemen.destroy');
+    // CRUD Mapping Lokasi Ralan (Poliklinik ↔ SATUSEHAT Location)
+    Route::get('/mapping/lokasi', [SatuSehatController::class, 'mappingLokasiIndex'])->name('api.satusehat.mapping.lokasi.index');
+    Route::post('/mapping/lokasi', [SatuSehatController::class, 'mappingLokasiStore'])->name('api.satusehat.mapping.lokasi.store');
+    Route::put('/mapping/lokasi/{kd_poli}', [SatuSehatController::class, 'mappingLokasiUpdate'])->name('api.satusehat.mapping.lokasi.update');
+    Route::delete('/mapping/lokasi/{kd_poli}', [SatuSehatController::class, 'mappingLokasiDestroy'])->name('api.satusehat.mapping.lokasi.destroy');
+// CRUD Mapping Lokasi Ranap (Kamar ↔ SATUSEHAT Location)
+Route::get('/mapping/lokasi-ranap', [SatuSehatController::class, 'mappingLokasiRanapIndex'])->name('api.satusehat.mapping.lokasi_ranap.index');
+Route::post('/mapping/lokasi-ranap', [SatuSehatController::class, 'mappingLokasiRanapStore'])->name('api.satusehat.mapping.lokasi_ranap.store');
+Route::put('/mapping/lokasi-ranap/{kd_kamar}', [SatuSehatController::class, 'mappingLokasiRanapUpdate'])->name('api.satusehat.mapping.lokasi_ranap.update');
+Route::delete('/mapping/lokasi-ranap/{kd_kamar}', [SatuSehatController::class, 'mappingLokasiRanapDestroy'])->name('api.satusehat.mapping.lokasi_ranap.destroy');
+// Referensi Kamar (untuk dropdown/select)
+Route::get('/ranap/kamar', [SatuSehatController::class, 'kamarList'])->name('api.satusehat.ranap.kamar');
+    // CRUD Mapping Lokasi Farmasi (Bangsal ↔ SATUSEHAT Location)
+    Route::get('/mapping/lokasi-farmasi', [SatuSehatController::class, 'mappingLokasiFarmasiIndex'])->name('api.satusehat.mapping.lokasi_farmasi.index');
+    Route::post('/mapping/lokasi-farmasi', [SatuSehatController::class, 'mappingLokasiFarmasiStore'])->name('api.satusehat.mapping.lokasi_farmasi.store');
+    Route::put('/mapping/lokasi-farmasi/{kd_bangsal}', [SatuSehatController::class, 'mappingLokasiFarmasiUpdate'])->name('api.satusehat.mapping.lokasi_farmasi.update');
+    Route::delete('/mapping/lokasi-farmasi/{kd_bangsal}', [SatuSehatController::class, 'mappingLokasiFarmasiDestroy'])->name('api.satusehat.mapping.lokasi_farmasi.destroy');
+    // Generic resource relay
+    // Batasi hanya ke resource FHIR umum agar tidak bentrok dengan endpoint khusus
+    Route::post('/{resource}', [SatuSehatController::class, 'createResource'])
+        ->where('resource', '^(?:Patient|Encounter|Observation|Condition|Composition|Procedure|Practitioner|Organization|Location|Bundle)$')
+        ->name('api.satusehat.create');
+    Route::get('/{resource}/{id}', [SatuSehatController::class, 'getResource'])
+        ->where('resource', '^(?:Patient|Encounter|Observation|Condition|Composition|Procedure|Practitioner|Organization|Location|Bundle)$')
+        ->name('api.satusehat.get');
 });
 // Mobile JKN API Routes
 Route::prefix('mobilejkn')->group(function () {
@@ -204,6 +311,10 @@ Route::prefix('mobilejkn')->group(function () {
     Route::get('/ref/dokter', [MobileJknController::class, 'getReferensiDokter'])->name('api.mobilejkn.ref.dokter');
     // Tambah Antrean
     Route::post('/antrean/add', [MobileJknController::class, 'addAntrean'])->name('api.mobilejkn.antrean.add');
+    // Panggil/Update Status Antrean
+    Route::post('/antrean/panggil', [MobileJknController::class, 'panggilAntrean'])->name('api.mobilejkn.antrean.panggil');
+    // Batal Antrean
+    Route::post('/antrean/batal', [MobileJknController::class, 'batalAntrean'])->name('api.mobilejkn.antrean.batal');
 });
 
 // Jadwal API Routes
@@ -229,3 +340,6 @@ Route::prefix('v1/rs')->group(function () {
     // Cari poliklinik RS dari tabel lokal 'poliklinik'
     Route::get('/poliklinik', [PcareController::class, 'searchPoliklinikRs'])->name('api.v1.rs.poliklinik');
 });
+
+// Poliklinik lookup (SearchableSelect) - ringan tanpa auth
+Route::get('/poliklinik', [PoliklinikController::class, 'apiIndex'])->name('api.poliklinik.index');

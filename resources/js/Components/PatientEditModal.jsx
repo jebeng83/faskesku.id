@@ -3,6 +3,7 @@ import { useForm, router } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { route } from "ziggy-js";
 import SelectWithAdd from "@/Components/SelectWithAdd";
+import SearchableSelect from "@/Components/SearchableSelect";
 import PenjabCreateModal from "@/Components/PenjabCreateModal";
 import WilayahSearchableSelect from "@/Components/WilayahSearchableSelect";
 import AddressDisplay from "@/Components/AddressDisplay";
@@ -14,6 +15,14 @@ export default function PatientEditModal({ isOpen, onClose, patient, onSuccess }
   const [isPenjabModalOpen, setIsPenjabModalOpen] = useState(false);
   const [selectedWilayah, setSelectedWilayah] = useState(null);
   const [loadingWilayah, setLoadingWilayah] = useState(false);
+  // Reference dropdowns
+  const [perusahaanOptions, setPerusahaanOptions] = useState([]);
+  const [sukuOptions, setSukuOptions] = useState([]);
+  const [bahasaOptions, setBahasaOptions] = useState([]);
+  const [cacatOptions, setCacatOptions] = useState([]);
+  // Local state untuk kontrol dropdown pekerjaan dengan opsi "LAINNYA"
+  const [pekerjaanOption, setPekerjaanOption] = useState("");
+  const [pekerjaanOther, setPekerjaanOther] = useState("");
 
   // Helper: normalize various date formats (e.g. ISO "1988-02-22T00:00:00.000000Z") to "YYYY-MM-DD"
   const formatDateForInput = (value) => {
@@ -35,7 +44,7 @@ export default function PatientEditModal({ isOpen, onClose, patient, onSuccess }
     return "";
   };
 
-  const { data, setData, errors, reset } = useForm({
+  const { data, setData, errors, reset, post, transform } = useForm({
     nm_pasien: "",
     no_ktp: "",
     jk: "L",
@@ -62,6 +71,11 @@ export default function PatientEditModal({ isOpen, onClose, patient, onSuccess }
     kabupatenpj: "",
     propinsipj: "",
     email: "",
+    // Tambahan: field yang diperlukan backend
+    perusahaan_pasien: "",
+    suku_bangsa: "",
+    bahasa_pasien: "",
+    cacat_fisik: "",
   });
 
   // Custom submitting state because we use router.post with method spoofing
@@ -122,7 +136,40 @@ export default function PatientEditModal({ isOpen, onClose, patient, onSuccess }
         kabupatenpj: patient.kabupatenpj || "",
         propinsipj: patient.propinsipj || "",
         email: patient.email || "",
+        // Field tambahan yang sering wajib
+        perusahaan_pasien: patient.perusahaan_pasien || "",
+        suku_bangsa: patient.suku_bangsa || "",
+        bahasa_pasien: patient.bahasa_pasien || "",
+        cacat_fisik: patient.cacat_fisik || "",
       });
+
+      // Inisialisasi kontrol dropdown pekerjaan
+      const pekerjaanList = [
+        "KARYAWAN SWASTA",
+        "WIRASWASTA",
+        "PELAJAR",
+        "MAHASISWA",
+        "PNS",
+        "TNI/POLRI",
+        "IBU RUMAH TANGGA",
+        "PETANI",
+        "NELAYAN",
+        "BURUH",
+        "GURU",
+        "PERANGKAT DESA",
+        "TIDAK BEKERJA",
+      ];
+      const currentJob = (patient.pekerjaan || "").trim();
+      if (currentJob && pekerjaanList.includes(currentJob.toUpperCase())) {
+        setPekerjaanOption(currentJob.toUpperCase());
+        setPekerjaanOther("");
+      } else if (currentJob) {
+        setPekerjaanOption("LAINNYA");
+        setPekerjaanOther(currentJob);
+      } else {
+        setPekerjaanOption("");
+        setPekerjaanOther("");
+      }
 
       // If kode_wilayah exists (or can be built from kd_*), fetch its full address for display
       const loadWilayahDetails = async () => {
@@ -229,6 +276,40 @@ export default function PatientEditModal({ isOpen, onClose, patient, onSuccess }
     }
   }, [isOpen, patient, setData]);
 
+  // Load reference options when modal opens
+  useEffect(() => {
+    if (!isOpen) return;
+    const loadRefs = async () => {
+      try {
+        const [perusahaanRes, sukuRes, bahasaRes, cacatRes] = await Promise.all([
+          fetch("/api/perusahaan-pasien"),
+          fetch("/api/suku-bangsa"),
+          fetch("/api/bahasa-pasien"),
+          fetch("/api/cacat-fisik"),
+        ]);
+        if (perusahaanRes.ok) {
+          const r = await perusahaanRes.json();
+          setPerusahaanOptions((r.data || []).map((d) => ({ value: d.value, label: d.label })));
+        }
+        if (sukuRes.ok) {
+          const r = await sukuRes.json();
+          setSukuOptions((r.data || []).map((d) => ({ value: d.value, label: d.label })));
+        }
+        if (bahasaRes.ok) {
+          const r = await bahasaRes.json();
+          setBahasaOptions((r.data || []).map((d) => ({ value: d.value, label: d.label })));
+        }
+        if (cacatRes.ok) {
+          const r = await cacatRes.json();
+          setCacatOptions((r.data || []).map((d) => ({ value: d.value, label: d.label })));
+        }
+      } catch (e) {
+        console.error("Error loading reference options:", e);
+      }
+    };
+    loadRefs();
+  }, [isOpen]);
+
   const getErrorMessage = (fieldName) => {
     if (!errors[fieldName]) return null;
     return Array.isArray(errors[fieldName]) ? errors[fieldName][0] : errors[fieldName];
@@ -318,36 +399,32 @@ export default function PatientEditModal({ isOpen, onClose, patient, onSuccess }
       return;
     }
 
-    // Validasi sisi-klien untuk kode_wilayah agar tidak kena 422 di server
-    const kw = String(data.kode_wilayah || "").trim();
-    if (!kw || !isValidWilayahCode(kw)) {
-      alert("Kelurahan/Desa belum dipilih atau kode wilayah tidak valid. Silakan pilih kelurahan/desa yang benar.");
-      return;
+    // Jika opsi pekerjaan adalah LAINNYA, pastikan nilai custom terisi ke data.pekerjaan
+    if (pekerjaanOption === "LAINNYA") {
+      setData("pekerjaan", pekerjaanOther.trim());
     }
 
-    // Include CSRF token explicitly because Inertia router uses fetch (not Axios)
-    const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || '';
-
-    // Use method spoofing to avoid 405 for PUT (POST + _method=PUT)
-    router.post(
-      route("patients.update", patient.no_rkm_medis),
-      { ...data, _method: "PUT", _token: csrfToken },
-      {
-        forceFormData: true,
-        preserveScroll: true,
-        onStart: () => setIsSubmitting(true),
-        onSuccess: () => {
-          alert("Data pasien berhasil diperbarui!");
-          if (onSuccess) onSuccess({ ...data });
-          onClose();
-        },
-        onError: (errs) => {
-          console.error("Update errors:", errs);
-          alert("Terjadi kesalahan saat memperbarui data pasien");
-        },
-        onFinish: () => setIsSubmitting(false),
-      }
-    );
+    // Method spoofing PUT seperti implementasi halaman Edit Pasien
+    transform((payload) => ({ ...payload, _method: "PUT" }));
+    post(route("patients.update", patient.no_rkm_medis), {
+      forceFormData: true,
+      preserveScroll: true,
+      onStart: () => setIsSubmitting(true),
+      onSuccess: () => {
+        alert("Data pasien berhasil diperbarui!");
+        if (onSuccess) onSuccess({ ...data });
+        onClose();
+      },
+      onError: (errs) => {
+        console.error("Update errors:", errs);
+        alert("Terjadi kesalahan saat memperbarui data pasien");
+      },
+      onFinish: () => {
+        setIsSubmitting(false);
+        // Kembalikan transform ke default agar tidak mempengaruhi submit lain
+        transform((payload) => payload);
+      },
+    });
   };
 
   return (
@@ -599,14 +676,53 @@ export default function PatientEditModal({ isOpen, onClose, patient, onSuccess }
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pekerjaan</label>
-                        <input
-                          type="text"
-                          name="pekerjaan"
-                          value={data.pekerjaan}
-                          onChange={(e) => setData("pekerjaan", e.target.value)}
+                        <select
+                          name="pekerjaan_select"
+                          value={pekerjaanOption}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setPekerjaanOption(val);
+                            if (val !== "LAINNYA") {
+                              setData("pekerjaan", val);
+                              setPekerjaanOther("");
+                            } else {
+                              setData("pekerjaan", pekerjaanOther.trim());
+                            }
+                          }}
                           className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                          placeholder="Masukkan pekerjaan"
-                        />
+                        >
+                          <option value="">- Pilih Pekerjaan -</option>
+                          <option value="KARYAWAN SWASTA">KARYAWAN SWASTA</option>
+                          <option value="WIRASWASTA">WIRASWASTA</option>
+                          <option value="PELAJAR">PELAJAR</option>
+                          <option value="MAHASISWA">MAHASISWA</option>
+                          <option value="PNS">PNS</option>
+                          <option value="TNI/POLRI">TNI/POLRI</option>
+                          <option value="IBU RUMAH TANGGA">IBU RUMAH TANGGA</option>
+                          <option value="PETANI">PETANI</option>
+                          <option value="NELAYAN">NELAYAN</option>
+                          <option value="BURUH">BURUH</option>
+                          <option value="GURU">GURU</option>
+                          <option value="PERANGKAT DESA">PERANGKAT DESA</option>
+                          <option value="TIDAK BEKERJA">TIDAK BEKERJA</option>
+                          <option value="LAINNYA">LAINNYA</option>
+                        </select>
+                        {pekerjaanOption === "LAINNYA" && (
+                          <div className="mt-2">
+                            <input
+                              type="text"
+                              name="pekerjaan"
+                              value={pekerjaanOther}
+                              onChange={(e) => {
+                                const v = e.target.value;
+                                setPekerjaanOther(v);
+                                setData("pekerjaan", v);
+                              }}
+                              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                              placeholder="Tuliskan pekerjaan"
+                            />
+                          </div>
+                        )}
                         {getErrorMessage("pekerjaan") && (
                           <p className="mt-1 text-xs text-red-600">{getErrorMessage("pekerjaan")}</p>
                         )}
@@ -632,14 +748,20 @@ export default function PatientEditModal({ isOpen, onClose, patient, onSuccess }
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Agama</label>
-                        <input
-                          type="text"
+                        <select
                           name="agama"
                           value={data.agama}
                           onChange={(e) => setData("agama", e.target.value)}
                           className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                          placeholder="Masukkan agama"
-                        />
+                        >
+                          <option value="">- Pilih Agama -</option>
+                          <option value="ISLAM">ISLAM</option>
+                          <option value="KRISTEN">KRISTEN</option>
+                          <option value="KATOLIK">KATOLIK</option>
+                          <option value="HINDU">HINDU</option>
+                          <option value="BUDHA">BUDHA</option>
+                          <option value="KONG HU CHU">KONG HU CHU</option>
+                        </select>
                         {getErrorMessage("agama") && (
                           <p className="mt-1 text-xs text-red-600">{getErrorMessage("agama")}</p>
                         )}
@@ -683,6 +805,73 @@ export default function PatientEditModal({ isOpen, onClose, patient, onSuccess }
                         />
                         {getErrorMessage("no_peserta") && (
                           <p className="mt-1 text-xs text-red-600">{getErrorMessage("no_peserta")}</p>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  {/* Informasi Administrasi (Perusahaan, Suku Bangsa, Bahasa, Cacat Fisik) */}
+                  <motion.div
+                    className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: 0.4 }}
+                  >
+                    <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Informasi Administrasi</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Perusahaan Pasien *</label>
+                        <SearchableSelect
+                          options={perusahaanOptions}
+                          value={data.perusahaan_pasien}
+                          onChange={(val) => setData("perusahaan_pasien", val)}
+                          placeholder="Pilih atau cari perusahaan pasien"
+                          displayKey="label"
+                          valueKey="value"
+                          searchPlaceholder="Ketik nama perusahaan..."
+                          error={!!getErrorMessage("perusahaan_pasien")}
+                        />
+                        {getErrorMessage("perusahaan_pasien") && (
+                          <p className="mt-1 text-xs text-red-600">{getErrorMessage("perusahaan_pasien")}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Suku Bangsa *</label>
+                        <SearchableSelect
+                          options={sukuOptions}
+                          value={data.suku_bangsa}
+                          onChange={(val) => setData("suku_bangsa", val)}
+                          placeholder="Pilih suku bangsa"
+                          error={!!getErrorMessage("suku_bangsa")}
+                        />
+                        {getErrorMessage("suku_bangsa") && (
+                          <p className="mt-1 text-xs text-red-600">{getErrorMessage("suku_bangsa")}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Bahasa Pasien *</label>
+                        <SearchableSelect
+                          options={bahasaOptions}
+                          value={data.bahasa_pasien}
+                          onChange={(val) => setData("bahasa_pasien", val)}
+                          placeholder="Pilih bahasa pasien"
+                          error={!!getErrorMessage("bahasa_pasien")}
+                        />
+                        {getErrorMessage("bahasa_pasien") && (
+                          <p className="mt-1 text-xs text-red-600">{getErrorMessage("bahasa_pasien")}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cacat Fisik *</label>
+                        <SearchableSelect
+                          options={cacatOptions}
+                          value={data.cacat_fisik}
+                          onChange={(val) => setData("cacat_fisik", val)}
+                          placeholder="Pilih cacat fisik"
+                          error={!!getErrorMessage("cacat_fisik")}
+                        />
+                        {getErrorMessage("cacat_fisik") && (
+                          <p className="mt-1 text-xs text-red-600">{getErrorMessage("cacat_fisik")}</p>
                         )}
                       </div>
                     </div>
@@ -823,7 +1012,7 @@ export default function PatientEditModal({ isOpen, onClose, patient, onSuccess }
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
                       )}
-                      {isSubmitting ? "Menyimpan..." : "Perbarui Data"}
+                      {isSubmitting ? "Menyimpan..." : "Perbaharui Data"}
                     </motion.button>
                   </motion.div>
                 </form>

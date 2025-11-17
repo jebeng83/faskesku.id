@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Link, usePage } from "@inertiajs/react";
+import { Link, usePage, router } from "@inertiajs/react";
 import { ChevronDownIcon, ChevronRightIcon, Bars3Icon, ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 import { route } from "ziggy-js";
+import { getRawatJalanFilters } from '@/tools/rawatJalanFilters';
 
 // Helper to resolve a route name robustly by trying common variants (casing/spacing)
 const resolveRouteUrl = (routeName, absolute = false) => {
@@ -28,12 +29,33 @@ const resolveRouteUrl = (routeName, absolute = false) => {
     return null;
 };
 
+// Menentukan apakah sebuah menu dianggap "aktif/terlihat" berdasarkan beberapa kemungkinan kolom status
+const isMenuEnabled = (menu) => {
+    if (!menu || typeof menu !== "object") return false;
+    // Jika ada salah satu kolom status dan nilainya false/0, anggap tidak aktif
+    const flags = ["active", "is_active", "enabled", "status"];
+    for (const key of flags) {
+        if (Object.prototype.hasOwnProperty.call(menu, key)) {
+            const val = menu[key];
+            if (val === false || val === 0 || val === "0" || val === "inactive" || val === "disabled") {
+                return false;
+            }
+        }
+    }
+    return true;
+};
+
 export default function SidebarMenu({
     collapsed = false,
     title = "Faskesku",
     onToggle,
 }) {
-    const { menu_hierarchy, current_menu } = usePage().props;
+    const { menu_hierarchy = [], current_menu } = usePage().props;
+    const normalizedMenus = Array.isArray(menu_hierarchy)
+        ? menu_hierarchy
+        : menu_hierarchy && typeof menu_hierarchy === "object"
+            ? Object.values(menu_hierarchy)
+            : [];
     const [expandedMenus, setExpandedMenus] = useState(new Set());
     // Drawer state untuk mobile (efek slide-in + overlay)
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -85,7 +107,7 @@ export default function SidebarMenu({
 
 	// Auto-expand menus that have active children
 	useEffect(() => {
-		if (!menu_hierarchy || !current_menu) return;
+		if (!normalizedMenus.length || !current_menu) return;
 
 		const findParentMenus = (menus, targetMenuId, parentIds = []) => {
 			for (const menu of menus) {
@@ -106,11 +128,11 @@ export default function SidebarMenu({
 			return [];
 		};
 
-		const parentIds = findParentMenus(menu_hierarchy, current_menu.id);
+		const parentIds = findParentMenus(normalizedMenus, current_menu.id);
 		if (parentIds.length > 0) {
 			setExpandedMenus(new Set(parentIds));
 		}
-	}, [menu_hierarchy, current_menu]);
+	}, [normalizedMenus, current_menu]);
 
 	const toggleExpanded = (menuId) => {
 		const newExpanded = new Set(expandedMenus);
@@ -206,6 +228,19 @@ export default function SidebarMenu({
                 return "/farmasi";
             }
         }
+        // Special case: Bridging root menu should open SATUSEHAT menu page
+        // This helps when the sidebar has a generic "Bridging" menu without a direct URL
+        if (
+            (menu.slug && menu.slug.replace(/\s+/g, "-").toLowerCase() === "bridging") ||
+            (menu.name && menu.name.replace(/\s+/g, "-").toLowerCase().includes("bridging"))
+        ) {
+            try {
+                return route("satusehat.index", {}, false);
+            } catch (error) {
+                console.warn("Route satusehat.index not found, falling back to /satusehat");
+                return "/satusehat";
+            }
+        }
         // Special case: PCare root menu should navigate directly to PCare Index
         if (
             (menu.slug && (menu.slug === "pcare" || menu.slug === "bridging-pcare")) ||
@@ -234,21 +269,8 @@ export default function SidebarMenu({
                 );
             }
 
-            // Read saved filters from localStorage (if available)
-            let kd_dokter = "";
-            let kd_poli = "";
-            try {
-                if (typeof window !== "undefined" && window.localStorage) {
-                    const saved = window.localStorage.getItem("rawatJalanFilters");
-                    if (saved) {
-                        const parsed = JSON.parse(saved);
-                        kd_dokter = parsed?.kd_dokter || "";
-                        kd_poli = parsed?.kd_poli || "";
-                    }
-                }
-            } catch (e) {
-                // ignore JSON parse errors
-            }
+            // Read saved filters via helper for consistency
+            const { kd_dokter = "", kd_poli = "" } = getRawatJalanFilters();
 
             try {
                 const u = new URL(basePath, window.location.origin);
@@ -354,11 +376,17 @@ export default function SidebarMenu({
 	};
 
 	const renderMenuItem = (menu, level = 0) => {
-		const children = menu.active_children_recursive || menu.children || [];
+		const rawChildren = menu.active_children_recursive || menu.children || [];
+        // Tampilkan dropdown hanya untuk anak-anak yang benar-benar aktif/terlihat
+        const children = (rawChildren || []).filter(isMenuEnabled);
 		const hasChildren = children && children.length > 0;
 		const isExpanded = expandedMenus.has(menu.id);
 		const isActive = isMenuActive(menu);
 		const menuUrl = getMenuUrl(menu);
+        const isBridgingRoot = (
+            (menu.slug && menu.slug.replace(/\s+/g, "-").toLowerCase() === "bridging") ||
+            (menu.name && menu.name.replace(/\s+/g, "-").toLowerCase().includes("bridging"))
+        ) && !(menu.name && menu.name.toLowerCase().includes("pcare"));
 
 		if (collapsed) {
 			// In collapsed mode, only render top-level icons (handled in renderCollapsed)
@@ -377,7 +405,14 @@ export default function SidebarMenu({
 				>
                     {hasChildren ? (
                         <motion.button
-                            onClick={() => toggleExpanded(menu.id)}
+                            onClick={() => {
+                                if (isBridgingRoot && menuUrl && menuUrl !== "#") {
+                                    // Navigasi langsung ke halaman SATUSEHAT ketika klik menu Bridging
+                                    router.visit(menuUrl);
+                                    return;
+                                }
+                                toggleExpanded(menu.id);
+                            }}
                             className={`relative w-full flex items-center px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 group ${
                                 (isActive || isExpanded)
                                     ? "text-blue-600 dark:text-blue-500"
@@ -499,7 +534,7 @@ export default function SidebarMenu({
 		);
 	};
 
-	if (!menu_hierarchy || menu_hierarchy.length === 0) {
+	if (!normalizedMenus || normalizedMenus.length === 0) {
 		return (
 			<div className="px-4 py-8 text-center text-gray-500">
 				<p className="text-sm">Tidak ada menu yang tersedia</p>
@@ -534,7 +569,7 @@ export default function SidebarMenu({
                                 </div>
                             </div>
                         </div>
-                        <nav className="px-1 pb-2 flex-1">{renderCollapsed(menu_hierarchy)}</nav>
+                        <nav className="px-1 pb-2 flex-1">{renderCollapsed(normalizedMenus)}</nav>
                     </>
                 ) : (
                     <>
@@ -552,7 +587,7 @@ export default function SidebarMenu({
                         </div>
                         <motion.nav className="px-4 py-4 pb-4 space-y-1 flex-1" variants={listVariants} initial="hidden" animate="show">
                             <motion.ul className="space-y-1" variants={listVariants}>
-                                {menu_hierarchy.map((menu) => renderMenuItem(menu))}
+                                {normalizedMenus.map((menu) => renderMenuItem(menu))}
                             </motion.ul>
                         </motion.nav>
                     </>
@@ -602,7 +637,7 @@ export default function SidebarMenu({
                                 </div>
                                 <motion.nav className="px-4 py-4 pb-4 space-y-1 flex-1 overflow-y-auto" variants={listVariants} initial="hidden" animate="show">
                                     <motion.ul className="space-y-1" variants={listVariants}>
-                                        {menu_hierarchy.map((menu) => renderMenuItem(menu))}
+                                {normalizedMenus.map((menu) => renderMenuItem(menu))}
                                     </motion.ul>
                                 </motion.nav>
                             </div>

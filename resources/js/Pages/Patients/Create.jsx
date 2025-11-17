@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { Head, Link, useForm, Form } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import AppLayout from "@/Layouts/AppLayout";
+import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
 import SelectWithAdd from "@/Components/SelectWithAdd";
 import PenjabCreateModal from "@/Components/PenjabCreateModal";
 import SearchableSelect from "@/Components/SearchableSelect";
@@ -9,6 +10,20 @@ import WilayahSearchableSelect from "@/Components/WilayahSearchableSelect";
 import AddressDisplay from "@/Components/AddressDisplay";
 
 export default function Create() {
+    // Variants for subtle, performant micro-interactions
+    const containerVariants = {
+        hidden: { opacity: 0, y: 8 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: { staggerChildren: 0.06, ease: "easeOut" },
+        },
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 8 },
+        visible: { opacity: 1, y: 0 },
+    };
     const [penjabOptions, setPenjabOptions] = useState([]);
     const [isPenjabModalOpen, setIsPenjabModalOpen] = useState(false);
     const [selectedWilayah, setSelectedWilayah] = useState(null);
@@ -231,14 +246,18 @@ export default function Create() {
 	};
 
 	return (
-		<AppLayout>
+		<LanjutanRegistrasiLayout
+            title="Registrasi Pasien"
+            menuConfig={{ activeTab: 'pasien' }}
+        >
 			<Head title="Tambah Pasien Baru" />
 
-			<div className="py-6">
+            <motion.div className="py-6" initial="hidden" animate="visible" variants={containerVariants}>
 				<div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-					{/* Header */}
-					<div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-						<div className="p-6">
+                    {/* Header */}
+                    <motion.div variants={itemVariants} className="relative overflow-visible mb-6">
+                        <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-br from-blue-500/15 via-purple-500/15 to-indigo-500/15 dark:from-blue-600/10 dark:via-purple-600/10 dark:to-indigo-600/10" />
+                        <div className="p-6 rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg">
 							<div className="flex justify-between items-center">
 								<div>
 									<h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -248,10 +267,10 @@ export default function Create() {
 										Masukkan data pasien baru ke dalam sistem
 									</p>
 								</div>
-								<Link
-									href={route("patients.index")}
-									className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-								>
+                                <Link
+                                    href={route("patients.index")}
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-700/80 hover:bg-gray-700 text-white transition-colors"
+                                >
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
 										viewBox="0 0 24 24"
@@ -265,12 +284,12 @@ export default function Create() {
 										/>
 									</svg>
 									Kembali
-								</Link>
-                                </div>
+                                </Link>
                             </div>
                         </div>
+                    </motion.div>
 
-					{/* Form */}
+                    {/* Form */}
 					<form
 						onSubmit={(e) => {
 							e.preventDefault();
@@ -278,9 +297,9 @@ export default function Create() {
 						}}
 						className="space-y-6"
 					>
-						{/* Basic Information */}
-						<div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-							<div className="p-6">
+                        {/* Basic Information */}
+                        <div className="relative overflow-visible rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg">
+                            <div className="p-6">
 								<h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
 									Informasi Dasar
 								</h3>
@@ -456,8 +475,8 @@ export default function Create() {
 							</div>
 						</div>
 
-						{/* Contact Information */}
-						<div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        {/* Contact Information */}
+                        <div className="bg-white dark:bg-gray-800 overflow-visible shadow-sm sm:rounded-lg">
 							<div className="p-6">
 								<h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
 									Informasi Kontak
@@ -523,8 +542,8 @@ export default function Create() {
 							</div>
 						</div>
 
-						{/* Additional Information */}
-						<div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        {/* Additional Information */}
+                        <div className="bg-white dark:bg-gray-800 overflow-visible shadow-sm sm:rounded-lg">
 							<div className="p-6">
 								<h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
 									Informasi Tambahan
@@ -669,7 +688,7 @@ export default function Create() {
                         </div>
 
 						{/* Family Information */}
-						<div className="bg-white dark:bg-gray-800 overflow-visible shadow-sm sm:rounded-lg mb-8">
+                        <div className="relative overflow-visible rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg mb-8">
 							<div className="p-6">
 								<h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
 									Informasi Keluarga
@@ -799,7 +818,7 @@ export default function Create() {
 						</div>
 
                         {/* Referensi Tambahan (Perusahaan, Suku Bangsa, Bahasa, Cacat Fisik, NIP) */}
-                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <div className="bg-white dark:bg-gray-800 overflow-visible shadow-sm sm:rounded-lg">
                             <div className="p-6">
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                                     Informasi Administrasi
@@ -942,7 +961,7 @@ export default function Create() {
                         </div>
 
                         {/* Submit Button */}
-                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <div className="relative overflow-visible rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg">
                             <div className="p-6">
                                 <div className="flex justify-end gap-4">
                                     <Link
@@ -969,7 +988,7 @@ export default function Create() {
 						onSuccess={handlePenjabSuccess}
 					/>
 				</div>
-			</div>
-		</AppLayout>
+			</motion.div>
+		</LanjutanRegistrasiLayout>
 	);
 }
