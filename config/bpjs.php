@@ -3,8 +3,10 @@
 return [
     // Konfigurasi BPJS (khusus PCare) dibaca dari .env dan dicache oleh Laravel
     'pcare' => [
-        'base_url' => env('BPJS_PCARE_BASE_URL'),
-        'kode_ppk' => env('BPJS_PCARE_KODE_PPK'),
+        // Beri default base URL agar tidak null ketika env belum terbaca
+        'base_url' => env('BPJS_PCARE_BASE_URL', 'https://apijkn.bpjs-kesehatan.go.id/pcare-rest'),
+        // Defaultkan ke kode PPK yang diinginkan bila env tidak terbaca
+        'kode_ppk' => env('BPJS_PCARE_KODE_PPK', '11251616'),
         'app_code' => env('BPJS_PCARE_APP_CODE', '095'),
         'kabupaten' => env('BPJS_PCARE_KABUPATEN', ''),
         // Fallback env untuk kredensial (umumnya diambil dari DB table setting_bridging_bpjs)

@@ -19,6 +19,8 @@ trait BpjsTraits
     {
         // Ambil satu baris konfigurasi dari tabel setting_bridging_bpjs
         $row = DB::table('setting_bridging_bpjs')->first();
+        // Fallback tambahan: beberapa instalasi menyimpan kode_ppk pada tabel 'setting'
+        $setting = DB::table('setting')->first();
     
         return [
             // Gunakan config() agar nilai dari .env tetap tersedia saat config di-cache
@@ -30,7 +32,8 @@ trait BpjsTraits
             'user_key' => (string) ($row?->userkey_pcare ?? ''),
             'user' => $row?->user_pcare ?? config('bpjs.pcare.user'),
             'pass' => $row?->pass_pcare ?? config('bpjs.pcare.pass'),
-            'kode_ppk' => config('bpjs.pcare.kode_ppk'),
+            // kode_ppk diutamakan dari config; jika null, fallback ke tabel 'setting'
+            'kode_ppk' => config('bpjs.pcare.kode_ppk') ?: ($setting->kode_ppk ?? null),
             'app_code' => config('bpjs.pcare.app_code'),
         ];
     }
