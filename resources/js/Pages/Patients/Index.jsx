@@ -1,18 +1,31 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { createPortal } from "react-dom";
 import { Head, Link, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
 import Alert from "@/Components/Alert";
+import { motion } from "framer-motion";
+import {
+    ArrowPathIcon,
+    CheckCircleIcon,
+    ExclamationTriangleIcon,
+    IdentificationIcon,
+    MagnifyingGlassIcon,
+    ClipboardDocumentCheckIcon,
+    XMarkIcon,
+} from "@heroicons/react/24/outline";
 
 export default function Index({
-	patients,
-	filters,
-	dokters,
-	polikliniks,
-	penjabs,
+    patients,
+    filters,
+    dokters,
+    polikliniks,
+    penjabs,
 }) {
 	const [search, setSearch] = useState(filters.search || "");
 	const [openDropdown, setOpenDropdown] = useState(null);
+	const [dropdownRect, setDropdownRect] = useState(null);
 	const [showRegisterModal, setShowRegisterModal] = useState(false);
 	const [selectedPatient, setSelectedPatient] = useState(null);
 	const [formData, setFormData] = useState({
@@ -35,7 +48,25 @@ export default function Index({
 		message: "",
 		autoClose: false,
 	});
-	const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Kunjungan Sehat (PCare) modal states
+    const [showKunjunganSehatModal, setShowKunjunganSehatModal] = useState(false);
+    const [kunjunganSehatPatient, setKunjunganSehatPatient] = useState(null);
+    const [nikKunjungan, setNikKunjungan] = useState("");
+    const [pcareLoading, setPcareLoading] = useState(false);
+    const [pcareError, setPcareError] = useState(null);
+    const [pcareData, setPcareData] = useState(null); // { response, metaData }
+
+    // Motion variants for lightweight, elegant transitions
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        show: { opacity: 1, transition: { staggerChildren: 0.06 } },
+    };
+    const itemVariants = {
+        hidden: { opacity: 0, y: 8 },
+        show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: "easeOut" } },
+    };
 
 	const handleSearch = (e) => {
 		e.preventDefault();
@@ -55,12 +86,22 @@ export default function Index({
 		}
 	};
 
-	const toggleDropdown = (patientId) => {
-		setOpenDropdown(openDropdown === patientId ? null : patientId);
+	const toggleDropdown = (patientId, anchorEl) => {
+		if (openDropdown === patientId) {
+			setOpenDropdown(null);
+			setDropdownRect(null);
+		} else {
+			setOpenDropdown(patientId);
+			if (anchorEl) {
+				const rect = anchorEl.getBoundingClientRect();
+				setDropdownRect(rect);
+			}
+		}
 	};
 
 	const closeDropdown = () => {
 		setOpenDropdown(null);
+		setDropdownRect(null);
 	};
 
 	const handleRegisterPeriksa = (patient) => {
@@ -81,6 +122,125 @@ export default function Index({
 		setShowRegisterModal(true);
 		closeDropdown();
 	};
+
+    // Helpers for Kunjungan Sehat
+    const sanitizeNik = (value) => String(value || "").replace(/[^0-9]/g, "").slice(0, 16);
+    const copyToClipboard = async (text) => {
+        try { await navigator.clipboard.writeText(text || ""); } catch (_) {}
+    };
+
+    const openKunjunganSehat = async (patient) => {
+        setKunjunganSehatPatient(patient);
+        const nik = sanitizeNik(patient?.no_ktp || "");
+        setNikKunjungan(nik);
+        setPcareError(null);
+        setPcareData(null);
+        setShowKunjunganSehatModal(true);
+        // Auto fetch peserta PCare by NIK saat modal dibuka
+        if (nik && nik.length >= 8) {
+            await fetchPcareByNik(nik);
+        } else {
+            setPcareError("NIK pasien tidak valid atau kosong.");
+        }
+        closeDropdown();
+    };
+
+    const closeKunjunganSehatModal = () => {
+        setShowKunjunganSehatModal(false);
+        setKunjunganSehatPatient(null);
+        setNikKunjungan("");
+        setPcareLoading(false);
+        setPcareError(null);
+        setPcareData(null);
+    };
+
+    const fetchPcareByNik = async (nik) => {
+        const n = sanitizeNik(nik);
+        setNikKunjungan(n);
+        setPcareError(null);
+        setPcareData(null);
+        if (!n || n.length < 8) {
+            setPcareError("Masukkan NIK yang valid (min. 8 digit, ideal 16 digit).");
+            return;
+        }
+        setPcareLoading(true);
+        try {
+            const params = new URLSearchParams({ nik: n });
+            const { data } = await axios.get(`/pcare/api/peserta/nik?${params.toString()}`, {
+                withCredentials: true,
+                headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+            });
+            setPcareData(data);
+        } catch (e) {
+            setPcareError(e?.response?.data?.metaData?.message || e?.message || "Terjadi kesalahan jaringan");
+        } finally {
+            setPcareLoading(false);
+        }
+    };
+
+    const sendKunjunganSehat = async () => {
+        const resp = pcareData?.response || null;
+        const noKartuFromResp = String(resp?.noKartu || "").replace(/[^0-9]/g, "");
+        const noKartuFromPatient = String(kunjunganSehatPatient?.no_peserta || "").replace(/[^0-9]/g, "");
+        const noKartu = noKartuFromResp || noKartuFromPatient;
+
+        if (!noKartu || noKartu.length !== 13) {
+            setAlertConfig({
+                type: "error",
+                title: "Nomor Kartu tidak valid",
+                message: "Tidak dapat mengirim Kunjungan Sehat: No. Kartu BPJS harus 13 digit.",
+                autoClose: false,
+            });
+            setShowAlert(true);
+            return;
+        }
+
+        try {
+            setIsSubmitting(true);
+            const payload = {
+                kdProviderPeserta: pcareData?.response?.kdProviderPst?.kdProvider || undefined,
+                tglDaftar: new Date().toISOString().slice(0, 10),
+                noKartu,
+                kdPoli: "021",
+                kd_poli_rs: formData?.kd_poli || undefined,
+                keluhan: "Konsultasi Kesehatan",
+                kunjSakit: false,
+                sistole: "0",
+                diastole: "0",
+                beratBadan: "0",
+                tinggiBadan: "0",
+                respRate: "0",
+                lingkarPerut: "0",
+                heartRate: "0",
+                rujukBalik: "0",
+                kdTkp: "10",
+            };
+            const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || '';
+            const { data: json } = await axios.post(`/pcare/api/kunjungan-sehat`, payload, {
+                withCredentials: true,
+                headers: {
+                    Accept: "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRF-TOKEN": csrfToken,
+                },
+            });
+            setAlertConfig({
+                type: "success",
+                title: "Berhasil Kirim Kunjungan Sehat",
+                message: (json?.metaData?.message || "Berhasil!") + (json?.response?.noKunjungan ? ` (No. Kunjungan: ${json.response.noKunjungan})` : ""),
+                autoClose: true,
+                autoCloseDelay: 3000,
+            });
+            setShowAlert(true);
+            closeKunjunganSehatModal();
+        } catch (e) {
+            const msg = e?.response?.data?.metaData?.message || e?.message || "Tidak dapat menghubungi server.";
+            setAlertConfig({ type: "error", title: "Kesalahan Jaringan", message: msg, autoClose: false });
+            setShowAlert(true);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
 	const handleFormChange = (e) => {
 		const { name, value } = e.target;
@@ -184,16 +344,37 @@ export default function Index({
 	// Close dropdown when clicking outside
 	useEffect(() => {
 		const handleClickOutside = (event) => {
-			if (openDropdown && !event.target.closest(".dropdown-container")) {
-				setOpenDropdown(null);
+			if (
+				openDropdown &&
+				!event.target.closest(".dropdown-container") &&
+				!event.target.closest(".dropdown-portal-menu")
+			) {
+				closeDropdown();
+			}
+		};
+
+		const handleScroll = () => {
+			if (openDropdown) {
+				closeDropdown();
+			}
+		};
+
+		const handleResize = () => {
+			if (openDropdown) {
+				setDropdownRect(null);
 			}
 		};
 
 		document.addEventListener("mousedown", handleClickOutside);
+		window.addEventListener("scroll", handleScroll);
+		window.addEventListener("resize", handleResize);
+
 		return () => {
 			document.removeEventListener("mousedown", handleClickOutside);
+			window.removeEventListener("scroll", handleScroll);
+			window.removeEventListener("resize", handleResize);
 		};
-	}, [openDropdown]);
+	}, [openDropdown, dropdownRect]);
 
     return (
         <LanjutanRegistrasiLayout
@@ -202,321 +383,367 @@ export default function Index({
         >
             <Head title="Data Pasien" />
 
-            <div className="space-y-6">
-				{/* Header */}
-				<div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-					<div className="p-6">
-						<div className="flex justify-between items-center">
-							<div>
-								<h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-									Data Pasien
-								</h2>
-								<p className="text-gray-600 dark:text-gray-400 mt-1"></p>
-							</div>
-							<Link
-								href={route("patients.create")}
-								className="bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 shadow-md hover:shadow-lg font-medium text-sm whitespace-nowrap transform hover:scale-105"
-							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									viewBox="0 0 24 24"
-									fill="currentColor"
-									className="w-4 h-4"
-								>
-									<path
-										fillRule="evenodd"
-										d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
-										clipRule="evenodd"
-									/>
-								</svg>
-								<span>Tambah Pasien</span>
-							</Link>
-						</div>
-					</div>
-				</div>
+            <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                className="space-y-6"
+            >
+                {/* Header */}
+                <motion.div
+                    variants={itemVariants}
+                    className="relative overflow-hidden rounded-2xl bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm border border-white/40 dark:border-gray-700/60 shadow-lg"
+                >
+                    <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-sky-500/10 via-emerald-500/10 to-indigo-500/10" />
+                    <div className="relative z-10 p-6 sm:p-8">
+                        <div className="flex justify-between items-center gap-4">
+                            <div>
+                                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+                                    Data Pasien
+                                </h2>
+                                <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm">
+                                    Kelola data pasien dengan tampilan yang modern dan responsif.
+                                </p>
+                            </div>
+                            <Link
+                                href={route("patients.create")}
+                                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg font-medium text-sm whitespace-nowrap"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="currentColor"
+                                    className="w-4 h-4"
+                                >
+                                    <path
+                                        fillRule="evenodd"
+                                        d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+                                        clipRule="evenodd"
+                                    />
+                                </svg>
+                                <span>Tambah Pasien</span>
+                            </Link>
+                        </div>
+                    </div>
+                </motion.div>
 
-				{/* Search and Filters */}
-				<div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-					<div className="p-6">
-						<form onSubmit={handleSearch} className="flex gap-4">
-							<div className="flex-1">
-								<input
-									type="text"
-									value={search}
-									onChange={(e) => setSearch(e.target.value)}
-									placeholder="Cari berdasarkan nama, NIK, no. RM, atau no. telepon..."
-									className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-								/>
-							</div>
-							<button
-								type="submit"
-								className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition-colors"
-							>
-								Cari
-							</button>
-							{search && (
-								<button
-									type="button"
-									onClick={() => {
-										setSearch("");
-										router.get(route("patients.index"));
-									}}
-									className="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-lg transition-colors"
-								>
-									Reset
-								</button>
-							)}
-						</form>
-					</div>
-				</div>
+                {/* Search and Filters */}
+                <motion.div
+                    variants={itemVariants}
+                    className="relative z-10 overflow-visible rounded-2xl bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm ring-1 ring-black/5 dark:ring-white/10 shadow-lg"
+                >
+                    <div className="relative z-10 p-6">
+                        <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3 items-stretch">
+                            <div className="flex-1">
+                                <input
+                                    type="text"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    placeholder="Cari berdasarkan nama, NIK, no. RM, atau no. telepon..."
+                                    className="w-full px-4 py-2 rounded-xl bg-white/80 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:border-transparent placeholder:text-gray-400 dark:placeholder:text-gray-400 text-gray-900 dark:text-white shadow-sm transition"
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                className="px-6 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-sm transition-all"
+                            >
+                                Cari
+                            </button>
+                            {search && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setSearch("");
+                                        router.get(route("patients.index"));
+                                    }}
+                                    className="px-6 py-2 rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 shadow-sm transition-colors"
+                                >
+                                    Reset
+                                </button>
+                            )}
+                        </form>
+                    </div>
+                </motion.div>
 
-				{/* Data Table */}
-				<div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-					<div className="overflow-x-auto">
-						<table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-							<thead className="bg-gray-50 dark:bg-gray-700">
-								<tr>
-									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-										No. RM
-									</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-										Nama Pasien
-									</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-										NIK
-									</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-										Jenis Kelamin
-									</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-										Umur
-									</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-										No. Telepon
-									</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-										Tgl. Daftar
-									</th>
-								</tr>
-							</thead>
-							<tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-								{patients.data.map((patient) => (
-									<tr
-										key={patient.no_rkm_medis}
-										className="hover:bg-gray-50 dark:hover:bg-gray-700"
-									>
-										<td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-											<div className="relative dropdown-container">
-												<button
-													onClick={() => toggleDropdown(patient.no_rkm_medis)}
-													className="flex items-center justify-between w-full px-3 py-2 text-sm font-mono text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
-												>
-													<span>{patient.no_rkm_medis}</span>
-													<svg
-														xmlns="http://www.w3.org/2000/svg"
-														viewBox="0 0 24 24"
-														fill="currentColor"
-														className={`w-4 h-4 transition-transform ${
-															openDropdown === patient.no_rkm_medis
-																? "rotate-180"
-																: ""
-														}`}
-													>
-														<path d="M7 10l5 5 5-5z" />
-													</svg>
-												</button>
+                {/* Data Table */}
+                <motion.div
+                    variants={itemVariants}
+                    className="relative z-30 overflow-visible rounded-2xl bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm shadow-lg ring-1 ring-black/5 dark:ring-white/10"
+                >
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead className="bg-gray-50/80 dark:bg-gray-700/60 backdrop-blur-sm">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        No. RM
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Nama Pasien
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        NIK
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Jenis Kelamin
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Umur
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        No. Telepon
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Tgl. Daftar
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white/70 dark:bg-gray-800/60 divide-y divide-gray-200 dark:divide-gray-700">
+                                {patients.data.map((patient) => (
+                                    <tr
+                                        key={patient.no_rkm_medis}
+                                        className="hover:bg-gray-50/80 dark:hover:bg-gray-700/50 transition-colors"
+                                    >
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                                            <div className="relative dropdown-container overflow-visible z-[1000]">
+                                                <button
+                                                    onClick={(e) => toggleDropdown(patient.no_rkm_medis, e.currentTarget)}
+                                                    className="flex items-center justify-between w-full px-3 py-2 text-sm font-mono text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                                                >
+                                                    <span>{patient.no_rkm_medis}</span>
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        viewBox="0 0 24 24"
+                                                        fill="currentColor"
+                                                        className={`w-4 h-4 transition-transform ${
+                                                            openDropdown === patient.no_rkm_medis
+                                                                ? "rotate-180"
+                                                                : ""
+                                                        }`}
+                                                    >
+                                                        <path d="M7 10l5 5 5-5z" />
+                                                    </svg>
+                                                </button>
 
-												{openDropdown === patient.no_rkm_medis && (
-													<div className="absolute z-10 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
-														<div className="py-1">
-															<Link
-																href={route(
-																	"patients.show",
-																	patient.no_rkm_medis
-																)}
-																onClick={closeDropdown}
-																className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-															>
-																<svg
-																	xmlns="http://www.w3.org/2000/svg"
-																	viewBox="0 0 24 24"
-																	fill="currentColor"
-																	className="w-4 h-4 mr-3 text-blue-600 dark:text-blue-400"
-																>
-																	<path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
-																	<path
-																		fillRule="evenodd"
-																		d="M1.323 11.447C2.811 6.976 7.028 3.75 12.001 3.75c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113-1.487 4.471-5.705 7.697-10.677 7.697-4.97 0-9.186-3.223-10.675-7.69a1.762 1.762 0 010-1.113zM17.25 12a5.25 5.25 0 11-10.5 0 5.25 5.25 0 0110.5 0z"
-																		clipRule="evenodd"
-																	/>
-																</svg>
-																Lihat Detail
-															</Link>
-															<Link
-																href={route(
-																	"patients.edit",
-																	patient.no_rkm_medis
-																)}
-																onClick={closeDropdown}
-																className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-															>
-																<svg
-																	xmlns="http://www.w3.org/2000/svg"
-																	viewBox="0 0 24 24"
-																	fill="currentColor"
-																	className="w-4 h-4 mr-3 text-green-600 dark:text-green-400"
-																>
-																	<path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32l8.4-8.4z" />
-																	<path d="M5.25 5.25a3 3 0 00-3 3v10.5a3 3 0 003 3h10.5a3 3 0 003-3V13.5a.75.75 0 00-1.5 0v5.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5V8.25a1.5 1.5 0 011.5-1.5h5.25a.75.75 0 000-1.5H5.25z" />
-																</svg>
-																Edit Data
-															</Link>
-															<button
-																onClick={() => handleRegisterPeriksa(patient)}
-																className="flex items-center w-full px-4 py-2 text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors"
-															>
-																<svg
-																	xmlns="http://www.w3.org/2000/svg"
-																	viewBox="0 0 24 24"
-																	fill="currentColor"
-																	className="w-4 h-4 mr-3"
-																>
-																	<path d="M11.25 4.533c0-1.036.84-1.875 1.875-1.875h7.5c1.036 0 1.875.84 1.875 1.875v7.5c0 1.036-.84 1.875-1.875 1.875h-7.5a1.875 1.875 0 01-1.875-1.875v-7.5zM12.75 6.75a.75.75 0 00-1.5 0v1.5a.75.75 0 001.5 0v-1.5zM12 9a.75.75 0 00-.75.75v1.5a.75.75 0 001.5 0v-1.5A.75.75 0 0012 9z" />
-																	<path d="M1.5 5.625c0-1.036.84-1.875 1.875-1.875h.75a.75.75 0 010 1.5h-.75a.375.375 0 00-.375.375v7.5c0 .207.168.375.375.375h.75a.75.75 0 010 1.5h-.75A1.875 1.875 0 011.5 18.375v-12.75zM6 5.625c0-1.036.84-1.875 1.875-1.875h.75a.75.75 0 010 1.5h-.75A.375.375 0 006 6.375v7.5c0 .207.168.375.375.375h.75a.75.75 0 010 1.5h-.75A1.875 1.875 0 016 18.375v-12.75z" />
-																</svg>
-																Daftar Periksa
-															</button>
-															<button
-																onClick={() => {
-																	closeDropdown();
-																	handleDelete(patient);
-																}}
-																className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-															>
-																<svg
-																	xmlns="http://www.w3.org/2000/svg"
-																	viewBox="0 0 24 24"
-																	fill="currentColor"
-																	className="w-4 h-4 mr-3"
-																>
-																	<path
-																		fillRule="evenodd"
-																		d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 00-6 0v-.113c0-.794.609-1.428 1.364-1.452a51.18 51.18 0 013.273 0z"
-																		clipRule="evenodd"
-																	/>
-																	<path d="M5.25 5.25a3 3 0 00-3 3v10.5a3 3 0 003 3h10.5a3 3 0 003-3V8.25a3 3 0 00-3-3H5.25z" />
-																</svg>
-																Hapus Data
-															</button>
-														</div>
-													</div>
-												)}
-											</div>
-										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-											{patient.nm_pasien}
-										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-											{patient.no_ktp || "-"}
-										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-											{patient.jk === "L" ? "Laki-laki" : "Perempuan"}
-										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-											{patient.umur}
-										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-											{patient.no_tlp || "-"}
-										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-											{patient.tgl_daftar
-												? new Date(patient.tgl_daftar).toLocaleDateString(
-														"id-ID"
-												  )
-												: "-"}
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
+                                                {openDropdown === patient.no_rkm_medis && dropdownRect &&
+                                                    createPortal(
+                                                        <div
+                                                            className="dropdown-portal-menu w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg"
+                                                            style={{
+                                                                position: "fixed",
+                                                                top: dropdownRect.bottom + 4,
+                                                                left: dropdownRect.left,
+                                                                zIndex: 10000,
+                                                            }}
+                                                        >
+                                                            <div className="py-1">
+                                                                <Link
+                                                                    href={route(
+                                                                        "patients.show",
+                                                                        patient.no_rkm_medis
+                                                                    )}
+                                                                    onClick={closeDropdown}
+                                                                    className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                                                >
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        viewBox="0 0 24 24"
+                                                                        fill="currentColor"
+                                                                        className="w-4 h-4 mr-3 text-blue-600 dark:text-blue-400"
+                                                                    >
+                                                                        <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
+                                                                        <path
+                                                                            fillRule="evenodd"
+                                                                            d="M1.323 11.447C2.811 6.976 7.028 3.75 12.001 3.75c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113-1.487 4.471-5.705 7.697-10.677 7.697-4.97 0-9.186-3.223-10.675-7.69a1.762 1.762 0 010-1.113zM17.25 12a5.25 5.25 0 11-10.5 0 5.25 5.25 0 0110.5 0z"
+                                                                            clipRule="evenodd"
+                                                                        />
+                                                                    </svg>
+                                                                    Lihat Detail
+                                                                </Link>
+                                                                <Link
+                                                                    href={route(
+                                                                        "patients.edit",
+                                                                        patient.no_rkm_medis
+                                                                    )}
+                                                                    onClick={closeDropdown}
+                                                                    className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                                                >
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        viewBox="0 0 24 24"
+                                                                        fill="currentColor"
+                                                                        className="w-4 h-4 mr-3 text-green-600 dark:text-green-400"
+                                                                    >
+                                                                        <path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32l8.4-8.4z" />
+                                                                        <path d="M5.25 5.25a3 3 0 00-3 3v10.5a3 3 0 003 3h10.5a3 3 0 003-3V13.5a.75.75 0 00-1.5 0v5.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5V8.25a1.5 1.5 0 011.5-1.5h5.25a.75.75 0 000-1.5H5.25z" />
+                                                                    </svg>
+                                                                    Edit Data
+                                                                </Link>
+                                                                <button
+                                                                    onClick={() => handleRegisterPeriksa(patient)}
+                                                                    className="flex items-center w-full px-4 py-2 text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors"
+                                                                >
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        viewBox="0 0 24 24"
+                                                                        fill="currentColor"
+                                                                        className="w-4 h-4 mr-3"
+                                                                    >
+                                                                        <path d="M11.25 4.533c0-1.036.84-1.875 1.875-1.875h7.5c1.036 0 1.875.84 1.875 1.875v7.5c0 1.036-.84 1.875-1.875 1.875h-7.5a1.875 1.875 0 01-1.875-1.875v-7.5zM12.75 6.75a.75.75 0 00-1.5 0v1.5a.75.75 0 001.5 0v-1.5zM12 9a.75.75 0 00-.75.75v1.5a.75.75 0 001.5 0v-1.5A.75.75 0 0012 9z" />
+                                                                        <path d="M1.5 5.625c0-1.036.84-1.875 1.875-1.875h.75a.75.75 0 010 1.5h-.75a.375.375 0 00-.375.375v7.5c0 .207.168.375.375.375h.75a.75.75 0 010 1.5h-.75A1.875 1.875 0 011.5 18.375v-12.75zM6 5.625c0-1.036.84-1.875 1.875-1.875h.75a.75.75 0 010 1.5h-.75A.375.375 0 006 6.375v7.5c0 .207.168.375.375.375h.75a.75.75 0 010 1.5h-.75A1.875 1.875 0 016 18.375v-12.75z" />
+                                                                    </svg>
+                                                                    Daftar Periksa
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => openKunjunganSehat(patient)}
+                                                                    className="flex items-center w-full px-4 py-2 text-sm text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-colors"
+                                                                >
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        viewBox="0 0 24 24"
+                                                                        fill="currentColor"
+                                                                        className="w-4 h-4 mr-3"
+                                                                    >
+                                                                        <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-.75 5.25a.75.75 0 011.5 0v5.19l3.28 1.86a.75.75 0 11-.75 1.3l-3.75-2.12a.75.75 0 01-.38-.65V7.25z" />
+                                                                    </svg>
+                                                                    Kunjungan Sehat
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        closeDropdown();
+                                                                        handleDelete(patient);
+                                                                    }}
+                                                                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                                                >
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        viewBox="0 0 24 24"
+                                                                        fill="currentColor"
+                                                                        className="w-4 h-4 mr-3"
+                                                                    >
+                                                                        <path
+                                                                            fillRule="evenodd"
+                                                                            d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 00-6 0v-.113c0-.794.609-1.428 1.364-1.452a51.18 51.18 0 013.273 0z"
+                                                                            clipRule="evenodd"
+                                                                        />
+                                                                        <path d="M5.25 5.25a3 3 0 00-3 3v10.5a3 3 0 003 3h10.5a3 3 0 003-3V8.25a3 3 0 00-3-3H5.25z" />
+                                                                    </svg>
+                                                                    Hapus Data
+                                                                </button>
+                                                            </div>
+                                                        </div>,
+                                                        document.body
+                                                    )}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                            {patient.nm_pasien}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                            {patient.no_ktp || "-"}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                            {patient.jk === "L" ? "Laki-laki" : "Perempuan"}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                            {patient.umur}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                            {patient.no_tlp || "-"}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                            {patient.tgl_daftar
+                                                ? new Date(patient.tgl_daftar).toLocaleDateString(
+                                                        "id-ID"
+                                                  )
+                                                : "-"}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
 
-					{/* Pagination */}
-					{patients.links && (
-						<div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-							<div className="flex items-center justify-between">
-								<div className="text-sm text-gray-700 dark:text-gray-300">
-									Menampilkan {patients.from} sampai {patients.to} dari{" "}
-									{patients.total} data
-								</div>
-								<div className="flex gap-2">
-									{patients.links.map((link, index) => (
-										<Link
-											key={index}
-											href={link.url || "#"}
-											className={`px-3 py-2 text-sm rounded-lg ${
-												link.active
-													? "bg-blue-600 text-white"
-													: "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-											} ${!link.url ? "opacity-50 cursor-not-allowed" : ""}`}
-											dangerouslySetInnerHTML={{ __html: link.label }}
-										/>
-									))}
-								</div>
-							</div>
-						</div>
-					)}
-				</div>
+                    {/* Pagination */}
+                    {patients.links && (
+                        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center justify-between">
+                                <div className="text-sm text-gray-700 dark:text-gray-300">
+                                    Menampilkan {patients.from} sampai {patients.to} dari{" "}
+                                    {patients.total} data
+                                </div>
+                                <div className="flex gap-2">
+                                    {patients.links.map((link, index) => (
+                                        <Link
+                                            key={index}
+                                            href={link.url || "#"}
+                                            className={`px-3 py-2 text-sm rounded-xl ${
+                                                link.active
+                                                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm"
+                                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                                            } ${!link.url ? "opacity-50 cursor-not-allowed" : ""}`}
+                                            dangerouslySetInnerHTML={{ __html: link.label }}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </motion.div>
 
-				{/* Empty State */}
-				{patients.data.length === 0 && (
-					<div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-						<div className="p-12 text-center">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								viewBox="0 0 24 24"
-								fill="currentColor"
-								className="w-16 h-16 text-gray-400 mx-auto mb-4"
-							>
-								<path
-									fillRule="evenodd"
-									d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
-									clipRule="evenodd"
-								/>
-							</svg>
-							<h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-								Tidak ada data pasien
-							</h3>
-							<p className="text-gray-500 dark:text-gray-400 mb-4">
-								Belum ada data pasien yang tersimpan.
-							</p>
-							<Link
-								href={route("patients.create")}
-								className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center gap-2 transition-colors"
-							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									viewBox="0 0 24 24"
-									fill="currentColor"
-									className="w-5 h-5"
-								>
-									<path d="M12 4.5v15m7.5-7.5h-15" />
-								</svg>
-								Tambah Pasien Pertama
-							</Link>
-						</div>
-					</div>
-				)}
-			</div>
+                {/* Empty State */}
+                {patients.data.length === 0 && (
+                    <motion.div
+                        variants={itemVariants}
+                        className="relative overflow-hidden rounded-2xl bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm border border-white/40 dark:border-gray-700/60 shadow-lg"
+                    >
+                        <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-fuchsia-500/10 via-blue-500/10 to-emerald-500/10" />
+                        <div className="relative z-10 p-12 text-center">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="currentColor"
+                                className="w-16 h-16 text-gray-400 mx-auto mb-4"
+                            >
+                                <path
+                                    fillRule="evenodd"
+                                    d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
+                                    clipRule="evenodd"
+                                />
+                            </svg>
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                Tidak ada data pasien
+                            </h3>
+                            <p className="text-gray-500 dark:text-gray-400 mb-4">
+                                Belum ada data pasien yang tersimpan.
+                            </p>
+                            <Link
+                                href={route("patients.create")}
+                                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2 rounded-xl inline-flex items-center gap-2 transition-all shadow-sm"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="currentColor"
+                                    className="w-5 h-5"
+                                >
+                                    <path d="M12 4.5v15m7.5-7.5h-15" />
+                                </svg>
+                                Tambah Pasien Pertama
+                            </Link>
+                        </div>
+                    </motion.div>
+                )}
+            </motion.div>
 
-			{/* Modal Registrasi Periksa */}
-			{showRegisterModal && (
-				<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-					<div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-						<div className="p-6">
-							<div className="flex justify-between items-center mb-6">
-								<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-									Registrasi Periksa - {selectedPatient?.nm_pasien}
+            {/* Modal Registrasi Periksa */}
+            {showRegisterModal && (
+                createPortal(
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center" style={{ zIndex: 12000 }}>
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                        <div className="p-6">
+						<div className="flex justify-between items-center mb-6">
+							<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+								Registrasi Periksa - {selectedPatient?.nm_pasien}
 								</h3>
 								<button
 									onClick={closeModal}
@@ -604,9 +831,9 @@ export default function Index({
 									</div>
 								</div>
 
-								{/* Status Poli dan Biaya Registrasi */}
-								{formData.kd_poli && (
-									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Status Poli dan Biaya Registrasi */}
+                                {formData.kd_poli && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 										<div>
 											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
 												Status Poli
@@ -625,13 +852,13 @@ export default function Index({
 											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
 												Biaya Registrasi
 											</label>
-											<div className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white">
-												Rp{" "}
-												{poliStatus.biaya_reg?.toLocaleString("id-ID") || "0"}
-											</div>
-										</div>
-									</div>
-								)}
+                                            <div className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white">
+                                                Rp{" "}
+                                                {poliStatus.biaya_reg?.toLocaleString("id-ID") || "0"}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
 								{/* Nama Penanggung Jawab */}
 								<div>
@@ -724,11 +951,189 @@ export default function Index({
 										{isSubmitting ? "Menyimpan..." : "Simpan Registrasi"}
 									</button>
 								</div>
-							</form>
-						</div>
+					</form>
 					</div>
 				</div>
-			)}
+			</div>,
+			document.body)
+		)}
+
+            {/* Modal Kunjungan Sehat (PCare) */}
+            {showKunjunganSehatModal && (
+                createPortal(
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center" style={{ zIndex: 13000 }}>
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                            <div className="p-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <div className="flex items-start gap-3">
+                                        <div className="rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white p-3 shadow">
+                                            <IdentificationIcon className="h-5 w-5" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Kunjungan Sehat</h3>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">{kunjunganSehatPatient?.nm_pasien} • NIK: {kunjunganSehatPatient?.no_ktp || '-'}</p>
+                                        </div>
+                                    </div>
+                                    <button onClick={closeKunjunganSehatModal} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                                        <XMarkIcon className="w-6 h-6" />
+                                    </button>
+                                </div>
+
+                                {/* Input NIK dan Cari ulang (opsional) */}
+                                <div className="bg-white/80 dark:bg-gray-700/60 border border-slate-200 dark:border-gray-600 rounded-lg p-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                        <div className="md:col-span-2">
+                                            <label htmlFor="nikKunjungan" className="text-xs text-slate-500">NIK Peserta</label>
+                                            <div className="mt-1 flex items-center gap-2">
+                                                <div className="relative flex-1">
+                                                    <MagnifyingGlassIcon className="pointer-events-none absolute left-2 top-2.5 h-4 w-4 text-slate-400" />
+                                                    <input
+                                                        id="nikKunjungan"
+                                                        inputMode="numeric"
+                                                        autoComplete="off"
+                                                        placeholder="Masukkan NIK (16 digit)"
+                                                        value={nikKunjungan}
+                                                        onChange={(e) => setNikKunjungan(sanitizeNik(e.target.value))}
+                                                        onKeyDown={(e) => { if (e.key === 'Enter') fetchPcareByNik(nikKunjungan); }}
+                                                        className="w-full rounded-md border-slate-300 pl-8 pr-8 text-sm dark:bg-gray-700 dark:text-white"
+                                                    />
+                                                    {nikKunjungan && (
+                                                        <button onClick={() => setNikKunjungan('')} className="absolute right-2 top-2 rounded p-1 text-slate-400 hover:text-slate-600" title="Clear">
+                                                            <XMarkIcon className="h-4 w-4" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                <button onClick={() => fetchPcareByNik(nikKunjungan)} disabled={pcareLoading} className={`inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm text-white shadow ${pcareLoading ? 'bg-emerald-400' : 'bg-emerald-600 hover:bg-emerald-700'}`}>
+                                                    {pcareLoading ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <MagnifyingGlassIcon className="h-4 w-4" />}
+                                                    {pcareLoading ? 'Mencari…' : 'Cari'}
+                                                </button>
+                                                <button onClick={() => { setNikKunjungan(sanitizeNik(kunjunganSehatPatient?.no_ktp || '')); setPcareError(null); setPcareData(null); }} className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm hover:bg-slate-50 dark:bg-gray-700 dark:text-white dark:border-gray-600">
+                                                    Reset
+                                                </button>
+                                            </div>
+                                            <div className="mt-1 text-xs text-slate-500">Tekan Enter untuk mencari.</div>
+                                        </div>
+                                        <div className="md:col-span-1">
+                                            <div className="rounded-lg border border-slate-200 dark:border-gray-600 p-3">
+                                                <div className="text-xs text-slate-500">Status</div>
+                                                <div className="mt-1 flex items-center gap-2">
+                                                    {pcareLoading ? (
+                                                        <>
+                                                            <ArrowPathIcon className="h-4 w-4 animate-spin text-emerald-600" />
+                                                            <span className="text-slate-700 text-sm dark:text-gray-200">Memuat…</span>
+                                                        </>
+                                                    ) : pcareError ? (
+                                                        <>
+                                                            <ExclamationTriangleIcon className="h-4 w-4 text-red-600" />
+                                                            <span className="text-red-700 text-sm">{pcareError}</span>
+                                                        </>
+                                                    ) : pcareData ? (
+                                                        <>
+                                                            <CheckCircleIcon className="h-4 w-4 text-emerald-600" />
+                                                            <span className="text-slate-700 text-sm dark:text-gray-200">{pcareData?.metaData?.message || 'OK'}</span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <IdentificationIcon className="h-4 w-4 text-slate-500" />
+                                                            <span className="text-slate-600 text-sm dark:text-gray-300">Siap mencari</span>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Hasil */}
+                                {pcareData && pcareData.response && (
+                                    <div className="mt-4 rounded-xl border border-slate-200 dark:border-gray-600 bg-white dark:bg-gray-800 p-4 shadow-sm">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <IdentificationIcon className="h-5 w-5 text-slate-500" />
+                                                <div>
+                                                    <div className="text-sm font-semibold text-slate-800 dark:text-gray-100">{pcareData.response?.nama || '-'}</div>
+                                                    <div className="text-xs text-slate-500 dark:text-gray-300">{pcareData.response?.jnsPeserta?.nama || 'Peserta'} • {(pcareData.response?.aktif ? 'AKTIF' : (pcareData.response?.ketAktif || 'TIDAK AKTIF'))}</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                {pcareData.response?.aktif ? (
+                                                    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-emerald-100 text-emerald-700">AKTIF</span>
+                                                ) : (
+                                                    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">TIDAK AKTIF</span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                            <div className="rounded-lg border border-slate-200 dark:border-gray-600 p-3">
+                                                <div className="text-xs text-slate-500">No. Kartu</div>
+                                                <div className="mt-1 flex items-center gap-2 text-sm text-slate-800 dark:text-gray-200">
+                                                    <span>{pcareData.response?.noKartu || '-'}</span>
+                                                    {pcareData.response?.noKartu && (
+                                                        <button onClick={() => copyToClipboard(pcareData.response.noKartu)} className="ml-1 rounded p-1 text-slate-400 hover:text-slate-600" title="Salin No. Kartu">
+                                                            <ClipboardDocumentCheckIcon className="h-4 w-4" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="rounded-lg border border-slate-200 dark:border-gray-600 p-3">
+                                                <div className="text-xs text-slate-500">NIK</div>
+                                                <div className="mt-1 flex items-center gap-2 text-sm text-slate-800 dark:text-gray-200">
+                                                    <span>{pcareData.response?.noKTP || '-'}</span>
+                                                    {pcareData.response?.noKTP && (
+                                                        <button onClick={() => copyToClipboard(pcareData.response.noKTP)} className="ml-1 rounded p-1 text-slate-400 hover:text-slate-600" title="Salin NIK">
+                                                            <ClipboardDocumentCheckIcon className="h-4 w-4" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="rounded-lg border border-slate-200 dark:border-gray-600 p-3">
+                                                <div className="text-xs text-slate-500">Tanggal Lahir</div>
+                                                <div className="mt-1 text-sm text-slate-800 dark:text-gray-200">{pcareData.response?.tglLahir || '-'}</div>
+                                            </div>
+
+                                            <div className="rounded-lg border border-slate-200 dark:border-gray-600 p-3">
+                                                <div className="text-xs text-slate-500">Kelas</div>
+                                                <div className="mt-1 text-sm text-slate-800 dark:text-gray-200">{pcareData.response?.jnsKelas?.nama || pcareData.response?.jnsKelas?.kode || '-'}</div>
+                                            </div>
+                                            <div className="rounded-lg border border-slate-200 dark:border-gray-600 p-3">
+                                                <div className="text-xs text-slate-500">Provider FKTP</div>
+                                                <div className="mt-1 text-sm text-slate-800 dark:text-gray-200">{pcareData.response?.kdProviderPst?.nmProvider || '-'}</div>
+                                            </div>
+                                            <div className="rounded-lg border border-slate-200 dark:border-gray-600 p-3">
+                                                <div className="text-xs text-slate-500">No. HP</div>
+                                                <div className="mt-1 text-sm text-slate-800 dark:text-gray-200">{pcareData.response?.noHP || '-'}</div>
+                                            </div>
+
+                                            <div className="rounded-lg border border-slate-200 dark:border-gray-600 p-3">
+                                                <div className="text-xs text-slate-500">Mulai Aktif</div>
+                                                <div className="mt-1 text-sm text-slate-800 dark:text-gray-200">{pcareData.response?.tglMulaiAktif || '-'}</div>
+                                            </div>
+                                            <div className="rounded-lg border border-slate-200 dark:border-gray-600 p-3">
+                                                <div className="text-xs text-slate-500">Akhir Berlaku</div>
+                                                <div className="mt-1 text-sm text-slate-800 dark:text-gray-200">{pcareData.response?.tglAkhirBerlaku || '-'}</div>
+                                            </div>
+                                            <div className="rounded-lg border border-slate-200 dark:border-gray-600 p-3">
+                                                <div className="text-xs text-slate-500">Golongan Darah</div>
+                                                <div className="mt-1 text-sm text-slate-800 dark:text-gray-200">{pcareData.response?.golDarah || '-'}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="mt-4 flex justify-end gap-2">
+                                    <button onClick={closeKunjunganSehatModal} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors">Tutup</button>
+                                    <button onClick={sendKunjunganSehat} disabled={isSubmitting || !pcareData} className="px-4 py-2 text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2">
+                                        {isSubmitting && <ArrowPathIcon className="h-4 w-4 animate-spin" />}
+                                        {isSubmitting ? "Mengirim…" : "Kirim Kunjungan Sehat"}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>,
+                    document.body
+                )
+            )}
 
 			{/* Alert Feedback */}
 			<Alert

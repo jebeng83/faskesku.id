@@ -1,8 +1,8 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:2037
-* @route '/pcare/api/kelompok/peserta'
+* @see app/Http/Controllers/Pcare/PcareController.php:289
+* @route '/pcare/api/kunjungan-sehat'
 */
 export const api = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: api.url(options),
@@ -11,13 +11,13 @@ export const api = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 api.definition = {
     methods: ["post"],
-    url: '/pcare/api/kelompok/peserta',
+    url: '/pcare/api/kunjungan-sehat',
 } satisfies RouteDefinition<["post"]>
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:2037
-* @route '/pcare/api/kelompok/peserta'
+* @see app/Http/Controllers/Pcare/PcareController.php:289
+* @route '/pcare/api/kunjungan-sehat'
 */
 api.url = (options?: RouteQueryOptions) => {
     return api.definition.url + queryParams(options)
@@ -25,16 +25,16 @@ api.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:2037
-* @route '/pcare/api/kelompok/peserta'
+* @see app/Http/Controllers/Pcare/PcareController.php:289
+* @route '/pcare/api/kunjungan-sehat'
 */
 api.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: api.url(options),
     method: 'post',
 })
 
-const add = {
+const sehat = {
     api: Object.assign(api, api),
 }
 
-export default add
+export default sehat

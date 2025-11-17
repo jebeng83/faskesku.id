@@ -79,6 +79,18 @@ class PcareController extends Controller
         $response = $result['response'];
         $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
 
+        // Diagnostik tambahan: log detail jika gagal (>= 400)
+        if ($response->status() >= 400) {
+            try {
+                Log::error('PCare getDokter error detail', [
+                    'http_status' => $response->status(),
+                    'processed' => is_array($processed) ? $processed : (string) $processed,
+                ]);
+            } catch (\Throwable $e) {
+                // abaikan jika logging gagal
+            }
+        }
+
         return response()->json($processed, $response->status());
     }
 
@@ -94,6 +106,18 @@ class PcareController extends Controller
 
         $response = $result['response'];
         $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        // Diagnostik: log detail jika gagal (>= 400)
+        if ($response->status() >= 400) {
+            try {
+                Log::error('PCare getFaskes error detail', [
+                    'http_status' => $response->status(),
+                    'processed' => is_array($processed) ? $processed : (string) $processed,
+                ]);
+            } catch (\Throwable $e) {
+                // abaikan jika logging gagal
+            }
+        }
 
         return response()->json($processed, $response->status());
     }
@@ -244,6 +268,116 @@ class PcareController extends Controller
                 'no_rawat' => $payload['no_rawat'] ?? null,
             ]);
         }
+
+        return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Kunjungan Sehat (pendaftaran PCare dengan kunjSakit = false).
+     * Endpoint PCare: POST /pendaftaran
+     *
+     * Mengacu pada controller lama (public/PcareController.php) yang
+     * menyiapkan payload minimal untuk pendaftaran kunjungan sehat:
+     * - kdProviderPeserta (default dari konfigurasi PCare jika tidak dikirim)
+     * - tglDaftar (Y-m-d)
+     * - noKartu (13 digit)
+     * - kdPoli (default '021' jika tidak dikirim)
+     * - keluhan (default 'Konsultasi Kesehatan')
+     * - kunjSakit = false
+     * - opsional tanda vital: sistole, diastole, beratBadan, tinggiBadan, respRate, heartRate
+     */
+    public function kirimKunjunganSehat(Request $request)
+    {
+        // Ambil konfigurasi dasar PCare
+        $cfg = $this->pcareConfig();
+
+        // Validasi nomor kartu: wajib 13 digit
+        $noKartu = preg_replace('/[^0-9]/', '', (string) $request->input('noKartu'));
+        if ($noKartu === '' || ! preg_match('/^\d{13}$/', $noKartu)) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Nomor kartu harus 13 digit',
+                    'code' => 422,
+                ],
+                'response' => null,
+            ], 422);
+        }
+
+        // Normalisasi tanggal daftar
+        // Catatan: API PCare untuk pendaftaran biasanya mengharapkan format dd-mm-yyyy.
+        // Kita terima input bebas (Y-m-d atau dd-mm-yyyy), normalisasi ke Y-m-d dulu,
+        // lalu konversi ke dd-mm-yyyy saat dikirim.
+        $tglDaftarInput = (string) ($request->input('tglDaftar') ?? now()->format('Y-m-d'));
+        $tglDaftarYmd = $this->normalizeDateToYmd($tglDaftarInput) ?? now()->format('Y-m-d');
+        try {
+            $dt = new \DateTime($tglDaftarYmd);
+            $tglDaftarForPcare = $dt->format('d-m-Y');
+        } catch (\Throwable $e) {
+            // Fallback aman
+            $tglDaftarForPcare = now()->format('d-m-Y');
+        }
+
+        // Coba mapping kd_poli RS ke KD PCare bila dikirim dari UI
+        $kdPoliFromRequest = $request->input('kdPoli', '021');
+        $kdPoliRs = $request->input('kd_poli_rs');
+        if ($kdPoliRs) {
+            try {
+                $mapped = \Illuminate\Support\Facades\DB::table('maping_poliklinik_pcare')
+                    ->where('kd_poli_rs', $kdPoliRs)
+                    ->value('kd_poli_pcare');
+                if (! empty($mapped)) {
+                    $kdPoliFromRequest = $mapped;
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Gagal mapping kd_poli_rs ke KD PCare', [
+                    'kd_poli_rs' => $kdPoliRs,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        // Siapkan payload minimal sesuai spesifikasi
+        $payload = [
+            'kdProviderPeserta' => $request->input('kdProviderPeserta', $cfg['kode_ppk'] ?? env('BPJS_PCARE_KODE_PPK')),
+            'tglDaftar' => $tglDaftarForPcare,
+            'noKartu' => $noKartu,
+            'kdPoli' => $kdPoliFromRequest,
+            'keluhan' => $request->input('keluhan', 'Konsultasi Kesehatan'),
+            'kunjSakit' => false,
+            // Opsional tanda vital
+            'sistole' => (string) ($request->input('sistole', '0')),
+            'diastole' => (string) ($request->input('diastole', '0')),
+            'beratBadan' => (string) ($request->input('beratBadan', '0')),
+            'tinggiBadan' => (string) ($request->input('tinggiBadan', '0')),
+            'respRate' => (string) ($request->input('respRate', '0')),
+            'lingkarPerut' => (string) ($request->input('lingkarPerut', '0')),
+            'heartRate' => (string) ($request->input('heartRate', '0')),
+            // Field tambahan sesuai kebutuhan minimal user/PCare
+            'rujukBalik' => (string) ($request->input('rujukBalik', '0')),
+            'kdTkp' => (string) ($request->input('kdTkp', '10')),
+        ];
+
+        // Logging diagnostik terperinci (tanpa bocorkan informasi sensitif)
+        try {
+            $maskedNoKartu = substr($noKartu, 0, 6) . str_repeat('*', max(strlen($noKartu) - 10, 0)) . substr($noKartu, -4);
+            \Illuminate\Support\Facades\Log::channel('bpjs')->info('Kunjungan Sehat - Payload siap dikirim', [
+                'kd_poli_rs' => $kdPoliRs,
+                'kdPoli_final' => $kdPoliFromRequest,
+                'kdProviderPeserta' => $payload['kdProviderPeserta'],
+                'tglDaftar_ddmmyyyy' => $tglDaftarForPcare,
+                'noKartu_masked' => $maskedNoKartu,
+                'kdTkp' => $payload['kdTkp'],
+                'kunjSakit' => $payload['kunjSakit'],
+            ]);
+        } catch (\Throwable $e) {
+            // abaikan jika logging gagal
+        }
+
+        // Sesuai katalog BPJS PCare, beberapa endpoint membutuhkan Content-Type: text/plain
+        $result = $this->pcareRequest('POST', 'pendaftaran', [], $payload, ['Content-Type' => 'text/plain']);
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
 
         return response()->json($processed, $response->status());
     }

@@ -1,9 +1,23 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Head, Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import AppLayout from '@/Layouts/AppLayout';
+import LanjutanRegistrasiLayout from '@/Layouts/LanjutanRegistrasiLayout';
 
 export default function Show({ patient }) {
+    // Motion variants for subtle and consistent transitions
+    const containerVariants = {
+        hidden: { opacity: 0, y: 8 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: { staggerChildren: 0.06, ease: 'easeOut' },
+        },
+    };
+    const itemVariants = {
+        hidden: { opacity: 0, y: 8 },
+        visible: { opacity: 1, y: 0 },
+    };
     const [labels, setLabels] = useState({
         perusahaan: '-',
         sukuBangsa: '-',
@@ -47,14 +61,18 @@ export default function Show({ patient }) {
         return () => { isMounted = false; };
     }, [patient.perusahaan_pasien, patient.suku_bangsa, patient.bahasa_pasien, patient.cacat_fisik]);
     return (
-        <AppLayout>
+        <LanjutanRegistrasiLayout
+            title="Registrasi Pasien"
+            menuConfig={{ activeTab: 'pasien' }}
+        >
             <Head title={`Detail Pasien - ${patient.nm_pasien}`} />
 
-            <div className="py-6">
+            <motion.div className="py-6" initial="hidden" animate="visible" variants={containerVariants}>
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     {/* Header */}
-                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                        <div className="p-6">
+                    <motion.div variants={itemVariants} className="relative overflow-visible mb-6">
+                        <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-br from-blue-500/15 via-purple-500/15 to-indigo-500/15 dark:from-blue-600/10 dark:via-purple-600/10 dark:to-indigo-600/10" />
+                        <div className="p-6 rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg">
                             <div className="flex justify-between items-center">
                                 <div>
                                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -67,7 +85,7 @@ export default function Show({ patient }) {
                                 <div className="flex gap-2">
                                     <Link
                                         href={route('patients.index')}
-                                        className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-700/80 hover:bg-gray-700 text-white transition-colors"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
                                             <path fillRule="evenodd" d="M7.72 12.53a.75.75 0 010-1.06L10.94 8.25H3a.75.75 0 010-1.5h7.94L7.72 3.53a.75.75 0 011.06-1.06l4.5 4.5a.75.75 0 010 1.06l-4.5 4.5a.75.75 0 01-1.06 0z" clipRule="evenodd" />
@@ -76,7 +94,7 @@ export default function Show({ patient }) {
                                     </Link>
                                     <Link
                                         href={route('patients.edit', patient.no_rkm_medis)}
-                                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white transition-colors"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
                                             <path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32l8.4-8.4z" />
@@ -87,7 +105,7 @@ export default function Show({ patient }) {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Patient Information */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -377,7 +395,7 @@ export default function Show({ patient }) {
                         </div>
                     </div>
                 </div>
-            </div>
-        </AppLayout>
+            </motion.div>
+        </LanjutanRegistrasiLayout>
     );
 }

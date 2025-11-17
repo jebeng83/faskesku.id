@@ -9,6 +9,7 @@ import poli from './poli'
 import rs from './rs'
 import tindakan from './tindakan'
 import peserta from './peserta'
+import kunjungan from './kunjungan'
 import setting from './setting'
 /**
 * @see routes/web.php:412
@@ -62,6 +63,7 @@ const pcare = {
     rs: Object.assign(rs, rs),
     tindakan: Object.assign(tindakan, tindakan),
     peserta: Object.assign(peserta, peserta),
+    kunjungan: Object.assign(kunjungan, kunjungan),
     setting: Object.assign(setting, setting),
 }
 

@@ -1,13 +1,27 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import AppLayout from '@/Layouts/AppLayout';
+import LanjutanRegistrasiLayout from '@/Layouts/LanjutanRegistrasiLayout';
 import WilayahSearchableSelect from '@/Components/WilayahSearchableSelect';
 import SelectWithAdd from "@/Components/SelectWithAdd";
 import PenjabCreateModal from "@/Components/PenjabCreateModal";
 import SearchableSelect from "@/Components/SearchableSelect";
 
 export default function Edit({ patient }) {
+    // Motion variants for subtle, performant micro-interactions
+    const containerVariants = {
+        hidden: { opacity: 0, y: 8 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: { staggerChildren: 0.05, ease: 'easeOut' },
+        },
+    };
+    const itemVariants = {
+        hidden: { opacity: 0, y: 8 },
+        visible: { opacity: 1, y: 0 },
+    };
     const [selectedWilayah, setSelectedWilayah] = useState(null);
     const [loadingWilayah, setLoadingWilayah] = useState(false);
     const [penjabOptions, setPenjabOptions] = useState([]);
@@ -233,14 +247,18 @@ export default function Edit({ patient }) {
     };
 
     return (
-        <AppLayout>
+        <LanjutanRegistrasiLayout
+            title="Registrasi Pasien"
+            menuConfig={{ activeTab: 'pasien' }}
+        >
             <Head title={`Edit Pasien - ${patient.nm_pasien}`} />
 
-            <div className="py-6">
+            <motion.div className="py-6" initial="hidden" animate="visible" variants={containerVariants}>
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     {/* Header */}
-                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                        <div className="p-6">
+                    <motion.div variants={itemVariants} className="relative overflow-visible mb-6">
+                        <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-br from-blue-500/15 via-purple-500/15 to-indigo-500/15 dark:from-blue-600/10 dark:via-purple-600/10 dark:to-indigo-600/10" />
+                        <div className="p-6 rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg">
                             <div className="flex justify-between items-center">
                                 <div>
                                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -253,7 +271,7 @@ export default function Edit({ patient }) {
                                 <div className="flex gap-2">
                                     <Link
                                         href={route('patients.index')}
-                                        className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-700/80 hover:bg-gray-700 text-white transition-colors"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
                                             <path fillRule="evenodd" d="M7.72 12.53a.75.75 0 010-1.06L10.94 8.25H3a.75.75 0 010-1.5h7.94L7.72 3.53a.75.75 0 011.06-1.06l4.5 4.5a.75.75 0 010 1.06l-4.5 4.5a.75.75 0 01-1.06 0z" clipRule="evenodd" />
@@ -262,7 +280,7 @@ export default function Edit({ patient }) {
                                     </Link>
                                     <Link
                                         href={route('patients.show', patient.no_rkm_medis)}
-                                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
                                             <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
@@ -273,12 +291,12 @@ export default function Edit({ patient }) {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Form */}
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Basic Information */}
-                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <motion.div variants={itemVariants} className="relative overflow-visible rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg">
                             <div className="p-6">
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                                     Informasi Dasar
@@ -394,10 +412,10 @@ export default function Edit({ patient }) {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Contact Information */}
-                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <motion.div variants={itemVariants} className="relative overflow-visible rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg">
                             <div className="p-6">
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                                     Informasi Kontak
@@ -452,10 +470,10 @@ export default function Edit({ patient }) {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Additional Information */}
-                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <motion.div variants={itemVariants} className="relative overflow-visible rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg">
                             <div className="p-6">
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                                     Informasi Tambahan
@@ -580,15 +598,15 @@ export default function Edit({ patient }) {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Family Information */}
-                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <motion.div variants={itemVariants} className="relative overflow-visible rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg">
                             <div className="p-6">
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                                     Informasi Keluarga
                                 </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6" style={{ position: 'relative', zIndex: 1 }}>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                             Hubungan Keluarga
@@ -750,7 +768,7 @@ export default function Edit({ patient }) {
                                     />
                                     {/* Optional: Show selected address preview */}
                                     {selectedWilayah && (
-                                        <div className="mt-3 p-3 border rounded bg-gray-50 dark:bg-gray-700">
+                                        <div className="mt-3 p-3 border rounded bg-gray-50/60 dark:bg-gray-800/60 backdrop-blur-sm">
                                             <p className="text-sm text-gray-700 dark:text-gray-200">
                                                 Alamat wilayah: {selectedWilayah.village}, {selectedWilayah.district}, {selectedWilayah.regency}, {selectedWilayah.province}
                                             </p>
@@ -758,10 +776,10 @@ export default function Edit({ patient }) {
                                     )}
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Informasi Administrasi (Perusahaan, Suku Bangsa, Bahasa, Cacat Fisik, NIP) */}
-                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <motion.div variants={itemVariants} className="relative overflow-visible rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg">
                             <div className="p-6">
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                                     Informasi Administrasi
@@ -848,22 +866,22 @@ export default function Edit({ patient }) {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Submit Button */}
-                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <motion.div variants={itemVariants} className="relative overflow-visible rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg">
                             <div className="p-6">
                                 <div className="flex justify-end gap-4">
                                     <Link
                                         href={route('patients.index')}
-                                        className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition-colors"
+                                        className="inline-flex items-center px-6 py-2 rounded-lg bg-gray-700/80 hover:bg-gray-700 text-white transition-colors"
                                     >
                                         Batal
                                     </Link>
                                     <button
                                         type="submit"
                                         disabled={processing}
-                                        className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg transition-colors flex items-center gap-2"
+                                        className="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white transition-colors"
                                     >
                                         {processing && (
                                             <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -875,16 +893,16 @@ export default function Edit({ patient }) {
                                     </button>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
                     </form>
                 </div>
-            </div>
+            </motion.div>
                     {/* Penjab Create Modal */}
                     <PenjabCreateModal
                         isOpen={isPenjabModalOpen}
                         onClose={() => setIsPenjabModalOpen(false)}
                         onSuccess={handlePenjabSuccess}
                     />
-        </AppLayout>
+        </LanjutanRegistrasiLayout>
     );
 }

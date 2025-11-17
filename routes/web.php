@@ -598,6 +598,9 @@ Route::middleware('auth')->group(function () {
         // API: Get Peserta by NIK dari BPJS PCare
         Route::get('/api/peserta/nik', [\App\Http\Controllers\Pcare\PcareController::class, 'pesertaByNik'])
             ->name('peserta.nik.api');
+        // API: Kirim Kunjungan Sehat ke BPJS PCare (POST)
+        Route::post('/api/kunjungan-sehat', [\App\Http\Controllers\Pcare\PcareController::class, 'kirimKunjunganSehat'])
+            ->name('kunjungan.sehat.api');
 
         // API: Get Peserta by No. Kartu (versi sederhana — tanpa tanggal pelayanan)
         Route::get('/api/peserta/{noka}', [\App\Http\Controllers\Pcare\PcareController::class, 'getPeserta'])

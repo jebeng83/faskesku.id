@@ -348,7 +348,8 @@ class PcareKunjunganController extends Controller
             Log::info('Sending kunjungan to PCare', ['data' => $data]);
             
             $endpoint = '/kunjungan/v1';
-            $response = $this->requestPcare($endpoint, 'POST', $data);
+            // Gunakan urutan argumen legacy (payload, method) untuk kompatibilitas IDE/static analyzer
+            $response = $this->requestPcare($endpoint, $data, 'POST');
             
             Log::info('PCare response received', ['response' => $response]);
             
