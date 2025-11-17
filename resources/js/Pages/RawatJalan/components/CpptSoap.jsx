@@ -2,8 +2,35 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { route } from 'ziggy-js';
 import SearchableSelect from '../../../Components/SearchableSelect.jsx';
 import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
 export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) {
+    // UI/UX variants (guided by docs/UI_UX_IMPROVEMENTS_GUIDE.md)
+    const prefersReducedMotion = useReducedMotion();
+    const containerVariants = {
+        hidden: { opacity: prefersReducedMotion ? 1 : 0 },
+        visible: {
+            opacity: 1,
+            transition: prefersReducedMotion
+                ? { duration: 0 }
+                : { staggerChildren: 0.08, delayChildren: 0.1 }
+        }
+    };
+    const itemVariants = {
+        hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 24, scale: prefersReducedMotion ? 1 : 0.98 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            transition: prefersReducedMotion
+                ? { duration: 0 }
+                : { duration: 0.35, ease: [0.22, 1, 0.36, 1] }
+        }
+    };
+    const cardHoverVariants = {
+        rest: { scale: 1, y: 0 },
+        hover: prefersReducedMotion ? { scale: 1, y: 0 } : { scale: 1.01, y: -2, transition: { duration: 0.25, ease: 'easeOut' } }
+    };
     const now = useMemo(() => new Date(), []);
     // Template kustom yang lebih rinci
     const customTemplates = useMemo(() => ([
@@ -529,7 +556,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
     const [kdTaccVisible, setKdTaccVisible] = useState(false);
     const [taccError, setTaccError] = useState('');
     const [isDiagnosaNonSpesialis, setIsDiagnosaNonSpesialis] = useState(false); // Menyimpan informasi apakah diagnosa yang dipilih adalah NonSpesialis
-    const [copiedPayload, setCopiedPayload] = useState(false);
     // Referensi KD TACC & Alasan (untuk penentuan rujuk). Sumber sesuai permintaan user.
     const REF_TACC = useMemo(() => ([
         { kdTacc: -1, nmTacc: 'Tanpa TACC', alasanTacc: [] },
@@ -948,42 +974,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
         return `${d}-${m}-${yyyy}`;
     };
 
-    // Payload final yang akan dikirim (gabungan preview + normalisasi + rujukLanjut bila aktif)
-    const payloadToSend = useMemo(() => {
-        if (!kunjunganPreview) return null;
-        const payload = { ...kunjunganPreview };
-        if (noRawat) payload.no_rawat = noRawat;
-        // Normalisasi KD TACC (-1/empty → 0, alasan kosong bila 0)
-        const isMinusOne = payload.kdTacc === -1 || payload.kdTacc === '-1';
-        const isEmptyTacc = payload.kdTacc === undefined || payload.kdTacc === null || payload.kdTacc === '';
-        if (isEmptyTacc || isMinusOne) {
-            payload.kdTacc = 0;
-            payload.alasanTacc = '';
-        } else {
-            if (payload.alasanTacc === undefined || payload.alasanTacc === null) {
-                payload.alasanTacc = '';
-            }
-            if (payload.kdTacc === 0) {
-                payload.alasanTacc = '';
-            }
-        }
-        // Lampirkan rujukLanjut bila aktif dan kdppk tersedia
-        if (rujukanActive && rujukForm.kdppk) {
-            payload.rujukLanjut = {
-                kdppk: rujukForm.kdppk,
-                tglEstRujuk: fromInputDate(rujukForm.tglEstRujuk) || null,
-                subSpesialis: {
-                    kdSubSpesialis1: rujukForm.kdSubSpesialis1 || null,
-                    kdSarana: rujukForm.kdSarana || null,
-                },
-                khusus: null,
-            };
-        } else {
-            // Pastikan rujukLanjut null bila tidak aktif
-            payload.rujukLanjut = null;
-        }
-        return payload;
-    }, [kunjunganPreview, noRawat, rujukanActive, rujukForm.kdppk, rujukForm.tglEstRujuk, rujukForm.kdSubSpesialis1, rujukForm.kdSarana]);
 
     // Update field helper untuk form Kunjungan
     const updateKunjunganField = (key, value, type = 'text') => {
@@ -1202,15 +1192,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
         }
     };
 
-    // Salin payload ke clipboard untuk pengecekan cepat
-    const copyPayloadToClipboard = async () => {
-        try {
-            if (!payloadToSend) return;
-            await navigator.clipboard.writeText(JSON.stringify(payloadToSend, null, 2));
-            setCopiedPayload(true);
-            setTimeout(() => setCopiedPayload(false), 1500);
-        } catch (_) {}
-    };
+    // Fungsi salin payload ke clipboard dihapus karena preview payload sudah dihilangkan
 
     const fetchList = async () => {
         if (!noRawat) return;
@@ -1333,12 +1315,13 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
 
     return (
         <>
-            <form onSubmit={handleSubmit} className="p-4 md:p-6">
+            <motion.form onSubmit={handleSubmit} variants={containerVariants} initial="hidden" animate="visible" className="p-4 md:p-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
                 {/* Baris atas: kiri card CPPT/SOAP (Informasi Dasar), kanan card Template */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 items-stretch">
-                    <div className="lg:col-span-2 h-full">
-                        <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-3 md:p-4 h-full">
-                            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Informasi Dasar</h4>
+                    <div className="lg:col-span-2">
+                        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/85 dark:bg-gray-800/85 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 p-4 md:p-6" whileHover={prefersReducedMotion ? {} : { scale: 1.01, y: -2 }}>
+                            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                            <h4 className="text-base md:text-lg font-semibold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent mb-3">Informasi Dasar</h4>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
                                 <div>
                                     <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Tanggal Perawatan</label>
@@ -1357,11 +1340,12 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                     </select>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
                         {/* Hanya card Informasi Dasar di kolom kiri atas */}
                     </div>
                     <aside className="lg:col-span-1 h-full">
-                        <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 md:p-4 lg:sticky lg:top-4 h-full">
+                        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/85 dark:bg-gray-800/85 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 p-4 md:p-6 lg:sticky lg:top-4 h-full">
+                            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
                             <div className="space-y-3 md:space-y-4">
                                 <div>                     
                                     <SearchableSelect
@@ -1375,19 +1359,76 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                     />
                                 </div>
                                 <div className="flex gap-2">
-                                    <button type="button" onClick={clearTemplateFields} className="bg-white dark:bg-gray-800 border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20 px-4 py-2.5 rounded-md text-sm font-medium transition-colors w-full">
+                                    <button type="button" onClick={clearTemplateFields} className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors w-full">
                                         Bersihkan isian
                                     </button>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
                     </aside>
                 </div>
 
                 {/* Baris bawah: card lain tetap penuh lebar seperti sebelumnya */}
                 <div className="space-y-4 md:space-y-6 mt-4 md:mt-6">
-                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 md:p-4">
-                        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3 flex items-center">
+                    {/* Alergi & Petugas Pemeriksa diletakkan tepat di bawah Informasi Dasar sebagai card penuh lebar */}
+                    <motion.div variants={itemVariants} className="relative z-10 overflow-visible rounded-2xl bg-white/85 dark:bg-gray-800/85 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 p-4 md:p-6">
+                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                        <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                            <svg className="w-4 h-4 mr-2 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                            </svg>
+                            Alergi & Petugas Pemeriksa
+                        </h4>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
+                            <div>
+                                <label className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+                                    <svg className="w-4 h-4 mr-1.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                    </svg>
+                                    Alergi
+                                </label>
+                                <input type="text" name="alergi" value={formData.alergi} onChange={handleChange} placeholder="Contoh: Penisilin, Aspirin" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                            </div>
+                            <div className="relative">
+                                <label className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
+                                    <svg className="w-4 h-4 mr-1.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    Petugas Pemeriksa
+                                </label>
+                                <input
+                                    type="text"
+                                    value={pegawaiQuery}
+                                    onChange={(e) => setPegawaiQuery(e.target.value)}
+                                    placeholder="Ketik nama atau NIK pegawai..."
+                                    className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                />
+                                {pegawaiOptions.length > 0 && (
+                                    <div className="absolute z-50 mt-1 w-full max-h-48 overflow-auto rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg">
+                                        {pegawaiOptions.map((p) => (
+                                            <button
+                                                key={p.nik}
+                                                type="button"
+                                                onClick={() => {
+                                                    setFormData((prev) => ({ ...prev, nip: p.nik }));
+                                                    setPegawaiQuery(p.nama + ' (' + p.nik + ')');
+                                                    setPegawaiOptions([]);
+                                                }}
+                                                className="w-full text-left px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700/50 text-sm border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors"
+                                            >
+                                                <div className="font-medium text-gray-900 dark:text-white">{p.nama}</div>
+                                                <div className="text-xs text-gray-500 dark:text-gray-400">NIK: {p.nik}</div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                                <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">💡 Mulai ketik untuk mencari pegawai</p>
+                            </div>
+                        </div>
+                    </motion.div>
+                    <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/85 dark:bg-gray-800/85 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 p-4 md:p-6">
+                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                        <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
                             <svg className="w-4 h-4 mr-2 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2" />
                             </svg>
@@ -1431,10 +1472,11 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                 <input type="text" name="lingkar_perut" value={formData.lingkar_perut} onChange={handleChange} placeholder="80" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
 
-                    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 md:p-4">
-                        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3 flex items-center">
+                    <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/85 dark:bg-gray-800/85 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 p-4 md:p-6">
+                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                        <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
                             <svg className="w-4 h-4 mr-2 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
@@ -1450,57 +1492,13 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                 <textarea name="pemeriksaan" value={formData.pemeriksaan} onChange={handleChange} rows={4} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Hasil pemeriksaan fisik dan penunjang..." />
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
-                        <div>
-                            <label className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
-                                <svg className="w-4 h-4 mr-1.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                                </svg>
-                                Alergi
-                            </label>
-                            <input type="text" name="alergi" value={formData.alergi} onChange={handleChange} placeholder="Contoh: Penisilin, Aspirin" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                        </div>
-                        <div className="relative">
-                            <label className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
-                                <svg className="w-4 h-4 mr-1.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                                Petugas Pemeriksa
-                            </label>
-                            <input
-                                type="text"
-                                value={pegawaiQuery}
-                                onChange={(e) => setPegawaiQuery(e.target.value)}
-                                placeholder="Ketik nama atau NIK pegawai..."
-                                className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                            />
-                            {pegawaiOptions.length > 0 && (
-                                <div className="absolute z-20 mt-1 w-full max-h-48 overflow-auto rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg">
-                                    {pegawaiOptions.map((p) => (
-                                        <button
-                                            key={p.nik}
-                                            type="button"
-                                            onClick={() => {
-                                                setFormData((prev) => ({ ...prev, nip: p.nik }));
-                                                setPegawaiQuery(p.nama + ' (' + p.nik + ')');
-                                                setPegawaiOptions([]);
-                                            }}
-                                            className="w-full text-left px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700/50 text-sm border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors"
-                                        >
-                                            <div className="font-medium text-gray-900 dark:text-white">{p.nama}</div>
-                                            <div className="text-xs text-gray-500 dark:text-gray-400">NIK: {p.nik}</div>
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                            <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">💡 Mulai ketik untuk mencari pegawai</p>
-                        </div>
-                    </div>
+                    {/* Alergi & Petugas Pemeriksa dipindahkan ke bawah panel Informasi Dasar */}
 
-                    <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 md:p-4">
-                        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3 flex items-center">
+                    <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/85 dark:bg-gray-800/85 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 p-4 md:p-6">
+                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                        <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
                             <svg className="w-4 h-4 mr-2 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                             </svg>
@@ -1524,7 +1522,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                 <textarea name="evaluasi" value={formData.evaluasi} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Evaluasi hasil pengobatan..." />
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-2 border-t border-gray-200 dark:border-gray-700">
@@ -1532,7 +1530,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                         <button
                             type="button"
                             onClick={() => { setEditKey(null); setMessage(null); setError(null); }}
-                            className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-md text-sm font-medium transition-colors flex items-center justify-center"
+                            className="bg-white/90 dark:bg-gray-700/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center"
                         >
                             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1540,7 +1538,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                             Batal
                         </button>
                     )}
-                    <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white px-6 py-2.5 rounded-md text-sm font-medium transition-colors disabled:cursor-not-allowed flex items-center justify-center" disabled={isSubmitting}>
+                    <button type="submit" className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 text-white font-semibold px-6 py-2.5 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed" disabled={isSubmitting}>
                         {isSubmitting ? (
                             <>
                                 <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -1562,7 +1560,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                         <button
                             type="button"
                             onClick={openBridgingModal}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-md text-sm font-medium transition-colors flex items-center justify-center"
+                            className="flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 transition-all duration-300 text-white font-semibold px-4 py-2.5 rounded-lg"
                             title="Bridging PCare"
                         >
                             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2157,7 +2155,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                         </button>
                     )}
                 </div>
-            </form>
+            </motion.form>
             {bridgingOpen && (
                 <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto">
                     <div className="absolute inset-0 bg-black/50" onClick={closeBridgingModal}></div>
@@ -2452,20 +2450,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                                     <label className="block text-xs font-medium mb-1">Terapi Obat</label>
                                                 <textarea value={kunjunganPreview.terapiObat ?? ''} onChange={(e) => updateKunjunganField('terapiObat', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm"></textarea>
                                             </div>
-                                            {/* Preview Payload: tampilkan payload final (Kunjungan + Rujukan) sebelum dikirim */}
-                                            {payloadToSend && (
-                                                <div className="mt-3 md:mt-4 border rounded-lg bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700">
-                                                    <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-700">
-                                                        <div className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-200">Preview Payload (akan dikirim)</div>
-                                                        <button type="button" onClick={copyPayloadToClipboard} className="text-xs px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200">
-                                                            {copiedPayload ? 'Tersalin' : 'Salin JSON'}
-                                                        </button>
-                                                    </div>
-                                                    <div className="p-3 overflow-auto max-h-64">
-                                                        <pre className="text-xs md:text-sm whitespace-pre-wrap break-words text-gray-800 dark:text-gray-100">{JSON.stringify(payloadToSend, null, 2)}</pre>
-                                                    </div>
-                                                </div>
-                                            )}
+                                            {/* Bagian preview payload dihapus sesuai permintaan untuk membuat popup lebih ringkas */}
                                         </div>
                                     )}
 
