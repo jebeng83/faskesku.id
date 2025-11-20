@@ -7,26 +7,65 @@ import Breadcrumb from "@/Components/Breadcrumb";
 import MenuSearch from "@/Components/MenuSearch";
 
 export default function AppLayout({
-	title = "Faskesku",
-	children,
-	variant = "default",
+    title = "Faskesku",
+    children,
+    variant = "default",
 }) {
-	const { auth, menu_hierarchy, current_menu } = usePage().props;
-	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-	const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-	const [isDark, setIsDark] = useState(false);
-	const [collapsedGroups, setCollapsedGroups] = useState({});
-	const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
-	const [isMenuSearchOpen, setIsMenuSearchOpen] = useState(false);
+    const { auth, menu_hierarchy, current_menu } = usePage().props;
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    // Theme: light | dark | system
+    const [theme, setTheme] = useState("system");
+    const [isDark, setIsDark] = useState(false);
+    const [collapsedGroups, setCollapsedGroups] = useState({});
+    const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+    const [isMenuSearchOpen, setIsMenuSearchOpen] = useState(false);
 
-	useEffect(() => {
-		const root = document.documentElement;
-		if (isDark) {
-			root.classList.add("dark");
-		} else {
-			root.classList.remove("dark");
-		}
-	}, [isDark]);
+    // Restore theme preference
+    useEffect(() => {
+        try {
+            const savedTheme = localStorage.getItem("theme-preference");
+            if (savedTheme === "light" || savedTheme === "dark" || savedTheme === "system") {
+                setTheme(savedTheme);
+            }
+        } catch (_) {}
+    }, []);
+
+    // Compute dark mode from theme + system preference
+    useEffect(() => {
+        const mediaQuery = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+        const compute = () => {
+            const systemPrefersDark = mediaQuery ? mediaQuery.matches : false;
+            const nextIsDark = theme === 'dark' || (theme === 'system' && systemPrefersDark);
+            setIsDark(nextIsDark);
+        };
+        compute();
+        if (mediaQuery) {
+            const listener = () => compute();
+            if (mediaQuery.addEventListener) mediaQuery.addEventListener('change', listener);
+            else if (mediaQuery.addListener) mediaQuery.addListener(listener);
+            return () => {
+                if (mediaQuery.removeEventListener) mediaQuery.removeEventListener('change', listener);
+                else if (mediaQuery.removeListener) mediaQuery.removeListener(listener);
+            };
+        }
+    }, [theme]);
+
+    useEffect(() => {
+        const root = document.documentElement;
+        if (isDark) {
+            root.classList.add("dark");
+        } else {
+            root.classList.remove("dark");
+        }
+    }, [isDark]);
+
+    // Persist theme preference
+    useEffect(() => {
+        try {
+            localStorage.setItem("theme-preference", theme);
+        } catch (_) {}
+    }, [theme]);
 
 	// Restore sidebar toggle state from localStorage
 	useEffect(() => {
@@ -98,49 +137,48 @@ export default function AppLayout({
 		}));
 	};
 
-	if (variant === "auth") {
-		return (
-			<div className="min-h-screen relative bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-950 dark:to-black">
-				<header className="h-14 flex items-center justify-between px-4 max-w-6xl mx-auto">
-					<div className="flex items-center gap-2">
-						<div className="h-7 w-7 rounded-md bg-blue-600 shadow-sm" />
-						<span className="font-semibold tracking-tight text-gray-900 dark:text-white">
-							{title}
-						</span>
-						<span className="hidden sm:inline text-xs text-gray-500 dark:text-gray-400">
-							SIMRS
-						</span>
-					</div>
-					<button
-						onClick={() => setIsDark((v) => !v)}
-						className="p-2 rounded-md hover:bg-white/50 dark:hover:bg-white/5"
-						aria-label="Toggle theme"
-					>
-						{isDark ? (
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								viewBox="0 0 24 24"
-								fill="currentColor"
-								className="w-5 h-5"
-							>
-								<path d="M21.752 15.002A9.718 9.718 0 0 1 12 21.75 9.75 9.75 0 0 1 9.9 2.28a.75.75 0 0 1 .893.987A8.25 8.25 0 0 0 20.73 13.86a.75.75 0 0 1 1.022.893Z" />
-							</svg>
-						) : (
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								viewBox="0 0 24 24"
-								fill="currentColor"
-								className="w-5 h-5"
-							>
-								<path d="M12 18.75a6.75 6.75 0 1 0 0-13.5 6.75 6.75 0 0 0 0 13.5Z" />
-							</svg>
-						)}
-					</button>
-				</header>
-				<div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-					<div className="absolute -top-28 -right-24 h-80 w-80 rounded-full bg-blue-400/10 blur-3xl" />
-					<div className="absolute -bottom-24 -left-24 h-80 w-80 rounded-full bg-purple-400/10 blur-3xl" />
-				</div>
+    const cycleTheme = () => setTheme((prev) => (prev === 'light' ? 'dark' : prev === 'dark' ? 'system' : 'light'));
+
+    if (variant === "auth") {
+        return (
+            <div className="min-h-screen relative bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-950 dark:to-black">
+                <header className="h-14 flex items-center justify-between px-4 max-w-6xl mx-auto">
+                    <div className="flex items-center gap-2">
+                        <div className="h-7 w-7 rounded-md bg-blue-600 shadow-sm" />
+                        <span className="font-semibold tracking-tight text-gray-900 dark:text-white">
+                            {title}
+                        </span>
+                        <span className="hidden sm:inline text-xs text-gray-500 dark:text-gray-400">
+                            SIMRS
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={cycleTheme}
+                            className="p-2 rounded-md hover:bg-white/50 dark:hover:bg-white/5"
+                            aria-label="Toggle theme"
+                            title={`Theme: ${theme}`}
+                        >
+                            {theme === 'light' ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                                    <path d="M12 4.5a.75.75 0 0 1 .75-.75h.003a.75.75 0 0 1 0 1.5H12.75A.75.75 0 0 1 12 4.5Zm0 13.5a.75.75 0 0 1 .75-.75h.003a.75.75 0 0 1 0 1.5H12.75a.75.75 0 0 1-.75-.75ZM4.5 12a.75.75 0 0 1 .75-.75h.003a.75.75 0 0 1 0 1.5H5.25A.75.75 0 0 1 4.5 12Zm13.5 0a.75.75 0 0 1 .75-.75h.003a.75.75 0 0 1 0 1.5H18.75a.75.75 0 0 1-.75-.75ZM6.22 6.22a.75.75 0 0 1 1.06 0l.002.002a.75.75 0 1 1-1.062 1.06l-.002-.002a.75.75 0 0 1 0-1.06Zm10.5 10.5a.75.75 0 0 1 1.06 0l.002.002a.75.75 0 1 1-1.062 1.06l-.002-.002a.75.75 0 0 1 0-1.06ZM6.22 17.78a.75.75 0 0 1 0-1.06l.002-.002a.75.75 0 1 1 1.06 1.062l-.002.002a.75.75 0 0 1-1.06 0Zm10.5-10.5a.75.75 0 0 1 0-1.06l.002-.002a.75.75 0 1 1 1.06 1.062l-.002.002a.75.75 0 0 1-1.06 0ZM12 8.25a3.75 3.75 0 1 1 0 7.5 3.75 3.75 0 0 1 0-7.5Z" />
+                                </svg>
+                            ) : theme === 'dark' ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                                    <path d="M21.752 15.002A9.718 9.718 0 0 1 12 21.75 9.75 9.75 0 0 1 9.9 2.28a.75.75 0 0 1 .893.987A8.25 8.25 0 0 0 20.73 13.86a.75.75 0 0 1 1.022.893Z" />
+                                </svg>
+                            ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                                    <path d="M4.5 6A2.25 2.25 0 0 1 6.75 3.75h10.5A2.25 2.25 0 0 1 19.5 6v12A2.25 2.25 0 0 1 17.25 20.25H6.75A2.25 2.25 0 0 1 4.5 18V6Zm1.5 0v12h12V6h-12Z" />
+                                </svg>
+                            )}
+                        </button>
+                    </div>
+                </header>
+                <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+                    <div className="absolute -top-28 -right-24 h-80 w-80 rounded-full bg-blue-400/10 blur-3xl" />
+                    <div className="absolute -bottom-24 -left-24 h-80 w-80 rounded-full bg-purple-400/10 blur-3xl" />
+                </div>
 				<main className="min-h-[calc(100vh-56px)] grid lg:grid-cols-2 items-stretch gap-6 max-w-6xl mx-auto px-4 pb-10">
 					<section className="hidden lg:flex flex-col justify-center">
 						<h1 className="text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">
@@ -221,32 +259,53 @@ export default function AppLayout({
 						/>
 					</div>
 
-					{/* Right side - Actions */}
-					<div className="flex items-center gap-3">
-						{/* Search Button */}
-						<button
-						onClick={() => setIsMenuSearchOpen(true)}
-						className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
-						title="Search menus (⌘+K)"
-						>
-							<svg
-								className="w-4 h-4"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-								/>
-							</svg>
-							<span className="hidden sm:inline">Search</span>
-							<kbd className="hidden sm:inline-flex ml-2 px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600">
-								⌘K
-							</kbd>
-						</button>
+                    {/* Right side - Actions */}
+                    <div className="flex items-center gap-3">
+                        {/* Theme switcher */}
+                        <button
+                            onClick={cycleTheme}
+                            className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
+                            title={`Theme: ${theme}`}
+                        >
+                            {theme === 'light' ? (
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 4a1 1 0 0 1 1 1v1h-2V5a1 1 0 0 1 1-1Zm0 14a1 1 0 0 1 1 1v1h-2v-1a1 1 0 0 1 1-1ZM4 12a1 1 0 0 1 1-1h1v2H5a1 1 0 0 1-1-1Zm14 0a1 1 0 0 1 1-1h1v2h-1a1 1 0 0 1-1-1ZM6.464 6.464a1 1 0 0 1 1.414 0l.707.707-1.414 1.414-.707-.707a1 1 0 0 1 0-1.414Zm9.192 9.192a1 1 0 0 1 1.414 0l.707.707-1.414 1.414-.707-.707a1 1 0 0 1 0-1.414ZM6.464 17.536a1 1 0 0 1 0-1.414l.707-.707 1.414 1.414-.707.707a1 1 0 0 1-1.414 0Zm9.192-9.192a1 1 0 0 1 0-1.414l.707-.707 1.414 1.414-.707.707a1 1 0 0 1-1.414 0ZM12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8Z" />
+                                </svg>
+                            ) : theme === 'dark' ? (
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M21.752 15.002A9.718 9.718 0 0 1 12 21.75 9.75 9.75 0 0 1 9.9 2.28a.75.75 0 0 1 .893.987A8.25 8.25 0 0 0 20.73 13.86a.75.75 0 0 1 1.022.893Z" />
+                                </svg>
+                            ) : (
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M4.5 6A2.25 2.25 0 0 1 6.75 3.75h10.5A2.25 2.25 0 0 1 19.5 6v12A2.25 2.25 0 0 1 17.25 20.25H6.75A2.25 2.25 0 0 1 4.5 18V6Zm1.5 0v12h12V6h-12Z" />
+                                </svg>
+                            )}
+                            <span className="hidden sm:inline capitalize">{theme}</span>
+                        </button>
+                        {/* Search Button */}
+                        <button
+                        onClick={() => setIsMenuSearchOpen(true)}
+                        className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
+                        title="Search menus (⌘+K)"
+                        >
+                            <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                />
+                            </svg>
+                            <span className="hidden sm:inline">Search</span>
+                            <kbd className="hidden sm:inline-flex ml-2 px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600">
+                                ⌘K
+                            </kbd>
+                        </button>
 						{/* Manage Button */}
 						{/* <button className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors">
 							<svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -397,24 +456,14 @@ export default function AppLayout({
 											e.stopPropagation();
 
 											// Get fresh CSRF token
-											const getFreshCSRFToken = async () => {
-												try {
-													const response = await fetch("/sanctum/csrf-cookie", {
-														method: "GET",
-														credentials: "same-origin",
-													});
-													if (response.ok) {
-														// Token refreshed, get new token
-														const token = document.querySelector(
-															'meta[name="csrf-token"]'
-														);
-														return token ? token.getAttribute("content") : null;
-													}
-												} catch (error) {
-													console.log("Failed to refresh CSRF token:", error);
-												}
-												return null;
-											};
+                                            const getFreshCSRFToken = async () => {
+                                                // Hindari pemanggilan Sanctum jika tidak digunakan.
+                                                // Ambil token dari meta tag yang selalu disediakan Blade.
+                                                const token = document.querySelector(
+                                                    'meta[name="csrf-token"]'
+                                                );
+                                                return token ? token.getAttribute("content") : null;
+                                            };
 
 											try {
 												// Try to get fresh CSRF token first

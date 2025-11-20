@@ -401,9 +401,6 @@ export default function Index({
                                 <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
                                     Data Pasien
                                 </h2>
-                                <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm">
-                                    Kelola data pasien dengan tampilan yang modern dan responsif.
-                                </p>
                             </div>
                             <Link
                                 href={route("patients.create")}

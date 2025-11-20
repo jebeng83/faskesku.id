@@ -55,4 +55,12 @@ const pipeline = {
     byRawat: Object.assign(byRawat, byRawat),
 }
 
+export default pipelineons),
+    method: 'post',
+})
+
+const pipeline = {
+    byRawat: Object.assign(byRawat, byRawat),
+}
+
 export default pipeline

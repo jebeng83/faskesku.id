@@ -198,4 +198,8 @@ const konversiSatuan = {
     destroy: Object.assign(destroy, destroy),
 }
 
+export default konversiSatuandate: Object.assign(update, update),
+    destroy: Object.assign(destroy, destroy),
+}
+
 export default konversiSatuan
