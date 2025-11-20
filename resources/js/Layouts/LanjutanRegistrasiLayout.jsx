@@ -14,9 +14,41 @@ function LanjutanRegistrasiLayout({
   const currentUrl = page?.url || (typeof window !== "undefined" ? window.location.pathname : "");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  // Theme: light | dark | system
+  const [theme, setTheme] = useState("system");
   const [isDark, setIsDark] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const prefersReducedMotion = useReducedMotion();
+
+  // Restore theme preference
+  useEffect(() => {
+    try {
+      const savedTheme = localStorage.getItem("theme-preference");
+      if (savedTheme === "light" || savedTheme === "dark" || savedTheme === "system") {
+        setTheme(savedTheme);
+      }
+    } catch (_) {}
+  }, []);
+
+  // Compute dark mode from theme + system preference
+  useEffect(() => {
+    const mediaQuery = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+    const compute = () => {
+      const systemPrefersDark = mediaQuery ? mediaQuery.matches : false;
+      const nextIsDark = theme === 'dark' || (theme === 'system' && systemPrefersDark);
+      setIsDark(nextIsDark);
+    };
+    compute();
+    if (mediaQuery) {
+      const listener = () => compute();
+      if (mediaQuery.addEventListener) mediaQuery.addEventListener('change', listener);
+      else if (mediaQuery.addListener) mediaQuery.addListener(listener);
+      return () => {
+        if (mediaQuery.removeEventListener) mediaQuery.removeEventListener('change', listener);
+        else if (mediaQuery.removeListener) mediaQuery.removeListener(listener);
+      };
+    }
+  }, [theme]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -26,6 +58,13 @@ function LanjutanRegistrasiLayout({
       root.classList.remove("dark");
     }
   }, [isDark]);
+
+  // Persist theme preference
+  useEffect(() => {
+    try {
+      localStorage.setItem("theme-preference", theme);
+    } catch (_) {}
+  }, [theme]);
 
   // Restore sidebar toggle state from localStorage
   useEffect(() => {
@@ -233,31 +272,27 @@ function LanjutanRegistrasiLayout({
 
           {/* Right side - User menu */}
           <div className="flex items-center gap-3">
-            {/* Theme Toggle */}
+            {/* Theme Switcher */}
             <button
-              onClick={() => setIsDark(!isDark)}
-              className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              onClick={() => setTheme((prev) => (prev === 'light' ? 'dark' : prev === 'dark' ? 'system' : 'light'))}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
               aria-label="Toggle theme"
+              title={`Theme: ${theme}`}
             >
-              {isDark ? (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="w-5 h-5 text-gray-600 dark:text-gray-400"
-                >
-                  <path d="M12 18.75a6.75 6.75 0 1 0 0-13.5 6.75 6.75 0 0 0 0 13.5Z" />
+              {theme === 'light' ? (
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 4a1 1 0 0 1 1 1v1h-2V5a1 1 0 0 1 1-1Zm0 14a1 1 0 0 1 1 1v1h-2v-1a1 1 0 0 1 1-1ZM4 12a1 1 0 0 1 1-1h1v2H5a1 1 0 0 1-1-1Zm14 0a1 1 0 0 1 1-1h1v2h-1a1 1 0 0 1-1-1ZM6.464 6.464a1 1 0 0 1 1.414 0l.707.707-1.414 1.414-.707-.707a1 1 0 0 1 0-1.414Zm9.192 9.192a1 1 0 0 1 1.414 0l.707.707-1.414 1.414-.707-.707a1 1 0 0 1 0-1.414ZM6.464 17.536a1 1 0 0 1 0-1.414l.707-.707 1.414 1.414-.707.707a1 1 0 0 1-1.414 0Zm9.192-9.192a1 1 0 0 1 0-1.414l.707-.707 1.414 1.414-.707.707a1 1 0 0 1-1.414 0ZM12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8Z" />
                 </svg>
-              ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="w-5 h-5 text-gray-600 dark:text-gray-400"
-                >
+              ) : theme === 'dark' ? (
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M21.752 15.002A9.718 9.718 0 0 1 12 21.75 9.75 9.75 0 0 1 9.9 2.28a.75.75 0 0 1 .893.987A8.25 8.25 0 0 0 20.73 13.86a.75.75 0 0 1 1.022.893Z" />
                 </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M4.5 6A2.25 2.25 0 0 1 6.75 3.75h10.5A2.25 2.25 0 0 1 19.5 6v12A2.25 2.25 0 0 1 17.25 20.25H6.75A2.25 2.25 0 0 1 4.5 18V6Zm1.5 0v12h12V6h-12Z" />
+                </svg>
               )}
+              <span className="hidden sm:inline capitalize">{theme}</span>
             </button>
 
             {/* Profile Dropdown */}

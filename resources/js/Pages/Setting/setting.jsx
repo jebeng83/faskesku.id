@@ -16,6 +16,7 @@ import {
     Trash2,
     Search,
 } from "lucide-react";
+import { toast } from "@/tools/toast";
 
 // Halaman CRUD Setting Aplikasi
 // - Sumber data: tabel `setting` (fallback ke `settings` jika ada)
@@ -64,6 +65,9 @@ export default function SettingIndex({ settings = [], table, flash }) {
     const [appLoading, setAppLoading] = useState(false);
     const [editingNama, setEditingNama] = useState(null);
     const [recordQuery, setRecordQuery] = useState("");
+    // Struktur tabel
+    const [tableStructure, setTableStructure] = useState(null);
+    const [showStructure, setShowStructure] = useState(false);
     const appForm = useForm({
         nama_instansi: "",
         alamat_instansi: "",
@@ -91,7 +95,7 @@ export default function SettingIndex({ settings = [], table, flash }) {
         const loadApp = async () => {
             setAppLoading(true);
             try {
-                const res = await fetch(route("setting.app.index"));
+                const res = await fetch(route("setting.app.index", [], false));
                 if (res.ok) {
                     const json = await res.json();
                     setAppRecords(json.data || []);
@@ -104,6 +108,21 @@ export default function SettingIndex({ settings = [], table, flash }) {
         };
         loadApp();
     }, []);
+
+    // Load struktur tabel setting
+    const loadTableStructure = async () => {
+        try {
+            const res = await fetch(route("setting.describe", [], false));
+            if (res.ok) {
+                const json = await res.json();
+                setTableStructure(json);
+                setShowStructure(true);
+            }
+        } catch (e) {
+            console.warn("Gagal memuat struktur tabel", e);
+            toast.error("Gagal memuat struktur tabel");
+        }
+    };
 
     // Pencarian untuk tabel existing records
     const filteredRecords = useMemo(() => {
@@ -140,8 +159,14 @@ export default function SettingIndex({ settings = [], table, flash }) {
         post(route("setting.store"), {
             preserveScroll: true,
             onSuccess: () => {
+                toast.success("Setting berhasil ditambahkan");
                 reset();
                 router.get(route("setting.index"));
+            },
+            onError: (errors) => {
+                toast.error(
+                    errors?.message || "Gagal menambahkan setting"
+                );
             },
         });
     };
@@ -165,7 +190,15 @@ export default function SettingIndex({ settings = [], table, flash }) {
         router.post(route("setting.destroy", id), { _method: "DELETE" }, {
             forceFormData: true,
             preserveScroll: true,
-            onSuccess: () => router.get(route("setting.index")),
+            onSuccess: () => {
+                toast.success("Setting berhasil dihapus");
+                router.get(route("setting.index"));
+            },
+            onError: (errors) => {
+                toast.error(
+                    errors?.message || "Gagal menghapus setting"
+                );
+            },
         });
     };
 
@@ -185,33 +218,45 @@ export default function SettingIndex({ settings = [], table, flash }) {
             // dan fallback ke store (POST) bila record dari tabel legacy `setting` tidak memiliki kolom id.
             const hasId = item?.id !== undefined && item?.id !== null;
             if (hasId) {
-                const updateUrl = route("setting.update", item.id);
-                router.post(
-                    updateUrl,
-                    { ...form, _method: "PUT" },
-                    {
-                        preserveScroll: true,
-                        forceFormData: true,
-                        onSuccess: () => {
-                            setEditing(false);
-                            router.get(route("setting.index"));
-                        },
+                        const updateUrl = route("setting.update", item.id);
+                        router.post(
+                            updateUrl,
+                            { ...form, _method: "PUT" },
+                            {
+                                preserveScroll: true,
+                                forceFormData: true,
+                                onSuccess: () => {
+                                    toast.success("Setting berhasil diperbarui");
+                                    setEditing(false);
+                                    router.get(route("setting.index"));
+                                },
+                                onError: (errors) => {
+                                    toast.error(
+                                        errors?.message || "Gagal memperbarui setting"
+                                    );
+                                },
+                            }
+                        );
+                    } else {
+                        // Tabel `setting` (legacy) tidak memiliki kolom id. Lakukan upsert via store (POST) berdasarkan key.
+                        router.post(
+                            route("setting.store"),
+                            { ...form },
+                            {
+                                preserveScroll: true,
+                                onSuccess: () => {
+                                    toast.success("Setting berhasil diperbarui");
+                                    setEditing(false);
+                                    router.get(route("setting.index"));
+                                },
+                                onError: (errors) => {
+                                    toast.error(
+                                        errors?.message || "Gagal memperbarui setting"
+                                    );
+                                },
+                            }
+                        );
                     }
-                );
-            } else {
-                // Tabel `setting` (legacy) tidak memiliki kolom id. Lakukan upsert via store (POST) berdasarkan key.
-                router.post(
-                    route("setting.store"),
-                    { ...form },
-                    {
-                        preserveScroll: true,
-                        onSuccess: () => {
-                            setEditing(false);
-                            router.get(route("setting.index"));
-                        },
-                    }
-                );
-            }
         };
 
         return (
@@ -506,6 +551,12 @@ export default function SettingIndex({ settings = [], table, flash }) {
                             Daftar Setting
                         </div>
                         <div className="ml-auto flex items-center gap-2">
+                            <button
+                                onClick={loadTableStructure}
+                                className="rounded-md bg-slate-100 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-200"
+                            >
+                                Lihat Struktur Tabel
+                            </button>
                             <input
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
@@ -526,6 +577,98 @@ export default function SettingIndex({ settings = [], table, flash }) {
                             </select>
                         </div>
                     </div>
+                    {/* Modal Struktur Tabel */}
+                    {showStructure && tableStructure && (
+                        <div className="fixed inset-0 z-50 overflow-y-auto">
+                            <div className="flex min-h-full items-center justify-center p-4">
+                                <div
+                                    className="fixed inset-0 bg-gray-500/75 transition-opacity"
+                                    onClick={() => setShowStructure(false)}
+                                ></div>
+                                <div className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:w-full sm:max-w-2xl">
+                                    <div className="bg-white px-4 pt-5 pb-4 sm:p-6">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className="text-lg font-medium text-gray-900">
+                                                Struktur Tabel: {tableStructure.table}
+                                            </h3>
+                                            <button
+                                                onClick={() => setShowStructure(false)}
+                                                className="text-gray-400 hover:text-gray-600"
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                        <div className="overflow-x-auto">
+                                            <table className="min-w-full text-sm">
+                                                <thead>
+                                                    <tr className="bg-slate-50">
+                                                        <th className="px-3 py-2 text-left text-xs font-medium text-slate-700">
+                                                            Field
+                                                        </th>
+                                                        <th className="px-3 py-2 text-left text-xs font-medium text-slate-700">
+                                                            Type
+                                                        </th>
+                                                        <th className="px-3 py-2 text-left text-xs font-medium text-slate-700">
+                                                            Null
+                                                        </th>
+                                                        <th className="px-3 py-2 text-left text-xs font-medium text-slate-700">
+                                                            Key
+                                                        </th>
+                                                        <th className="px-3 py-2 text-left text-xs font-medium text-slate-700">
+                                                            Default
+                                                        </th>
+                                                        <th className="px-3 py-2 text-left text-xs font-medium text-slate-700">
+                                                            Extra
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {tableStructure.columns?.map((col, idx) => (
+                                                        <tr
+                                                            key={idx}
+                                                            className="border-t border-slate-200"
+                                                        >
+                                                            <td className="px-3 py-2 text-xs text-slate-800">
+                                                                <code className="bg-slate-50 px-1 py-0.5 rounded">
+                                                                    {col.Field}
+                                                                </code>
+                                                            </td>
+                                                            <td className="px-3 py-2 text-xs text-slate-600">
+                                                                {col.Type}
+                                                            </td>
+                                                            <td className="px-3 py-2 text-xs text-slate-600">
+                                                                {col.Null}
+                                                            </td>
+                                                            <td className="px-3 py-2 text-xs text-slate-600">
+                                                                {col.Key || "-"}
+                                                            </td>
+                                                            <td className="px-3 py-2 text-xs text-slate-600">
+                                                                {col.Default !== null
+                                                                    ? col.Default
+                                                                    : "NULL"}
+                                                            </td>
+                                                            <td className="px-3 py-2 text-xs text-slate-600">
+                                                                {col.Extra || "-"}
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowStructure(false)}
+                                            className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 sm:ml-3 sm:w-auto"
+                                        >
+                                            Tutup
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                     <div className="overflow-x-auto">
                         <table className="min-w-full">
                             <thead>
@@ -566,7 +709,10 @@ export default function SettingIndex({ settings = [], table, flash }) {
 
             {/* Card: Setting Aplikasi (CRUD tabel legacy `setting`) */}
             <div className="w-full px-2 md:px-3 pb-10">
-                <MotionCard className="p-6 border-slate-200 mt-6">
+                {/* Catatan: Menggunakan <div> biasa untuk menghindari isu fokus/blur saat mengetik di input.
+                   Sebelumnya card ini dibungkus MotionCard (framer-motion) yang berpotensi me-recreate
+                   node DOM pada setiap perubahan state sehingga input kehilangan fokus setelah 1 karakter. */}
+                <div className="p-6 border-slate-200 mt-6 rounded-2xl border bg-white/90 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow">
                     <div className="mb-4 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-sky-600 text-white shadow">
@@ -594,39 +740,116 @@ export default function SettingIndex({ settings = [], table, flash }) {
                         onSubmit={(e) => {
                             e.preventDefault();
                             if (editingNama) {
-                                // Perbaikan 405 PUT: spoofing method via POST + _method=PUT agar kompatibel dengan server/proxy
-                                const updateUrl = route(
-                                    "setting.app.update",
-                                    editingNama
-                                );
-                                router.post(
-                                    updateUrl,
-                                    { ...appForm.data, _method: "PUT" },
-                                    {
-                                        preserveScroll: true,
-                                        forceFormData: true,
-                                        onSuccess: () => {
-                                            setEditingNama(null);
-                                            appForm.reset();
-                                            fetch(route("setting.app.index"))
-                                                .then((r) => r.json())
-                                                .then((j) =>
-                                                    setAppRecords(j.data || [])
-                                                );
-                                        },
+                                // Perbaikan upload file: gunakan appForm.transform() dan appForm.post()
+                                // untuk memastikan FormData dibuat dengan benar untuk file upload
+                                const updateUrl = `/setting/app/${encodeURIComponent(editingNama)}`;
+                                
+                                // Simpan info file yang akan di-update SEBELUM transform/reset
+                                const hasWallpaperUpdate = appForm.data.wallpaper instanceof File;
+                                const hasLogoUpdate = appForm.data.logo instanceof File;
+                                
+                                // Debug: log data sebelum transform
+                                console.log('Form data before submit:', {
+                                    wallpaper: appForm.data.wallpaper ? {
+                                        name: appForm.data.wallpaper.name,
+                                        size: appForm.data.wallpaper.size,
+                                        type: appForm.data.wallpaper.type,
+                                        isFile: appForm.data.wallpaper instanceof File,
+                                    } : null,
+                                    logo: appForm.data.logo ? {
+                                        name: appForm.data.logo.name,
+                                        size: appForm.data.logo.size,
+                                        type: appForm.data.logo.type,
+                                        isFile: appForm.data.logo instanceof File,
+                                    } : null,
+                                });
+                                
+                                // Transform hanya untuk menambahkan _method, pastikan file tetap ada
+                                appForm.transform((data) => {
+                                    const transformed = {
+                                        nama_instansi: data.nama_instansi,
+                                        alamat_instansi: data.alamat_instansi,
+                                        kabupaten: data.kabupaten,
+                                        propinsi: data.propinsi,
+                                        kontak: data.kontak,
+                                        email: data.email,
+                                        aktifkan: data.aktifkan,
+                                        kode_ppk: data.kode_ppk,
+                                        kode_ppkinkhealth: data.kode_ppkinkhealth,
+                                        kode_ppkkemenkes: data.kode_ppkkemenkes,
+                                        _method: "PUT",
+                                    };
+                                    // Hanya tambahkan file jika benar-benar ada (instanceof File)
+                                    if (data.wallpaper instanceof File) {
+                                        transformed.wallpaper = data.wallpaper;
+                                        console.log('Wallpaper file included in transform');
+                                    } else {
+                                        console.log('Wallpaper is not a File instance:', typeof data.wallpaper, data.wallpaper);
                                     }
-                                );
-                            } else {
-                                appForm.post(route("setting.app.store"), {
+                                    if (data.logo instanceof File) {
+                                        transformed.logo = data.logo;
+                                        console.log('Logo file included in transform');
+                                    }
+                                    console.log('Transformed data keys:', Object.keys(transformed));
+                                    return transformed;
+                                });
+                                appForm.post(updateUrl, {
                                     preserveScroll: true,
                                     forceFormData: true,
                                     onSuccess: () => {
+                                        toast.success("Setting aplikasi berhasil diperbarui");
+                                        setEditingNama(null);
                                         appForm.reset();
-                                        fetch(route("setting.app.index"))
+                                        appForm.transform((data) => data); // Reset transform
+                                        
+                                        // Reload data setelah update dengan delay untuk memastikan DB sudah ter-update
+                                        setTimeout(() => {
+                                            fetch(route("setting.app.index", [], false))
+                                                .then((r) => r.json())
+                                                .then((j) => {
+                                                    setAppRecords(j.data || []);
+                                                    // Force reload halaman untuk clear cache gambar
+                                                    // Tapi hanya jika wallpaper/logo di-update
+                                                    if (hasWallpaperUpdate || hasLogoUpdate) {
+                                                        console.log('File di-update, reload halaman untuk clear cache...');
+                                                        // Reload setelah 1 detik untuk memastikan data ter-update
+                                                        setTimeout(() => {
+                                                            window.location.reload();
+                                                        }, 1000);
+                                                    }
+                                                });
+                                        }, 500);
+                                    },
+                                    onFinish: () => {
+                                        // Reset transform setelah selesai
+                                        appForm.transform((data) => data);
+                                    },
+                                    onError: (errors) => {
+                                        console.error('Update error:', errors);
+                                        toast.error(
+                                            errors?.message ||
+                                                "Gagal memperbarui setting aplikasi"
+                                        );
+                                    },
+                                });
+                            } else {
+                                appForm.post(route("setting.app.store", [], false), {
+                                    preserveScroll: true,
+                                    forceFormData: true,
+                                    onSuccess: () => {
+                                        toast.success("Setting aplikasi berhasil ditambahkan");
+                                        appForm.reset();
+                                        fetch(route("setting.app.index", [], false))
                                             .then((r) => r.json())
                                             .then((j) =>
                                                 setAppRecords(j.data || [])
                                             );
+                                    },
+                                    onError: (errors) => {
+                                        toast.error(
+                                            errors?.message ||
+                                                "Gagal menambahkan setting aplikasi"
+                                        );
                                     },
                                 });
                             }
@@ -646,6 +869,8 @@ export default function SettingIndex({ settings = [], table, flash }) {
                                         Nama Instansi
                                     </label>
                                     <input
+                                        id="nama_instansi"
+                                        name="nama_instansi"
                                         type="text"
                                         value={appForm.data.nama_instansi}
                                         onChange={(e) =>
@@ -665,6 +890,8 @@ export default function SettingIndex({ settings = [], table, flash }) {
                                         Kontak
                                     </label>
                                     <input
+                                        id="kontak"
+                                        name="kontak"
                                         type="text"
                                         value={appForm.data.kontak}
                                         onChange={(e) =>
@@ -683,6 +910,8 @@ export default function SettingIndex({ settings = [], table, flash }) {
                                         Email
                                     </label>
                                     <input
+                                        id="email"
+                                        name="email"
                                         type="email"
                                         value={appForm.data.email}
                                         onChange={(e) =>
@@ -711,6 +940,8 @@ export default function SettingIndex({ settings = [], table, flash }) {
                                         Alamat Instansi
                                     </label>
                                     <input
+                                        id="alamat_instansi"
+                                        name="alamat_instansi"
                                         type="text"
                                         value={appForm.data.alamat_instansi}
                                         onChange={(e) =>
@@ -729,6 +960,8 @@ export default function SettingIndex({ settings = [], table, flash }) {
                                         Aktifkan
                                     </label>
                                     <select
+                                        id="aktifkan"
+                                        name="aktifkan"
                                         value={appForm.data.aktifkan}
                                         onChange={(e) =>
                                             appForm.setData(
@@ -757,6 +990,8 @@ export default function SettingIndex({ settings = [], table, flash }) {
                                         Kabupaten
                                     </label>
                                     <input
+                                        id="kabupaten"
+                                        name="kabupaten"
                                         type="text"
                                         value={appForm.data.kabupaten}
                                         onChange={(e) =>
@@ -774,6 +1009,8 @@ export default function SettingIndex({ settings = [], table, flash }) {
                                         Propinsi
                                     </label>
                                     <input
+                                        id="propinsi"
+                                        name="propinsi"
                                         type="text"
                                         value={appForm.data.propinsi}
                                         onChange={(e) =>
@@ -792,6 +1029,8 @@ export default function SettingIndex({ settings = [], table, flash }) {
                                         Kode PPK
                                     </label>
                                     <input
+                                        id="kode_ppk"
+                                        name="kode_ppk"
                                         type="text"
                                         value={appForm.data.kode_ppk}
                                         onChange={(e) =>
@@ -821,6 +1060,8 @@ export default function SettingIndex({ settings = [], table, flash }) {
                                         Kode PPK InKHealth
                                     </label>
                                     <input
+                                        id="kode_ppkinkhealth"
+                                        name="kode_ppkinkhealth"
                                         type="text"
                                         value={appForm.data.kode_ppkinkhealth}
                                         onChange={(e) =>
@@ -839,6 +1080,8 @@ export default function SettingIndex({ settings = [], table, flash }) {
                                         Kode PPK Kemenkes
                                     </label>
                                     <input
+                                        id="kode_ppkkemenkes"
+                                        name="kode_ppkkemenkes"
                                         type="text"
                                         value={appForm.data.kode_ppkkemenkes}
                                         onChange={(e) =>
@@ -857,16 +1100,36 @@ export default function SettingIndex({ settings = [], table, flash }) {
                                         Wallpaper
                                     </label>
                                     <input
+                                        key={`wallpaper-${editingNama || 'new'}`}
+                                        id="wallpaper"
+                                        name="wallpaper"
                                         type="file"
-                                        onChange={(e) =>
-                                            appForm.setData(
-                                                "wallpaper",
-                                                e.target.files?.[0] ?? null
-                                            )
-                                        }
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0] ?? null;
+                                            if (file) {
+                                                console.log('Wallpaper file selected:', {
+                                                    name: file.name,
+                                                    size: file.size,
+                                                    type: file.type,
+                                                });
+                                                // Pastikan file benar-benar ter-set
+                                                appForm.setData("wallpaper", file);
+                                                // Verifikasi setelah set
+                                                setTimeout(() => {
+                                                    console.log('Wallpaper setelah setData:', appForm.data.wallpaper);
+                                                }, 100);
+                                            } else {
+                                                appForm.setData("wallpaper", null);
+                                            }
+                                        }}
                                         className="mt-1 w-full rounded-xl border-2 border-slate-300 bg-white text-sm file:mr-2 file:px-3 file:py-1.5 file:text-sm file:bg-slate-100 file:border-0 file:rounded-md"
                                         accept="image/*"
                                     />
+                                    {appForm.data.wallpaper && (
+                                        <p className="mt-1 text-[11px] text-emerald-600">
+                                            File dipilih: {appForm.data.wallpaper.name} ({formatBytes(appForm.data.wallpaper.size)})
+                                        </p>
+                                    )}
                                     <p className="mt-1 text-[11px] text-slate-500">
                                         Format: JPG/PNG • Disarankan ≤ 2MB
                                     </p>
@@ -879,16 +1142,36 @@ export default function SettingIndex({ settings = [], table, flash }) {
                                         Logo
                                     </label>
                                     <input
+                                        key={`logo-${editingNama || 'new'}`}
+                                        id="logo"
+                                        name="logo"
                                         type="file"
-                                        onChange={(e) =>
-                                            appForm.setData(
-                                                "logo",
-                                                e.target.files?.[0] ?? null
-                                            )
-                                        }
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0] ?? null;
+                                            if (file) {
+                                                console.log('Logo file selected:', {
+                                                    name: file.name,
+                                                    size: file.size,
+                                                    type: file.type,
+                                                });
+                                                // Pastikan file benar-benar ter-set
+                                                appForm.setData("logo", file);
+                                                // Verifikasi setelah set
+                                                setTimeout(() => {
+                                                    console.log('Logo setelah setData:', appForm.data.logo);
+                                                }, 100);
+                                            } else {
+                                                appForm.setData("logo", null);
+                                            }
+                                        }}
                                         className="mt-1 w-full rounded-xl border-2 border-slate-300 bg-white text-sm file:mr-2 file:px-3 file:py-1.5 file:text-sm file:bg-slate-100 file:border-0 file:rounded-md"
                                         accept="image/*"
                                     />
+                                    {appForm.data.logo && (
+                                        <p className="mt-1 text-[11px] text-emerald-600">
+                                            File dipilih: {appForm.data.logo.name} ({formatBytes(appForm.data.logo.size)})
+                                        </p>
+                                    )}
                                     <p className="mt-1 text-[11px] text-slate-500">
                                         Format: SVG/PNG • Disarankan ≤ 1MB
                                     </p>
@@ -992,10 +1275,16 @@ export default function SettingIndex({ settings = [], table, flash }) {
                                                 <td className="px-3 py-2">
                                                     {r.wallpaper_size > 0 ? (
                                                         <a
-                                                            href={route("setting.app.wallpaper", r.nama_instansi)}
+                                                            href={`/setting/app/${encodeURIComponent(r.nama_instansi)}/wallpaper?t=${Date.now()}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="text-sky-700 hover:underline"
+                                                            onClick={(e) => {
+                                                                // Force reload dengan cache busting
+                                                                e.preventDefault();
+                                                                const url = `/setting/app/${encodeURIComponent(r.nama_instansi)}/wallpaper?t=${Date.now()}`;
+                                                                window.open(url, '_blank');
+                                                            }}
                                                         >
                                                             {formatBytes(r.wallpaper_size)} • Lihat
                                                         </a>
@@ -1006,10 +1295,16 @@ export default function SettingIndex({ settings = [], table, flash }) {
                                                 <td className="px-3 py-2">
                                                     {r.logo_size > 0 ? (
                                                         <a
-                                                            href={route("setting.app.logo", r.nama_instansi)}
+                                                            href={`/setting/app/${encodeURIComponent(r.nama_instansi)}/logo?t=${Date.now()}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="text-sky-700 hover:underline"
+                                                            onClick={(e) => {
+                                                                // Force reload dengan cache busting
+                                                                e.preventDefault();
+                                                                const url = `/setting/app/${encodeURIComponent(r.nama_instansi)}/logo?t=${Date.now()}`;
+                                                                window.open(url, '_blank');
+                                                            }}
                                                         >
                                                             {formatBytes(r.logo_size)} • Lihat
                                                         </a>
@@ -1047,13 +1342,19 @@ export default function SettingIndex({ settings = [], table, flash }) {
                                                             className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-2.5 py-1 text-xs text-white hover:bg-rose-700"
                                                                 onClick={() => {
                                                                     if (!confirm(`Hapus data ${r.nama_instansi}?`)) return;
-                                                                router.post(route("setting.app.destroy", r.nama_instansi), { _method: "DELETE" }, {
+                                                                router.post(`/setting/app/${encodeURIComponent(r.nama_instansi)}`, { _method: "DELETE" }, {
                                                                     forceFormData: true,
                                                                     preserveScroll: true,
                                                                     onSuccess: () => {
-                                                                        fetch(route("setting.app.index"))
+                                                                        toast.success("Setting aplikasi berhasil dihapus");
+                                                                        fetch(route("setting.app.index", [], false))
                                                                             .then((rr) => rr.json())
                                                                             .then((j) => setAppRecords(j.data || []));
+                                                                    },
+                                                                    onError: (errors) => {
+                                                                        toast.error(
+                                                                            errors?.message || "Gagal menghapus setting aplikasi"
+                                                                        );
                                                                     },
                                                                 });
                                                             }}
@@ -1076,7 +1377,7 @@ export default function SettingIndex({ settings = [], table, flash }) {
                             </table>
                         </div>
                     </div>
-                </MotionCard>
+                </div>
             </div>
         </div>
     );

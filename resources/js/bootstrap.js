@@ -6,6 +6,25 @@ window.axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 // Ini membantu mencegah 419 (CSRF token mismatch) akibat cookie sesi tidak terkirim.
 window.axios.defaults.withCredentials = true;
 
+// --- Ziggy URL/Port Auto-Sync ---
+// Beberapa environment lokal sering berpindah port (mis. 8000, 8016, dsb.).
+// Agar semua pemanggilan route() otomatis menggunakan origin/port yang sedang aktif,
+// kita sinkronkan konfigurasi Ziggy ke window.location setiap kali aplikasi dimuat.
+try {
+    if (typeof window !== "undefined" && typeof window.Ziggy !== "undefined") {
+        const origin = window.location.origin; // contoh: http://127.0.0.1:8000
+        const currentPort = window.location.port
+            ? parseInt(window.location.port, 10)
+            : (origin.startsWith("https") ? 443 : 80);
+
+        // Mutasi langsung objek Ziggy global yang disuntikkan oleh @routes
+        window.Ziggy.url = origin;
+        window.Ziggy.port = currentPort;
+    }
+} catch (e) {
+    console.warn("Gagal menyinkronkan Ziggy dengan origin saat ini:", e);
+}
+
 // Get CSRF token from meta tag
 let token = document.head.querySelector('meta[name="csrf-token"]');
 
@@ -18,7 +37,6 @@ if (token) {
         "CSRF token not found: https://laravel.com/docs/csrf#csrf-x-csrf-token"
     );
 }
-
 // Inject CSRF header untuk semua request fetch same-origin yang berpotensi mengubah state
 // (POST, PUT, PATCH, DELETE). Ini memastikan Inertia router (yang menggunakan fetch)
 // dan pemanggilan fetch manual selalu menyertakan token CSRF.
@@ -79,6 +97,60 @@ if (token) {
         return origFetch(input, init);
     };
 })();
+
+// --- Auto-refresh CSRF Token & Retry untuk 419 ---
+// Jika terjadi 419 (Page Expired / CSRF mismatch), coba refresh token terlebih dahulu
+// lalu ulangi 1x request yang gagal. Ini membantu saat token berubah akibat rotasi session.
+const refreshCsrfToken = async () => {
+    // Ambil ulang token dari meta tag dan set ke axios default
+    try {
+        const mt = document.head.querySelector('meta[name="csrf-token"]');
+        const newToken = mt?.content || "";
+        if (newToken) {
+            window.axios.defaults.headers.common["X-CSRF-TOKEN"] = newToken;
+        }
+        return newToken;
+    } catch (_) {
+        return "";
+    }
+};
+
+window.axios.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const status = error?.response?.status;
+        const is419 = status === 419;
+        const isCsrfMismatch =
+            typeof error?.response?.data === "string" &&
+            /CSRF|Page Expired/i.test(error.response.data);
+
+        // Hindari loop retry tak terbatas
+        const alreadyRetried = error?.config?.headers?.["X-CSRF-RETRY"] === "1";
+
+        if ((is419 || isCsrfMismatch) && !alreadyRetried) {
+            try {
+                await refreshCsrfToken();
+                const retryConfig = {
+                    ...error.config,
+                    headers: {
+                        ...(error.config?.headers || {}),
+                        "X-CSRF-RETRY": "1",
+                        // Perbarui header token saat ini
+                        "X-CSRF-TOKEN":
+                            document.head.querySelector('meta[name="csrf-token"]')?.content ||
+                            window.axios.defaults.headers.common["X-CSRF-TOKEN"] ||
+                            "",
+                    },
+                };
+                return window.axios.request(retryConfig);
+            } catch (e) {
+                // Jika refresh+retry gagal, teruskan error aslinya
+                return Promise.reject(error);
+            }
+        }
+        return Promise.reject(error);
+    }
+);
 
 // --- BPJS Debug Interceptors ---
 // Mencatat setiap request/response/error ke endpoint /pcare/api/* di console

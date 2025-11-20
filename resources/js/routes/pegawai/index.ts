@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::search
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:718
