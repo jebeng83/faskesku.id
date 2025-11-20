@@ -1,65 +1,80 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Head } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
 import DoctorModal from "@/Components/DoctorModal";
 import DoctorDetail from "@/Components/DoctorDetail";
-import {
-	PlusIcon,
-	MagnifyingGlassIcon,
-	PencilIcon,
-	TrashIcon,
-} from "@heroicons/react/24/outline";
+import { Plus, Search, Pencil, Trash, Stethoscope } from "lucide-react";
 import { router } from "@inertiajs/react";
 
 const containerVariants = {
-	hidden: { opacity: 0 },
-	visible: {
-		opacity: 1,
-		transition: {
-			duration: 0.3,
-			staggerChildren: 0.1,
-		},
-	},
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
+    },
+  },
 };
 
 const itemVariants = {
-	hidden: { opacity: 0, y: 20 },
-	visible: {
-		opacity: 1,
-		y: 0,
-		transition: { duration: 0.3 },
-	},
+  hidden: { opacity: 0, y: 30, scale: 0.98 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+  },
 };
 
 const cardVariants = {
-	hidden: { opacity: 0, scale: 0.95 },
-	visible: {
-		opacity: 1,
-		scale: 1,
-		transition: { duration: 0.3 },
-	},
-	hover: {
-		scale: 1.02,
-		transition: { duration: 0.2 },
-	},
+  hidden: { opacity: 0, scale: 0.98 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+  },
+  hover: {
+    scale: 1.01,
+    y: -4,
+    transition: { duration: 0.3, ease: "easeOut" },
+  },
 };
 
 export default function Index({ doctors, availableEmployees, spesialisList }) {
-	const [selectedDoctor, setSelectedDoctor] = useState(null);
-	const [showModal, setShowModal] = useState(false);
-	const [modalMode, setModalMode] = useState("create");
-	const [searchTerm, setSearchTerm] = useState("");
-	const [filteredDoctors, setFilteredDoctors] = useState(doctors);
+    const [selectedDoctor, setSelectedDoctor] = useState(null);
+    const [showModal, setShowModal] = useState(false);
+    const [modalMode, setModalMode] = useState("create");
+    const [searchTerm, setSearchTerm] = useState("");
+    const [filteredDoctors, setFilteredDoctors] = useState(doctors);
+    const [filterSpesialis, setFilterSpesialis] = useState("all");
+    const [filterStatus, setFilterStatus] = useState("all");
 
-	useEffect(() => {
-		const filtered = doctors.filter(
-			(doctor) =>
-				doctor.nm_dokter.toLowerCase().includes(searchTerm.toLowerCase()) ||
-				doctor.kd_dokter.toLowerCase().includes(searchTerm.toLowerCase())
-		);
-		setFilteredDoctors(filtered);
-	}, [searchTerm, doctors]);
+    const reduceMotion = useMemo(() =>
+      typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    []);
+
+// Helper: get spesialis name from code for display
+const getSpesialisName = (kd_sps) => {
+  if (!kd_sps || !Array.isArray(spesialisList)) return kd_sps || "-";
+  const match = spesialisList.find((s) => s.kd_sps === kd_sps || s.kdSps === kd_sps);
+  return match?.nm_sps || match?.nmSps || kd_sps || "-";
+};
+
+useEffect(() => {
+  const q = searchTerm.trim().toLowerCase();
+  const filtered = doctors.filter((doctor) => {
+    const matchesText =
+      (doctor.nm_dokter || "").toLowerCase().includes(q) ||
+      (doctor.kd_dokter || "").toLowerCase().includes(q);
+    const matchesSpesialis = filterSpesialis === "all" || doctor.kd_sps === filterSpesialis;
+    const matchesStatus =
+      filterStatus === "all" || (filterStatus === "aktif" ? doctor.status === "1" : doctor.status !== "1");
+    return matchesText && matchesSpesialis && matchesStatus;
+  });
+  setFilteredDoctors(filtered);
+}, [searchTerm, filterSpesialis, filterStatus, doctors]);
 
 	useEffect(() => {
 		if (filteredDoctors.length > 0 && !selectedDoctor) {
@@ -106,71 +121,112 @@ export default function Index({ doctors, availableEmployees, spesialisList }) {
 
   return (
     <LanjutanRegistrasiLayout
-      title="Registrasi Pasien"
+      title="Manajemen Dokter"
       menuConfig={{ activeTab: "dokter" }}
     >
       <Head title="Manajemen Dokter" />
 
       <div className="space-y-6">
-        {/* Header */}
-        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-          <div className="p-6">
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex justify-between items-center"
-            >
+        {/* Header - modern glass with gradient accent */}
+        <motion.div
+          variants={itemVariants}
+          initial={reduceMotion ? false : "hidden"}
+          animate={reduceMotion ? false : "visible"}
+          className="relative overflow-hidden rounded-2xl bg-white/85 dark:bg-gray-800/85 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-purple-500/10" />
+                    <div className="absolute top-2 left-4 right-4 h-2 rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 shadow-sm ring-1 ring-black/5 dark:ring-white/10 z-20" />
+          <div className="relative p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md shadow-blue-500/20">
+                <Stethoscope className="w-5 h-5 text-white" />
+              </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Manajemen Dokter
-                </h2>
-                <p className="text-gray-600 dark:text-gray-400 mt-1">
-                  Kelola data dokter rumah sakit
-                </p>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Manajemen Dokter</h2>
+                <p className="text-gray-600 dark:text-gray-400 mt-1">Kelola data dokter rumah sakit</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="hidden md:flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                <span className="px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-900/40">Total: {doctors?.length ?? 0}</span>
+                <span className="px-2 py-1 rounded-lg bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">Aktif: {doctors?.filter?.(d => d.status === "1")?.length ?? 0}</span>
               </div>
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={handleCreate}
-                className="bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-900 hover:to-black text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 shadow-md hover:shadow-lg font-medium text-sm whitespace-nowrap transform hover:scale-105"
+                className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 shadow-lg shadow-blue-500/25"
               >
-                <PlusIcon className="h-5 w-5" />
-                Tambah Dokter
+                <Plus className="h-5 w-5" />
+                <span className="text-sm font-semibold">Tambah Dokter</span>
               </motion.button>
-            </motion.div>
+            </div>
           </div>
-        </div>
+        </motion.div>
 
 				<motion.div
 					variants={containerVariants}
-					initial="hidden"
-					animate="visible"
-					className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+					initial={reduceMotion ? false : "hidden"}
+					animate={reduceMotion ? false : "visible"}
+					className="grid grid-cols-1 lg:grid-cols-12 gap-6"
 				>
 					{/* Left Side - Doctor List */}
 					<motion.div
 						variants={itemVariants}
-						className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700"
+						className="relative bg-white/95 dark:bg-gray-900/85 rounded-2xl shadow-xl shadow-blue-500/5 overflow-hidden border border-gray-200/70 dark:border-gray-800 col-span-12 lg:col-span-5"
 					>
-						{/* Search Header */}
-						<div className="bg-gray-900 p-6">
-							<h3 className="text-lg font-semibold text-white mb-4">
-								Daftar Dokter ({filteredDoctors.length})
-							</h3>
-							<div className="relative">
-								<MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-								<input
-									type="text"
-									placeholder="Cari dokter..."
-									value={searchTerm}
-									onChange={(e) => setSearchTerm(e.target.value)}
-									className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
-								/>
+						{/* Overlay gradient + top accent bar for premium feel */}
+						<div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-purple-500/10" />
+                        <div className="absolute top-2 left-4 right-4 h-2 rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 shadow-sm ring-1 ring-black/5 dark:ring-white/10 z-20" />
+						<div className="relative z-[1]">
+						{/* Search & Filters Header */}
+						<div className="bg-gradient-to-r from-gray-900 via-gray-900 to-gray-800 p-6">
+							<div className="flex items-center justify-between mb-4">
+								<h3 className="text-lg font-semibold text-white">
+									Daftar Dokter ({filteredDoctors.length})
+								</h3>
+								<div className="hidden lg:flex items-center gap-2 text-xs text-gray-300">
+									<span className="px-2 py-1 rounded-lg bg-white/10 ring-1 ring-white/20">Spesialis: {filterSpesialis === "all" ? "Semua" : getSpesialisName(filterSpesialis)}</span>
+									<span className="px-2 py-1 rounded-lg bg-white/10 ring-1 ring-white/20">Status: {filterStatus === "all" ? "Semua" : filterStatus === "aktif" ? "Aktif" : "Non-Aktif"}</span>
+								</div>
+							</div>
+							<div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+								<div className="relative md:col-span-2">
+									<Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+									<input
+										type="text"
+										placeholder="Cari dokter (nama/kode)…"
+										value={searchTerm}
+										onChange={(e) => setSearchTerm(e.target.value)}
+										className="w-full pl-10 pr-4 py-3 bg-gray-800/90 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent"
+									/>
+								</div>
+								<div className="flex items-center gap-3">
+									<select
+										value={filterSpesialis}
+										onChange={(e) => setFilterSpesialis(e.target.value)}
+										className="flex-1 px-3 py-3 rounded-lg bg-gray-800/90 border border-gray-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+									>
+										<option value="all">Semua Spesialis</option>
+										{Array.isArray(spesialisList) && spesialisList.map((s) => (
+											<option key={s.kd_sps ?? s.kdSps} value={s.kd_sps ?? s.kdSps}>{s.nm_sps ?? s.nmSps}</option>
+										))}
+									</select>
+									<select
+										value={filterStatus}
+										onChange={(e) => setFilterStatus(e.target.value)}
+										className="px-3 py-3 rounded-lg bg-gray-800/90 border border-gray-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+									>
+										<option value="all">Semua Status</option>
+										<option value="aktif">Aktif</option>
+										<option value="non">Non-Aktif</option>
+									</select>
+								</div>
 							</div>
 						</div>
 
 						{/* Doctor List */}
-						<div className="flex-1 overflow-y-auto max-h-[calc(100vh-350px)]">
+						<div className="flex-1 overflow-y-auto max-h-[calc(100vh-360px)]">
 							<AnimatePresence mode="wait">
 								{filteredDoctors.length === 0 ? (
 									<motion.div
@@ -186,42 +242,45 @@ export default function Index({ doctors, availableEmployees, spesialisList }) {
 										<p className="text-sm">Coba ubah kata kunci pencarian</p>
 									</motion.div>
 								) : (
-									<motion.div
-										variants={containerVariants}
-										initial="hidden"
-										animate="visible"
-										className="p-4 space-y-3"
-									>
+										<motion.div
+											variants={containerVariants}
+											initial={reduceMotion ? false : "hidden"}
+											animate={reduceMotion ? false : "visible"}
+											className="p-4 space-y-3"
+										>
 										{filteredDoctors.map((doctor) => (
 											<motion.div
 												key={doctor.kd_dokter}
 												variants={cardVariants}
 												whileHover="hover"
 												onClick={() => handleDoctorSelect(doctor)}
-												className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+												className={`relative p-4 rounded-xl cursor-pointer transition-all border ${
 													selectedDoctor?.kd_dokter === doctor.kd_dokter
-														? "border-gray-900 bg-gray-50"
-														: "border-gray-200 hover:border-gray-300"
+														? "border-blue-600 bg-blue-50/60"
+														: "border-gray-200 dark:border-gray-700 hover:border-gray-300"
 												}`}
 											>
 												<div className="flex justify-between items-start">
 													<div className="flex-1 min-w-0">
-														<h4 className="font-semibold text-gray-900 truncate">
+														<h4 className="font-semibold text-gray-900 dark:text-white truncate">
 															{doctor.nm_dokter}
 														</h4>
-														<p className="text-sm text-gray-600 mt-1">
+														<p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
 															Kode: {doctor.kd_dokter}
 														</p>
-														<div className="flex items-center gap-4 mt-2">
-															<span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
+														<div className="flex flex-wrap items-center gap-2 mt-2">
+															<span className="text-xs px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 ring-1 ring-gray-200 dark:ring-gray-700">
 																{doctor.jk === "L" ? "Laki-laki" : "Perempuan"}
 															</span>
+															<span className="text-xs px-2 py-1 rounded-lg bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 ring-1 ring-indigo-200 dark:ring-indigo-800">
+																{getSpesialisName(doctor.kd_sps)}
+															</span>
 															{doctor.status === "1" ? (
-																<span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+																<span className="text-xs px-2 py-1 rounded-lg bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 ring-1 ring-green-200 dark:ring-green-800">
 																	Aktif
 																</span>
 															) : (
-																<span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">
+																<span className="text-xs px-2 py-1 rounded-lg bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 ring-1 ring-red-200 dark:ring-red-800">
 																	Non-Aktif
 																</span>
 															)}
@@ -235,9 +294,9 @@ export default function Index({ doctors, availableEmployees, spesialisList }) {
 																e.stopPropagation();
 																handleEdit(doctor);
 															}}
-															className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+															className="p-1.5 text-gray-600 dark:text-gray-300 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
 														>
-															<PencilIcon className="h-4 w-4" />
+															<Pencil className="h-4 w-4" />
 														</motion.button>
 														<motion.button
 															whileHover={{ scale: 1.1 }}
@@ -246,9 +305,9 @@ export default function Index({ doctors, availableEmployees, spesialisList }) {
 																e.stopPropagation();
 																handleDelete(doctor);
 															}}
-															className="p-1.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+															className="p-1.5 text-gray-600 dark:text-gray-300 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
 														>
-															<TrashIcon className="h-4 w-4" />
+															<Trash className="h-4 w-4" />
 														</motion.button>
 													</div>
 												</div>
@@ -258,11 +317,17 @@ export default function Index({ doctors, availableEmployees, spesialisList }) {
 								)}
 							</AnimatePresence>
 						</div>
+					</div>
 					</motion.div>
 
 					{/* Right Side - Doctor Detail */}
-					<motion.div variants={itemVariants}>
-						<DoctorDetail doctor={selectedDoctor} />
+					<motion.div variants={itemVariants} className="col-span-12 lg:col-span-7">
+						<div className="relative overflow-hidden rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/85 backdrop-blur-xl p-6 shadow-xl shadow-blue-500/5">
+							<div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+							<div className="relative">
+								<DoctorDetail doctor={selectedDoctor} />
+							</div>
+						</div>
 					</motion.div>
 				</motion.div>
 			</div>

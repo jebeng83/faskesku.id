@@ -1,1445 +1,2432 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\Pcare;
 
 use App\Http\Controllers\Controller;
+use App\Traits\BpjsTraits;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Validator;
-use App\Traits\PcareTrait;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Schema;
 
+/**
+ * Controller untuk bridging BPJS PCare.
+ * - Membuat header (X-cons-id, X-timestamp, X-signature, X-authorization, user_key)
+ * - Proxy request ke endpoint PCare
+ * - Contoh endpoint umum (dokter, faskes, peserta, kunjungan)
+ */
 class PcareController extends Controller
 {
-    use PcareTrait;
+    use BpjsTraits;
 
     /**
-     * Mendapatkan data peserta berdasarkan nomor kartu
-     * URL: {Base URL}/{Service Name}/peserta/{Parameter 1}
-     * Parameter 1: Nomor Kartu Peserta
+     * Uji pembuatan header dan tampilkan konfigurasi dasar.
      */
-    public function getPeserta($noKartu)
+    public function ping()
     {
-        try {
-            // Perbaiki format nomor kartu (hapus non-digit, hapus leading zeros, padding hingga 13 digit)
-            $noKartu = preg_replace('/[^0-9]/', '', $noKartu); // Hapus karakter non-digit
-            $noKartuClean = ltrim($noKartu, '0'); // Hapus leading zeros
-            $noKartu = str_pad($noKartuClean, 13, '0', STR_PAD_LEFT); // Padding hingga 13 digit
-            
-            // Log nomor kartu yang sudah diperbaiki
-            Log::info('PCare Get Peserta Format Fix', [
-                'original' => $noKartu,
-                'cleaned' => $noKartuClean,
-                'padded' => $noKartu
-            ]);
-            
-            // Validasi format nomor kartu
-            if (!preg_match('/^\d{13}$/', $noKartu)) {
-                return response()->json([
-                    'metaData' => [
-                        'code' => 400,
-                        'message' => 'Nomor kartu harus 13 digit'
-                    ],
-                    'response' => null
-                ], 400);
-            }
+        $cfg = $this->pcareConfig();
+        $timestamp = $this->generateTimestamp();
+        $headers = $this->buildPcareHeaders($timestamp);
 
-            // Cek cache dulu
-            $cacheKey = 'peserta_' . $noKartu;
-            if (Cache::has($cacheKey)) {
-                Log::info('PCare Get Peserta From Cache', ['noKartu' => $noKartu]);
-                return response()->json(Cache::get($cacheKey));
-            }
+        return response()->json([
+            'pcare' => [
+                'base_url' => $cfg['base_url'],
+                'kode_ppk' => $cfg['kode_ppk'],
+                'app_code' => $cfg['app_code'],
+            ],
+            'headers' => $headers,
+        ]);
+    }
 
-            // Log request
-            Log::info('PCare Get Peserta Request', [
-                'noKartu' => $noKartu,
-                'timestamp' => now()
-            ]);
+    /**
+     * Proxy generic untuk memanggil endpoint PCare.
+     * Request method mengikuti method HTTP yang dikirim oleh client.
+     * Contoh: GET /api/pcare/proxy/dokter/0/10
+     */
+    public function proxy(Request $request, string $endpoint)
+    {
+        $method = strtoupper($request->method());
+        $query = $request->query();
+        $body = $request->all();
 
-            // Format endpoint
-            $endpoint = "peserta/{$noKartu}";
+        $result = $this->pcareRequest($method, $endpoint, $query, $body);
 
-            // Debugging info - tampilkan semua variabel environment yang diperlukan
-            Log::info('PCare Environment Variables', [
-                'base_url' => env('BPJS_PCARE_BASE_URL'),
-                'cons_id' => env('BPJS_PCARE_CONS_ID'),
-                'user_key' => env('BPJS_PCARE_USER_KEY'),
-                'username' => env('BPJS_PCARE_USER'),
-                'has_password' => !empty(env('BPJS_PCARE_PASS')),
-                'has_cons_pwd' => !empty(env('BPJS_PCARE_CONS_PWD')),
-                'app_code' => env('BPJS_PCARE_APP_CODE')
-            ]);
+        $response = $result['response'];
+        $timestamp = $result['timestamp_used'];
+        $rawBody = $response->body();
+        $processed = $this->maybeDecryptAndDecompress($rawBody, $timestamp);
 
-            // Kirim request ke PCare
-            $response = $this->requestPcare($endpoint);
+        return response()->json([
+            'ok' => $response->successful(),
+            'status' => $response->status(),
+            'endpoint' => $result['url'],
+            'headers_used' => $result['headers_used'],
+            'data' => $processed,
+            'raw' => $response->json() ?? $rawBody,
+        ], $response->status());
+    }
 
-            // Debug response
-            Log::info('PCare Response Debug', [
-                'response' => $response
-            ]);
+    /**
+     * Contoh: daftar dokter.
+     * Endpoint PCare biasanya: GET /dokter/{start}/{limit}
+     */
+    public function getDokter(Request $request)
+    {
+        $start = $request->query('start', 0);
+        $limit = $request->query('limit', 100);
+        $result = $this->pcareRequest('GET', "dokter/{$start}/{$limit}");
 
-            // Cek response
-            if (isset($response['metaData']) && $response['metaData']['code'] == 200) {
-                // Simpan ke cache selama 6 jam
-                Cache::put($cacheKey, $response, now()->addHours(6));
-                
-                // Format response sesuai dengan contoh Java
-                $peserta = $response['response'];
-                
-                // Data yang ditampilkan sesuai dengan contoh Java
-                $formattedData = [
-                    ['No.Kartu', ': '.$peserta['noKartu']],
-                    ['Nama', ': '.$peserta['nama']],
-                    ['Hubungan Keluarga', ': '.$peserta['hubunganKeluarga']],
-                    ['Jenis Kelamin', ': '.str_replace(['L', 'P'], ['Laki-Laki', 'Perempuan'], $peserta['sex'])],
-                    ['Tanggal Lahir', ': '.$peserta['tglLahir']],
-                    ['Mulai Aktif', ': '.$peserta['tglMulaiAktif']],
-                    ['Akhir Berlaku', ': '.$peserta['tglAkhirBerlaku']],
-                    ['Provider Umum', ':'],
-                    ['       Kode Provider', ': '.($peserta['kdProviderPst']['kdProvider'] ?? '-')],
-                    ['       Nama Provider', ': '.($peserta['kdProviderPst']['nmProvider'] ?? '-')],
-                    ['Provider Gigi', ':'],
-                    ['       Kode Provider', ': '.($peserta['kdProviderGigi']['kdProvider'] ?? '-')],
-                    ['       Nama Provider', ': '.($peserta['kdProviderGigi']['nmProvider'] ?? '-')],
-                    ['Kelas Tanggungan', ':'],
-                    ['       Kode Kelas', ': '.$peserta['jnsKelas']['kode']],
-                    ['       Nama Kelas', ': '.$peserta['jnsKelas']['nama']],
-                    ['Jenis Peserta', ':'],
-                    ['       Kode Jenis', ': '.$peserta['jnsPeserta']['kode']],
-                    ['       Nama Jenis', ': '.$peserta['jnsPeserta']['nama']],
-                    ['Golongan Darah', ': '.$peserta['golDarah']],
-                    ['Nomor HP', ': '.$peserta['noHP']],
-                    ['Nomor KTP', ': '.$peserta['noKTP']],
-                    ['Peserta Prolanis', ': '.($peserta['pstProl'] ?? '-')],
-                    ['Peserta PRB', ': '.($peserta['pstPrb'] ?? '-')],
-                    ['Status', ': '.$peserta['ketAktif']],
-                    ['Asuransi/COB', ':'],
-                    ['       Kode Asuransi', ': '.($peserta['asuransi']['kdAsuransi'] ?? '-')],
-                    ['       Nama Asuransi', ': '.($peserta['asuransi']['nmAsuransi'] ?? '-')],
-                    ['       Nomer Asuransi', ': '.($peserta['asuransi']['noAsuransi'] ?? '-')],
-                    ['       COB', ': '.($peserta['asuransi']['cob'] ? 'Ya' : 'Tidak')],
-                    ['Tunggakan', ': '.$peserta['tunggakan']]
-                ];
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
 
-                $response['formattedData'] = $formattedData;
-                return response()->json($response);
-            }
+        return response()->json($processed, $response->status());
+    }
 
-            // Debug response error
-            Log::warning('PCare Response Error', [
-                'response' => $response,
-                'endpoint' => $endpoint
-            ]);
+    /**
+     * Contoh: daftar faskes.
+     * Endpoint PCare biasanya: GET /faskes/{start}/{limit}
+     */
+    public function getFaskes(Request $request)
+    {
+        $start = $request->query('start', 0);
+        $limit = $request->query('limit', 100);
+        $result = $this->pcareRequest('GET', "faskes/{$start}/{$limit}");
 
-            // Cek jika ada error authentication
-            if (isset($response['metaData']) && $response['metaData']['code'] == 401) {
-                return response()->json($response, 401);
-            }
-            
-            // Cek jika ada error authentication
-            if (isset($response['metaData']) && $response['metaData']['code'] == 401) {
-                return response()->json($response, 401);
-            }
-            
-            return response()->json($response, 400);
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
 
-        } catch (\Exception $e) {
-            Log::error('PCare Get Peserta Error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
+        return response()->json($processed, $response->status());
+    }
 
+    /**
+     * Referensi Poli FKTP (PCare REST).
+     * Endpoint PCare: GET /poli/fktp/{start}/{limit}
+     */
+    public function getPoli(Request $request)
+    {
+        $start = $request->query('start', 0);
+        $limit = $request->query('limit', 100);
+        // Validasi konfigurasi dasar terlebih dahulu agar tidak 500 ketika base URL kosong
+        $cfg = $this->pcareConfig();
+        $base = trim((string) ($cfg['base_url'] ?? ''));
+        if ($base === '') {
             return response()->json([
                 'metaData' => [
-                    'code' => 500,
-                    'message' => $this->getErrorMessage($e)
+                    'message' => 'BPJS_PCARE_BASE_URL belum dikonfigurasi di server ini (.env). Silakan isi nilai base URL PCare (mis. https://apijkn.bpjs-kesehatan.go.id/pcare-rest atau pcare-rest-v3.0).',
+                    'code' => 422,
                 ],
-                'response' => null
-            ], 500);
+                'response' => [
+                    'list' => [],
+                    'count' => 0,
+                ],
+            ], 422);
         }
-    }
 
-    /**
-     * Mendapatkan data peserta berdasarkan NIK
-     */
-    public function getPesertaByNIK($nik)
-    {
         try {
-            // Validasi format NIK
-            if (!preg_match('/^\d{16}$/', $nik)) {
-                return response()->json([
-                    'metaData' => [
-                        'code' => 400,
-                        'message' => 'NIK harus 16 digit'
-                    ],
-                    'response' => null
-                ], 400);
-            }
-
-            // Cek cache dulu
-            $cacheKey = 'peserta_nik_' . $nik;
-            if (Cache::has($cacheKey)) {
-                Log::info('PCare Get Peserta By NIK From Cache', ['nik' => $nik]);
-                return response()->json(Cache::get($cacheKey));
-            }
-
-            // Log request
-            Log::info('PCare Get Peserta By NIK Request', [
-                'nik' => $nik,
-                'timestamp' => now()
-            ]);
-
-            // Format endpoint
-            $endpoint = "peserta/nik/{$nik}";
-
-            // Kirim request ke PCare
-            $response = $this->requestPcare($endpoint);
-
-            // Cek response dan simpan ke cache
-            if (isset($response['metaData']) && $response['metaData']['code'] == 200) {
-                Cache::put($cacheKey, $response, now()->addHours(6));
-                return response()->json($response);
-            }
-
-            return response()->json($response, 400);
-
-        } catch (\Exception $e) {
-            Log::error('PCare Get Peserta By NIK Error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
+            // Per spesifikasi PCare REST, poli FKTP ada pada path 'poli/fktp/{start}/{limit}'
+            $result = $this->pcareRequest('GET', "poli/fktp/{$start}/{$limit}");
+        } catch (\InvalidArgumentException $e) {
+            // Kembalikan pesan yang ramah bila terjadi kesalahan konfigurasi
             return response()->json([
                 'metaData' => [
-                    'code' => 500,
-                    'message' => $this->getErrorMessage($e)
+                    'message' => $e->getMessage(),
+                    'code' => 422,
                 ],
-                'response' => null
-            ], 500);
+                'response' => [
+                    'list' => [],
+                    'count' => 0,
+                ],
+            ], 422);
         }
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        return response()->json($processed, $response->status());
     }
 
     /**
-     * Mendapatkan data provider PCare
+     * Referensi Kesadaran (PCare REST).
+     * Endpoint PCare: GET /kesadaran
      */
-    public function getProvider()
+    public function getKesadaran(Request $request)
     {
-        try {
-            // Kirim request ke PCare
-            $response = $this->requestPcare('provider');
+        // Endpoint tidak membutuhkan start/limit; BPJS mengembalikan 4 item standar
+        $result = $this->pcareRequest('GET', 'kesadaran');
 
-            return response()->json($response);
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
 
-        } catch (\Exception $e) {
-            Log::error('PCare Get Provider Error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
+        return response()->json($processed, $response->status());
+    }
 
+    /**
+     * Contoh: peserta berdasarkan nomor kartu (noka) & tanggal pelayanan.
+     * Endpoint yang umum: GET /peserta/nokartu/{noka}/tglPelayanan/{tglPelayanan}
+     */
+    public function pesertaByNoKartu(string $noka, string $tglPelayanan)
+    {
+        $endpoint = "peserta/nokartu/{$noka}/tglPelayanan/{$tglPelayanan}";
+        $result = $this->pcareRequest('GET', $endpoint);
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Get Peserta PCare by Nomor Kartu (versi sederhana tanpa tanggal pelayanan).
+     * Katalog BPJS: GET /peserta/{noKartu}
+     */
+    public function getPeserta(string $noka)
+    {
+        $noka = trim($noka);
+        if ($noka === '') {
             return response()->json([
                 'metaData' => [
-                    'code' => 500,
-                    'message' => $this->getErrorMessage($e)
+                    'message' => 'Parameter nomor kartu (noka) wajib diisi',
+                    'code' => 422,
                 ],
-                'response' => null
-            ], 500);
+            ], 422);
         }
+
+        $endpoint = 'peserta/'.urlencode($noka);
+        $result = $this->pcareRequest('GET', $endpoint);
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        return response()->json($processed, $response->status());
     }
 
     /**
-     * Mendapatkan data dokter PCare
+     * Contoh: pendaftaran/kunjungan (POST ke PCare). Payload mengikuti spesifikasi BPJS PCare.
      */
-    public function getDokter()
+    public function daftarKunjungan(Request $request)
     {
+        $payload = $request->all();
+        // Normalisasi KD TACC: Sesuai Ref_TACC BPJS, nilai valid adalah -1, 1, 2, 3, 4
+        // UI kadang mengirim 0 (dari konversi -1) atau -1 untuk "Tanpa TACC"
+        // API BPJS menerima -1 untuk "Tanpa TACC", bukan 0
         try {
-            // Kirim request ke PCare
-            $response = $this->requestPcare('dokter');
-
-            return response()->json($response);
-
-        } catch (\Exception $e) {
-            Log::error('PCare Get Dokter Error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'metaData' => [
-                    'code' => 500,
-                    'message' => $this->getErrorMessage($e)
-                ],
-                'response' => null
-            ], 500);
-        }
-    }
-
-    /**
-     * Mendapatkan data diagnosa PCare
-     */
-    public function getDiagnosa($keyword)
-    {
-        try {
-            // Kirim request ke PCare
-            $response = $this->requestPcare('diagnosa/' . urlencode($keyword));
-
-            return response()->json($response);
-
-        } catch (\Exception $e) {
-            Log::error('PCare Get Diagnosa Error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'metaData' => [
-                    'code' => 500,
-                    'message' => $this->getErrorMessage($e)
-                ],
-                'response' => null
-            ], 500);
-        }
-    }
-
-    /**
-     * Mendapatkan data tindakan PCare
-     */
-    public function getTindakan($keyword)
-    {
-        try {
-            // Kirim request ke PCare
-            $response = $this->requestPcare('tindakan/' . urlencode($keyword));
-
-            return response()->json($response);
-
-        } catch (\Exception $e) {
-            Log::error('PCare Get Tindakan Error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'metaData' => [
-                    'code' => 500,
-                    'message' => $this->getErrorMessage($e)
-                ],
-                'response' => null
-            ], 500);
-        }
-    }
-
-    /**
-     * Mendapatkan data obat PCare
-     */
-    public function getObat($keyword)
-    {
-        try {
-            // Kirim request ke PCare
-            $response = $this->requestPcare('obat/' . urlencode($keyword));
-
-            return response()->json($response);
-
-        } catch (\Exception $e) {
-            Log::error('PCare Get Obat Error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'metaData' => [
-                    'code' => 500,
-                    'message' => $this->getErrorMessage($e)
-                ],
-                'response' => null
-            ], 500);
-        }
-    }
-
-    /**
-     * Mendapatkan data kunjungan PCare
-     */
-    public function getKunjungan($noKartu)
-    {
-        try {
-            // Validasi format nomor kartu
-            if (!preg_match('/^\d{13}$/', $noKartu)) {
-                return response()->json([
-                    'metaData' => [
-                        'code' => 400,
-                        'message' => 'Nomor kartu harus 13 digit'
-                    ],
-                    'response' => null
-                ], 400);
-            }
-
-            // Kirim request ke PCare dengan endpoint kunjungan/peserta/[noKartu]
-            $response = $this->requestPcare('kunjungan/peserta/' . $noKartu);
-
-            return response()->json($response);
-
-        } catch (\Exception $e) {
-            Log::error('PCare Get Kunjungan Error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'metaData' => [
-                    'code' => 500,
-                    'message' => $this->getErrorMessage($e)
-                ],
-                'response' => null
-            ], 500);
-        }
-    }
-
-    /**
-     * Mendapatkan data status pulang PCare
-     */
-    public function getStatusPulang()
-    {
-        try {
-            // Kirim request ke PCare
-            $response = $this->requestPcare('statuspulang');
-
-            return response()->json($response);
-
-        } catch (\Exception $e) {
-            Log::error('PCare Get Status Pulang Error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'metaData' => [
-                    'code' => 500,
-                    'message' => $this->getErrorMessage($e)
-                ],
-                'response' => null
-            ], 500);
-        }
-    }
-
-    /**
-     * Mendapatkan data poli PCare
-     */
-    public function getPoli()
-    {
-        try {
-            // Kirim request ke PCare
-            $response = $this->requestPcare('poli');
-
-            return response()->json($response);
-
-        } catch (\Exception $e) {
-            Log::error('PCare Get Poli Error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'metaData' => [
-                    'code' => 500,
-                    'message' => $this->getErrorMessage($e)
-                ],
-                'response' => null
-            ], 500);
-        }
-    }
-
-    /**
-     * Mendapatkan mapping poliklinik PCare berdasarkan kode poli rumah sakit
-     * Digunakan untuk form pendaftaran PCare
-     */
-    public function getMappingPoli($kd_poli_rs = null)
-    {
-        try {
-            // Log request
-            Log::info('PCare Get Mapping Poli Request', [
-                'kd_poli_rs' => $kd_poli_rs
-            ]);
-
-            // Query untuk mendapatkan mapping poli
-            $query = DB::table('maping_poliklinik_pcare')
-                ->select(
-                    'maping_poliklinik_pcare.kd_poli_rs',
-                    'maping_poliklinik_pcare.kd_poli_pcare',
-                    'maping_poliklinik_pcare.nm_poli_pcare',
-                    'poliklinik.nm_poli as nm_poli_rs'
-                )
-                ->join('poliklinik', 'maping_poliklinik_pcare.kd_poli_rs', '=', 'poliklinik.kd_poli');
-
-            // Filter berdasarkan kode poli jika ada
-            if ($kd_poli_rs) {
-                $query->where('maping_poliklinik_pcare.kd_poli_rs', $kd_poli_rs);
-            }
-
-            $mappingPoli = $query->get();
-
-            if ($mappingPoli->isEmpty() && $kd_poli_rs) {
-                // Jika mapping untuk poli tertentu tidak ditemukan
-                Log::warning('PCare Mapping Poli Not Found', [
-                    'kd_poli_rs' => $kd_poli_rs
-                ]);
-
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Mapping poli tidak ditemukan',
-                    'data' => null
-                ], 404);
-            }
-
-            // Log success
-            Log::info('PCare Get Mapping Poli Success', [
-                'count' => $mappingPoli->count()
-            ]);
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Data mapping poli berhasil didapatkan',
-                'data' => $mappingPoli
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('PCare Get Mapping Poli Error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
-                'data' => null
-            ], 500);
-        }
-    }
-
-    /**
-     * Mendapatkan data kelompok sehat PCare
-     */
-    public function getKelompokSehat()
-    {
-        try {
-            // Kirim request ke PCare
-            $response = $this->requestPcare('kelompok');
-
-            return response()->json($response);
-
-        } catch (\Exception $e) {
-            Log::error('PCare Get Kelompok Sehat Error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'metaData' => [
-                    'code' => 500,
-                    'message' => $this->getErrorMessage($e)
-                ],
-                'response' => null
-            ], 500);
-        }
-    }
-
-    /**
-     * Mendapatkan data klub prolanis PCare
-     */
-    public function getKlubProlanis()
-    {
-        try {
-            // Kirim request ke PCare
-            $response = $this->requestPcare('klubprolanis');
-
-            return response()->json($response);
-
-        } catch (\Exception $e) {
-            Log::error('PCare Get Klub Prolanis Error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'metaData' => [
-                    'code' => 500,
-                    'message' => $this->getErrorMessage($e)
-                ],
-                'response' => null
-            ], 500);
-        }
-    }
-
-    /**
-     * Menambahkan pendaftaran PCare
-     * Format endpoint: {Base URL}/{Service Name}/pendaftaran
-     * 
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function addPendaftaran(Request $request)
-    {
-        try {
-            // Log raw request untuk debugging
-            Log::info('PCare Add Pendaftaran - Raw Request', [
-                'raw_input' => $request->all()
-            ]);
-            
-            // Penanganan khusus untuk Kunjungan Sehat dari fungsi daftarKunjunganSehat()
-            if (isset($request->kunjSakit) && $request->kunjSakit === false && 
-                isset($request->noKartu) && !isset($request->no_rawat) && !isset($request->no_rkm_medis) && 
-                isset($request->keluhan) && $request->keluhan === 'Konsultasi Kesehatan') {
-                
-                Log::info('PCare Kunjungan Sehat - Request Khusus Terdeteksi');
-                
-                // Persiapkan data untuk dikirim ke PCare (minimal yang diperlukan)
-                $dataRequest = [
-                    'kdProviderPeserta' => $request->kdProviderPeserta ?? env('BPJS_PCARE_KODE_PPK', '11251919'),
-                    'tglDaftar' => $request->tglDaftar,
-                    'noKartu' => $request->noKartu,
-                    'kdPoli' => $request->kdPoli ?? '021',
-                    'keluhan' => $request->keluhan ?? 'Konsultasi Kesehatan',
-                    'kunjSakit' => false,
-                    'sistole' => $request->sistole ?? '0',
-                    'diastole' => $request->diastole ?? '0',
-                    'beratBadan' => $request->beratBadan ?? '0',
-                    'tinggiBadan' => $request->tinggiBadan ?? '0',
-                    'respRate' => $request->respRate ?? '0',
-                    'lingkarPerut' => $request->lingkarPerut ?? '0',
-                    'heartRate' => $request->heartRate ?? '0',
-                    'rujukBalik' => $request->rujukBalik ?? '0',
-                    'kdTkp' => $request->kdTkp ?? '10'
-                ];
-                
-                Log::info('PCare Kunjungan Sehat - Request Data', [
-                    'data' => $dataRequest
-                ]);
-                
-                // Kirim request ke PCare dengan Content-Type text/plain
-                // Gunakan urutan argumen legacy (payload, method, content-type) untuk kompatibilitas IDE/static analyzer
-                $response = $this->requestPcare('pendaftaran', $dataRequest, 'POST', 'text/plain');
-                
-                Log::info('PCare Kunjungan Sehat - Response', [
-                    'metaData' => $response['metaData'] ?? null,
-                    'response' => $response['response'] ?? null
-                ]);
-                
-                return response()->json($response);
-            }
-            
-            // Validasi input (untuk pendaftaran normal)
-            $validator = Validator::make($request->all(), [
-                'no_rawat' => 'required|string',
-                'no_rkm_medis' => 'required|string',
-                'nm_pasien' => 'required|string',
-                'kdProviderPeserta' => 'required|string',
-                'tglDaftar' => 'required|string', // format dd-mm-yyyy
-                'noKartu' => 'required|string',
-                'kdPoli' => 'required|string',
-                'nmPoli' => 'required|string',
-                'keluhan' => 'nullable|string',
-                'kunjSakit' => 'required',  // Bisa string "true"/"false" atau boolean
-                'sistole' => 'required|numeric',
-                'diastole' => 'required|numeric',
-                'beratBadan' => 'required|numeric',
-                'tinggiBadan' => 'required|numeric',
-                'respRate' => 'required|numeric',
-                'lingkarPerut' => 'required|numeric',
-                'heartRate' => 'required|numeric',
-                'rujukBalik' => 'required|numeric',
-                'kdTkp' => 'required|string', // 10 = Rawat Jalan, 20 = Rawat Inap, 50 = Promotif Preventif
-            ]);
-
-            if ($validator->fails()) {
-                Log::warning('PCare Add Pendaftaran - Validation Failed', [
-                    'errors' => $validator->errors()->toArray()
-                ]);
-                
-                return response()->json([
-                    'metaData' => [
-                        'code' => 400,
-                        'message' => $validator->errors()->first()
-                    ],
-                    'response' => null
-                ], 400);
-            }
-
-            // Konversi kunjSakit dari string ke boolean jika perlu
-            $kunjSakit = $request->kunjSakit;
-            if (is_string($kunjSakit)) {
-                // Cek jika string adalah "true", "false", "Kunjungan Sakit", "Kunjungan Sehat"
-                if (strtolower($kunjSakit) === 'true' || strtolower($kunjSakit) === 'kunjungan sakit') {
-                    $kunjSakit = true;
-                } else {
-                    $kunjSakit = false;
-                }
-                
-                Log::info('PCare Add Pendaftaran - Converted kunjSakit', [
-                    'original' => $request->kunjSakit,
-                    'converted' => $kunjSakit ? 'Kunjungan Sakit' : 'Kunjungan Sehat'
-                ]);
-            }
-
-            // Persiapkan data untuk dikirim ke PCare
-            $dataRequest = [
-                'kdProviderPeserta' => substr($request->kdProviderPeserta ?? '', 0, 15),
-                'tglDaftar' => $request->tglDaftar,
-                'noKartu' => substr($request->noKartu ?? '', 0, 25),
-                'kdPoli' => substr($request->kdPoli ?? '', 0, 5),
-                'keluhan' => substr($request->keluhan ?: '', 0, 400),
-                'kunjSakit' => $kunjSakit,
-                'sistole' => substr($request->sistole ?? '120', 0, 3),
-                'diastole' => substr($request->diastole ?? '80', 0, 3),
-                'beratBadan' => substr($request->beratBadan ?? '60', 0, 5),
-                'tinggiBadan' => substr($request->tinggiBadan ?? '165', 0, 5),
-                'respRate' => substr($request->respRate ?? '20', 0, 3),
-                'lingkarPerut' => substr($request->lingkar_perut ?? '80', 0, 5),
-                'heartRate' => substr($request->heartRate ?? '80', 0, 3),
-                'rujukBalik' => substr($request->rujukBalik ?? '0', 0, 3),
-                'kdTkp' => substr($request->kdTkp ?? '10', 0, 5)
-            ];
-
-            // Log data yang akan dikirim ke PCare
-            Log::info('PCare Add Pendaftaran - Request Data', [
-                'data' => $dataRequest
-            ]);
-
-            // Kirim request ke PCare dengan Content-Type text/plain
-            // Gunakan urutan argumen legacy (payload, method, content-type) untuk kompatibilitas IDE/static analyzer
-            $response = $this->requestPcare('pendaftaran', $dataRequest, 'POST', 'text/plain');
-
-            // Log response dari PCare
-            Log::info('PCare Add Pendaftaran - Response', [
-                'metaData' => $response['metaData'] ?? null,
-                'response' => $response['response'] ?? null
-            ]);
-
-            // Jika berhasil, simpan ke database
-            if (isset($response['metaData']['code']) && $response['metaData']['code'] == 201) {
-                $noUrut = isset($response['response']['message']) ? $response['response']['message'] : '';
-                
-                // Persiapkan data untuk disimpan ke database
-                // Pastikan nilai untuk field enum (kunjSakit) sesuai dengan tipe data di database
-                $kunjSakitForDB = $kunjSakit ? 'Kunjungan Sakit' : 'Kunjungan Sehat';
-                
-                $dataSave = [
-                    'no_rawat' => $request->no_rawat,
-                    'no_rkm_medis' => $request->no_rkm_medis,
-                    'nm_pasien' => $request->nm_pasien,
-                    'kdProviderPeserta' => $request->kdProviderPeserta,
-                    'tglDaftar' => $request->tglDaftar,
-                    'noKartu' => $request->noKartu,
-                    'kdPoli' => $request->kdPoli,
-                    'nmPoli' => $request->nmPoli,
-                    'keluhan' => $request->keluhan,
-                    'kunjSakit' => $kunjSakitForDB, // String enum untuk database
-                    'sistole' => $request->sistole,
-                    'diastole' => $request->diastole,
-                    'beratBadan' => $request->beratBadan,
-                    'tinggiBadan' => $request->tinggiBadan,
-                    'respRate' => $request->respRate,
-                    'lingkar_perut' => $request->lingkar_perut,
-                    'heartRate' => $request->heartRate,
-                    'rujukBalik' => $request->rujukBalik,
-                    'kdTkp' => $request->kdTkp,
-                    'kd_dokter' => $request->kd_dokter ?? null,
-                    'suhu_tubuh' => $request->suhu_tubuh ?? null,
-                    'alergiMakanan' => $request->alergiMakanan ?? null,
-                    'alergiUdara' => $request->alergiUdara ?? null,
-                    'alergiObat' => $request->alergiObat ?? null,
-                    'terapiObat' => $request->terapiObat ?? null,
-                    'terapiNonObat' => $request->terapiNonObat ?? null,
-                    'BMHP' => $request->BMHP ?? null,
-                    'prognosa' => $request->prognosa ?? null
-                ];
-                
-                // Log data yang akan disimpan
-                Log::info('PCare Add Pendaftaran - Data yang akan disimpan', [
-                    'no_rawat' => $dataSave['no_rawat'],
-                    'no_rkm_medis' => $dataSave['no_rkm_medis'],
-                    'kunjSakit' => $dataSave['kunjSakit']
-                ]);
-                
-                // Simpan ke database
-                $saved = $this->simpanPendaftaranKeDatabase($dataSave, $noUrut);
-                
-                if (!$saved) {
-                    // Berikan peringatan jika gagal menyimpan ke database
-                    $response['metaData']['warning'] = 'Pendaftaran berhasil di PCare tetapi gagal disimpan ke database lokal.';
+            if (array_key_exists('kdTacc', $payload)) {
+                $v = $payload['kdTacc'];
+                // Konversi 0, -1, '-1', '', null menjadi -1 (Tanpa TACC)
+                if ($v === 0 || $v === -1 || $v === '0' || $v === '-1' || $v === '' || $v === null) {
+                    $payload['kdTacc'] = -1;
+                    $payload['alasanTacc'] = null;
                 }
             }
-
-            return response()->json($response);
-        } catch (\Exception $e) {
-            Log::error('PCare Add Pendaftaran - Exception', [
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-                return response()->json([
-                    'metaData' => [
-                    'code' => 500,
-                    'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-                    ],
-                    'response' => null
-            ], 500);
+        } catch (\Throwable $e) {
+            // abaikan jika normalisasi gagal
         }
+        // Sesuai katalog BPJS PCare, body harus dikirim dengan Content-Type: text/plain
+        $result = $this->pcareRequest('POST', 'kunjungan/v1', [], $payload, ['Content-Type' => 'text/plain']);
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        // Simpan ke DB lokal jika tersedia no_rawat (sesuai instruksi)
+        try {
+            $noRawat = trim((string) ($payload['no_rawat'] ?? ''));
+            if ($noRawat !== '') {
+                $noKunjungan = $this->parseNoKunjunganFromResponse(is_array($processed) ? $processed : []);
+                $status = ($response->status() === 201) ? 'Terkirim' : 'Gagal';
+                $this->savePcareKunjunganUmum($noRawat, $payload, $noKunjungan, $status);
+                if (! empty($payload['rujukLanjut']) && is_array($payload['rujukLanjut'])) {
+                    $this->savePcareRujukSubspesialis($noRawat, $payload, $noKunjungan);
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::error('Gagal menyimpan data kunjungan ke tabel lokal', [
+                'error' => $e->getMessage(),
+                'no_rawat' => $payload['no_rawat'] ?? null,
+            ]);
+        }
+
+        return response()->json($processed, $response->status());
     }
 
     /**
-     * Menyimpan data pendaftaran PCare ke database
-     * Digunakan untuk menyimpan data ke tabel pcare_pendaftaran, pemeriksaan_ralan, dan pemeriksaan_ranap
-     * 
-     * @param array $data Data pendaftaran dari request
-     * @param string $noUrut Nomor urut yang didapat dari response PCare
-     * @return bool
+     * Ambil nilai noKunjungan dari struktur response PCare (variasi beberapa format).
      */
-    protected function simpanPendaftaranKeDatabase($data, $noUrut)
+    protected function parseNoKunjunganFromResponse(array $processed): ?string
     {
-        try {
-            // Log data yang diterima untuk debugging
-            Log::info('Menyimpan pendaftaran PCare ke database', [
-                'no_rawat_original' => $data['no_rawat'],
-                'no_rkm_medis' => $data['no_rkm_medis']
+        // Pola 1: { response: { field: 'noKunjungan', message: '...' }, metaData: {...} }
+        if (isset($processed['response']) && is_array($processed['response'])) {
+            $resp = $processed['response'];
+            if (($resp['field'] ?? '') === 'noKunjungan' && ! empty($resp['message'])) {
+                return (string) $resp['message'];
+            }
+            // Pola 2: response berupa array list dengan item [0]['noKunjungan']
+            if (isset($resp[0]) && is_array($resp[0]) && ! empty($resp[0]['noKunjungan'])) {
+                return (string) $resp[0]['noKunjungan'];
+            }
+            // Pola 3: response memiliki key langsung 'noKunjungan'
+            if (! empty($resp['noKunjungan'])) {
+                return (string) $resp['noKunjungan'];
+            }
+        }
+        // Pola 4: processed di atas langsung punya 'noKunjungan'
+        if (! empty($processed['noKunjungan'])) {
+            return (string) $processed['noKunjungan'];
+        }
+
+        return null;
+    }
+
+    /**
+     * Simpan (upsert) data kunjungan umum ke tabel lokal pcare_kunjungan_umum.
+     * Hanya akan menyimpan kolom yang memang ada di tabel untuk mencegah error skema.
+     */
+    protected function savePcareKunjunganUmum(string $noRawat, array $payload, ?string $noKunjungan, string $status): void
+    {
+        // Jika tabel tidak ada, fallback update status di reg_periksa saja
+        if (! Schema::hasTable('pcare_kunjungan_umum')) {
+            DB::table('reg_periksa')->where('no_rawat', $noRawat)->update([
+                'status_pcare' => strtolower($status) === 'terkirim' ? 'sent' : 'failed',
+                'response_pcare' => json_encode(['noKunjungan' => $noKunjungan, 'status' => $status]),
             ]);
 
-            // Cek apakah pasien sudah terdaftar hari ini
-            $today = date('Y-m-d');
-            $pendaftaranPasienHariIni = DB::table('reg_periksa')
-                ->where('tgl_registrasi', $today)
-                ->where('no_rkm_medis', $data['no_rkm_medis'])
-                ->orderBy('no_rawat', 'desc')
+            return;
+        }
+
+        $reg = DB::table('reg_periksa')->where('no_rawat', $noRawat)->first();
+        if (! $reg) {
+            Log::warning('Data reg_periksa tidak ditemukan untuk no_rawat: '.$noRawat);
+
+            return;
+        }
+
+        $pasien = DB::table('pasien')->where('no_rkm_medis', $reg->no_rkm_medis)->first();
+        $poli = $reg->kd_poli ? DB::table('poliklinik')->where('kd_poli', $reg->kd_poli)->first() : null;
+        $dokter = $reg->kd_dokter ? DB::table('dokter')->where('kd_dokter', $reg->kd_dokter)->first() : null;
+
+        // Ambil data pemeriksaan terbaru
+        $pemeriksaan = DB::table('pemeriksaan_ralan')
+            ->where('no_rawat', $noRawat)
+            ->orderBy('tgl_perawatan', 'desc')
+            ->orderBy('jam_rawat', 'desc')
+            ->first();
+
+        // Ambil diagnosa dari database
+        $diagnosa1 = DB::table('diagnosa_pasien')
+            ->join('penyakit', 'diagnosa_pasien.kd_penyakit', '=', 'penyakit.kd_penyakit')
+            ->where('diagnosa_pasien.no_rawat', $noRawat)
+            ->where('diagnosa_pasien.prioritas', '1')
+            ->select('diagnosa_pasien.kd_penyakit', 'penyakit.nm_penyakit')
+            ->first();
+
+        $diagnosa2 = DB::table('diagnosa_pasien')
+            ->join('penyakit', 'diagnosa_pasien.kd_penyakit', '=', 'penyakit.kd_penyakit')
+            ->where('diagnosa_pasien.no_rawat', $noRawat)
+            ->where('diagnosa_pasien.prioritas', '2')
+            ->select('diagnosa_pasien.kd_penyakit', 'penyakit.nm_penyakit')
+            ->first();
+
+        $diagnosa3 = DB::table('diagnosa_pasien')
+            ->join('penyakit', 'diagnosa_pasien.kd_penyakit', '=', 'penyakit.kd_penyakit')
+            ->where('diagnosa_pasien.no_rawat', $noRawat)
+            ->where('diagnosa_pasien.prioritas', '3')
+            ->select('diagnosa_pasien.kd_penyakit', 'penyakit.nm_penyakit')
+            ->first();
+
+        // Ambil terapi obat
+        $terapiObatData = DB::table('resep_obat')
+            ->join('resep_dokter', 'resep_obat.no_resep', '=', 'resep_dokter.no_resep')
+            ->join('databarang', 'resep_dokter.kode_brng', '=', 'databarang.kode_brng')
+            ->where('resep_obat.no_rawat', $noRawat)
+            ->select('databarang.nama_brng', 'resep_dokter.jml', 'resep_dokter.aturan_pakai')
+            ->get();
+
+        $terapiObatString = 'Tidak Ada';
+        if ($terapiObatData->isNotEmpty()) {
+            $terapiObatArray = [];
+            foreach ($terapiObatData as $obat) {
+                $terapiObatArray[] = $obat->nama_brng.' '.$obat->jml.' ['.$obat->aturan_pakai.']';
+            }
+            $terapiObatString = implode(', ', $terapiObatArray);
+        }
+
+        // Parse tensi menjadi sistole/diastole
+        $sistole = null;
+        $diastole = null;
+        if ($pemeriksaan && ! empty($pemeriksaan->tensi) && strpos($pemeriksaan->tensi, '/') !== false) {
+            $tensiParts = explode('/', $pemeriksaan->tensi);
+            $sistole = trim($tensiParts[0]) ?: null;
+            $diastole = isset($tensiParts[1]) ? trim($tensiParts[1]) : null;
+        }
+        // Fallback ke payload jika tidak ada di pemeriksaan
+        $sistole = $sistole ?? (isset($payload['sistole']) ? (string) $payload['sistole'] : null);
+        $diastole = $diastole ?? (isset($payload['diastole']) ? (string) $payload['diastole'] : null);
+
+        // Normalisasi tanggal daftar/pulang
+        $tglDaftar = isset($payload['tglDaftar']) ? $this->normalizeDateToYmd((string) $payload['tglDaftar']) : null;
+        $tglPulang = isset($payload['tglPulang']) ? $this->normalizeDateToYmd((string) $payload['tglPulang']) : null;
+
+        // Ambil nama referensi dari database atau payload
+        // Nama Poli
+        $nmPoli = $poli->nm_poli ?? null;
+        if (! $nmPoli && isset($payload['nmPoli'])) {
+            $nmPoli = $payload['nmPoli'];
+        }
+
+        // Nama Dokter
+        $nmDokter = $dokter->nm_dokter ?? null;
+        if (! $nmDokter && isset($payload['nmDokter'])) {
+            $nmDokter = $payload['nmDokter'];
+        }
+
+        // Nama Diagnosa
+        $nmDiag1 = $diagnosa1->nm_penyakit ?? null;
+        $nmDiag2 = $diagnosa2->nm_penyakit ?? null;
+        $nmDiag3 = $diagnosa3->nm_penyakit ?? null;
+
+        // Nama Status Pulang
+        $nmStatusPulang = null;
+        if (isset($payload['kdStatusPulang'])) {
+            $statusPulang = DB::table('status_pulang')
+                ->where('kd_status_pulang', $payload['kdStatusPulang'])
                 ->first();
-                
-            if ($pendaftaranPasienHariIni) {
-                // Jika pasien sudah terdaftar hari ini, prioritaskan menggunakan pendaftaran yang sudah ada
-                $data['no_rawat'] = $pendaftaranPasienHariIni->no_rawat;
-                Log::info('Pasien sudah terdaftar hari ini, menggunakan pendaftaran yang sudah ada', [
-                    'no_rawat' => $data['no_rawat'],
-                    'no_rkm_medis' => $data['no_rkm_medis'],
-                    'kd_poli' => $pendaftaranPasienHariIni->kd_poli,
-                    'tgl_registrasi' => $pendaftaranPasienHariIni->tgl_registrasi
-                ]);
-                
-                // Lanjut ke proses simpan data PCare tanpa membuat entry baru di reg_periksa
-            } else {
-                // Jika pasien belum terdaftar hari ini, cari pendaftaran terbaru untuk pasien ini
-                $rawatTerbaru = DB::table('reg_periksa')
-                    ->where('no_rkm_medis', $data['no_rkm_medis'])
-                    ->orderBy('tgl_registrasi', 'desc')
-                    ->orderBy('jam_reg', 'desc')
-                    ->first();
-                
-                if ($rawatTerbaru) {
-                    // Periksa apakah pendaftaran terbaru adalah hari ini
-                    if ($rawatTerbaru->tgl_registrasi == $today) {
-                        // Jika pendaftaran terbaru adalah hari ini, gunakan no_rawat tersebut
-                        $data['no_rawat'] = $rawatTerbaru->no_rawat;
-                        Log::info('Menggunakan pendaftaran terbaru pasien hari ini', [
-                            'no_rawat' => $data['no_rawat'],
-                            'tgl_registrasi' => $rawatTerbaru->tgl_registrasi
-                        ]);
-                    } else {
-                        // Jika pendaftaran terbaru bukan hari ini, cari pendaftaran lain hari ini
-                        $pendaftaranHariIni = DB::table('reg_periksa')
-                            ->where('tgl_registrasi', $today)
-                            ->orderBy('no_rawat', 'desc')
-                            ->first();
-                        
-                        if ($pendaftaranHariIni) {
-                            // Buat no_rawat baru berdasarkan pendaftaran lain hari ini
-                            $formattedDate = date('Y/m/d');
-                            $lastNumber = substr($pendaftaranHariIni->no_rawat, -6);
-                            $newNumber = str_pad(intval($lastNumber) + 1, 6, '0', STR_PAD_LEFT);
-                            $data['no_rawat'] = $formattedDate . '/' . $newNumber;
-                            
-                            Log::info('Membuat no_rawat baru untuk pasien hari ini', [
-                                'no_rawat_baru' => $data['no_rawat']
-                            ]);
-                            
-                            // Buat pendaftaran baru di reg_periksa
-                            DB::table('reg_periksa')->insert([
-                                'no_rawat' => $data['no_rawat'],
-                                'no_reg' => $newNumber,
-                                'tgl_registrasi' => $today,
-                                'jam_reg' => date('H:i:s'),
-                                'kd_dokter' => $data['kd_dokter'] ?? '1',
-                                'no_rkm_medis' => $data['no_rkm_medis'],
-                                'kd_poli' => 'U0002', // Default ke poli umum
-                                'p_jawab' => 'BPJS',
-                                'almt_pj' => '-',
-                                'hubunganpj' => '-',
-                                'biaya_reg' => 0,
-                                'stts' => 'Belum',
-                                'stts_daftar' => 'Lama',
-                                'status_lanjut' => ($data['kdTkp'] == '20') ? 'Ranap' : 'Ralan',
-                                'kd_pj' => 'BPJ',
-                                'umurdaftar' => 0,
-                                'sttsumur' => 'Th',
-                                'status_bayar' => 'Belum Bayar',
-                                'status_poli' => 'Lama'
-                            ]);
-                            
-                            Log::info('Entry baru dibuat di reg_periksa untuk pendaftaran PCare', [
-                                'no_rawat' => $data['no_rawat']
-                            ]);
-                        } else {
-                            // Jika tidak ada pendaftaran lain hari ini, gunakan format default
-                            $formattedDate = date('Y/m/d');
-                            $data['no_rawat'] = $formattedDate . '/000001';
-                            
-                            Log::info('Membuat no_rawat default untuk pendaftaran baru', [
-                                'no_rawat_default' => $data['no_rawat']
-                            ]);
-                            
-                            // Buat pendaftaran baru dengan format default
-                            DB::table('reg_periksa')->insert([
-                                'no_rawat' => $data['no_rawat'],
-                                'no_reg' => '000001',
-                                'tgl_registrasi' => $today,
-                                'jam_reg' => date('H:i:s'),
-                                'kd_dokter' => $data['kd_dokter'] ?? '1',
-                                'no_rkm_medis' => $data['no_rkm_medis'],
-                                'kd_poli' => 'U0002', // Default ke poli umum
-                                'p_jawab' => 'BPJS',
-                                'almt_pj' => '-',
-                                'hubunganpj' => '-',
-                                'biaya_reg' => 0,
-                                'stts' => 'Belum',
-                                'stts_daftar' => 'Lama',
-                                'status_lanjut' => ($data['kdTkp'] == '20') ? 'Ranap' : 'Ralan',
-                                'kd_pj' => 'BPJ',
-                                'umurdaftar' => 0,
-                                'sttsumur' => 'Th',
-                                'status_bayar' => 'Belum Bayar',
-                                'status_poli' => 'Lama'
-                            ]);
-                            
-                            Log::info('Entry default dibuat di reg_periksa', [
-                                'no_rawat' => $data['no_rawat']
-                            ]);
-                        }
-                    }
-                } else {
-                    // Jika pasien belum pernah terdaftar, gunakan format no_rawat yang dikirim
-                    // atau buat nomor baru jika format tidak valid
-                    if (!preg_match('/^\d{4}\/\d{2}\/\d{2}\/\d+$/', $data['no_rawat'])) {
-                        // Format no_rawat tidak valid, buat yang baru
-                        $pendaftaranHariIni = DB::table('reg_periksa')
-                            ->where('tgl_registrasi', $today)
-                            ->orderBy('no_rawat', 'desc')
-                            ->first();
-                        
-                        if ($pendaftaranHariIni) {
-                            // Buat no_rawat baru berdasarkan pendaftaran hari ini
-                            $formattedDate = date('Y/m/d');
-                            $lastNumber = substr($pendaftaranHariIni->no_rawat, -6);
-                            $newNumber = str_pad(intval($lastNumber) + 1, 6, '0', STR_PAD_LEFT);
-                            $data['no_rawat'] = $formattedDate . '/' . $newNumber;
-                        } else {
-                            // Jika tidak ada pendaftaran hari ini, buat nomor default
-                            $formattedDate = date('Y/m/d');
-                            $data['no_rawat'] = $formattedDate . '/000001';
-                            $newNumber = '000001';
-                        }
-                        
-                        Log::info('Format no_rawat tidak valid, membuat yang baru', [
-                            'no_rawat_baru' => $data['no_rawat']
-                        ]);
-                        
-                        // Buat entry baru di reg_periksa
-                        DB::table('reg_periksa')->insert([
-                            'no_rawat' => $data['no_rawat'],
-                            'no_reg' => $newNumber ?? '000001',
-                            'tgl_registrasi' => $today,
-                            'jam_reg' => date('H:i:s'),
-                            'kd_dokter' => $data['kd_dokter'] ?? '1',
-                            'no_rkm_medis' => $data['no_rkm_medis'],
-                            'kd_poli' => 'U0002', // Default ke poli umum
-                            'p_jawab' => 'BPJS',
-                            'almt_pj' => '-',
-                            'hubunganpj' => '-',
-                            'biaya_reg' => 0,
-                            'stts' => 'Belum',
-                            'stts_daftar' => 'Lama',
-                            'status_lanjut' => ($data['kdTkp'] == '20') ? 'Ranap' : 'Ralan',
-                            'kd_pj' => 'BPJ',
-                            'umurdaftar' => 0,
-                            'sttsumur' => 'Th',
-                            'status_bayar' => 'Belum Bayar',
-                            'status_poli' => 'Lama'
-                        ]);
-                        
-                        Log::info('Entry baru dibuat di reg_periksa untuk pendaftaran PCare', [
-                            'no_rawat' => $data['no_rawat']
-                        ]);
-                    }
-                }
-            }
-            
-            // Periksa kembali apakah no_rawat valid di reg_periksa
-            $cekNoRawat = DB::table('reg_periksa')
-                ->where('no_rawat', $data['no_rawat'])
+            $nmStatusPulang = $statusPulang->nm_status_pulang ?? null;
+        }
+        if (! $nmStatusPulang && isset($payload['nmStatusPulang'])) {
+            $nmStatusPulang = $payload['nmStatusPulang'];
+        }
+
+        // Nama Kesadaran (Sadar)
+        $nmSadar = null;
+        if (isset($payload['kdSadar'])) {
+            $kesadaran = DB::table('master_kesadaran')
+                ->where('kd_kesadaran', $payload['kdSadar'])
                 ->first();
-                
-            if (!$cekNoRawat) {
-                throw new \Exception('No_rawat tidak valid dan tidak dapat dibuat: ' . $data['no_rawat']);
-            }
+            $nmSadar = $kesadaran->nm_kesadaran ?? null;
+        }
 
-            DB::beginTransaction();
+        // Nama Alergi
+        $nmAlergiMakanan = null;
+        $nmAlergiUdara = null;
+        $nmAlergiObat = null;
+        $kdAlergiMakanan = $payload['alergiMakan'] ?? '00';
+        $kdAlergiUdara = $payload['alergiUdara'] ?? '00';
+        $kdAlergiObat = $payload['alergiObat'] ?? '00';
 
-            // Format tanggal untuk database (YYYY-MM-DD)
-            $tglDaftarParts = explode('-', $data['tglDaftar']);
-            $tglDaftarDB = $tglDaftarParts[2] . '-' . $tglDaftarParts[1] . '-' . $tglDaftarParts[0];
-            
-            // Validasi dan konversi kdTkp ke format enum yang benar
-            $kdTkpLabel = '';
-            switch ($data['kdTkp']) {
-                case '10':
-                    $kdTkpLabel = '10 Rawat Jalan';
-                    break;
-                case '20':
-                    $kdTkpLabel = '20 Rawat Inap';
-                    break;
-                case '50':
-                    $kdTkpLabel = '50 Promotif Preventif';
-                    break;
-                default:
-                    $kdTkpLabel = '10 Rawat Jalan';
-            }
-
-            // Validasi dan konversi kunjSakit ke format enum yang benar
-            $kunjSakit = 'Kunjungan Sakit'; // Default value
-            if (is_string($data['kunjSakit'])) {
-                // Jika string, validasi nilainya
-                if ($data['kunjSakit'] === 'Kunjungan Sehat' || strtolower($data['kunjSakit']) === 'kunjungan sehat') {
-                    $kunjSakit = 'Kunjungan Sehat';
-                }
-            } else if (is_bool($data['kunjSakit'])) {
-                // Jika boolean, konversi ke string
-                $kunjSakit = $data['kunjSakit'] ? 'Kunjungan Sakit' : 'Kunjungan Sehat';
-            }
-            
-            // Log data yang akan disimpan ke database
-            Log::info('Data pendaftaran PCare yang akan disimpan ke database', [
-                'no_rawat' => $data['no_rawat'],
-                'tglDaftar' => $tglDaftarDB,
-                'no_rkm_medis' => $data['no_rkm_medis'],
-                'kunjSakit' => $kunjSakit,
-                'kdTkp' => $kdTkpLabel
-            ]);
-            
-            // Cek apakah sudah ada pendaftaran dengan no_rawat yang sama
-            $cekPendaftaran = DB::table('pcare_pendaftaran')
-                ->where('no_rawat', $data['no_rawat'])
+        if (isset($payload['alergiMakan'])) {
+            $alergiMakan = DB::table('master_alergi')
+                ->where('kd_alergi', $payload['alergiMakan'])
                 ->first();
-                
-            // Prepare data untuk insert/update
-            $pendaftaranData = [
-                'tglDaftar' => $tglDaftarDB,
-                'no_rkm_medis' => substr($data['no_rkm_medis'] ?? '', 0, 15),
-                'nm_pasien' => substr($data['nm_pasien'] ?? '', 0, 40),
-                'kdProviderPeserta' => substr($data['kdProviderPeserta'] ?? '', 0, 15),
-                'noKartu' => substr($data['noKartu'] ?? '', 0, 25),
-                'kdPoli' => substr($data['kdPoli'] ?? '', 0, 5),
-                'nmPoli' => substr($data['nmPoli'] ?? '', 0, 50),
-                'keluhan' => substr($data['keluhan'] ?? 'Tidak Ada', 0, 400),
-                'kunjSakit' => $kunjSakit,
-                'sistole' => substr($data['sistole'] ?? '0', 0, 3),
-                'diastole' => substr($data['diastole'] ?? '0', 0, 3),
-                'beratBadan' => substr($data['beratBadan'] ?? '0', 0, 5),
-                'tinggiBadan' => substr($data['tinggiBadan'] ?? '0', 0, 5),
-                'respRate' => substr($data['respRate'] ?? '0', 0, 3),
-                'lingkar_perut' => substr($data['lingkar_perut'] ?? $data['lingkarPerut'] ?? '', 0, 5),
-                'heartRate' => substr($data['heartRate'] ?? '0', 0, 3),
-                'rujukBalik' => substr($data['rujukBalik'] ?? '0', 0, 3),
-                'kdTkp' => $kdTkpLabel,
-                'noUrut' => substr($noUrut ?? '', 0, 5),
-                'status' => 'Terkirim'
-            ];
-            
-            if ($cekPendaftaran) {
-                Log::info('Pendaftaran PCare sudah ada, melakukan update', [
-                    'no_rawat' => $data['no_rawat']
-                ]);
-                
-                // Update pendaftaran yang sudah ada
-                try {
-                    DB::table('pcare_pendaftaran')
-                        ->where('no_rawat', $data['no_rawat'])
-                        ->update($pendaftaranData);
-                        
-                    Log::info('Update pendaftaran PCare berhasil', [
-                        'no_rawat' => $data['no_rawat']
-                    ]);
-                } catch (\Exception $updateError) {
-                    Log::error('Gagal update pendaftaran PCare', [
-                        'error' => $updateError->getMessage(),
-                        'no_rawat' => $data['no_rawat']
-                    ]);
-                    throw $updateError;
-                }
-            } else {
-                // Insert pendaftaran baru
-                try {
-                    // Tambahkan no_rawat ke data
-                    $pendaftaranData['no_rawat'] = $data['no_rawat'];
-                    
-                    Log::info('Inserting data to pcare_pendaftaran', [
-                        'data' => $pendaftaranData
-                    ]);
-                    
-                    DB::table('pcare_pendaftaran')->insert($pendaftaranData);
-                    
-                    Log::info('Insert pendaftaran PCare berhasil', [
-                        'no_rawat' => $data['no_rawat']
-                    ]);
-                } catch (\Exception $insertError) {
-                    Log::error('Gagal insert pendaftaran PCare', [
-                        'error' => $insertError->getMessage(),
-                        'no_rawat' => $data['no_rawat'],
-                        'data' => $pendaftaranData
-                    ]);
-                    
-                    // Jika gagal, coba lagi dengan nilai minimal
-                    try {
-                        $minimalData = [
-                            'no_rawat' => $data['no_rawat'],
-                            'tglDaftar' => $tglDaftarDB,
-                            'no_rkm_medis' => substr($data['no_rkm_medis'] ?? '', 0, 15),
-                            'nm_pasien' => substr($data['nm_pasien'] ?? '-', 0, 40),
-                            'kdProviderPeserta' => substr($data['kdProviderPeserta'] ?? '-', 0, 15),
-                            'noKartu' => substr($data['noKartu'] ?? '-', 0, 25),
-                            'kdPoli' => substr($data['kdPoli'] ?? '-', 0, 5),
-                            'nmPoli' => substr($data['nmPoli'] ?? '-', 0, 50),
-                            'keluhan' => substr('Tidak Ada', 0, 400),
-                            'kunjSakit' => 'Kunjungan Sakit',
-                            'sistole' => '0',
-                            'diastole' => '0',
-                            'beratBadan' => '0',
-                            'tinggiBadan' => '0',
-                            'respRate' => '0',
-                            'lingkar_perut' => '0',
-                            'heartRate' => '0',
-                            'rujukBalik' => '0',
-                            'kdTkp' => '10 Rawat Jalan',
-                            'noUrut' => substr($noUrut ?? '-', 0, 5),
-                            'status' => 'Terkirim'
-                        ];
-                        
-                        DB::table('pcare_pendaftaran')->insert($minimalData);
-                        
-                        Log::info('Insert pendaftaran PCare dengan data minimal berhasil', [
-                            'no_rawat' => $data['no_rawat']
-                        ]);
-                    } catch (\Exception $minimalInsertError) {
-                        Log::error('Gagal insert pendaftaran PCare dengan data minimal', [
-                            'error' => $minimalInsertError->getMessage(),
-                            'no_rawat' => $data['no_rawat']
-                        ]);
-                        throw $minimalInsertError;
-                    }
-                }
+            $nmAlergiMakanan = $alergiMakan->nm_alergi ?? ($payload['alergiMakan'] === '00' ? 'Tidak Ada' : 'Tidak Ada');
+        } else {
+            $nmAlergiMakanan = 'Tidak Ada';
+        }
+
+        if (isset($payload['alergiUdara'])) {
+            $alergiUdara = DB::table('master_alergi')
+                ->where('kd_alergi', $payload['alergiUdara'])
+                ->first();
+            $nmAlergiUdara = $alergiUdara->nm_alergi ?? ($payload['alergiUdara'] === '00' ? 'Tidak Ada' : 'Tidak Ada');
+        } else {
+            $nmAlergiUdara = 'Tidak Ada';
+        }
+
+        if (isset($payload['alergiObat'])) {
+            $alergiObat = DB::table('master_alergi')
+                ->where('kd_alergi', $payload['alergiObat'])
+                ->first();
+            $nmAlergiObat = $alergiObat->nm_alergi ?? ($payload['alergiObat'] === '00' ? 'Tidak Ada' : 'Tidak Ada');
+        } else {
+            $nmAlergiObat = 'Tidak Ada';
+        }
+
+        // Nama Prognosa
+        $nmPrognosa = null;
+        $kdPrognosa = $payload['kdPrognosa'] ?? '01';
+        if (isset($payload['kdPrognosa'])) {
+            $prognosa = DB::table('master_prognosa')
+                ->where('kd_prognosa', $payload['kdPrognosa'])
+                ->first();
+            $nmPrognosa = $prognosa->nm_prognosa ?? null;
+        }
+        if (! $nmPrognosa) {
+            $nmPrognosa = 'Bonam (Baik)';
+        }
+
+        // Lingkar perut harus NOT NULL, beri default value jika kosong
+        $lingkarPerut = isset($payload['lingkarPerut']) ? (string) $payload['lingkarPerut'] : ($pemeriksaan->lingkar_perut ?? '');
+        if ($lingkarPerut === '') {
+            $lingkarPerut = '';
+        }
+
+        // Terapi non obat
+        $terapiNonObat = $payload['terapiNonObat'] ?? ($pemeriksaan->instruksi ?? 'Edukasi Kesehatan');
+        if ($terapiNonObat === '') {
+            $terapiNonObat = 'Edukasi Kesehatan';
+        }
+
+        // BMHP
+        $bmhp = $payload['bmhp'] ?? 'Tidak Ada';
+        if ($bmhp === '') {
+            $bmhp = 'Tidak Ada';
+        }
+
+        // Siapkan data map sesuai struktur tabel pcare_kunjungan_umum
+        $data = [
+            'no_rawat' => $noRawat,
+            'noKunjungan' => $noKunjungan,
+            'tglDaftar' => $tglDaftar,
+            'no_rkm_medis' => $reg->no_rkm_medis ?? null,
+            'nm_pasien' => $pasien->nm_pasien ?? null,
+            'noKartu' => $payload['noKartu'] ?? null,
+            'kdPoli' => $payload['kdPoli'] ?? null,
+            'nmPoli' => $nmPoli,
+            'keluhan' => $payload['keluhan'] ?? null,
+            'kdSadar' => $payload['kdSadar'] ?? null,
+            'nmSadar' => $nmSadar,
+            'sistole' => $sistole,
+            'diastole' => $diastole,
+            'beratBadan' => isset($payload['beratBadan']) ? (string) $payload['beratBadan'] : ($pemeriksaan->berat ?? null),
+            'tinggiBadan' => isset($payload['tinggiBadan']) ? (string) $payload['tinggiBadan'] : ($pemeriksaan->tinggi ?? null),
+            'respRate' => isset($payload['respRate']) ? (string) $payload['respRate'] : ($pemeriksaan->respirasi ?? null),
+            'heartRate' => isset($payload['heartRate']) ? (string) $payload['heartRate'] : ($pemeriksaan->nadi ?? null),
+            'lingkarPerut' => $lingkarPerut,
+            'terapi' => $payload['terapiObat'] ?? $terapiObatString,
+            'kdStatusPulang' => $payload['kdStatusPulang'] ?? null,
+            'nmStatusPulang' => $nmStatusPulang,
+            'tglPulang' => $tglPulang,
+            'kdDokter' => $payload['kdDokter'] ?? null,
+            'nmDokter' => $nmDokter,
+            'kdDiag1' => $payload['kdDiag1'] ?? ($diagnosa1->kd_penyakit ?? null),
+            'nmDiag1' => $nmDiag1,
+            'kdDiag2' => $payload['kdDiag2'] ?? ($diagnosa2->kd_penyakit ?? null),
+            'nmDiag2' => $nmDiag2,
+            'kdDiag3' => $payload['kdDiag3'] ?? ($diagnosa3->kd_penyakit ?? null),
+            'nmDiag3' => $nmDiag3,
+            'status' => $status,
+            'KdAlergiMakanan' => $kdAlergiMakanan,
+            'NmAlergiMakanan' => $nmAlergiMakanan,
+            'KdAlergiUdara' => $kdAlergiUdara,
+            'NmAlergiUdara' => $nmAlergiUdara,
+            'KdAlergiObat' => $kdAlergiObat,
+            'NmAlergiObat' => $nmAlergiObat,
+            'KdPrognosa' => $kdPrognosa,
+            'NmPrognosa' => $nmPrognosa,
+            'terapi_non_obat' => $terapiNonObat,
+            'bmhp' => $bmhp,
+        ];
+
+        $this->safeUpsert('pcare_kunjungan_umum', ['no_rawat' => $noRawat], $data);
+    }
+
+    /**
+     * Simpan (upsert) data rujuk subspesialis ke tabel lokal pcare_rujuk_subspesialis.
+     */
+    protected function savePcareRujukSubspesialis(string $noRawat, array $payload, ?string $noKunjungan): void
+    {
+        if (! Schema::hasTable('pcare_rujuk_subspesialis')) {
+            return; // abaikan jika tabel tidak tersedia
+        }
+
+        try {
+            // Ambil data dari database
+            $reg = DB::table('reg_periksa')->where('no_rawat', $noRawat)->first();
+            if (! $reg) {
+                Log::warning('Data reg_periksa tidak ditemukan untuk no_rawat: '.$noRawat);
+
+                return;
             }
-            
-            // Tentukan jenis pemeriksaan berdasarkan reg_periksa
-            $jenisRawat = DB::table('reg_periksa')
-                ->where('no_rawat', $data['no_rawat'])
-                ->value('status_lanjut');
-                
-            // Jika data status_lanjut tidak ditemukan, gunakan kdTkp
-            if (!$jenisRawat) {
-                $jenisRawat = ($data['kdTkp'] == '20') ? 'Ranap' : 'Ralan';
+
+            $pasien = DB::table('pasien')->where('no_rkm_medis', $reg->no_rkm_medis)->first();
+            $poli = $reg->kd_poli ? DB::table('poliklinik')->where('kd_poli', $reg->kd_poli)->first() : null;
+            $dokter = $reg->kd_dokter ? DB::table('dokter')->where('kd_dokter', $reg->kd_dokter)->first() : null;
+
+            // Ambil data pemeriksaan terbaru
+            $pemeriksaan = DB::table('pemeriksaan_ralan')
+                ->where('no_rawat', $noRawat)
+                ->orderBy('tgl_perawatan', 'desc')
+                ->orderBy('jam_rawat', 'desc')
+                ->first();
+
+            // Ambil diagnosa dari database
+            $diagnosa1 = DB::table('diagnosa_pasien')
+                ->join('penyakit', 'diagnosa_pasien.kd_penyakit', '=', 'penyakit.kd_penyakit')
+                ->where('diagnosa_pasien.no_rawat', $noRawat)
+                ->where('diagnosa_pasien.prioritas', '1')
+                ->select('diagnosa_pasien.kd_penyakit', 'penyakit.nm_penyakit')
+                ->first();
+
+            $diagnosa2 = DB::table('diagnosa_pasien')
+                ->join('penyakit', 'diagnosa_pasien.kd_penyakit', '=', 'penyakit.kd_penyakit')
+                ->where('diagnosa_pasien.no_rawat', $noRawat)
+                ->where('diagnosa_pasien.prioritas', '2')
+                ->select('diagnosa_pasien.kd_penyakit', 'penyakit.nm_penyakit')
+                ->first();
+
+            $diagnosa3 = DB::table('diagnosa_pasien')
+                ->join('penyakit', 'diagnosa_pasien.kd_penyakit', '=', 'penyakit.kd_penyakit')
+                ->where('diagnosa_pasien.no_rawat', $noRawat)
+                ->where('diagnosa_pasien.prioritas', '3')
+                ->select('diagnosa_pasien.kd_penyakit', 'penyakit.nm_penyakit')
+                ->first();
+
+            // Ambil terapi obat
+            $terapiObatData = DB::table('resep_obat')
+                ->join('resep_dokter', 'resep_obat.no_resep', '=', 'resep_dokter.no_resep')
+                ->join('databarang', 'resep_dokter.kode_brng', '=', 'databarang.kode_brng')
+                ->where('resep_obat.no_rawat', $noRawat)
+                ->select('databarang.nama_brng', 'resep_dokter.jml', 'resep_dokter.aturan_pakai')
+                ->get();
+
+            $terapiObatString = 'Tidak Ada';
+            if ($terapiObatData->isNotEmpty()) {
+                $terapiObatArray = [];
+                foreach ($terapiObatData as $obat) {
+                    $terapiObatArray[] = $obat->nama_brng.' '.$obat->jml.' ['.$obat->aturan_pakai.']';
+                }
+                $terapiObatString = implode(', ', $terapiObatArray);
             }
-            
-            // Simpan ke tabel pemeriksaan berdasarkan jenis rawat
-            if ($jenisRawat == 'Ralan' || (isset($data['save_to_pemeriksaan_ralan']) && $data['save_to_pemeriksaan_ralan'] == true)) {
-                // 2. Simpan ke tabel pemeriksaan_ralan
-                Log::info('Menyimpan data ke pemeriksaan_ralan', [
-                    'alasan' => ($jenisRawat == 'Ralan' ? 'Jenis rawat Ralan' : 'Flag save_to_pemeriksaan_ralan = true'),
-                    'no_rawat' => $data['no_rawat']
-                ]);
-                
-                // Cek apakah sudah ada pemeriksaan ralan
-                $cekPemeriksaan = DB::table('pemeriksaan_ralan')
-                    ->where('no_rawat', $data['no_rawat'])
-                    ->where('tgl_perawatan', $tglDaftarDB)
+
+            // Parse tensi menjadi sistole/diastole
+            $sistole = null;
+            $diastole = null;
+            if ($pemeriksaan && ! empty($pemeriksaan->tensi) && strpos($pemeriksaan->tensi, '/') !== false) {
+                $tensiParts = explode('/', $pemeriksaan->tensi);
+                $sistole = trim($tensiParts[0]) ?: null;
+                $diastole = isset($tensiParts[1]) ? trim($tensiParts[1]) : null;
+            }
+            // Fallback ke payload jika tidak ada di pemeriksaan
+            $sistole = $sistole ?? (isset($payload['sistole']) ? (string) $payload['sistole'] : null);
+            $diastole = $diastole ?? (isset($payload['diastole']) ? (string) $payload['diastole'] : null);
+
+            // Data rujukan
+            $rujuk = is_array($payload['rujukLanjut'] ?? null) ? $payload['rujukLanjut'] : [];
+            $subSpesialis = is_array($rujuk['subSpesialis'] ?? null) ? $rujuk['subSpesialis'] : [];
+
+            // Normalisasi tanggal
+            $tglDaftar = isset($payload['tglDaftar']) ? $this->normalizeDateToYmd((string) $payload['tglDaftar']) : null;
+            $tglPulang = isset($payload['tglPulang']) ? $this->normalizeDateToYmd((string) $payload['tglPulang']) : null;
+            $tglEstRujuk = isset($rujuk['tglEstRujuk']) ? $this->normalizeDateToYmd((string) $rujuk['tglEstRujuk']) : null;
+
+            // Ambil nama referensi dari database atau payload
+            // Nama Poli
+            $nmPoli = $poli->nm_poli ?? null;
+            if (! $nmPoli && isset($payload['nmPoli'])) {
+                $nmPoli = $payload['nmPoli'];
+            }
+
+            // Nama Dokter
+            $nmDokter = $dokter->nm_dokter ?? null;
+            if (! $nmDokter && isset($payload['nmDokter'])) {
+                $nmDokter = $payload['nmDokter'];
+            }
+
+            // Nama Diagnosa
+            $nmDiag1 = $diagnosa1->nm_penyakit ?? null;
+            $nmDiag2 = $diagnosa2->nm_penyakit ?? null;
+            $nmDiag3 = $diagnosa3->nm_penyakit ?? null;
+
+            // Nama Status Pulang
+            $nmStatusPulang = null;
+            if (isset($payload['kdStatusPulang'])) {
+                $statusPulang = DB::table('status_pulang')
+                    ->where('kd_status_pulang', $payload['kdStatusPulang'])
                     ->first();
-                    
-                // Dapatkan user yang sedang login
-                $usernameLogin = session('username') ?? '';
-                Log::info('Mencari NIP berdasarkan username login', [
-                    'username' => $usernameLogin
-                ]);
-                
-                // Pertama coba cari di tabel pegawai
-                $nipPegawai = null;
-                if (!empty($usernameLogin)) {
-                    $pegawai = DB::table('pegawai')
-                        ->where('nik', $usernameLogin)
-                        ->first();
-                    
-                    if ($pegawai) {
-                        $nipPegawai = $pegawai->nik;
-                        Log::info('NIP pegawai ditemukan', [
-                            'nik' => $pegawai->nik,
-                            'nama' => $pegawai->nama
-                        ]);
-                    } else {
-                        // Coba cari di tabel user
-                        $user = DB::table('user')
-                            ->where('id_user', $usernameLogin)
-                            ->first();
-                            
-                        if ($user && !empty($user->nip)) {
-                            $nipPegawai = $user->nip;
-                            Log::info('NIP pegawai ditemukan dari tabel user', [
-                                'nip' => $user->nip
-                            ]);
-                        } else {
-                            Log::warning('NIP pegawai tidak ditemukan untuk username', [
-                                'username' => $usernameLogin
-                            ]);
-                        }
-                    }
-                }
-                
-                // Jika tidak ditemukan NIP pegawai, gunakan kd_dokter dari permintaan atau dari reg_periksa
-                $nip = $nipPegawai;
-                if (empty($nip)) {
-                    // Dapatkan dokter dari reg_periksa jika kd_dokter tidak tersedia
-                    $dokter = $data['kd_dokter'] ?? '';
-                    if (empty($dokter)) {
-                        $dokter = DB::table('reg_periksa')
-                            ->where('no_rawat', $data['no_rawat'])
-                            ->value('kd_dokter');
-                    }
-                    
-                    // Jika masih kosong, gunakan default dokter
-                    if (empty($dokter)) {
-                        $dokter = DB::table('dokter')
-                            ->orderBy('kd_dokter', 'asc')
-                            ->value('kd_dokter') ?? 'D0000001';
-                    }
-                    
-                    $nip = $dokter;
-                }
-                
-                $pemeriksaanData = [
-                    'no_rawat' => substr($data['no_rawat'], 0, 17),
-                    'tgl_perawatan' => $tglDaftarDB,
-                    'jam_rawat' => date('H:i:s'),
-                    'suhu_tubuh' => substr($data['suhu_tubuh'] ?? '', 0, 5),
-                    'tensi' => substr(($data['sistole'].'/'.$data['diastole']), 0, 8),
-                    'nadi' => substr($data['heartRate'] ?? '', 0, 3),
-                    'respirasi' => substr($data['respRate'] ?? '', 0, 3),
-                    'tinggi' => substr($data['tinggiBadan'] ?? '', 0, 5),
-                    'berat' => substr($data['beratBadan'] ?? '', 0, 5),
-                    'spo2' => substr($data['spo2'] ?? '', 0, 3),
-                    'gcs' => substr($data['gcs'] ?? '', 0, 10),
-                    'kesadaran' => $data['kesadaran'] ?? 'Compos Mentis',
-                    'keluhan' => substr($data['keluhan'] ?? 'Tidak Ada', 0, 2000),
-                    'pemeriksaan' => substr($data['pemeriksaan'] ?? '', 0, 2000),
-                    'alergi' => substr(isset($data['alergi']) ? 'Makanan : ' . ($data['alergiMakanan'] ?? '-') . ', Udara : ' . ($data['alergiUdara'] ?? '-') . ', Obat : ' . ($data['alergiObat'] ?? '-') : '', 0, 80),
-                    'lingkar_perut' => substr($data['lingkar_perut'] ?? $data['lingkarPerut'] ?? '', 0, 5),
-                    'rtl' => substr(isset($data['terapiObat']) || isset($data['terapiNonObat']) ? 'Terapi Obat : ' . ($data['terapiObat'] ?? '-') . ', Terapi Non Obat : ' . ($data['terapiNonObat'] ?? '-') . ', BMHP : ' . ($data['BMHP'] ?? '-') : '', 0, 2000),
-                    'penilaian' => substr($data['prognosa'] ?? '', 0, 2000),
-                    'instruksi' => substr($data['instruksi'] ?? '', 0, 2000),
-                    'evaluasi' => substr($data['evaluasi'] ?? '', 0, 2000),
-                    'nip' => substr($nip, 0, 20)
+                $nmStatusPulang = $statusPulang->nm_status_pulang ?? null;
+            }
+            if (! $nmStatusPulang && isset($payload['nmStatusPulang'])) {
+                $nmStatusPulang = $payload['nmStatusPulang'];
+            }
+
+            // Nama Kesadaran (Sadar)
+            $nmSadar = null;
+            if (isset($payload['kdSadar'])) {
+                $kesadaran = DB::table('master_kesadaran')
+                    ->where('kd_kesadaran', $payload['kdSadar'])
+                    ->first();
+                $nmSadar = $kesadaran->nm_kesadaran ?? null;
+            }
+
+            // Nama TACC
+            $nmTACC = null;
+            if (isset($payload['kdTacc'])) {
+                $kdTacc = (string) $payload['kdTacc'];
+                $taccMap = [
+                    '-1' => 'Tanpa TACC',
+                    '1' => 'Time',
+                    '2' => 'Age',
+                    '3' => 'Complication',
+                    '4' => 'Comorbidity',
                 ];
-                
-                Log::info('Data pemeriksaan_ralan yang akan disimpan', [
-                    'no_rawat' => $data['no_rawat'],
-                    'nip' => $nip,
-                    'tgl_perawatan' => $tglDaftarDB
-                ]);
-                
-                try {
-                    if ($cekPemeriksaan) {
-                        // Update pemeriksaan yang sudah ada
-                        DB::table('pemeriksaan_ralan')
-                            ->where('no_rawat', $data['no_rawat'])
-                            ->where('tgl_perawatan', $tglDaftarDB)
-                            ->update($pemeriksaanData);
-                        
-                        Log::info('Update pemeriksaan_ralan berhasil', [
-                            'no_rawat' => $data['no_rawat']
-                        ]);
-                    } else {
-                        // Insert pemeriksaan baru
-                        DB::table('pemeriksaan_ralan')->insert($pemeriksaanData);
-                        
-                        Log::info('Insert pemeriksaan_ralan berhasil', [
-                            'no_rawat' => $data['no_rawat']
-                        ]);
-                    }
-                } catch (\Exception $pemeriksaanError) {
-                    Log::error('Gagal menyimpan ke pemeriksaan_ralan', [
-                        'error' => $pemeriksaanError->getMessage(),
-                        'no_rawat' => $data['no_rawat']
-                    ]);
-                    // Tidak throw exception agar proses tetap berlanjut
-                }
-            } 
+                $nmTACC = $taccMap[$kdTacc] ?? null;
+            }
+
+            // Nama SubSpesialis (dari response BPJS atau lookup)
+            $kdSubSpesialis = $subSpesialis['kdSubSpesialis1'] ?? $subSpesialis['kdSubSpesialis'] ?? null;
+            $nmSubSpesialis = null;
             
-            // Pemeriksaan ranap - Simpan jika jenisRawat = Ranap atau jika flag save_to_pemeriksaan_ranap = true
-            if ($jenisRawat == 'Ranap' || (isset($data['save_to_pemeriksaan_ranap']) && $data['save_to_pemeriksaan_ranap'] == true)) {
-                // 3. Simpan ke tabel pemeriksaan_ranap
-                Log::info('Menyimpan data ke pemeriksaan_ranap', [
-                    'alasan' => ($jenisRawat == 'Ranap' ? 'Jenis rawat Ranap' : 'Flag save_to_pemeriksaan_ranap = true'),
-                    'no_rawat' => $data['no_rawat']
-                ]);
-                
-                // Cek apakah sudah ada pemeriksaan ranap
-                $cekPemeriksaan = DB::table('pemeriksaan_ranap')
-                    ->where('no_rawat', $data['no_rawat'])
-                    ->where('tgl_perawatan', $tglDaftarDB)
-                    ->first();
+            // Lookup nama subspesialis dari API PCare jika kode tersedia
+            if ($kdSubSpesialis) {
+                try {
+                    // Cari dari spesialis untuk mendapatkan kdSpesialis terlebih dahulu
+                    // Kemudian cari subspesialis berdasarkan kdSpesialis
+                    $spesialisRes = $this->pcareRequest('GET', 'spesialis', []);
+                    $spesialisProcessed = $this->maybeDecryptAndDecompress($spesialisRes['response']->body(), $spesialisRes['timestamp_used']);
+                    $spesialisList = is_array($spesialisProcessed) && isset($spesialisProcessed['response']['list']) 
+                        ? $spesialisProcessed['response']['list'] 
+                        : [];
                     
-                // Dapatkan user yang sedang login jika belum didefinisikan
-                if (!isset($usernameLogin)) {
-                    $usernameLogin = session('username') ?? '';
-                    Log::info('Mencari NIP berdasarkan username login untuk pemeriksaan_ranap', [
-                        'username' => $usernameLogin
-                    ]);
-                }
-                
-                // Gunakan NIP yang sudah dicari atau cari jika belum ada
-                if (!isset($nipPegawai)) {
-                    // Pertama coba cari di tabel pegawai
-                    $nipPegawai = null;
-                    if (!empty($usernameLogin)) {
-                        $pegawai = DB::table('pegawai')
-                            ->where('nik', $usernameLogin)
-                            ->first();
-                        
-                        if ($pegawai) {
-                            $nipPegawai = $pegawai->nik;
-                            Log::info('NIP pegawai ditemukan untuk pemeriksaan_ranap', [
-                                'nik' => $pegawai->nik,
-                                'nama' => $pegawai->nama
-                            ]);
-                        } else {
-                            // Coba cari di tabel user
-                            $user = DB::table('user')
-                                ->where('id_user', $usernameLogin)
-                                ->first();
-                                
-                            if ($user && !empty($user->nip)) {
-                                $nipPegawai = $user->nip;
-                                Log::info('NIP pegawai ditemukan dari tabel user untuk pemeriksaan_ranap', [
-                                    'nip' => $user->nip
-                                ]);
-                            } else {
-                                Log::warning('NIP pegawai tidak ditemukan untuk username (pemeriksaan_ranap)', [
-                                    'username' => $usernameLogin
-                                ]);
+                    // Cari kdSpesialis yang sesuai
+                    foreach ($spesialisList as $sp) {
+                        if (isset($sp['kdSpesialis'])) {
+                            $subSpRes = $this->pcareRequest('GET', 'spesialis/subspesialis', ['kdSpesialis' => $sp['kdSpesialis']]);
+                            $subSpProcessed = $this->maybeDecryptAndDecompress($subSpRes['response']->body(), $subSpRes['timestamp_used']);
+                            $subSpList = is_array($subSpProcessed) && isset($subSpProcessed['response']['list']) 
+                                ? $subSpProcessed['response']['list'] 
+                                : [];
+                            
+                            foreach ($subSpList as $subSp) {
+                                if (isset($subSp['kdSubSpesialis']) && $subSp['kdSubSpesialis'] === $kdSubSpesialis) {
+                                    $nmSubSpesialis = $subSp['nmSubSpesialis'] ?? null;
+                                    break 2; // Break dari kedua loop
+                                }
                             }
                         }
                     }
+                } catch (\Throwable $e) {
+                    Log::warning('Gagal lookup nmSubSpesialis dari API PCare: '.$e->getMessage());
                 }
                 
-                // Jika tidak ditemukan NIP pegawai, gunakan kd_dokter dari permintaan atau dari reg_periksa
-                $nip = $nipPegawai;
-                if (empty($nip)) {
-                    // Dapatkan dokter dari data request atau reg_periksa
-                    $dokter = $data['kd_dokter'] ?? '';
-                    if (empty($dokter)) {
-                        $dokter = DB::table('reg_periksa')
-                            ->where('no_rawat', $data['no_rawat'])
-                            ->value('kd_dokter');
-                        
-                        // Jika masih kosong, gunakan default dokter
-                        if (empty($dokter)) {
-                            $dokter = DB::table('dokter')
-                                ->orderBy('kd_dokter', 'asc')
-                                ->value('kd_dokter') ?? 'D0000001';
-                        }
-                    }
-                    
-                    $nip = $dokter;
-                }
-                
-                $pemeriksaanData = [
-                    'no_rawat' => substr($data['no_rawat'], 0, 17),
-                    'tgl_perawatan' => $tglDaftarDB,
-                    'jam_rawat' => date('H:i:s'),
-                    'suhu_tubuh' => substr($data['suhu_tubuh'] ?? '', 0, 5),
-                    'tensi' => substr(($data['sistole'].'/'.$data['diastole']), 0, 8),
-                    'nadi' => substr($data['heartRate'] ?? '', 0, 3),
-                    'respirasi' => substr($data['respRate'] ?? '', 0, 3),
-                    'tinggi' => substr($data['tinggiBadan'] ?? '', 0, 5),
-                    'berat' => substr($data['beratBadan'] ?? '', 0, 5),
-                    'spo2' => substr($data['spo2'] ?? '', 0, 3),
-                    'gcs' => substr($data['gcs'] ?? '', 0, 10),
-                    'kesadaran' => $data['kesadaran'] ?? 'Compos Mentis',
-                    'keluhan' => substr($data['keluhan'] ?? 'Tidak Ada', 0, 2000),
-                    'pemeriksaan' => substr($data['pemeriksaan'] ?? '', 0, 2000),
-                    'alergi' => substr(isset($data['alergi']) ? 'Makanan : ' . ($data['alergiMakanan'] ?? '-') . ', Udara : ' . ($data['alergiUdara'] ?? '-') . ', Obat : ' . ($data['alergiObat'] ?? '-') : '', 0, 80),
-                    'lingkar_perut' => substr($data['lingkar_perut'] ?? $data['lingkarPerut'] ?? '', 0, 5),
-                    'rtl' => substr(isset($data['terapiObat']) || isset($data['terapiNonObat']) ? 'Terapi Obat : ' . ($data['terapiObat'] ?? '-') . ', Terapi Non Obat : ' . ($data['terapiNonObat'] ?? '-') . ', BMHP : ' . ($data['BMHP'] ?? '-') : '', 0, 2000),
-                    'penilaian' => substr($data['prognosa'] ?? '', 0, 2000),
-                    'instruksi' => substr($data['instruksi'] ?? '', 0, 2000),
-                    'evaluasi' => substr($data['evaluasi'] ?? '', 0, 2000),
-                    'nip' => substr($nip, 0, 20)
-                ];
-                
-                Log::info('Data pemeriksaan_ranap yang akan disimpan', [
-                    'no_rawat' => $data['no_rawat'],
-                    'nip' => $nip,
-                    'tgl_perawatan' => $tglDaftarDB
-                ]);
-                
-                try {
-                    if ($cekPemeriksaan) {
-                        // Update pemeriksaan yang sudah ada
-                        DB::table('pemeriksaan_ranap')
-                            ->where('no_rawat', $data['no_rawat'])
-                            ->where('tgl_perawatan', $tglDaftarDB)
-                            ->update($pemeriksaanData);
-                            
-                        Log::info('Update pemeriksaan_ranap berhasil', [
-                                'no_rawat' => $data['no_rawat']
-                            ]);
-                    } else {
-                        // Insert pemeriksaan baru
-                        DB::table('pemeriksaan_ranap')->insert($pemeriksaanData);
-                        
-                        Log::info('Insert pemeriksaan_ranap berhasil', [
-                            'no_rawat' => $data['no_rawat']
-                        ]);
-                    }
-                } catch (\Exception $pemeriksaanError) {
-                    Log::error('Gagal menyimpan ke pemeriksaan_ranap', [
-                        'error' => $pemeriksaanError->getMessage(),
-                        'no_rawat' => $data['no_rawat']
-                    ]);
-                    // Tidak throw exception agar proses tetap berlanjut
+                // Fallback ke payload jika lookup gagal
+                if (! $nmSubSpesialis && isset($payload['nmSubSpesialis'])) {
+                    $nmSubSpesialis = $payload['nmSubSpesialis'];
                 }
             }
-            
-            DB::commit();
-            Log::info('PCare Pendaftaran berhasil disimpan ke database', [
-                'no_rawat' => $data['no_rawat'],
-                'no_rkm_medis' => $data['no_rkm_medis'],
-                'noUrut' => $noUrut,
-                'jenis_rawat' => $jenisRawat
+
+            // Nama Sarana
+            $nmSarana = null;
+            if (isset($subSpesialis['kdSarana'])) {
+                $saranaMap = [
+                    '1' => 'Rawat Jalan',
+                    '2' => 'Rawat Inap',
+                ];
+                $nmSarana = $saranaMap[$subSpesialis['kdSarana']] ?? null;
+            }
+
+            // Nama PPK (Faskes Rujukan)
+            $nmPPK = null;
+            if (isset($rujuk['kdppk'])) {
+                // Prioritas: gunakan nmPPK dari payload jika tersedia (lebih cepat dan akurat)
+                if (isset($payload['nmPPK']) && ! empty(trim($payload['nmPPK']))) {
+                    $nmPPK = trim($payload['nmPPK']);
+                } else {
+                    // Jika tidak ada di payload, lookup dari API PCare provider
+                    try {
+                        $providerRes = $this->pcareRequest('GET', 'provider', []);
+                        $providerProcessed = $this->maybeDecryptAndDecompress($providerRes['response']->body(), $providerRes['timestamp_used']);
+                        $providerList = is_array($providerProcessed) && isset($providerProcessed['response']['list']) 
+                            ? $providerProcessed['response']['list'] 
+                            : [];
+                        
+                        foreach ($providerList as $provider) {
+                            if (isset($provider['kdProvider']) && $provider['kdProvider'] === $rujuk['kdppk']) {
+                                $nmPPK = $provider['nmProvider'] ?? null;
+                                break;
+                            }
+                        }
+                    } catch (\Throwable $e) {
+                        Log::warning('Gagal lookup nmPPK dari API PCare: '.$e->getMessage());
+                    }
+                }
+            }
+
+            // Nama Alergi
+            $nmAlergiMakanan = null;
+            $nmAlergiUdara = null;
+            $nmAlergiObat = null;
+            if (isset($payload['alergiMakan'])) {
+                $alergiMakan = DB::table('master_alergi')
+                    ->where('kd_alergi', $payload['alergiMakan'])
+                    ->first();
+                $nmAlergiMakanan = $alergiMakan->nm_alergi ?? ($payload['alergiMakan'] === '00' ? 'Tidak Ada' : null);
+            }
+            if (isset($payload['alergiUdara'])) {
+                $alergiUdara = DB::table('master_alergi')
+                    ->where('kd_alergi', $payload['alergiUdara'])
+                    ->first();
+                $nmAlergiUdara = $alergiUdara->nm_alergi ?? ($payload['alergiUdara'] === '00' ? 'Tidak Ada' : null);
+            }
+            if (isset($payload['alergiObat'])) {
+                $alergiObat = DB::table('master_alergi')
+                    ->where('kd_alergi', $payload['alergiObat'])
+                    ->first();
+                $nmAlergiObat = $alergiObat->nm_alergi ?? ($payload['alergiObat'] === '00' ? 'Tidak Ada' : null);
+            }
+
+            // Nama Prognosa
+            $nmPrognosa = null;
+            if (isset($payload['kdPrognosa'])) {
+                $prognosa = DB::table('master_prognosa')
+                    ->where('kd_prognosa', $payload['kdPrognosa'])
+                    ->first();
+                $nmPrognosa = $prognosa->nm_prognosa ?? null;
+            }
+
+            // Siapkan data untuk insert/update
+            $data = [
+                'no_rawat' => $noRawat,
+                'noKunjungan' => $noKunjungan,
+                'tglDaftar' => $tglDaftar,
+                'no_rkm_medis' => $reg->no_rkm_medis ?? null,
+                'nm_pasien' => $pasien->nm_pasien ?? null,
+                'noKartu' => $payload['noKartu'] ?? null,
+                'kdPoli' => $payload['kdPoli'] ?? null,
+                'nmPoli' => $nmPoli,
+                'keluhan' => $payload['keluhan'] ?? null,
+                'kdSadar' => $payload['kdSadar'] ?? null,
+                'nmSadar' => $nmSadar,
+                'sistole' => $sistole,
+                'diastole' => $diastole,
+                'beratBadan' => isset($payload['beratBadan']) ? (string) $payload['beratBadan'] : ($pemeriksaan->berat ?? null),
+                'tinggiBadan' => isset($payload['tinggiBadan']) ? (string) $payload['tinggiBadan'] : ($pemeriksaan->tinggi ?? null),
+                'respRate' => isset($payload['respRate']) ? (string) $payload['respRate'] : ($pemeriksaan->respirasi ?? null),
+                'heartRate' => isset($payload['heartRate']) ? (string) $payload['heartRate'] : ($pemeriksaan->nadi ?? null),
+                'lingkarPerut' => isset($payload['lingkarPerut']) ? (string) $payload['lingkarPerut'] : ($pemeriksaan->lingkar_perut ?? ''),
+                'terapi' => $terapiObatString,
+                'kdStatusPulang' => $payload['kdStatusPulang'] ?? null,
+                'nmStatusPulang' => $nmStatusPulang,
+                'tglPulang' => $tglPulang,
+                'kdDokter' => $payload['kdDokter'] ?? null,
+                'nmDokter' => $nmDokter,
+                'kdDiag1' => $payload['kdDiag1'] ?? ($diagnosa1->kd_penyakit ?? null),
+                'nmDiag1' => $nmDiag1,
+                'kdDiag2' => $payload['kdDiag2'] ?? ($diagnosa2->kd_penyakit ?? null),
+                'nmDiag2' => $nmDiag2,
+                'kdDiag3' => $payload['kdDiag3'] ?? ($diagnosa3->kd_penyakit ?? null),
+                'nmDiag3' => $nmDiag3,
+                'tglEstRujuk' => $tglEstRujuk,
+                'kdPPK' => $rujuk['kdppk'] ?? null,
+                'nmPPK' => $nmPPK ?? '',
+                'kdSubSpesialis' => $kdSubSpesialis,
+                'nmSubSpesialis' => $nmSubSpesialis,
+                'kdSarana' => $subSpesialis['kdSarana'] ?? null,
+                'nmSarana' => $nmSarana,
+                'kdTACC' => isset($payload['kdTacc']) ? (string) $payload['kdTacc'] : null,
+                'nmTACC' => $nmTACC,
+                'alasanTACC' => $payload['alasanTacc'] ?? null,
+                'KdAlergiMakanan' => $payload['alergiMakan'] ?? '00',
+                'NmAlergiMakanan' => $nmAlergiMakanan ?? 'Tidak Ada',
+                'KdAlergiUdara' => $payload['alergiUdara'] ?? '00',
+                'NmAlergiUdara' => $nmAlergiUdara ?? 'Tidak Ada',
+                'KdAlergiObat' => $payload['alergiObat'] ?? '00',
+                'NmAlergiObat' => $nmAlergiObat ?? 'Tidak Ada',
+                'KdPrognosa' => $payload['kdPrognosa'] ?? '01',
+                'NmPrognosa' => $nmPrognosa ?? 'Bonam (Baik)',
+                'terapi_non_obat' => $payload['terapiNonObat'] ?? ($pemeriksaan->instruksi ?? 'Edukasi Kesehatan'),
+                'bmhp' => $payload['bmhp'] ?? 'Tidak Ada',
+            ];
+
+            $this->safeUpsert('pcare_rujuk_subspesialis', ['no_rawat' => $noRawat], $data);
+        } catch (\Throwable $e) {
+            Log::error('Error saving pcare_rujuk_subspesialis: '.$e->getMessage(), [
+                'no_rawat' => $noRawat,
+                'trace' => $e->getTraceAsString(),
             ]);
-            
-            return true;
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Gagal menyimpan pendaftaran PCare ke database', [
-                'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return false;
         }
     }
-}
 
+    /**
+     * Normalisasi tanggal dd-mm-YYYY ⇄ YYYY-mm-dd (mengembalikan Y-m-d atau null jika tidak valid).
+     */
+    protected function normalizeDateToYmd(string $dateStr): ?string
+    {
+        $dateStr = trim($dateStr);
+        if ($dateStr === '') {
+            return null;
+        }
+        // Jika format sudah YYYY-mm-dd
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateStr)) {
+            return $dateStr;
+        }
+        // Jika dd-mm-YYYY → ubah ke YYYY-mm-dd
+        if (preg_match('/^(\d{2})-(\d{2})-(\d{4})$/', $dateStr, $m)) {
+            return $m[3].'-'.$m[2].'-'.$m[1];
+        }
+
+        return null;
+    }
+
+    /**
+     * Upsert aman: hanya menyertakan kolom yang tersedia di tabel.
+     */
+    protected function safeUpsert(string $table, array $keys, array $data): void
+    {
+        try {
+            if (! Schema::hasTable($table)) {
+                return;
+            }
+            $cols = Schema::getColumnListing($table);
+            $filtered = [];
+            foreach ($data as $k => $v) {
+                if (in_array($k, $cols, true)) {
+                    $filtered[$k] = $v;
+                }
+            }
+            // Tambahkan updated_at jika ada di tabel
+            if (in_array('updated_at', $cols, true)) {
+                $filtered['updated_at'] = now();
+            }
+            DB::table($table)->updateOrInsert($keys, $filtered);
+        } catch (\Throwable $e) {
+            // Log dan lanjutkan tanpa memblokir alur
+            Log::error('safeUpsert error', ['table' => $table, 'error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Ambil data rujukan subspesialis PCare berdasarkan nomor rawat.
+     * Sumber tabel: pcare_rujuk_subspesialis dengan join ke reg_periksa dan pasien untuk data lengkap.
+     */
+    public function getRujukanSubspesialisByRawat(string $noRawat)
+    {
+        $noRawat = trim($noRawat);
+        if ($noRawat === '') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Parameter no_rawat wajib diisi',
+            ], 422);
+        }
+
+        try {
+            if (! Schema::hasTable('pcare_rujuk_subspesialis')) {
+                return response()->json([
+                    'success' => false,
+                    'data' => null,
+                    'message' => 'Tabel pcare_rujuk_subspesialis tidak tersedia',
+                ], 404);
+            }
+
+            $data = DB::table('pcare_rujuk_subspesialis')
+                ->where('pcare_rujuk_subspesialis.no_rawat', $noRawat)
+                ->leftJoin('reg_periksa', 'pcare_rujuk_subspesialis.no_rawat', '=', 'reg_periksa.no_rawat')
+                ->leftJoin('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+                ->leftJoin('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
+                ->select(
+                    'pcare_rujuk_subspesialis.*',
+                    'reg_periksa.umurdaftar',
+                    'reg_periksa.sttsumur',
+                    'reg_periksa.hubunganpj',
+                    'reg_periksa.tgl_registrasi as tglDaftar',
+                    'pasien.tgl_lahir',
+                    'pasien.jk',
+                    'dokter.nm_dokter'
+                )
+                ->first();
+
+            if (! $data) {
+                return response()->json([
+                    'success' => false,
+                    'data' => null,
+                    'message' => 'Data rujukan tidak ditemukan',
+                ], 404);
+            }
+
+            // Mapping hubungan keluarga ke status BPJS
+            $hubunganMap = [
+                'Peserta' => '1',
+                'Istri' => '2',
+                'Anak' => '3',
+            ];
+            $hubunganpj = $data->hubunganpj ?? '';
+            $statusPeserta = '4'; // Default lainnya
+            foreach ($hubunganMap as $key => $value) {
+                if (stripos($hubunganpj, $key) !== false) {
+                    $statusPeserta = $value;
+                    break;
+                }
+            }
+
+            // Format jenis kelamin
+            $jenisKelamin = '';
+            if ($data->jk === 'L' || $data->jk === 'Laki-laki' || $data->jk === 'LAKI-LAKI') {
+                $jenisKelamin = 'L';
+            } elseif ($data->jk === 'P' || $data->jk === 'Perempuan' || $data->jk === 'PEREMPUAN') {
+                $jenisKelamin = 'P';
+            }
+
+            // Tambahkan data tambahan ke response
+            $data->statusPeserta = $statusPeserta;
+            $data->jenisKelamin = $jenisKelamin;
+            $data->umur = $data->umurdaftar ?? null;
+            $data->satuanUmur = $data->sttsumur ?? 'Th';
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Error getting rujukan subspesialis by rawat: '.$e->getMessage(), [
+                'no_rawat' => $noRawat,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data rujukan',
+            ], 500);
+        }
+    }
+
+    /**
+     * Ambil config kabupaten/kota BPJS PCare dari config.
+     */
+    public function getKabupatenConfig()
+    {
+        try {
+            $kabupaten = config('bpjs.pcare.kabupaten', '');
+            return response()->json([
+                'success' => true,
+                'kabupaten' => $kabupaten,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Error getting kabupaten config: '.$e->getMessage());
+            return response()->json([
+                'success' => false,
+                'kabupaten' => '',
+            ], 500);
+        }
+    }
+
+    /**
+     * Ambil data pendaftaran PCare terakhir berdasarkan nomor rawat.
+     * Sumber tabel: pcare_pendaftaran
+     */
+    public function getPendaftaranByRawat(string $noRawat)
+    {
+        $noRawat = trim($noRawat);
+        if ($noRawat === '') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Parameter no_rawat wajib diisi',
+            ], 422);
+        }
+
+        try {
+            $row = DB::table('pcare_pendaftaran')
+                ->where('no_rawat', $noRawat)
+                ->orderByDesc('tglDaftar')
+                ->orderByDesc('noUrut')
+                ->first();
+
+            if (! $row) {
+                return response()->json([
+                    'success' => true,
+                    'data' => null,
+                    'message' => 'Belum ada data pendaftaran untuk no_rawat ini',
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $row,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Internal server error: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Add Data Pendaftaran (BPJS PCare Catalog)
+     * Endpoint: POST {Base URL}/{Service Name}/pendaftaran
+     * Content-Type: text/plain
+     * Payload fields mapped from UI and RS tables.
+     */
+    public function addPendaftaran(Request $request)
+    {
+        $noRawat = trim((string) $request->input('no_rawat', ''));
+        if ($noRawat === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Parameter no_rawat wajib diisi',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        // Ambil data registrasi & pasien
+        $reg = DB::table('reg_periksa')->where('no_rawat', $noRawat)->first();
+        if (! $reg) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Data reg_periksa tidak ditemukan untuk no_rawat: '.$noRawat,
+                    'code' => 404,
+                ],
+            ], 404);
+        }
+        $pasien = DB::table('pasien')->where('no_rkm_medis', $reg->no_rkm_medis)->first();
+        if (! $pasien) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Data pasien tidak ditemukan untuk no_rkm_medis: '.$reg->no_rkm_medis,
+                    'code' => 404,
+                ],
+            ], 404);
+        }
+
+        // Validasi nomor kartu BPJS (no_peserta)
+        $noKartu = trim((string) ($pasien->no_peserta ?? ''));
+        if ($noKartu === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Nomor kartu BPJS pasien (no_peserta) tidak tersedia',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        // Mapping kdPoli RS -> kdPoli PCare
+        $kdPoliRs = trim((string) ($reg->kd_poli ?? ''));
+        $mapPoli = null;
+        if ($kdPoliRs !== '') {
+            $mapPoli = DB::table('maping_poliklinik_pcare')->where('kd_poli_rs', $kdPoliRs)->first();
+        }
+        $kdPoli = $mapPoli?->kd_poli_pcare ?: $kdPoliRs ?: '';
+        $nmPoli = $mapPoli?->nm_poli_pcare ?: (DB::table('poliklinik')->where('kd_poli', $kdPoliRs)->value('nm_poli') ?: '');
+
+        // Konfigurasi provider
+        $cfg = $this->pcareConfig();
+        $kdProviderPeserta = trim((string) ($cfg['kode_ppk'] ?? ''));
+        if ($kdProviderPeserta === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'BPJS_PCARE_KODE_PPK belum dikonfigurasi (.env/config).',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        // Ambil & parsing data dari request (form CPPT)
+        $keluhan = (string) $request->input('keluhan', '');
+        $tensi = trim((string) $request->input('tensi', ''));
+        $sistole = 0;
+        $diastole = 0;
+        if ($tensi !== '') {
+            $parts = preg_split('/\s*\/\s*/', $tensi);
+            if (is_array($parts) && count($parts) >= 2) {
+                $sistole = (int) preg_replace('/[^0-9]/', '', $parts[0]);
+                $diastole = (int) preg_replace('/[^0-9]/', '', $parts[1]);
+            } else {
+                // Jika hanya satu angka, asumsikan sistole
+                $sistole = (int) preg_replace('/[^0-9]/', '', $tensi);
+            }
+        }
+        $beratBadan = (int) preg_replace('/[^0-9]/', '', (string) $request->input('berat', '0'));
+        $tinggiBadan = (int) preg_replace('/[^0-9]/', '', (string) $request->input('tinggi', '0'));
+        $respRate = (int) preg_replace('/[^0-9]/', '', (string) $request->input('respirasi', '0'));
+        $lingkarPerut = (int) preg_replace('/[^0-9]/', '', (string) $request->input('lingkar_perut', '0'));
+        $heartRate = (int) preg_replace('/[^0-9]/', '', (string) $request->input('nadi', '0'));
+
+        // Tanggal daftar: gunakan tgl_perawatan dari form atau tanggal hari ini
+        $tglPerawatan = (string) $request->input('tgl_perawatan', date('Y-m-d'));
+        // Format ke dd-mm-YYYY sesuai katalog
+        try {
+            $date = new \DateTime($tglPerawatan);
+            $tglDaftarFormatted = $date->format('d-m-Y');
+        } catch (\Throwable $e) {
+            $tglDaftarFormatted = date('d-m-Y');
+        }
+
+        // Payload ke PCare
+        $payload = [
+            'kdProviderPeserta' => $kdProviderPeserta,
+            'tglDaftar' => $tglDaftarFormatted,
+            'noKartu' => $noKartu,
+            'kdPoli' => $kdPoli,
+            'keluhan' => $keluhan !== '' ? $keluhan : null,
+            'kunjSakit' => true,
+            'sistole' => $sistole,
+            'diastole' => $diastole,
+            'beratBadan' => $beratBadan,
+            'tinggiBadan' => $tinggiBadan,
+            'respRate' => $respRate,
+            'lingkarPerut' => $lingkarPerut,
+            'heartRate' => $heartRate,
+            'rujukBalik' => 0,
+            'kdTkp' => '10',
+        ];
+
+        // Kirim ke PCare dengan Content-Type: text/plain
+        try {
+            $result = $this->pcareRequest('POST', 'pendaftaran', [], $payload, ['Content-Type' => 'text/plain']);
+        } catch (\Throwable $e) {
+            // Simpan ke tabel sebagai Gagal
+            $this->savePcarePendaftaran($noRawat, $reg, $pasien, $kdProviderPeserta, $noKartu, $kdPoli, $nmPoli, $keluhan, $sistole, $diastole, $beratBadan, $tinggiBadan, $respRate, $lingkarPerut, $heartRate, '10', '', false, $tglPerawatan);
+
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Gagal mengirim ke BPJS PCare: '.$e->getMessage(),
+                    'code' => 500,
+                ],
+            ], 500);
+        }
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        // Ekstrak noUrut dari response jika tersedia
+        $noUrut = '';
+        $statusOk = ($response->status() === 201);
+        if (is_array($processed) && isset($processed['response']) && is_array($processed['response'])) {
+            $resp = $processed['response'];
+            if (($resp['field'] ?? '') === 'noUrut') {
+                $noUrut = (string) ($resp['message'] ?? '');
+            }
+        }
+
+        // Simpan ke tabel pcare_pendaftaran
+        $this->savePcarePendaftaran($noRawat, $reg, $pasien, $kdProviderPeserta, $noKartu, $kdPoli, $nmPoli, $keluhan, $sistole, $diastole, $beratBadan, $tinggiBadan, $respRate, $lingkarPerut, $heartRate, '10', $noUrut, $statusOk, $tglPerawatan);
+
+        return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Helper: Simpan data pendaftaran ke tabel pcare_pendaftaran.
+     */
+    protected function savePcarePendaftaran(
+        string $noRawat,
+        object $reg,
+        object $pasien,
+        string $kdProviderPeserta,
+        string $noKartu,
+        string $kdPoli,
+        string $nmPoli,
+        ?string $keluhan,
+        int $sistole,
+        int $diastole,
+        int $beratBadan,
+        int $tinggiBadan,
+        int $respRate,
+        int $lingkarPerut,
+        int $heartRate,
+        string $kdTkp,
+        string $noUrut,
+        bool $success,
+        string $tglPerawatan
+    ): void {
+        // Map enum strings
+        $kunjStr = 'Kunjungan Sakit';
+        $kdTkpStr = match ($kdTkp) {
+            '20' => '20 Rawat Inap',
+            '50' => '50 Promotif Preventif',
+            default => '10 Rawat Jalan',
+        };
+
+        // Parse date to Y-m-d
+        try {
+            $tgl = new \DateTime($tglPerawatan);
+            $tglDb = $tgl->format('Y-m-d');
+        } catch (\Throwable $e) {
+            $tglDb = date('Y-m-d');
+        }
+
+        DB::table('pcare_pendaftaran')->insert([
+            'no_rawat' => $noRawat,
+            'tglDaftar' => $tglDb,
+            'no_rkm_medis' => (string) ($reg->no_rkm_medis ?? ''),
+            'nm_pasien' => (string) ($pasien->nm_pasien ?? ''),
+            'kdProviderPeserta' => $kdProviderPeserta,
+            'noKartu' => $noKartu,
+            'kdPoli' => $kdPoli,
+            'nmPoli' => $nmPoli,
+            'keluhan' => (string) ($keluhan ?? ''),
+            'kunjSakit' => $kunjStr,
+            'sistole' => (string) $sistole,
+            'diastole' => (string) $diastole,
+            'beratBadan' => (string) $beratBadan,
+            'tinggiBadan' => (string) $tinggiBadan,
+            'respRate' => (string) $respRate,
+            'lingkar_perut' => (string) $lingkarPerut,
+            'heartRate' => (string) $heartRate,
+            'rujukBalik' => '0',
+            'kdTkp' => $kdTkpStr,
+            'noUrut' => $noUrut,
+            'status' => $success ? 'Terkirim' : 'Gagal',
+        ]);
+    }
+
+    /**
+     * Referensi Diagnosa.
+     * - Legacy (/pcare-rest): GET /diagnosa/{query}/{start}/{limit}
+     * - v3 (/pcare-rest-v3.0): GET /diagnosa?keyword={query}&offset={start}&limit={limit}
+     * Params via query string: q, start, limit
+     */
+    public function getDiagnosa(Request $request)
+    {
+        $q = trim($request->query('q', ''));
+        $start = (int) $request->query('start', 0);
+        $limit = (int) $request->query('limit', 25);
+
+        $cfg = $this->pcareConfig();
+        $base = rtrim($cfg['base_url'] ?? '', '/');
+
+        // Default keyword untuk empty string
+        $keyword = $q === '' ? '-' : $q; // beberapa katalog PCare menggunakan '-' untuk all
+
+        // Deteksi v3 berdasarkan base URL
+        $isV3 = str_contains($base, 'pcare-rest-v3.0');
+
+        if ($isV3) {
+            // v3 menggunakan query parameter
+            $endpoint = 'diagnosa';
+            $query = [
+                'keyword' => $keyword,
+                'offset' => $start,
+                'limit' => $limit,
+            ];
+            $result = $this->pcareRequest('GET', $endpoint, $query);
+        } else {
+            // legacy menggunakan path segment
+            $endpoint = 'diagnosa/'.urlencode($keyword).'/'.$start.'/'.$limit;
+            $result = $this->pcareRequest('GET', $endpoint);
+        }
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        if (! is_array($processed)) {
+            $processed = ['raw' => $processed];
+        }
+
+        return response()->json($processed, $response->status());
+    }
+
+    public function getDpho(Request $request)
+    {
+        $q = trim($request->query('q', ''));
+        $start = (int) $request->query('start', 0);
+        $limit = (int) $request->query('limit', 25);
+
+        // Default keyword untuk empty string: '-' (sebagian katalog PCare menggunakan '-')
+        $keyword = $q === '' ? '-' : $q;
+        $endpoint = 'obat/dpho/'.urlencode($keyword).'/'.$start.'/'.$limit;
+        $result = $this->pcareRequest('GET', $endpoint);
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Referensi Tindakan (PCare REST).
+     * Endpoint PCare: GET /tindakan/kdTkp/{kdTkp}/{start}/{limit}
+     * - kdTkp: '10' (RJTP), '20' (RITP), '50' (Promotif)
+     * Query params: kdTkp, start, limit
+     */
+    public function getTindakan(Request $request)
+    {
+        $kdTkpInput = trim((string) $request->query('kdTkp', '10'));
+        $start = (int) $request->query('start', 0);
+        $limit = (int) $request->query('limit', 25);
+
+        // Terima input teks dan konversi ke kode jika perlu
+        $map = [
+            'rjtp' => '10',
+            'rawat jalan' => '10',
+            'rawat jalan tingkat pertama' => '10',
+            'ritp' => '20',
+            'rawat inap' => '20',
+            'rawat inap tingkat pertama' => '20',
+            'promotif' => '50',
+        ];
+        $lower = strtolower($kdTkpInput);
+        $kdTkp = $map[$lower] ?? strtoupper($kdTkpInput);
+
+        if (! in_array($kdTkp, ['10', '20', '50'], true)) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Parameter kdTkp harus 10 (RJTP), 20 (RITP), atau 50 (Promotif)',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        $endpoint = 'tindakan/kdTkp/'.urlencode($kdTkp).'/'.$start.'/'.$limit;
+        $result = $this->pcareRequest('GET', $endpoint);
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Referensi Provider Rayonisasi (PCare REST).
+     * Endpoint PCare: GET /provider/{start}/{limit}
+     */
+    public function getProvider(Request $request)
+    {
+        $start = (int) $request->query('start', 0);
+        $limit = (int) $request->query('limit', 25);
+        $endpoint = 'provider/'.$start.'/'.$limit;
+        $result = $this->pcareRequest('GET', $endpoint);
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Referensi Spesialis (PCare REST).
+     * Endpoint PCare: GET /spesialis
+     */
+    public function getSpesialis(Request $request)
+    {
+        // Endpoint tidak membutuhkan start/limit
+        $result = $this->pcareRequest('GET', 'spesialis');
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Referensi Sub Spesialis (PCare REST).
+     * Endpoint PCare: GET /spesialis/{kdSpesialis}/subspesialis
+     * Query param: kdSpesialis (required)
+     */
+    public function getSubSpesialis(Request $request)
+    {
+        $kd = trim((string) $request->query('kdSpesialis', ''));
+        if ($kd === '') {
+            return response()->json([
+                'metaData' => ['message' => 'Kode Spesialis (kdSpesialis) wajib diisi', 'code' => 422],
+            ], 422);
+        }
+
+        try {
+            $endpoint = 'spesialis/'.urlencode($kd).'/subspesialis';
+            $result = $this->pcareRequest('GET', $endpoint);
+
+            $response = $result['response'];
+            $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+            // Sanitasi data untuk memastikan UTF-8 valid
+            if (is_string($processed)) {
+                // Coba decode jika masih binary
+                $processed = mb_convert_encoding($processed, 'UTF-8', 'UTF-8');
+            } elseif (is_array($processed)) {
+                // Recursively sanitize array
+                $processed = $this->sanitizeUtf8($processed);
+            }
+
+            return response()->json($processed, $response->status());
+        } catch (\Throwable $e) {
+            Log::error('Error in getSubSpesialis: '.$e->getMessage(), [
+                'kdSpesialis' => $kd,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'metaData' => ['message' => 'Terjadi kesalahan saat mengambil data subspesialis', 'code' => 500],
+            ], 500);
+        }
+    }
+
+    /**
+     * Sanitize UTF-8 data recursively
+     */
+    private function sanitizeUtf8($data)
+    {
+        if (is_string($data)) {
+            // Remove invalid UTF-8 characters
+            $sanitized = mb_convert_encoding($data, 'UTF-8', 'UTF-8');
+            // Remove any remaining invalid characters using regex
+            $sanitized = preg_replace('/[\x00-\x1F\x7F-\x9F]/u', '', $sanitized);
+            // Ensure valid UTF-8
+            return mb_check_encoding($sanitized, 'UTF-8') ? $sanitized : '';
+        } elseif (is_array($data)) {
+            return array_map([$this, 'sanitizeUtf8'], $data);
+        } elseif (is_object($data)) {
+            $sanitized = [];
+            foreach ((array) $data as $key => $value) {
+                $sanitized[$this->sanitizeUtf8($key)] = $this->sanitizeUtf8($value);
+            }
+            return (object) $sanitized;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Referensi Sarana (PCare REST).
+     * Endpoint PCare: GET /spesialis/sarana
+     */
+    public function getSarana(Request $request)
+    {
+        // Endpoint tidak membutuhkan start/limit
+        $result = $this->pcareRequest('GET', 'spesialis/sarana');
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Referensi Khusus (PCare REST).
+     * Endpoint PCare: GET /spesialis/khusus
+     */
+    public function getKhusus(Request $request)
+    {
+        // Endpoint tidak membutuhkan start/limit
+        $result = $this->pcareRequest('GET', 'spesialis/khusus');
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Referensi Alergi (PCare REST).
+     * Endpoint PCare: GET /alergi/jenis/{kodeJenis}
+     * Param: jenis (query string) → '01' (Makanan) | '02' (Udara) | '03' (Obat)
+     */
+    public function getAlergi(Request $request)
+    {
+        $jenisInput = trim((string) $request->query('jenis', '01'));
+        // Izinkan input teks (makanan/udara/obat) dan konversi ke kode, selain kode langsung
+        $map = [
+            'makanan' => '01',
+            'udara' => '02',
+            'obat' => '03',
+        ];
+        $lower = strtolower($jenisInput);
+        $jenis = $map[$lower] ?? strtoupper($jenisInput);
+
+        $allowed = ['01', '02', '03'];
+        if (! in_array($jenis, $allowed, true)) {
+            return response()->json([
+                'metaData' => ['message' => 'Parameter jenis harus salah satu dari 01 (Makanan), 02 (Udara), 03 (Obat)', 'code' => 422],
+            ], 422);
+        }
+
+        $endpoint = 'alergi/jenis/'.urlencode($jenis);
+        $result = $this->pcareRequest('GET', $endpoint);
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Referensi Prognosa (PCare REST).
+     * Endpoint PCare: GET /prognosa
+     */
+    public function getPrognosa(Request $request)
+    {
+        // Endpoint tidak membutuhkan parameter
+        $result = $this->pcareRequest('GET', 'prognosa');
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Referensi Status Pulang (PCare REST).
+     * Endpoint PCare: GET /statuspulang/rawatInap/{true|false}
+     * Query param: rawatInap (boolean-like string: "true"/"false" or 1/0)
+     */
+    public function getStatusPulang(Request $request)
+    {
+        // Ambil parameter rawatInap; default false
+        $raw = strtolower((string) $request->query('rawatInap', 'false'));
+        $isInap = in_array($raw, ['true', '1', 'yes', 'y'], true);
+
+        $endpoint = 'statuspulang/rawatInap/'.($isInap ? 'true' : 'false');
+        $result = $this->pcareRequest('GET', $endpoint);
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Referensi Faskes Rujukan Sub Spesialis (PCare REST).
+     * Endpoint PCare: GET /spesialis/rujuk/subspesialis/{kdSubSpesialis}/sarana/{kdSarana}/tglEstRujuk/{tglEstRujuk}
+     * Param tglEstRujuk diizinkan format dd-mm-yyyy; jika menerima yyyy-mm-dd (input HTML date), akan dikonversi.
+     */
+    public function getFaskesRujukanSubSpesialis(string $kdSubSpesialis, string $kdSarana, string $tglEstRujuk)
+    {
+        // Konversi tanggal yyyy-mm-dd → dd-mm-yyyy bila diperlukan
+        $tgl = $tglEstRujuk;
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $tglEstRujuk)) {
+            [$y, $m, $d] = explode('-', $tglEstRujuk);
+            $tgl = $d.'-'.$m.'-'.$y;
+        }
+
+        $endpoint = 'spesialis/rujuk/subspesialis/'.urlencode($kdSubSpesialis).'/sarana/'.urlencode($kdSarana).'/tglEstRujuk/'.urlencode($tgl);
+        $result = $this->pcareRequest('GET', $endpoint);
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Get Peserta PCare by NIK
+     * Katalog BPJS: GET peserta/nik/{nik}
+     */
+    public function pesertaByNik(Request $request, ?string $nik = null)
+    {
+        $nik = trim($nik ?? (string) $request->query('nik', ''));
+        if ($nik === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Parameter nik wajib diisi',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        $result = $this->pcareRequest('GET', 'peserta/nik/'.urlencode($nik));
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Club Prolanis (Kelompok) berdasarkan jenis program.
+     * Katalog BPJS: GET /kelompok/club/{kdProgram}
+     * - kdProgram: '01' (Diabetes Melitus) | '02' (Hipertensi)
+     */
+    public function getClubProlanis(string $kdProgram)
+    {
+        // Normalisasi input: terima '01'/'02' atau teks 'diabetes'/'hipertensi'
+        $map = [
+            'diabetes melitus' => '01',
+            'diabetes' => '01',
+            'dm' => '01',
+            'hipertensi' => '02',
+            'ht' => '02',
+        ];
+
+        $normalized = strtoupper($kdProgram);
+        $lower = strtolower($kdProgram);
+        if (isset($map[$lower])) {
+            $normalized = $map[$lower];
+        }
+
+        if (! in_array($normalized, ['01', '02'], true)) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Parameter kdProgram harus 01 (Diabetes Melitus) atau 02 (Hipertensi)',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        $endpoint = 'kelompok/club/'.urlencode($normalized);
+        $result = $this->pcareRequest('GET', $endpoint);
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Kegiatan Kelompok berdasarkan bulan (format dd-mm-yyyy). Dapat menerima yyyy-mm-dd dan dikonversi.
+     * Katalog BPJS: GET /kelompok/kegiatan/{tanggal}
+     */
+    public function getKegiatanKelompok(string $tanggal)
+    {
+        $tgl = trim($tanggal);
+        if ($tgl === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Parameter tanggal wajib diisi',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        // Jika menerima yyyy-mm-dd (from <input type="date"/>), ubah ke dd-mm-yyyy
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $tgl)) {
+            [$y, $m, $d] = explode('-', $tgl);
+            $tgl = $d.'-'.$m.'-'.$y;
+        }
+
+        // Validasi sederhana pola dd-mm-yyyy
+        if (! preg_match('/^\d{2}-\d{2}-\d{4}$/', $tgl)) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Format tanggal tidak valid. Gunakan dd-mm-yyyy atau yyyy-mm-dd',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        $endpoint = 'kelompok/kegiatan/'.urlencode($tgl);
+        $result = $this->pcareRequest('GET', $endpoint);
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Tambah (Add) Kegiatan Kelompok.
+     * Katalog BPJS: POST /kelompok/kegiatan
+     * Format JSON, Content-Type: text/plain (sesuai katalog PCare)
+     */
+    public function addKegiatanKelompok(Request $request)
+    {
+        // Ambil input mentah, lakukan normalisasi seperlunya
+        $eduId = $request->input('eduId'); // bisa null untuk penambahan baru
+        $clubId = $request->input('clubId');
+        $tglPelayanan = trim((string) $request->input('tglPelayanan'));
+        $kdKegiatan = (string) $request->input('kdKegiatan');
+        // Katalog menamai "kdKelompok" namun contoh daftar berisi kdProgram 01/02
+        // Di aplikasi ini field Jenis Kelompok disimpan sebagai kdProgram (01/02)
+        // sehingga kita terima baik kdKelompok maupun kdProgram.
+        $kdKelompok = (string) ($request->input('kdKelompok') ?? $request->input('kdProgram'));
+        $materi = (string) $request->input('materi', '');
+        $pembicara = (string) $request->input('pembicara', '');
+        $lokasi = (string) $request->input('lokasi', '');
+        $keterangan = (string) $request->input('keterangan', '');
+        $biaya = $request->input('biaya', 0);
+
+        // Validasi sederhana
+        if ($clubId === null || $clubId === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'clubId wajib diisi',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        // Normalisasi tanggal ke dd-mm-yyyy bila user mengirim yyyy-mm-dd
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $tglPelayanan)) {
+            [$y, $m, $d] = explode('-', $tglPelayanan);
+            $tglPelayanan = $d.'-'.$m.'-'.$y;
+        }
+        if (! preg_match('/^\d{2}-\d{2}-\d{4}$/', $tglPelayanan)) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Format tglPelayanan harus dd-mm-yyyy atau yyyy-mm-dd',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        // Validasi kode kelompok dan kegiatan
+        if (! in_array($kdKelompok, ['01', '02'], true)) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'kdKelompok harus 01 (Diabetes Melitus) atau 02 (Hipertensi)',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+        if (! in_array($kdKegiatan, ['01', '10', '11'], true)) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'kdKegiatan tidak valid. Gunakan 01 (Senam), 10 (Penyuluhan), 11 (Penyuluhan dan Senam)',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        $payload = [
+            'eduId' => $eduId, // null untuk baru
+            'clubId' => is_numeric($clubId) ? (int) $clubId : $clubId,
+            'tglPelayanan' => $tglPelayanan,
+            'kdKegiatan' => $kdKegiatan,
+            'kdKelompok' => $kdKelompok,
+            'materi' => $materi,
+            'pembicara' => $pembicara,
+            'lokasi' => $lokasi,
+            'keterangan' => $keterangan,
+            'biaya' => (int) $biaya,
+        ];
+
+        // Panggil endpoint PCare dengan Content-Type: text/plain (sesuai katalog)
+        $result = $this->pcareRequest('POST', 'kelompok/kegiatan', [], $payload, [
+            'Content-Type' => 'text/plain',
+        ]);
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Update (Edit) Kegiatan Kelompok.
+     * Katalog BPJS: PUT /kelompok/kegiatan
+     * Format JSON, Content-Type: text/plain (sesuai katalog PCare)
+     */
+    public function updateKegiatanKelompok(Request $request)
+    {
+        // Ambil input dan validasi
+        $eduId = trim((string) $request->input('eduId', ''));
+        $clubId = $request->input('clubId');
+        $tglPelayanan = trim((string) $request->input('tglPelayanan'));
+        $kdKegiatan = (string) $request->input('kdKegiatan');
+        $kdKelompok = (string) ($request->input('kdKelompok') ?? $request->input('kdProgram'));
+        $materi = (string) $request->input('materi', '');
+        $pembicara = (string) $request->input('pembicara', '');
+        $lokasi = (string) $request->input('lokasi', '');
+        $keterangan = (string) $request->input('keterangan', '');
+        $biaya = $request->input('biaya', 0);
+
+        if ($eduId === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'eduId wajib diisi untuk update kegiatan',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+        if ($clubId === null || $clubId === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'clubId wajib diisi',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        // Normalisasi tanggal ke dd-mm-yyyy bila user mengirim yyyy-mm-dd
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $tglPelayanan)) {
+            [$y, $m, $d] = explode('-', $tglPelayanan);
+            $tglPelayanan = $d.'-'.$m.'-'.$y;
+        }
+        if (! preg_match('/^\d{2}-\d{2}-\d{4}$/', $tglPelayanan)) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Format tglPelayanan harus dd-mm-yyyy atau yyyy-mm-dd',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        if (! in_array($kdKelompok, ['01', '02'], true)) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'kdKelompok harus 01 (Diabetes Melitus) atau 02 (Hipertensi)',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+        if (! in_array($kdKegiatan, ['01', '10', '11'], true)) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'kdKegiatan tidak valid. Gunakan 01 (Senam), 10 (Penyuluhan), 11 (Penyuluhan dan Senam)',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        $payload = [
+            'eduId' => $eduId,
+            'clubId' => is_numeric($clubId) ? (int) $clubId : $clubId,
+            'tglPelayanan' => $tglPelayanan,
+            'kdKegiatan' => $kdKegiatan,
+            'kdKelompok' => $kdKelompok,
+            'materi' => $materi,
+            'pembicara' => $pembicara,
+            'lokasi' => $lokasi,
+            'keterangan' => $keterangan,
+            'biaya' => (int) $biaya,
+        ];
+
+        $result = $this->pcareRequest('PUT', 'kelompok/kegiatan', [], $payload, [
+            'Content-Type' => 'text/plain',
+        ]);
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Hapus (Delete) Kegiatan Kelompok.
+     * Katalog BPJS: DELETE /kelompok/kegiatan/{eduId}
+     * Format JSON, Content-Type: application/json; charset=utf-8
+     */
+    public function deleteKegiatanKelompok(string $eduId)
+    {
+        $eduId = trim($eduId);
+        if ($eduId === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Parameter eduId wajib diisi',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        $endpoint = 'kelompok/kegiatan/'.urlencode($eduId);
+        $result = $this->pcareRequest('DELETE', $endpoint, [], null, [
+            'Content-Type' => 'application/json; charset=utf-8',
+        ]);
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Tambah (Add) Peserta Kegiatan Kelompok.
+     * Katalog BPJS: POST /kelompok/peserta
+     * Format JSON, Content-Type: text/plain
+     * Body minimal: { "eduId": "...", "noKartu": "..." }
+     */
+    public function addPesertaKegiatan(Request $request)
+    {
+        $eduId = trim((string) $request->input('eduId', ''));
+        $noKartu = trim((string) $request->input('noKartu', ''));
+
+        if ($eduId === '' || $noKartu === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'eduId dan noKartu wajib diisi',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        // Siapkan payload sesuai katalog
+        $payload = [
+            'eduId' => $eduId,
+            'noKartu' => $noKartu,
+        ];
+
+        $result = $this->pcareRequest('POST', 'kelompok/peserta', [], $payload, [
+            'Content-Type' => 'text/plain',
+        ]);
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Peserta Kegiatan Kelompok berdasarkan eduId.
+     * Katalog BPJS: GET /kelompok/peserta/{eduId}
+     */
+    public function getPesertaKegiatan(string $eduId)
+    {
+        $eduId = trim($eduId);
+        if ($eduId === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Parameter eduId wajib diisi',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        $endpoint = 'kelompok/peserta/'.urlencode($eduId);
+        $result = $this->pcareRequest('GET', $endpoint);
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Hapus (Delete) Peserta Kegiatan Kelompok
+     * Katalog BPJS: DELETE /kelompok/peserta/{eduId}/{noKartu}
+     * Format JSON, Content-Type: application/json; charset=utf-8
+     */
+    public function deletePesertaKegiatan(string $eduId, string $noKartu)
+    {
+        $eduId = trim($eduId);
+        $noKartu = trim($noKartu);
+        if ($eduId === '' || $noKartu === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Parameter eduId dan noKartu wajib diisi',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        $endpoint = 'kelompok/peserta/'.urlencode($eduId).'/'.urlencode($noKartu);
+        $result = $this->pcareRequest('DELETE', $endpoint, [], null, [
+            'Content-Type' => 'application/json; charset=utf-8',
+        ]);
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Pencarian poliklinik RS dari tabel lokal 'poliklinik'.
+     * Query param: q (opsional) - cari pada kd_poli atau nm_poli
+     * Response: { data: [{ kd_poli, nm_poli }] }
+     */
+    public function searchPoliklinikRs(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+        $query = DB::table('poliklinik')->select(['kd_poli', 'nm_poli']);
+        if ($q !== '') {
+            $like = '%'.$q.'%';
+            $query->where(function ($w) use ($like) {
+                $w->where('kd_poli', 'like', $like)
+                    ->orWhere('nm_poli', 'like', $like);
+            });
+        }
+        $rows = $query->orderBy('kd_poli')->limit(100)->get();
+
+        return response()->json(['data' => $rows]);
+    }
+
+    /**
+     * Pencarian dokter RS dari tabel lokal 'dokter'.
+     * Query param: q (opsional) - cari pada kd_dokter atau nm_dokter
+     * Response: { data: [{ kd_dokter, nm_dokter }] }
+     */
+    public function searchDokterRs(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+        $query = DB::table('dokter')->select(['kd_dokter', 'nm_dokter']);
+        if ($q !== '') {
+            $like = '%'.$q.'%';
+            $query->where(function ($w) use ($like) {
+                $w->where('kd_dokter', 'like', $like)
+                    ->orWhere('nm_dokter', 'like', $like);
+            });
+        }
+        $rows = $query->orderBy('kd_dokter')->limit(100)->get();
+
+        return response()->json(['data' => $rows]);
+    }
+
+    /**
+     * Pencarian obat RS dari tabel lokal 'databarang'.
+     * Query param: q (opsional) - cari pada kode_brng atau nama_brng
+     * Response: { data: [{ kode_brng, nama_brng }] }
+     */
+    public function searchObatRs(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+        $query = DB::table('databarang')->select(['kode_brng', 'nama_brng']);
+        if ($q !== '') {
+            $like = '%'.$q.'%';
+            $query->where(function ($w) use ($like) {
+                $w->where('kode_brng', 'like', $like)
+                    ->orWhere('nama_brng', 'like', $like);
+            });
+        }
+        $rows = $query->orderBy('kode_brng')->limit(100)->get();
+
+        return response()->json(['data' => $rows]);
+    }
+
+    /**
+     * Ambil daftar mapping poli dari tabel 'maping_poliklinik_pcare'.
+     * Response: { data: [{ kd_poli_rs, kd_poli_pcare, nm_poli_pcare }] }
+     */
+    public function getMappingPoli(Request $request)
+    {
+        $rows = DB::table('maping_poliklinik_pcare')
+            ->select(['kd_poli_rs', 'kd_poli_pcare', 'nm_poli_pcare'])
+            ->orderBy('kd_poli_rs')
+            ->limit(1000)
+            ->get();
+
+        return response()->json(['data' => $rows]);
+    }
+
+    /**
+     * Simpan mapping poli ke tabel 'maping_poliklinik_pcare'.
+     * Body JSON: { kd_poli_rs: char(5), kd_poli_pcare: char(5), nm_poli_pcare: varchar(50) }
+     * Tidak melakukan migrasi — tabel sudah ada.
+     * Perilaku: upsert berdasarkan kd_poli_rs.
+     */
+    public function storeMappingPoli(Request $request)
+    {
+        $kdPoliRs = strtoupper(trim((string) $request->input('kd_poli_rs', '')));
+        $kdPoliPcare = strtoupper(trim((string) $request->input('kd_poli_pcare', '')));
+        $nmPoliPcare = trim((string) $request->input('nm_poli_pcare', ''));
+
+        if ($kdPoliRs === '' || $kdPoliPcare === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'kd_poli_rs dan kd_poli_pcare wajib diisi',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+        if (strlen($kdPoliRs) > 5 || strlen($kdPoliPcare) > 5) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Panjang kd_poli_rs dan kd_poli_pcare maksimal 5 karakter',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+        if (strlen($nmPoliPcare) > 50) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Panjang nm_poli_pcare maksimal 50 karakter',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        try {
+            DB::table('maping_poliklinik_pcare')->updateOrInsert(
+                ['kd_poli_rs' => $kdPoliRs],
+                [
+                    'kd_poli_pcare' => $kdPoliPcare,
+                    'nm_poli_pcare' => $nmPoliPcare,
+                ]
+            );
+        } catch (\Throwable $e) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Gagal menyimpan mapping: '.$e->getMessage(),
+                    'code' => 500,
+                ],
+            ], 500);
+        }
+
+        return response()->json([
+            'metaData' => [
+                'message' => 'Berhasil menyimpan mapping poli',
+                'code' => 200,
+            ],
+        ]);
+    }
+
+    /**
+     * Hapus mapping poli dari tabel 'maping_poliklinik_pcare'.
+     * Body JSON: { kd_poli_rs: char(5), kd_poli_pcare?: char(5) }
+     * Jika kd_poli_pcare tidak diisi, akan menghapus berdasarkan kd_poli_rs saja.
+     */
+    public function deleteMappingPoli(Request $request)
+    {
+        $kdPoliRs = strtoupper(trim((string) $request->input('kd_poli_rs', '')));
+        $kdPoliPcare = strtoupper(trim((string) $request->input('kd_poli_pcare', '')));
+
+        if ($kdPoliRs === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'kd_poli_rs wajib diisi untuk hapus mapping',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        try {
+            $query = DB::table('maping_poliklinik_pcare')->where('kd_poli_rs', $kdPoliRs);
+            if ($kdPoliPcare !== '') {
+                $query->where('kd_poli_pcare', $kdPoliPcare);
+            }
+            $deleted = $query->delete();
+        } catch (\Throwable $e) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Gagal menghapus mapping: '.$e->getMessage(),
+                    'code' => 500,
+                ],
+            ], 500);
+        }
+
+        if ($deleted > 0) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Berhasil menghapus mapping poli',
+                    'code' => 200,
+                ],
+            ]);
+        }
+
+        return response()->json([
+            'metaData' => [
+                'message' => 'Mapping poli tidak ditemukan',
+                'code' => 404,
+            ],
+        ], 404);
+    }
+
+    /**
+     * Ambil daftar mapping dokter dari tabel 'maping_dokter_pcare'.
+     * Response: { data: [{ kd_dokter, kd_dokter_pcare, nm_dokter_pcare }] }
+     */
+    public function getMappingDokter(Request $request)
+    {
+        $rows = DB::table('maping_dokter_pcare')
+            ->select(['kd_dokter', 'kd_dokter_pcare', 'nm_dokter_pcare'])
+            ->orderBy('kd_dokter')
+            ->limit(1000)
+            ->get();
+
+        return response()->json(['data' => $rows]);
+    }
+
+    /**
+     * Simpan mapping dokter ke tabel 'maping_dokter_pcare'.
+     * Body JSON: { kd_dokter: varchar(20), kd_dokter_pcare: varchar(20), nm_dokter_pcare: varchar(50) }
+     * Tidak melakukan migrasi — tabel sudah ada.
+     * Perilaku: upsert berdasarkan kd_dokter.
+     */
+    public function storeMappingDokter(Request $request)
+    {
+        $kdDokter = strtoupper(trim((string) $request->input('kd_dokter', '')));
+        $kdDokterPcare = strtoupper(trim((string) $request->input('kd_dokter_pcare', '')));
+        $nmDokterPcare = trim((string) $request->input('nm_dokter_pcare', ''));
+
+        if ($kdDokter === '' || $kdDokterPcare === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'kd_dokter dan kd_dokter_pcare wajib diisi',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+        if (strlen($kdDokter) > 20 || strlen($kdDokterPcare) > 20) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Panjang kd_dokter dan kd_dokter_pcare maksimal 20 karakter',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+        if (strlen($nmDokterPcare) > 50) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Panjang nm_dokter_pcare maksimal 50 karakter',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        try {
+            DB::table('maping_dokter_pcare')->updateOrInsert(
+                ['kd_dokter' => $kdDokter],
+                [
+                    'kd_dokter_pcare' => $kdDokterPcare,
+                    'nm_dokter_pcare' => $nmDokterPcare,
+                ]
+            );
+        } catch (\Throwable $e) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Gagal menyimpan mapping: '.$e->getMessage(),
+                    'code' => 500,
+                ],
+            ], 500);
+        }
+
+        return response()->json([
+            'metaData' => [
+                'message' => 'Berhasil menyimpan mapping dokter',
+                'code' => 200,
+            ],
+        ]);
+    }
+
+    /**
+     * Hapus mapping dokter dari tabel 'maping_dokter_pcare'.
+     * Body JSON: { kd_dokter: varchar(20), kd_dokter_pcare?: varchar(20) }
+     * Jika kd_dokter_pcare tidak diisi, akan menghapus berdasarkan kd_dokter saja.
+     */
+    public function deleteMappingDokter(Request $request)
+    {
+        $kdDokter = strtoupper(trim((string) $request->input('kd_dokter', '')));
+        $kdDokterPcare = strtoupper(trim((string) $request->input('kd_dokter_pcare', '')));
+
+        if ($kdDokter === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'kd_dokter wajib diisi untuk hapus mapping',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        try {
+            $query = DB::table('maping_dokter_pcare')->where('kd_dokter', $kdDokter);
+            if ($kdDokterPcare !== '') {
+                $query->where('kd_dokter_pcare', $kdDokterPcare);
+            }
+            $deleted = $query->delete();
+        } catch (\Throwable $e) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Gagal menghapus mapping: '.$e->getMessage(),
+                    'code' => 500,
+                ],
+            ], 500);
+        }
+
+        if ($deleted > 0) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Berhasil menghapus mapping dokter',
+                    'code' => 200,
+                ],
+            ]);
+        }
+
+        return response()->json([
+            'metaData' => [
+                'message' => 'Mapping dokter tidak ditemukan',
+                'code' => 404,
+            ],
+        ], 404);
+    }
+
+    /**
+     * Ambil daftar mapping obat dari tabel 'maping_obat_pcare'.
+     * Response: { data: [{ kode_brng, kode_brng_pcare, nama_brng_pcare }] }
+     */
+    public function getMappingObat(Request $request)
+    {
+        $rows = DB::table('maping_obat_pcare')
+            ->select(['kode_brng', 'kode_brng_pcare', 'nama_brng_pcare'])
+            ->orderBy('kode_brng')
+            ->limit(1000)
+            ->get();
+
+        return response()->json(['data' => $rows]);
+    }
+
+    /**
+     * Simpan mapping obat ke tabel 'maping_obat_pcare'.
+     * Body JSON: { kode_brng: varchar(15), kode_brng_pcare: varchar(15), nama_brng_pcare: varchar(80) }
+     * Perilaku: upsert berdasarkan kode_brng.
+     */
+    public function storeMappingObat(Request $request)
+    {
+        $kodeBrng = strtoupper(trim((string) $request->input('kode_brng', '')));
+        $kodeBrngPcare = strtoupper(trim((string) $request->input('kode_brng_pcare', '')));
+        $namaBrngPcare = trim((string) $request->input('nama_brng_pcare', ''));
+
+        if ($kodeBrng === '' || $kodeBrngPcare === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'kode_brng dan kode_brng_pcare wajib diisi',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+        if (strlen($kodeBrng) > 15 || strlen($kodeBrngPcare) > 15) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Panjang kode_brng dan kode_brng_pcare maksimal 15 karakter',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+        if (strlen($namaBrngPcare) > 80) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Panjang nama_brng_pcare maksimal 80 karakter',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        try {
+            DB::table('maping_obat_pcare')->updateOrInsert(
+                ['kode_brng' => $kodeBrng],
+                [
+                    'kode_brng_pcare' => $kodeBrngPcare,
+                    'nama_brng_pcare' => $namaBrngPcare,
+                ]
+            );
+        } catch (\Throwable $e) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Gagal menyimpan mapping: '.$e->getMessage(),
+                    'code' => 500,
+                ],
+            ], 500);
+        }
+
+        return response()->json([
+            'metaData' => [
+                'message' => 'Berhasil menyimpan mapping obat',
+                'code' => 200,
+            ],
+        ]);
+    }
+
+    /**
+     * Hapus mapping obat dari tabel 'maping_obat_pcare'.
+     * Body JSON: { kode_brng: varchar(15), kode_brng_pcare?: varchar(15) }
+     * Jika kode_brng_pcare tidak diisi, akan menghapus berdasarkan kode_brng saja.
+     */
+    public function deleteMappingObat(Request $request)
+    {
+        $kodeBrng = strtoupper(trim((string) $request->input('kode_brng', '')));
+        $kodeBrngPcare = strtoupper(trim((string) $request->input('kode_brng_pcare', '')));
+
+        if ($kodeBrng === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'kode_brng wajib diisi untuk hapus mapping',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        try {
+            $query = DB::table('maping_obat_pcare')->where('kode_brng', $kodeBrng);
+            if ($kodeBrngPcare !== '') {
+                $query->where('kode_brng_pcare', $kodeBrngPcare);
+            }
+            $deleted = $query->delete();
+        } catch (\Throwable $e) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Gagal menghapus mapping: '.$e->getMessage(),
+                    'code' => 500,
+                ],
+            ], 500);
+        }
+
+        if ($deleted > 0) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Berhasil menghapus mapping obat',
+                    'code' => 200,
+                ],
+            ]);
+        }
+
+        return response()->json([
+            'metaData' => [
+                'message' => 'Mapping obat tidak ditemukan',
+                'code' => 404,
+            ],
+        ], 404);
+    }
+}
