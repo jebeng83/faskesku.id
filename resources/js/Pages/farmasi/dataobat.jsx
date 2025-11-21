@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Head, Link, useForm, usePage, router } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAnimationFrame } from 'motion/react';
-import AppLayout from '../../Layouts/AppLayout.jsx';
+import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
 
 // Util: kunci harga yang didukung
 const PRICE_KEYS = ['ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan'];
@@ -818,4 +818,4 @@ export default function DataObatPage() {
   );
 }
 
-DataObatPage.layout = (page) => <AppLayout title="Farmasi" children={page} />;
+DataObatPage.layout = (page) => <SidebarFarmasi title="Farmasi" children={page} />;

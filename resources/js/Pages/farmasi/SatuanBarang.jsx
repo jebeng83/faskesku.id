@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Head, Link, useForm, usePage, router } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import AppLayout from '../../Layouts/AppLayout.jsx';
+import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
 
 const PageHeader = () => (
   <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-6 text-white shadow-lg">
@@ -212,4 +212,4 @@ export default function SatuanBarangPage() {
   );
 }
 
-SatuanBarangPage.layout = (page) => <AppLayout title="Farmasi" children={page} />;
+SatuanBarangPage.layout = (page) => <SidebarFarmasi title="Farmasi" children={page} />;

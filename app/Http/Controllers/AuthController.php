@@ -19,9 +19,11 @@ class AuthController extends Controller
         try {
             if (Schema::hasTable('setting')) {
                 // Ambil record aktif jika ada, jika tidak, ambil record pertama
+                // Catatan: di UI/validasi kita menggunakan nilai 'Yes'/'No'.
+                // Untuk kompatibilitas dengan variasi data lama ('yes'/'no'), gunakan pencarian case-insensitive.
                 $active = DB::table('setting')
                     ->select('nama_instansi', 'wallpaper', 'aktifkan')
-                    ->where('aktifkan', 'yes')
+                    ->whereRaw('LOWER(aktifkan) = "yes"')
                     ->first();
 
                 if (!$active) {

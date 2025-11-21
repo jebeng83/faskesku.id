@@ -133,6 +133,16 @@ export default function LanjutanRegistrasiSidebar({
           active: menuConfig.activeTab === "poliklinik",
           colorScheme: "blue",
         },
+        {
+          id: "keg_kelompok_pcare",
+          name: "Keg Kelompok PCare",
+          icon: "clipboard-document-list",
+          description: "Entri kegiatan kelompok PCare",
+          // Navigate to PCare Kegiatan Kelompok Entri page
+          route: "pcare.kelompok.entri",
+          active: menuConfig.activeTab === "keg_kelompok_pcare",
+          colorScheme: "blue",
+        },
       ],
     },
   ];

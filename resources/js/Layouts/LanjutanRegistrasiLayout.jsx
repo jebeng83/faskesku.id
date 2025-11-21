@@ -135,6 +135,8 @@ function LanjutanRegistrasiLayout({
           router.visit(route("doctors.index"), { preserveScroll: true, preserveState: true });
         } else if (tab === "poliklinik") {
           router.visit(route("poliklinik.index"), { preserveScroll: true, preserveState: true });
+        } else if (tab === "keg_kelompok_pcare") {
+          router.visit(route("pcare.kelompok.entri"), { preserveScroll: true, preserveState: true });
         }
       } catch (_) {
         // Fallback to hard navigation if needed
@@ -146,6 +148,8 @@ function LanjutanRegistrasiLayout({
           window.location.href = route("doctors.index");
         } else if (tab === "poliklinik") {
           window.location.href = route("poliklinik.index");
+        } else if (tab === "keg_kelompok_pcare") {
+          window.location.href = route("pcare.kelompok.entri");
         }
       }
     },

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Head, Link } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import AppLayout from "@/Layouts/AppLayout";
+import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ClipboardDocumentListIcon,
@@ -210,7 +210,7 @@ export default function FarmasiIndex() {
   const current = tabs.find((t) => t.key === activeTab);
 
   return (
-    <AppLayout title="Farmasi">
+    <SidebarFarmasi title="Farmasi">
       <Head title="Farmasi" />
 
       {/* Page Header */}
@@ -320,6 +320,6 @@ export default function FarmasiIndex() {
           </motion.div>
         </AnimatePresence>
       </div>
-    </AppLayout>
+    </SidebarFarmasi>
   );
 }
