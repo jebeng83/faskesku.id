@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Head } from '@inertiajs/react';
-import AppLayout from '@/Layouts/AppLayout';
+import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/Card';
 import Button from '@/Components/ui/Button';
 import Input from '@/Components/ui/Input';
@@ -151,7 +151,7 @@ const RiwayatTransaksiGudang = () => {
     };
 
     return (
-        <AppLayout>
+        <SidebarFarmasi title="Farmasi">
             <Head title="Riwayat Transaksi Gudang Barang" />
             
             <div className="space-y-6">
@@ -495,7 +495,7 @@ const RiwayatTransaksiGudang = () => {
                     </div>
                 </div>
             )}
-        </AppLayout>
+        </SidebarFarmasi>
     );
 };
 

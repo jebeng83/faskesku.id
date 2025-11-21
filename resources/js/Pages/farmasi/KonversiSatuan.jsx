@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Head, useForm, usePage, router, Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import AppLayout from '../../Layouts/AppLayout.jsx';
+import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
 
 const PageHeader = () => (
   <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 p-6 text-white shadow-lg">
@@ -207,4 +207,4 @@ export default function KonversiSatuanPage() {
   );
 }
 
-KonversiSatuanPage.layout = (page) => <AppLayout title="Farmasi" children={page} />;
+KonversiSatuanPage.layout = (page) => <SidebarFarmasi title="Farmasi" children={page} />;

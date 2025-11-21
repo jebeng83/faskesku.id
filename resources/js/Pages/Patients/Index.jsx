@@ -5,7 +5,8 @@ import { Head, Link, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
 import Alert from "@/Components/Alert";
-import { motion } from "framer-motion";
+import { Toaster } from "@/Components/ui";
+import { motion, AnimatePresence } from "framer-motion";
 import {
     ArrowPathIcon,
     CheckCircleIcon,
@@ -15,6 +16,7 @@ import {
     ClipboardDocumentCheckIcon,
     XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { Building2, Plus, Search as SearchIcon, Globe } from "lucide-react";
 
 export default function Index({
     patients,
@@ -49,6 +51,12 @@ export default function Index({
 		autoClose: false,
 	});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [toasts, setToasts] = useState([]);
+    const addToast = (type = "info", title = "", message = "", duration = 4000) => {
+        const id = `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+        setToasts((prev) => [...prev, { id, type, title, message, duration }]);
+    };
+    const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id));
 
     // Kunjungan Sehat (PCare) modal states
     const [showKunjunganSehatModal, setShowKunjunganSehatModal] = useState(false);
@@ -58,14 +66,32 @@ export default function Index({
     const [pcareError, setPcareError] = useState(null);
     const [pcareData, setPcareData] = useState(null); // { response, metaData }
 
-    // Motion variants for lightweight, elegant transitions
+    // Motion variants (UI/UX Improvements Guide)
+    // Ref: docs/UI_UX_IMPROVEMENTS_GUIDE.md
     const containerVariants = {
         hidden: { opacity: 0 },
-        show: { opacity: 1, transition: { staggerChildren: 0.06 } },
+        visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+        },
     };
     const itemVariants = {
-        hidden: { opacity: 0, y: 8 },
-        show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: "easeOut" } },
+        hidden: { opacity: 0, y: 30, scale: 0.98 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+        },
+    };
+    const rowVariants = {
+        hidden: { opacity: 0, x: -20 },
+        visible: { opacity: 1, x: 0 },
+        exit: { opacity: 0, x: 20 },
+    };
+    const cardHoverVariants = {
+        rest: { scale: 1, y: 0 },
+        hover: { scale: 1.01, y: -4, transition: { duration: 0.3, ease: "easeOut" } },
     };
 
 	const handleSearch = (e) => {
@@ -386,118 +412,117 @@ export default function Index({
             <motion.div
                 variants={containerVariants}
                 initial="hidden"
-                animate="show"
+                animate="visible"
                 className="space-y-6"
             >
+                {/* Global Toaster */}
+                <Toaster toasts={toasts} onRemove={removeToast} />
+
                 {/* Header */}
                 <motion.div
                     variants={itemVariants}
-                    className="relative overflow-hidden rounded-2xl bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm border border-white/40 dark:border-gray-700/60 shadow-lg"
+                    className="relative overflow-hidden rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 p-6"
                 >
-                    <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-sky-500/10 via-emerald-500/10 to-indigo-500/10" />
-                    <div className="relative z-10 p-6 sm:p-8">
-                        <div className="flex justify-between items-center gap-4">
-                            <div>
-                                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-                                    Data Pasien
-                                </h2>
-                            </div>
-                            <Link
-                                href={route("patients.create")}
-                                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg font-medium text-sm whitespace-nowrap"
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-purple-500/10" />
+                    <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                        <div className="flex items-center gap-4">
+                            <motion.div
+                                className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/25"
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.6, delay: 0.2 }}
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    fill="currentColor"
-                                    className="w-4 h-4"
+                                <Building2 className="w-6 h-6 text-white" />
+                            </motion.div>
+                            <div>
+                                <motion.h1
+                                    className="text-3xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
                                 >
-                                    <path
-                                        fillRule="evenodd"
-                                        d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
-                                        clipRule="evenodd"
+                                    Data Pasien
+                                </motion.h1>
+                                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                                    Kelola data pasien dan proses registrasi
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="w-full md:w-auto flex items-center gap-3">
+                            <form onSubmit={handleSearch} className="hidden sm:flex items-center gap-2">
+                                <div className="relative">
+                                    <SearchIcon className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                                    <input
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        className="pl-8 pr-3 py-2 w-64 text-sm rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
+                                        placeholder="Cari nama/NIK/No.RM/Telepon"
+                                        aria-label="Cari Pasien"
                                     />
-                                </svg>
-                                <span>Tambah Pasien</span>
-                            </Link>
+                                </div>
+                                <button
+                                    type="submit"
+                                    className="px-3 py-2 text-sm rounded-md bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/20 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 transition-all"
+                                >
+                                    Cari
+                                </button>
+                            </form>
+                            <motion.a
+                                href={route("patients.create")}
+                                variants={cardHoverVariants}
+                                initial="rest"
+                                whileHover="hover"
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 text-sm"
+                            >
+                                <Plus className="w-4 h-4" />
+                                Tambah
+                            </motion.a>
                         </div>
                     </div>
                 </motion.div>
 
-                {/* Search and Filters */}
-                <motion.div
-                    variants={itemVariants}
-                    className="relative z-10 overflow-visible rounded-2xl bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm ring-1 ring-black/5 dark:ring-white/10 shadow-lg"
-                >
-                    <div className="relative z-10 p-6">
-                        <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3 items-stretch">
-                            <div className="flex-1">
-                                <input
-                                    type="text"
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    placeholder="Cari berdasarkan nama, NIK, no. RM, atau no. telepon..."
-                                    className="w-full px-4 py-2 rounded-xl bg-white/80 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:border-transparent placeholder:text-gray-400 dark:placeholder:text-gray-400 text-gray-900 dark:text-white shadow-sm transition"
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                className="px-6 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-sm transition-all"
-                            >
-                                Cari
-                            </button>
-                            {search && (
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setSearch("");
-                                        router.get(route("patients.index"));
-                                    }}
-                                    className="px-6 py-2 rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 shadow-sm transition-colors"
-                                >
-                                    Reset
-                                </button>
-                            )}
-                        </form>
-                    </div>
-                </motion.div>
+                
 
                 {/* Data Table */}
                 <motion.div
                     variants={itemVariants}
-                    className="relative z-30 overflow-visible rounded-2xl bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm shadow-lg ring-1 ring-black/5 dark:ring-white/10"
+                    className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5"
                 >
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
                     <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead className="bg-gray-50/80 dark:bg-gray-700/60 backdrop-blur-sm">
+                        <table className="min-w-full text-sm">
+                            <thead>
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    <th className="text-left px-4 py-3 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300">
                                         No. RM
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    <th className="text-left px-4 py-3 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300">
                                         Nama Pasien
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    <th className="text-left px-4 py-3 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300">
                                         NIK
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    <th className="text-left px-4 py-3 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300">
                                         Jenis Kelamin
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    <th className="text-left px-4 py-3 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300">
                                         Umur
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    <th className="text-left px-4 py-3 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300">
                                         No. Telepon
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    <th className="text-left px-4 py-3 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300">
                                         Tgl. Daftar
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white/70 dark:bg-gray-800/60 divide-y divide-gray-200 dark:divide-gray-700">
+                            <tbody className="divide-y divide-gray-100/60 dark:divide-gray-800/60 text-gray-800 dark:text-gray-200">
+                                <AnimatePresence initial={false}>
                                 {patients.data.map((patient) => (
-                                    <tr
+                                    <motion.tr
                                         key={patient.no_rkm_medis}
+                                        variants={rowVariants}
+                                        initial="hidden"
+                                        animate="visible"
+                                        exit="exit"
                                         className="hover:bg-gray-50/80 dark:hover:bg-gray-700/50 transition-colors"
                                     >
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
@@ -524,7 +549,7 @@ export default function Index({
                                                 {openDropdown === patient.no_rkm_medis && dropdownRect &&
                                                     createPortal(
                                                         <div
-                                                            className="dropdown-portal-menu w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg"
+                                                            className="dropdown-portal-menu w-56 rounded-xl bg-white/95 dark:bg-gray-900/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/10 ring-1 ring-black/5 dark:ring-white/10 overflow-hidden"
                                                             style={{
                                                                 position: "fixed",
                                                                 top: dropdownRect.bottom + 4,
@@ -539,7 +564,7 @@ export default function Index({
                                                                         patient.no_rkm_medis
                                                                     )}
                                                                     onClick={closeDropdown}
-                                                                    className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                                                    className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gradient-to-r hover:from-blue-50/70 hover:to-indigo-50/70 dark:hover:from-gray-800/60 dark:hover:to-gray-800/40 transition-all"
                                                                 >
                                                                     <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -562,7 +587,7 @@ export default function Index({
                                                                         patient.no_rkm_medis
                                                                     )}
                                                                     onClick={closeDropdown}
-                                                                    className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                                                    className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gradient-to-r hover:from-blue-50/70 hover:to-indigo-50/70 dark:hover:from-gray-800/60 dark:hover:to-gray-800/40 transition-all"
                                                                 >
                                                                     <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -577,7 +602,7 @@ export default function Index({
                                                                 </Link>
                                                                 <button
                                                                     onClick={() => handleRegisterPeriksa(patient)}
-                                                                    className="flex items-center w-full px-4 py-2 text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors"
+                                                                    className="flex items-center w-full px-4 py-2 text-sm text-purple-600 dark:text-purple-400 hover:bg-gradient-to-r hover:from-purple-50/60 hover:to-indigo-50/60 dark:hover:from-purple-900/20 dark:hover:to-indigo-900/20 transition-all"
                                                                 >
                                                                     <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -592,7 +617,7 @@ export default function Index({
                                                                 </button>
                                                                 <button
                                                                     onClick={() => openKunjunganSehat(patient)}
-                                                                    className="flex items-center w-full px-4 py-2 text-sm text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-colors"
+                                                                    className="flex items-center w-full px-4 py-2 text-sm text-teal-600 dark:text-teal-400 hover:bg-gradient-to-r hover:from-teal-50/60 hover:to-emerald-50/60 dark:hover:from-teal-900/20 dark:hover:to-emerald-900/20 transition-all"
                                                                 >
                                                                     <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -609,7 +634,7 @@ export default function Index({
                                                                         closeDropdown();
                                                                         handleDelete(patient);
                                                                     }}
-                                                                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                                                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gradient-to-r hover:from-red-50/60 hover:to-rose-50/60 dark:hover:from-red-900/20 dark:hover:to-rose-900/20 transition-all"
                                                                 >
                                                                     <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -654,8 +679,29 @@ export default function Index({
                                                   )
                                                 : "-"}
                                         </td>
-                                    </tr>
+                                    </motion.tr>
                                 ))}
+                                </AnimatePresence>
+                                {patients.data.length === 0 && (
+                                    <tr>
+                                        <td colSpan={7} className="px-4 py-12">
+                                            <motion.div
+                                                className="flex flex-col items-center justify-center gap-3"
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                            >
+                                                <Globe className="w-12 h-12 text-gray-400" />
+                                                <span className="text-sm text-gray-600 dark:text-gray-400">Tidak ada data pasien.</span>
+                                                <Link
+                                                    href={route("patients.create")}
+                                                    className="mt-1 inline-flex items-center gap-2 px-4 py-2 rounded-md bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 text-sm"
+                                                >
+                                                    <Plus className="w-4 h-4" /> Tambah Pasien Pertama
+                                                </Link>
+                                            </motion.div>
+                                        </td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>
@@ -687,49 +733,7 @@ export default function Index({
                     )}
                 </motion.div>
 
-                {/* Empty State */}
-                {patients.data.length === 0 && (
-                    <motion.div
-                        variants={itemVariants}
-                        className="relative overflow-hidden rounded-2xl bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm border border-white/40 dark:border-gray-700/60 shadow-lg"
-                    >
-                        <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-fuchsia-500/10 via-blue-500/10 to-emerald-500/10" />
-                        <div className="relative z-10 p-12 text-center">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="currentColor"
-                                className="w-16 h-16 text-gray-400 mx-auto mb-4"
-                            >
-                                <path
-                                    fillRule="evenodd"
-                                    d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
-                                    clipRule="evenodd"
-                                />
-                            </svg>
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                                Tidak ada data pasien
-                            </h3>
-                            <p className="text-gray-500 dark:text-gray-400 mb-4">
-                                Belum ada data pasien yang tersimpan.
-                            </p>
-                            <Link
-                                href={route("patients.create")}
-                                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2 rounded-xl inline-flex items-center gap-2 transition-all shadow-sm"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    fill="currentColor"
-                                    className="w-5 h-5"
-                                >
-                                    <path d="M12 4.5v15m7.5-7.5h-15" />
-                                </svg>
-                                Tambah Pasien Pertama
-                            </Link>
-                        </div>
-                    </motion.div>
-                )}
+                
             </motion.div>
 
             {/* Modal Registrasi Periksa */}

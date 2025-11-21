@@ -107,7 +107,8 @@ trait BpjsTraits
             'X-cons-id' => $cfg['cons_id'],
             'X-timestamp' => $timestamp,
             'X-signature' => $signature,
-            // PCare expects "Basic <base64(username:password:kdAplikasi)>"
+            // PCare REST mensyaratkan header X-authorization dengan prefix "Basic "
+            // dan nilai Base64(username:password:kdAplikasi)
             'X-authorization' => 'Basic ' . $authorization,
             'user_key' => $cfg['user_key'],
             'Accept' => 'application/json',
@@ -165,42 +166,142 @@ trait BpjsTraits
             'body_preview' => $bodyPreview,
         ]);
 
-        $request = Http::withHeaders($headers);
-
+        // Build HTTP client dengan opsi koneksi yang lebih tahan gangguan
+        // Tambahkan timeout dan opsi DNS fallback via CURLOPT_RESOLVE (bila di-set di .env)
+        $baseHttpOptions = [];
+        // Query params
         if (!empty($query)) {
-            $request = $request->withOptions(['query' => $query]);
+            $baseHttpOptions['query'] = $query;
+        }
+        // Timeouts (konfigurable via env; gunakan default yang aman)
+        $connectTimeout = (int) env('BPJS_HTTP_CONNECT_TIMEOUT', 10);
+        $timeout = (int) env('BPJS_HTTP_TIMEOUT', 30);
+        $baseHttpOptions['connect_timeout'] = $connectTimeout;
+        $baseHttpOptions['timeout'] = $timeout;
+        // Prefer IPv4 untuk menghindari masalah koneksi IPv6 di jaringan lokal
+        $baseCurlOptions = [];
+        if (defined('CURL_IPRESOLVE_V4')) {
+            $baseCurlOptions[CURLOPT_IPRESOLVE] = CURL_IPRESOLVE_V4;
+        }
+        // Paksa HTTP/1.1 untuk kestabilan handshake di beberapa lingkungan
+        if (defined('CURL_HTTP_VERSION_1_1')) {
+            $baseCurlOptions[CURLOPT_HTTP_VERSION] = CURL_HTTP_VERSION_1_1;
+        }
+        // Hindari masalah sinyal pada timeout di lingkungan tertentu (macOS/Linux)
+        if (defined('CURLOPT_NOSIGNAL')) {
+            $baseCurlOptions[CURLOPT_NOSIGNAL] = true;
+        }
+        // Paksa TLS v1.2 sesuai rekomendasi BPJS
+        if (defined('CURL_SSLVERSION_TLSv1_2')) {
+            $baseCurlOptions[CURLOPT_SSLVERSION] = CURL_SSLVERSION_TLSv1_2;
+        }
+        // Opsi untuk mematikan verifikasi SSL saat troubleshooting (JANGAN aktifkan di produksi)
+        $disableSslVerify = filter_var(env('BPJS_HTTP_DISABLE_SSL_VERIFY', false), FILTER_VALIDATE_BOOLEAN);
+        if ($disableSslVerify) {
+            $baseCurlOptions[CURLOPT_SSL_VERIFYPEER] = false;
+            $baseCurlOptions[CURLOPT_SSL_VERIFYHOST] = 0;
+            Log::channel('bpjs')->warning('PCare SSL verification DISABLED via env BPJS_HTTP_DISABLE_SSL_VERIFY');
+        }
+        // Fallback DNS: list multi-IP untuk auto-switch
+        $resolveListEnv = (string) env('BPJS_PCARE_FORCE_RESOLVE_LIST', '');
+        $resolveList = array_values(array_filter(array_map('trim', explode(',', $resolveListEnv)), function ($v) {
+            return $v !== '';
+        }));
+        // Fallback single resolve untuk kompatibilitas
+        $forceResolve = env('BPJS_PCARE_FORCE_RESOLVE');
+        if (empty($resolveList) && !empty($forceResolve)) {
+            $resolveList = [$forceResolve];
         }
 
-        switch (strtoupper($method)) {
-            case 'GET':
-                $response = $request->get($url);
-                break;
-            case 'POST':
-                // Jika header meminta text/plain, kirimkan body sebagai JSON string plain text
-                if (isset($headers['Content-Type']) && strtolower($headers['Content-Type']) === 'text/plain') {
-                    $json = is_string($body) ? $body : json_encode(is_array($body) ? $body : []);
-                    $response = $request->withBody($json, 'text/plain')->post($url);
-                } else {
-                    $payload = is_array($body) ? $body : (is_string($body) ? json_decode($body, true) : []);
-                    $response = $request->post($url, $payload);
+        // Retry sederhana untuk mengatasi kegagalan koneksi sementara (per attempt)
+        $retryTimes = (int) env('BPJS_HTTP_RETRY_TIMES', 2);
+        $retrySleep = (int) env('BPJS_HTTP_RETRY_SLEEP', 500);
+
+        $response = null;
+        $attempt = 0;
+        $lastException = null;
+        $attemptResolveUsed = null;
+
+        // Jika ada daftar IP fallback, coba satu per satu hingga sukses
+        $attemptsPool = !empty($resolveList) ? $resolveList : [null];
+        foreach ($attemptsPool as $resolveEntry) {
+            $attempt++;
+            $httpOptions = $baseHttpOptions;
+            $curlOptions = $baseCurlOptions;
+            if (!empty($resolveEntry)) {
+                $curlOptions[CURLOPT_RESOLVE] = [$resolveEntry];
+                Log::channel('bpjs')->warning('PCare attempt using CURLOPT_RESOLVE', [
+                    'attempt' => $attempt,
+                    'resolve' => $resolveEntry,
+                ]);
+                $attemptResolveUsed = $resolveEntry;
+            } else {
+                $attemptResolveUsed = null;
+            }
+            if (!empty($curlOptions)) {
+                $httpOptions['curl'] = $curlOptions;
+            }
+
+            $request = Http::withHeaders($headers)->withOptions($httpOptions);
+            if ($retryTimes > 0) {
+                $request = $request->retry($retryTimes, $retrySleep);
+            }
+
+            try {
+                switch (strtoupper($method)) {
+                    case 'GET':
+                        $response = $request->get($url);
+                        break;
+                    case 'POST':
+                        if (isset($headers['Content-Type']) && strtolower($headers['Content-Type']) === 'text/plain') {
+                            $json = is_string($body) ? $body : json_encode(is_array($body) ? $body : []);
+                            $response = $request->withBody($json, 'text/plain')->post($url);
+                        } else {
+                            $payload = is_array($body) ? $body : (is_string($body) ? json_decode($body, true) : []);
+                            $response = $request->post($url, $payload);
+                        }
+                        break;
+                    case 'PUT':
+                        if (isset($headers['Content-Type']) && strtolower($headers['Content-Type']) === 'text/plain') {
+                            $json = is_string($body) ? $body : json_encode(is_array($body) ? $body : []);
+                            $response = $request->withBody($json, 'text/plain')->put($url);
+                        } else {
+                            $payload = is_array($body) ? $body : (is_string($body) ? json_decode($body, true) : []);
+                            $response = $request->put($url, $payload);
+                        }
+                        break;
+                    case 'DELETE':
+                        $payload = is_array($body) ? $body : (is_string($body) ? json_decode($body, true) : []);
+                        $response = $request->delete($url, $payload);
+                        break;
+                    default:
+                        throw new \InvalidArgumentException("Unsupported HTTP method: {$method}");
                 }
-                break;
-            case 'PUT':
-                if (isset($headers['Content-Type']) && strtolower($headers['Content-Type']) === 'text/plain') {
-                    $json = is_string($body) ? $body : json_encode(is_array($body) ? $body : []);
-                    $response = $request->withBody($json, 'text/plain')->put($url);
-                } else {
-                    $payload = is_array($body) ? $body : (is_string($body) ? json_decode($body, true) : []);
-                    $response = $request->put($url, $payload);
+
+                // Jika berhasil (tidak melempar ConnectionException), hentikan loop
+                if ($response) {
+                    break;
                 }
-                break;
-            case 'DELETE':
-                $payload = is_array($body) ? $body : (is_string($body) ? json_decode($body, true) : []);
-                $response = $request->delete($url, $payload);
-                break;
-            default:
-                throw new \InvalidArgumentException("Unsupported HTTP method: {$method}");
+            } catch (\Throwable $e) {
+                $lastException = $e;
+                Log::channel('bpjs')->error('PCare attempt failed', [
+                    'attempt' => $attempt,
+                    'resolve' => $attemptResolveUsed,
+                    'error' => $e->getMessage(),
+                ]);
+                // Lanjut ke IP berikutnya jika ada
+                $response = null;
+                continue;
+            }
         }
+
+        // Jika semua percobaan gagal, lempar exception terakhir
+        if (!$response && $lastException) {
+            throw $lastException;
+        }
+
+        // Pada titik ini, $response harus sudah di-set dari percobaan di atas.
+        // Jangan jalankan kembali request agar tidak mengulang error yang sama.
 
         $durationMs = (int) round((microtime(true) - $start) * 1000);
         $rawBody = $response->body();

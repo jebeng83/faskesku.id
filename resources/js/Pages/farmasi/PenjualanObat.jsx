@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
-import AppLayout from '@/Layouts/AppLayout';
+import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
 
 export default function PenjualanObat() {
     const [search, setSearch] = useState('');
@@ -91,7 +91,7 @@ export default function PenjualanObat() {
     };
 
     return (
-        <AppLayout>
+        <SidebarFarmasi title="Farmasi">
             <Head title="Penjualan Obat" />
 
             <div className="space-y-6 p-6">
@@ -296,6 +296,6 @@ export default function PenjualanObat() {
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </SidebarFarmasi>
     );
 }

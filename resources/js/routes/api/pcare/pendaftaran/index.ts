@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::store
-* @see app/Http/Controllers/Pcare/PcareController.php:1180
+* @see app/Http/Controllers/Pcare/PcareController.php:1339
 * @route '/api/pcare/pendaftaran'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::store
-* @see app/Http/Controllers/Pcare/PcareController.php:1180
+* @see app/Http/Controllers/Pcare/PcareController.php:1339
 * @route '/api/pcare/pendaftaran'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::store
-* @see app/Http/Controllers/Pcare/PcareController.php:1180
+* @see app/Http/Controllers/Pcare/PcareController.php:1339
 * @route '/api/pcare/pendaftaran'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::byRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:1137
+* @see app/Http/Controllers/Pcare/PcareController.php:1296
 * @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
 */
 export const byRawat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -50,7 +50,7 @@ byRawat.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::byRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:1137
+* @see app/Http/Controllers/Pcare/PcareController.php:1296
 * @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
 */
 byRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -77,7 +77,7 @@ byRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::byRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:1137
+* @see app/Http/Controllers/Pcare/PcareController.php:1296
 * @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
 */
 byRawat.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -87,7 +87,7 @@ byRawat.get = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::byRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:1137
+* @see app/Http/Controllers/Pcare/PcareController.php:1296
 * @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
 */
 byRawat.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

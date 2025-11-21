@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Head, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import AppLayout from '@/Layouts/AppLayout';
+import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
 import axios from 'axios';
 import { toast } from '@/tools/toast';
 
@@ -418,7 +418,7 @@ export default function DataObat({ dataBarang = { data: [], links: null, from: 0
     };
 
     return (
-        <AppLayout>
+        <SidebarFarmasi title="Farmasi">
             <Head title="Data Obat" />
 
             <div className="space-y-6 -mt-6 -mx-6 p-6">
@@ -1173,6 +1173,6 @@ export default function DataObat({ dataBarang = { data: [], links: null, from: 0
                     </div>
                 </div>
             )}
-        </AppLayout>
+        </SidebarFarmasi>
     );
 }

@@ -410,9 +410,11 @@ export default function Dashboard() {
         props?.setting?.nama_instansi ||
         props?.nama_instansi;
     // Gunakan wallpaper dari tabel setting via route streaming; fallback ke file default
-    const wallpaperUrl = namaInstansi
-        ? route("setting.app.wallpaper", namaInstansi, false)
-        : "/img/wallpaper.jpg";
+    
+    const wallpaperUrl = "/img/wallpaper.png";
+    // const wallpaperUrl = namaInstansi
+    //     ? route("setting.app.wallpaper", namaInstansi, false)
+    //     : "/img/wallpaper.png";
     // Nama faskes akan diambil langsung saat render, tanpa variabel terpisah
 
     // Reduce motion if user prefers reduced motion
