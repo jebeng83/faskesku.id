@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Head } from '@inertiajs/react';
-import AppLayout from '@/Layouts/AppLayout';
+import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
 import { router } from '@inertiajs/react';
 import { toast } from '@/tools/toast';
 
@@ -571,7 +571,7 @@ export default function PembelianObat() {
     };
 
     return (
-        <AppLayout>
+        <SidebarFarmasi title="Farmasi">
             <Head title="Pembelian Obat" />
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -1030,6 +1030,6 @@ export default function PembelianObat() {
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </SidebarFarmasi>
     );
 };

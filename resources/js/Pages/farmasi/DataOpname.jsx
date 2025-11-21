@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Head } from '@inertiajs/react';
-import AppLayout from '@/Layouts/AppLayout';
+import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
 import { toast } from '@/tools/toast';
 import { Search, RefreshCcw, Printer, Trash2, XCircle, Plus } from 'lucide-react';
 import axios from 'axios';
@@ -298,9 +298,12 @@ export default function DataOpname({ auth }) {
     }
   }
 
-  return (
-    <AppLayout user={auth?.user} header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Data Opname</h2>}>
-      <Head title="Data Opname" />
+    return (
+    <SidebarFarmasi title="Farmasi">
+        <Head title="Data Opname" />
+        <div className="p-6">
+            <h2 className="font-semibold text-xl text-gray-800 leading-tight">Data Opname</h2>
+        </div>
       <div className="py-6">
         <div className="max-w-full mx-auto px-2">
           <Card className="mb-4">
@@ -601,6 +604,6 @@ export default function DataOpname({ auth }) {
           </motion.div>
         )}
       </AnimatePresence>
-    </AppLayout>
+    </SidebarFarmasi>
   );
 }

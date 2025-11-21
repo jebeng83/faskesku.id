@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Head, router } from '@inertiajs/react';
-import AppLayout from '@/Layouts/AppLayout';
+import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
 import { todayDateString } from '@/tools/datetime';
 import { Loader2, Save, Search, Plus, Trash2, X } from 'lucide-react';
 import axios from 'axios';
@@ -390,11 +390,11 @@ export default function StokOpname({ auth }) {
     };
 
     return (
-        <AppLayout
-            user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Stok Opname</h2>}
-        >
+        <SidebarFarmasi title="Farmasi">
             <Head title="Stok Opname" />
+            <div className="p-6">
+                <h2 className="font-semibold text-xl text-gray-800 leading-tight">Stok Opname</h2>
+            </div>
 
             <div className="py-6">
                 <div className="max-w-full mx-auto px-0">
@@ -812,6 +812,6 @@ export default function StokOpname({ auth }) {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </AppLayout>
+        </SidebarFarmasi>
     );
 }

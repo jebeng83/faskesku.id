@@ -1,10 +1,10 @@
 import React from 'react';
 import { Head } from '@inertiajs/react';
-import AppLayout from '@/Layouts/AppLayout';
+import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
 
 export default function FarmasiDashboard() {
     return (
-        <AppLayout>
+        <SidebarFarmasi title="Farmasi">
             <Head title="Dashboard Farmasi" />
 
             <div className="space-y-6 p-6">
@@ -209,6 +209,6 @@ export default function FarmasiDashboard() {
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </SidebarFarmasi>
     );
 }

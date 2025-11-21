@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Head, useForm, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import AppLayout from '@/Layouts/AppLayout';
+import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
@@ -267,16 +267,14 @@ export default function SetHargaObat({ auth, hargaObat, schema, penjualanUmum, p
     }, [data.kode_brng, activeTab]);
 
     return (
-        <AppLayout
-            user={auth.user}
-            header={(
+        <SidebarFarmasi title="Farmasi">
+            <Head title="Pengaturan Harga Obat" />
+            <div className="p-6">
                 <div className="rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 p-6 text-white shadow-lg">
                     <h2 className="font-semibold text-xl leading-tight">Pengaturan Harga Obat</h2>
                     <p className="mt-1 text-sm opacity-90">Membuat tampilan lebih profesional dan elegan dengan tab menu.</p>
                 </div>
-            )}
-        >
-            <Head title="Pengaturan Harga Obat" />
+            </div>
 
             <div className="py-12">
                 {/* Perbesar card agar memenuhi ruang kosong kiri/kanan */}
@@ -624,6 +622,6 @@ export default function SetHargaObat({ auth, hargaObat, schema, penjualanUmum, p
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </SidebarFarmasi>
     );
 }
