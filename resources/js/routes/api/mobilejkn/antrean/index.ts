@@ -107,4 +107,8 @@ const antrean = {
     batal: Object.assign(batal, batal),
 }
 
+export default antrean: Object.assign(panggil, panggil),
+    batal: Object.assign(batal, batal),
+}
+
 export default antrean

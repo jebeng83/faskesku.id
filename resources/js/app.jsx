@@ -3,21 +3,31 @@ import './bootstrap';
 import { createInertiaApp } from '@inertiajs/react';
 import { createRoot } from 'react-dom/client';
 
-// Enable lazy-loading of route pages using Vite's import.meta.glob
+// Robust resolver: support .jsx/.js/.tsx and handle case sensitivity gracefully
 createInertiaApp({
-    resolve: (name) => {
-        const pages = import.meta.glob('./Pages/**/*.jsx');
-        const importPage = pages[`./Pages/${name}.jsx`];
-        if (!importPage) {
-            throw new Error(`Page not found: ${name}`);
-        }
-        return importPage();
-    },
-    setup({ el, App, props }) {
-        createRoot(el).render(
-            <App {...props} />
-        );
-    },
+  resolve: (name) => {
+    const normalized = name.replace(/^\//, '').replace(/\\/g, '/');
+
+    // Prefer import.meta.glob for Vite-optimized chunks
+    const pages = import.meta.glob('./Pages/**/*.{jsx,js,tsx,ts}');
+    const candidates = [
+      `./Pages/${normalized}.jsx`,
+      `./Pages/${normalized}.js`,
+      `./Pages/${normalized}.tsx`,
+      `./Pages/${normalized}.ts`,
+    ];
+    for (const key of candidates) {
+      if (pages[key]) return pages[key]();
+    }
+
+    // Fallback to dynamic import to cope with newly added files in dev or case-insensitive FS quirks
+    return import(`./Pages/${normalized}.jsx`).catch(() => import(`./Pages/${normalized}.js`)).catch(() => {
+      throw new Error(`Page not found: ${name}`);
+    });
+  },
+  setup({ el, App, props }) {
+    createRoot(el).render(<App {...props} />);
+  },
 });
 
 

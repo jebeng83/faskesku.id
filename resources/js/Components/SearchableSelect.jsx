@@ -228,6 +228,28 @@ const REFERENSI_CONFIG = {
             }));
         },
     },
+    // ===== Sumber: Rekening/COA untuk modul Akuntansi =====
+    // Endpoint: GET /api/akutansi/pengaturan-rekening/rekening?limit=50&q=
+    rekening: {
+        supportsSearch: true,
+        defaultParams: { limit: 50, q: '' },
+        buildUrl: ({ limit = 50, q = '' } = {}) => {
+            const params = new URLSearchParams({ limit: String(limit), q });
+            return `/api/akutansi/pengaturan-rekening/rekening?${params.toString()}`;
+        },
+        parse: (json) => {
+            const items = Array.isArray(json?.items) ? json.items : [];
+            return items.map((it) => ({
+                value: it?.kd_rek || '',
+                label: `${it?.kd_rek ?? ''} — ${it?.nm_rek ?? ''}${it?.tipe || it?.balance ? ` [${it?.tipe ?? '-'}${it?.balance ? '/' + it.balance : ''}]` : ''}`.trim(),
+                kd_rek: it?.kd_rek || '',
+                nm_rek: it?.nm_rek || '',
+                tipe: it?.tipe || '',
+                balance: it?.balance || '',
+                level: it?.level ?? null,
+            }));
+        },
+    },
 };
 
 const SearchableSelect = ({ 

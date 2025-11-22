@@ -1,7 +1,7 @@
 import React from "react";
 import { Head, useForm, Link } from "@inertiajs/react";
 import { motion } from "framer-motion";
-import AppLayout from "@/Layouts/AppLayout";
+import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
 
 export default function SettingBridingMobileJkn({ setting, flash }) {
     // Animations
@@ -337,7 +337,7 @@ export default function SettingBridingMobileJkn({ setting, flash }) {
     );
 }
 
-// Layout: render di dalam AppLayout global
+// Layout: render di dalam SidebarPengaturan
 SettingBridingMobileJkn.layout = (page) => (
-    <AppLayout title="Setting Bridging Mobile JKN" children={page} />
+    <SidebarPengaturan title="Pengaturan" children={page} />
 );

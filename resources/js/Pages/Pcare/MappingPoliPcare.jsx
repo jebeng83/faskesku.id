@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import AppLayout from '@/Layouts/AppLayout';
+import SidebarPengaturan from '@/Layouts/SidebarPengaturan';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowPathIcon, CheckCircleIcon, ExclamationTriangleIcon, MagnifyingGlassIcon, PlusIcon, PencilSquareIcon, TrashIcon, XMarkIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/Components/ui';
@@ -592,4 +592,4 @@ export default function MappingPoliPcare() {
   );
 }
 
-MappingPoliPcare.layout = (page) => <AppLayout title="Mapping Poli PCare" children={page} />;
+MappingPoliPcare.layout = (page) => <SidebarPengaturan title="Pengaturan" children={page} />;

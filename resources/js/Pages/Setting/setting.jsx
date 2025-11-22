@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Head, useForm, Link, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import AppLayout from "@/Layouts/AppLayout";
+import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Save,
@@ -1383,7 +1383,7 @@ export default function SettingIndex({ settings = [], table, flash }) {
     );
 }
 
-// Render dalam AppLayout global
+// Render dalam SidebarPengaturan
 SettingIndex.layout = (page) => (
-    <AppLayout title="Setting Aplikasi" children={page} />
+    <SidebarPengaturan title="Pengaturan" children={page} />
 );

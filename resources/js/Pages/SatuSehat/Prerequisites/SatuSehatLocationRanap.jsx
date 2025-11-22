@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import AppLayout from "@/Layouts/AppLayout";
+import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
 import SearchableSelect from "@/Components/SearchableSelect";
 import { Card, CardHeader, CardTitle, CardContent } from "@/Components/ui/Card";
 import Button from "@/Components/ui/Button";
@@ -201,7 +201,7 @@ export default function SatuSehatLocationRanap() {
   }
 
   return (
-    <AppLayout title="SATUSEHAT • Prerequisites • Location (Ranap)">
+    <SidebarPengaturan title="Pengaturan">
       <motion.div className="p-4 md:p-6 lg:p-8 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900" variants={containerVariants} initial="hidden" animate="visible">
         <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 p-6">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-purple-500/10" />
@@ -418,6 +418,6 @@ export default function SatuSehatLocationRanap() {
 
         <Toaster toasts={toasts} onDismiss={removeToast} />
       </motion.div>
-    </AppLayout>
+    </SidebarPengaturan>
   );
 }
