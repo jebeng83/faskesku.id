@@ -77,4 +77,20 @@ class RegPeriksa extends Model
     // {
     //     return $this->hasOne(KamarInap::class, 'no_rawat', 'no_rawat');
     // }
+
+    // Akutansi / Keuangan Relations
+    public function billing()
+    {
+        return $this->hasMany(\App\Models\Akutansi\Billing::class, 'no_rawat', 'no_rawat');
+    }
+
+    public function notaJalan()
+    {
+        return $this->hasOne(\App\Models\Akutansi\NotaJalan::class, 'no_rawat', 'no_rawat');
+    }
+
+    public function notaInap()
+    {
+        return $this->hasOne(\App\Models\Akutansi\NotaInap::class, 'no_rawat', 'no_rawat');
+    }
 }

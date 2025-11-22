@@ -11,6 +11,7 @@ import {
     CheckCircle2,
     Clock4,
     UserPlus,
+    Settings,
     Search,
     FlaskConical,
     Radiation,
@@ -24,6 +25,7 @@ import {
     Phone,
     MapPin,
     ArrowUp,
+    Wallet,
 } from "lucide-react";
 import { route } from "ziggy-js";
 
@@ -38,6 +40,11 @@ const MonthlyInfoPanelLazy = React.lazy(() =>
 // Stats akan dibuat dinamis di dalam komponen menggunakan data dari endpoint
 
 const quickLinks = [
+    {
+        title: "Pengaturan",
+        description: "Kelola konfigurasi aplikasi & bridging",
+        href: "/setting",
+    },
     {
         title: "Pendaftaran Pasien",
         description: "Registrasi cepat atau tambah pasien baru",
@@ -62,6 +69,12 @@ const quickLinks = [
         title: "Pembayaran",
         description: "Kelola pembayaran Ralan & Ranap",
         href: "/pembayaran",
+    },
+    {
+        title: "Keuangan",
+        description: "Kelola Rekening, Jurnal, dan Nota",
+        // Arahkan ke halaman Rekening yang sudah menggunakan SidebarKeuangan
+        href: "/akutansi/rekening",
     },
 ];
 
@@ -706,6 +719,19 @@ export default function Dashboard() {
                 label: "Pembayaran",
                 href: safeRoute("pembayaran.index"),
                 icon: <CreditCard className="w-5 h-5" />,
+            },
+            {
+                key: "keuangan",
+                label: "Keuangan",
+                // Langsung arahkan ke halaman Rekening yang memakai SidebarKeuangan
+                href: "/akutansi/rekening",
+                icon: <Wallet className="w-5 h-5" />,
+            },
+            {
+                key: "settings",
+                label: "Pengaturan",
+                href: safeRoute("setting.index"),
+                icon: <Settings className="w-5 h-5" />,
             },
         ],
         []

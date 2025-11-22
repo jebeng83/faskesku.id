@@ -20,6 +20,11 @@ use App\Http\Controllers\RawatInapController;
 use App\Http\Controllers\RawatJalan\ObatController;
 use App\Http\Controllers\RawatJalan\RawatJalanController;
 use App\Http\Controllers\RawatJalan\ResepController;
+use App\Http\Controllers\Akutansi\AkutansiController;
+use App\Http\Controllers\Akutansi\RekeningController;
+use App\Http\Controllers\Akutansi\AkunBayarController;
+use App\Http\Controllers\Akutansi\AkunPiutangController;
+use App\Http\Controllers\Akutansi\SetAkunController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\RegPeriksaController;
 use App\Http\Controllers\RehabilitasiMedikController;
@@ -67,6 +72,61 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
+
+    // Akutansi: preview invoice berbasis billing/nota
+    Route::get('/akutansi/invoice/{no_rawat}', [AkutansiController::class, 'invoice'])
+        ->where('no_rawat', '.*')
+        ->name('akutansi.invoice');
+
+    // Akutansi: Rekening page (Inertia)
+    Route::get('/akutansi/rekening', [RekeningController::class, 'page'])
+        ->name('akutansi.rekening.page');
+
+    // Akutansi: Akun Bayar page (Inertia)
+    Route::get('/akutansi/akun-bayar', [AkunBayarController::class, 'page'])
+        ->name('akutansi.akun-bayar.page');
+
+    // Akutansi: Akun Piutang page (Inertia)
+    Route::get('/akutansi/akun-piutang', [AkunPiutangController::class, 'page'])
+        ->name('akutansi.akun-piutang.page');
+
+    // Akutansi: Pengaturan Rekening/COA (Inertia)
+    Route::get('/akutansi/pengaturan-rekening', function () {
+        return Inertia::render('Akutansi/PengaturanRekening');
+    })->name('akutansi.pengaturan-rekening.page');
+
+    // Akutansi API: Rekening CRUD
+    Route::prefix('api/akutansi')->group(function () {
+        Route::get('/rekening', [RekeningController::class, 'index'])->name('api.akutansi.rekening.index');
+        Route::post('/rekening', [RekeningController::class, 'store'])->name('api.akutansi.rekening.store');
+        Route::put('/rekening/{kd_rek}', [RekeningController::class, 'update'])->name('api.akutansi.rekening.update');
+        Route::delete('/rekening/{kd_rek}', [RekeningController::class, 'destroy'])->name('api.akutansi.rekening.destroy');
+
+        // Akun Bayar CRUD
+        Route::get('/akun-bayar', [AkunBayarController::class, 'index'])->name('api.akutansi.akun-bayar.index');
+        Route::post('/akun-bayar', [AkunBayarController::class, 'store'])->name('api.akutansi.akun-bayar.store');
+        Route::put('/akun-bayar/{nama_bayar}', [AkunBayarController::class, 'update'])->name('api.akutansi.akun-bayar.update');
+        Route::delete('/akun-bayar/{nama_bayar}', [AkunBayarController::class, 'destroy'])->name('api.akutansi.akun-bayar.destroy');
+
+        // Akun Piutang CRUD
+        Route::get('/akun-piutang', [AkunPiutangController::class, 'index'])->name('api.akutansi.akun-piutang.index');
+        Route::post('/akun-piutang', [AkunPiutangController::class, 'store'])->name('api.akutansi.akun-piutang.store');
+        Route::put('/akun-piutang/{nama_bayar}', [AkunPiutangController::class, 'update'])->name('api.akutansi.akun-piutang.update');
+        Route::delete('/akun-piutang/{nama_bayar}', [AkunPiutangController::class, 'destroy'])->name('api.akutansi.akun-piutang.destroy');
+
+        // Pengaturan Rekening/COA (SetAkun)
+        Route::get('/pengaturan-rekening', [SetAkunController::class, 'index'])
+            ->name('api.akutansi.pengaturan-rekening.index');
+        // NOTE: Tempatkan route statis 'rekening' SEBELUM route dinamis '{section}' untuk mencegah konflik penangkapan
+        Route::get('/pengaturan-rekening/rekening', [SetAkunController::class, 'rekening'])
+            ->name('api.akutansi.pengaturan-rekening.rekening');
+        Route::get('/pengaturan-rekening/{section}', [SetAkunController::class, 'show'])
+            ->where('section', '^(umum|umum2|ralan|ranap|ranap2)$')
+            ->name('api.akutansi.pengaturan-rekening.show');
+        Route::put('/pengaturan-rekening/{section}', [SetAkunController::class, 'update'])
+            ->where('section', '^(umum|umum2|ralan|ranap|ranap2)$')
+            ->name('api.akutansi.pengaturan-rekening.update');
+    });
 
     // Master Data landing page
     Route::get('/master-data', function () {

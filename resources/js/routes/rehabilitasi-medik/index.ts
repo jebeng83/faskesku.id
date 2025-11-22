@@ -369,8 +369,4 @@ const rehabilitasiMedik = {
     destroy: Object.assign(destroy, destroy),
 }
 
-export default rehabilitasiMedikObject.assign(update, update),
-    destroy: Object.assign(destroy, destroy),
-}
-
 export default rehabilitasiMedik
