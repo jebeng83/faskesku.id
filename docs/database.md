@@ -582,6 +582,328 @@ Dengan catatan ini, pengembangan selanjutnya diharapkan:
 
 ---
 
+## Catatan Suspen Piutang (Suspense Receivable)
+
+## Blueprint Implementasi Akuntansi End-to-End (Ralan/Ranap)
+
+Tujuan: Bagian ini merangkum keseluruhan proses akuntansi agar implementasi di aplikasi konsisten, mudah ditelusuri, dan siap diuji end-to-end. Fokus pada alur tindakan rawat jalan (Ralan), namun prinsipnya sama untuk modul lain (Ranap, Lab, Farmasi).
+
+Komponen Kode & Tabel Penting di Workspace:
+- public/Jurnal.java: Pipeline posting jurnal dari staging (tampjurnal) ke tabel permanen (jurnal, detailjurnal). Menjamin penomoran, keseimbangan Debet=Kredit, dan pembersihan tampjurnal.
+- public/sekuel.java (dipanggil sebagai Sequel.* di form): Utilitas CRUD/SQL termasuk menyimpantf/menyimpan2 untuk tulis ke tabel transaksi dan tampjurnal. Menyediakan pola transaksional Commit/RollBack di pemanggil.
+- public/DlgRawatJalan.java: Input tindakan ke rawat_jl_dr/pr/drpr, validasi verifikasi billing, posting jurnal (tampjurnal → Jurnal.simpanJurnal()) termasuk jurnal pembalik saat pembatalan.
+- public/DlgKasirRalan.java: Agregasi tindakan untuk kasir, pengelolaan dokter/poli/penjamin, cetak laporan registrasi ralan. Memiliki alur otomatisRalan/otomatisRalan2 yang menyiapkan tampjurnal dan memanggil Jurnal.simpanJurnal(). Perlu penetapan titik posting agar tidak terjadi double-posting.
+- Tabel transaksi: rawat_jl_dr, rawat_jl_pr, rawat_jl_drpr (status awal "Belum").
+- Tabel keuangan: tampjurnal (staging), jurnal, detailjurnal (final), rekening (COA), billing (snapshot nota), nota_jalan/nota_inap.
+
+Prinsip Satu Titik Posting (Single Posting Point):
+- Rekomendasi: Jadikan DlgRawatJalan sebagai sumber kebenaran untuk posting jurnal saat tindakan disimpan. DlgKasirRalan hanya melakukan agregasi/rekap dan cetak; tidak melakukan posting jurnal ulang untuk tindakan yang sama.
+- Manfaat: Mencegah double-posting; memudahkan audit karena setiap tindakan langsung tercermin di jurnal; pembatalan tindakan membuat jurnal pembalik dari titik yang sama.
+
+Alur End-to-End (Ralan):
+1) Input Tindakan di Poli
+   - Dokter/Petugas menginput tindakan → baris tercatat di rawat_jl_dr/pr/drpr dengan komponen biaya (tarif_tindakandr/pr, kso, material, bhp, menejemen) dan status "Belum".
+2) Siapkan Staging Jurnal (tampjurnal)
+   - Hapus tampjurnal lama, isi pasangan akun berikut sesuai nilai agregat tindakan:
+     - Suspen_Piutang_Tindakan_Ralan (Debet)
+     - Tindakan_Ralan (Kredit)
+     - Beban Jasa Medik Dokter/Paramedis (Debet) vs Utang Jasa Medik Dokter/Paramedis (Kredit)
+     - Beban KSO (Debet) vs Utang KSO (Kredit)
+     - Beban Jasa Sarana (Debet) vs Utang Jasa Sarana (Kredit)
+     - Beban Jasa Manajemen (Debet) vs Utang Jasa Manajemen (Kredit)
+     - HPP BHP (Debet) vs Persediaan BHP (Kredit)
+3) Posting Jurnal
+   - Panggil Jurnal.simpanJurnal(no_rawat, jenis, keterangan). Sistem akan:
+     - Memastikan Debet=Kredit di tampjurnal.
+     - Membuat header jurnal (no_jurnal otomatis per tanggal) dan menyalin baris ke detailjurnal.
+     - Mengosongkan tampjurnal.
+4) Pembatalan Tindakan (bila ada)
+   - Hitung ulang agregat tindakan yang dibatalkan; siapkan tampjurnal pembalik (kebalikan Debet/Kredit); panggil Jurnal.simpanJurnal() untuk mencatat reversal.
+5) Kasir & Cetak Billing
+   - Kasir menarik data dari rawat_jl_*, farmasi, lab, dll. Simpan snapshot ke tabel billing dan buat nota_jalan. Billing berperan sebagai data statis untuk cetak kuitansi dan laporan pendapatan.
+6) Pembayaran & Reklasifikasi
+   - Saat pembayaran diterima: Debet Kas/Bank, Kredit Suspen Piutang (menutup saldo suspen). Jika menggunakan piutang usaha, lakukan reklasifikasi dari suspen/piutang ke kas/penjamin sesuai skenario.
+7) Verifikasi & Status
+   - Terapkan status "Belum/Bayar/Verif" konsisten; blokir edit/hapus tindakan jika billing terverifikasi.
+
+COA Mapping yang Direkomendasikan (contoh, sesuaikan dengan COA Anda):
+- 117004 Suspen Piutang (tipe: Neraca, balance: D)
+- Pendapatan: Tindakan_Ralan
+- Beban/Utang Jasa Medik: Beban_Jasa_Medik_Dokter_Tindakan_Ralan, Utang_Jasa_Medik_Dokter_Tindakan_Ralan, Beban_Jasa_Medik_Petugas_Tindakan_Ralan, Utang_Jasa_Medik_Petugas_Tindakan_Ralan
+- Beban/Utang KSO: Beban_KSO_Tindakan_Ralan, Utang_KSO_Tindakan_Ralan
+- Beban/Utang Sarana: Beban_Jasa_Sarana_Tindakan_Ralan, Utang_Jasa_Sarana_Tindakan_Ralan
+- Beban/Utang Manajemen: Beban_Jasa_Menejemen_Tindakan_Ralan, Utang_Jasa_Menejemen_Tindakan_Ralan
+- HPP/Persediaan BHP: HPP_BHP_Tindakan_Ralan, Persediaan_BHP_Tindakan_Ralan
+- Kas/Bank, Piutang Usaha (bila digunakan), dan akun PPN Keluaran/Masukan sesuai kebijakan.
+
+Template Jurnal Standar (ringkas):
+- Saat Posting Tindakan Ralan
+  - D: Suspen_Piutang_Tindakan_Ralan
+  - K: Tindakan_Ralan
+  - D: Beban Jasa Medik (Dr/Pr), Beban KSO, Beban Sarana, Beban Manajemen, HPP BHP
+  - K: Utang Jasa Medik (Dr/Pr), Utang KSO, Utang Sarana, Utang Manajemen, Persediaan BHP
+- Saat Pembatalan Tindakan
+  - Kebalikan dari di atas (D↔K dibalik sesuai nilai pembatalan)
+- Saat Pembayaran
+  - D: Kas/Bank
+  - K: Suspen_Piutang_Tindakan_Ralan
+  - Tambahkan PPN/MDR/admin sesuai kebijakan jika relevan.
+
+Validasi & Guard Rails:
+- Cek status verifikasi billing sebelum edit/hapus tindakan; tampilkan pesan blokir yang jelas.
+- Pastikan staging tampjurnal selalu bersih sebelum diisi; Debet=Kredit sebelum posting.
+- Gunakan transaksi atomic: bila salah satu insert/update gagal, lakukan RollBack dan jangan menandai tindakan sebagai berhasil.
+
+Performa & Indeks Database:
+- Tambahkan indeks pada rawat_jl_dr/pr/drpr: (no_rawat), (kd_jenis_prw), (tgl_perawatan, jam_rawat), (kd_dokter/nip) untuk mempercepat agregasi dan pencarian.
+
+Query Pemeriksaan Cepat:
+```sql
+-- Keseimbangan staging saat ini
+SELECT SUM(debet) AS total_debet, SUM(kredit) AS total_kredit, COUNT(*) AS jml FROM tampjurnal;
+
+-- Detail staging + nama rekening
+SELECT t.kd_rek, r.nm_rek, t.debet, t.kredit
+FROM tampjurnal t
+LEFT JOIN rekening r ON r.kd_rek = t.kd_rek
+ORDER BY t.kd_rek;
+
+-- Ringkasan billing per status untuk satu no_rawat
+SELECT status, SUM(totalbiaya) AS total
+FROM billing
+WHERE no_rawat = ?
+GROUP BY status
+ORDER BY status;
+
+-- Jurnal terakhir per no_bukti (no_rawat)
+SELECT j.no_jurnal, j.no_bukti, j.tgl_jurnal, j.jenis, j.keterangan,
+       SUM(d.debet) AS debet, SUM(d.kredit) AS kredit
+FROM jurnal j
+JOIN detailjurnal d ON d.no_jurnal = j.no_jurnal
+WHERE j.no_bukti = ?
+GROUP BY j.no_jurnal, j.no_bukti, j.tgl_jurnal, j.jenis, j.keterangan
+ORDER BY j.tgl_jurnal DESC, j.no_jurnal DESC
+LIMIT 10;
+```
+
+Catatan Implementasi:
+- DlgRawatJalan: gunakan Single Posting Point; panggil Jurnal.simpanJurnal() setelah isi tampjurnal, dan gunakan jurnal pembalik saat pembatalan.
+- DlgKasirRalan: nonaktifkan posting jurnal duplikat (otomatisRalan) bila tindakan sudah diposting dari DlgRawatJalan; tetap gunakan untuk agregasi dan cetak.
+- sekuel/Sequel.*: gunakan menyimpantf/menyimpan2 untuk operasi insert; pastikan urutan operasi dalam satu transaksi konsisten dan aman.
+- Dokumentasi Suspen Piutang di atas menjadi acuan integrasi dengan COA; sesuaikan kd_rek dengan chart akun masing-masing.
+
+Test Plan End-to-End (ringkas):
+1) Simpan tindakan (dr/pr/drpr) → verifikasi tampjurnal dan posting jurnal → cek jurnal/detailjurnal.
+2) Batalkan sebagian/seluruh tindakan → jurnal pembalik tercatat → saldo suspen/pendapatan/biaya menyesuaikan.
+3) Buat billing dan nota_jalan → cetak → nominal sesuai snapshot dan jurnal.
+4) Simulasi pembayaran → jurnal kas vs suspen; status berubah sesuai kebijakan.
+5) Kasus parsial/aktifkan parsial (bila digunakan) → reklasifikasi dan cetak nota parsial sesuai kebijakan.
+
+### QA/E2E Akuntansi – Baseline Diagnostik (Ralan)
+
+Bagian ini mendokumentasikan baseline diagnostik QA/E2E akuntansi untuk layanan Rawat Jalan (Ralan) yang telah ditambahkan sebagai Artisan command. Tujuan utamanya adalah memverifikasi kesesuaian blueprint dengan kondisi data aktual tanpa memodifikasi data (read-only).
+
+Ringkasan fitur diagnostik:
+- Validasi ketersediaan tabel inti: `set_akun_ralan`, `rekening`, `jns_perawatan`, `rawat_jl_dr`, `rawat_jl_pr`, `rawat_jl_drpr`, `tampjurnal`, `jurnal`, `detailjurnal`.
+- Validasi mapping COA pada `set_akun_ralan` untuk key kunci: Suspen, Pendapatan, Beban/Utang Dokter & Paramedis, KSO, Manajemen, HPP/Persediaan.
+- Deteksi tindakan Ralan (dr/pr/drpr) terbaru atau berdasarkan `no_rawat`.
+- Hitung komposisi jurnal teoretis sesuai blueprint (Suspen vs Pendapatan; Beban/Utang Jasa Medik; KSO; Manajemen; HPP vs Persediaan).
+- Verifikasi jurnal terkait berdasarkan `no_bukti = no_rawat` beserta keseimbangan total Debet vs Kredit di `detailjurnal`.
+
+Cara menjalankan:
+- Otomatis (ambil beberapa tindakan terbaru):
+  - `php artisan akutansi:qa-e2e --limit=3`
+- Berdasarkan nomor rawat tertentu:
+  - `php artisan akutansi:qa-e2e 2025/07/16/000001`
+- Mengarahkan tipe tindakan (opsional):
+  - `php artisan akutansi:qa-e2e --mode=drpr --limit=5`
+
+Output yang dihasilkan (ringkas):
+- Tabel validasi mapping COA: kolom Key, `kd_rek`, Status (OK/MISSING).
+- Tabel komposisi teoretis: `kd_rek`, Pos, Debet, Kredit, serta ringkasan keseimbangan (Debet total vs Kredit total → SEIMBANG/TIDAK SEIMBANG).
+- Ringkasan jurnal terkait (top 5) untuk `no_bukti = no_rawat`: `no_jurnal`, `tgl_jurnal`, `jam_jurnal`, Debet total, Kredit total.
+
+Kriteria kelulusan QA/E2E:
+- Mapping COA pada `set_akun_ralan` valid untuk akun-akun yang dipakai pada komposisi teoretis.
+- Komposisi teoretis SEIMBANG (total Debet = total Kredit).
+- Jurnal terkait ditemukan dan ringkasan `detailjurnal` menunjukkan Debet = Kredit.
+
+Limitasi dan catatan:
+- Diagnostik ini read-only; tidak membuat/mengubah `tampjurnal`/`jurnal`.
+- Fokus awal pada tindakan Ralan; layanan lain (Lab, Radiologi, Farmasi, Registrasi, Operasi) akan menggunakan pola serupa mengacu pada kolom masing-masing di `set_akun_ralan`/`set_akun_ranap`.
+- Komponen biaya diambil dari `jns_perawatan` dan/atau `rawat_jl_*`; ketepatan komposisi bergantung pada konsistensi data tarif (dokter/paramedis/kso/manajemen/material/bhp).
+
+Rencana perluasan cakupan:
+- Tambah opsi diagnostik untuk Lab, Radiologi, Resep Pulang, Registrasi, Operasi, dan Ranap.
+- Tambah pemeriksaan guard rails runtime (lihat bagian berikut) untuk memastikan idempotensi dan single posting point saat implementasi posting otomatis di controller.
+
+### Guard Rails Implementasi Akuntansi (Disarankan)
+
+Guard rails berikut disarankan agar implementasi akuntansi konsisten, aman, dan mudah diaudit:
+
+- Single Posting Point
+  - Lakukan posting jurnal dari satu titik sumber kebenaran (mis. saat simpan tindakan di controller Rawat Jalan) dan hindari posting ulang dari modul lain (kasir) untuk transaksi yang sama.
+
+- Idempotensi & Locking
+  - Gunakan idempotency key (mis. gabungan `no_rawat + jenis + tgl/jam + kd_jenis_prw`) untuk mencegah double posting.
+  - Terapkan locking/transaksi saat menulis jurnal untuk mencegah race condition pada penomoran `no_jurnal`.
+
+- Transaksi atomic
+  - Bungkus isi `tampjurnal` → validasi Debet=Kredit → tulis `jurnal`/`detailjurnal` dalam satu transaksi. Rollback bila ada kegagalan di salah satu langkah.
+
+- Validasi COA mandatory
+  - Pastikan setiap akun di mapping (`set_akun_ralan`/`set_akun_ranap`) terdaftar di `rekening` sebelum mengizinkan posting.
+  - Fail-fast dengan pesan jelas jika ada akun yang MISSING.
+
+- Debet=Kredit wajib lulus
+  - Terapkan guard rails agar posting gagal bila Debet != Kredit (baik pada staging maupun gabungan baris di `detailjurnal`).
+
+- Normalisasi waktu server
+  - Pastikan timezone, `tgl_jurnal` dan `jam_jurnal` konsisten; hindari perbedaan zona waktu yang dapat mengganggu penomoran atau urutan jurnal.
+
+- Penomoran `no_jurnal`
+  - Gunakan pola penomoran per tanggal yang konsisten; pastikan aman terhadap concurrency (locking atau sequence terkontrol).
+
+- Reversal saat delete
+  - Saat pembatalan tindakan atau koreksi, catat jurnal pembalik daripada menghapus jurnal lama, agar jejak audit tetap lengkap.
+
+- Pencegahan double posting
+  - Simpan status posting per transaksi dan hindari pemanggilan service posting ganda untuk transaksi yang sama.
+
+- Audit log & monitoring
+  - Catat metadata (user, waktu, sumber modul) saat posting; sediakan dashboard yang menyorot ketidakseimbangan atau akun MISSING.
+
+- Performa & indeks
+  - Tambahkan indeks pada kolom yang sering dipakai agregasi/filter (mis. `no_rawat`, `kd_jenis_prw`, `tgl_perawatan`, `jam_rawat`) pada tabel transaksi.
+
+Rencana Integrasi Service (outline):
+- `JurnalPostingService`
+  - Tanggung jawab: validasi COA, komposisi baris jurnal, penomoran `no_jurnal`, tulis `jurnal`/`detailjurnal`, pembersihan `tampjurnal`, reversal saat delete.
+  - Masukan: `no_rawat`, jenis layanan, agregat nilai (tarif dr/pr/kso/manajemen/material/bhp), keterangan.
+  - Keluaran: `no_jurnal`, status sukses/gagal, pesan.
+- `TampJurnalComposer`
+  - Tanggung jawab: menyusun staging `tampjurnal` dari transaksi (tindakan dr/pr/drpr); memastikan Debet=Kredit teoretis.
+  - Masukan: data tindakan/jenis perawatan dan mapping COA.
+  - Keluaran: baris-baris `tampjurnal` siap diposting.
+
+Dengan baseline QA/E2E ini dan guard rails yang direkomendasikan, pengembangan ke arah posting otomatis di controller (mis. `TarifTindakanController`) dapat dilakukan secara bertahap, aman, dan terukur sambil menjaga konsistensi blueprint.
+
+
+Suspen Piutang adalah akun penampung sementara untuk nilai tagihan pasien/penjamin sebelum diklasifikasikan menjadi Piutang atau dibayar. Akun ini membantu menjaga pemisahan proses pengakuan pendapatan layanan dengan proses pengakuan piutang/pembayaran, terutama saat nota belum final atau masih menunggu verifikasi.
+
+Tujuan penggunaan:
+- Menampung nilai tagihan saat snapshot billing dibuat (Posting Billing) agar pendapatan dapat diakui per kategori layanan sementara piutang diklasifikasi kemudian.
+- Memudahkan rekonsiliasi: saldo Suspen Piutang idealnya kembali ke nol setelah re-klasifikasi ke Piutang dilakukan, sehingga selisih yang tersisa menandakan adanya transaksi yang belum selesai.
+
+Master COA yang direkomendasikan:
+- kd_rek: 117004
+- nm_rek: Suspen Piutang
+- tipe: Neraca (disarankan tipe N sesuai konvensi lokal)
+- balance: D (Debit)
+
+Lokasi mapping di database dan aplikasi:
+- Tabel set_akun_ralan dan set_akun_ranap memiliki kolom-kolom Suspen_Piutang per kategori layanan (misal: Suspen_Piutang_Tindakan_Ralan, Suspen_Piutang_Laborat_Ralan, Suspen_Piutang_Radiologi_Ralan, Suspen_Piutang_Obat_Ralan, Suspen_Piutang_Registrasi, Suspen_Piutang_Administrasi, Suspen_Piutang_Kamar). Kolom-kolom ini berelasi ke rekening(kd_rek).
+- Frontend PengaturanRekening.jsx memuat pilihan rekening dari endpoint /api/akutansi/rekening untuk setiap kolom Suspen_Piutang di Ralan/Ranap.
+- SetAkunController memvalidasi kd_rek agar selalu valid di tabel rekening saat update mapping.
+
+Kapan diposting (alur ringkas):
+- Rawat Jalan (Ralan): saat tombol Posting Billing di Lanjutan.jsx ditekan, sistem membuat snapshot billing. Jurnal akrual dibuat: Debet Suspen Piutang, Kredit Pendapatan per kategori layanan (Tindakan, Obat, Laborat, Radiologi, Administrasi, Registrasi, dsb.).
+- Rawat Inap (Ranap): saat Discharge & Posting Billing, lakukan pola yang sama terhadap snapshot akhir ranap (setelah validasi resume dan audit tindakan).
+- Re-klasifikasi Piutang: setelah nota final diterbitkan/di-approve, pindahkan saldo dari Suspen Piutang ke akun Piutang Pasien/Asuransi: Debet Piutang, Kredit Suspen Piutang.
+- Pembayaran: saat kasir menerima pembayaran, buat jurnal Debet Kas/Bank, Kredit Piutang. Jika ada PPN/MDR/biaya admin per metode bayar, tambahkan baris jurnal sesuai konfigurasi akun terkait.
+
+Template jurnal standar (contoh, disederhanakan):
+
+1) Posting Billing (akru pendapatan melalui Suspen)
+```
+Debet  117004 Suspen Piutang            xxx.xxx
+Kredit 4xx001 Pendapatan Tindakan       aaa.aaa
+Kredit 4xx005 Pendapatan Farmasi        bbb.bbb
+... (per kategori layanan)
+```
+
+2) Re-klasifikasi ke Piutang (setelah nota final)
+```
+Debet  113001 Piutang Pasien/Asuransi   xxx.xxx
+Kredit 117004 Suspen Piutang            xxx.xxx
+```
+
+3) Pembayaran (kasir)
+```
+Debet  111001 Kas/Bank                  yyy.yyy
+Kredit 113001 Piutang Pasien/Asuransi   yyy.yyy
+(+ opsional baris PPN/MDR/biaya admin sesuai kebijakan)
+```
+
+Catatan:
+- Beberapa instalasi memilih langsung mengakui piutang saat posting billing (tanpa Suspen). Dokumen ini menganjurkan penggunaan Suspen untuk memudahkan audit dan rekonsiliasi proses kasir. Pilih pola yang paling sesuai kebijakan internal, namun konsisten di seluruh modul.
+- Jika granular Suspen per kategori diperlukan (misalnya memisahkan Suspen Tindakan vs Suspen Obat), pastikan semua kolom Suspen_Piutang di set_akun_ralan/set_akun_ranap memiliki nilai kd_rek yang valid.
+
+Query pemeriksaan cepat:
+- Pastikan akun Suspen Piutang ada di master COA
+```
+SELECT kd_rek, nm_rek, tipe, balance FROM rekening WHERE kd_rek = '117004';
+```
+
+- Cek mapping Suspen di Ralan/Ranap (contoh kolom, sesuaikan dengan skema aktual)
+```
+SELECT Suspen_Piutang_Tindakan_Ralan, Suspen_Piutang_Obat_Ralan,
+       Suspen_Piutang_Laborat_Ralan, Suspen_Piutang_Radiologi_Ralan
+FROM set_akun_ralan;
+
+SELECT Suspen_Piutang_Tindakan_Ranap, Suspen_Piutang_Obat_Ranap,
+       Suspen_Piutang_Laborat_Ranap, Suspen_Piutang_Radiologi_Ranap,
+       Suspen_Piutang_Kamar, Suspen_Piutang_Administrasi
+FROM set_akun_ranap;
+```
+
+- Telusuri jurnal Suspen Piutang yang diposting dalam 7 hari terakhir
+```
+SELECT j.no_jurnal, j.tgl_jurnal, dj.kd_rek, r.nm_rek, dj.debet, dj.kredit
+FROM jurnal j
+JOIN detailjurnal dj ON dj.no_jurnal = j.no_jurnal
+JOIN rekening r ON r.kd_rek = dj.kd_rek
+WHERE r.kd_rek = '117004'
+  AND j.tgl_jurnal BETWEEN CURDATE() - INTERVAL 7 DAY AND CURDATE()
+ORDER BY j.tgl_jurnal, dj.no_jurnal;
+```
+
+- Pastikan staging tampjurnal seimbang sebelum posting
+```
+SELECT SUM(debet) AS total_debet, SUM(kredit) AS total_kredit, COUNT(*) AS jml
+FROM tampjurnal;
+```
+
+Best practices implementasi:
+- Gunakan satu akun global "Suspen Piutang" (117004) untuk kemudahan rekonsiliasi; jika diperlukan granular per kategori, dokumentasikan dengan jelas dan konsisten.
+- balance harus D (debit) untuk menampung nilai tagihan sebelum re-klasifikasi.
+- Jangan menjadikan nm_rek sebagai sumber kebenaran; gunakan kd_rek dan lakukan join saat menampilkan nama akun.
+- Pastikan setiap jurnal yang diposting memiliki total debet == total kredit (double-entry); gunakan transaksi database dan penomoran harian no_jurnal seperti di Jurnal.java.
+- Hindari race-condition pada penyiapan tampjurnal: pakai session_id/snapshot_id per transaksi dan kosongkan staging setelah posting.
+
+Rekonsiliasi periodik:
+- Saldo Suspen Piutang idealnya nol di akhir hari/periode. Jika tidak, cari snapshot atau nota yang belum direklasifikasi ke Piutang.
+```
+SELECT j.no_jurnal, j.tgl_jurnal,
+       SUM(CASE WHEN dj.kd_rek = '117004' THEN dj.debet - dj.kredit ELSE 0 END) AS saldo_suspen
+FROM jurnal j
+JOIN detailjurnal dj ON dj.no_jurnal = j.no_jurnal
+GROUP BY j.no_jurnal, j.tgl_jurnal
+HAVING saldo_suspen <> 0
+ORDER BY j.tgl_jurnal;
+```
+
+Integrasi API (rekomendasi untuk konsistensi pengembangan):
+- POST /api/billing/ralan/:no_rawat/compute → hitung rincian dan kembalikan pratinjau.
+- POST /api/billing/ralan/:no_rawat/snapshot → buat snapshot billing, hasilkan jurnal akrual Debet Suspen/Kredit Pendapatan.
+- POST /api/akutansi/jurnal/preview → terima snapshot dan kembalikan komposisi jurnal (cek debet=kredit).
+- POST /api/akutansi/jurnal/post → posting ke jurnal/detailjurnal dari tampjurnal.
+- POST /api/payment/ralan → buat pembayaran (kas/bank vs piutang), dukung split metode bayar dan PPN/MDR.
+
+Dengan panduan ini, implementasi Suspen Piutang di seluruh alur Ralan/Ranap menjadi terdokumentasi dengan jelas, memudahkan audit, rekonsiliasi, dan pengembangan fitur lanjutan.
+
+---
+
 ## 9. Pengaturan Rekening (COA Mapping dari SIMRS Khanza)
 
 Ringkasan ini merangkum fungsionalitas dialog Java "DlgPengaturanRekening" (aplikasi Swing SIMRS Khanza) yang digunakan untuk memetakan akun-akun Chart of Account (COA) ke berbagai proses/pos transaksi. Tujuannya agar implementasi di aplikasi Faskesku ID konsisten dan mudah dirawat.

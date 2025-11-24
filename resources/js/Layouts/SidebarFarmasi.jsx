@@ -104,9 +104,8 @@ export default function SidebarFarmasi({ title = 'Farmasi', children }) {
         },
         {
           label: 'Permintaan Obat',
-          // Belum ada route spesifik, tampilkan sebagai disabled
-          href: '#',
-          disabled: true,
+          href: route('farmasi.permintaan-resep'),
+          disabled: false,
           icon: <Package className="w-4 h-4" />,
         },
         {

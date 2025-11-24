@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Carbon\Carbon;
+use App\Services\Akutansi\TampJurnalComposerRalan;
 
 class TarifTindakanController extends Controller
 {
@@ -78,6 +79,42 @@ class TarifTindakanController extends Controller
             ],
             'message' => 'Data jenis perawatan berhasil diambil'
         ]);
+    }
+
+    /**
+     * Compose staging jurnal (tampjurnal2) untuk tindakan Rawat Jalan (umum) berdasarkan no_rawat.
+     * Menggunakan pengaturan akun rawat jalan jika tersedia.
+     */
+    public function stageJurnalRalan(Request $request)
+    {
+        $validated = $request->validate([
+            'no_rawat' => ['required', 'string'],
+        ]);
+
+        try {
+            /** @var TampJurnalComposerRalan $composer */
+            $composer = app(TampJurnalComposerRalan::class);
+            $result = $composer->composeForNoRawat($validated['no_rawat']);
+
+            $balanced = round($result['debet'], 2) === round($result['kredit'], 2);
+
+            return response()->json([
+                'success' => true,
+                'meta' => [
+                    'debet' => $result['debet'],
+                    'kredit' => $result['kredit'],
+                    'balanced' => $balanced,
+                    'lines' => count($result['lines']),
+                ],
+                'lines' => $result['lines'],
+                'message' => 'Staging jurnal (tampjurnal2) berhasil disusun untuk rawat jalan umum',
+            ], 201);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyusun staging jurnal: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -354,8 +391,45 @@ class TarifTindakanController extends Controller
             'nip' => 'nullable|string'
         ]);
         
-        // Log untuk debugging
-        Log::info('Delete tindakan request:', $request->all());
+        // Normalisasi tgl_perawatan dan jam_rawat agar sesuai dengan format kolom di DB
+        // Beberapa frontend/axios mengirimkan tgl_perawatan sebagai ISO 8601 (mis. "2025-11-21T17:00:00.000000Z")
+        // dan jam_rawat sebagai "HH:MM" tanpa detik. Kita konversi keduanya ke timezone lokal dan format yang konsisten.
+        $appTz = config('app.timezone', 'Asia/Jakarta');
+        try {
+            $tglNormalized = Carbon::parse($request->tgl_perawatan)
+                ->setTimezone($appTz)
+                ->format('Y-m-d');
+        } catch (\Throwable $e) {
+            // Jika parsing gagal, gunakan nilai asli apa adanya
+            $tglNormalized = is_string($request->tgl_perawatan)
+                ? (str_contains($request->tgl_perawatan, 'T')
+                    ? explode('T', $request->tgl_perawatan)[0]
+                    : (str_contains($request->tgl_perawatan, ' ')
+                        ? explode(' ', $request->tgl_perawatan)[0]
+                        : $request->tgl_perawatan))
+                : (string) $request->tgl_perawatan;
+        }
+
+        // Normalisasi jam_rawat ke format HH:MM:SS
+        $jamRaw = trim((string) $request->jam_rawat);
+        if (preg_match('/^\d{2}:\d{2}$/', $jamRaw)) {
+            $jamNormalized = $jamRaw . ':00';
+        } elseif (preg_match('/^\d{2}:\d{2}:\d{2}$/', $jamRaw)) {
+            $jamNormalized = $jamRaw;
+        } else {
+            // Upaya parsing generik bila format tidak standar
+            try {
+                $jamNormalized = Carbon::parse($jamRaw)->setTimezone($appTz)->format('H:i:s');
+            } catch (\Throwable $e) {
+                $jamNormalized = $jamRaw; // fallback
+            }
+        }
+
+        // Log untuk debugging (termasuk nilai yang telah dinormalisasi)
+        $logPayload = $request->all();
+        $logPayload['tgl_perawatan_normalized'] = $tglNormalized;
+        $logPayload['jam_rawat_normalized'] = $jamNormalized;
+        Log::info('Delete tindakan request:', $logPayload);
 
         try {
             DB::beginTransaction();
@@ -368,8 +442,8 @@ class TarifTindakanController extends Controller
                     // Cek apakah record ada sebelum dihapus
                     $query = RawatJlDr::where('no_rawat', $request->no_rawat)
                         ->where('kd_jenis_prw', $request->kd_jenis_prw)
-                        ->where('tgl_perawatan', $request->tgl_perawatan)
-                        ->where('jam_rawat', $request->jam_rawat);
+                        ->where('tgl_perawatan', $tglNormalized)
+                        ->where('jam_rawat', $jamNormalized);
                     
                     if ($request->kd_dokter) {
                         $query->where('kd_dokter', $request->kd_dokter);
@@ -387,8 +461,8 @@ class TarifTindakanController extends Controller
                     // Cek apakah record ada sebelum dihapus
                     $query = RawatJlPr::where('no_rawat', $request->no_rawat)
                         ->where('kd_jenis_prw', $request->kd_jenis_prw)
-                        ->where('tgl_perawatan', $request->tgl_perawatan)
-                        ->where('jam_rawat', $request->jam_rawat);
+                        ->where('tgl_perawatan', $tglNormalized)
+                        ->where('jam_rawat', $jamNormalized);
                     
                     if ($request->nip) {
                         $query->where('nip', $request->nip);
@@ -406,8 +480,8 @@ class TarifTindakanController extends Controller
                     // Cek apakah record ada sebelum dihapus
                     $query = RawatJlDrpr::where('no_rawat', $request->no_rawat)
                         ->where('kd_jenis_prw', $request->kd_jenis_prw)
-                        ->where('tgl_perawatan', $request->tgl_perawatan)
-                        ->where('jam_rawat', $request->jam_rawat);
+                        ->where('tgl_perawatan', $tglNormalized)
+                        ->where('jam_rawat', $jamNormalized);
                     
                     if ($request->kd_dokter) {
                         $query->where('kd_dokter', $request->kd_dokter);

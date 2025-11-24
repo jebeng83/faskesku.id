@@ -22,6 +22,9 @@ use App\Http\Controllers\RawatJalan\RawatJalanController;
 use App\Http\Controllers\RawatJalan\ResepController;
 use App\Http\Controllers\Akutansi\AkutansiController;
 use App\Http\Controllers\Akutansi\RekeningController;
+use App\Http\Controllers\Akutansi\JurnalController;
+use App\Http\Controllers\Akutansi\CashFlowController;
+use App\Http\Controllers\Akutansi\BillingController;
 use App\Http\Controllers\Akutansi\AkunBayarController;
 use App\Http\Controllers\Akutansi\AkunPiutangController;
 use App\Http\Controllers\Akutansi\SetAkunController;
@@ -95,12 +98,47 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('Akutansi/PengaturanRekening');
     })->name('akutansi.pengaturan-rekening.page');
 
+    // Akutansi: Jurnal page (Inertia)
+    Route::get('/akutansi/jurnal', [JurnalController::class, 'page'])
+        ->name('akutansi.jurnal.page');
+
+    // Akutansi: Cash Flow page (Inertia)
+    Route::get('/akutansi/cashflow', [CashFlowController::class, 'page'])
+        ->name('akutansi.cashflow.page');
+
+    // Akutansi: Billing page (Inertia)
+    Route::get('/akutansi/billing', [BillingController::class, 'page'])
+        ->name('akutansi.billing.page');
+
+    // Akutansi: Kasir Ralan page (Inertia)
+    Route::get('/akutansi/kasir-ralan', [BillingController::class, 'kasirRalanPage'])
+        ->name('akutansi.kasir-ralan.page');
+
     // Akutansi API: Rekening CRUD
     Route::prefix('api/akutansi')->group(function () {
         Route::get('/rekening', [RekeningController::class, 'index'])->name('api.akutansi.rekening.index');
         Route::post('/rekening', [RekeningController::class, 'store'])->name('api.akutansi.rekening.store');
         Route::put('/rekening/{kd_rek}', [RekeningController::class, 'update'])->name('api.akutansi.rekening.update');
         Route::delete('/rekening/{kd_rek}', [RekeningController::class, 'destroy'])->name('api.akutansi.rekening.destroy');
+
+    // Akutansi API: Jurnal CRUD
+    Route::get('/jurnal', [JurnalController::class, 'index'])->name('api.akutansi.jurnal.index');
+    Route::get('/jurnal/{no_jurnal}', [JurnalController::class, 'show'])->where('no_jurnal', '.*')->name('api.akutansi.jurnal.show');
+    Route::post('/jurnal', [JurnalController::class, 'store'])->name('api.akutansi.jurnal.store');
+    Route::put('/jurnal/{no_jurnal}', [JurnalController::class, 'update'])->where('no_jurnal', '.*')->name('api.akutansi.jurnal.update');
+    Route::delete('/jurnal/{no_jurnal}', [JurnalController::class, 'destroy'])->where('no_jurnal', '.*')->name('api.akutansi.jurnal.destroy');
+    // Akutansi API: Single Posting Point dari tampjurnal
+    Route::post('/jurnal/preview', [JurnalController::class, 'previewFromTemp'])->name('api.akutansi.jurnal.preview');
+    Route::post('/jurnal/post', [JurnalController::class, 'postFromTemp'])->name('api.akutansi.jurnal.post');
+
+        // Akutansi API: Cash Flow aggregation
+        Route::get('/cashflow', [CashFlowController::class, 'index'])->name('api.akutansi.cashflow.index');
+
+        // Billing CRUD
+        Route::get('/billing', [BillingController::class, 'index'])->name('api.akutansi.billing.index');
+        Route::post('/billing', [BillingController::class, 'store'])->name('api.akutansi.billing.store');
+        Route::put('/billing/{noindex}', [BillingController::class, 'update'])->name('api.akutansi.billing.update');
+        Route::delete('/billing/{noindex}', [BillingController::class, 'destroy'])->name('api.akutansi.billing.destroy');
 
         // Akun Bayar CRUD
         Route::get('/akun-bayar', [AkunBayarController::class, 'index'])->name('api.akutansi.akun-bayar.index');
@@ -113,6 +151,52 @@ Route::middleware('auth')->group(function () {
         Route::post('/akun-piutang', [AkunPiutangController::class, 'store'])->name('api.akutansi.akun-piutang.store');
         Route::put('/akun-piutang/{nama_bayar}', [AkunPiutangController::class, 'update'])->name('api.akutansi.akun-piutang.update');
         Route::delete('/akun-piutang/{nama_bayar}', [AkunPiutangController::class, 'destroy'])->name('api.akutansi.akun-piutang.destroy');
+
+        // Nota Jalan & Detail Nota Jalan
+        Route::get('/nota-jalan/{no_rawat}', [\App\Http\Controllers\Akutansi\NotaJalanController::class, 'show'])
+            ->where('no_rawat', '.*')
+            ->name('api.akutansi.nota-jalan.show');
+        Route::post('/nota-jalan', [\App\Http\Controllers\Akutansi\NotaJalanController::class, 'store'])
+            ->name('api.akutansi.nota-jalan.store');
+        Route::delete('/nota-jalan/{no_rawat}', [\App\Http\Controllers\Akutansi\NotaJalanController::class, 'destroy'])
+            ->where('no_rawat', '.*')
+            ->name('api.akutansi.nota-jalan.destroy');
+
+        Route::get('/detail-nota-jalan/{no_rawat}', [\App\Http\Controllers\Akutansi\DetailNotaJalanController::class, 'index'])
+            ->where('no_rawat', '.*')
+            ->name('api.akutansi.detail-nota-jalan.index');
+        Route::post('/detail-nota-jalan', [\App\Http\Controllers\Akutansi\DetailNotaJalanController::class, 'store'])
+            ->name('api.akutansi.detail-nota-jalan.store');
+        Route::delete('/detail-nota-jalan/{no_rawat}/{nama_bayar}', [\App\Http\Controllers\Akutansi\DetailNotaJalanController::class, 'destroy'])
+            ->where(['no_rawat' => '.*', 'nama_bayar' => '.*'])
+            ->name('api.akutansi.detail-nota-jalan.destroy');
+
+        // Piutang Pasien & Detail Piutang Pasien
+        Route::get('/piutang-pasien', [\App\Http\Controllers\Akutansi\PiutangPasienController::class, 'index'])
+            ->name('api.akutansi.piutang-pasien.index');
+        Route::get('/piutang-pasien/{no_rawat}', [\App\Http\Controllers\Akutansi\PiutangPasienController::class, 'show'])
+            ->where('no_rawat', '.*')
+            ->name('api.akutansi.piutang-pasien.show');
+        Route::post('/piutang-pasien', [\App\Http\Controllers\Akutansi\PiutangPasienController::class, 'store'])
+            ->name('api.akutansi.piutang-pasien.store');
+        Route::put('/piutang-pasien/{no_rawat}', [\App\Http\Controllers\Akutansi\PiutangPasienController::class, 'update'])
+            ->where('no_rawat', '.*')
+            ->name('api.akutansi.piutang-pasien.update');
+        Route::delete('/piutang-pasien/{no_rawat}', [\App\Http\Controllers\Akutansi\PiutangPasienController::class, 'destroy'])
+            ->where('no_rawat', '.*')
+            ->name('api.akutansi.piutang-pasien.destroy');
+
+        Route::get('/detail-piutang-pasien/{no_rawat}', [\App\Http\Controllers\Akutansi\DetailPiutangPasienController::class, 'index'])
+            ->where('no_rawat', '.*')
+            ->name('api.akutansi.detail-piutang-pasien.index');
+        Route::post('/detail-piutang-pasien', [\App\Http\Controllers\Akutansi\DetailPiutangPasienController::class, 'store'])
+            ->name('api.akutansi.detail-piutang-pasien.store');
+        Route::put('/detail-piutang-pasien/{no_rawat}/{nama_bayar}', [\App\Http\Controllers\Akutansi\DetailPiutangPasienController::class, 'update'])
+            ->where(['no_rawat' => '.*', 'nama_bayar' => '.*'])
+            ->name('api.akutansi.detail-piutang-pasien.update');
+        Route::delete('/detail-piutang-pasien/{no_rawat}/{nama_bayar}', [\App\Http\Controllers\Akutansi\DetailPiutangPasienController::class, 'destroy'])
+            ->where(['no_rawat' => '.*', 'nama_bayar' => '.*'])
+            ->name('api.akutansi.detail-piutang-pasien.destroy');
 
         // Pengaturan Rekening/COA (SetAkun)
         Route::get('/pengaturan-rekening', [SetAkunController::class, 'index'])
@@ -251,8 +335,9 @@ Route::middleware('auth')->group(function () {
 
     // API routes untuk resep
     Route::post('api/resep', [ResepController::class, 'store'])->name('api.resep.store');
-    Route::get('api/resep/{no_resep}', [ResepController::class, 'getResep'])->name('api.resep.get');
-    Route::get('api/resep/rawat/{no_rawat}', [ResepController::class, 'getByNoRawat'])->name('api.resep.by-rawat');
+Route::get('api/resep/{no_resep}', [ResepController::class, 'getResep'])->name('api.resep.get');
+Route::get('api/resep/rawat/{no_rawat}', [ResepController::class, 'getByNoRawat'])->name('api.resep.by-rawat');
+Route::post('api/resep/{no_resep}/penyerahan', [ResepController::class, 'penyerahan'])->name('api.resep.penyerahan');
 
     Route::resource('rawat-jalan', RawatJalanController::class);
 
@@ -332,8 +417,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/dokter', [TarifTindakanController::class, 'storeTindakanDokter'])->name('store-dokter');
         Route::post('/perawat', [TarifTindakanController::class, 'storeTindakanPerawat'])->name('store-perawat');
         Route::post('/dokter-perawat', [TarifTindakanController::class, 'storeTindakanDokterPerawat'])->name('store-dokter-perawat');
+        // Compose staging jurnal untuk Rawat Jalan (umum) → tulis ke tampjurnal2
+        Route::post('/stage-ralan', [TarifTindakanController::class, 'stageJurnalRalan'])->name('stage-ralan');
         Route::get('/riwayat/{noRawat}', [TarifTindakanController::class, 'getRiwayatTindakan'])->name('riwayat')->where('noRawat', '.*');
-        Route::delete('/', [TarifTindakanController::class, 'deleteTindakan'])->name('delete');
+        // Fallback agar frontend lama yang masih mengirim POST + _method=DELETE tetap terlayani
+        // Terima DELETE dan POST pada endpoint yang sama
+        Route::match(['delete', 'post'], '/', [TarifTindakanController::class, 'deleteTindakan'])->name('delete');
     });
 
     // Farmasi routes
@@ -359,6 +448,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/resep-obat', function () {
             return Inertia::render('farmasi/ResepObat');
         })->name('resep-obat');
+
+        // Daftar Permintaan Resep (search by no_rawat / no_rkm_medis)
+        Route::get('/permintaan-resep', function () {
+            return Inertia::render('farmasi/DaftarPermintaanResep');
+        })->name('permintaan-resep');
 
         Route::get('/riwayat-transaksi-gudang', function () {
             return Inertia::render('farmasi/RiwayatTransaksiGudang');

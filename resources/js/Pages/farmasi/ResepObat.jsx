@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
+import { route } from 'ziggy-js';
 import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
 
 export default function ResepObat() {
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
+    const [notif, setNotif] = useState(null);
 
-    const prescriptionData = [
+    const [prescriptions, setPrescriptions] = useState([
         {
             id: 1,
             no_resep: 'RSP001',
@@ -15,7 +17,9 @@ export default function ResepObat() {
             dokter: 'Dr. Sarah',
             status: 'selesai',
             total: 150000,
-            items: 3
+            items: 3,
+            tgl_penyerahan: '2024-01-15',
+            jam_penyerahan: '10:20:00'
         },
         {
             id: 2,
@@ -25,7 +29,10 @@ export default function ResepObat() {
             dokter: 'Dr. Ahmad',
             status: 'proses',
             total: 250000,
-            items: 4
+            items: 4,
+            tgl_penyerahan: '',
+            jam_penyerahan: '',
+            _processing: false
         },
         {
             id: 3,
@@ -35,7 +42,9 @@ export default function ResepObat() {
             dokter: 'Dr. Maria',
             status: 'selesai',
             total: 180000,
-            items: 2
+            items: 2,
+            tgl_penyerahan: '2024-01-14',
+            jam_penyerahan: '14:05:00'
         },
         {
             id: 4,
@@ -45,11 +54,14 @@ export default function ResepObat() {
             dokter: 'Dr. John',
             status: 'menunggu',
             total: 320000,
-            items: 5
+            items: 5,
+            tgl_penyerahan: '',
+            jam_penyerahan: '',
+            _processing: false
         }
-    ];
+    ]);
 
-    const filteredData = prescriptionData.filter(item => {
+    const filteredData = prescriptions.filter(item => {
         const matchesSearch = item.no_resep.toLowerCase().includes(search.toLowerCase()) ||
                             item.pasien.toLowerCase().includes(search.toLowerCase()) ||
                             item.dokter.toLowerCase().includes(search.toLowerCase());
@@ -94,6 +106,59 @@ export default function ResepObat() {
         }).format(value);
     };
 
+    const handlePenyerahan = async (item) => {
+        try {
+            if (item._processing) return;
+            // Jika sudah ada tgl/jam penyerahan, jangan proses lagi
+            if (item.tgl_penyerahan && item.jam_penyerahan) {
+                setNotif({ type: 'info', message: `Resep ${item.no_resep} sudah diserahkan pada ${item.tgl_penyerahan} ${item.jam_penyerahan}.` });
+                return;
+            }
+
+            // Konfirmasi sederhana
+            const ok = window.confirm(`Proses penyerahan obat untuk resep ${item.no_resep}? Stok akan dikurangi sesuai FIFO.`);
+            if (!ok) return;
+
+            // Set processing state
+            setPrescriptions((prev) => prev.map((p) => p.id === item.id ? { ...p, _processing: true } : p));
+
+            const url = route('api.resep.penyerahan', { no_resep: item.no_resep });
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({}),
+            });
+
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                throw new Error(data?.message || `Gagal memproses penyerahan resep ${item.no_resep}`);
+            }
+
+            // Update status dan tgl/jam penyerahan di UI
+            setPrescriptions((prev) => prev.map((p) => {
+                if (p.id === item.id) {
+                    return {
+                        ...p,
+                        status: 'selesai',
+                        tgl_penyerahan: data?.tgl_penyerahan || new Date().toISOString().slice(0, 10),
+                        jam_penyerahan: data?.jam_penyerahan || new Date().toTimeString().slice(0, 8),
+                        _processing: false,
+                    };
+                }
+                return p;
+            }));
+
+            setNotif({ type: 'success', message: data?.message || `Penyerahan obat berhasil untuk resep ${item.no_resep}` });
+        } catch (e) {
+            console.error(e);
+            setPrescriptions((prev) => prev.map((p) => p.id === item.id ? { ...p, _processing: false } : p));
+            setNotif({ type: 'error', message: e.message || 'Terjadi kesalahan saat penyerahan obat' });
+        }
+    };
+
     return (
         <SidebarFarmasi title="Farmasi">
             <Head title="Resep Obat" />
@@ -118,6 +183,12 @@ export default function ResepObat() {
                                 Buat Resep
                             </button>
                         </div>
+                        {notif && (
+                            <div className={`mt-4 px-4 py-2 rounded-md text-sm ${notif.type === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : notif.type === 'error' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'}`}
+                                role="alert">
+                                {notif.message}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -251,6 +322,9 @@ export default function ResepObat() {
                                         Total
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Penyerahan
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Aksi
                                     </th>
                                 </tr>
@@ -281,13 +355,28 @@ export default function ResepObat() {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                             {formatCurrency(item.total)}
                                         </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                            {item.tgl_penyerahan && item.jam_penyerahan ? (
+                                                <div className="space-y-0.5">
+                                                    <div className="text-xs">{item.tgl_penyerahan}</div>
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400">{item.jam_penyerahan}</div>
+                                                </div>
+                                            ) : (
+                                                <span className="text-xs text-gray-500 dark:text-gray-400">Belum diserahkan</span>
+                                            )}
+                                        </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <div className="flex space-x-2">
                                                 <button className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
                                                     Detail
                                                 </button>
-                                                <button className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">
-                                                    Proses
+                                                <button
+                                                    className={`text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 ${item._processing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                    onClick={() => handlePenyerahan(item)}
+                                                    disabled={item._processing || (item.tgl_penyerahan && item.jam_penyerahan)}
+                                                    title={item.tgl_penyerahan ? 'Sudah diserahkan' : 'Penyerahan Obat'}
+                                                >
+                                                    {item._processing ? 'Memproses...' : 'Penyerahan Obat'}
                                                 </button>
                                                 <button className="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300">
                                                     Print

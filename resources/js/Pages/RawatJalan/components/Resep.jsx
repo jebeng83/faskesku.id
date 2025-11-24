@@ -25,6 +25,7 @@ export default function Resep({ token = '', noRkmMedis = '', noRawat = '', kdPol
     const [loadingMore, setLoadingMore] = useState(false);
     const [showCopyModal, setShowCopyModal] = useState(false);
     const [selectedResepForCopy, setSelectedResepForCopy] = useState(null);
+    const [penyerahanLoading, setPenyerahanLoading] = useState({});
 
     // Fetch obat dari API dengan validasi stok yang lebih baik
     const fetchObat = async (search = '') => {
@@ -364,6 +365,60 @@ export default function Resep({ token = '', noRkmMedis = '', noRawat = '', kdPol
         } catch (error) {
             console.error('Error checking stock:', error);
             return false;
+        }
+    };
+
+    // Proses penyerahan obat untuk resep tertentu
+    const handlePenyerahan = async (resep) => {
+        if (!resep?.no_resep) return;
+        if (penyerahanLoading[resep.no_resep]) return;
+
+        // Konfirmasi sebelum penyerahan
+        const info = `No. Resep ${resep.no_resep} pada ${new Date(resep.tgl_peresepan).toLocaleDateString('id-ID')} ${resep.jam_peresepan}`;
+        if (!confirm(`Lanjutkan penyerahan obat untuk ${info}?`)) {
+            return;
+        }
+
+        try {
+            setPenyerahanLoading(prev => ({ ...prev, [resep.no_resep]: true }));
+            // Kirim request ke endpoint penyerahan
+            const response = await axios.post(`/api/resep/${encodeURIComponent(resep.no_resep)}/penyerahan`, {
+                // kd_poli opsional; backend akan ambil dari reg_periksa menggunakan no_rawat
+                kd_poli: kdPoli || resep.kd_poli || undefined
+            });
+
+            if (response.data?.success) {
+                const data = response.data.data || {};
+                const tglPenyerahan = data.tgl_penyerahan || resep.tgl_penyerahan || new Date().toISOString().slice(0, 10);
+                const jamPenyerahan = data.jam_penyerahan || resep.jam_penyerahan || new Date().toTimeString().slice(0, 8);
+
+                alert('Penyerahan obat berhasil diproses. Stok telah diperbarui.');
+
+                // Update item pada riwayatResep
+                setRiwayatResep(prev => prev.map(r => {
+                    if (r.no_resep === resep.no_resep) {
+                        return { ...r, tgl_penyerahan: tglPenyerahan, jam_penyerahan: jamPenyerahan };
+                    }
+                    return r;
+                }));
+
+                // Update data resep yang disimpan jika relevan
+                setSavedResep(prev => {
+                    if (prev?.no_resep === resep.no_resep) {
+                        return { ...prev, tgl_penyerahan: tglPenyerahan, jam_penyerahan: jamPenyerahan, status: 'Sudah diserahkan' };
+                    }
+                    return prev;
+                });
+            } else {
+                const msg = response.data?.message || 'Gagal memproses penyerahan.';
+                alert(msg);
+            }
+        } catch (error) {
+            console.error('Error penyerahan obat:', error);
+            const msg = error.response?.data?.message || 'Terjadi kesalahan saat penyerahan obat';
+            alert(msg);
+        } finally {
+            setPenyerahanLoading(prev => ({ ...prev, [resep.no_resep]: false }));
         }
     };
 
@@ -794,6 +849,35 @@ export default function Resep({ token = '', noRkmMedis = '', noRawat = '', kdPol
                                                 Copy
                                             </button>
                                             <button
+                                                onClick={() => handlePenyerahan(resep)}
+                                                disabled={!!resep.tgl_penyerahan || penyerahanLoading[resep.no_resep]}
+                                                className={`px-3 py-1 text-sm rounded-md transition-colors duration-200 flex items-center gap-1 ${
+                                                    !!resep.tgl_penyerahan
+                                                        ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                                                        : penyerahanLoading[resep.no_resep]
+                                                            ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
+                                                            : 'bg-green-500 hover:bg-green-600 text-white'
+                                                }`}
+                                                title={resep.tgl_penyerahan ? 'Sudah diserahkan' : 'Penyerahan Obat'}
+                                            >
+                                                {penyerahanLoading[resep.no_resep] ? (
+                                                    <>
+                                                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                        Memproses...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                        Penyerahan
+                                                    </>
+                                                )}
+                                            </button>
+                                            <button
                                                 onClick={() => deleteResep(resep)}
                                                 disabled={deletingResep === `${resep.tgl_peresepan}_${resep.jam_peresepan}`}
                                                 className="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white rounded-md transition-colors duration-200 flex items-center gap-1"
@@ -817,6 +901,18 @@ export default function Resep({ token = '', noRkmMedis = '', noRawat = '', kdPol
                                                 )}
                                             </button>
                                         </div>
+                                    </div>
+                                    {/* Status Penyerahan */}
+                                    <div className="mt-2">
+                                        {resep.tgl_penyerahan ? (
+                                            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                                Sudah diserahkan: {new Date(resep.tgl_penyerahan).toLocaleDateString('id-ID')} {resep.jam_penyerahan}
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+                                                Belum diserahkan
+                                            </span>
+                                        )}
                                     </div>
                                     
                                     {resep.detail_obat && resep.detail_obat.length > 0 && (
@@ -917,6 +1013,48 @@ export default function Resep({ token = '', noRkmMedis = '', noRawat = '', kdPol
                             <div>
                                 <strong>Status:</strong> {savedResep.status}
                             </div>
+                            <div className="col-span-2">
+                                <strong>Penyerahan:</strong>{' '}
+                                {savedResep.tgl_penyerahan ? (
+                                    <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
+                                        {new Date(savedResep.tgl_penyerahan).toLocaleDateString('id-ID')} {savedResep.jam_penyerahan}
+                                    </span>
+                                ) : (
+                                    <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        Belum diserahkan
+                                    </span>
+                                )}
+                            </div>
+                            {!savedResep.tgl_penyerahan && (
+                                <div className="col-span-2 flex justify-end">
+                                    <button
+                                        onClick={() => handlePenyerahan(savedResep)}
+                                        disabled={penyerahanLoading[savedResep.no_resep]}
+                                        className={`px-4 py-2 text-sm rounded-md transition-colors duration-200 flex items-center gap-2 ${
+                                            penyerahanLoading[savedResep.no_resep]
+                                                ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
+                                                : 'bg-green-600 hover:bg-green-700 text-white'
+                                        }`}
+                                    >
+                                        {penyerahanLoading[savedResep.no_resep] ? (
+                                            <>
+                                                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Memproses Penyerahan...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                Penyerahan Obat
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            )}
                         </div>
                         
                         <h4 className="font-semibold mb-3">Detail Obat:</h4>
@@ -980,5 +1118,4 @@ export default function Resep({ token = '', noRkmMedis = '', noRawat = '', kdPol
         </div>
     );
 }
-
 
