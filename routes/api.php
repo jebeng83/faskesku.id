@@ -113,11 +113,16 @@ Route::post('/obat/cek-stok', [ObatController::class, 'cekStokObat'])->name('api
 
 // API routes untuk resep
 Route::post('/resep', [ResepController::class, 'store'])->name('api.resep.store');
+Route::get('/resep/list', [ResepController::class, 'list'])->name('api.resep.list');
 Route::get('/resep/stok-info', [ResepController::class, 'getStokInfo'])->name('api.resep.stok-info');
 Route::get('/resep/rawat/{no_rawat}', [ResepController::class, 'getByNoRawat'])->where('no_rawat', '.*')->name('api.resep.by-rawat');
+// Alternatif akses memakai query string untuk menghindari issue 405/404 saat no_rawat berisi '/'
+Route::get('/resep/rawat', [ResepController::class, 'getByNoRawatQuery'])->name('api.resep.by-rawat.q');
 Route::get('/resep/pasien/{no_rkm_medis}', [ResepController::class, 'getByNoRkmMedis'])->where('no_rkm_medis', '.*')->name('api.resep.by-pasien');
 Route::get('/resep/{no_resep}', [ResepController::class, 'getResep'])->name('api.resep.get');
-Route::delete('/resep/{no_resep}', [ResepController::class, 'destroy'])->where('no_resep', '.*')->name('api.resep.delete');
+// Catatan: no_resep tidak mengandung karakter '/'. Jangan gunakan pola '.*' agar tidak bentrok dengan route '/resep/rawat/{no_rawat}'.
+Route::delete('/resep/{no_resep}', [ResepController::class, 'destroy'])->name('api.resep.delete');
+Route::post('/resep/{no_resep}/penyerahan', [ResepController::class, 'penyerahan'])->where('no_resep', '.*')->name('api.resep.penyerahan');
 
 // API routes untuk diagnosa pasien (Rawat Jalan)
 Route::get('/rawat-jalan/diagnosa', [RawatJalanController::class, 'getDiagnosaPasien'])->name('api.rawat-jalan.diagnosa.index');

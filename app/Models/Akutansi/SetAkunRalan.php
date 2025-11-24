@@ -71,6 +71,7 @@ class SetAkunRalan extends Model
         'Persediaan_Obat_Rawat_Jalan',
         'Registrasi_Ralan',
 
+
         'Suspen_Piutang_Operasi_Ralan',
         'Operasi_Ralan',
         'Beban_Jasa_Medik_Dokter_Operasi_Ralan',

@@ -97,8 +97,11 @@ export default function SidebarKeuangan({ title = 'Keuangan', children }) {
       label: 'Akutansi',
       icon: <Receipt className="w-4 h-4" />,
       children: [
+        { label: 'Kasir Ralan', href: '/akutansi/kasir-ralan', icon: <Receipt className="w-4 h-4" /> },
+        { label: 'Billing', href: '/akutansi/billing', icon: <Receipt className="w-4 h-4" /> },
         { label: 'Nota Jalan', href: '/akutansi/nota-jalan', icon: <Receipt className="w-4 h-4" /> },
         { label: 'Nota Inap', href: '/akutansi/nota-inap', icon: <Receipt className="w-4 h-4" /> },
+        { label: 'Cash Flow', href: '/akutansi/cashflow', icon: <Wallet className="w-4 h-4" /> },
       ],
     },
   ]), []);

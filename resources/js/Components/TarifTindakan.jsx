@@ -5,6 +5,7 @@ const TarifTindakan = ({ noRawat, kdDokter, nipPerawat, onTindakanAdded }) => {
     const [activeTab, setActiveTab] = useState('dokter');
     const [jenisPerawatan, setJenisPerawatan] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [stageLoading, setStageLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedTindakan, setSelectedTindakan] = useState(null);
     const [riwayatTindakan, setRiwayatTindakan] = useState({
@@ -28,6 +29,26 @@ const TarifTindakan = ({ noRawat, kdDokter, nipPerawat, onTindakanAdded }) => {
             console.error('Error loading jenis perawatan:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Compose staging jurnal (tampjurnal2) untuk Rawat Jalan (umum)
+    const handleStageJurnalRalan = async () => {
+        if (!noRawat) {
+            alert('No. Rawat tidak tersedia');
+            return;
+        }
+        try {
+            setStageLoading(true);
+            const response = await axios.post('/api/tarif-tindakan/stage-ralan', { no_rawat: noRawat });
+            const meta = response.data.meta || {};
+            const msg = `Staging jurnal berhasil. Debet: ${formatCurrency(meta.debet)} | Kredit: ${formatCurrency(meta.kredit)} | Balanced: ${meta.balanced ? 'Ya' : 'Tidak'}`;
+            alert(msg);
+        } catch (error) {
+            console.error('Error staging jurnal ralan:', error);
+            alert('Gagal menyusun staging jurnal: ' + (error.response?.data?.message || error.message));
+        } finally {
+            setStageLoading(false);
         }
     };
 
@@ -261,13 +282,21 @@ const TarifTindakan = ({ noRawat, kdDokter, nipPerawat, onTindakanAdded }) => {
                             )}
                         </div>
 
-                        {/* Submit Button */}
+                        {/* Submit & Stage Buttons */}
                         <button
                             onClick={handleSubmitTindakan}
                             disabled={!selectedTindakan || loading}
                             className="w-full mt-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white py-2 px-4 rounded-lg font-medium transition-colors"
                         >
                             {loading ? 'Menyimpan...' : 'Simpan Tindakan'}
+                        </button>
+
+                        <button
+                            onClick={handleStageJurnalRalan}
+                            disabled={!noRawat || stageLoading}
+                            className="w-full mt-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 text-white py-2 px-4 rounded-lg font-medium transition-colors"
+                        >
+                            {stageLoading ? 'Menyusun Staging...' : 'Susun Staging Jurnal (Ralan Umum)'}
                         </button>
                     </div>
 

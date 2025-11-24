@@ -240,4 +240,9 @@ destroy.delete = (args: { kode_sat: string | number } | [kode_sat: string | numb
 
 const SatuanBarangController = { index, store, update, destroy }
 
+export default SatuanBarangControllerod: 'delete',
+})
+
+const SatuanBarangController = { index, store, update, destroy }
+
 export default SatuanBarangController
