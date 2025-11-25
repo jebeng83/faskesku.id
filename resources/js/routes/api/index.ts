@@ -30,8 +30,8 @@ import mobilejkn from './mobilejkn'
 import jadwal from './jadwal'
 import v1 from './v1'
 import poliklinik from './poliklinik'
-import menu from './menu'
 import akutansi from './akutansi'
+import menu from './menu'
 import tarifTindakan from './tarif-tindakan'
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
@@ -199,8 +199,8 @@ const api = {
     jadwal: Object.assign(jadwal, jadwal),
     v1: Object.assign(v1, v1),
     poliklinik: Object.assign(poliklinik, poliklinik),
-    menu: Object.assign(menu, menu),
     akutansi: Object.assign(akutansi, akutansi),
+    menu: Object.assign(menu, menu),
     tarifTindakan: Object.assign(tarifTindakan, tarifTindakan),
 }
 

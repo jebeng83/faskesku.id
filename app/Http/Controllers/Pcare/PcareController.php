@@ -1358,6 +1358,33 @@ class PcareController extends Controller
                 ],
             ], 404);
         }
+
+        // Validasi kd_pj: hanya BPJ dan PBI yang boleh dikirim ke PCare pendaftaran
+        try {
+            $kdPj = strtoupper(trim((string) ($reg->kd_pj ?? '')));
+            if (! in_array($kdPj, ['BPJ', 'PBI'], true)) {
+                \Illuminate\Support\Facades\Log::channel('bpjs')->info('Lewati PCare pendaftaran: kd_pj bukan BPJ/PBI', [
+                    'no_rawat' => $noRawat,
+                    'kd_pj' => $kdPj,
+                ]);
+                return response()->json([
+                    'metaData' => [
+                        'message' => 'Lewati: pendaftaran PCare hanya untuk penjamin BPJ atau PBI',
+                        'code' => 200,
+                    ],
+                    'response' => null,
+                    'skipped' => true,
+                ], 200);
+            }
+        } catch (\Throwable $e) {
+            // Jika terjadi error pada validasi, kembalikan sebagai 500 agar tidak mengirim ke PCare secara tidak sengaja
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Gagal memproses validasi kd_pj: ' . $e->getMessage(),
+                    'code' => 500,
+                ],
+            ], 500);
+        }
         $pasien = DB::table('pasien')->where('no_rkm_medis', $reg->no_rkm_medis)->first();
         if (! $pasien) {
             return response()->json([

@@ -1,7 +1,119 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
+* @see \App\Http\Controllers\Akutansi\NotaJalanController::exists
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:20
+* @route '/api/akutansi/nota-jalan/exists'
+*/
+export const exists = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: exists.url(options),
+    method: 'get',
+})
+
+exists.definition = {
+    methods: ["get","head"],
+    url: '/api/akutansi/nota-jalan/exists',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Akutansi\NotaJalanController::exists
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:20
+* @route '/api/akutansi/nota-jalan/exists'
+*/
+exists.url = (options?: RouteQueryOptions) => {
+    return exists.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Akutansi\NotaJalanController::exists
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:20
+* @route '/api/akutansi/nota-jalan/exists'
+*/
+exists.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: exists.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Akutansi\NotaJalanController::exists
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:20
+* @route '/api/akutansi/nota-jalan/exists'
+*/
+exists.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: exists.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Akutansi\NotaJalanController::store
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:36
+* @route '/api/akutansi/nota-jalan'
+*/
+export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: store.url(options),
+    method: 'post',
+})
+
+store.definition = {
+    methods: ["post"],
+    url: '/api/akutansi/nota-jalan',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Akutansi\NotaJalanController::store
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:36
+* @route '/api/akutansi/nota-jalan'
+*/
+store.url = (options?: RouteQueryOptions) => {
+    return store.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Akutansi\NotaJalanController::store
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:36
+* @route '/api/akutansi/nota-jalan'
+*/
+store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: store.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Akutansi\NotaJalanController::snapshot
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:93
+* @route '/api/akutansi/nota-jalan/snapshot'
+*/
+export const snapshot = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: snapshot.url(options),
+    method: 'post',
+})
+
+snapshot.definition = {
+    methods: ["post"],
+    url: '/api/akutansi/nota-jalan/snapshot',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Akutansi\NotaJalanController::snapshot
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:93
+* @route '/api/akutansi/nota-jalan/snapshot'
+*/
+snapshot.url = (options?: RouteQueryOptions) => {
+    return snapshot.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Akutansi\NotaJalanController::snapshot
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:93
+* @route '/api/akutansi/nota-jalan/snapshot'
+*/
+snapshot.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: snapshot.url(options),
+    method: 'post',
+})
+
+/**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::show
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:18
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:0
 * @route '/api/akutansi/nota-jalan/{no_rawat}'
 */
 export const show = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +128,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::show
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:18
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:0
 * @route '/api/akutansi/nota-jalan/{no_rawat}'
 */
 show.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +155,7 @@ show.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] |
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::show
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:18
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:0
 * @route '/api/akutansi/nota-jalan/{no_rawat}'
 */
 show.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +165,7 @@ show.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] |
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::show
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:18
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:0
 * @route '/api/akutansi/nota-jalan/{no_rawat}'
 */
 show.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -62,42 +174,8 @@ show.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] 
 })
 
 /**
-* @see \App\Http\Controllers\Akutansi\NotaJalanController::store
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:44
-* @route '/api/akutansi/nota-jalan'
-*/
-export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: store.url(options),
-    method: 'post',
-})
-
-store.definition = {
-    methods: ["post"],
-    url: '/api/akutansi/nota-jalan',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \App\Http\Controllers\Akutansi\NotaJalanController::store
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:44
-* @route '/api/akutansi/nota-jalan'
-*/
-store.url = (options?: RouteQueryOptions) => {
-    return store.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\Akutansi\NotaJalanController::store
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:44
-* @route '/api/akutansi/nota-jalan'
-*/
-store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: store.url(options),
-    method: 'post',
-})
-
-/**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::destroy
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:89
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:0
 * @route '/api/akutansi/nota-jalan/{no_rawat}'
 */
 export const destroy = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -112,7 +190,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::destroy
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:89
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:0
 * @route '/api/akutansi/nota-jalan/{no_rawat}'
 */
 destroy.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -139,7 +217,7 @@ destroy.url = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::destroy
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:89
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:0
 * @route '/api/akutansi/nota-jalan/{no_rawat}'
 */
 destroy.delete = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -147,6 +225,6 @@ destroy.delete = (args: { no_rawat: string | number } | [no_rawat: string | numb
     method: 'delete',
 })
 
-const NotaJalanController = { show, store, destroy }
+const NotaJalanController = { exists, store, snapshot, show, destroy }
 
 export default NotaJalanController

@@ -274,8 +274,4 @@ updateHargaSemua.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => 
 
 const DataBarangController = { index, store, update, destroy, updateHargaSemua }
 
-export default DataBarangController})
-
-const DataBarangController = { index, store, update, destroy, updateHargaSemua }
-
 export default DataBarangController

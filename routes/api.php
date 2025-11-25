@@ -77,7 +77,11 @@ Route::prefix('permissions')->group(function () {
 Route::prefix('reg-periksa')->group(function () {
     Route::get('/', [RegPeriksaController::class, 'index'])->name('api.reg-periksa.index');
     Route::post('/', [RegPeriksaController::class, 'store'])->name('api.reg-periksa.store');
-    Route::get('/{regPeriksa}', [RegPeriksaController::class, 'show'])->name('api.reg-periksa.show');
+    // Endpoint aman untuk ambil data berdasarkan no_rawat (mendukung karakter '/')
+    Route::get('/by-rawat', [RegPeriksaController::class, 'findByNoRawat'])->name('api.reg-periksa.by-rawat');
+    Route::get('/{regPeriksa}', [RegPeriksaController::class, 'show'])
+        ->where('regPeriksa', '^(?!by-rawat$).*')
+        ->name('api.reg-periksa.show');
     Route::put('/{regPeriksa}', [RegPeriksaController::class, 'update'])->name('api.reg-periksa.update');
     Route::delete('/{regPeriksa}', [RegPeriksaController::class, 'destroy'])->name('api.reg-periksa.destroy');
     Route::post('/hitung-umur', [RegPeriksaController::class, 'hitungUmur'])->name('api.reg-periksa.hitung-umur');
@@ -343,3 +347,16 @@ Route::prefix('v1/rs')->group(function () {
 
 // Poliklinik lookup (SearchableSelect) - ringan tanpa auth
 Route::get('/poliklinik', [PoliklinikController::class, 'apiIndex'])->name('api.poliklinik.index');
+
+// Akutansi - Nota Jalan & Jurnal
+use App\Http\Controllers\Akutansi\NotaJalanController;
+use App\Http\Controllers\Akutansi\JurnalController;
+
+// Akutansi: Cek & buat nota_jalan
+Route::get('/akutansi/nota-jalan/exists', [NotaJalanController::class, 'exists'])->name('api.akutansi.nota-jalan.exists');
+Route::post('/akutansi/nota-jalan', [NotaJalanController::class, 'store'])->name('api.akutansi.nota-jalan.store');
+Route::post('/akutansi/nota-jalan/snapshot', [NotaJalanController::class, 'snapshot'])->name('api.akutansi.nota-jalan.snapshot');
+
+// Akutansi: Jurnal staging & posting
+Route::post('/akutansi/jurnal/stage-from-billing', [JurnalController::class, 'stageFromBilling'])->name('api.akutansi.jurnal.stage-from-billing');
+Route::post('/akutansi/jurnal/post-staging', [JurnalController::class, 'postStaging'])->name('api.akutansi.jurnal.post-staging');

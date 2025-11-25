@@ -5,8 +5,8 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\RegPeriksa;
 use App\Models\Patient;
-use App\Models\Doctor;
-use App\Models\Poli;
+use App\Models\Dokter;
+use App\Models\Poliklinik;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Carbon\Carbon;
@@ -19,7 +19,7 @@ class RegPeriksaController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $query = RegPeriksa::with(['patient', 'doctor', 'poli']);
+            $query = RegPeriksa::with(['patient', 'dokter', 'poliklinik']);
 
             // Filter berdasarkan status
             if ($request->filled('status')) {
@@ -92,6 +92,45 @@ class RegPeriksaController extends Controller
     }
 
     /**
+     * Get registrasi periksa by exact no_rawat (safe for values containing '/')
+     */
+    public function findByNoRawat(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'no_rawat' => 'required|string',
+            ]);
+
+            $regPeriksa = RegPeriksa::with(['patient', 'dokter', 'poliklinik'])
+                ->where('no_rawat', $request->no_rawat)
+                ->first();
+
+            if (!$regPeriksa) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data registrasi periksa tidak ditemukan untuk nomor rawat yang diberikan'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $regPeriksa,
+                'message' => 'Data registrasi periksa berhasil diambil berdasarkan no_rawat'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data registrasi periksa: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    /**
      * Create a new registrasi periksa
      */
     public function store(Request $request): JsonResponse
@@ -130,7 +169,7 @@ class RegPeriksaController extends Controller
             }
 
             $regPeriksa->save();
-            $regPeriksa->load(['patient', 'doctor', 'poli']);
+            $regPeriksa->load(['patient', 'dokter', 'poliklinik']);
 
             return response()->json([
                 'success' => true,
@@ -157,7 +196,7 @@ class RegPeriksaController extends Controller
     public function show(RegPeriksa $regPeriksa): JsonResponse
     {
         try {
-            $regPeriksa->load(['patient', 'doctor', 'poli']);
+            $regPeriksa->load(['patient', 'dokter', 'poliklinik']);
 
             return response()->json([
                 'success' => true,
@@ -335,8 +374,8 @@ class RegPeriksaController extends Controller
     public function getFilterData(): JsonResponse
     {
         try {
-            $doctors = Doctor::where('status', 'Aktif')->get(['kd_dokter', 'nm_dokter']);
-            $polis = Poli::where('status', 'Aktif')->get(['kd_poli', 'nm_poli']);
+            $doctors = Dokter::aktif()->get(['kd_dokter', 'nm_dokter']);
+            $polis = Poliklinik::aktif()->get(['kd_poli', 'nm_poli']);
             $patients = Patient::orderBy('nama')->get(['no_rkm_medis', 'nama']);
 
             return response()->json([

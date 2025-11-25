@@ -248,6 +248,36 @@ Tabel `billing` adalah tabel **Agregasi / Snapshot** yang berfungsi sebagai rinc
 
 ### Catatan Relasi & Kunci
 * `nota_jalan`: PK di `no_rawat`, `no_nota` bernilai unik; menyimpan `tanggal` dan `jam`. Umumnya 1 kunjungan (no_rawat) → 1 nota.
+
+#### Posting Jurnal Otomatis dari Snapshot Billing
+
+Untuk memastikan pencatatan akuntansi setelah penyimpanan tagihan, ditambahkan alur posting jurnal otomatis:
+
+1) Stage jurnal di tabel `tampjurnal` berdasarkan total `billing` per `no_rawat`.
+   - Minimal dua baris: Debet (Kas/Bank) dan Kredit (Pendapatan Jasa).
+   - Kode rekening diambil dari konfigurasi `config/akutansi.php` atau dapat disuplai langsung via API.
+
+2) Validasi keseimbangan: total `debet` harus sama dengan total `kredit`.
+
+3) Posting ke `jurnal` dan `detailjurnal`:
+   - Generate `no_jurnal` format `JRYYYYMMDDNNNNNN` (running number harian).
+   - Simpan header jurnal (`no_bukti`, `tgl_jurnal`, `jam_jurnal`, `jenis`, `keterangan`).
+   - Salin baris dari `tampjurnal` ke `detailjurnal`.
+   - Kosongkan `tampjurnal` setelah posting.
+
+4) Relasi `nota_jalan`:
+   - Ketika nomor nota (`no_nota`) tersedia untuk `no_rawat` terkait, digunakan sebagai `no_bukti` jurnal.
+
+Endpoint terkait (Laravel):
+- `POST /api/akutansi/jurnal/stage-from-billing` — menyiapkan `tampjurnal` dari total `billing` per `no_rawat`.
+- `POST /api/akutansi/jurnal/post-staging` — melakukan posting dari `tampjurnal` ke `jurnal` dan `detailjurnal`.
+- `POST /api/akutansi/nota-jalan` — membuat nomor nota ralan (`nota_jalan`) otomatis; nomor digunakan sebagai `no_bukti` jurnal.
+
+Konfigurasi COA default:
+- `config/akutansi.php`:
+  - `rek_kas_default`: contoh `110101` (Kas Umum).
+  - `rek_pendapatan_default`: contoh `410101` (Pendapatan Jasa Pelayanan).
+  - Sesuaikan dengan tabel `rekening` live Anda.
 * `nota_inap`: PK di `no_rawat`, `no_nota` unik, menyimpan `tanggal`, `jam`, serta `Uang_Muka` (deposit).
 * `detailjurnal`: berelasi ke `jurnal` dan `rekening` untuk pencatatan ke buku besar.
 

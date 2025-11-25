@@ -250,6 +250,62 @@ const REFERENSI_CONFIG = {
             }));
         },
     },
+    // ===== Sumber: Akun Bayar (metode pembayaran) =====
+    // Endpoint: GET /api/akutansi/akun-bayar?per_page=50&q=
+    akun_bayar: {
+        supportsSearch: true,
+        defaultParams: { per_page: 50, q: '' },
+        buildUrl: ({ per_page = 50, q = '' } = {}) => {
+            const params = new URLSearchParams({ per_page: String(per_page), q });
+            return `/api/akutansi/akun-bayar?${params.toString()}`;
+        },
+        parse: (json) => {
+            const items = Array.isArray(json?.data) ? json.data : [];
+            return items.map((it) => {
+                const kd_rek = it?.kd_rek || '';
+                const nm_rek = it?.nm_rek || '';
+                const nama_bayar = it?.nama_bayar || '';
+                const ppn = typeof it?.ppn === 'number' ? it.ppn : Number(it?.ppn) || 0;
+                return {
+                    value: kd_rek,
+                    label: `${nama_bayar} — ${kd_rek}${nm_rek ? ' — ' + nm_rek : ''}`.trim(),
+                    kd_rek,
+                    nm_rek,
+                    nama_bayar,
+                    ppn,
+                };
+            });
+        },
+    },
+    // ===== Sumber: Akun Piutang (per penjamin) =====
+    // Endpoint: GET /api/akutansi/akun-piutang?per_page=50&q=
+    akun_piutang: {
+        supportsSearch: true,
+        defaultParams: { per_page: 50, q: '' },
+        buildUrl: ({ per_page = 50, q = '' } = {}) => {
+            const params = new URLSearchParams({ per_page: String(per_page), q });
+            return `/api/akutansi/akun-piutang?${params.toString()}`;
+        },
+        parse: (json) => {
+            const items = Array.isArray(json?.data) ? json.data : [];
+            return items.map((it) => {
+                const kd_rek = it?.kd_rek || '';
+                const nm_rek = it?.nm_rek || '';
+                const nama_bayar = it?.nama_bayar || '';
+                const kd_pj = it?.kd_pj || '';
+                const png_jawab = it?.png_jawab || '';
+                return {
+                    value: kd_rek,
+                    label: `${nama_bayar} — ${kd_rek}${nm_rek ? ' — ' + nm_rek : ''}${png_jawab ? ' — PJ: ' + png_jawab : ''}`.trim(),
+                    kd_rek,
+                    nm_rek,
+                    nama_bayar,
+                    kd_pj,
+                    png_jawab,
+                };
+            });
+        },
+    },
 };
 
 const SearchableSelect = ({ 

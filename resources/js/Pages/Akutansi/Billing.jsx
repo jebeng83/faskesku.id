@@ -12,6 +12,7 @@ import {
     Check,
 } from "lucide-react";
 import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
+import SearchableSelect from "@/Components/SearchableSelect";
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -268,6 +269,52 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
     const [mergingObatPreview, setMergingObatPreview] = React.useState(false);
     const [mergeError, setMergeError] = React.useState(null);
 
+    // Pemetaan kategori UI -> status billing (dipakai bersama oleh PembayaranTab dan handleSnapshot)
+    const CATEGORY_MAP = [
+        { label: "Laboratorium", keys: ["Laborat", "TtlLaborat"] },
+        { label: "Radiologi", keys: ["Radiologi", "TtlRadiologi"] },
+        {
+            label: "Tarif Dokter",
+            keys: [
+                "Ralan Dokter",
+                "Ranap Dokter",
+                "TtlRalan Dokter",
+                "TtlRanap Dokter",
+                "Dokter",
+                "Ralan Dokter Paramedis",
+            ],
+        },
+        {
+            label: "Tarif Paramedis",
+            keys: [
+                "Ralan Paramedis",
+                "Ralan Dokter Paramedis",
+                "Ranap Dokter Paramedis",
+                "Ranap Paramedis",
+                "TtlRalan Paramedis",
+                "Perawat",
+            ],
+        },
+        {
+            label: "Obat",
+            keys: [
+                "Obat",
+                "Resep Pulang",
+                "TtlObat",
+                "TtlResep Pulang",
+                "Retur Obat",
+                "TtlRetur Obat",
+            ],
+        },
+        { label: "Tambahan", keys: ["Tambahan", "TtlTambahan"] },
+        { label: "Potongan", keys: ["Potongan", "TtlPotongan"] },
+        {
+            label: "Administrasi",
+            keys: ["Administrasi", "Registrasi", "Service"],
+        },
+        { label: "Sarpras", keys: ["Kamar", "TtlKamar", "Harian"] },
+    ];
+
     const buildUrl = (path, params = {}) => {
         try {
             const u = new URL(path, window.location.origin);
@@ -368,6 +415,104 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         } finally {
             setLoading(false);
         }
+    };
+
+    // Notifikasi sederhana (sementara gunakan alert)
+    const notify = (msg) => {
+        if (msg) alert(String(msg));
+    };
+
+    // Validasi ringan sebelum simpan item billing + cek keberadaan nota_jalan
+    const validateBeforeSave = async (payload) => {
+        if (!payload?.no_rawat) {
+            notify("No. Rawat wajib diisi sebelum simpan.");
+            return false;
+        }
+        if (!payload?.status) {
+            notify("Kategori (Status) wajib dipilih.");
+            return false;
+        }
+        try {
+            const existsUrl = buildUrl("/api/akutansi/nota-jalan/exists", {
+                no_rawat: payload.no_rawat,
+            });
+            const existsRes = await axios.get(existsUrl);
+            const count = Number(existsRes?.data?.count || 0);
+            if (count > 0) {
+                // Ikuti perilaku Java: jika nota sudah ada, blokir simpan baru
+                notify(
+                    "Tagihan sudah pernah disimpan (nota_jalan sudah ada). Tidak bisa menyimpan ulang."
+                );
+                return false;
+            }
+        } catch (e) {
+            // Jika gagal cek, tetap lanjut tapi beri peringatan
+            console.warn("Gagal cek nota_jalan exists:", e?.message);
+        }
+        return true;
+    };
+
+    // Validasi sebelum melakukan snapshot (Posting Billing dari tab Pembayaran)
+    const validateBeforeSnapshot = async ({
+        selectedCategories,
+        bayar,
+        totalWithPpn,
+        akunBayar,
+        akunPiutang,
+        akunPendapatan,
+        piutang,
+    }) => {
+        if (!noRawat) {
+            notify("Masukkan No. Rawat terlebih dahulu sebelum menyimpan.");
+            return false;
+        }
+        if (
+            !Array.isArray(selectedCategories) ||
+            selectedCategories.length === 0
+        ) {
+            notify("Pilih minimal satu komponen biaya sebelum menyimpan.");
+            return false;
+        }
+        // Validasi pembayaran & piutang dasar
+        if ((Number(bayar) || 0) > (Number(totalWithPpn) || 0)) {
+            notify(
+                "Nominal bayar melebihi total tagihan + PPN. Atur kembali agar uang kembali = 0 sebelum menyimpan."
+            );
+            return false;
+        }
+        if ((Number(bayar) || 0) > 0 && !akunBayar) {
+            notify(
+                "Akun Bayar wajib dipilih ketika nominal bayar > 0 (Kas/Bank)."
+            );
+            return false;
+        }
+        if ((Number(piutang) || 0) > 0 && !akunPiutang) {
+            notify("Akun Piutang wajib dipilih ketika ada sisa piutang.");
+            return false;
+        }
+        // Akun pendapatan: wajib jika tidak disediakan default pada config
+        if (!akunPendapatan) {
+            notify(
+                "Akun Pendapatan (kredit) wajib dipilih. Alternatif: set rek_pendapatan_default di config/akutansi.php."
+            );
+            return false;
+        }
+        try {
+            const existsUrl = buildUrl("/api/akutansi/nota-jalan/exists", {
+                no_rawat: noRawat,
+            });
+            const existsRes = await axios.get(existsUrl);
+            const count = Number(existsRes?.data?.count || 0);
+            if (count > 0) {
+                notify(
+                    "Tagihan sudah pernah disimpan (nota_jalan sudah ada). Snapshot tidak diizinkan."
+                );
+                return false;
+            }
+        } catch (e) {
+            console.warn("Gagal cek nota_jalan exists:", e?.message);
+        }
+        return true;
     };
 
     /**
@@ -497,8 +642,243 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
     };
 
     const handleCreate = async (payload) => {
+        // Preflight validation (mirroring sebagian BtnSimpanActionPerformed)
+        const ok = await validateBeforeSave(payload);
+        if (!ok) return;
+
+        // 1) Simpan item billing terlebih dahulu
         await axios.post("/api/akutansi/billing", payload);
+
+        // 2) Buat nota_jalan jika belum ada, nomor otomatis per tanggal
+        let noNota = invoice?.nota?.no_nota || null;
+        try {
+            const createNotaRes = await axios.post("/api/akutansi/nota-jalan", {
+                no_rawat: payload.no_rawat,
+                tanggal: payload.tgl_byr,
+                jam: new Date().toTimeString().slice(0, 8),
+            });
+            noNota = createNotaRes?.data?.no_nota || noNota;
+        } catch (e) {
+            console.warn("Gagal membuat nota_jalan:", e?.message);
+        }
+
+        // 3) Stage jurnal dari total billing pasien ini
+        try {
+            await axios.post("/api/akutansi/jurnal/stage-from-billing", {
+                no_rawat: payload.no_rawat,
+            });
+        } catch (e) {
+            notify(
+                e?.response?.data?.message ||
+                    "Gagal menyiapkan staging jurnal. Pastikan mapping rekening debet/kredit di config/akutansi.php."
+            );
+        }
+
+        // 4) Posting jurnal (balik) dengan no_bukti = no_nota (jika ada)
+        try {
+            const bukti = noNota || `BILL-${payload.no_rawat}`;
+            const postRes = await axios.post(
+                "/api/akutansi/jurnal/post-staging",
+                {
+                    no_bukti: bukti,
+                    jenis: "U",
+                    keterangan: `Posting otomatis Billing ${payload.no_rawat}`,
+                }
+            );
+            if (postRes?.data?.no_jurnal) {
+                notify(`Posting jurnal berhasil: ${postRes.data.no_jurnal}`);
+            }
+        } catch (e) {
+            notify(
+                e?.response?.data?.message ||
+                    "Posting jurnal gagal. Periksa keseimbangan debet/kredit atau data staging."
+            );
+        }
+
+        // Refresh UI
         setShowCreate(false);
+        await loadData();
+    };
+
+    // Flow: Snapshot billing dari pilihan kategori, buat nota_jalan, lalu stage & post jurnal
+    const handleSnapshot = async ({
+        selectedCategories,
+        ppnPercent,
+        bayar,
+        subtotal,
+        totalWithPpn,
+        kembali,
+        piutang,
+        akunBayar,
+        akunPiutang,
+        akunPendapatan,
+    }) => {
+        const ok = await validateBeforeSnapshot({
+            selectedCategories,
+            bayar,
+            totalWithPpn,
+            akunBayar,
+            akunPiutang,
+            akunPendapatan,
+            piutang,
+        });
+        if (!ok) return;
+
+        // Konsistensi nominal: bayar + piutang harus sama dengan totalWithPpn
+        const sumPay = Math.round(
+            (Number(bayar) || 0) + (Number(piutang) || 0)
+        );
+        const twp = Math.round(Number(totalWithPpn) || 0);
+        if (sumPay !== twp) {
+            notify(
+                `Jumlah Bayar (${currency.format(
+                    Number(bayar) || 0
+                )}) + Piutang (${currency.format(
+                    Number(piutang) || 0
+                )}) tidak sama dengan Total (${currency.format(
+                    Number(totalWithPpn) || 0
+                )}). Periksa kembali sebelum menyimpan.`
+            );
+            return;
+        }
+
+        // Bangun objek toggles: label -> boolean
+        const toggles = {};
+        for (const label of selectedCategories) {
+            toggles[label] = true;
+        }
+
+        // 1) Snapshot ke tabel billing berdasarkan kategori yang dipilih
+        // Terjemahkan kategori terpilih menjadi daftar status yang diizinkan
+        const allowedStatus = {};
+        CATEGORY_MAP.forEach((cat) => {
+            if (selectedCategories.includes(cat.label)) {
+                cat.keys.forEach((k) => (allowedStatus[k] = true));
+            }
+        });
+
+        // Filter items yang sedang ditampilkan di halaman Billing sesuai status pilih
+        const selectedItems = (items || [])
+            .filter((it) => allowedStatus[it?.status ?? "-"])
+            .map((it) => ({
+                no_rawat: noRawat,
+                tgl_byr: it.tgl_byr || new Date().toISOString().slice(0, 10),
+                no: it.no || null,
+                nm_perawatan: it.nm_perawatan || (it.no ?? "Item"),
+                pemisah: it.pemisah || "-",
+                biaya: Number(it.biaya || 0),
+                jumlah: Number(it.jumlah || 1),
+                tambahan: Number(it.tambahan || 0),
+                status: it.status || "-",
+            }));
+
+        try {
+            const snapRes = await axios.post(
+                "/api/akutansi/nota-jalan/snapshot",
+                {
+                    no_rawat: noRawat,
+                    toggles,
+                    selected_statuses: Object.keys(allowedStatus),
+                    items: selectedItems,
+                }
+            );
+            const inserted = Number(snapRes?.data?.inserted || 0);
+            const gt = Number(snapRes?.data?.grand_total || 0);
+            notify(
+                `Snapshot billing tersimpan: ${inserted} item, total ${currency.format(
+                    gt
+                )}.`
+            );
+            if (Math.round(gt) !== Math.round(Number(subtotal || 0))) {
+                notify(
+                    `Peringatan: Total snapshot (${currency.format(
+                        gt
+                    )}) berbeda dengan perhitungan UI (${currency.format(
+                        subtotal || 0
+                    )}). Pastikan filter kategori dan data sumber konsisten.`
+                );
+            }
+        } catch (e) {
+            notify(
+                e?.response?.data?.message ||
+                    "Snapshot billing gagal. Pastikan data sumber tersedia dan belum ada nota_jalan."
+            );
+            return;
+        }
+
+        // 2) Buat nota_jalan baru
+        let noNota = null;
+        try {
+            const createNotaRes = await axios.post("/api/akutansi/nota-jalan", {
+                no_rawat: noRawat,
+                tanggal: new Date().toISOString().slice(0, 10),
+                jam: new Date().toTimeString().slice(0, 8),
+            });
+            noNota = createNotaRes?.data?.no_nota || null;
+            if (noNota) notify(`Nota jalan dibuat: ${noNota}`);
+        } catch (e) {
+            notify(
+                e?.response?.data?.message ||
+                    "Gagal membuat nota_jalan setelah snapshot. Anda dapat membuatnya manual dari menu terkait."
+            );
+        }
+
+        // 3) Stage jurnal dari total billing dengan pemecahan debit & PPN
+        try {
+            await axios.post("/api/akutansi/jurnal/stage-from-billing", {
+                no_rawat: noRawat,
+                akun_bayar: akunBayar || null,
+                akun_piutang: akunPiutang || null,
+                bayar: Number(bayar) || 0,
+                piutang: Number(piutang) || 0,
+                ppn_percent: Number(ppnPercent) || 0,
+                kd_rek_kredit: akunPendapatan?.kd_rek || null,
+            });
+        } catch (e) {
+            notify(
+                e?.response?.data?.message ||
+                    "Gagal menyiapkan staging jurnal. Pastikan mapping rekening debet/kredit di config/akutansi.php."
+            );
+        }
+
+        // 4) Posting jurnal dengan no_bukti = no_nota (jika ada)
+        try {
+            const bukti = noNota || `BILL-${noRawat}`;
+            const postRes = await axios.post(
+                "/api/akutansi/jurnal/post-staging",
+                {
+                    no_bukti: bukti,
+                    jenis: "U",
+                    keterangan: `Posting otomatis Billing ${noRawat}`,
+                }
+            );
+            if (postRes?.data?.no_jurnal) {
+                notify(`Posting jurnal berhasil: ${postRes.data.no_jurnal}`);
+            }
+        } catch (e) {
+            notify(
+                e?.response?.data?.message ||
+                    "Posting jurnal gagal. Periksa keseimbangan debet/kredit atau data staging."
+            );
+        }
+
+        // 5) Pesan tambahan sesuai kondisi pembayaran (placeholder untuk aturan Java)
+        if (piutang > 0) {
+            notify(
+                `Terdapat piutang sebesar ${currency.format(
+                    piutang
+                )}. Pastikan penagihan/rekonsiliasi dilakukan.`
+            );
+        }
+        if (kembali > 0) {
+            notify(
+                `Uang kembali sebesar ${currency.format(
+                    kembali
+                )}. Catatan: fitur multi-cara bayar belum didukung di UI ini, dan pada Java jika cara bayar > 1 maka kembali wajib 0.`
+            );
+        }
+
+        // Refresh UI
         await loadData();
     };
 
@@ -743,7 +1123,35 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                 )}
 
                 {activeTab === "pembayaran" && (
-                    <PembayaranTab summary={summary} />
+                    <PembayaranTab
+                        summary={summary}
+                        categoryMap={CATEGORY_MAP}
+                        onSave={({
+                            selectedCategories,
+                            ppnPercent,
+                            bayar,
+                            subtotal,
+                            totalWithPpn,
+                            kembali,
+                            piutang,
+                            akunBayar,
+                            akunPiutang,
+                            akunPendapatan,
+                        }) =>
+                            handleSnapshot({
+                                selectedCategories,
+                                ppnPercent,
+                                bayar,
+                                subtotal,
+                                totalWithPpn,
+                                kembali,
+                                piutang,
+                                akunBayar,
+                                akunPiutang,
+                                akunPendapatan,
+                            })
+                        }
+                    />
                 )}
 
                 {activeTab === "permintaan" && (
@@ -961,54 +1369,10 @@ BillingPage.layout = (page) => (
  * Tab: Pembayaran
  * Menampilkan rangkuman pembayaran dengan pilihan komponen biaya yang disertakan.
  */
-function PembayaranTab({ summary }) {
-    // Pemetaan kategori UI -> status billing
-    const categoryMap = [
-        { label: "Laboratorium", keys: ["Laborat", "TtlLaborat"] },
-        { label: "Radiologi", keys: ["Radiologi", "TtlRadiologi"] },
-        {
-            label: "Tarif Dokter",
-            keys: [
-                "Ralan Dokter",
-                "Ranap Dokter",
-                "TtlRalan Dokter",
-                "TtlRanap Dokter",
-                "Dokter",
-            ],
-        },
-        {
-            label: "Tarif Paramedis",
-            keys: [
-                "Ralan Paramedis",
-                "Ralan Dokter Paramedis",
-                "Ranap Dokter Paramedis",
-                "Ranap Paramedis",
-                "TtlRalan Paramedis",
-                "Perawat",
-            ],
-        },
-        {
-            label: "Obat",
-            keys: [
-                "Obat",
-                "Resep Pulang",
-                "TtlObat",
-                "TtlResep Pulang",
-                "Retur Obat",
-                "TtlRetur Obat",
-            ],
-        },
-        { label: "Tambahan", keys: ["Tambahan", "TtlTambahan"] },
-        { label: "Potongan", keys: ["Potongan", "TtlPotongan"] },
-        {
-            label: "Administrasi",
-            keys: ["Administrasi", "Registrasi", "Service"],
-        },
-        { label: "Sarpras", keys: ["Kamar", "TtlKamar", "Harian"] },
-    ];
-
+function PembayaranTab({ summary, categoryMap, onSave }) {
     const [selected, setSelected] = React.useState(() =>
-        categoryMap.map((c) => c.label)
+        // Default: semua komponen aktif (mirip notaralan=="Yes")
+        (Array.isArray(categoryMap) ? categoryMap : []).map((c) => c.label)
     );
     const toggle = (label) => {
         setSelected((prev) =>
@@ -1028,10 +1392,18 @@ function PembayaranTab({ summary }) {
             }
         }
         return total;
-    }, [selected, summary]);
+    }, [selected, summary, categoryMap]);
 
     const [ppnPercent, setPpnPercent] = React.useState(0);
     const [bayar, setBayar] = React.useState(0);
+    // Akun bayar (Kas/Bank) dan akun piutang yang dipilih melalui SearchableSelect
+    const [akunBayar, setAkunBayar] = React.useState("");
+    const [akunBayarData, setAkunBayarData] = React.useState(null);
+    const [akunPiutang, setAkunPiutang] = React.useState("");
+    const [akunPiutangData, setAkunPiutangData] = React.useState(null);
+    // Akun pendapatan (kredit) untuk posting jurnal ketika snapshot
+    const [akunPendapatan, setAkunPendapatan] = React.useState("");
+    const [akunPendapatanData, setAkunPendapatanData] = React.useState(null);
 
     const totalWithPpn = React.useMemo(() => {
         const t = subtotal || 0;
@@ -1074,61 +1446,96 @@ function PembayaranTab({ summary }) {
 
             {/* Ringkasan pembayaran */}
             <div className="space-y-3">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <Field label="Total Tagihan">
-                        <input
-                            readOnly
-                            value={currency.format(subtotal || 0)}
-                            className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
-                        />
-                    </Field>
-                    <Field label="PPN (%)">
-                        <input
-                            type="number"
-                            step="0.1"
-                            value={ppnPercent}
-                            onChange={(e) =>
-                                setPpnPercent(Number(e.target.value) || 0)
-                            }
-                            className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
-                        />
-                    </Field>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <Field label="Tagihan + PPN">
-                        <input
-                            readOnly
-                            value={currency.format(totalWithPpn || 0)}
-                            className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
-                        />
-                    </Field>
-                    <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-2">
-                        <Field label="Bayar : Rp">
+                {/* Baris tunggal: Total Tagihan, PPN (%), Tagihan + PPN dengan komposisi kolom 2-1-2 */}
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                    <div className="md:col-span-2">
+                        <Field label="Total Tagihan">
+                            <input
+                                readOnly
+                                value={currency.format(subtotal || 0)}
+                                className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
+                            />
+                        </Field>
+                    </div>
+                    <div className="md:col-span-1">
+                        <Field label="PPN (%)">
                             <input
                                 type="number"
-                                step="1"
-                                value={bayar}
+                                step="0.1"
+                                value={ppnPercent}
                                 onChange={(e) =>
-                                    setBayar(Number(e.target.value) || 0)
+                                    setPpnPercent(Number(e.target.value) || 0)
                                 }
                                 className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
                             />
                         </Field>
-                        <button
-                            onClick={() => setBayar(totalWithPpn || 0)}
-                            className="self-end px-3 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800"
-                            title="Bayar penuh"
-                        >
-                            <Check className="w-4 h-4" />
-                        </button>
+                    </div>
+                    <div className="md:col-span-2">
+                        <Field label="Tagihan + PPN">
+                            <input
+                                readOnly
+                                value={currency.format(totalWithPpn || 0)}
+                                className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
+                            />
+                        </Field>
                     </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-2">
+                {/* Baris Bayar: nominal + pilih akun bayar + tombol cek */}
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto] gap-2">
+                    <Field label="Bayar : Rp">
+                        <input
+                            type="number"
+                            step="1"
+                            value={bayar}
+                            onChange={(e) =>
+                                setBayar(Number(e.target.value) || 0)
+                            }
+                            className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
+                        />
+                    </Field>
+                    <Field label="Akun Bayar">
+                        <SearchableSelect
+                            source="akun_bayar"
+                            value={akunBayar}
+                            onChange={(v) => setAkunBayar(v || "")}
+                            onSelect={(opt) => {
+                                setAkunBayarData(opt || null);
+                                // Selaraskan dengan DlgBilingRalan: gunakan PPN dari akun bayar terpilih sebagai default
+                                if (opt && typeof opt.ppn === "number") {
+                                    setPpnPercent(opt.ppn);
+                                }
+                            }}
+                            placeholder="Pilih akun bayar (Kas/Bank)"
+                            defaultDisplay={akunBayarData?.label || null}
+                            className="min-w-[180px]"
+                        />
+                    </Field>
+                    <button
+                        onClick={() => setBayar(totalWithPpn || 0)}
+                        className="self-end px-3 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800"
+                        title="Bayar penuh"
+                    >
+                        <Check className="w-4 h-4" />
+                    </button>
+                </div>
+                {/* Baris Piutang: tampilan sisa + pilih akun piutang + tombol cek */}
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto] gap-2">
                     <Field label="Piutang : Rp">
                         <input
                             readOnly
                             value={currency.format(piutang || 0)}
                             className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
+                        />
+                    </Field>
+                    <Field label="Akun Piutang">
+                        <SearchableSelect
+                            source="akun_piutang"
+                            value={akunPiutang}
+                            onChange={(v) => setAkunPiutang(v || "")}
+                            onSelect={(opt) => setAkunPiutangData(opt || null)}
+                            placeholder="Pilih akun piutang"
+                            defaultDisplay={akunPiutangData?.label || null}
+                            className="min-w-[180px]"
                         />
                     </Field>
                     <button
@@ -1147,14 +1554,72 @@ function PembayaranTab({ summary }) {
                             className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
                         />
                     </Field>
+                    <Field label="Akun Pendapatan (Kredit)">
+                        <SearchableSelect
+                            source="rekening"
+                            value={akunPendapatan}
+                            onChange={(v) => setAkunPendapatan(v || "")}
+                            onSelect={(opt) =>
+                                setAkunPendapatanData(opt || null)
+                            }
+                            placeholder="Pilih akun pendapatan (COA)"
+                            defaultDisplay={akunPendapatanData?.label || null}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            Wajib dipilih bila default pendapatan belum diatur
+                            pada config/akutansi.php
+                        </p>
+                    </Field>
                 </div>
             </div>
 
-            {/* Tombol aksi (placeholder) */}
+            {/* Tombol aksi */}
             <div className="flex items-center gap-3 mt-4">
                 <button
-                    className="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold shadow hover:bg-blue-700"
-                    disabled
+                    className="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold shadow hover:bg-blue-700 disabled:opacity-50"
+                    disabled={!onSave}
+                    onClick={() =>
+                        onSave?.({
+                            selectedCategories: selected,
+                            ppnPercent,
+                            bayar,
+                            subtotal,
+                            totalWithPpn,
+                            kembali,
+                            piutang,
+                            // Kirim detail akun sesuai sumber Akun Bayar/Akun Piutang
+                            akunBayar: akunBayar
+                                ? {
+                                      kd_rek: akunBayar,
+                                      nama_bayar:
+                                          akunBayarData?.nama_bayar || null,
+                                      nm_rek: akunBayarData?.nm_rek || null,
+                                      ppn:
+                                          typeof akunBayarData?.ppn === "number"
+                                              ? akunBayarData.ppn
+                                              : null,
+                                  }
+                                : null,
+                            akunPiutang: akunPiutang
+                                ? {
+                                      kd_rek: akunPiutang,
+                                      nama_bayar:
+                                          akunPiutangData?.nama_bayar || null,
+                                      nm_rek: akunPiutangData?.nm_rek || null,
+                                      kd_pj: akunPiutangData?.kd_pj || null,
+                                      png_jawab:
+                                          akunPiutangData?.png_jawab || null,
+                                  }
+                                : null,
+                            akunPendapatan: akunPendapatan
+                                ? {
+                                      kd_rek: akunPendapatan,
+                                      nm_rek:
+                                          akunPendapatanData?.nm_rek || null,
+                                  }
+                                : null,
+                        })
+                    }
                 >
                     Simpan
                 </button>
