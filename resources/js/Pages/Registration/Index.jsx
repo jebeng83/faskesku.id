@@ -405,8 +405,15 @@ export default function Registration({
         setIsSubmitting(true);
 
         try {
-            // Gunakan helper route Ziggy agar URL selalu benar, dan sertakan CSRF header eksplisit
-            const url = route('registration.register-patient', selectedPatient.no_rkm_medis);
+            // Pastikan URL benar. Jika Ziggy tidak tersedia/mengembalikan path yang tidak lengkap,
+            // fallback ke path eksplisit untuk menghindari kasus seperti "000019/register" (tanpa prefix /registration)
+            let url = `/registration/${encodeURIComponent(selectedPatient.no_rkm_medis)}/register`;
+            try {
+                url = route('registration.register-patient', selectedPatient.no_rkm_medis);
+            } catch (_) {
+                // gunakan fallback di atas
+            }
+
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
             const response = await axios.post(
                 url,
@@ -414,6 +421,7 @@ export default function Registration({
                 {
                     headers: {
                         'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest',
                         'Accept': 'application/json',
                     },
                     withCredentials: true,

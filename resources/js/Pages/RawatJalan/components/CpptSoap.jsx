@@ -690,15 +690,35 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                 const pcareText = await pcareRes.text();
                 let pcareJson;
                 try { pcareJson = pcareText ? JSON.parse(pcareText) : {}; } catch (_) { pcareJson = {}; }
-                if (pcareRes.ok && pcareRes.status === 200) {
-                    // Ambil noUrut dari response BPJS bila ada
-                    const noUrut = (pcareJson && pcareJson.response && pcareJson.response.field === 'noUrut') ? (pcareJson.response.message || '') : '';
-                    setMessage((prev) => `${prev || ''} • Pendaftaran PCare terkirim${noUrut ? ' (No Urut: ' + noUrut + ')' : ''}`.trim());
-                    // Tampilkan tombol Bridging PCare setelah sukses dengan status 200
-                    setShowBridging(true);
+                if (pcareRes.ok) {
+                    // Deteksi kasus "dilewati" dari backend (non-BPJS): skipped === true
+                    const skipped = !!(pcareJson && pcareJson.skipped);
+                    if (skipped) {
+                        const skipMsg = (pcareJson && pcareJson.metaData && pcareJson.metaData.message)
+                            ? pcareJson.metaData.message
+                            : 'Pendaftaran PCare dilewati (Non-BPJS)';
+                        // Jangan menampilkan pesan "Pendaftaran PCare terkirim" jika dilewati
+                        setMessage((prev) => `${prev || ''} • ${skipMsg}`.trim());
+                        // Tombol Bridging PCare tidak boleh muncul pada kasus non-BPJS
+                        setShowBridging(false);
+                    } else if (pcareRes.status === 201 || pcareRes.status === 200) {
+                        // Sukses kirim ke BPJS PCare
+                        const noUrut = (pcareJson && pcareJson.response && pcareJson.response.field === 'noUrut')
+                            ? (pcareJson.response.message || '')
+                            : '';
+                        setMessage((prev) => `${prev || ''} • Pendaftaran PCare terkirim${noUrut ? ' (No Urut: ' + noUrut + ')' : ''}`.trim());
+                        setShowBridging(true);
+                    } else {
+                        const errMsg = (pcareJson && pcareJson.metaData && pcareJson.metaData.message)
+                            ? pcareJson.metaData.message
+                            : `Gagal pendaftaran PCare (${pcareRes.status})`;
+                        setError(errMsg);
+                        setShowBridging(false);
+                    }
                 } else {
                     const errMsg = (pcareJson && pcareJson.metaData && pcareJson.metaData.message) ? pcareJson.metaData.message : `Gagal pendaftaran PCare (${pcareRes.status})`;
                     setError(errMsg);
+                    setShowBridging(false);
                 }
             } catch (e) {
                 setError(`Gagal koneksi ke PCare: ${e.message || e}`);
@@ -2911,5 +2931,4 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
         </>
     );
 }
-
 

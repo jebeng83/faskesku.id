@@ -1,365 +1,224 @@
 <?php
-declare(strict_types=1);
 
 namespace App\Http\Controllers\Akutansi;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Http\JsonResponse;
-use Inertia\Inertia;
-use Inertia\Response as InertiaResponse;
-use Carbon\Carbon;
+use App\Services\Akutansi\JournalService;
 use App\Services\Akutansi\JurnalPostingService;
+use Carbon\Carbon;
 
 class JurnalController extends Controller
 {
     /**
-     * Inertia page for Jurnal CRUD.
+     * Inertia page untuk Jurnal Akutansi
      */
-    public function page(): InertiaResponse
+    public function page()
     {
-        return Inertia::render('Akutansi/Jurnal');
+        return \Inertia\Inertia::render('Akutansi/Jurnal');
     }
 
     /**
-     * List journals with optional filters and pagination.
+     * Bangun staging tampjurnal dari total billing per no_rawat dengan pemecahan debit (kas/bank vs piutang) dan opsi PPN.
+     * Body contoh:
+     * {
+     *   no_rawat: string,
+     *   bayar?: number,              // nominal bayar tunai/transfer
+     *   piutang?: number,            // sisa piutang
+     *   ppn_percent?: number,        // persen PPN
+     *   akun_bayar?: { kd_rek: string },
+     *   akun_piutang?: { kd_rek: string },
+     *   kd_rek_kredit?: string       // akun pendapatan utama (fallback config)
+     * }
      */
-    /**
-     * List journals with optional filters and pagination.
-     *
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function index(Request $request): JsonResponse
+    public function stageFromBilling(Request $request)
     {
-        $q = trim((string) $request->get('q'));
-        $from = $request->get('from');
-        $to = $request->get('to');
-        $jenis = $request->get('jenis');
-        $page = max(1, (int) $request->get('page', 1));
-        $perPage = max(1, min(100, (int) $request->get('per_page', 20)));
-
-        $base = DB::table('jurnal')
-            ->leftJoin('detailjurnal', 'detailjurnal.no_jurnal', '=', 'jurnal.no_jurnal')
-            ->select(
-                'jurnal.no_jurnal', 'jurnal.no_bukti', 'jurnal.tgl_jurnal', 'jurnal.jam_jurnal', 'jurnal.jenis', 'jurnal.keterangan',
-                DB::raw('IFNULL(SUM(detailjurnal.debet),0) AS debet_total'),
-                DB::raw('IFNULL(SUM(detailjurnal.kredit),0) AS kredit_total')
-            )
-            ->groupBy('jurnal.no_jurnal', 'jurnal.no_bukti', 'jurnal.tgl_jurnal', 'jurnal.jam_jurnal', 'jurnal.jenis', 'jurnal.keterangan');
-
-        if ($q !== '') {
-            $base->where(function ($w) use ($q) {
-                $w->where('jurnal.no_jurnal', 'like', "%$q%")
-                  ->orWhere('jurnal.no_bukti', 'like', "%$q%")
-                  ->orWhere('jurnal.keterangan', 'like', "%$q%");
-            });
-        }
-        if ($from && $to) {
-            $base->whereBetween('jurnal.tgl_jurnal', [$from, $to]);
-        } elseif ($from) {
-            $base->where('jurnal.tgl_jurnal', '>=', $from);
-        } elseif ($to) {
-            $base->where('jurnal.tgl_jurnal', '<=', $to);
-        }
-        if ($jenis && in_array($jenis, ['U', 'P'])) {
-            $base->where('jurnal.jenis', $jenis);
+        $noRawat = $request->input('no_rawat');
+        if (!$noRawat) {
+            return response()->json(['message' => 'no_rawat wajib diisi'], 422);
         }
 
-        $base->orderByDesc('jurnal.tgl_jurnal')
-            ->orderByDesc('jurnal.jam_jurnal')
-            ->orderByDesc('jurnal.no_jurnal');
+        // Subtotal dari snapshot billing (tanpa PPN)
+        $subtotal = (float) DB::table('billing')->where('no_rawat', $noRawat)->sum('totalbiaya');
+        if ($subtotal <= 0) {
+            return response()->json(['message' => 'Total billing 0, tidak ada yang di-stage'], 400);
+        }
 
-        // Manual pagination using count subquery
-        $countQuery = DB::table('jurnal');
-        if ($q !== '') {
-            $countQuery->where(function ($w) use ($q) {
-                $w->where('jurnal.no_jurnal', 'like', "%$q%")
-                  ->orWhere('jurnal.no_bukti', 'like', "%$q%")
-                  ->orWhere('jurnal.keterangan', 'like', "%$q%");
-            });
-        }
-        if ($from && $to) {
-            $countQuery->whereBetween('jurnal.tgl_jurnal', [$from, $to]);
-        } elseif ($from) {
-            $countQuery->where('jurnal.tgl_jurnal', '>=', $from);
-        } elseif ($to) {
-            $countQuery->where('jurnal.tgl_jurnal', '<=', $to);
-        }
-        if ($jenis && in_array($jenis, ['U', 'P'])) {
-            $countQuery->where('jurnal.jenis', $jenis);
-        }
-        $total = (int) $countQuery->count();
+        // Hitung PPN jika ada
+        $ppnPercent = (float) ($request->input('ppn_percent') ?? 0);
+        $ppnNominal = $ppnPercent > 0 ? round($subtotal * ($ppnPercent / 100), 2) : 0.0;
+        $totalWithPpn = round($subtotal + $ppnNominal, 2);
 
-        $items = $base->forPage($page, $perPage)->get();
+        // Ambil nominal bayar & piutang dari payload (opsional)
+        $bayar = (float) ($request->input('bayar') ?? 0);
+        $piutang = (float) ($request->input('piutang') ?? max(0.0, $totalWithPpn - $bayar));
+
+        // Validasi overpay: bayar tidak boleh melebihi totalWithPpn
+        if ($bayar > $totalWithPpn) {
+            return response()->json([
+                'message' => 'Nominal bayar melebihi total tagihan + PPN. Atur kembali agar uang kembali = 0 sebelum menyimpan.',
+            ], 422);
+        }
+
+        // Akun debit: bayar (kas/bank) dan piutang (AR)
+        $kdDebetBayar = $request->input('akun_bayar.kd_rek') ?? $request->input('kd_rek_debet') ?? config('akutansi.rek_kas_default');
+        $kdDebetPiutang = $request->input('akun_piutang.kd_rek') ?? null;
+
+        if ($bayar > 0 && !$kdDebetBayar) {
+            return response()->json(['message' => 'Akun Bayar (kas/bank) wajib diisi untuk nominal bayar > 0. Set rek_kas_default di config/akutansi.php atau pilih dari UI.'], 422);
+        }
+        if ($piutang > 0 && !$kdDebetPiutang) {
+            return response()->json(['message' => 'Akun Piutang wajib diisi ketika ada sisa piutang. Pilih dari UI.'], 422);
+        }
+
+        // Akun kredit: pendapatan utama dan PPN keluaran (opsional)
+        $kdKreditPendapatan = $request->input('kd_rek_kredit') ?? config('akutansi.rek_pendapatan_default');
+        if (!$kdKreditPendapatan) {
+            return response()->json([
+                'message' => 'Akun pendapatan (rek_pendapatan_default) belum diatur. Lengkapi config/akutansi.php atau kirim kd_rek_kredit pada payload.',
+            ], 422);
+        }
+
+        // Ambil akun PPN Keluaran dari set_akun jika tersedia
+        $kdKreditPpn = DB::table('set_akun')->value('PPN_Keluaran');
+        if (!$kdKreditPpn && $ppnNominal > 0) {
+            // Jika tidak ada pengaturan, tetap lanjut dengan memperingatkan user bahwa PPN akan digabung ke pendapatan
+            // Untuk menjaga keseimbangan, tambahkan PPN ke pendapatan jika akun PPN tidak tersedia
+            $kdKreditPpn = null;
+        }
+
+        // Nama akun untuk tampilan (opsional)
+        $nmDebetBayar = $kdDebetBayar ? (DB::table('rekening')->where('kd_rek', $kdDebetBayar)->value('nm_rek') ?? 'Kas/Bank') : null;
+        $nmDebetPiutang = $kdDebetPiutang ? (DB::table('rekening')->where('kd_rek', $kdDebetPiutang)->value('nm_rek') ?? 'Piutang') : null;
+        $nmKreditPendapatan = DB::table('rekening')->where('kd_rek', $kdKreditPendapatan)->value('nm_rek') ?? 'Pendapatan';
+        $nmKreditPpn = $kdKreditPpn ? (DB::table('rekening')->where('kd_rek', $kdKreditPpn)->value('nm_rek') ?? 'PPN Keluaran') : null;
+
+        // Tulis ke staging tampjurnal: kosongkan dulu
+        DB::table('tampjurnal')->truncate();
+
+        // Debet: kas/bank
+        if ($bayar > 0 && $kdDebetBayar) {
+            DB::table('tampjurnal')->insert([
+                'kd_rek' => $kdDebetBayar,
+                'nm_rek' => $nmDebetBayar,
+                'debet'  => $bayar,
+                'kredit' => 0,
+            ]);
+        }
+
+        // Debet: piutang
+        if ($piutang > 0 && $kdDebetPiutang) {
+            DB::table('tampjurnal')->insert([
+                'kd_rek' => $kdDebetPiutang,
+                'nm_rek' => $nmDebetPiutang,
+                'debet'  => $piutang,
+                'kredit' => 0,
+            ]);
+        }
+
+        // Kredit: pendapatan (subtotal tanpa PPN)
+        DB::table('tampjurnal')->insert([
+            'kd_rek' => $kdKreditPendapatan,
+            'nm_rek' => $nmKreditPendapatan,
+            'debet'  => 0,
+            'kredit' => $subtotal,
+        ]);
+
+        // Kredit: PPN keluaran jika akun tersedia, jika tidak maka gabungkan ke pendapatan agar tetap seimbang
+        if ($ppnNominal > 0) {
+            if ($kdKreditPpn) {
+                DB::table('tampjurnal')->insert([
+                    'kd_rek' => $kdKreditPpn,
+                    'nm_rek' => $nmKreditPpn,
+                    'debet'  => 0,
+                    'kredit' => $ppnNominal,
+                ]);
+            } else {
+                // Tambahkan ke pendapatan jika akun PPN tidak tersedia
+                DB::table('tampjurnal')->insert([
+                    'kd_rek' => $kdKreditPendapatan,
+                    'nm_rek' => $nmKreditPendapatan,
+                    'debet'  => 0,
+                    'kredit' => $ppnNominal,
+                ]);
+            }
+        }
 
         return response()->json([
-            'data' => $items,
-            'meta' => [
-                'current_page' => $page,
-                'per_page' => $perPage,
-                'last_page' => (int) ceil(max(1, $total) / $perPage),
-                'total' => $total,
+            'status' => 'ok',
+            'message' => 'Staging tampjurnal dari billing berhasil (debet bayar/piutang, kredit pendapatan + opsi PPN)',
+            'no_rawat' => $noRawat,
+            'subtotal' => $subtotal,
+            'ppn_nominal' => $ppnNominal,
+            'total_with_ppn' => $totalWithPpn,
+            'bayar' => $bayar,
+            'piutang' => $piutang,
+            'akun' => [
+                'debet_bayar' => $kdDebetBayar,
+                'debet_piutang' => $kdDebetPiutang,
+                'kredit_pendapatan' => $kdKreditPendapatan,
+                'kredit_ppn' => $kdKreditPpn,
             ],
         ]);
     }
 
     /**
-     * Show single journal with detail lines.
+     * Posting tampjurnal ke jurnal/detailjurnal.
+     * Body: { no_bukti, jenis?, keterangan? }
      */
-    /**
-     * Show single journal with detail lines.
-     *
-     * @param string $no_jurnal
-     * @return JsonResponse
-     */
-    public function show(string $no_jurnal): JsonResponse
+    public function postStaging(Request $request, JournalService $service)
     {
-        $jurnal = DB::table('jurnal')->where('no_jurnal', $no_jurnal)->first();
-        if (!$jurnal) {
-            return response()->json(['message' => 'Jurnal tidak ditemukan'], 404);
+        $noBukti = $request->input('no_bukti');
+        if (!$noBukti) {
+            return response()->json(['message' => 'no_bukti wajib diisi'], 422);
         }
 
-        $details = DB::table('detailjurnal')
-            ->leftJoin('rekening', 'rekening.kd_rek', '=', 'detailjurnal.kd_rek')
-            ->select('detailjurnal.no_jurnal', 'detailjurnal.kd_rek', 'rekening.nm_rek', 'detailjurnal.debet', 'detailjurnal.kredit')
-            ->where('detailjurnal.no_jurnal', $no_jurnal)
-            ->orderByDesc('detailjurnal.debet')
-            ->orderBy('detailjurnal.kredit')
-            ->get();
+        $jenis = $request->input('jenis', 'U');
+        $keterangan = $request->input('keterangan', 'Posting otomatis');
 
-        $totals = [
-            'debet_total' => (float) ($details->sum('debet')),
-            'kredit_total' => (float) ($details->sum('kredit')),
-        ];
-
-        return response()->json(['header' => $jurnal, 'details' => $details, 'totals' => $totals]);
+        $result = $service->postFromStaging($noBukti, $jenis, $keterangan);
+        if ($result['status'] !== 'ok') {
+            return response()->json($result, 400);
+        }
+        return response()->json($result);
     }
 
     /**
-     * Create a new manual journal (jenis = U by default) with detail lines.
+     * Preview komposisi staging (tampjurnal + tampjurnal2) sebelum posting.
+     * Response: { meta: {jml, tanggal, jam, debet, kredit, balanced}, lines: [{kd_rek,nm_rek,debet,kredit}] }
      */
-    /**
-     * Create a new manual journal (jenis = U by default) with detail lines.
-     *
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function store(Request $request): JsonResponse
+    public function previewFromTemp(JurnalPostingService $service)
     {
-        $data = $request->validate([
-            'no_bukti' => ['nullable', 'string', 'max:30'],
-            'tgl_jurnal' => ['required', 'date'],
-            'jam_jurnal' => ['nullable', 'date_format:H:i:s'],
-            'jenis' => ['nullable', 'in:U,P'],
-            'keterangan' => ['nullable', 'string', 'max:350'],
-            'details' => ['required', 'array', 'min:1'],
-            'details.*.kd_rek' => ['required', 'string', 'max:15', 'exists:rekening,kd_rek'],
-            'details.*.debet' => ['nullable', 'numeric', 'min:0'],
-            'details.*.kredit' => ['nullable', 'numeric', 'min:0'],
-        ]);
-
-        $jenis = $data['jenis'] ?? 'U';
-        $tgl = $data['tgl_jurnal'];
-        $jam = $data['jam_jurnal'] ?? Carbon::now()->format('H:i:s');
-
-        // Validate debet == kredit and at least one positive value
-        $sumDebet = 0.0; $sumKredit = 0.0; $hasPositive = false;
-        foreach ($data['details'] as $d) {
-            $debet = (float) ($d['debet'] ?? 0);
-            $kredit = (float) ($d['kredit'] ?? 0);
-            $sumDebet += $debet;
-            $sumKredit += $kredit;
-            if ($debet > 0 || $kredit > 0) $hasPositive = true;
-        }
-        if (!$hasPositive || round($sumDebet, 2) <= 0 || round($sumKredit, 2) <= 0) {
-            return response()->json(['message' => 'Detail jurnal harus memiliki nominal debet/kredit > 0'], 422);
-        }
-        if (round($sumDebet, 2) !== round($sumKredit, 2)) {
-            return response()->json(['message' => 'Total Debet dan Kredit harus sama (double-entry).'], 422);
-        }
-
-        DB::beginTransaction();
         try {
-            // Generate no_jurnal harian (prefix JR + yyyymmdd + 6 digit)
-            $prefix = 'JR' . str_replace('-', '', $tgl);
-            $max = DB::table('jurnal')
-                ->lockForUpdate()
-                ->where('tgl_jurnal', $tgl)
-                ->select(DB::raw('IFNULL(MAX(CONVERT(RIGHT(no_jurnal,6),SIGNED)),0) AS max_no'))
-                ->value('max_no');
-            $next = ((int) $max) + 1;
-            $noSuffix = str_pad((string) $next, 6, '0', STR_PAD_LEFT);
-            $noJurnal = $prefix . $noSuffix;
-
-            // Insert header
-            DB::table('jurnal')->insert([
-                'no_jurnal' => $noJurnal,
-                'no_bukti' => $data['no_bukti'] ?? null,
-                'tgl_jurnal' => $tgl,
-                'jam_jurnal' => $jam,
-                'jenis' => $jenis,
-                'keterangan' => $data['keterangan'] ?? null,
-            ]);
-
-            // Insert detail lines
-            $detailRows = [];
-            foreach ($data['details'] as $d) {
-                $detailRows[] = [
-                    'no_jurnal' => $noJurnal,
-                    'kd_rek' => $d['kd_rek'],
-                    'debet' => (float) ($d['debet'] ?? 0),
-                    'kredit' => (float) ($d['kredit'] ?? 0),
-                ];
-            }
-            if (!empty($detailRows)) {
-                DB::table('detailjurnal')->insert($detailRows);
-            }
-
-            DB::commit();
-            return response()->json(['message' => 'Jurnal tersimpan', 'no_jurnal' => $noJurnal], 201);
+            $data = $service->preview();
+            return response()->json($data);
         } catch (\Throwable $e) {
-            DB::rollBack();
-            return response()->json(['message' => 'Gagal menyimpan jurnal', 'error' => $e->getMessage()], 500);
+            return response()->json([
+                'message' => 'Gagal mengambil preview staging jurnal: ' . $e->getMessage(),
+            ], 500);
         }
     }
 
     /**
-     * Preview komposisi staging tampjurnal (Debet/Kredit) sebelum posting.
-     * Single Posting Point helper.
+     * Posting staging (tampjurnal + tampjurnal2) ke jurnal/detailjurnal.
+     * Body: { no_bukti?: string, keterangan?: string, tgl_jurnal?: string(YYYY-MM-DD) }
+     * Response (201): { no_jurnal: string }
      */
-    public function previewFromTemp(JurnalPostingService $service): JsonResponse
+    public function postFromTemp(Request $request, JurnalPostingService $service)
     {
-        $data = $service->preview();
-        return response()->json($data);
-    }
-
-    /**
-     * Posting isi tampjurnal ke jurnal/detailjurnal.
-     * Menghasilkan jurnal jenis=P (posted dari transaksi), lalu mengosongkan tampjurnal.
-     */
-    public function postFromTemp(Request $request, JurnalPostingService $service): JsonResponse
-    {
-        $validated = $request->validate([
-            'no_bukti' => ['nullable', 'string', 'max:30'],
-            'keterangan' => ['nullable', 'string', 'max:350'],
-            'tgl_jurnal' => ['nullable', 'date'],
-        ]);
+        $noBukti = $request->input('no_bukti');
+        $keterangan = $request->input('keterangan');
+        $tgl = $request->input('tgl_jurnal');
 
         try {
-            $result = $service->post($validated['no_bukti'] ?? null, $validated['keterangan'] ?? null, $validated['tgl_jurnal'] ?? null);
-            return response()->json(['message' => 'Posting jurnal berhasil', 'no_jurnal' => $result['no_jurnal']], 201);
-        } catch (\RuntimeException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
+            $result = $service->post($noBukti, $keterangan, $tgl);
+            return response()->json($result, 201);
         } catch (\Throwable $e) {
-            return response()->json(['message' => 'Gagal melakukan posting jurnal', 'error' => $e->getMessage()], 500);
-        }
-    }
-
-    /**
-     * Update manual journal (jenis U). For jenis P (posted), disallow edits except description.
-     */
-    /**
-     * Update manual journal (jenis U). For jenis P (posted), disallow edits except description.
-     *
-     * @param Request $request
-     * @param string $no_jurnal
-     * @return JsonResponse
-     */
-    public function update(Request $request, string $no_jurnal): JsonResponse
-    {
-        $jurnal = DB::table('jurnal')->where('no_jurnal', $no_jurnal)->first();
-        if (!$jurnal) return response()->json(['message' => 'Jurnal tidak ditemukan'], 404);
-
-        $allowEditDetails = ($jurnal->jenis === 'U');
-        $rules = [
-            'no_bukti' => ['nullable', 'string', 'max:30'],
-            'tgl_jurnal' => ['required', 'date'],
-            'jam_jurnal' => ['nullable', 'date_format:H:i:s'],
-            'keterangan' => ['nullable', 'string', 'max:350'],
-        ];
-        if ($allowEditDetails) {
-            $rules['details'] = ['required', 'array', 'min:1'];
-            $rules['details.*.kd_rek'] = ['required', 'string', 'max:15', 'exists:rekening,kd_rek'];
-            $rules['details.*.debet'] = ['nullable', 'numeric', 'min:0'];
-            $rules['details.*.kredit'] = ['nullable', 'numeric', 'min:0'];
-        }
-        $data = $request->validate($rules);
-
-        if ($allowEditDetails) {
-            $sumDebet = 0.0; $sumKredit = 0.0; $hasPositive = false;
-            foreach ($data['details'] as $d) {
-                $debet = (float) ($d['debet'] ?? 0);
-                $kredit = (float) ($d['kredit'] ?? 0);
-                $sumDebet += $debet; $sumKredit += $kredit; if ($debet > 0 || $kredit > 0) $hasPositive = true;
-            }
-            if (!$hasPositive || round($sumDebet, 2) <= 0 || round($sumKredit, 2) <= 0) {
-                return response()->json(['message' => 'Detail jurnal harus memiliki nominal debet/kredit > 0'], 422);
-            }
-            if (round($sumDebet, 2) !== round($sumKredit, 2)) {
-                return response()->json(['message' => 'Total Debet dan Kredit harus sama (double-entry).'], 422);
-            }
-        }
-
-        DB::beginTransaction();
-        try {
-            // Update header fields (jenis tidak diubah melalui update ini)
-            DB::table('jurnal')->where('no_jurnal', $no_jurnal)->update([
-                'no_bukti' => $data['no_bukti'] ?? $jurnal->no_bukti,
-                'tgl_jurnal' => $data['tgl_jurnal'] ?? $jurnal->tgl_jurnal,
-                'jam_jurnal' => $data['jam_jurnal'] ?? $jurnal->jam_jurnal,
-                'keterangan' => $data['keterangan'] ?? $jurnal->keterangan,
-            ]);
-
-            if ($allowEditDetails) {
-                DB::table('detailjurnal')->where('no_jurnal', $no_jurnal)->delete();
-                $rows = [];
-                foreach ($data['details'] as $d) {
-                    $rows[] = [
-                        'no_jurnal' => $no_jurnal,
-                        'kd_rek' => $d['kd_rek'],
-                        'debet' => (float) ($d['debet'] ?? 0),
-                        'kredit' => (float) ($d['kredit'] ?? 0),
-                    ];
-                }
-                if (!empty($rows)) DB::table('detailjurnal')->insert($rows);
-            }
-
-            DB::commit();
-            return response()->json(['message' => 'Jurnal diperbarui']);
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            return response()->json(['message' => 'Gagal memperbarui jurnal', 'error' => $e->getMessage()], 500);
-        }
-    }
-
-    /**
-     * Delete manual journal (jenis U). For jenis P (posted), refuse and suggest reversal.
-     */
-    /**
-     * Delete manual journal (jenis U). For jenis P (posted), refuse and suggest reversal.
-     *
-     * @param string $no_jurnal
-     * @return JsonResponse
-     */
-    public function destroy(string $no_jurnal): JsonResponse
-    {
-        $jurnal = DB::table('jurnal')->where('no_jurnal', $no_jurnal)->first();
-        if (!$jurnal) return response()->json(['message' => 'Jurnal tidak ditemukan'], 404);
-        if ($jurnal->jenis === 'P') {
-            return response()->json(['message' => 'Jurnal hasil posting transaksi (jenis=P) bersifat read-only. Gunakan jurnal pembalik (reversal) untuk koreksi.'], 400);
-        }
-
-        DB::beginTransaction();
-        try {
-            DB::table('detailjurnal')->where('no_jurnal', $no_jurnal)->delete();
-            DB::table('jurnal')->where('no_jurnal', $no_jurnal)->delete();
-            DB::commit();
-            return response()->json(['message' => 'Jurnal dihapus']);
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            return response()->json(['message' => 'Gagal menghapus jurnal', 'error' => $e->getMessage()], 500);
+            // Validasi keseimbangan atau staging kosong akan melempar exception dengan pesan yang informatif
+            return response()->json([
+                'message' => 'Gagal posting jurnal: ' . $e->getMessage(),
+            ], 400);
         }
     }
 }

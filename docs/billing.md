@@ -197,3 +197,35 @@ Berikut rangkuman fungsi inti di Java dan padanan/implikasi di web (React/Larave
 - DlgBilingRalan.java: sumber referensi agregasi kategori dan alur bisnis (registrasi, ralan, lab, radiologi, obat, operasi, tambahan/potongan, akun bayar/piutang, bank, PPN, kembalian).
 
 Jika Anda memerlukan detail tambahan (misal struktur payload dari endpoint tertentu, atau penyesuaian kategori/PPN), mohon informasikan agar dokumentasi diperbarui sesuai implementasi terbaru.
+
+---
+
+## Posting Jurnal Otomatis setelah Simpan (Billing.jsx)
+
+Untuk memenuhi kebutuhan “posting jurnal balik” setelah aksi simpan di halaman Billing, ditambahkan endpoint dan alur berikut:
+
+- Endpoint baru:
+  - `GET /api/akutansi/nota-jalan/exists?no_rawat=...` — cek apakah sudah ada `nota_jalan` untuk kunjungan.
+  - `POST /api/akutansi/nota-jalan` — membuat `nota_jalan` otomatis dengan format nomor `YYYY/MM/DD/RJ/NNNN`.
+  - `POST /api/akutansi/jurnal/stage-from-billing` — menyiapkan baris staging di `tampjurnal` dari total `billing` untuk `no_rawat` tersebut.
+  - `POST /api/akutansi/jurnal/post-staging` — melakukan posting dari `tampjurnal` ke `jurnal` dan `detailjurnal`.
+
+- Perubahan di `resources/js/Pages/Akutansi/Billing.jsx` (handleCreate):
+  1) Validasi ringan dan cek `nota_jalan` (blokir jika nota sudah ada, mengikuti perilaku Java).
+  2) Simpan item snapshot ke `/api/akutansi/billing`.
+  3) Buat `nota_jalan` (jika belum ada) via `/api/akutansi/nota-jalan`.
+  4) Stage jurnal via `/api/akutansi/jurnal/stage-from-billing`.
+  5) Posting jurnal via `/api/akutansi/jurnal/post-staging` dengan `no_bukti` = nomor nota (`no_nota`) bila tersedia.
+
+- Konfigurasi COA (Chart of Accounts):
+  - Berkas baru `config/akutansi.php` menyediakan kunci:
+    - `rek_kas_default`: kode rekening default untuk Debet (Kas/Bank).
+    - `rek_pendapatan_default`: kode rekening default untuk Kredit (Pendapatan Jasa).
+  - Jika tidak diisi, endpoint `stage-from-billing` akan memberi error 422. Isi sesuai tabel `rekening` Anda agar staging jurnal berhasil.
+
+- Validasi posting jurnal:
+  - Service `App/Services/Akutansi/JournalService.php` memastikan jumlah baris staging > 0 dan total debet == kredit sebelum membuat `no_jurnal` (`JRYYYYMMDDNNNNNN`) dan menyisipkan ke tabel `jurnal` serta `detailjurnal`.
+
+Catatan:
+- Alur di atas adalah implementasi minimal agar “posting jurnal balik” terjadi setelah simpan item billing. Implementasi penuh (meniru `isSimpan()` Java: memasukkan komponen biaya per kategori ke staging dan membuat nota pembayaran terperinci) tetap direncanakan di modul Kasir.
+- Bila Anda memiliki mapping akun per kategori (Laborat, Radiologi, Obat, Administrasi, Sarpras, Tarif Dokter/Perawat, dsb.), endpoint `stage-from-billing` dapat dikembangkan untuk menyusun baris staging lebih rinci per komponen biaya.

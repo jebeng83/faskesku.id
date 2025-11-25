@@ -1,7 +1,75 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
+* @see \App\Http\Controllers\Akutansi\JurnalController::stageFromBilling
+* @see app/Http/Controllers/Akutansi/JurnalController.php:35
+* @route '/api/akutansi/jurnal/stage-from-billing'
+*/
+export const stageFromBilling = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: stageFromBilling.url(options),
+    method: 'post',
+})
+
+stageFromBilling.definition = {
+    methods: ["post"],
+    url: '/api/akutansi/jurnal/stage-from-billing',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Akutansi\JurnalController::stageFromBilling
+* @see app/Http/Controllers/Akutansi/JurnalController.php:35
+* @route '/api/akutansi/jurnal/stage-from-billing'
+*/
+stageFromBilling.url = (options?: RouteQueryOptions) => {
+    return stageFromBilling.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Akutansi\JurnalController::stageFromBilling
+* @see app/Http/Controllers/Akutansi/JurnalController.php:35
+* @route '/api/akutansi/jurnal/stage-from-billing'
+*/
+stageFromBilling.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: stageFromBilling.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Akutansi\JurnalController::postStaging
+* @see app/Http/Controllers/Akutansi/JurnalController.php:170
+* @route '/api/akutansi/jurnal/post-staging'
+*/
+export const postStaging = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: postStaging.url(options),
+    method: 'post',
+})
+
+postStaging.definition = {
+    methods: ["post"],
+    url: '/api/akutansi/jurnal/post-staging',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Akutansi\JurnalController::postStaging
+* @see app/Http/Controllers/Akutansi/JurnalController.php:170
+* @route '/api/akutansi/jurnal/post-staging'
+*/
+postStaging.url = (options?: RouteQueryOptions) => {
+    return postStaging.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Akutansi\JurnalController::postStaging
+* @see app/Http/Controllers/Akutansi/JurnalController.php:170
+* @route '/api/akutansi/jurnal/post-staging'
+*/
+postStaging.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: postStaging.url(options),
+    method: 'post',
+})
+
+/**
 * @see \App\Http\Controllers\Akutansi\JurnalController::page
-* @see app/Http/Controllers/Akutansi/JurnalController.php:20
+* @see app/Http/Controllers/Akutansi/JurnalController.php:17
 * @route '/akutansi/jurnal'
 */
 export const page = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +84,7 @@ page.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::page
-* @see app/Http/Controllers/Akutansi/JurnalController.php:20
+* @see app/Http/Controllers/Akutansi/JurnalController.php:17
 * @route '/akutansi/jurnal'
 */
 page.url = (options?: RouteQueryOptions) => {
@@ -25,7 +93,7 @@ page.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::page
-* @see app/Http/Controllers/Akutansi/JurnalController.php:20
+* @see app/Http/Controllers/Akutansi/JurnalController.php:17
 * @route '/akutansi/jurnal'
 */
 page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +103,7 @@ page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::page
-* @see app/Http/Controllers/Akutansi/JurnalController.php:20
+* @see app/Http/Controllers/Akutansi/JurnalController.php:17
 * @route '/akutansi/jurnal'
 */
 page.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +113,7 @@ page.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::index
-* @see app/Http/Controllers/Akutansi/JurnalController.php:34
+* @see app/Http/Controllers/Akutansi/JurnalController.php:0
 * @route '/api/akutansi/jurnal'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,7 +128,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::index
-* @see app/Http/Controllers/Akutansi/JurnalController.php:34
+* @see app/Http/Controllers/Akutansi/JurnalController.php:0
 * @route '/api/akutansi/jurnal'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -69,7 +137,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::index
-* @see app/Http/Controllers/Akutansi/JurnalController.php:34
+* @see app/Http/Controllers/Akutansi/JurnalController.php:0
 * @route '/api/akutansi/jurnal'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -79,7 +147,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::index
-* @see app/Http/Controllers/Akutansi/JurnalController.php:34
+* @see app/Http/Controllers/Akutansi/JurnalController.php:0
 * @route '/api/akutansi/jurnal'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -89,7 +157,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::show
-* @see app/Http/Controllers/Akutansi/JurnalController.php:117
+* @see app/Http/Controllers/Akutansi/JurnalController.php:0
 * @route '/api/akutansi/jurnal/{no_jurnal}'
 */
 export const show = (args: { no_jurnal: string | number } | [no_jurnal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -104,7 +172,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::show
-* @see app/Http/Controllers/Akutansi/JurnalController.php:117
+* @see app/Http/Controllers/Akutansi/JurnalController.php:0
 * @route '/api/akutansi/jurnal/{no_jurnal}'
 */
 show.url = (args: { no_jurnal: string | number } | [no_jurnal: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -131,7 +199,7 @@ show.url = (args: { no_jurnal: string | number } | [no_jurnal: string | number ]
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::show
-* @see app/Http/Controllers/Akutansi/JurnalController.php:117
+* @see app/Http/Controllers/Akutansi/JurnalController.php:0
 * @route '/api/akutansi/jurnal/{no_jurnal}'
 */
 show.get = (args: { no_jurnal: string | number } | [no_jurnal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -141,7 +209,7 @@ show.get = (args: { no_jurnal: string | number } | [no_jurnal: string | number ]
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::show
-* @see app/Http/Controllers/Akutansi/JurnalController.php:117
+* @see app/Http/Controllers/Akutansi/JurnalController.php:0
 * @route '/api/akutansi/jurnal/{no_jurnal}'
 */
 show.head = (args: { no_jurnal: string | number } | [no_jurnal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -151,7 +219,7 @@ show.head = (args: { no_jurnal: string | number } | [no_jurnal: string | number 
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::store
-* @see app/Http/Controllers/Akutansi/JurnalController.php:149
+* @see app/Http/Controllers/Akutansi/JurnalController.php:0
 * @route '/api/akutansi/jurnal'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -166,7 +234,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::store
-* @see app/Http/Controllers/Akutansi/JurnalController.php:149
+* @see app/Http/Controllers/Akutansi/JurnalController.php:0
 * @route '/api/akutansi/jurnal'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -175,7 +243,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::store
-* @see app/Http/Controllers/Akutansi/JurnalController.php:149
+* @see app/Http/Controllers/Akutansi/JurnalController.php:0
 * @route '/api/akutansi/jurnal'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -185,7 +253,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::update
-* @see app/Http/Controllers/Akutansi/JurnalController.php:270
+* @see app/Http/Controllers/Akutansi/JurnalController.php:0
 * @route '/api/akutansi/jurnal/{no_jurnal}'
 */
 export const update = (args: { no_jurnal: string | number } | [no_jurnal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -200,7 +268,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::update
-* @see app/Http/Controllers/Akutansi/JurnalController.php:270
+* @see app/Http/Controllers/Akutansi/JurnalController.php:0
 * @route '/api/akutansi/jurnal/{no_jurnal}'
 */
 update.url = (args: { no_jurnal: string | number } | [no_jurnal: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -227,7 +295,7 @@ update.url = (args: { no_jurnal: string | number } | [no_jurnal: string | number
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::update
-* @see app/Http/Controllers/Akutansi/JurnalController.php:270
+* @see app/Http/Controllers/Akutansi/JurnalController.php:0
 * @route '/api/akutansi/jurnal/{no_jurnal}'
 */
 update.put = (args: { no_jurnal: string | number } | [no_jurnal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -237,7 +305,7 @@ update.put = (args: { no_jurnal: string | number } | [no_jurnal: string | number
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::destroy
-* @see app/Http/Controllers/Akutansi/JurnalController.php:346
+* @see app/Http/Controllers/Akutansi/JurnalController.php:0
 * @route '/api/akutansi/jurnal/{no_jurnal}'
 */
 export const destroy = (args: { no_jurnal: string | number } | [no_jurnal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -252,7 +320,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::destroy
-* @see app/Http/Controllers/Akutansi/JurnalController.php:346
+* @see app/Http/Controllers/Akutansi/JurnalController.php:0
 * @route '/api/akutansi/jurnal/{no_jurnal}'
 */
 destroy.url = (args: { no_jurnal: string | number } | [no_jurnal: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -279,7 +347,7 @@ destroy.url = (args: { no_jurnal: string | number } | [no_jurnal: string | numbe
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::destroy
-* @see app/Http/Controllers/Akutansi/JurnalController.php:346
+* @see app/Http/Controllers/Akutansi/JurnalController.php:0
 * @route '/api/akutansi/jurnal/{no_jurnal}'
 */
 destroy.delete = (args: { no_jurnal: string | number } | [no_jurnal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -289,7 +357,7 @@ destroy.delete = (args: { no_jurnal: string | number } | [no_jurnal: string | nu
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::previewFromTemp
-* @see app/Http/Controllers/Akutansi/JurnalController.php:232
+* @see app/Http/Controllers/Akutansi/JurnalController.php:191
 * @route '/api/akutansi/jurnal/preview'
 */
 export const previewFromTemp = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -304,7 +372,7 @@ previewFromTemp.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::previewFromTemp
-* @see app/Http/Controllers/Akutansi/JurnalController.php:232
+* @see app/Http/Controllers/Akutansi/JurnalController.php:191
 * @route '/api/akutansi/jurnal/preview'
 */
 previewFromTemp.url = (options?: RouteQueryOptions) => {
@@ -313,7 +381,7 @@ previewFromTemp.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::previewFromTemp
-* @see app/Http/Controllers/Akutansi/JurnalController.php:232
+* @see app/Http/Controllers/Akutansi/JurnalController.php:191
 * @route '/api/akutansi/jurnal/preview'
 */
 previewFromTemp.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -323,7 +391,7 @@ previewFromTemp.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =>
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::postFromTemp
-* @see app/Http/Controllers/Akutansi/JurnalController.php:242
+* @see app/Http/Controllers/Akutansi/JurnalController.php:208
 * @route '/api/akutansi/jurnal/post'
 */
 export const postFromTemp = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -338,7 +406,7 @@ postFromTemp.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::postFromTemp
-* @see app/Http/Controllers/Akutansi/JurnalController.php:242
+* @see app/Http/Controllers/Akutansi/JurnalController.php:208
 * @route '/api/akutansi/jurnal/post'
 */
 postFromTemp.url = (options?: RouteQueryOptions) => {
@@ -347,7 +415,7 @@ postFromTemp.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Akutansi\JurnalController::postFromTemp
-* @see app/Http/Controllers/Akutansi/JurnalController.php:242
+* @see app/Http/Controllers/Akutansi/JurnalController.php:208
 * @route '/api/akutansi/jurnal/post'
 */
 postFromTemp.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -355,6 +423,6 @@ postFromTemp.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     method: 'post',
 })
 
-const JurnalController = { page, index, show, store, update, destroy, previewFromTemp, postFromTemp }
+const JurnalController = { stageFromBilling, postStaging, page, index, show, store, update, destroy, previewFromTemp, postFromTemp }
 
 export default JurnalController
