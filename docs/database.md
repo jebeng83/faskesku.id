@@ -200,7 +200,32 @@ erDiagram
         double tambahan
         double totalbiaya
         enum status "Laborat/Radiologi/Operasi/Obat/Ranap/Ralan/Kamar/Administrasi/Registrasi/Tambahan/Potongan/Tagihan"
-    }
+}
+
+### Buku Besar (General Ledger)
+
+Submodul Buku Besar menyajikan pergerakan akun (rekening) per periode dengan saldo berjalan.
+
+- Sumber saldo awal: tabel `rekeningtahun` (per tahun dan kd_rek).
+- Sumber transaksi: tabel `jurnal` dan `detailjurnal`.
+- Penentu arah saldo: kolom `rekening.balance` (D = debit-nature, K = credit-nature).
+
+Perhitungan dan API:
+
+- Endpoint: `GET /api/akutansi/buku-besar?kd_rek=XXXX&year=YYYY[&month=MM][&day=DD]`
+- Jika hanya `year`: saldo awal periode = `sum(rekeningtahun.saldo_awal where thn=year and kd_rek=...)`.
+- Jika `month` dan opsional `day`: saldo awal periode = saldo_awal_tahun + akumulasi transaksi dari 1 Jan sampai hari sebelum tanggal tampilan.
+  - Akumulasi sebelum periode: `SUM(debet) & SUM(kredit)` dari `detailjurnal` untuk `kd_rek` antara `YYYY-01-01` hingga `view_start - 1 day`.
+  - Rumus saldo berdasarkan nature:
+    - Balance = 'D': `saldo := saldo_awal_tahun + (debet_before - kredit_before)` lalu per baris `saldo := saldo + debet - kredit`.
+    - Balance = 'K': `saldo := saldo_awal_tahun + (kredit_before - debet_before)` lalu per baris `saldo := saldo + kredit - debet`.
+
+Kolom hasil per baris:
+
+- `tgl_jurnal`, `jam_jurnal`, `no_jurnal`, `no_bukti`, `keterangan`
+- `saldo_awal` (sebelum baris), `debet`, `kredit`, `saldo_akhir` (setelah baris)
+
+Frontend: halaman Inertia `resources/js/Pages/Akutansi/BukuBesar.jsx` menyediakan form filter (akun, tahun, bulan, tanggal) dan tabel hasil, mengikuti pedoman `docs/UI_UX_IMPROVEMENTS_GUIDE.md`.
     nota_jalan {
         varchar(17) no_rawat PK
         varchar(17) no_nota UNI
@@ -561,6 +586,66 @@ Hal-hal penting terkait kolom PPN di database:
   - setharga, hargadasar: kontrol sumber penetapan harga jual (Umum/Jenis/Barang dan Harga Beli/Harga Diskon).
 
 - Unit Transfusi Darah (UTD)
+
+---
+
+## Chart of Account (COA) dan Subrekening
+
+Struktur COA di sistem mengikuti pola induk-sub, sesuai dengan implementasi di aplikasi desktop Java (public/DlgRekening.java).
+
+- Tabel `rekening` (master akun):
+  - kd_rek (varchar(15)) — Kode akun (PK).
+  - nm_rek (varchar(100)) — Nama akun.
+  - tipe (enum 'N','R','M') — Kelompok laporan: Neraca (N), Rugi/Laba (R), Perubahan Modal (M).
+  - balance (enum 'D','K') — Saldo normal: Debet (D) atau Kredit (K).
+  - level (enum '0','1') — 0 = Akun Utama (Induk), 1 = Sub Akun.
+
+- Tabel `subrekening` (relasi induk → anak):
+  - kd_rek (varchar(15)) — Kode akun induk.
+  - kd_rek2 (varchar(15)) — Kode akun anak (sub-akun).
+  - Keduanya mereferensikan rekening.kd_rek (relasi logik di aplikasi).
+
+Relasi ini memungkinkan penyusunan hierarki akun bertingkat seperti di DlgRekening.java yang menampilkan akun induk beserta turunannya.
+
+### Operasi yang Didukung (Laravel API)
+
+Untuk menyelaraskan perilaku dengan DlgRekening (Java Swing), endpoint berikut ditambahkan/diubah:
+
+- GET /api/akutansi/rekening?level=0 — List akun induk saja.
+- GET /api/akutansi/rekening?induk_kd=XXXXXX — List sub-akun dari akun induk tertentu.
+- POST /api/akutansi/rekening — Buat akun baru.
+  - Body:
+    - kd_rek, nm_rek, tipe, balance ('D'/'K')
+    - Opsional: parent_kd_rek (jika diisi, akun dibuat sebagai sub-akun dengan level='1' dan mapping ke subrekening).
+  - Jika parent_kd_rek tidak diisi, akun dibuat sebagai akun utama (level='0').
+
+- PUT /api/akutansi/rekening/{kd_rek} — Edit akun (tanpa memaksa perubahan level).
+
+- DELETE /api/akutansi/rekening/{kd_rek} — Hapus akun.
+  - Proteksi: Menolak menghapus akun induk yang masih memiliki sub-akun.
+  - Jika akun adalah sub-akun, mapping di subrekening dibersihkan otomatis.
+
+- POST /api/akutansi/rekening/{kd_rek}/make-sub — Jadikan akun sebagai sub-akun dari induk.
+  - Body: induk_kd (kode induk yang valid).
+  - Efek: Menghapus mapping lama (jika ada), membuat mapping baru di subrekening, dan menyetel level='1'.
+
+- POST /api/akutansi/rekening/{kd_rek}/make-induk — Jadikan akun sebagai akun utama.
+  - Efek: Menghapus mapping di subrekening (jika ada) dan menyetel level='0'.
+
+- GET /api/akutansi/rekening/{kd_rek}/children — Ambil sub-akun (anak) dari akun induk.
+
+### Penyesuaian Halaman Inertia Akutansi/Rekening.jsx
+
+Halaman input dan tabel rekening diperbarui untuk:
+
+- Menyediakan "Mode Akun" (Akun Utama/Sub Akun) saat input.
+- Jika memilih Sub Akun, tersedia dropdown untuk memilih Akun Induk (level=0).
+- Tombol tindakan per baris:
+  - "Jadikan Sub" (untuk akun level=0) — Memunculkan panel pemilihan induk lalu menyimpan mapping.
+  - "Jadikan Utama" (untuk akun level=1) — Menghapus mapping dan menyetel level menjadi 0.
+- Tabel tetap menampilkan kolom Balance (D→Debet, K→Kredit) dan Level.
+
+Dengan demikian, struktur dan perilaku sekarang konsisten dengan DlgRekening.form / DlgRekening.java dan relasinya terhadap tabel subrekening di schema_dump.txt.
   - utd_penyerahan_darah.besarppn (double): PPN nominal pada penyerahan darah.
 
 Catatan akun dan jurnal PPN yang direkomendasikan:
@@ -1018,6 +1103,71 @@ Dengan ringkasan ini, modul Pengaturan Rekening di Faskesku ID dapat dibangun se
 ## 10. Tabel `temporary` dan `temporary2` (Scratch Tables)
 
 Di dalam skema live terdapat dua tabel generik yang sering digunakan sebagai penampung sementara untuk keperluan laporan atau proses batch: `temporary` dan `temporary2`. Keduanya tidak memiliki relasi FK yang ketat dan kolomnya bersifat general-purpose.
+
+---
+
+## 11. Rekening Tahun (Saldo Awal per Tahun)
+
+Tabel `rekeningtahun` menyimpan saldo awal per akun (`rekening.kd_rek`) untuk setiap tahun buku. Data ini digunakan sebagai basis perhitungan saldo berjalan dan laporan seperti Cash Flow.
+
+Struktur (berdasarkan pembacaan kode Java `keuangan.DlgRekeningTahun` dan skema live):
+- `thn` varchar/int (tahun buku, misal: `2025`)
+- `kd_rek` char(15) FK → `rekening.kd_rek`
+- `saldo_awal` double
+
+Relasi dan penggunaan:
+- Join utama: `rekening` ⟷ `rekeningtahun` via `kd_rek`.
+- Di UI Java (DlgRekeningTahun) ditampilkan kolom: Tahun, Kode Rekening, Nama Rekening, Tipe, Balance, Saldo Awal, Mutasi Debet, Mutasi Kredit, Saldo Akhir.
+- Mutasi diambil dari jurnal tahun berjalan.
+
+Perhitungan Mutasi & Saldo Akhir (sesuai DlgRekeningTahun.java):
+- Ambil agregat per akun dari tabel jurnal/detailjurnal untuk tahun `thn`:
+  - `sum_debet = SUM(detailjurnal.debet)`
+  - `sum_kredit = SUM(detailjurnal.kredit)`
+- Penentuan mutasi mengikuti sifat saldo (`rekening.balance`):
+  - Jika `balance = 'D'`: `mutasi_debet = sum_debet`, `mutasi_kredit = sum_kredit`
+  - Jika `balance = 'K'`: `mutasi_debet = sum_kredit`, `mutasi_kredit = sum_debet`
+- Saldo akhir: `saldo_akhir = saldo_awal + (mutasi_debet - mutasi_kredit)`
+
+Contoh query (MySQL):
+```sql
+-- Daftar saldo awal beserta mutasi dan saldo akhir untuk tahun tertentu
+SELECT rt.thn, r.kd_rek, r.nm_rek, r.tipe, r.balance, rt.saldo_awal,
+       COALESCE(m.sum_debet, 0) AS sum_debet,
+       COALESCE(m.sum_kredit, 0) AS sum_kredit,
+       CASE r.balance
+         WHEN 'D' THEN rt.saldo_awal + COALESCE(m.sum_debet,0) - COALESCE(m.sum_kredit,0)
+         WHEN 'K' THEN rt.saldo_awal + COALESCE(m.sum_kredit,0) - COALESCE(m.sum_debet,0)
+       END AS saldo_akhir
+FROM rekening r
+JOIN rekeningtahun rt ON rt.kd_rek = r.kd_rek
+LEFT JOIN (
+  SELECT dj.kd_rek,
+         SUM(dj.debet) AS sum_debet,
+         SUM(dj.kredit) AS sum_kredit
+  FROM jurnal j
+  JOIN detailjurnal dj ON dj.no_jurnal = j.no_jurnal
+  WHERE YEAR(j.tgl_jurnal) = 2025
+  GROUP BY dj.kd_rek
+) m ON m.kd_rek = r.kd_rek
+WHERE rt.thn = '2025'
+ORDER BY r.kd_rek;
+```
+
+Catatan implementasi:
+- `rt.thn` disimpan sebagai teks angka tahun (contoh: `'2025'`), sementara filter jurnal menggunakan `YEAR(j.tgl_jurnal) = <tahun>`.
+- Hindari duplikasi baris `rt` untuk pasangan `(thn, kd_rek)`; gunakan upsert saat menyimpan.
+- Nilai negatif pada `saldo_akhir` dapat ditampilkan dengan format kurung di UI, tetapi tetap simpan sebagai angka murni di API/DB.
+
+Endpoint API baru (Laravel):
+- `GET /api/akutansi/rekeningtahun?thn=2025&q=...` — Listing saldo awal per akun untuk tahun, termasuk mutasi dan saldo akhir.
+- `POST /api/akutansi/rekeningtahun` — Upsert saldo awal: body `{ thn, kd_rek, saldo_awal }`.
+- `PUT /api/akutansi/rekeningtahun/{thn}/{kd_rek}` — Update saldo awal.
+- `DELETE /api/akutansi/rekeningtahun/{thn}/{kd_rek}` — Hapus saldo awal untuk tahun-akun.
+
+Referensi kode:
+- Java Swing: `public/DlgRekeningTahun.java` (form input & tabel, perhitungan mutasi berdasarkan jurnal tahun berjalan).
+- Cash Flow: `app/Http/Controllers/Akutansi/CashFlowController.php` (menggunakan `rekeningtahun` untuk saldo awal dalam agregasi kas).
 
 ### Struktur (mengacu pada schema_dump.txt)
 - `temporary`

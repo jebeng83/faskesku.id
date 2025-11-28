@@ -14,6 +14,7 @@ class PeriksaLab extends Model
     protected $primaryKey = 'no_rawat';
     public $incrementing = false;
     protected $keyType = 'string';
+    public $timestamps = false; // Tabel tidak memiliki created_at dan updated_at
 
     protected $fillable = [
         'no_rawat',
@@ -22,10 +23,17 @@ class PeriksaLab extends Model
         'tgl_periksa',
         'jam',
         'dokter_perujuk',
-        'bagian_perujuk',
-        'kategori',
+        'bagian_rs',
+        'bhp',
+        'tarif_perujuk',
+        'tarif_tindakan_dokter',
+        'tarif_tindakan_petugas',
+        'kso',
+        'menejemen',
+        'biaya',
+        'kd_dokter',
         'status',
-        'keterangan'
+        'kategori'
     ];
 
     protected $casts = [
@@ -54,8 +62,13 @@ class PeriksaLab extends Model
     // Relasi dengan DetailPeriksaLab
     public function detailPemeriksaan()
     {
+        // Gunakan nilai instance untuk filter saat load pada satu model instance,
+        // dan longgarkan filter ke tanggal saja untuk menghindari mismatch jam.
         return $this->hasMany(DetailPeriksaLab::class, 'no_rawat', 'no_rawat')
-                    ->where('kd_jenis_prw', $this->kd_jenis_prw);
+            ->where('kd_jenis_prw', $this->kd_jenis_prw)
+            ->when(!is_null($this->tgl_periksa), function ($q) {
+                $q->whereDate('tgl_periksa', \Carbon\Carbon::parse($this->tgl_periksa)->toDateString());
+            });
     }
 
     // Relasi dengan Patient melalui RegPeriksa

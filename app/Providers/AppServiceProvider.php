@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -49,6 +50,33 @@ class AppServiceProvider extends ServiceProvider
             }
         } catch (\Throwable $e) {
             Log::warning('Failed to set MySQL session time_zone: '.$e->getMessage());
+        }
+
+        // Ensure Wayfinder route directories exist before generation
+        // This prevents "No such file or directory" errors when Wayfinder tries to write route files
+        try {
+            $routesBasePath = resource_path('js/routes');
+            
+            // Ensure base directories exist
+            if (!File::isDirectory($routesBasePath)) {
+                File::makeDirectory($routesBasePath, 0755, true);
+            }
+
+            // Common Wayfinder directories that might be needed
+            $commonDirs = [
+                'pcare/referensi',
+                'pcare/referensi/mobilejkn',
+                'api/pcare',
+            ];
+
+            foreach ($commonDirs as $dir) {
+                $fullPath = $routesBasePath . '/' . $dir;
+                if (!File::isDirectory($fullPath)) {
+                    File::makeDirectory($fullPath, 0755, true);
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Failed to ensure Wayfinder directories exist: '.$e->getMessage());
         }
     }
 }

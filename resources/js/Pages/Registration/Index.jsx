@@ -405,14 +405,21 @@ export default function Registration({
         setIsSubmitting(true);
 
         try {
-            // Pastikan URL benar. Jika Ziggy tidak tersedia/mengembalikan path yang tidak lengkap,
-            // fallback ke path eksplisit untuk menghindari kasus seperti "000019/register" (tanpa prefix /registration)
+            // Pastikan URL benar. Gunakan fallback eksplisit dan hanya terima hasil Ziggy jika valid.
             let url = `/registration/${encodeURIComponent(selectedPatient.no_rkm_medis)}/register`;
             try {
-                url = route('registration.register-patient', selectedPatient.no_rkm_medis);
-            } catch (_) {
-                // gunakan fallback di atas
+                const ziggyUrl = route("registration.register-patient", selectedPatient.no_rkm_medis);
+                // Validasi: harus mengandung segment /registration/ dan diakhiri dengan /register
+                if (typeof ziggyUrl === "string" && /\/registration\/.+\/register$/.test(ziggyUrl)) {
+                    url = ziggyUrl;
+                } else {
+                    console.warn("Ziggy route malformed for register-patient, using fallback:", ziggyUrl);
+                }
+            } catch (err) {
+                console.warn("Ziggy route() unavailable, using fallback URL.");
             }
+            // Log URL yang dipakai agar mudah ditelusuri di console/network
+            try { console.debug("RegisterPatient POST URL:", url); } catch (_) {}
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
             const response = await axios.post(

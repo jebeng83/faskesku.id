@@ -10,16 +10,32 @@ class DetailPeriksaLab extends Model
     use HasFactory;
 
     protected $table = 'detail_periksa_lab';
-    protected $primaryKey = 'id';
+    // Tabel asli tidak memiliki kolom id auto-increment, menggunakan composite key.
+    // Biarkan Eloquent menggunakan default primary key namun kita tidak akan mengandalkannya.
+    public $timestamps = false;
 
     protected $fillable = [
         'no_rawat',
         'kd_jenis_prw',
-        'item_pemeriksaan',
+        'id_template',
+        'tgl_periksa',
+        'jam',
+        // kolom nilai hasil
+        'item_pemeriksaan', // tidak ada di tabel asli, hanya untuk compat bila ada
         'nilai',
         'nilai_rujukan',
-        'satuan',
+        'satuan', // tidak ada di tabel asli, hanya untuk compat bila ada
         'keterangan'
+        ,
+        // biaya komponen (mengikuti schema dump)
+        'bagian_rs',
+        'bhp',
+        'bagian_perujuk',
+        'bagian_dokter',
+        'bagian_laborat',
+        'kso',
+        'menejemen',
+        'biaya_item'
     ];
 
     // Relasi dengan PeriksaLab
@@ -37,8 +53,7 @@ class DetailPeriksaLab extends Model
     // Relasi dengan TemplateLaboratorium
     public function template()
     {
-        return $this->belongsTo(TemplateLaboratorium::class, 'item_pemeriksaan', 'item_pemeriksaan')
-                    ->where('kd_jenis_prw', $this->kd_jenis_prw);
+        return $this->belongsTo(TemplateLaboratorium::class, 'id_template', 'id_template');
     }
 
     // Scope untuk filter berdasarkan jenis pemeriksaan

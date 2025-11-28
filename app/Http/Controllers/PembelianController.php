@@ -63,17 +63,23 @@ class PembelianController extends Controller
     /**
      * Get dropdown data for petugas
      */
-    public function getPetugas()
+    public function getPetugas(Request $request)
     {
         try {
-            Log::info('Getting petugas data...');
-            $petugas = DB::table('petugas')
+            $query = DB::table('petugas')
                 ->select('nip', 'nama')
-                ->orderBy('nama')
-                ->get();
+                ->orderBy('nama');
 
-            Log::info('Petugas count: ' . $petugas->count());
-            Log::info('Petugas data: ' . $petugas->toJson());
+            // Support pencarian jika parameter q ada
+            if ($request->has('q') && !empty($request->q)) {
+                $searchTerm = $request->q;
+                $query->where(function($q) use ($searchTerm) {
+                    $q->where('nip', 'like', "%{$searchTerm}%")
+                      ->orWhere('nama', 'like', "%{$searchTerm}%");
+                });
+            }
+
+            $petugas = $query->get();
 
             return response()->json([
                 'success' => true,

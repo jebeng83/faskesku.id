@@ -8,21 +8,32 @@ import PenjabCreateModal from "@/Components/PenjabCreateModal";
 import SearchableSelect from "@/Components/SearchableSelect";
 import WilayahSearchableSelect from "@/Components/WilayahSearchableSelect";
 import AddressDisplay from "@/Components/AddressDisplay";
+import { UserPlus, ArrowLeft, Info, CheckCircle2, Loader2 } from "lucide-react";
 
 export default function Create() {
     // Variants for subtle, performant micro-interactions
     const containerVariants = {
-        hidden: { opacity: 0, y: 8 },
+        hidden: { opacity: 0 },
         visible: {
             opacity: 1,
-            y: 0,
-            transition: { staggerChildren: 0.06, ease: "easeOut" },
+            transition: {
+                staggerChildren: 0.08,
+                delayChildren: 0.1,
+            },
         },
     };
 
     const itemVariants = {
-        hidden: { opacity: 0, y: 8 },
-        visible: { opacity: 1, y: 0 },
+        hidden: { opacity: 0, y: 30, scale: 0.95 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            transition: {
+                duration: 0.5,
+                ease: [0.22, 1, 0.36, 1],
+            },
+        },
     };
     const [penjabOptions, setPenjabOptions] = useState([]);
     const [isPenjabModalOpen, setIsPenjabModalOpen] = useState(false);
@@ -252,40 +263,39 @@ export default function Create() {
         >
 			<Head title="Tambah Pasien Baru" />
 
-            <motion.div className="py-6" initial="hidden" animate="visible" variants={containerVariants}>
-				<div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <motion.div className="py-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 min-h-screen" initial="hidden" animate="visible" variants={containerVariants}>
+				<div className="max-w-[98%] mx-auto px-2 sm:px-4">
                     {/* Header */}
-                    <motion.div variants={itemVariants} className="relative overflow-visible mb-6">
-                        <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-br from-blue-500/15 via-purple-500/15 to-indigo-500/15 dark:from-blue-600/10 dark:via-purple-600/10 dark:to-indigo-600/10" />
-                        <div className="p-6 rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg">
-							<div className="flex justify-between items-center">
-								<div>
-									<h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-										Tambah Pasien Baru
-									</h2>
-									<p className="text-gray-600 dark:text-gray-400 mt-1">
-										Masukkan data pasien baru ke dalam sistem
-									</p>
-								</div>
-                                <Link
-                                    href={route("patients.index")}
-                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-700/80 hover:bg-gray-700 text-white transition-colors"
+                    <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 p-4 mb-6">
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-purple-500/10" />
+                        <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <motion.div
+                                    className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/25"
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.6, delay: 0.2 }}
                                 >
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										viewBox="0 0 24 24"
-										fill="currentColor"
-										className="w-5 h-5"
-									>
-										<path
-											fillRule="evenodd"
-											d="M7.72 12.53a.75.75 0 010-1.06L10.94 8.25H3a.75.75 0 010-1.5h7.94L7.72 3.53a.75.75 0 011.06-1.06l4.5 4.5a.75.75 0 010 1.06l-4.5 4.5a.75.75 0 01-1.06 0z"
-											clipRule="evenodd"
-										/>
-									</svg>
-									Kembali
-                                </Link>
+                                    <UserPlus className="w-5 h-5 text-white" />
+                                </motion.div>
+                                <div>
+                                    <motion.h1
+                                        className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
+                                    >
+                                        Tambah Pasien Baru
+                                    </motion.h1>
+                                    <p className="mt-0.5 text-xs text-gray-600 dark:text-gray-300">
+                                        Masukkan data pasien baru ke dalam sistem
+                                    </p>
+                                </div>
                             </div>
+                            <Link
+                                href={route("patients.index")}
+                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/90 dark:bg-gray-700/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 text-sm"
+                            >
+                                <ArrowLeft className="w-4 h-4" />
+                                Kembali
+                            </Link>
                         </div>
                     </motion.div>
 
@@ -298,14 +308,26 @@ export default function Create() {
 						className="space-y-6"
 					>
                         {/* Basic Information */}
-                        <div className="relative overflow-visible rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg">
-                            <div className="p-6">
-								<h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-									Informasi Dasar
-								</h3>
+                        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 mb-8">
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                            <div className="relative px-4 py-2.5 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <motion.div
+                                        className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
+                                        whileHover={{ rotate: 90, scale: 1.1 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <UserPlus className="w-4 h-4 text-white" />
+                                    </motion.div>
+                                    <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                        Informasi Dasar
+                                    </span>
+                                </h3>
+                            </div>
+                            <div className="relative p-8">
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 									<div>
-										<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+										<label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
 											Nama Lengkap *
 										</label>
 										<input
@@ -313,13 +335,18 @@ export default function Create() {
 											name="nm_pasien"
 											value={data.nm_pasien}
 											onChange={(e) => setData("nm_pasien", e.target.value)}
-											className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+											className="w-full px-4 py-2.5 border border-gray-300/50 dark:border-gray-600/50 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:bg-gray-700/80 dark:text-white backdrop-blur-sm transition-all duration-200"
 											placeholder="Masukkan nama lengkap"
 										/>
 										{getErrorMessage("nm_pasien") && (
-											<p className="mt-1 text-sm text-red-600">
+											<motion.p
+												initial={{ opacity: 0 }}
+												animate={{ opacity: 1 }}
+												className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center gap-1"
+											>
+												<Info className="w-3 h-3" />
 												{getErrorMessage("nm_pasien")}
-											</p>
+											</motion.p>
 										)}
 									</div>
 
@@ -473,14 +500,26 @@ export default function Create() {
 									</div>
 								</div>
 							</div>
-						</div>
+						</motion.div>
 
                         {/* Contact Information */}
-                        <div className="bg-white dark:bg-gray-800 overflow-visible shadow-sm sm:rounded-lg">
-							<div className="p-6">
-								<h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-									Informasi Kontak
-								</h3>
+                        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 mb-8">
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                            <div className="relative px-4 py-2.5 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <motion.div
+                                        className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
+                                        whileHover={{ rotate: 90, scale: 1.1 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <Info className="w-4 h-4 text-white" />
+                                    </motion.div>
+                                    <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                        Informasi Kontak
+                                    </span>
+                                </h3>
+                            </div>
+                            <div className="relative p-8">
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 									<div className="md:col-span-2">
 										<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -540,14 +579,26 @@ export default function Create() {
 									</div>
 								</div>
 							</div>
-						</div>
+						</motion.div>
 
                         {/* Additional Information */}
-                        <div className="bg-white dark:bg-gray-800 overflow-visible shadow-sm sm:rounded-lg">
-							<div className="p-6">
-								<h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-									Informasi Tambahan
-								</h3>
+                        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 mb-8">
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                            <div className="relative px-4 py-2.5 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <motion.div
+                                        className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
+                                        whileHover={{ rotate: 90, scale: 1.1 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <Info className="w-4 h-4 text-white" />
+                                    </motion.div>
+                                    <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                        Informasi Tambahan
+                                    </span>
+                                </h3>
+                            </div>
+                            <div className="relative p-8">
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 									<div>
 										<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -683,20 +734,29 @@ export default function Create() {
                                             </p>
                                         )}
                                     </div>
-                                </div>
+								</div>
                             </div>
-                        </div>
+                        </motion.div>
 
 						{/* Family Information */}
-                        <div className="relative overflow-visible rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg mb-8">
-							<div className="p-6">
-								<h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-									Informasi Keluarga
-								</h3>
-								<div
-									className="grid grid-cols-1 md:grid-cols-2 gap-6"
-									style={{ position: "relative", zIndex: 1 }}
-								>
+                        <motion.div variants={itemVariants} className="relative overflow-visible rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 mb-8" style={{ zIndex: 100 }}>
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                            <div className="relative px-4 py-2.5 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <motion.div
+                                        className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
+                                        whileHover={{ rotate: 90, scale: 1.1 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <UserPlus className="w-4 h-4 text-white" />
+                                    </motion.div>
+                                    <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                        Informasi Keluarga
+                                    </span>
+                                </h3>
+                            </div>
+                            <div className="relative p-8" style={{ overflow: 'visible' }}>
+								<div className="grid grid-cols-1 md:grid-cols-2 gap-6" style={{ overflow: 'visible' }}>
 									<div>
 										<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
 											Hubungan Keluarga
@@ -793,19 +853,21 @@ export default function Create() {
 										)}
 									</div>
 
-									<WilayahSearchableSelect
-										label="Pilih Kelurahan/Desa"
-										name="kode_wilayah"
-										value={data.kode_wilayah}
-										onChange={handleWilayahChange}
-										level="village"
-										placeholder="Pilih atau cari kelurahan/desa"
-										error={getErrorMessage("kode_wilayah")}
-										required={true}
-										searchPlaceholder="Ketik nama kelurahan/desa..."
-										noOptionsText="Tidak ada kelurahan/desa ditemukan"
-										loadingText="Memuat data kelurahan/desa..."
-									/>
+									<div className="relative" style={{ zIndex: 10000 }}>
+										<WilayahSearchableSelect
+											label="Pilih Kelurahan/Desa"
+											name="kode_wilayah"
+											value={data.kode_wilayah}
+											onChange={handleWilayahChange}
+											level="village"
+											placeholder="Pilih atau cari kelurahan/desa"
+											error={getErrorMessage("kode_wilayah")}
+											required={true}
+											searchPlaceholder="Ketik nama kelurahan/desa..."
+											noOptionsText="Tidak ada kelurahan/desa ditemukan"
+											loadingText="Memuat data kelurahan/desa..."
+										/>
+									</div>
 
 									{/* Address Display */}
 									<AddressDisplay
@@ -815,14 +877,26 @@ export default function Create() {
 									/>
 								</div>
 							</div>
-						</div>
+						</motion.div>
 
                         {/* Referensi Tambahan (Perusahaan, Suku Bangsa, Bahasa, Cacat Fisik, NIP) */}
-                        <div className="bg-white dark:bg-gray-800 overflow-visible shadow-sm sm:rounded-lg">
-                            <div className="p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                    Informasi Administrasi
+                        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 mb-8" style={{ zIndex: 0 }}>
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                            <div className="relative px-4 py-2.5 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <motion.div
+                                        className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
+                                        whileHover={{ rotate: 90, scale: 1.1 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <Info className="w-4 h-4 text-white" />
+                                    </motion.div>
+                                    <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                        Informasi Administrasi
+                                    </span>
                                 </h3>
+                            </div>
+                            <div className="relative p-8">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {/* Perusahaan Pasien: Textbox Pencarian + Dropdown (SearchableSelect) */}
                                     <div>
@@ -958,27 +1032,40 @@ export default function Create() {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Submit Button */}
-                        <div className="relative overflow-visible rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg">
-                            <div className="p-6">
+                        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5">
+                            <div className="relative p-8">
                                 <div className="flex justify-end gap-4">
                                     <Link
                                         href={route("patients.index")}
-                                        className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition-colors"
+                                        className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-white/90 dark:bg-gray-700/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200"
                                     >
                                         Batal
                                     </Link>
-                                    <button
+                                    <motion.button
                                         type="submit"
-                                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors flex items-center gap-2"
+                                        disabled={processing}
+                                        className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                                        whileHover={{ scale: processing ? 1 : 1.02 }}
+                                        whileTap={{ scale: processing ? 1 : 0.98 }}
                                     >
-                                        Simpan
-                                    </button>
+                                        {processing ? (
+                                            <>
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                Menyimpan...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <CheckCircle2 className="w-4 h-4" />
+                                                Simpan
+                                            </>
+                                        )}
+                                    </motion.button>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
                     </form>
 
 					{/* Penjab Create Modal */}

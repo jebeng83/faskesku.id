@@ -136,4 +136,65 @@ class PermintaanLab extends Model
     {
         return $query->where('dokter_perujuk', $kdDokter);
     }
+
+    /**
+     * Check apakah hasil benar-benar tersedia di detail_periksa_lab
+     * Memastikan bahwa ada data hasil yang tersimpan untuk semua template yang diminta
+     */
+    public function hasHasilTersedia(): bool
+    {
+        // Jika tgl_hasil tidak valid, pasti belum ada hasil
+        if (!$this->tgl_hasil || $this->tgl_hasil === '0000-00-00') {
+            return false;
+        }
+
+        // Validasi format tanggal invalid lainnya
+        $tglHasilStr = is_string($this->tgl_hasil) ? $this->tgl_hasil : (string)$this->tgl_hasil;
+        $invalidDates = ['0000-00-00', '-0001-11-30', '-0001-11-29', '1970-01-01'];
+        foreach ($invalidDates as $invalid) {
+            if (str_contains($tglHasilStr, $invalid)) {
+                return false;
+            }
+        }
+        
+        if (str_starts_with(trim($tglHasilStr), '-')) {
+            return false;
+        }
+
+        // Ambil detail permintaan untuk mendapatkan semua template yang diminta
+        // Pastikan relasi sudah dimuat untuk menghindari N+1 query
+        if (!$this->relationLoaded('detailPermintaan')) {
+            $this->load('detailPermintaan');
+        }
+        
+        $detailPermintaan = $this->detailPermintaan;
+        
+        if ($detailPermintaan->isEmpty()) {
+            return false;
+        }
+
+        // Cek apakah semua template yang diminta sudah memiliki hasil di detail_periksa_lab
+        foreach ($detailPermintaan as $detail) {
+            $hasResult = \App\Models\DetailPeriksaLab::where('no_rawat', $this->no_rawat)
+                ->where('kd_jenis_prw', $detail->kd_jenis_prw)
+                ->where('id_template', $detail->id_template)
+                ->whereNotNull('nilai')
+                ->where('nilai', '!=', '')
+                ->exists();
+            
+            if (!$hasResult) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Accessor untuk status hasil
+     */
+    public function getHasHasilTersediaAttribute(): bool
+    {
+        return $this->hasHasilTersedia();
+    }
 }

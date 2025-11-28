@@ -46,7 +46,8 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'nik' => 'nullable|string|max:20|unique:users,nik',
+            // Ensure nik refers to an existing pegawai, and remains unique per users
+            'nik' => 'nullable|string|max:20|exists:pegawai,nik|unique:users,nik',
             'roles' => 'array',
             'roles.*' => 'exists:roles,name'
         ]);
@@ -96,7 +97,8 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
-            'nik' => 'nullable|string|max:20|unique:users,nik,' . $user->id,
+            // Ensure nik refers to an existing pegawai, and remains unique per users
+            'nik' => 'nullable|string|max:20|exists:pegawai,nik|unique:users,nik,' . $user->id,
             'roles' => 'array',
             'roles.*' => 'exists:roles,name'
         ]);

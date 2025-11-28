@@ -1,9 +1,14 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
 import rekening from './rekening'
+import rekeningTahun from './rekening-tahun'
 import akunBayar from './akun-bayar'
 import akunPiutang from './akun-piutang'
 import pengaturanRekening from './pengaturan-rekening'
 import jurnal from './jurnal'
+import jurnalPenyesuaian from './jurnal-penyesuaian'
+import jurnalPenutup from './jurnal-penutup'
+import bukuBesar from './buku-besar'
+import neraca from './neraca'
 import cashflow from './cashflow'
 import billing from './billing'
 import kasirRalan from './kasir-ralan'
@@ -72,10 +77,15 @@ invoice.head = (args: { no_rawat: string | number } | [no_rawat: string | number
 const akutansi = {
     invoice: Object.assign(invoice, invoice),
     rekening: Object.assign(rekening, rekening),
+    rekeningTahun: Object.assign(rekeningTahun, rekeningTahun),
     akunBayar: Object.assign(akunBayar, akunBayar),
     akunPiutang: Object.assign(akunPiutang, akunPiutang),
     pengaturanRekening: Object.assign(pengaturanRekening, pengaturanRekening),
     jurnal: Object.assign(jurnal, jurnal),
+    jurnalPenyesuaian: Object.assign(jurnalPenyesuaian, jurnalPenyesuaian),
+    jurnalPenutup: Object.assign(jurnalPenutup, jurnalPenutup),
+    bukuBesar: Object.assign(bukuBesar, bukuBesar),
+    neraca: Object.assign(neraca, neraca),
     cashflow: Object.assign(cashflow, cashflow),
     billing: Object.assign(billing, billing),
     kasirRalan: Object.assign(kasirRalan, kasirRalan),

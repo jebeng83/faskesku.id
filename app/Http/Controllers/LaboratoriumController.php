@@ -12,6 +12,7 @@ use App\Models\Patient;
 use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Inertia\Inertia;
@@ -108,7 +109,7 @@ class LaboratoriumController extends Controller
                 DetailPeriksaLab::create([
                     'no_rawat' => $request->no_rawat,
                     'kd_jenis_prw' => $request->kd_jenis_prw,
-                    'item_pemeriksaan' => $template->item_pemeriksaan,
+                    'item_pemeriksaan' => $template->Pemeriksaan,
                     'nilai_rujukan' => $template->getNilaiRujukan(),
                     'satuan' => $template->satuan
                 ]);
@@ -146,6 +147,103 @@ class LaboratoriumController extends Controller
             'periksaLab' => $periksaLab,
             'riwayatLab' => $riwayatLab
         ]);
+    }
+
+    /**
+     * Detail pemeriksaan (JSON) untuk kebutuhan popup input hasil.
+     */
+    public function detail(Request $request, $noRawat = null)
+    {
+        try {
+            $noRawatParam = $noRawat ?: $request->query('no_rawat');
+            if (!$noRawatParam) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Parameter no_rawat wajib diisi.',
+                ], 422);
+            }
+
+            // Hindari eager-load untuk detailPemeriksaan di sini karena relasi menggunakan nilai instance.
+            $periksaLab = PeriksaLab::with(['regPeriksa.patient'])->findOrFail($noRawatParam);
+
+            // Generate detail dari template_laboratorium jika baris untuk template tertentu belum ada.
+            $templates = TemplateLaboratorium::byJenisPemeriksaan($periksaLab->kd_jenis_prw)
+                ->ordered()
+                ->get();
+
+            // Hitung usia jika tersedia (null-safe)
+            $jk = $periksaLab->regPeriksa?->patient?->jk;
+            $usiaTahun = null;
+            if (!empty($periksaLab->regPeriksa?->patient?->tgl_lahir)) {
+                try {
+                    $usiaTahun = \Carbon\Carbon::parse($periksaLab->regPeriksa->patient->tgl_lahir)
+                        ->diffInYears(\Carbon\Carbon::parse($periksaLab->tgl_periksa ?? now()));
+                } catch (\Exception $e) {
+                    $usiaTahun = null;
+                }
+            }
+
+            // Tentukan tgl & jam yang dipakai: gunakan milik pemeriksaan bila ada,
+            // jika tidak, ambil dari baris existing pertama; jika tetap tidak ada, gunakan sekarang.
+            $existingFirst = $periksaLab->detailPemeriksaan->first();
+            $tglForDetail = $periksaLab->tgl_periksa ?? $existingFirst?->tgl_periksa ?? now();
+            $jamForDetail = $periksaLab->jam ?? $existingFirst?->jam ?? now();
+
+            foreach ($templates as $template) {
+                DetailPeriksaLab::firstOrCreate([
+                    'no_rawat' => $periksaLab->no_rawat,
+                    'kd_jenis_prw' => $periksaLab->kd_jenis_prw,
+                    'id_template' => $template->id_template,
+                    'tgl_periksa' => \Carbon\Carbon::parse($tglForDetail)->toDateString(),
+                    'jam' => \Carbon\Carbon::parse($jamForDetail)->format('H:i:s'),
+                ], [
+                    'nilai_rujukan' => $template->getNilaiRujukan($jk, $usiaTahun),
+                    // komponen biaya mengikuti template agar cocok dengan schema
+                    'bagian_rs' => $template->bagian_rs ?? 0,
+                    'bhp' => $template->bhp ?? 0,
+                    'bagian_perujuk' => $template->bagian_perujuk ?? 0,
+                    'bagian_dokter' => $template->bagian_dokter ?? 0,
+                    'bagian_laborat' => $template->bagian_laborat ?? 0,
+                    'kso' => $template->kso ?? 0,
+                    'menejemen' => $template->menejemen ?? 0,
+                    'biaya_item' => $template->biaya_item ?? 0,
+                ]);
+            }
+
+            // Ambil detail menggunakan query relasi langsung agar tidak terpengaruh eager-load constraints
+            $detailRows = $periksaLab->detailPemeriksaan()->with('template')->get();
+
+            $details = $detailRows->map(function ($detail) {
+                return [
+                    // gunakan id_template sebagai pengenal baris untuk kompatibilitas frontend
+                    'id' => $detail->id_template,
+                    'item_pemeriksaan' => $detail->template?->Pemeriksaan ?? '-',
+                    'nilai' => $detail->nilai,
+                    'nilai_rujukan' => $detail->nilai_rujukan,
+                    'satuan' => $detail->template?->satuan ?? null,
+                    'keterangan' => $detail->keterangan,
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'no_rawat' => $periksaLab->no_rawat,
+                    'status' => $periksaLab->status,
+                    'detail_pemeriksaan' => $details,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Laboratorium detail error', [
+                'no_rawat' => $request->query('no_rawat'),
+                'exception_message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil detail pemeriksaan: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -221,24 +319,38 @@ class LaboratoriumController extends Controller
     {
         $request->validate([
             'detail_pemeriksaan' => 'required|array',
-            'detail_pemeriksaan.*.id' => 'required|exists:detail_periksa_lab,id',
+            // gunakan id_template sebagai pengenal baris
+            'detail_pemeriksaan.*.id' => 'required|exists:template_laboratorium,id_template',
             'detail_pemeriksaan.*.nilai' => 'nullable|string',
-            'detail_pemeriksaan.*.keterangan' => 'nullable|in:Normal,Tinggi,Rendah,Abnormal'
+            // Bebaskan keterangan sesuai behavior Java form
+            'detail_pemeriksaan.*.keterangan' => 'nullable|string',
+            // Izinkan perubahan nilai rujukan bila diperlukan
+            'detail_pemeriksaan.*.nilai_rujukan' => 'nullable|string'
         ]);
 
         try {
             DB::beginTransaction();
 
+            $periksaLab = PeriksaLab::findOrFail($noRawat);
             foreach ($request->detail_pemeriksaan as $detail) {
-                DetailPeriksaLab::where('id', $detail['id'])
-                    ->update([
-                        'nilai' => $detail['nilai'],
-                        'keterangan' => $detail['keterangan']
-                    ]);
+                $updateFields = [
+                    'nilai' => $detail['nilai'] ?? null,
+                    'keterangan' => $detail['keterangan'] ?? null,
+                ];
+                if (array_key_exists('nilai_rujukan', $detail)) {
+                    $updateFields['nilai_rujukan'] = $detail['nilai_rujukan'];
+                }
+
+                // update berdasarkan identitas baris asli
+                DetailPeriksaLab::where('no_rawat', $noRawat)
+                    ->where('kd_jenis_prw', $periksaLab->kd_jenis_prw)
+                    ->where('id_template', $detail['id'])
+                    ->whereDate('tgl_periksa', \Carbon\Carbon::parse($periksaLab->tgl_periksa ?? now())->toDateString())
+                    ->where('jam', \Carbon\Carbon::parse($periksaLab->jam ?? now())->format('H:i:s'))
+                    ->update($updateFields);
             }
 
             // Update status pemeriksaan
-            $periksaLab = PeriksaLab::findOrFail($noRawat);
             $totalDetail = $periksaLab->detailPemeriksaan()->count();
             $detailTerisi = $periksaLab->detailPemeriksaan()->whereNotNull('nilai')->count();
 

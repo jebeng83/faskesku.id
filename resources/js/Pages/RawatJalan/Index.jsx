@@ -210,18 +210,12 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                     <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl p-8 text-white">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h1 className="text-3xl font-bold mb-2">
+                                <h1 className="text-2xl font-bold mb-2">
                                     Data Rawat Jalan
                                 </h1>
 
                             </div>
-                            <Link
-                                href={route('rawat-jalan.create')}
-                                className="bg-white/20 backdrop-blur hover:bg-white/30 text-white px-6 py-3 rounded-xl flex items-center gap-3 transition-all duration-300 shadow-lg hover:shadow-xl font-medium border border-white/20 transform hover:scale-105"
-                            >
-                                <PlusIcon className="w-5 h-5" />
-                                <span>Registrasi Baru</span>
-                            </Link>
+                            
                         </div>
                     </div>
                 </div>

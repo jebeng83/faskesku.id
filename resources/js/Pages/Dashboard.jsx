@@ -66,6 +66,11 @@ const quickLinks = [
         href: "/rawat-jalan",
     },
     {
+        title: "Laboratorium",
+        description: "Kelola pemeriksaan laboratorium & data hasil",
+        href: route("laboratorium.index"),
+    },
+    {
         title: "Pembayaran",
         description: "Kelola pembayaran Ralan & Ranap",
         href: "/pembayaran",
@@ -166,28 +171,39 @@ const TopNavbar = React.memo(function TopNavbar() {
                     </Link>
                     <nav className="hidden md:flex items-center gap-5 text-sm">
                         <Link
-                            href="/registration/lanjutan"
-                            className="text-slate-700 dark:text-gray-300 hover:text-blue-600"
+                            href={route("registration.index")}
+                            className="inline-flex items-center gap-1.5 text-slate-700 dark:text-gray-300 hover:text-blue-600 transition-colors"
                         >
-                            Pendaftaran
+                            <UserPlus className="w-4 h-4" />
+                            <span>Pendaftaran</span>
                         </Link>
                         <Link
-                            href="/rawat-jalan"
-                            className="text-slate-700 dark:text-gray-300 hover:text-blue-600"
+                            href={route("rawat-jalan.index")}
+                            className="inline-flex items-center gap-1.5 text-slate-700 dark:text-gray-300 hover:text-blue-600 transition-colors"
                         >
-                            Rawat Jalan
+                            <Stethoscope className="w-4 h-4" />
+                            <span>Rawat Jalan</span>
                         </Link>
                         <Link
-                            href="/satusehat/monitoring"
-                            className="text-slate-700 dark:text-gray-300 hover:text-blue-600"
+                            href={route("laboratorium.index")}
+                            className="inline-flex items-center gap-1.5 text-slate-700 dark:text-gray-300 hover:text-blue-600 transition-colors"
                         >
-                            SATUSEHAT
+                            <FlaskConical className="w-4 h-4" />
+                            <span>Laborat</span>
                         </Link>
                         <Link
-                            href="/pembayaran"
-                            className="text-slate-700 dark:text-gray-300 hover:text-blue-600"
+                            href={route("farmasi.permintaan-resep")}
+                            className="inline-flex items-center gap-1.5 text-slate-700 dark:text-gray-300 hover:text-blue-600 transition-colors"
                         >
-                            Pembayaran
+                            <Pill className="w-4 h-4" />
+                            <span>Farmasi</span>
+                        </Link>
+                        <Link
+                            href={route("akutansi.kasir-ralan.page")}
+                            className="inline-flex items-center gap-1.5 text-slate-700 dark:text-gray-300 hover:text-blue-600 transition-colors"
+                        >
+                            <CreditCard className="w-4 h-4" />
+                            <span>Kasir</span>
                         </Link>
                     </nav>
                     <div className="flex items-center gap-2">
@@ -200,18 +216,36 @@ const TopNavbar = React.memo(function TopNavbar() {
                                 Billing
                             </span>
                         </Link>
-                        <Link
-                            href={route("logout")}
-                            method="post"
-                            as="button"
+                        <button
+                            onClick={() => {
+                                try {
+                                    const form = document.createElement("form");
+                                    form.method = "POST";
+                                    form.action = route("logout");
+                                    const csrfInput =
+                                        document.createElement("input");
+                                    csrfInput.type = "hidden";
+                                    csrfInput.name = "_token";
+                                    csrfInput.value =
+                                        document
+                                            .querySelector(
+                                                'meta[name="csrf-token"]'
+                                            )
+                                            ?.getAttribute("content") || "";
+                                    form.appendChild(csrfInput);
+                                    document.body.appendChild(form);
+                                    form.submit();
+                                } catch (error) {
+                                    console.error("Logout error:", error);
+                                }
+                            }}
                             className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-slate-900/80 text-white hover:bg-slate-900"
-                            preserveScroll
                         >
                             <LogOut className="w-4 h-4" />
                             <span className="text-xs font-semibold">
                                 Keluar
                             </span>
-                        </Link>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -283,7 +317,7 @@ const Footer = React.memo(function Footer() {
     const unitLinks = [
         { label: "SATUSEHAT Monitoring", href: "/satusehat/monitoring" },
         { label: "Penjaminan Mutu (Audit)", href: "/permissions" },
-        { label: "Laboratorium", href: "/laboratorium" },
+        { label: "Laboratorium", href: route("laboratorium.index") },
         { label: "Radiologi", href: "/radiologi" },
         { label: "Farmasi", href: "/farmasi" },
     ];
@@ -423,7 +457,7 @@ export default function Dashboard() {
         props?.setting?.nama_instansi ||
         props?.nama_instansi;
     // Gunakan wallpaper dari tabel setting via route streaming; fallback ke file default
-    
+
     const wallpaperUrl = "/img/wallpaper.png";
     // const wallpaperUrl = namaInstansi
     //     ? route("setting.app.wallpaper", namaInstansi, false)
@@ -861,6 +895,15 @@ export default function Dashboard() {
                                         <Stethoscope className="w-4 h-4" />
                                         <span className="text-sm font-semibold">
                                             Rawat Jalan
+                                        </span>
+                                    </Link>
+                                    <Link
+                                        href={safeRoute("laboratorium.index")}
+                                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/20 hover:bg-white/30 ring-1 ring-white/40 text-white"
+                                    >
+                                        <FlaskConical className="w-4 h-4" />
+                                        <span className="text-sm font-semibold">
+                                            Laboratorium
                                         </span>
                                     </Link>
                                 </div>

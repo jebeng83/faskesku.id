@@ -29,5 +29,18 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Handle 419 CSRF Token Expired untuk Inertia requests
+        // Sesuai dokumentasi Inertia: https://inertiajs.com/csrf-protection
+        $exceptions->respond(function (\Symfony\Component\HttpFoundation\Response $response, \Throwable $exception, \Illuminate\Http\Request $request) {
+            // Handle CSRF token mismatch (419 error)
+            if ($response->getStatusCode() === 419) {
+                // Untuk Inertia requests, redirect kembali dengan flash message
+                // Ini akan menghasilkan Inertia response yang valid
+                return back()->with([
+                    'error' => 'Halaman telah berakhir. Silakan coba lagi.',
+                ]);
+            }
+            
+            return $response;
+        });
     })->create();
