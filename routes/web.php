@@ -28,6 +28,7 @@ use App\Http\Controllers\Akutansi\BillingController;
 use App\Http\Controllers\Akutansi\AkunBayarController;
 use App\Http\Controllers\Akutansi\AkunPiutangController;
 use App\Http\Controllers\Akutansi\SetAkunController;
+use App\Http\Controllers\Akutansi\BukuBesarController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\RegPeriksaController;
 use App\Http\Controllers\RehabilitasiMedikController;
@@ -85,6 +86,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/akutansi/rekening', [RekeningController::class, 'page'])
         ->name('akutansi.rekening.page');
 
+    // Akutansi: Rekening Tahun (Saldo Awal per Tahun) page (Inertia)
+    Route::get('/akutansi/rekening-tahun', function () {
+        return Inertia::render('Akutansi/RekeningTahun');
+    })->name('akutansi.rekening-tahun.page');
+
     // Akutansi: Akun Bayar page (Inertia)
     Route::get('/akutansi/akun-bayar', [AkunBayarController::class, 'page'])
         ->name('akutansi.akun-bayar.page');
@@ -101,6 +107,23 @@ Route::middleware('auth')->group(function () {
     // Akutansi: Jurnal page (Inertia)
     Route::get('/akutansi/jurnal', [JurnalController::class, 'page'])
         ->name('akutansi.jurnal.page');
+
+    // Akutansi: Jurnal Penyesuaian (Adjusting Entries) page (Inertia)
+    Route::get('/akutansi/jurnal-penyesuaian', [JurnalController::class, 'penyesuaianPage'])
+        ->name('akutansi.jurnal-penyesuaian.page');
+
+    // Akutansi: Jurnal Penutup (Closing Entries) page (Inertia)
+    Route::get('/akutansi/jurnal-penutup', [JurnalController::class, 'penutupPage'])
+        ->name('akutansi.jurnal-penutup.page');
+
+    // Akutansi: Buku Besar (General Ledger) page (Inertia)
+    Route::get('/akutansi/buku-besar', [BukuBesarController::class, 'page'])
+        ->name('akutansi.buku-besar.page');
+
+    // Akutansi: Neraca (Balance Sheet) page (Inertia)
+    Route::get('/akutansi/neraca', function () {
+        return Inertia::render('Akutansi/Neraca');
+    })->name('akutansi.neraca.page');
 
     // Akutansi: Cash Flow page (Inertia)
     Route::get('/akutansi/cashflow', [CashFlowController::class, 'page'])
@@ -120,19 +143,42 @@ Route::middleware('auth')->group(function () {
         Route::post('/rekening', [RekeningController::class, 'store'])->name('api.akutansi.rekening.store');
         Route::put('/rekening/{kd_rek}', [RekeningController::class, 'update'])->name('api.akutansi.rekening.update');
         Route::delete('/rekening/{kd_rek}', [RekeningController::class, 'destroy'])->name('api.akutansi.rekening.destroy');
+        // Rekening hierarchical operations (subrekening)
+        Route::post('/rekening/{kd_rek}/make-sub', [RekeningController::class, 'makeSub'])->name('api.akutansi.rekening.make-sub');
+        Route::post('/rekening/{kd_rek}/make-induk', [RekeningController::class, 'makeInduk'])->name('api.akutansi.rekening.make-induk');
+        Route::get('/rekening/{kd_rek}/children', [RekeningController::class, 'children'])->name('api.akutansi.rekening.children');
+
+        // Akutansi API: Rekening Tahun (Saldo Awal per Tahun)
+        Route::get('/rekeningtahun', [\App\Http\Controllers\Akutansi\RekeningTahunController::class, 'index'])->name('api.akutansi.rekeningtahun.index');
+        Route::post('/rekeningtahun', [\App\Http\Controllers\Akutansi\RekeningTahunController::class, 'store'])->name('api.akutansi.rekeningtahun.store');
+        Route::put('/rekeningtahun/{thn}/{kd_rek}', [\App\Http\Controllers\Akutansi\RekeningTahunController::class, 'update'])->name('api.akutansi.rekeningtahun.update');
+        Route::delete('/rekeningtahun/{thn}/{kd_rek}', [\App\Http\Controllers\Akutansi\RekeningTahunController::class, 'destroy'])->name('api.akutansi.rekeningtahun.destroy');
 
     // Akutansi API: Jurnal CRUD
     Route::get('/jurnal', [JurnalController::class, 'index'])->name('api.akutansi.jurnal.index');
-    Route::get('/jurnal/{no_jurnal}', [JurnalController::class, 'show'])->where('no_jurnal', '.*')->name('api.akutansi.jurnal.show');
-    Route::post('/jurnal', [JurnalController::class, 'store'])->name('api.akutansi.jurnal.store');
-    Route::put('/jurnal/{no_jurnal}', [JurnalController::class, 'update'])->where('no_jurnal', '.*')->name('api.akutansi.jurnal.update');
-    Route::delete('/jurnal/{no_jurnal}', [JurnalController::class, 'destroy'])->where('no_jurnal', '.*')->name('api.akutansi.jurnal.destroy');
+    // IMPORTANT: Place static routes BEFORE dynamic catch-all to avoid shadowing
+    // Akutansi API: Preview Jurnal Penutup
+    Route::get('/jurnal/closing-preview', [JurnalController::class, 'closingPreview'])->name('api.akutansi.jurnal.closing-preview');
     // Akutansi API: Single Posting Point dari tampjurnal
     Route::post('/jurnal/preview', [JurnalController::class, 'previewFromTemp'])->name('api.akutansi.jurnal.preview');
     Route::post('/jurnal/post', [JurnalController::class, 'postFromTemp'])->name('api.akutansi.jurnal.post');
+    // Dynamic show/update/destroy must come AFTER static routes
+    Route::get('/jurnal/{no_jurnal}', [JurnalController::class, 'show'])
+        ->where('no_jurnal', '^(?!closing-preview$).*$')
+        ->name('api.akutansi.jurnal.show');
+    Route::post('/jurnal', [JurnalController::class, 'store'])->name('api.akutansi.jurnal.store');
+    Route::put('/jurnal/{no_jurnal}', [JurnalController::class, 'update'])
+        ->where('no_jurnal', '^(?!closing-preview$).*$')
+        ->name('api.akutansi.jurnal.update');
+    Route::delete('/jurnal/{no_jurnal}', [JurnalController::class, 'destroy'])
+        ->where('no_jurnal', '^(?!closing-preview$).*$')
+        ->name('api.akutansi.jurnal.destroy');
 
         // Akutansi API: Cash Flow aggregation
         Route::get('/cashflow', [CashFlowController::class, 'index'])->name('api.akutansi.cashflow.index');
+
+        // Akutansi API: Buku Besar (General Ledger)
+        Route::get('/buku-besar', [BukuBesarController::class, 'index'])->name('api.akutansi.buku-besar.index');
 
         // Billing CRUD
         Route::get('/billing', [BillingController::class, 'index'])->name('api.akutansi.billing.index');
@@ -384,15 +430,35 @@ Route::post('api/resep/{no_resep}/penyerahan', [ResepController::class, 'penyera
         Route::get('/dashboard', [LaboratoriumController::class, 'dashboard'])->name('dashboard');
         Route::get('/create', [LaboratoriumController::class, 'create'])->name('create');
         Route::post('/', [LaboratoriumController::class, 'store'])->name('store');
-        Route::get('/{noRawat}', [LaboratoriumController::class, 'show'])->name('show');
-        Route::get('/{noRawat}/edit', [LaboratoriumController::class, 'edit'])->name('edit');
-        Route::put('/{noRawat}', [LaboratoriumController::class, 'update'])->name('update');
-        Route::delete('/{noRawat}', [LaboratoriumController::class, 'destroy'])->name('destroy');
-        Route::put('/{noRawat}/hasil', [LaboratoriumController::class, 'updateHasil'])->name('update-hasil');
+        // JSON detail untuk popup input hasil — gunakan query string agar aman untuk no_rawat yang mengandung '/'
+        Route::get('/detail', [LaboratoriumController::class, 'detail'])->name('detail');
+        
+        // Permintaan Laboratorium (resource) di bawah prefix laboratorium
+        // IMPORTANT: Route spesifik harus didefinisikan SEBELUM route wildcard
+        Route::resource('permintaan-lab', PermintaanLabController::class);
+        // Ambil sampel: update tanggal & jam sampel berdasarkan no_rawat (order terbaru)
+        Route::post('/permintaan-lab/ambil-sampel', [PermintaanLabController::class, 'ambilSampel'])->name('permintaan-lab.ambil-sampel');
+        // Update sampel: update tanggal & jam sampel berdasarkan noorder (sesuai dokumentasi)
+        // Route ini HARUS didefinisikan SEBELUM route wildcard /{noRawat} untuk menghindari konflik
+        Route::put('/permintaan-lab/{permintaan_lab}/sampel', [PermintaanLabController::class, 'updateSampel'])->name('permintaan-lab.update-sampel');
+        // Input hasil: tampilkan form input hasil berdasarkan permintaan lab
+        Route::get('/permintaan-lab/{permintaan_lab}/hasil', [PermintaanLabController::class, 'inputHasil'])->name('permintaan-lab.input-hasil');
+        Route::post('/permintaan-lab/{permintaan_lab}/hasil', [PermintaanLabController::class, 'storeHasil'])->name('permintaan-lab.store-hasil');
+        // Preview hasil pemeriksaan sebelum download PDF
+        Route::get('/permintaan-lab/{permintaan_lab}/preview', [PermintaanLabController::class, 'preview'])->name('permintaan-lab.preview');
+        // Cetak hasil pemeriksaan (download PDF)
+        Route::get('/permintaan-lab/{permintaan_lab}/cetak', [PermintaanLabController::class, 'cetak'])->name('permintaan-lab.cetak');
+        
+        // Tampilkan pemeriksaan berdasarkan no_rawat (mengizinkan karakter '/')
+        // Route wildcard HARUS didefinisikan TERAKHIR untuk menghindari konflik dengan route spesifik
+        Route::get('/{noRawat}', [LaboratoriumController::class, 'show'])->name('show')->where('noRawat', '.*');
+        Route::get('/{noRawat}/edit', [LaboratoriumController::class, 'edit'])->name('edit')->where('noRawat', '.*');
+        Route::put('/{noRawat}', [LaboratoriumController::class, 'update'])->name('update')->where('noRawat', '.*');
+        Route::delete('/{noRawat}', [LaboratoriumController::class, 'destroy'])->name('destroy')->where('noRawat', '.*');
+        Route::put('/{noRawat}/hasil', [LaboratoriumController::class, 'updateHasil'])->name('update-hasil')->where('noRawat', '.*');
     });
 
-    // Permintaan Laboratorium routes
-    Route::resource('permintaan-lab', PermintaanLabController::class);
+    // Permintaan Laboratorium routes dipindahkan ke dalam prefix laboratorium (lihat di atas)
     Route::get('/api/reg-periksa', [PermintaanLabController::class, 'getRegPeriksa'])->name('api.reg-periksa');
     Route::resource('radiologi', RadiologiController::class);
     Route::resource('rehabilitasi-medik', RehabilitasiMedikController::class);

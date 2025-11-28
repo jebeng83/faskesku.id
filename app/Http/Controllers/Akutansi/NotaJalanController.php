@@ -81,6 +81,17 @@ class NotaJalanController extends Controller
                 ]);
             }
 
+            // Otomatis buat tagihan_sadewa setelah nota_jalan dibuat
+            try {
+                \App\Http\Controllers\Akutansi\TagihanSadewaController::createFromNota(
+                    $noNota,
+                    auth()->user()?->name ?? 'System'
+                );
+            } catch (\Throwable $e) {
+                // Log error tapi jangan gagalkan pembuatan nota
+                \Log::warning('Gagal membuat tagihan_sadewa otomatis: ' . $e->getMessage());
+            }
+
             return response()->json(['no_nota' => $noNota], 201);
         });
     }

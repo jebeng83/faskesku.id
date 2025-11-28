@@ -449,94 +449,39 @@ export default function AppLayout({
 									{/* Divider */}
 									<div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
 
-									{/* Logout */}
-									<button
-										onClick={async (e) => {
-											e.preventDefault();
-											e.stopPropagation();
-
-											// Get fresh CSRF token
-                                            const getFreshCSRFToken = async () => {
-                                                // Hindari pemanggilan Sanctum jika tidak digunakan.
-                                                // Ambil token dari meta tag yang selalu disediakan Blade.
-                                                const token = document.querySelector(
-                                                    'meta[name="csrf-token"]'
-                                                );
-                                                return token ? token.getAttribute("content") : null;
-                                            };
-
-											try {
-												// Try to get fresh CSRF token first
-												const freshToken = await getFreshCSRFToken();
-
-												// Use Inertia router with fresh token
-												router.post(
-													route("logout"),
-													{},
-													{
-														headers: {
-															"X-CSRF-TOKEN":
-																freshToken ||
-																document
-																	.querySelector('meta[name="csrf-token"]')
-																	?.getAttribute("content") ||
-																"",
-														},
-														onSuccess: () => {
-															// Logout successful
-														},
-														onError: (errors) => {
-															console.log("Logout error:", errors);
-															// If still fails, try direct form submission
-															const form = document.createElement("form");
-															form.method = "POST";
-															form.action = route("logout");
-
-															const csrfInput = document.createElement("input");
-															csrfInput.type = "hidden";
-															csrfInput.name = "_token";
-															csrfInput.value =
-																freshToken ||
-																document
-																	.querySelector('meta[name="csrf-token"]')
-																	?.getAttribute("content") ||
-																"";
-															form.appendChild(csrfInput);
-
-															document.body.appendChild(form);
-															form.submit();
-														},
-													}
-												);
-											} catch (error) {
-												console.log("Logout failed:", error);
-												// Final fallback: direct form submission
-												const form = document.createElement("form");
-												form.method = "POST";
-												form.action = route("logout");
-
-												const csrfInput = document.createElement("input");
-												csrfInput.type = "hidden";
-												csrfInput.name = "_token";
-												csrfInput.value =
-													document
-														.querySelector('meta[name="csrf-token"]')
-														?.getAttribute("content") || "";
-												form.appendChild(csrfInput);
-
-												document.body.appendChild(form);
-												form.submit();
-											}
-										}}
-										onMouseDown={(e) => e.stopPropagation()}
-										onMouseUp={(e) => e.stopPropagation()}
-										className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 w-full text-left"
-									>
-										<svg
-											className="w-4 h-4"
-											fill="currentColor"
-											viewBox="0 0 20 20"
-										>
+                                    {/* Logout */}
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            // Gunakan form submission agar CSRF selalu tervalidasi oleh Laravel
+                                            try {
+                                                const form = document.createElement("form");
+                                                form.method = "POST";
+                                                form.action = route("logout");
+                                                const csrfInput = document.createElement("input");
+                                                csrfInput.type = "hidden";
+                                                csrfInput.name = "_token";
+                                                csrfInput.value =
+                                                    document
+                                                        .querySelector('meta[name="csrf-token"]')
+                                                        ?.getAttribute("content") || "";
+                                                form.appendChild(csrfInput);
+                                                document.body.appendChild(form);
+                                                form.submit();
+                                            } catch (error) {
+                                                console.error("Logout error:", error);
+                                            }
+                                        }}
+                                        onMouseDown={(e) => e.stopPropagation()}
+                                        onMouseUp={(e) => e.stopPropagation()}
+                                        className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 w-full text-left"
+                                    >
+                                        <svg
+                                            className="w-4 h-4"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
 											<path
 												fillRule="evenodd"
 												d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z"
@@ -762,9 +707,25 @@ function NavItemCollapsed({ icon, active = false, href = "#" }) {
 }
 
 function UserProfileDropdown({ isOpen, onToggle }) {
-	const handleLogout = () => {
-		router.post(route("logout"));
-	};
+    const handleLogout = () => {
+        try {
+            const form = document.createElement("form");
+            form.method = "POST";
+            form.action = route("logout");
+            const csrfInput = document.createElement("input");
+            csrfInput.type = "hidden";
+            csrfInput.name = "_token";
+            csrfInput.value =
+                document
+                    .querySelector('meta[name="csrf-token"]')
+                    ?.getAttribute("content") || "";
+            form.appendChild(csrfInput);
+            document.body.appendChild(form);
+            form.submit();
+        } catch (error) {
+            console.error("Logout error:", error);
+        }
+    };
 
 	return (
 		<div className="relative profile-dropdown">

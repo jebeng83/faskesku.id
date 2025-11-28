@@ -1,7 +1,70 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
+import templatesD41748 from './templates'
+/**
+* @see \App\Http\Controllers\PermintaanLabController::templates
+* @see app/Http/Controllers/PermintaanLabController.php:1046
+* @route '/api/permintaan-lab/templates/{kdJenisPrw}'
+*/
+export const templates = (args: { kdJenisPrw: string | number } | [kdJenisPrw: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: templates.url(args, options),
+    method: 'get',
+})
+
+templates.definition = {
+    methods: ["get","head"],
+    url: '/api/permintaan-lab/templates/{kdJenisPrw}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::templates
+* @see app/Http/Controllers/PermintaanLabController.php:1046
+* @route '/api/permintaan-lab/templates/{kdJenisPrw}'
+*/
+templates.url = (args: { kdJenisPrw: string | number } | [kdJenisPrw: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { kdJenisPrw: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            kdJenisPrw: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        kdJenisPrw: args.kdJenisPrw,
+    }
+
+    return templates.definition.url
+            .replace('{kdJenisPrw}', parsedArgs.kdJenisPrw.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::templates
+* @see app/Http/Controllers/PermintaanLabController.php:1046
+* @route '/api/permintaan-lab/templates/{kdJenisPrw}'
+*/
+templates.get = (args: { kdJenisPrw: string | number } | [kdJenisPrw: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: templates.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::templates
+* @see app/Http/Controllers/PermintaanLabController.php:1046
+* @route '/api/permintaan-lab/templates/{kdJenisPrw}'
+*/
+templates.head = (args: { kdJenisPrw: string | number } | [kdJenisPrw: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: templates.url(args, options),
+    method: 'head',
+})
+
 /**
 * @see \App\Http\Controllers\PermintaanLabController::store
-* @see app/Http/Controllers/PermintaanLabController.php:86
+* @see app/Http/Controllers/PermintaanLabController.php:131
 * @route '/api/permintaan-lab'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +79,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::store
-* @see app/Http/Controllers/PermintaanLabController.php:86
+* @see app/Http/Controllers/PermintaanLabController.php:131
 * @route '/api/permintaan-lab'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -25,7 +88,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::store
-* @see app/Http/Controllers/PermintaanLabController.php:86
+* @see app/Http/Controllers/PermintaanLabController.php:131
 * @route '/api/permintaan-lab'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -34,8 +97,42 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
+* @see \App\Http\Controllers\PermintaanLabController::stageLab
+* @see app/Http/Controllers/PermintaanLabController.php:1081
+* @route '/api/permintaan-lab/stage-lab'
+*/
+export const stageLab = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: stageLab.url(options),
+    method: 'post',
+})
+
+stageLab.definition = {
+    methods: ["post"],
+    url: '/api/permintaan-lab/stage-lab',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::stageLab
+* @see app/Http/Controllers/PermintaanLabController.php:1081
+* @route '/api/permintaan-lab/stage-lab'
+*/
+stageLab.url = (options?: RouteQueryOptions) => {
+    return stageLab.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::stageLab
+* @see app/Http/Controllers/PermintaanLabController.php:1081
+* @route '/api/permintaan-lab/stage-lab'
+*/
+stageLab.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: stageLab.url(options),
+    method: 'post',
+})
+
+/**
 * @see \App\Http\Controllers\PermintaanLabController::byRawat
-* @see app/Http/Controllers/PermintaanLabController.php:318
+* @see app/Http/Controllers/PermintaanLabController.php:948
 * @route '/api/permintaan-lab/rawat/{no_rawat}'
 */
 export const byRawat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -50,7 +147,7 @@ byRawat.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::byRawat
-* @see app/Http/Controllers/PermintaanLabController.php:318
+* @see app/Http/Controllers/PermintaanLabController.php:948
 * @route '/api/permintaan-lab/rawat/{no_rawat}'
 */
 byRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -77,7 +174,7 @@ byRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::byRawat
-* @see app/Http/Controllers/PermintaanLabController.php:318
+* @see app/Http/Controllers/PermintaanLabController.php:948
 * @route '/api/permintaan-lab/rawat/{no_rawat}'
 */
 byRawat.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -87,7 +184,7 @@ byRawat.get = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::byRawat
-* @see app/Http/Controllers/PermintaanLabController.php:318
+* @see app/Http/Controllers/PermintaanLabController.php:948
 * @route '/api/permintaan-lab/rawat/{no_rawat}'
 */
 byRawat.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -97,7 +194,7 @@ byRawat.head = (args: { no_rawat: string | number } | [no_rawat: string | number
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::riwayat
-* @see app/Http/Controllers/PermintaanLabController.php:416
+* @see app/Http/Controllers/PermintaanLabController.php:1116
 * @route '/api/permintaan-lab/riwayat/{no_rawat}'
 */
 export const riwayat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -112,7 +209,7 @@ riwayat.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::riwayat
-* @see app/Http/Controllers/PermintaanLabController.php:416
+* @see app/Http/Controllers/PermintaanLabController.php:1116
 * @route '/api/permintaan-lab/riwayat/{no_rawat}'
 */
 riwayat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -139,7 +236,7 @@ riwayat.url = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::riwayat
-* @see app/Http/Controllers/PermintaanLabController.php:416
+* @see app/Http/Controllers/PermintaanLabController.php:1116
 * @route '/api/permintaan-lab/riwayat/{no_rawat}'
 */
 riwayat.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -149,7 +246,7 @@ riwayat.get = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::riwayat
-* @see app/Http/Controllers/PermintaanLabController.php:416
+* @see app/Http/Controllers/PermintaanLabController.php:1116
 * @route '/api/permintaan-lab/riwayat/{no_rawat}'
 */
 riwayat.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -159,7 +256,7 @@ riwayat.head = (args: { no_rawat: string | number } | [no_rawat: string | number
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::destroy
-* @see app/Http/Controllers/PermintaanLabController.php:255
+* @see app/Http/Controllers/PermintaanLabController.php:773
 * @route '/api/permintaan-lab/{noorder}'
 */
 export const destroy = (args: { noorder: string | number } | [noorder: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -174,7 +271,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::destroy
-* @see app/Http/Controllers/PermintaanLabController.php:255
+* @see app/Http/Controllers/PermintaanLabController.php:773
 * @route '/api/permintaan-lab/{noorder}'
 */
 destroy.url = (args: { noorder: string | number } | [noorder: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -201,7 +298,7 @@ destroy.url = (args: { noorder: string | number } | [noorder: string | number ] 
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::destroy
-* @see app/Http/Controllers/PermintaanLabController.php:255
+* @see app/Http/Controllers/PermintaanLabController.php:773
 * @route '/api/permintaan-lab/{noorder}'
 */
 destroy.delete = (args: { noorder: string | number } | [noorder: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -210,7 +307,9 @@ destroy.delete = (args: { noorder: string | number } | [noorder: string | number
 })
 
 const permintaanLab = {
+    templates: Object.assign(templates, templatesD41748),
     store: Object.assign(store, store),
+    stageLab: Object.assign(stageLab, stageLab),
     byRawat: Object.assign(byRawat, byRawat),
     riwayat: Object.assign(riwayat, riwayat),
     destroy: Object.assign(destroy, destroy),

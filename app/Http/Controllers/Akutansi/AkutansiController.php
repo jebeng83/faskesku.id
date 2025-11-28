@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Akutansi;
 
 use App\Http\Controllers\Controller;
-use App\Models\RegPeriksa;
 use App\Models\Akutansi\Billing;
-use App\Models\Akutansi\NotaJalan;
 use App\Models\Akutansi\NotaInap;
+use App\Models\Akutansi\NotaJalan;
+use App\Models\RegPeriksa;
 
 class AkutansiController extends Controller
 {
@@ -59,13 +59,25 @@ class AkutansiController extends Controller
         return response()->json([
             'visit' => [
                 'no_rawat' => $reg->no_rawat,
+                'no_reg' => $reg->no_reg ?? null,
                 'no_rkm_medis' => $reg->no_rkm_medis,
                 'pasien' => optional($reg->pasien)->nm_pasien,
+                'kd_dokter' => $reg->kd_dokter ?? null,
                 'dokter' => optional($reg->dokter)->nm_dokter,
+                'kd_poli' => $reg->kd_poli ?? null,
                 'poli' => optional($reg->poliklinik)->nm_poli,
+                'kd_pj' => $reg->kd_pj ?? null,
                 'penjamin' => optional($reg->penjab)->png_jawab,
+                'p_jawab' => $reg->p_jawab ?? null,
+                'almt_pj' => $reg->almt_pj ?? null,
+                'biaya_reg' => $reg->biaya_reg ?? null,
+                'status_bayar' => $reg->status_bayar ?? null,
+                'status_poli' => $reg->status_poli ?? null,
+                'keputusan' => $reg->keputusan ?? null,
                 'status_lanjut' => $reg->status_lanjut ?? null,
                 'tgl_registrasi' => $reg->tgl_registrasi ?? null,
+                'umur' => optional($reg->pasien)->umur ?? null,
+                'no_tlp' => optional($reg->pasien)->no_tlp ?? null,
             ],
             'nota' => $nota,
             'items' => $billing->map(function ($b) {

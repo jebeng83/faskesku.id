@@ -1,6 +1,6 @@
 import React from "react";
 import axios from "axios";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
     Receipt,
     Search,
@@ -10,6 +10,16 @@ import {
     Info,
     Wallet,
     Check,
+    Calendar,
+    FileText,
+    Tag,
+    DollarSign,
+    Hash,
+    X,
+    Loader2,
+    AlertCircle,
+    Database,
+    RefreshCw,
 } from "lucide-react";
 import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
 import SearchableSelect from "@/Components/SearchableSelect";
@@ -18,17 +28,26 @@ const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
         opacity: 1,
-        transition: { staggerChildren: 0.06, delayChildren: 0.05 },
+        transition: { staggerChildren: 0.08, delayChildren: 0.1 },
     },
 };
 
 const itemVariants = {
-    hidden: { opacity: 0, y: 24, scale: 0.98 },
+    hidden: { opacity: 0, y: 30, scale: 0.95 },
     visible: {
         opacity: 1,
         y: 0,
         scale: 1,
-        transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+        transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+    },
+};
+
+const cardHoverVariants = {
+    rest: { scale: 1, y: 0 },
+    hover: {
+        scale: 1.01,
+        y: -4,
+        transition: { duration: 0.3, ease: "easeOut" },
     },
 };
 
@@ -39,10 +58,11 @@ const currency = new Intl.NumberFormat("id-ID", {
 });
 const number = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 2 });
 
-function Field({ label, children }) {
+function Field({ label, children, icon: Icon }) {
     return (
-        <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
+        <div className="space-y-2">
+            <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                {Icon && <Icon className="w-3.5 h-3.5" />}
                 {label}
             </label>
             {children}
@@ -91,41 +111,41 @@ function BillingForm({ initial = {}, statusOptions = [], onSubmit, onCancel }) {
     };
 
     return (
-        <form onSubmit={submit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="No. Rawat">
+        <form onSubmit={submit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <Field label="No. Rawat" icon={Hash}>
                     <input
                         name="no_rawat"
                         value={form.no_rawat}
                         onChange={handleChange}
                         required
-                        className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
+                        className="w-full rounded-lg border border-gray-300/50 dark:border-gray-600/50 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
                     />
                 </Field>
-                <Field label="Tanggal">
+                <Field label="Tanggal" icon={Calendar}>
                     <input
                         type="date"
                         name="tgl_byr"
                         value={form.tgl_byr}
                         onChange={handleChange}
-                        className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
+                        className="w-full rounded-lg border border-gray-300/50 dark:border-gray-600/50 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
                     />
                 </Field>
-                <Field label="Keterangan (No)">
+                <Field label="Keterangan (No)" icon={Tag}>
                     <input
                         name="no"
                         value={form.no}
                         onChange={handleChange}
-                        className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
+                        className="w-full rounded-lg border border-gray-300/50 dark:border-gray-600/50 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
                     />
                 </Field>
-                <Field label="Kategori (Status)">
+                <Field label="Kategori (Status)" icon={FileText}>
                     <select
                         name="status"
                         value={form.status}
                         onChange={handleChange}
                         required
-                        className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
+                        className="w-full rounded-lg border border-gray-300/50 dark:border-gray-600/50 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
                     >
                         <option value="">Pilih Kategori…</option>
                         {statusOptions.map((opt) => (
@@ -135,27 +155,27 @@ function BillingForm({ initial = {}, statusOptions = [], onSubmit, onCancel }) {
                         ))}
                     </select>
                 </Field>
-                <Field label="Nama Item (nm_perawatan)">
+                <Field label="Nama Item (nm_perawatan)" icon={FileText}>
                     <input
                         name="nm_perawatan"
                         value={form.nm_perawatan}
                         onChange={handleChange}
                         required
-                        className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
+                        className="w-full rounded-lg border border-gray-300/50 dark:border-gray-600/50 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
                     />
                 </Field>
-                <Field label="Pemisah">
+                <Field label="Pemisah" icon={Tag}>
                     <input
                         name="pemisah"
                         value={form.pemisah}
                         onChange={handleChange}
                         maxLength={1}
-                        className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
+                        className="w-full rounded-lg border border-gray-300/50 dark:border-gray-600/50 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
                     />
                 </Field>
             </div>
-            <div className="grid grid-cols-3 gap-4">
-                <Field label="Biaya">
+            <div className="grid grid-cols-3 gap-4 md:gap-6">
+                <Field label="Biaya" icon={DollarSign}>
                     <input
                         type="number"
                         step="0.01"
@@ -163,10 +183,10 @@ function BillingForm({ initial = {}, statusOptions = [], onSubmit, onCancel }) {
                         value={form.biaya}
                         onChange={handleChange}
                         required
-                        className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
+                        className="w-full rounded-lg border border-gray-300/50 dark:border-gray-600/50 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
                     />
                 </Field>
-                <Field label="Jumlah">
+                <Field label="Jumlah" icon={Hash}>
                     <input
                         type="number"
                         step="0.01"
@@ -174,43 +194,62 @@ function BillingForm({ initial = {}, statusOptions = [], onSubmit, onCancel }) {
                         value={form.jumlah}
                         onChange={handleChange}
                         required
-                        className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
+                        className="w-full rounded-lg border border-gray-300/50 dark:border-gray-600/50 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
                     />
                 </Field>
-                <Field label="Tambahan">
+                <Field label="Tambahan" icon={DollarSign}>
                     <input
                         type="number"
                         step="0.01"
                         name="tambahan"
                         value={form.tambahan}
                         onChange={handleChange}
-                        className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
+                        className="w-full rounded-lg border border-gray-300/50 dark:border-gray-600/50 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
                     />
                 </Field>
             </div>
-            <div className="flex items-center justify-between rounded-xl bg-gray-50/80 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 px-4 py-3">
-                <div className="text-sm text-gray-600 dark:text-gray-300">
+            <motion.div
+                className="flex items-center justify-between rounded-lg bg-gradient-to-r from-blue-50/80 to-indigo-50/80 dark:from-blue-900/30 dark:to-indigo-900/30 border border-blue-200/50 dark:border-blue-800/50 px-6 py-4 backdrop-blur-sm"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+            >
+                <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <Wallet className="w-4 h-4" />
                     Total Per Item
                 </div>
-                <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                     {currency.format(total || 0)}
                 </div>
-            </div>
+            </motion.div>
             <div className="flex items-center justify-end gap-3">
-                <button
+                <motion.button
                     type="button"
                     onClick={onCancel}
-                    className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800"
+                    className="px-6 py-2.5 rounded-lg bg-white/90 dark:bg-gray-700/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                 >
                     Batal
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                     type="submit"
                     disabled={saving}
-                    className="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold shadow hover:bg-blue-700 disabled:opacity-50"
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 text-white font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    whileHover={{ scale: saving ? 1 : 1.02 }}
+                    whileTap={{ scale: saving ? 1 : 0.98 }}
                 >
-                    {saving ? "Menyimpan…" : "Simpan"}
-                </button>
+                    {saving ? (
+                        <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Menyimpan…
+                        </>
+                    ) : (
+                        <>
+                            <Check className="w-4 h-4" />
+                            Simpan
+                        </>
+                    )}
+                </motion.button>
             </div>
         </form>
     );
@@ -218,25 +257,35 @@ function BillingForm({ initial = {}, statusOptions = [], onSubmit, onCancel }) {
 
 function Modal({ title, children, onClose }) {
     return (
-        <div className="fixed inset-0 z-50">
-            <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={onClose}
+            />
             <motion.div
                 variants={itemVariants}
                 initial="hidden"
                 animate="visible"
-                className="absolute inset-x-0 top-14 mx-auto max-w-2xl rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl p-6"
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="relative w-full max-w-2xl rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/10 p-6 md:p-8 max-h-[90vh] overflow-y-auto"
             >
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                         {title}
                     </h3>
-                    <button
+                    <motion.button
                         onClick={onClose}
-                        className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+                        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
                         aria-label="Close"
                     >
-                        ×
-                    </button>
+                        <X className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    </motion.button>
                 </div>
                 {children}
             </motion.div>
@@ -459,7 +508,6 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         totalWithPpn,
         akunBayar,
         akunPiutang,
-        akunPendapatan,
         piutang,
     }) => {
         if (!noRawat) {
@@ -490,13 +538,8 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             notify("Akun Piutang wajib dipilih ketika ada sisa piutang.");
             return false;
         }
-        // Akun pendapatan: wajib jika tidak disediakan default pada config
-        if (!akunPendapatan) {
-            notify(
-                "Akun Pendapatan (kredit) wajib dipilih. Alternatif: set rek_pendapatan_default di config/akutansi.php."
-            );
-            return false;
-        }
+        // Akun pendapatan tidak perlu dipilih di UI. Sistem akan memilih otomatis dari master rekening (rekening & subrekening)
+        // berdasarkan status layanan (Ranap/Ralan → prefix 41/42) atau fallback prefix 43 jika tidak tersedia.
         try {
             const existsUrl = buildUrl("/api/akutansi/nota-jalan/exists", {
                 no_rawat: noRawat,
@@ -711,7 +754,6 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         piutang,
         akunBayar,
         akunPiutang,
-        akunPendapatan,
     }) => {
         const ok = await validateBeforeSnapshot({
             selectedCategories,
@@ -719,7 +761,6 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             totalWithPpn,
             akunBayar,
             akunPiutang,
-            akunPendapatan,
             piutang,
         });
         if (!ok) return;
@@ -832,7 +873,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                 bayar: Number(bayar) || 0,
                 piutang: Number(piutang) || 0,
                 ppn_percent: Number(ppnPercent) || 0,
-                kd_rek_kredit: akunPendapatan?.kd_rek || null,
+                // Akun Pendapatan (kredit) tidak dikirim dari UI; backend akan memilih otomatis dari master rekening
             });
         } catch (e) {
             notify(
@@ -917,26 +958,35 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="space-y-6"
+            className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 px-4 sm:px-6 lg:px-12 xl:px-16 py-6 md:py-8 space-y-6"
         >
             {/* Header */}
             <motion.div
                 variants={itemVariants}
-                className="relative overflow-hidden rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 p-6"
+                className="relative overflow-hidden rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 p-6 md:p-8"
             >
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-purple-500/10" />
                 <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/25">
+                    <div className="flex items-center gap-4">
+                        <motion.div
+                            className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/25"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.6, delay: 0.2 }}
+                        >
                             <Receipt className="w-6 h-6 text-white" />
-                        </div>
+                        </motion.div>
                         <div>
-                            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                            <motion.h1
+                                className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: 0.3 }}
+                            >
                                 Billing Pasien
-                            </h1>
-                            <p className="text-sm text-gray-600 dark:text-gray-300">
-                                Kelola rincian biaya pasien berdasarkan snapshot
-                                tabel billing.
+                            </motion.h1>
+                            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                                Kelola rincian biaya pasien berdasarkan snapshot tabel billing.
                             </p>
                         </div>
                     </div>
@@ -949,123 +999,186 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                 onKeyDown={(e) => {
                                     if (e.key === "Enter") loadData();
                                 }}
-                                className="w-full md:w-[420px] rounded-xl border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-900/80 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500/30"
+                                className="w-full md:w-[420px] rounded-lg border border-gray-300/50 dark:border-gray-600/50 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm px-4 py-2.5 pl-10 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
                             />
-                            <Search className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" />
+                            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                         </div>
-                        <button
+                        <motion.button
                             onClick={loadData}
-                            className="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold shadow hover:bg-blue-700"
+                            disabled={loading}
+                            className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 text-white font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            whileHover={{ scale: loading ? 1 : 1.02 }}
+                            whileTap={{ scale: loading ? 1 : 0.98 }}
                         >
-                            Muat
-                        </button>
+                            {loading ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Memuat…
+                                </>
+                            ) : (
+                                <>
+                                    <RefreshCw className="w-4 h-4" />
+                                    Muat Data
+                                </>
+                            )}
+                        </motion.button>
                     </div>
                 </div>
                 {invoice && (
-                    <div className="relative mt-5 grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <motion.div
+                        className="relative mt-6 grid grid-cols-1 md:grid-cols-3 gap-4"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 }}
+                    >
+                        <motion.div
+                            className="relative overflow-hidden rounded-xl bg-gradient-to-r from-blue-50/80 to-indigo-50/80 dark:from-blue-900/30 dark:to-indigo-900/30 border border-blue-200/50 dark:border-blue-800/50 p-4 backdrop-blur-sm"
+                            variants={cardHoverVariants}
+                            initial="rest"
+                            whileHover="hover"
+                        >
+                            <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
                                 Kunjungan
                             </p>
-                            <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                            <p className="text-sm font-bold text-gray-900 dark:text-white font-mono">
                                 {invoice.visit?.no_rawat}
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 {invoice.visit?.tgl_registrasi}
                             </p>
-                        </div>
-                        <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                        </motion.div>
+                        <motion.div
+                            className="relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-50/80 to-purple-50/80 dark:from-indigo-900/30 dark:to-purple-900/30 border border-indigo-200/50 dark:border-indigo-800/50 p-4 backdrop-blur-sm"
+                            variants={cardHoverVariants}
+                            initial="rest"
+                            whileHover="hover"
+                        >
+                            <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
                                 Pasien
                             </p>
-                            <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                            <p className="text-sm font-bold text-gray-900 dark:text-white">
                                 {invoice.visit?.pasien}{" "}
-                                <span className="text-gray-500">
+                                <span className="text-gray-500 font-normal">
                                     ({invoice.visit?.no_rkm_medis})
                                 </span>
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                Dokter: {invoice.visit?.dokter} • Poli:{" "}
-                                {invoice.visit?.poli}
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Dokter: {invoice.visit?.dokter} • Poli: {invoice.visit?.poli}
                             </p>
-                        </div>
-                        <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                        </motion.div>
+                        <motion.div
+                            className="relative overflow-hidden rounded-xl bg-gradient-to-r from-purple-50/80 to-pink-50/80 dark:from-purple-900/30 dark:to-pink-900/30 border border-purple-200/50 dark:border-purple-800/50 p-4 backdrop-blur-sm"
+                            variants={cardHoverVariants}
+                            initial="rest"
+                            whileHover="hover"
+                        >
+                            <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
                                 Penjamin
                             </p>
-                            <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                            <p className="text-sm font-bold text-gray-900 dark:text-white">
                                 {invoice.visit?.penjamin}
                             </p>
                             {invoice.nota && (
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                    Nota {invoice.nota?.jenis}:{" "}
-                                    {invoice.nota?.no_nota} •{" "}
-                                    {invoice.nota?.tanggal} {invoice.nota?.jam}
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    Nota {invoice.nota?.jenis}: {invoice.nota?.no_nota} • {invoice.nota?.tanggal} {invoice.nota?.jam}
                                 </p>
                             )}
-                        </div>
-                    </div>
+                        </motion.div>
+                    </motion.div>
                 )}
             </motion.div>
 
             {/* Tabs */}
             <motion.div
                 variants={itemVariants}
-                className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-sm"
+                className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 p-6"
             >
-                <div className="border-b border-gray-200 dark:border-gray-800 mb-4">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                <div className="border-b border-gray-200/50 dark:border-gray-700/50 mb-6">
                     <div className="flex items-center gap-6">
-                        <button
-                            className={`px-2 pb-3 text-sm font-semibold ${
+                        <motion.button
+                            className={`relative px-4 pb-3 text-sm font-semibold transition-colors ${
                                 activeTab === "tagihan"
-                                    ? "text-blue-600 border-b-2 border-blue-600"
-                                    : "text-gray-600 dark:text-gray-300"
+                                    ? "text-blue-600 dark:text-blue-400"
+                                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
                             }`}
                             onClick={() => setActiveTab("tagihan")}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                         >
                             Data Tagihan
-                        </button>
-                        <button
-                            className={`px-2 pb-3 text-sm font-semibold ${
+                            {activeTab === "tagihan" && (
+                                <motion.div
+                                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"
+                                    layoutId="activeTab"
+                                    initial={false}
+                                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                />
+                            )}
+                        </motion.button>
+                        <motion.button
+                            className={`relative px-4 pb-3 text-sm font-semibold transition-colors ${
                                 activeTab === "pembayaran"
-                                    ? "text-blue-600 border-b-2 border-blue-600"
-                                    : "text-gray-600 dark:text-gray-300"
+                                    ? "text-blue-600 dark:text-blue-400"
+                                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
                             }`}
                             onClick={() => setActiveTab("pembayaran")}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                         >
                             Pembayaran
-                        </button>
-                        <button
-                            className={`px-2 pb-3 text-sm font-semibold ${
+                            {activeTab === "pembayaran" && (
+                                <motion.div
+                                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"
+                                    layoutId="activeTab"
+                                    initial={false}
+                                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                />
+                            )}
+                        </motion.button>
+                        <motion.button
+                            className={`relative px-4 pb-3 text-sm font-semibold transition-colors ${
                                 activeTab === "permintaan"
-                                    ? "text-blue-600 border-b-2 border-blue-600"
-                                    : "text-gray-600 dark:text-gray-300"
+                                    ? "text-blue-600 dark:text-blue-400"
+                                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
                             }`}
                             onClick={() => setActiveTab("permintaan")}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                         >
                             Status Permintaan
-                        </button>
+                            {activeTab === "permintaan" && (
+                                <motion.div
+                                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"
+                                    layoutId="activeTab"
+                                    initial={false}
+                                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                />
+                            )}
+                        </motion.button>
                     </div>
                 </div>
 
                 {activeTab === "tagihan" && (
                     <div>
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                            <div className="flex items-center gap-3">
-                                <button
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div className="flex flex-wrap items-center gap-3">
+                                <motion.button
                                     onClick={() => setShowCreate(true)}
-                                    className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-600 text-white text-sm font-semibold shadow hover:bg-emerald-700"
+                                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white text-sm font-semibold shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 transition-all duration-300"
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
                                 >
                                     <Plus className="w-4 h-4" />
                                     Tambah Item
-                                </button>
+                                </motion.button>
                                 <div className="flex items-center gap-2">
                                     <select
                                         value={statusFilter}
                                         onChange={(e) =>
                                             setStatusFilter(e.target.value)
                                         }
-                                        className="rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm"
+                                        className="rounded-lg border border-gray-300/50 dark:border-gray-600/50 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
                                     >
                                         <option value="">Semua Kategori</option>
                                         {statusOptions.map((s) => (
@@ -1074,50 +1187,61 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                             </option>
                                         ))}
                                     </select>
-                                    <input
-                                        value={q}
-                                        onChange={(e) => setQ(e.target.value)}
-                                        placeholder="Cari item…"
-                                        className="rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm"
-                                    />
-                                    <button
+                                    <div className="relative">
+                                        <input
+                                            value={q}
+                                            onChange={(e) => setQ(e.target.value)}
+                                            placeholder="Cari item…"
+                                            className="rounded-lg border border-gray-300/50 dark:border-gray-600/50 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm px-3 py-2 pl-9 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
+                                        />
+                                        <Search className="w-4 h-4 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                                    </div>
+                                    <motion.button
                                         onClick={loadData}
-                                        className="px-3 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800"
+                                        className="px-4 py-2 rounded-lg bg-white/90 dark:bg-gray-700/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
                                     >
                                         Terapkan
-                                    </button>
+                                    </motion.button>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-2 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 px-3 py-2">
-                                    <Wallet className="w-4 h-4 text-indigo-600 dark:text-indigo-300" />
-                                    <span className="text-sm text-gray-700 dark:text-gray-300">
-                                        Grand Total:
-                                    </span>
-                                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                                        {currency.format(
-                                            summary.grand_total || 0
-                                        )}
-                                    </span>
-                                </div>
-                            </div>
+                            <motion.div
+                                className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-indigo-50/80 to-purple-50/80 dark:from-indigo-900/30 dark:to-purple-900/30 border border-indigo-200/50 dark:border-indigo-800/50 backdrop-blur-sm"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                            >
+                                <Wallet className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                    Grand Total:
+                                </span>
+                                <span className="text-lg font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                                    {currency.format(summary.grand_total || 0)}
+                                </span>
+                            </motion.div>
                         </div>
                         {/* Status proses preview obat / pesan error saja (tanpa pesan info panjang) */}
                         {items.length > 0 &&
                             items[0]?.source === "preview" &&
                             (mergingObatPreview || mergeError) && (
-                                <div className="mt-4 rounded-xl bg-amber-50 border border-amber-200 p-3 text-amber-800 dark:bg-amber-900/30 dark:border-amber-800 dark:text-amber-200">
+                                <motion.div
+                                    className="mt-4 rounded-lg bg-gradient-to-r from-amber-50/50 to-yellow-50/50 dark:from-amber-900/20 dark:to-yellow-900/20 border border-amber-200/50 dark:border-amber-800/50 p-4 backdrop-blur-sm"
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                >
                                     {mergingObatPreview && (
-                                        <div className="mt-2 text-xs">
+                                        <div className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-200">
+                                            <Loader2 className="w-4 h-4 animate-spin" />
                                             Memuat preview obat dari resep…
                                         </div>
                                     )}
                                     {mergeError && (
-                                        <div className="mt-2 text-xs text-red-700 dark:text-red-300">
+                                        <div className="flex items-center gap-2 text-sm text-red-700 dark:text-red-300">
+                                            <AlertCircle className="w-4 h-4" />
                                             {mergeError}
                                         </div>
                                     )}
-                                </div>
+                                </motion.div>
                             )}
                     </div>
                 )}
@@ -1136,7 +1260,6 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                             piutang,
                             akunBayar,
                             akunPiutang,
-                            akunPendapatan,
                         }) =>
                             handleSnapshot({
                                 selectedCategories,
@@ -1148,7 +1271,6 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                 piutang,
                                 akunBayar,
                                 akunPiutang,
-                                akunPendapatan,
                             })
                         }
                     />
@@ -1169,122 +1291,147 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             {activeTab === "tagihan" && (
                 <motion.div
                     variants={itemVariants}
-                    className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm overflow-x-auto"
+                    className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 overflow-x-auto"
                 >
-                    <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-800 text-sm">
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                    <table className="min-w-full text-sm">
                         <thead>
-                            <tr className="text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                                <th className="py-3 px-4">Tanggal</th>
-                                <th className="py-3 px-4">Keterangan</th>
-                                <th className="py-3 px-4">
+                            <tr className="bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">
+                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Tanggal</th>
+                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Keterangan</th>
+                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     Tagihan/Tindakan/Terapi
                                 </th>
-                                <th className="py-3 px-4">Biaya</th>
-                                <th className="py-3 px-4">Jml</th>
-                                <th className="py-3 px-4">Tambahan</th>
-                                <th className="py-3 px-4">Total</th>
-                                <th className="py-3 px-4">Kategori</th>
-                                <th className="py-3 px-4">Aksi</th>
+                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Biaya</th>
+                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Jml</th>
+                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Tambahan</th>
+                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Total</th>
+                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Kategori</th>
+                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                        <tbody>
                             {loading ? (
                                 <tr>
                                     <td
                                         colSpan={9}
-                                        className="py-8 text-center text-gray-600 dark:text-gray-300"
+                                        className="px-4 py-12 text-center"
                                     >
-                                        Memuat data…
+                                        <motion.div
+                                            className="flex flex-col items-center justify-center gap-3"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                        >
+                                            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                                            <span className="text-sm text-gray-600 dark:text-gray-400">Memuat data...</span>
+                                        </motion.div>
                                     </td>
                                 </tr>
                             ) : items.length === 0 ? (
                                 <tr>
-                                    <td colSpan={9} className="py-10">
-                                        <div className="flex items-center justify-center gap-3 text-sm text-gray-600 dark:text-gray-300">
-                                            <Info className="w-4 h-4" />
-                                            Tidak ada item billing untuk no.
-                                            rawat ini.
-                                        </div>
+                                    <td colSpan={9} className="px-4 py-12">
+                                        <motion.div
+                                            className="flex flex-col items-center justify-center gap-3"
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                        >
+                                            <Database className="w-12 h-12 text-gray-400" />
+                                            <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
+                                                Tidak ada item billing untuk no. rawat ini.
+                                            </span>
+                                        </motion.div>
                                     </td>
                                 </tr>
                             ) : (
-                                items.map((row) => (
-                                    <tr
-                                        key={row.noindex}
-                                        className="hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors"
-                                    >
-                                        <td className="py-2 px-4 text-gray-900 dark:text-white">
-                                            {row.tgl_byr}
-                                        </td>
-                                        <td className="py-2 px-4">
-                                            {row.no || "-"}
-                                        </td>
-                                        <td className="py-2 px-4 font-medium text-gray-900 dark:text-white">
-                                            {row.nm_perawatan}
-                                        </td>
-                                        <td className="py-2 px-4">
-                                            {currency.format(row.biaya || 0)}
-                                        </td>
-                                        <td className="py-2 px-4">
-                                            {number.format(row.jumlah || 0)}
-                                        </td>
-                                        <td className="py-2 px-4">
-                                            {currency.format(row.tambahan || 0)}
-                                        </td>
-                                        <td className="py-2 px-4 font-semibold">
-                                            {currency.format(
-                                                row.totalbiaya || 0
-                                            )}
-                                        </td>
-                                        <td className="py-2 px-4">
-                                            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300">
-                                                {row.status}
-                                            </span>
-                                        </td>
-                                        <td className="py-2 px-4">
-                                            <div className="flex items-center gap-2">
-                                                <button
-                                                    onClick={() =>
-                                                        setEditItem(row)
-                                                    }
-                                                    disabled={
-                                                        row?.source !==
-                                                        "billing"
-                                                    }
-                                                    title={
-                                                        row?.source !==
-                                                        "billing"
-                                                            ? "Tidak bisa edit: item preview (belum snapshot billing)"
-                                                            : "Edit"
-                                                    }
-                                                    className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50"
-                                                    aria-label="Edit"
+                                <AnimatePresence>
+                                    {items.map((row, idx) => (
+                                        <motion.tr
+                                            key={row.noindex ?? `temp-${idx}`}
+                                            className="border-b border-gray-100/50 dark:border-gray-700/30 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 dark:hover:from-gray-700/50 dark:hover:to-gray-800/50 transition-all duration-200 group"
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: 20 }}
+                                            transition={{ delay: idx * 0.02 }}
+                                            whileHover={{ scale: 1.01 }}
+                                        >
+                                            <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                                                {row.tgl_byr}
+                                            </td>
+                                            <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                                                {row.no || "-"}
+                                            </td>
+                                            <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
+                                                {row.nm_perawatan}
+                                            </td>
+                                            <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                                                {currency.format(row.biaya || 0)}
+                                            </td>
+                                            <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                                                {number.format(row.jumlah || 0)}
+                                            </td>
+                                            <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                                                {currency.format(row.tambahan || 0)}
+                                            </td>
+                                            <td className="px-4 py-3 font-semibold text-blue-600 dark:text-blue-400">
+                                                {currency.format(row.totalbiaya || 0)}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <motion.span
+                                                    className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 text-gray-700 dark:text-gray-300 ring-1 ring-gray-200 dark:ring-gray-700"
+                                                    whileHover={{ scale: 1.05 }}
                                                 >
-                                                    <Pencil className="w-4 h-4" />
-                                                </button>
-                                                <button
-                                                    onClick={() =>
-                                                        handleDelete(row)
-                                                    }
-                                                    disabled={
-                                                        row?.source !==
-                                                        "billing"
-                                                    }
-                                                    title={
-                                                        row?.source !==
-                                                        "billing"
-                                                            ? "Tidak bisa hapus: item preview (belum snapshot billing)"
-                                                            : "Hapus"
-                                                    }
-                                                    className="p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-300 disabled:opacity-50"
-                                                    aria-label="Delete"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
+                                                    {row.status}
+                                                </motion.span>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <div className="flex items-center gap-2">
+                                                    <motion.button
+                                                        onClick={() =>
+                                                            setEditItem(row)
+                                                        }
+                                                        disabled={
+                                                            row?.source !==
+                                                            "billing"
+                                                        }
+                                                        title={
+                                                            row?.source !==
+                                                            "billing"
+                                                                ? "Tidak bisa edit: item preview (belum snapshot billing)"
+                                                                : "Edit"
+                                                        }
+                                                        className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                        whileHover={{ scale: 1.1 }}
+                                                        whileTap={{ scale: 0.9 }}
+                                                        aria-label="Edit"
+                                                    >
+                                                        <Pencil className="w-4 h-4" />
+                                                    </motion.button>
+                                                    <motion.button
+                                                        onClick={() =>
+                                                            handleDelete(row)
+                                                        }
+                                                        disabled={
+                                                            row?.source !==
+                                                            "billing"
+                                                        }
+                                                        title={
+                                                            row?.source !==
+                                                            "billing"
+                                                                ? "Tidak bisa hapus: item preview (belum snapshot billing)"
+                                                                : "Hapus"
+                                                        }
+                                                        className="p-2 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                        whileHover={{ scale: 1.1 }}
+                                                        whileTap={{ scale: 0.9 }}
+                                                        aria-label="Delete"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </motion.button>
+                                                </div>
+                                            </td>
+                                        </motion.tr>
+                                    ))}
+                                </AnimatePresence>
                             )}
                         </tbody>
                     </table>
@@ -1295,68 +1442,74 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             {activeTab === "tagihan" && (
                 <motion.div
                     variants={itemVariants}
-                    className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                    className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6"
                 >
                     {Object.entries(summary.by_status || {}).map(
-                        ([key, val]) => (
-                            <div
+                        ([key, val], idx) => (
+                            <motion.div
                                 key={key}
-                                className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-sm"
+                                className="relative overflow-hidden rounded-xl bg-gradient-to-r from-blue-50/80 to-indigo-50/80 dark:from-blue-900/30 dark:to-indigo-900/30 border border-blue-200/50 dark:border-blue-800/50 p-4 backdrop-blur-sm"
+                                variants={cardHoverVariants}
+                                initial="rest"
+                                whileHover="hover"
+                                transition={{ delay: idx * 0.1 }}
                             >
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">
                                     {key}
                                 </p>
-                                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
+                                <p className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mt-1">
                                     {currency.format(val.total || 0)}
                                 </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                     {val.count || 0} item
                                 </p>
-                            </div>
+                            </motion.div>
                         )
                     )}
                 </motion.div>
             )}
 
-            {showCreate && (
-                <Modal
-                    title="Tambah Item Billing"
-                    onClose={() => setShowCreate(false)}
-                >
-                    <BillingForm
-                        initial={{ no_rawat: noRawat }}
-                        statusOptions={statusOptions}
-                        onSubmit={handleCreate}
-                        onCancel={() => setShowCreate(false)}
-                    />
-                </Modal>
-            )}
+            <AnimatePresence>
+                {showCreate && (
+                    <Modal
+                        title="Tambah Item Billing"
+                        onClose={() => setShowCreate(false)}
+                    >
+                        <BillingForm
+                            initial={{ no_rawat: noRawat }}
+                            statusOptions={statusOptions}
+                            onSubmit={handleCreate}
+                            onCancel={() => setShowCreate(false)}
+                        />
+                    </Modal>
+                )}
 
-            {editItem && (
-                <Modal
-                    title="Edit Item Billing"
-                    onClose={() => setEditItem(null)}
-                >
-                    <BillingForm
-                        initial={{
-                            no_rawat: editItem.no_rawat,
-                            tgl_byr: editItem.tgl_byr,
-                            no: editItem.no,
-                            nm_perawatan: editItem.nm_perawatan,
-                            pemisah: editItem.pemisah,
-                            biaya: editItem.biaya,
-                            jumlah: editItem.jumlah,
-                            tambahan: editItem.tambahan,
-                            status: editItem.status,
-                        }}
-                        statusOptions={statusOptions}
-                        onSubmit={(payload) =>
-                            handleUpdate(editItem.noindex, payload)
-                        }
-                        onCancel={() => setEditItem(null)}
-                    />
-                </Modal>
-            )}
+                {editItem && (
+                    <Modal
+                        title="Edit Item Billing"
+                        onClose={() => setEditItem(null)}
+                    >
+                        <BillingForm
+                            initial={{
+                                no_rawat: editItem.no_rawat,
+                                tgl_byr: editItem.tgl_byr,
+                                no: editItem.no,
+                                nm_perawatan: editItem.nm_perawatan,
+                                pemisah: editItem.pemisah,
+                                biaya: editItem.biaya,
+                                jumlah: editItem.jumlah,
+                                tambahan: editItem.tambahan,
+                                status: editItem.status,
+                            }}
+                            statusOptions={statusOptions}
+                            onSubmit={(payload) =>
+                                handleUpdate(editItem.noindex, payload)
+                            }
+                            onCancel={() => setEditItem(null)}
+                        />
+                    </Modal>
+                )}
+            </AnimatePresence>
         </motion.div>
     );
 }
@@ -1401,9 +1554,7 @@ function PembayaranTab({ summary, categoryMap, onSave }) {
     const [akunBayarData, setAkunBayarData] = React.useState(null);
     const [akunPiutang, setAkunPiutang] = React.useState("");
     const [akunPiutangData, setAkunPiutangData] = React.useState(null);
-    // Akun pendapatan (kredit) untuk posting jurnal ketika snapshot
-    const [akunPendapatan, setAkunPendapatan] = React.useState("");
-    const [akunPendapatanData, setAkunPendapatanData] = React.useState(null);
+    // Akun pendapatan (kredit) dipilih otomatis di backend dari master rekening (rekening & subrekening); UI tidak perlu mengirimnya
 
     const totalWithPpn = React.useMemo(() => {
         const t = subtotal || 0;
@@ -1546,29 +1697,13 @@ function PembayaranTab({ summary, categoryMap, onSave }) {
                         <Check className="w-4 h-4" />
                     </button>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-3">
                     <Field label="Kembali : Rp">
                         <input
                             readOnly
                             value={currency.format(kembali || 0)}
                             className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
                         />
-                    </Field>
-                    <Field label="Akun Pendapatan (Kredit)">
-                        <SearchableSelect
-                            source="rekening"
-                            value={akunPendapatan}
-                            onChange={(v) => setAkunPendapatan(v || "")}
-                            onSelect={(opt) =>
-                                setAkunPendapatanData(opt || null)
-                            }
-                            placeholder="Pilih akun pendapatan (COA)"
-                            defaultDisplay={akunPendapatanData?.label || null}
-                        />
-                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            Wajib dipilih bila default pendapatan belum diatur
-                            pada config/akutansi.php
-                        </p>
                     </Field>
                 </div>
             </div>
@@ -1611,13 +1746,7 @@ function PembayaranTab({ summary, categoryMap, onSave }) {
                                           akunPiutangData?.png_jawab || null,
                                   }
                                 : null,
-                            akunPendapatan: akunPendapatan
-                                ? {
-                                      kd_rek: akunPendapatan,
-                                      nm_rek:
-                                          akunPendapatanData?.nm_rek || null,
-                                  }
-                                : null,
+                            // Akun pendapatan tidak dikirim dari UI; backend akan menentukan otomatis
                         })
                     }
                 >
@@ -1699,9 +1828,9 @@ function StatusPermintaanTab({
                                     {p.diagnosa_klinis}
                                 </div>
                                 <ul className="mt-2 text-sm list-disc pl-6">
-                                    {p.detail_tests?.map((d) => (
+                                    {p.detail_tests?.map((d, idx) => (
                                         <li
-                                            key={`${p.noorder}-${d.kd_jenis_prw}`}
+                                            key={`lab-${p.noorder}-${d.kd_jenis_prw}-${idx}`}
                                         >
                                             {d.nm_perawatan} • {d.stts_bayar}
                                         </li>
@@ -1741,9 +1870,9 @@ function StatusPermintaanTab({
                                     {p.diagnosa_klinis}
                                 </div>
                                 <ul className="mt-2 text-sm list-disc pl-6">
-                                    {p.pemeriksaan?.map((d) => (
+                                    {p.pemeriksaan?.map((d, idx) => (
                                         <li
-                                            key={`${p.noorder}-${d.kd_jenis_prw}`}
+                                            key={`rad-${p.noorder}-${d.kd_jenis_prw}-${idx}`}
                                         >
                                             {
                                                 d.jns_perawatan_radiologi
@@ -1784,9 +1913,9 @@ function StatusPermintaanTab({
                                     </div>
                                 </div>
                                 <ul className="mt-2 text-sm list-disc pl-6">
-                                    {r.detail_obat?.map((d) => (
+                                    {r.detail_obat?.map((d, idx) => (
                                         <li
-                                            key={`${r.no_resep}-${d.kode_brng}`}
+                                            key={`resep-${r.no_resep}-${d.kode_brng}-${idx}`}
                                         >
                                             {d.nama_brng} • {d.jml} {d.satuan} •{" "}
                                             {d.aturan_pakai}

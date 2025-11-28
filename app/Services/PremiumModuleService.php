@@ -10,24 +10,34 @@ use Illuminate\Support\Str;
 
 class PremiumModuleService
 {
-    private $appKey;
-    private $encryptionKey;
-
+    /**
+     * Octane-friendly: Don't cache config or server info in constructor
+     * Always get fresh values to avoid stale data between requests
+     */
     public function __construct()
     {
-        $this->appKey = config('app.key');
-        $this->encryptionKey = $this->generateEncryptionKey();
+        // Empty constructor - resolve values dynamically when needed
+    }
+
+    /**
+     * Get app key dynamically (always fresh)
+     */
+    private function getAppKey(): string
+    {
+        return config('app.key');
     }
 
     /**
      * Generate a unique encryption key based on app key and server info
+     * Octane-friendly: Always get fresh server info from request
      */
-    private function generateEncryptionKey()
+    private function generateEncryptionKey(): string
     {
+        $request = request();
         $serverInfo = [
-            'server_name' => $_SERVER['SERVER_NAME'] ?? 'localhost',
-            'document_root' => $_SERVER['DOCUMENT_ROOT'] ?? '/',
-            'app_key' => $this->appKey,
+            'server_name' => $request->server('SERVER_NAME', 'localhost'),
+            'document_root' => $request->server('DOCUMENT_ROOT', base_path()),
+            'app_key' => $this->getAppKey(),
             'timestamp' => time(),
         ];
 
@@ -64,7 +74,7 @@ class PremiumModuleService
         $timestamp = time();
         $random = Str::random(8);
 
-        return strtoupper($baseKey . '_' . $timestamp . '_' . $random);
+        return strtoupper($baseKey.'_'.$timestamp.'_'.$random);
     }
 
     /**
@@ -92,15 +102,16 @@ class PremiumModuleService
         // Layer 2: Base64 encode
         $base64Data = base64_encode($jsonData);
 
-        // Layer 3: XOR with encryption key
-        $xorData = $this->xorEncrypt($base64Data, $this->encryptionKey);
+        // Layer 3: XOR with encryption key (generate fresh for each license)
+        $encryptionKey = $this->generateEncryptionKey();
+        $xorData = $this->xorEncrypt($base64Data, $encryptionKey);
 
         // Layer 4: Laravel encryption
         $encryptedData = Crypt::encryptString($xorData);
 
-        // Layer 5: Add checksum
-        $checksum = hash('sha256', $encryptedData . $this->appKey);
-        $finalLicense = $encryptedData . '|' . $checksum;
+        // Layer 5: Add checksum (use fresh app key)
+        $checksum = hash('sha256', $encryptedData.$this->getAppKey());
+        $finalLicense = $encryptedData.'|'.$checksum;
 
         // Store in database
         $module->license_key = $finalLicense;
@@ -124,26 +135,27 @@ class PremiumModuleService
 
             [$encryptedData, $checksum] = $parts;
 
-            // Verify checksum
-            $expectedChecksum = hash('sha256', $encryptedData . $this->appKey);
-            if (!hash_equals($expectedChecksum, $checksum)) {
+            // Verify checksum (use fresh app key)
+            $expectedChecksum = hash('sha256', $encryptedData.$this->getAppKey());
+            if (! hash_equals($expectedChecksum, $checksum)) {
                 return false;
             }
 
-            // Decrypt data
+            // Decrypt data (generate fresh encryption key)
             $xorData = Crypt::decryptString($encryptedData);
-            $base64Data = $this->xorDecrypt($xorData, $this->encryptionKey);
+            $encryptionKey = $this->generateEncryptionKey();
+            $base64Data = $this->xorDecrypt($xorData, $encryptionKey);
             $jsonData = base64_decode($base64Data);
             $licenseData = json_decode($jsonData, true);
 
-            if (!$licenseData) {
+            if (! $licenseData) {
                 return false;
             }
 
             // Validate data structure
             $requiredFields = ['module_key', 'module_id', 'timestamp', 'random', 'app_signature', 'server_fingerprint'];
             foreach ($requiredFields as $field) {
-                if (!isset($licenseData[$field])) {
+                if (! isset($licenseData[$field])) {
                     return false;
                 }
             }
@@ -154,7 +166,7 @@ class PremiumModuleService
             }
 
             // Validate app signature
-            if (!$this->validateAppSignature($licenseData['app_signature'])) {
+            if (! $this->validateAppSignature($licenseData['app_signature'])) {
                 return false;
             }
 
@@ -176,7 +188,8 @@ class PremiumModuleService
 
             return $licenseData;
         } catch (\Exception $e) {
-            Log::error('License validation error: ' . $e->getMessage());
+            Log::error('License validation error: '.$e->getMessage());
+
             return false;
         }
     }
@@ -188,13 +201,13 @@ class PremiumModuleService
     {
         $module = PremiumModule::where('module_key', $moduleKey)->first();
 
-        if (!$module) {
+        if (! $module) {
             return ['success' => false, 'message' => 'Module not found'];
         }
 
         $licenseData = $this->validateLicenseKey($licenseKey, $moduleKey);
 
-        if (!$licenseData) {
+        if (! $licenseData) {
             return ['success' => false, 'message' => 'Invalid license key'];
         }
 
@@ -227,20 +240,21 @@ class PremiumModuleService
     {
         $module = PremiumModule::where('module_key', $moduleKey)->first();
 
-        if (!$module) {
+        if (! $module) {
             return false;
         }
 
-        if (!$module->is_active) {
+        if (! $module->is_active) {
             return false;
         }
 
         // Validate license if exists
         if ($module->license_key) {
             $licenseData = $this->validateLicenseKey($module->license_key, $moduleKey);
-            if (!$licenseData) {
+            if (! $licenseData) {
                 $module->is_active = false;
                 $module->save();
+
                 return false;
             }
         }
@@ -249,6 +263,7 @@ class PremiumModuleService
         if ($module->expires_at && $module->expires_at->isPast()) {
             $module->is_active = false;
             $module->save();
+
             return false;
         }
 
@@ -285,12 +300,13 @@ class PremiumModuleService
 
     /**
      * Generate app signature for license validation
+     * Octane-friendly: Always get fresh config values
      */
-    private function generateAppSignature()
+    private function generateAppSignature(): string
     {
         $data = [
             'app_name' => config('app.name'),
-            'app_key' => $this->appKey,
+            'app_key' => $this->getAppKey(),
             'app_env' => config('app.env'),
             'timestamp' => time(),
         ];
@@ -304,18 +320,21 @@ class PremiumModuleService
     private function validateAppSignature($signature)
     {
         $expectedSignature = $this->generateAppSignature();
+
         return hash_equals($expectedSignature, $signature);
     }
 
     /**
      * Generate server fingerprint
+     * Octane-friendly: Always get fresh server info from request
      */
-    private function generateServerFingerprint()
+    private function generateServerFingerprint(): string
     {
+        $request = request();
         $serverInfo = [
-            'server_name' => $_SERVER['SERVER_NAME'] ?? 'localhost',
-            'document_root' => $_SERVER['DOCUMENT_ROOT'] ?? '/',
-            'server_software' => $_SERVER['SERVER_SOFTWARE'] ?? 'unknown',
+            'server_name' => $request->server('SERVER_NAME', 'localhost'),
+            'document_root' => $request->server('DOCUMENT_ROOT', base_path()),
+            'server_software' => $request->server('SERVER_SOFTWARE', 'unknown'),
             'php_version' => PHP_VERSION,
         ];
 
@@ -328,15 +347,18 @@ class PremiumModuleService
     private function validateServerFingerprint($fingerprint)
     {
         $expectedFingerprint = $this->generateServerFingerprint();
+
         return hash_equals($expectedFingerprint, $fingerprint);
     }
 
     /**
      * Generate activation hash
+     * Octane-friendly: Always get fresh app key
      */
-    private function generateActivationHash($module, $licenseKey)
+    private function generateActivationHash($module, $licenseKey): string
     {
-        $data = $module->module_key . $licenseKey . $this->appKey . time();
+        $data = $module->module_key.$licenseKey.$this->getAppKey().time();
+
         return hash('sha256', $data);
     }
 
@@ -363,7 +385,7 @@ class PremiumModuleService
     {
         $module = PremiumModule::where('module_key', $moduleKey)->first();
 
-        if (!$module) {
+        if (! $module) {
             return false;
         }
 

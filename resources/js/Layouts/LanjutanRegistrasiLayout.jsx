@@ -345,7 +345,23 @@ function LanjutanRegistrasiLayout({
                     </a>
                     <hr className="my-1 border-gray-200 dark:border-gray-700" />
                     <button
-                      onClick={() => router.post(route("logout"))}
+                      onClick={() => {
+                        try {
+                          const form = document.createElement("form");
+                          form.method = "POST";
+                          form.action = route("logout");
+                          const csrfInput = document.createElement("input");
+                          csrfInput.type = "hidden";
+                          csrfInput.name = "_token";
+                          csrfInput.value =
+                            document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || "";
+                          form.appendChild(csrfInput);
+                          document.body.appendChild(form);
+                          form.submit();
+                        } catch (error) {
+                          console.error("Logout error:", error);
+                        }
+                      }}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
                       Sign out

@@ -252,42 +252,49 @@ const cardHoverVariants = {
   {/* Top border gradient */}
   <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
   
-  {/* Card Header */}
-  <CardHeader className="relative bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-600/50">
-    {/* Content */}
-  </CardHeader>
+  {/* Card Header - Compact Design */}
+  <div className="relative px-4 py-2.5 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
+    {/* Header content */}
+  </div>
   
   {/* Card Content */}
-  <CardContent className="p-8">
+  <div className="relative p-8">
     {/* Content */}
-  </CardContent>
+  </div>
 </motion.div>
 ```
 
 **Penjelasan:**
 - Top border gradient sebagai accent
-- Header dengan gradient background
-- Content dengan padding yang cukup
+- Header dengan gradient background dan padding compact (`px-4 py-2.5`)
+- Content dengan padding yang cukup (`p-8`)
 
 ### 4.2 Card Header dengan Animated Icon
 
 **Pola:**
 ```jsx
-<CardTitle className="flex items-center gap-3 text-xl font-bold text-gray-900 dark:text-gray-100">
-  <motion.div
-    className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
-    whileHover={{ rotate: 90, scale: 1.1 }}
-    transition={{ duration: 0.3 }}
-  >
-    <Plus className="w-5 h-5 text-white" />
-  </motion.div>
-  <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-    Card Title
-  </span>
-</CardTitle>
+<div className="relative px-4 py-2.5 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
+  <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+    <motion.div
+      className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
+      whileHover={{ rotate: 90, scale: 1.1 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Plus className="w-4 h-4 text-white" />
+    </motion.div>
+    <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+      Card Title
+    </span>
+  </h3>
+</div>
 ```
 
 **Penjelasan:**
+- Header dengan padding compact: `px-4 py-2.5` (bukan `p-8`)
+- Font size: `text-lg` (bukan `text-xl`)
+- Icon size: `w-4 h-4` (bukan `w-5 h-5`)
+- Icon padding: `p-1.5` (bukan `p-2`)
+- Gap antar elemen: `gap-2` (bukan `gap-3`)
 - Icon dengan hover animation (rotate + scale)
 - Title dengan gradient text
 
@@ -650,6 +657,7 @@ className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark
 
 - Gunakan Tailwind spacing scale: `gap-2`, `gap-4`, `gap-6`, `gap-8`
 - Padding konsisten: `p-4`, `p-6`, `p-8`
+- **Card Header Padding**: `px-4 py-2.5` (compact design)
 
 ### 13.2 Konsistensi Border Radius
 
@@ -660,10 +668,35 @@ className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark
 
 ### 13.3 Konsistensi Typography
 
-- Headers: `text-xl`, `text-2xl`, `text-3xl`, `text-4xl`
+- Card Headers: `text-lg` (compact design)
+- Section Headers: `text-xl`, `text-2xl`, `text-3xl`, `text-4xl`
 - Body: `text-sm`, `text-base`
 - Labels: `text-sm font-semibold`
 - Helpers: `text-xs`
+
+### 13.3.1 Ukuran Card Header (Compact Design)
+
+Untuk semua Card Header sections, gunakan ukuran berikut agar lebih compact dan profesional:
+
+- **Padding Header**: `px-4 py-2.5` (bukan `p-8`)
+- **Font Size**: `text-lg` (bukan `text-xl`)
+- **Icon Size**: `w-4 h-4` (bukan `w-5 h-5`)
+- **Icon Padding**: `p-1.5` (bukan `p-2`)
+- **Gap antar elemen**: `gap-2` (bukan `gap-3`)
+
+**Contoh:**
+```jsx
+<div className="relative px-4 py-2.5 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
+  <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+    <motion.div className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md">
+      <Icon className="w-4 h-4 text-white" />
+    </motion.div>
+    <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+      Section Title
+    </span>
+  </h3>
+</div>
+```
 
 ### 13.4 Animation Timing
 
@@ -692,6 +725,7 @@ Saat membuat menu baru, pastikan:
 - [ ] Menambahkan entrance animations dengan stagger
 - [ ] Menambahkan hover effects pada interactive elements
 - [ ] Menggunakan consistent spacing dan typography
+- [ ] **Card Header menggunakan ukuran compact**: `px-4 py-2.5`, `text-lg`, icon `w-4 h-4`, `p-1.5`, `gap-2`
 - [ ] Menambahkan loading states
 - [ ] Menambahkan empty states
 - [ ] Menggunakan toast notifications untuk feedback
@@ -795,8 +829,8 @@ Ketiganya mengimplementasikan pola glassmorphism, animasi Framer Motion, dan dar
 
 ---
 
-**Terakhir Diupdate:** 2025-11-14
-**Versi:** 1.0.0
+**Terakhir Diupdate:** 2025-01-27
+**Versi:** 1.2.0
 ## Poliklinik Monthly Chart – Styling Patterns
 
 Tujuan: membuat grafik bar kunjungan poli per bulan yang elegan, modern, informatif, dan tetap ringan tanpa library eksternal.
@@ -840,3 +874,234 @@ Tips performa:
 Catatan pengembangan:
 - Jika ingin animasi lebih kompleks, dapat mempertimbangkan framer-motion. Namun saat ini kita memakai CSS transition untuk menjaga footprint bundle tetap ringan.
 
+---
+
+## 19. Pola Form Input dengan Auto-Validation & Visual Feedback
+
+### 19.1 Input dengan Conditional Styling Berdasarkan Status
+
+**Pola:**
+```jsx
+<input
+  type="text"
+  value={value}
+  onChange={(e) => handleChange(e.target.value)}
+  className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:bg-gray-700/80 dark:text-white backdrop-blur-sm transition-all duration-200 ${
+    status === 'K'
+      ? 'border-red-500 bg-red-50/80 dark:border-red-600 dark:bg-red-900/30'
+      : status === 'H'
+      ? 'border-orange-500 bg-orange-50/80 dark:border-orange-600 dark:bg-orange-900/30'
+      : status === 'L'
+      ? 'border-yellow-500 bg-yellow-50/80 dark:border-yellow-600 dark:bg-yellow-900/30'
+      : 'border-gray-300/50 dark:border-gray-600/50'
+  }`}
+/>
+```
+
+**Penjelasan:**
+- Conditional styling berdasarkan status/kondisi nilai
+- Background dengan opacity (`/80`, `/30`) untuk efek subtle
+- Border warna matching dengan background
+- Dark mode support dengan opacity berbeda
+
+### 19.2 Visual Feedback dengan Motion Animation
+
+**Pola:**
+```jsx
+{status && (
+  <motion.p
+    className="mt-1 text-xs font-semibold"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+  >
+    {status === 'K' && <span className="text-red-600 dark:text-red-400">⚠️ Kritis</span>}
+    {status === 'H' && <span className="text-orange-600 dark:text-orange-400">↑ Tinggi</span>}
+    {status === 'L' && <span className="text-yellow-600 dark:text-yellow-400">↓ Rendah</span>}
+  </motion.p>
+)}
+```
+
+**Penjelasan:**
+- Fade-in animation untuk feedback visual
+- Icon/emoji untuk quick visual cue
+- Warna konsisten dengan status
+- Dark mode support
+
+### 19.3 Table Rows dengan Stagger Animation
+
+**Pola:**
+```jsx
+<AnimatePresence>
+  {items.map((item, index) => (
+    <motion.tr
+      key={item.id}
+      className="border-b border-gray-100/50 dark:border-gray-700/30 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 dark:hover:from-gray-700/50 dark:hover:to-gray-800/50 transition-all duration-200 group"
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+      transition={{ delay: index * 0.02 }}
+      whileHover={{ scale: 1.01 }}
+    >
+      {/* Cells */}
+    </motion.tr>
+  ))}
+</AnimatePresence>
+```
+
+**Penjelasan:**
+- Stagger delay berdasarkan index untuk efek cascade
+- Exit animation untuk smooth removal
+- Hover dengan gradient background
+- Scale effect pada hover untuk feedback
+
+### 19.4 Badge dengan Gradient & Ring Border
+
+**Pola:**
+```jsx
+<motion.span
+  className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold ${
+    status === "Sudah"
+      ? "bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 text-green-700 dark:text-green-300 ring-1 ring-green-200 dark:ring-green-800"
+      : "bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/30 dark:to-amber-900/30 text-yellow-700 dark:text-yellow-300 ring-1 ring-yellow-200 dark:ring-yellow-800"
+  }`}
+  whileHover={{ scale: 1.05 }}
+>
+  {status || "Default"}
+</motion.span>
+```
+
+**Penjelasan:**
+- Gradient background untuk depth
+- Ring border untuk emphasis
+- Hover scale effect
+- Dark mode dengan opacity berbeda
+
+### 19.5 Container dengan Wider Horizontal Padding
+
+**Pola:**
+```jsx
+<motion.div
+  variants={containerVariants}
+  initial="hidden"
+  animate="visible"
+  className="mx-auto px-4 sm:px-6 lg:px-12 xl:px-16"
+>
+  {/* Content */}
+</motion.div>
+```
+
+**Penjelasan:**
+- Responsive padding yang lebih luas untuk desktop
+- `lg:px-12 xl:px-16` memberikan lebih banyak ruang horizontal
+- Mobile-first dengan padding minimal di mobile
+
+---
+
+## 20. Best Practices untuk Form dengan Dynamic Validation
+
+### 20.1 Auto-populate Fields Berdasarkan Input
+
+**Pola:**
+```jsx
+const updateField = (index, field, value) => {
+  const newData = [...data];
+  newData[index][field] = value;
+  
+  // Auto-populate berdasarkan field yang diubah
+  if (field === 'hasil' || field === 'nilai_rujukan') {
+    const currentHasil = field === 'hasil' ? value : newData[index].hasil;
+    const currentNilaiRujukan = field === 'nilai_rujukan' ? value : newData[index].nilai_rujukan;
+    
+    if (currentHasil && currentNilaiRujukan) {
+      const status = calculateStatus(currentHasil, currentNilaiRujukan);
+      newData[index].status = status;
+    }
+  }
+  
+  setData(newData);
+};
+```
+
+**Penjelasan:**
+- Auto-calculate berdasarkan input user
+- Validasi real-time
+- Update state secara efisien
+
+### 20.2 Conditional Rendering untuk Visual Feedback
+
+**Pola:**
+```jsx
+{value && (
+  <motion.div
+    initial={{ opacity: 0, y: -10 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -10 }}
+    className="mt-2 p-3 rounded-lg bg-blue-50/80 dark:bg-blue-900/30 border border-blue-200/50 dark:border-blue-800/50"
+  >
+    {/* Feedback content */}
+  </motion.div>
+)}
+```
+
+**Penjelasan:**
+- Conditional rendering dengan AnimatePresence
+- Smooth entrance/exit animations
+- Glassmorphism untuk feedback box
+
+### 20.3 Form dengan Grouped Data dan Nested Mapping
+
+**Pola:**
+```jsx
+{groupedData && Array.isArray(groupedData) && groupedData.length > 0 && (
+  <motion.div
+    variants={itemVariants}
+    className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 mb-8"
+  >
+    {/* Top border gradient */}
+    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500" />
+    
+    <div className="relative px-4 py-2.5 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-purple-50/80 via-pink-50/80 to-rose-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
+      <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+        <motion.div
+          className="p-1.5 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 shadow-md"
+          whileHover={{ rotate: 90, scale: 1.1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <ClipboardList className="w-4 h-4 text-white" />
+        </motion.div>
+        <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+          Form Title
+        </span>
+      </h2>
+    </div>
+    <div className="relative p-8">
+      {groupedData.map((group, groupIndex) => (
+        <motion.div
+          key={group.id}
+          variants={itemVariants}
+          className="mb-8 last:mb-0"
+        >
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+            <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              {group.name}
+            </span>
+          </h3>
+          {/* Nested content - bisa table, form fields, dll */}
+          {group.items && Array.isArray(group.items) && group.items.map((item, itemIndex) => (
+            // Item content
+          ))}
+        </motion.div>
+      ))}
+    </div>
+  </motion.div>
+)}
+```
+
+**Penjelasan:**
+- Conditional rendering dengan array check untuk keamanan
+- Nested mapping untuk grouped data
+- Setiap group memiliki card terpisah dengan spacing (`mb-8 last:mb-0`)
+- Gradient header untuk setiap group section
+- Variants animation untuk smooth entrance
+
+---

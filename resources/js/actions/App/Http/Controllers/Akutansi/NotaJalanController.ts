@@ -79,7 +79,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::snapshot
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:93
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:104
 * @route '/api/akutansi/nota-jalan/snapshot'
 */
 export const snapshot = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -94,7 +94,7 @@ snapshot.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::snapshot
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:93
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:104
 * @route '/api/akutansi/nota-jalan/snapshot'
 */
 snapshot.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ snapshot.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::snapshot
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:93
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:104
 * @route '/api/akutansi/nota-jalan/snapshot'
 */
 snapshot.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

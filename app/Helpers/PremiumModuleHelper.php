@@ -7,17 +7,14 @@ use Illuminate\Support\Facades\App;
 
 class PremiumModuleHelper
 {
-    protected static $premiumService;
-
     /**
      * Get premium service instance
+     *
+     * Octane-friendly: Always resolve fresh instance to avoid memory leaks
      */
     protected static function getPremiumService()
     {
-        if (!self::$premiumService) {
-            self::$premiumService = App::make(PremiumModuleService::class);
-        }
-        return self::$premiumService;
+        return App::make(PremiumModuleService::class);
     }
 
     /**
@@ -33,14 +30,14 @@ class PremiumModuleHelper
      */
     public static function hasAccess($moduleKey, $feature = null)
     {
-        if (!self::isModuleActive($moduleKey)) {
+        if (! self::isModuleActive($moduleKey)) {
             return false;
         }
 
         // If specific feature is requested, check if module has that feature
         if ($feature) {
             $module = \App\Models\PremiumModule::where('module_key', $moduleKey)->first();
-            if ($module && !$module->hasFeature($feature)) {
+            if ($module && ! $module->hasFeature($feature)) {
                 return false;
             }
         }
@@ -86,7 +83,7 @@ class PremiumModuleHelper
     public static function getModuleStatus($moduleKey)
     {
         $module = self::getModuleInfo($moduleKey);
-        if (!$module) {
+        if (! $module) {
             return 'not_found';
         }
 
@@ -107,6 +104,7 @@ class PremiumModuleHelper
     public static function getModuleFeatures($moduleKey)
     {
         $module = self::getModuleInfo($moduleKey);
+
         return $module ? $module->getFeatures() : [];
     }
 
@@ -116,6 +114,7 @@ class PremiumModuleHelper
     public static function hasFeature($moduleKey, $feature)
     {
         $module = self::getModuleInfo($moduleKey);
+
         return $module ? $module->hasFeature($feature) : false;
     }
 
@@ -125,6 +124,7 @@ class PremiumModuleHelper
     public static function getModulePermissions($moduleKey)
     {
         $module = self::getModuleInfo($moduleKey);
+
         return $module ? $module->permissions : [];
     }
 
@@ -133,11 +133,12 @@ class PremiumModuleHelper
      */
     public static function hasPermission($moduleKey, $permission)
     {
-        if (!self::isModuleActive($moduleKey)) {
+        if (! self::isModuleActive($moduleKey)) {
             return false;
         }
 
         $permissions = self::getModulePermissions($moduleKey);
+
         return in_array($permission, $permissions);
     }
 
@@ -147,6 +148,7 @@ class PremiumModuleHelper
     public static function getModulePrice($moduleKey)
     {
         $module = self::getModuleInfo($moduleKey);
+
         return $module ? $module->price : 0;
     }
 
@@ -155,7 +157,7 @@ class PremiumModuleHelper
      */
     public static function formatPrice($price)
     {
-        return 'Rp ' . number_format($price, 0, ',', '.');
+        return 'Rp '.number_format($price, 0, ',', '.');
     }
 
     /**
@@ -164,6 +166,7 @@ class PremiumModuleHelper
     public static function getActivationDate($moduleKey)
     {
         $module = self::getModuleInfo($moduleKey);
+
         return $module ? $module->activated_at : null;
     }
 
@@ -173,6 +176,7 @@ class PremiumModuleHelper
     public static function getExpirationDate($moduleKey)
     {
         $module = self::getModuleInfo($moduleKey);
+
         return $module ? $module->expires_at : null;
     }
 
@@ -182,7 +186,7 @@ class PremiumModuleHelper
     public static function isExpired($moduleKey)
     {
         $expirationDate = self::getExpirationDate($moduleKey);
-        if (!$expirationDate) {
+        if (! $expirationDate) {
             return false; // No expiration date means lifetime
         }
 
@@ -195,7 +199,7 @@ class PremiumModuleHelper
     public static function getDaysUntilExpiration($moduleKey)
     {
         $expirationDate = self::getExpirationDate($moduleKey);
-        if (!$expirationDate) {
+        if (! $expirationDate) {
             return null; // No expiration date means lifetime
         }
 

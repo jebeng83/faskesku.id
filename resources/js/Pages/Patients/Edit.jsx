@@ -7,20 +7,31 @@ import WilayahSearchableSelect from '@/Components/WilayahSearchableSelect';
 import SelectWithAdd from "@/Components/SelectWithAdd";
 import PenjabCreateModal from "@/Components/PenjabCreateModal";
 import SearchableSelect from "@/Components/SearchableSelect";
+import { UserCog, ArrowLeft, Eye, Info, CheckCircle2, Loader2 } from "lucide-react";
 
 export default function Edit({ patient }) {
     // Motion variants for subtle, performant micro-interactions
     const containerVariants = {
-        hidden: { opacity: 0, y: 8 },
+        hidden: { opacity: 0 },
         visible: {
             opacity: 1,
-            y: 0,
-            transition: { staggerChildren: 0.05, ease: 'easeOut' },
+            transition: {
+                staggerChildren: 0.08,
+                delayChildren: 0.1,
+            },
         },
     };
     const itemVariants = {
-        hidden: { opacity: 0, y: 8 },
-        visible: { opacity: 1, y: 0 },
+        hidden: { opacity: 0, y: 30, scale: 0.95 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            transition: {
+                duration: 0.5,
+                ease: [0.22, 1, 0.36, 1],
+            },
+        },
     };
     const [selectedWilayah, setSelectedWilayah] = useState(null);
     const [loadingWilayah, setLoadingWilayah] = useState(false);
@@ -253,42 +264,47 @@ export default function Edit({ patient }) {
         >
             <Head title={`Edit Pasien - ${patient.nm_pasien}`} />
 
-            <motion.div className="py-6" initial="hidden" animate="visible" variants={containerVariants}>
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <motion.div className="py-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 min-h-screen" initial="hidden" animate="visible" variants={containerVariants}>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 xl:px-16">
                     {/* Header */}
-                    <motion.div variants={itemVariants} className="relative overflow-visible mb-6">
-                        <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-br from-blue-500/15 via-purple-500/15 to-indigo-500/15 dark:from-blue-600/10 dark:via-purple-600/10 dark:to-indigo-600/10" />
-                        <div className="p-6 rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg">
-                            <div className="flex justify-between items-center">
+                    <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 p-8 mb-8">
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-purple-500/10" />
+                        <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                            <div className="flex items-center gap-4">
+                                <motion.div
+                                    className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/25"
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.6, delay: 0.2 }}
+                                >
+                                    <UserCog className="w-6 h-6 text-white" />
+                                </motion.div>
                                 <div>
-                                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                    <motion.h1
+                                        className="text-3xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
+                                    >
                                         Edit Pasien
-                                    </h2>
-                                    <p className="text-gray-600 dark:text-gray-400 mt-1">
+                                    </motion.h1>
+                                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
                                         {patient.nm_pasien} - {patient.no_rkm_medis}
                                     </p>
                                 </div>
-                                <div className="flex gap-2">
-                                    <Link
-                                        href={route('patients.index')}
-                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-700/80 hover:bg-gray-700 text-white transition-colors"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                                            <path fillRule="evenodd" d="M7.72 12.53a.75.75 0 010-1.06L10.94 8.25H3a.75.75 0 010-1.5h7.94L7.72 3.53a.75.75 0 011.06-1.06l4.5 4.5a.75.75 0 010 1.06l-4.5 4.5a.75.75 0 01-1.06 0z" clipRule="evenodd" />
-                                        </svg>
-                                        Kembali
-                                    </Link>
-                                    <Link
-                                        href={route('patients.show', patient.no_rkm_medis)}
-                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                                            <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
-                                            <path fillRule="evenodd" d="M1.323 11.447C2.811 6.976 7.028 3.75 12.001 3.75c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113-1.487 4.471-5.705 7.697-10.677 7.697-4.97 0-9.186-3.223-10.675-7.69a1.762 1.762 0 010-1.113zM17.25 12a5.25 5.25 0 11-10.5 0 5.25 5.25 0 0110.5 0z" clipRule="evenodd" />
-                                        </svg>
-                                        Lihat
-                                    </Link>
-                                </div>
+                            </div>
+                            <div className="flex gap-2">
+                                <Link
+                                    href={route('patients.index')}
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/90 dark:bg-gray-700/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200"
+                                >
+                                    <ArrowLeft className="w-4 h-4" />
+                                    Kembali
+                                </Link>
+                                <Link
+                                    href={route('patients.show', patient.no_rkm_medis)}
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30 transition-all duration-200"
+                                >
+                                    <Eye className="w-4 h-4" />
+                                    Lihat
+                                </Link>
                             </div>
                         </div>
                     </motion.div>
@@ -296,11 +312,23 @@ export default function Edit({ patient }) {
                     {/* Form */}
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Basic Information */}
-                        <motion.div variants={itemVariants} className="relative overflow-visible rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg">
-                            <div className="p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                    Informasi Dasar
+                        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 mb-8">
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                            <div className="relative p-8 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                                    <motion.div
+                                        className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
+                                        whileHover={{ rotate: 90, scale: 1.1 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <UserCog className="w-5 h-5 text-white" />
+                                    </motion.div>
+                                    <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                        Informasi Dasar
+                                    </span>
                                 </h3>
+                            </div>
+                            <div className="relative p-8">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -415,11 +443,23 @@ export default function Edit({ patient }) {
                         </motion.div>
 
                         {/* Contact Information */}
-                        <motion.div variants={itemVariants} className="relative overflow-visible rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg">
-                            <div className="p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                    Informasi Kontak
+                        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 mb-8">
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                            <div className="relative p-8 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                                    <motion.div
+                                        className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
+                                        whileHover={{ rotate: 90, scale: 1.1 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <Info className="w-5 h-5 text-white" />
+                                    </motion.div>
+                                    <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                        Informasi Kontak
+                                    </span>
                                 </h3>
+                            </div>
+                            <div className="relative p-8">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -473,11 +513,23 @@ export default function Edit({ patient }) {
                         </motion.div>
 
                         {/* Additional Information */}
-                        <motion.div variants={itemVariants} className="relative overflow-visible rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg">
-                            <div className="p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                    Informasi Tambahan
+                        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 mb-8">
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                            <div className="relative p-8 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                                    <motion.div
+                                        className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
+                                        whileHover={{ rotate: 90, scale: 1.1 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <Info className="w-5 h-5 text-white" />
+                                    </motion.div>
+                                    <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                        Informasi Tambahan
+                                    </span>
                                 </h3>
+                            </div>
+                            <div className="relative p-8">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -601,11 +653,23 @@ export default function Edit({ patient }) {
                         </motion.div>
 
                         {/* Family Information */}
-                        <motion.div variants={itemVariants} className="relative overflow-visible rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg">
-                            <div className="p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                    Informasi Keluarga
+                        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 mb-8">
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                            <div className="relative p-8 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                                    <motion.div
+                                        className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
+                                        whileHover={{ rotate: 90, scale: 1.1 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <UserCog className="w-5 h-5 text-white" />
+                                    </motion.div>
+                                    <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                        Informasi Keluarga
+                                    </span>
                                 </h3>
+                            </div>
+                            <div className="relative p-8">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6" style={{ position: 'relative', zIndex: 1 }}>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -779,11 +843,23 @@ export default function Edit({ patient }) {
                         </motion.div>
 
                         {/* Informasi Administrasi (Perusahaan, Suku Bangsa, Bahasa, Cacat Fisik, NIP) */}
-                        <motion.div variants={itemVariants} className="relative overflow-visible rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg">
-                            <div className="p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                    Informasi Administrasi
+                        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 mb-8">
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                            <div className="relative p-8 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                                    <motion.div
+                                        className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
+                                        whileHover={{ rotate: 90, scale: 1.1 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <Info className="w-5 h-5 text-white" />
+                                    </motion.div>
+                                    <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                        Informasi Administrasi
+                                    </span>
                                 </h3>
+                            </div>
+                            <div className="relative p-8">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -869,28 +945,34 @@ export default function Edit({ patient }) {
                         </motion.div>
 
                         {/* Submit Button */}
-                        <motion.div variants={itemVariants} className="relative overflow-visible rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg">
-                            <div className="p-6">
+                        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5">
+                            <div className="relative p-8">
                                 <div className="flex justify-end gap-4">
                                     <Link
                                         href={route('patients.index')}
-                                        className="inline-flex items-center px-6 py-2 rounded-lg bg-gray-700/80 hover:bg-gray-700 text-white transition-colors"
+                                        className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-white/90 dark:bg-gray-700/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200"
                                     >
                                         Batal
                                     </Link>
-                                    <button
+                                    <motion.button
                                         type="submit"
                                         disabled={processing}
-                                        className="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white transition-colors"
+                                        className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                                        whileHover={{ scale: processing ? 1 : 1.02 }}
+                                        whileTap={{ scale: processing ? 1 : 0.98 }}
                                     >
-                                        {processing && (
-                                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
+                                        {processing ? (
+                                            <>
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                Menyimpan...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <CheckCircle2 className="w-4 h-4" />
+                                                Simpan Perubahan
+                                            </>
                                         )}
-                                        {processing ? 'Menyimpan...' : 'Simpan Perubahan'}
-                                    </button>
+                                    </motion.button>
                                 </div>
                             </div>
                         </motion.div>

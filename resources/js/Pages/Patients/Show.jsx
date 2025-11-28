@@ -3,20 +3,31 @@ import { motion } from 'framer-motion';
 import { Head, Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import LanjutanRegistrasiLayout from '@/Layouts/LanjutanRegistrasiLayout';
+import { User, ArrowLeft, Edit, Info, Phone, Mail, MapPin, Calendar, FileText } from "lucide-react";
 
 export default function Show({ patient }) {
     // Motion variants for subtle and consistent transitions
     const containerVariants = {
-        hidden: { opacity: 0, y: 8 },
+        hidden: { opacity: 0 },
         visible: {
             opacity: 1,
-            y: 0,
-            transition: { staggerChildren: 0.06, ease: 'easeOut' },
+            transition: {
+                staggerChildren: 0.08,
+                delayChildren: 0.1,
+            },
         },
     };
     const itemVariants = {
-        hidden: { opacity: 0, y: 8 },
-        visible: { opacity: 1, y: 0 },
+        hidden: { opacity: 0, y: 30, scale: 0.95 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            transition: {
+                duration: 0.5,
+                ease: [0.22, 1, 0.36, 1],
+            },
+        },
     };
     const [labels, setLabels] = useState({
         perusahaan: '-',
@@ -67,42 +78,47 @@ export default function Show({ patient }) {
         >
             <Head title={`Detail Pasien - ${patient.nm_pasien}`} />
 
-            <motion.div className="py-6" initial="hidden" animate="visible" variants={containerVariants}>
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <motion.div className="py-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 min-h-screen" initial="hidden" animate="visible" variants={containerVariants}>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 xl:px-16">
                     {/* Header */}
-                    <motion.div variants={itemVariants} className="relative overflow-visible mb-6">
-                        <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-br from-blue-500/15 via-purple-500/15 to-indigo-500/15 dark:from-blue-600/10 dark:via-purple-600/10 dark:to-indigo-600/10" />
-                        <div className="p-6 rounded-2xl bg-white/60 dark:bg-gray-900/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-lg">
-                            <div className="flex justify-between items-center">
+                    <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 p-8 mb-8">
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-purple-500/10" />
+                        <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                            <div className="flex items-center gap-4">
+                                <motion.div
+                                    className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/25"
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.6, delay: 0.2 }}
+                                >
+                                    <User className="w-6 h-6 text-white" />
+                                </motion.div>
                                 <div>
-                                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                    <motion.h1
+                                        className="text-3xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
+                                    >
                                         Detail Pasien
-                                    </h2>
-                                    <p className="text-gray-600 dark:text-gray-400 mt-1">
+                                    </motion.h1>
+                                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
                                         {patient.nm_pasien} - {patient.no_rkm_medis}
                                     </p>
                                 </div>
-                                <div className="flex gap-2">
-                                    <Link
-                                        href={route('patients.index')}
-                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-700/80 hover:bg-gray-700 text-white transition-colors"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                                            <path fillRule="evenodd" d="M7.72 12.53a.75.75 0 010-1.06L10.94 8.25H3a.75.75 0 010-1.5h7.94L7.72 3.53a.75.75 0 011.06-1.06l4.5 4.5a.75.75 0 010 1.06l-4.5 4.5a.75.75 0 01-1.06 0z" clipRule="evenodd" />
-                                        </svg>
-                                        Kembali
-                                    </Link>
-                                    <Link
-                                        href={route('patients.edit', patient.no_rkm_medis)}
-                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white transition-colors"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                                            <path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32l8.4-8.4z" />
-                                            <path d="M5.25 5.25a3 3 0 00-3 3v10.5a3 3 0 003 3h10.5a3 3 0 003-3V13.5a.75.75 0 00-1.5 0v5.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5V8.25a1.5 1.5 0 011.5-1.5h5.25a.75.75 0 000-1.5H5.25z" />
-                                        </svg>
-                                        Edit
-                                    </Link>
-                                </div>
+                            </div>
+                            <div className="flex gap-2">
+                                <Link
+                                    href={route('patients.index')}
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/90 dark:bg-gray-700/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200"
+                                >
+                                    <ArrowLeft className="w-4 h-4" />
+                                    Kembali
+                                </Link>
+                                <Link
+                                    href={route('patients.edit', patient.no_rkm_medis)}
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-200"
+                                >
+                                    <Edit className="w-4 h-4" />
+                                    Edit
+                                </Link>
                             </div>
                         </div>
                     </motion.div>
@@ -110,11 +126,23 @@ export default function Show({ patient }) {
                     {/* Patient Information */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Basic Information */}
-                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                            <div className="p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                    Informasi Dasar
+                        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5">
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                            <div className="relative p-8 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                                    <motion.div
+                                        className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
+                                        whileHover={{ rotate: 90, scale: 1.1 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <User className="w-5 h-5 text-white" />
+                                    </motion.div>
+                                    <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                        Informasi Dasar
+                                    </span>
                                 </h3>
+                            </div>
+                            <div className="relative p-8">
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
@@ -188,14 +216,26 @@ export default function Show({ patient }) {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Contact Information */}
-                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                            <div className="p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                    Informasi Kontak
+                        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5">
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                            <div className="relative p-8 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                                    <motion.div
+                                        className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
+                                        whileHover={{ rotate: 90, scale: 1.1 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <Phone className="w-5 h-5 text-white" />
+                                    </motion.div>
+                                    <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                        Informasi Kontak
+                                    </span>
                                 </h3>
+                            </div>
+                            <div className="relative p-8">
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">
@@ -231,14 +271,26 @@ export default function Show({ patient }) {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Additional Information */}
-                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                            <div className="p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                    Informasi Tambahan
+                        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5">
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                            <div className="relative p-8 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                                    <motion.div
+                                        className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
+                                        whileHover={{ rotate: 90, scale: 1.1 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <Info className="w-5 h-5 text-white" />
+                                    </motion.div>
+                                    <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                        Informasi Tambahan
+                                    </span>
                                 </h3>
+                            </div>
+                            <div className="relative p-8">
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
@@ -284,14 +336,26 @@ export default function Show({ patient }) {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Family Information */}
-                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                            <div className="p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                    Informasi Keluarga
+                        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5">
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                            <div className="relative p-8 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                                    <motion.div
+                                        className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
+                                        whileHover={{ rotate: 90, scale: 1.1 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <User className="w-5 h-5 text-white" />
+                                    </motion.div>
+                                    <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                        Informasi Keluarga
+                                    </span>
                                 </h3>
+                            </div>
+                            <div className="relative p-8">
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">
@@ -327,14 +391,26 @@ export default function Show({ patient }) {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Administrative Information */}
-                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                            <div className="p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                    Informasi Administrasi
+                        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5">
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                            <div className="relative p-8 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                                    <motion.div
+                                        className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
+                                        whileHover={{ rotate: 90, scale: 1.1 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <FileText className="w-5 h-5 text-white" />
+                                    </motion.div>
+                                    <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                        Informasi Administrasi
+                                    </span>
                                 </h3>
+                            </div>
+                            <div className="relative p-8">
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
@@ -392,7 +468,7 @@ export default function Show({ patient }) {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
             </motion.div>

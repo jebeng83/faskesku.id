@@ -306,6 +306,24 @@ const REFERENSI_CONFIG = {
             });
         },
     },
+    // ===== Sumber: Petugas (dari tabel petugas) =====
+    // Endpoint: GET /api/pembelian/petugas (mendukung q untuk pencarian)
+    petugas: {
+        supportsSearch: true,
+        defaultParams: { q: '' },
+        buildUrl: ({ q = '' } = {}) => {
+            // Gunakan endpoint yang sudah ada di PembelianController
+            const params = new URLSearchParams({ q });
+            return `/api/pembelian/petugas?${params.toString()}`;
+        },
+        parse: (json) => {
+            const list = json?.data || json?.list || [];
+            return list.map((it) => ({
+                value: it?.nip || '',
+                label: `${it?.nip ?? ''} — ${it?.nama ?? ''}`.trim(),
+            }));
+        },
+    },
 };
 
 const SearchableSelect = ({ 

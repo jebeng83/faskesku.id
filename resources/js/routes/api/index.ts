@@ -35,7 +35,7 @@ import menu from './menu'
 import tarifTindakan from './tarif-tindakan'
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
-* @see app/Http/Controllers/PermintaanLabController.php:287
+* @see app/Http/Controllers/PermintaanLabController.php:917
 * @route '/api/reg-periksa'
 */
 export const regPeriksa = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -50,7 +50,7 @@ regPeriksa.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
-* @see app/Http/Controllers/PermintaanLabController.php:287
+* @see app/Http/Controllers/PermintaanLabController.php:917
 * @route '/api/reg-periksa'
 */
 regPeriksa.url = (options?: RouteQueryOptions) => {
@@ -59,7 +59,7 @@ regPeriksa.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
-* @see app/Http/Controllers/PermintaanLabController.php:287
+* @see app/Http/Controllers/PermintaanLabController.php:917
 * @route '/api/reg-periksa'
 */
 regPeriksa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -69,7 +69,7 @@ regPeriksa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
-* @see app/Http/Controllers/PermintaanLabController.php:287
+* @see app/Http/Controllers/PermintaanLabController.php:917
 * @route '/api/reg-periksa'
 */
 regPeriksa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -79,7 +79,7 @@ regPeriksa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:380
+* @see app/Http/Controllers/PermintaanLabController.php:1010
 * @route '/api/lab-tests'
 */
 export const labTests = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ labTests.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:380
+* @see app/Http/Controllers/PermintaanLabController.php:1010
 * @route '/api/lab-tests'
 */
 labTests.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ labTests.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:380
+* @see app/Http/Controllers/PermintaanLabController.php:1010
 * @route '/api/lab-tests'
 */
 labTests.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -113,7 +113,7 @@ labTests.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:380
+* @see app/Http/Controllers/PermintaanLabController.php:1010
 * @route '/api/lab-tests'
 */
 labTests.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

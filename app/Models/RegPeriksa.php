@@ -34,6 +34,7 @@ class RegPeriksa extends Model
         'sttsumur',
         'status_bayar',
         'status_poli',
+        'keputusan',
     ];
 
     public static function generateNoReg($kd_dokter, $kd_poli)

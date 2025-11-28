@@ -27,8 +27,8 @@ use App\Http\Controllers\PoliklinikController;
 use App\Http\Controllers\RawatJalan\ObatController;
 use App\Http\Controllers\RawatJalan\RawatJalanController;
 use App\Http\Controllers\RawatJalan\ResepController;
-use App\Http\Controllers\SatuSehat\SatuSehatController;
 use App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController;
+use App\Http\Controllers\SatuSehat\SatuSehatController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/employees', [EmployeeController::class, 'store'])->name('api.employees.store');
@@ -138,7 +138,10 @@ Route::get('/dokter/{kd_dokter}', [DokterController::class, 'show'])->name('api.
 
 // API routes untuk permintaan laboratorium
 Route::get('/lab-tests', [PermintaanLabController::class, 'getLabTests'])->name('api.lab-tests.index');
+Route::get('/permintaan-lab/templates/{kdJenisPrw}', [PermintaanLabController::class, 'getTemplates'])->name('api.permintaan-lab.templates');
+Route::get('/permintaan-lab/templates', [PermintaanLabController::class, 'getTemplates'])->name('api.permintaan-lab.templates.query');
 Route::post('/permintaan-lab', [PermintaanLabController::class, 'store'])->name('api.permintaan-lab.store');
+Route::post('/permintaan-lab/stage-lab', [PermintaanLabController::class, 'stageJurnalLab'])->name('api.permintaan-lab.stage-lab');
 Route::get('/permintaan-lab/rawat/{no_rawat}', [PermintaanLabController::class, 'getByNoRawat'])->where('no_rawat', '.*')->name('api.permintaan-lab.by-rawat');
 Route::get('/permintaan-lab/riwayat/{no_rawat}', [PermintaanLabController::class, 'getRiwayat'])->where('no_rawat', '.*')->name('api.permintaan-lab.riwayat');
 Route::delete('/permintaan-lab/{noorder}', [PermintaanLabController::class, 'destroy'])->name('api.permintaan-lab.destroy');
@@ -283,13 +286,13 @@ Route::prefix('satusehat')->group(function () {
     Route::post('/mapping/lokasi', [SatuSehatController::class, 'mappingLokasiStore'])->name('api.satusehat.mapping.lokasi.store');
     Route::put('/mapping/lokasi/{kd_poli}', [SatuSehatController::class, 'mappingLokasiUpdate'])->name('api.satusehat.mapping.lokasi.update');
     Route::delete('/mapping/lokasi/{kd_poli}', [SatuSehatController::class, 'mappingLokasiDestroy'])->name('api.satusehat.mapping.lokasi.destroy');
-// CRUD Mapping Lokasi Ranap (Kamar ↔ SATUSEHAT Location)
-Route::get('/mapping/lokasi-ranap', [SatuSehatController::class, 'mappingLokasiRanapIndex'])->name('api.satusehat.mapping.lokasi_ranap.index');
-Route::post('/mapping/lokasi-ranap', [SatuSehatController::class, 'mappingLokasiRanapStore'])->name('api.satusehat.mapping.lokasi_ranap.store');
-Route::put('/mapping/lokasi-ranap/{kd_kamar}', [SatuSehatController::class, 'mappingLokasiRanapUpdate'])->name('api.satusehat.mapping.lokasi_ranap.update');
-Route::delete('/mapping/lokasi-ranap/{kd_kamar}', [SatuSehatController::class, 'mappingLokasiRanapDestroy'])->name('api.satusehat.mapping.lokasi_ranap.destroy');
-// Referensi Kamar (untuk dropdown/select)
-Route::get('/ranap/kamar', [SatuSehatController::class, 'kamarList'])->name('api.satusehat.ranap.kamar');
+    // CRUD Mapping Lokasi Ranap (Kamar ↔ SATUSEHAT Location)
+    Route::get('/mapping/lokasi-ranap', [SatuSehatController::class, 'mappingLokasiRanapIndex'])->name('api.satusehat.mapping.lokasi_ranap.index');
+    Route::post('/mapping/lokasi-ranap', [SatuSehatController::class, 'mappingLokasiRanapStore'])->name('api.satusehat.mapping.lokasi_ranap.store');
+    Route::put('/mapping/lokasi-ranap/{kd_kamar}', [SatuSehatController::class, 'mappingLokasiRanapUpdate'])->name('api.satusehat.mapping.lokasi_ranap.update');
+    Route::delete('/mapping/lokasi-ranap/{kd_kamar}', [SatuSehatController::class, 'mappingLokasiRanapDestroy'])->name('api.satusehat.mapping.lokasi_ranap.destroy');
+    // Referensi Kamar (untuk dropdown/select)
+    Route::get('/ranap/kamar', [SatuSehatController::class, 'kamarList'])->name('api.satusehat.ranap.kamar');
     // CRUD Mapping Lokasi Farmasi (Bangsal ↔ SATUSEHAT Location)
     Route::get('/mapping/lokasi-farmasi', [SatuSehatController::class, 'mappingLokasiFarmasiIndex'])->name('api.satusehat.mapping.lokasi_farmasi.index');
     Route::post('/mapping/lokasi-farmasi', [SatuSehatController::class, 'mappingLokasiFarmasiStore'])->name('api.satusehat.mapping.lokasi_farmasi.store');
@@ -349,8 +352,8 @@ Route::prefix('v1/rs')->group(function () {
 Route::get('/poliklinik', [PoliklinikController::class, 'apiIndex'])->name('api.poliklinik.index');
 
 // Akutansi - Nota Jalan & Jurnal
-use App\Http\Controllers\Akutansi\NotaJalanController;
 use App\Http\Controllers\Akutansi\JurnalController;
+use App\Http\Controllers\Akutansi\NotaJalanController;
 
 // Akutansi: Cek & buat nota_jalan
 Route::get('/akutansi/nota-jalan/exists', [NotaJalanController::class, 'exists'])->name('api.akutansi.nota-jalan.exists');
@@ -360,3 +363,24 @@ Route::post('/akutansi/nota-jalan/snapshot', [NotaJalanController::class, 'snaps
 // Akutansi: Jurnal staging & posting
 Route::post('/akutansi/jurnal/stage-from-billing', [JurnalController::class, 'stageFromBilling'])->name('api.akutansi.jurnal.stage-from-billing');
 Route::post('/akutansi/jurnal/post-staging', [JurnalController::class, 'postStaging'])->name('api.akutansi.jurnal.post-staging');
+// Single Posting Point: Posting dari tampjurnal + tampjurnal2 (untuk lab, tindakan ralan, dll)
+Route::post('/akutansi/jurnal/post', [JurnalController::class, 'postFromTemp'])->name('api.akutansi.jurnal.post');
+
+// API routes untuk Tagihan dan Pembayaran
+Route::prefix('akutansi/tagihan')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Akutansi\TagihanSadewaController::class, 'index'])->name('api.akutansi.tagihan.index');
+    Route::get('/{no_nota}', [\App\Http\Controllers\Akutansi\TagihanSadewaController::class, 'show'])->name('api.akutansi.tagihan.show');
+    Route::post('/', [\App\Http\Controllers\Akutansi\TagihanSadewaController::class, 'store'])->name('api.akutansi.tagihan.store');
+    Route::put('/{no_nota}', [\App\Http\Controllers\Akutansi\TagihanSadewaController::class, 'update'])->name('api.akutansi.tagihan.update');
+    Route::post('/{no_nota}/payment', [\App\Http\Controllers\Akutansi\TagihanSadewaController::class, 'addPayment'])->name('api.akutansi.tagihan.add-payment');
+    Route::delete('/{no_nota}', [\App\Http\Controllers\Akutansi\TagihanSadewaController::class, 'destroy'])->name('api.akutansi.tagihan.destroy');
+});
+
+Route::prefix('akutansi/bayar-piutang')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Akutansi\BayarPiutangController::class, 'index'])->name('api.akutansi.bayar-piutang.index');
+    Route::get('/show', [\App\Http\Controllers\Akutansi\BayarPiutangController::class, 'show'])->name('api.akutansi.bayar-piutang.show');
+    Route::post('/', [\App\Http\Controllers\Akutansi\BayarPiutangController::class, 'store'])->name('api.akutansi.bayar-piutang.store');
+    Route::put('/', [\App\Http\Controllers\Akutansi\BayarPiutangController::class, 'update'])->name('api.akutansi.bayar-piutang.update');
+    Route::delete('/', [\App\Http\Controllers\Akutansi\BayarPiutangController::class, 'destroy'])->name('api.akutansi.bayar-piutang.destroy');
+    Route::get('/total', [\App\Http\Controllers\Akutansi\BayarPiutangController::class, 'getTotalPiutang'])->name('api.akutansi.bayar-piutang.total');
+});
