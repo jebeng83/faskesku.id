@@ -10,6 +10,7 @@ use App\Models\RawatJlPr;
 use App\Models\RegPeriksa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class BillingController extends Controller
@@ -324,7 +325,7 @@ class BillingController extends Controller
                 ->get();
 
             // DEBUG: Log jumlah data yang diambil dari database
-            \Log::info('BillingController: Data obat dari detail_pemberian_obat', [
+            Log::info('BillingController: Data obat dari detail_pemberian_obat', [
                 'no_rawat' => $noRawat,
                 'total_rows' => $obatDetails->count(),
                 'items' => $obatDetails->map(function($item) {
@@ -348,8 +349,9 @@ class BillingController extends Controller
                 $tuslah = (float) ($item->tuslah ?? 0);
                 $tambahan = $embalase + $tuslah;
                 $total = (float) ($item->total ?? 0);
-                // Total biaya = total + tambahan (sesuai logika Java: total + tambahan)
-                $totalBiaya = $total + $tambahan;
+                // Selaraskan dengan snapshot & jurnal: gunakan formula biaya_obat * jml + (embalase + tuslah)
+                // Hindari double-count jika kolom `total` sudah termasuk tambahan
+                $totalBiaya = round(($biayaObat * $jml) + $tambahan, 2);
                 
                 // Format nama: nama_brng (nama_jenis) sesuai Java
                 $nmPerawatan = $item->nama_brng ?? $item->kode_brng ?? '';
@@ -384,7 +386,7 @@ class BillingController extends Controller
             });
 
             // DEBUG: Log jumlah item setelah mapping
-            \Log::info('BillingController: Item obat setelah mapping', [
+            Log::info('BillingController: Item obat setelah mapping', [
                 'no_rawat' => $noRawat,
                 'total_items' => $obatItems->count(),
                 'items' => $obatItems->map(function($item) {
@@ -422,7 +424,7 @@ class BillingController extends Controller
                         $tglByr = Carbon::parse($item['tgl_byr']);
                         $tglReg = Carbon::parse($regPeriksa->tgl_registrasi);
                         if ($tglByr->lt($tglReg)) {
-                            \Log::warning('Preview item dengan tgl_byr lebih lama dari tgl_registrasi diabaikan', [
+                            Log::warning('Preview item dengan tgl_byr lebih lama dari tgl_registrasi diabaikan', [
                                 'no_rawat' => $noRawat,
                                 'tgl_byr' => $item['tgl_byr'],
                                 'tgl_registrasi' => $regPeriksa->tgl_registrasi,
@@ -432,7 +434,7 @@ class BillingController extends Controller
                         }
                     } catch (\Exception $e) {
                         // Jika parsing tanggal gagal, tetap tampilkan item (fallback)
-                        \Log::warning('Gagal parsing tanggal untuk preview item', [
+                        Log::warning('Gagal parsing tanggal untuk preview item', [
                             'no_rawat' => $noRawat,
                             'tgl_byr' => $item['tgl_byr'] ?? null,
                             'error' => $e->getMessage(),
@@ -448,7 +450,7 @@ class BillingController extends Controller
             $items = $existing->filter(function ($b) use ($noRawat, $regPeriksa) {
                 // Validasi 1: no_rawat harus sesuai
                 if ($b->no_rawat !== $noRawat) {
-                    \Log::warning('Item billing dengan no_rawat tidak sesuai ditemukan', [
+                    Log::warning('Item billing dengan no_rawat tidak sesuai ditemukan', [
                         'expected' => $noRawat,
                         'actual' => $b->no_rawat,
                         'noindex' => $b->noindex,
@@ -462,7 +464,7 @@ class BillingController extends Controller
                 $tglReg = Carbon::parse($regPeriksa->tgl_registrasi);
                 
                 if ($tglByr->lt($tglReg)) {
-                    \Log::warning('Item billing dengan tgl_byr lebih lama dari tgl_registrasi diabaikan', [
+                    Log::warning('Item billing dengan tgl_byr lebih lama dari tgl_registrasi diabaikan', [
                         'no_rawat' => $noRawat,
                         'noindex' => $b->noindex,
                         'tgl_byr' => $b->tgl_byr,
@@ -524,7 +526,7 @@ class BillingController extends Controller
         $obatItemsFinal = $filteredItems->filter(function($item) {
             return ($item['status'] ?? '') === 'Obat';
         });
-        \Log::info('BillingController: Final response items obat', [
+        Log::info('BillingController: Final response items obat', [
             'no_rawat' => $noRawat,
             'total_obat_items' => $obatItemsFinal->count(),
             'obat_items' => $obatItemsFinal->map(function($item) {

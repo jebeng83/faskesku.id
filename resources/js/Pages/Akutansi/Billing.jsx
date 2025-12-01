@@ -26,7 +26,12 @@ import {
 } from "lucide-react";
 import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
 import SearchableSelect from "@/Components/SearchableSelect";
-import { todayDateString, getAppTimeZone, nowDateTimeString } from "@/tools/datetime";
+import {
+    todayDateString,
+    getAppTimeZone,
+    nowDateTimeString,
+} from "@/tools/datetime";
+import { toast } from "@/tools/toast";
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -64,37 +69,43 @@ const number = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 2 });
 
 // Fungsi helper untuk membulatkan angka ke n desimal
 function round(value, decimals = 2) {
-    return Math.round((value + Number.EPSILON) * Math.pow(10, decimals)) / Math.pow(10, decimals);
+    return (
+        Math.round((value + Number.EPSILON) * Math.pow(10, decimals)) /
+        Math.pow(10, decimals)
+    );
 }
 
 // Fungsi untuk normalisasi tanggal ke format yyyy-MM-dd untuk input type="date"
 // Menggunakan timezone aplikasi (Asia/Jakarta) untuk konsistensi
 function normalizeDateForInput(dateValue, useAppTimezone = true) {
-    if (!dateValue) return '';
+    if (!dateValue) return "";
     // Jika sudah format yyyy-MM-dd, return langsung
-    if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+    if (
+        typeof dateValue === "string" &&
+        /^\d{4}-\d{2}-\d{2}$/.test(dateValue)
+    ) {
         return dateValue;
     }
     // Jika format ISO datetime string, ambil bagian tanggal saja dengan timezone
-    if (typeof dateValue === 'string' && dateValue.includes('T')) {
+    if (typeof dateValue === "string" && dateValue.includes("T")) {
         if (useAppTimezone) {
             try {
                 const tz = getAppTimeZone();
                 const date = new Date(dateValue);
-                return date.toLocaleDateString('en-CA', { timeZone: tz });
+                return date.toLocaleDateString("en-CA", { timeZone: tz });
             } catch (e) {
                 // Fallback ke split jika parsing gagal
-                return dateValue.split('T')[0];
+                return dateValue.split("T")[0];
             }
         }
-        return dateValue.split('T')[0];
+        return dateValue.split("T")[0];
     }
     // Jika Date object, konversi ke yyyy-MM-dd dengan timezone
     if (dateValue instanceof Date) {
         if (useAppTimezone) {
             try {
                 const tz = getAppTimeZone();
-                return dateValue.toLocaleDateString('en-CA', { timeZone: tz });
+                return dateValue.toLocaleDateString("en-CA", { timeZone: tz });
             } catch (e) {
                 // Fallback ke ISO jika parsing gagal
                 return dateValue.toISOString().slice(0, 10);
@@ -109,7 +120,7 @@ function normalizeDateForInput(dateValue, useAppTimezone = true) {
             if (useAppTimezone) {
                 try {
                     const tz = getAppTimeZone();
-                    return date.toLocaleDateString('en-CA', { timeZone: tz });
+                    return date.toLocaleDateString("en-CA", { timeZone: tz });
                 } catch (e) {
                     // Fallback ke ISO jika parsing gagal
                     return date.toISOString().slice(0, 10);
@@ -120,17 +131,17 @@ function normalizeDateForInput(dateValue, useAppTimezone = true) {
     } catch (e) {
         // Ignore
     }
-    return '';
+    return "";
 }
 
 // Fungsi untuk format tanggal menjadi format Indonesia (DD/MM/YYYY)
 function formatTanggal(dateString) {
     if (!dateString) return "-";
-    
+
     try {
         // Handle berbagai format input
         let date;
-        
+
         // Jika format ISO dengan timezone (2025-11-24T17:00:00.000000Z)
         if (dateString.includes("T")) {
             date = new Date(dateString);
@@ -143,17 +154,17 @@ function formatTanggal(dateString) {
         else {
             date = new Date(dateString);
         }
-        
+
         // Validasi apakah date valid
         if (isNaN(date.getTime())) {
             return dateString; // Return as-is jika tidak bisa di-parse
         }
-        
+
         // Format menjadi DD/MM/YYYY
         const day = String(date.getDate()).padStart(2, "0");
         const month = String(date.getMonth() + 1).padStart(2, "0");
         const year = date.getFullYear();
-        
+
         return `${day}/${month}/${year}`;
     } catch (e) {
         // Jika error, return as-is
@@ -490,24 +501,24 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
     };
 
     const loadData = async () => {
-        if (!noRawat || noRawat.trim() === '') {
-            console.log('loadData: noRawat kosong, skip loading');
+        if (!noRawat || noRawat.trim() === "") {
+            console.log("loadData: noRawat kosong, skip loading");
             return;
         }
-        
-        console.log('loadData: Memuat data untuk no_rawat:', noRawat);
+
+        console.log("loadData: Memuat data untuk no_rawat:", noRawat);
         setLoading(true);
         setError(null);
         try {
             // Header info invoice (visit + nota)
             // Gunakan encodeURI agar karakter '/' pada no_rawat tidak di-encode menjadi %2F
             const invUrl = buildUrl(`/akutansi/invoice/${encodeURI(noRawat)}`);
-            console.log('loadData: Fetching invoice dari:', invUrl);
+            console.log("loadData: Fetching invoice dari:", invUrl);
             const invRes = await axios.get(invUrl, {
                 headers: { Accept: "application/json" },
             });
             setInvoice(invRes.data);
-            console.log('loadData: Invoice data diterima:', invRes.data);
+            console.log("loadData: Invoice data diterima:", invRes.data);
 
             // Items untuk CRUD (butuh noindex)
             // Tambahkan filter tanggal hari ini untuk memastikan hanya data hari ini yang ditampilkan
@@ -517,64 +528,67 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                 q,
                 status: statusFilter,
                 start_date: today, // Filter mulai dari tanggal hari ini
-                end_date: today,   // Filter sampai tanggal hari ini
+                end_date: today, // Filter sampai tanggal hari ini
             });
-            console.log('loadData: Fetching billing dari:', apiUrl);
+            console.log("loadData: Fetching billing dari:", apiUrl);
             const apiRes = await axios.get(apiUrl);
-            console.log('loadData: Billing response:', {
+            console.log("loadData: Billing response:", {
                 itemsCount: apiRes.data.items?.length || 0,
                 items: apiRes.data.items,
-                summary: apiRes.data.summary
+                summary: apiRes.data.summary,
             });
             let baseItems = apiRes.data.items || [];
-            
+
             // Normalisasi no_rawat untuk perbandingan (decode jika ada encoding)
-            const normalizedNoRawat = decodeURIComponent(noRawat || '').trim();
-            
+            const normalizedNoRawat = decodeURIComponent(noRawat || "").trim();
+
             // Validasi: Pastikan hanya item dengan no_rawat yang sesuai yang ditampilkan
             // Filter ketat untuk mencegah duplikasi dari tanggal lain
             baseItems = baseItems.filter((item) => {
                 // Normalisasi no_rawat dari item
-                const itemNoRawat = (item.no_rawat || '').trim();
-                
+                const itemNoRawat = (item.no_rawat || "").trim();
+
                 // Pastikan no_rawat sesuai dengan yang diminta (perbandingan case-sensitive)
                 if (itemNoRawat !== normalizedNoRawat) {
-                    console.warn(`Item dengan no_rawat tidak sesuai diabaikan:`, {
-                        expected: normalizedNoRawat,
-                        actual: itemNoRawat,
-                        item: item
-                    });
+                    console.warn(
+                        `Item dengan no_rawat tidak sesuai diabaikan:`,
+                        {
+                            expected: normalizedNoRawat,
+                            actual: itemNoRawat,
+                            item: item,
+                        }
+                    );
                     return false;
                 }
                 return true;
             });
-            
+
             // Deduplication: Hapus item duplikat berdasarkan kombinasi field unik
             // PRIORITAS: Gunakan kombinasi no + status + tgl_byr + nm_perawatan + biaya + jumlah + tambahan
             // karena data bisa duplikat dengan noindex berbeda di database
             const seenItems = new Map();
             const deduplicatedItems = [];
-            
+
             baseItems.forEach((item) => {
                 // Normalisasi field untuk konsistensi
-                const tglByr = String(item.tgl_byr || '').trim();
-                const no = String(item.no || '').trim();
-                const status = String(item.status || '').trim();
-                const nmPerawatan = String(item.nm_perawatan || '').trim();
+                const tglByr = String(item.tgl_byr || "").trim();
+                const no = String(item.no || "").trim();
+                const status = String(item.status || "").trim();
+                const nmPerawatan = String(item.nm_perawatan || "").trim();
                 const biaya = Number(item.biaya || 0);
                 const jumlah = Number(item.jumlah || 0);
                 const tambahan = Number(item.tambahan || 0);
-                
+
                 // Buat key unik berdasarkan kombinasi field (bukan noindex karena bisa berbeda untuk duplikat)
                 const uniqueKey = `${no}_${status}_${tglByr}_${nmPerawatan}_${biaya}_${jumlah}_${tambahan}`;
-                
+
                 // Cek apakah item sudah pernah muncul
                 if (!seenItems.has(uniqueKey)) {
                     seenItems.set(uniqueKey, item); // Simpan item pertama yang ditemukan
                     deduplicatedItems.push(item);
                 } else {
                     const existingItem = seenItems.get(uniqueKey);
-                    console.warn('Item duplikat diabaikan:', {
+                    console.warn("Item duplikat diabaikan:", {
                         uniqueKey,
                         existing_noindex: existingItem?.noindex,
                         duplicate_noindex: item.noindex,
@@ -586,50 +600,68 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                             biaya: item.biaya,
                             jumlah: item.jumlah,
                             tambahan: item.tambahan,
-                        }
+                        },
                     });
                 }
             });
-            
+
             baseItems = deduplicatedItems;
-            const duplicatesRemoved = (apiRes.data.items?.length || 0) - baseItems.length;
-            console.log(`✅ Deduplication: ${apiRes.data.items?.length || 0} items -> ${baseItems.length} items (${duplicatesRemoved} duplikat dihapus)`);
-            
+            const duplicatesRemoved =
+                (apiRes.data.items?.length || 0) - baseItems.length;
+            console.log(
+                `✅ Deduplication: ${apiRes.data.items?.length || 0} items -> ${
+                    baseItems.length
+                } items (${duplicatesRemoved} duplikat dihapus)`
+            );
+
             if (duplicatesRemoved > 0) {
-                console.warn(`⚠️ Peringatan: ${duplicatesRemoved} item duplikat ditemukan dan dihapus. Periksa database untuk data duplikat.`);
+                console.warn(
+                    `⚠️ Peringatan: ${duplicatesRemoved} item duplikat ditemukan dan dihapus. Periksa database untuk data duplikat.`
+                );
             }
-            
+
             const baseSummary = apiRes.data.summary || {
                 by_status: {},
                 grand_total: 0,
             };
-            
+
             // Recalculate summary berdasarkan items yang sudah difilter
-            const recalculatedSummary = baseItems.reduce((acc, item) => {
-                const status = item.status || '-';
-                const totalbiaya = Number(item.totalbiaya || 0);
-                if (!acc.by_status[status]) {
-                    acc.by_status[status] = { count: 0, total: 0 };
-                }
-                acc.by_status[status].count += 1;
-                acc.by_status[status].total += totalbiaya;
-                acc.grand_total += totalbiaya;
-                return acc;
-            }, { by_status: {}, grand_total: 0 });
-            
-            console.log('loadData: Setelah filter, baseItems count:', baseItems.length);
-            console.log('loadData: Recalculated summary:', recalculatedSummary);
-            console.log('loadData: Sample items totalbiaya:', baseItems.slice(0, 3).map(i => ({ 
-                nm: i.nm_perawatan, 
-                status: i.status, 
-                totalbiaya: i.totalbiaya 
-            })));
-            
+            const recalculatedSummary = baseItems.reduce(
+                (acc, item) => {
+                    const status = item.status || "-";
+                    const totalbiaya = Number(item.totalbiaya || 0);
+                    if (!acc.by_status[status]) {
+                        acc.by_status[status] = { count: 0, total: 0 };
+                    }
+                    acc.by_status[status].count += 1;
+                    acc.by_status[status].total += totalbiaya;
+                    acc.grand_total += totalbiaya;
+                    return acc;
+                },
+                { by_status: {}, grand_total: 0 }
+            );
+
+            console.log(
+                "loadData: Setelah filter, baseItems count:",
+                baseItems.length
+            );
+            console.log("loadData: Recalculated summary:", recalculatedSummary);
+            console.log(
+                "loadData: Sample items totalbiaya:",
+                baseItems.slice(0, 3).map((i) => ({
+                    nm: i.nm_perawatan,
+                    status: i.status,
+                    totalbiaya: i.totalbiaya,
+                }))
+            );
+
             // DEBUG: Log item obat yang diterima dari backend
-            const obatItemsFromBackend = baseItems.filter(item => item.status === 'Obat');
-            console.log('🔍 DEBUG: Item obat dari backend', {
+            const obatItemsFromBackend = baseItems.filter(
+                (item) => item.status === "Obat"
+            );
+            console.log("🔍 DEBUG: Item obat dari backend", {
                 total_obat_items: obatItemsFromBackend.length,
-                items: obatItemsFromBackend.map(item => ({
+                items: obatItemsFromBackend.map((item) => ({
                     no: item.no,
                     kode_brng: item.kode_brng,
                     nm_perawatan: item.nm_perawatan,
@@ -641,25 +673,25 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                     source: item.source,
                 })),
             });
-            
+
             // Set items - useEffect akan menghitung ulang summary secara otomatis
             setItems(baseItems);
-            
-            console.log('loadData: Data berhasil dimuat:', {
+
+            console.log("loadData: Data berhasil dimuat:", {
                 itemsCount: baseItems.length,
-                expectedGrandTotal: round(recalculatedSummary.grand_total, 2)
+                expectedGrandTotal: round(recalculatedSummary.grand_total, 2),
             });
-            
+
             // Refresh status permintaan jika tab aktif (setelah billing data ter-load)
             // Note: useEffect akan handle refresh otomatis saat items.length berubah
 
             // PERBAIKAN: Nonaktifkan buildObatPreview karena mengambil data dari resep yang belum diserahkan
             // Data obat sudah diambil di backend dari detail_pemberian_obat yang berarti sudah diserahkan
             // Item obat hanya akan tampil setelah diserahkan (setelah masuk ke detail_pemberian_obat)
-            // 
+            //
             // Catatan: buildObatPreview mengambil dari API resep yang bisa termasuk resep belum diserahkan,
             // sehingga menyebabkan item obat muncul padahal belum diserahkan.
-            // 
+            //
             // const isPreviewMode = baseItems.length === 0 || (baseItems.length > 0 && baseItems[0]?.source === "preview");
             // if (isPreviewMode) {
             //     ... buildObatPreview code disabled ...
@@ -673,19 +705,47 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         }
     };
 
-    // Notifikasi sederhana (sementara gunakan alert)
     const notify = (msg) => {
-        if (msg) alert(String(msg));
+        if (!msg) return;
+        try {
+            toast.success(String(msg));
+        } catch (e) {
+            alert(String(msg));
+        }
+    };
+    const notifyError = (msg) => {
+        if (!msg) return;
+        try {
+            toast.error(String(msg));
+        } catch (e) {
+            alert(String(msg));
+        }
+    };
+    const notifyWarning = (msg) => {
+        if (!msg) return;
+        try {
+            toast.warning(String(msg));
+        } catch (e) {
+            alert(String(msg));
+        }
+    };
+    const notifyInfo = (msg) => {
+        if (!msg) return;
+        try {
+            toast.info(String(msg));
+        } catch (e) {
+            alert(String(msg));
+        }
     };
 
     // Validasi ringan sebelum simpan item billing + cek keberadaan nota_jalan
     const validateBeforeSave = async (payload) => {
         if (!payload?.no_rawat) {
-            notify("No. Rawat wajib diisi sebelum simpan.");
+            notifyWarning("No. Rawat wajib diisi sebelum simpan.");
             return false;
         }
         if (!payload?.status) {
-            notify("Kategori (Status) wajib dipilih.");
+            notifyWarning("Kategori (Status) wajib dipilih.");
             return false;
         }
         try {
@@ -696,7 +756,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             const count = Number(existsRes?.data?.count || 0);
             if (count > 0) {
                 // Ikuti perilaku Java: jika nota sudah ada, blokir simpan baru
-                notify(
+                notifyWarning(
                     "Tagihan sudah pernah disimpan (nota_jalan sudah ada). Tidak bisa menyimpan ulang."
                 );
                 return false;
@@ -718,65 +778,86 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         piutang,
     }) => {
         if (!noRawat) {
-            notify("Masukkan No. Rawat terlebih dahulu sebelum menyimpan.");
+            notifyWarning(
+                "Masukkan No. Rawat terlebih dahulu sebelum menyimpan."
+            );
             return false;
         }
         if (
             !Array.isArray(selectedCategories) ||
             selectedCategories.length === 0
         ) {
-            notify("Pilih minimal satu komponen biaya sebelum menyimpan.");
+            notifyWarning(
+                "Pilih minimal satu komponen biaya sebelum menyimpan."
+            );
             return false;
         }
         // Validasi pembayaran & piutang dasar
         const nominalBayar = Number(bayar) || 0;
         const nominalPiutang = Number(piutang) || 0;
         const totalTagihan = Number(totalWithPpn) || 0;
-        
+
         // Hitung uang kembali dan piutang yang seharusnya
-        const uangKembaliHitung = nominalBayar > totalTagihan ? nominalBayar - totalTagihan : 0;
-        const piutangHitung = nominalBayar < totalTagihan ? totalTagihan - nominalBayar : 0;
-        
+        const uangKembaliHitung =
+            nominalBayar > totalTagihan ? nominalBayar - totalTagihan : 0;
+        const piutangHitung =
+            nominalBayar < totalTagihan ? totalTagihan - nominalBayar : 0;
+
         // Validasi: jika ada piutang, nominal piutang harus sesuai dengan perhitungan
-        if (nominalPiutang > 0 && Math.abs(nominalPiutang - piutangHitung) > 0.01) {
-            notify(
-                `Piutang yang diisi (${currency.format(nominalPiutang)}) tidak sesuai dengan perhitungan (${currency.format(piutangHitung)}).`
+        if (
+            nominalPiutang > 0 &&
+            Math.abs(nominalPiutang - piutangHitung) > 0.01
+        ) {
+            notifyWarning(
+                `Piutang yang diisi (${currency.format(
+                    nominalPiutang
+                )}) tidak sesuai dengan perhitungan (${currency.format(
+                    piutangHitung
+                )}).`
             );
             return false;
         }
-        
+
         // Validasi: jika ada uang kembali, harus sesuai dengan perhitungan
         if (uangKembaliHitung > 0 && nominalPiutang > 0) {
-            notify(
+            notifyWarning(
                 "Tidak boleh ada uang kembali dan piutang sekaligus. Periksa kembali nominal bayar."
             );
             return false;
         }
-        
+
         // Validasi: uang kembali harus = 0 sebelum menyimpan (sesuai requirement)
         if (uangKembaliHitung > 0) {
-            notify(
+            notifyWarning(
                 "Nominal bayar melebihi total tagihan + PPN. Atur kembali agar uang kembali = 0 sebelum menyimpan."
             );
             return false;
         }
-        
+
         // Validasi: bayar + piutang harus sama dengan total tagihan
         const totalPembayaran = nominalBayar + nominalPiutang;
         if (Math.abs(totalPembayaran - totalTagihan) > 0.01) {
-            notify(
-                `Jumlah Bayar (${currency.format(nominalBayar)}) + Piutang (${currency.format(nominalPiutang)}) harus sama dengan Total Tagihan (${currency.format(totalTagihan)}).`
+            notifyWarning(
+                `Jumlah Bayar (${currency.format(
+                    nominalBayar
+                )}) + Piutang (${currency.format(
+                    nominalPiutang
+                )}) harus sama dengan Total Tagihan (${currency.format(
+                    totalTagihan
+                )}).`
             );
             return false;
         }
         if ((Number(bayar) || 0) > 0 && !akunBayar) {
-            notify(
+            notifyWarning(
                 "Akun Bayar wajib dipilih ketika nominal bayar > 0 (Kas/Bank)."
             );
             return false;
         }
         if ((Number(piutang) || 0) > 0 && !akunPiutang) {
-            notify("Akun Piutang wajib dipilih ketika ada sisa piutang.");
+            notifyWarning(
+                "Akun Piutang wajib dipilih ketika ada sisa piutang."
+            );
             return false;
         }
         // Akun pendapatan tidak perlu dipilih di UI. Sistem akan memilih otomatis dari master rekening (rekening & subrekening)
@@ -788,7 +869,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             const existsRes = await axios.get(existsUrl);
             const count = Number(existsRes?.data?.count || 0);
             if (count > 0) {
-                notify(
+                notifyWarning(
                     "Tagihan sudah pernah disimpan (nota_jalan sudah ada). Snapshot tidak diizinkan."
                 );
                 return false;
@@ -884,7 +965,8 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                 noindex: `preview-obat-${val.kode_brng}`,
                 source: "preview",
                 no_rawat: rawatNo,
-                tgl_byr: normalizeDateForInput(val.tgl_byr) || todayDateString(),
+                tgl_byr:
+                    normalizeDateForInput(val.tgl_byr) || todayDateString(),
                 no: noKeterangan || "-",
                 nm_perawatan: val.nama_brng || val.kode_brng,
                 pemisah: "-",
@@ -934,6 +1016,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
 
         // 1) Simpan item billing terlebih dahulu
         await axios.post("/api/akutansi/billing", payload);
+        notify("Item billing tersimpan");
 
         // 2) Buat nota_jalan jika belum ada, nomor otomatis per tanggal
         let noNota = invoice?.nota?.no_nota || null;
@@ -941,13 +1024,22 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             const createNotaRes = await axios.post("/api/akutansi/nota-jalan", {
                 no_rawat: payload.no_rawat,
                 tanggal: payload.tgl_byr,
-                jam: nowDateTimeString().split(' ')[1] || new Date().toTimeString().slice(0, 8),
+                jam:
+                    nowDateTimeString().split(" ")[1] ||
+                    new Date().toTimeString().slice(0, 8),
             });
             noNota = createNotaRes?.data?.no_nota || noNota;
         } catch (e) {
-            const errorMsg = e?.response?.data?.message || e?.message || "Gagal membuat nota_jalan";
-            console.error("Gagal membuat nota_jalan:", errorMsg, e?.response?.data);
-            notify(`Gagal membuat nota_jalan: ${errorMsg}`);
+            const errorMsg =
+                e?.response?.data?.message ||
+                e?.message ||
+                "Gagal membuat nota_jalan";
+            console.error(
+                "Gagal membuat nota_jalan:",
+                errorMsg,
+                e?.response?.data
+            );
+            notifyError(`Gagal membuat nota_jalan: ${errorMsg}`);
             // Jangan lanjut jika gagal membuat nota_jalan
             return;
         }
@@ -955,14 +1047,18 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         // 3) Stage jurnal dari total billing pasien ini
         let stagingSuccess = false;
         try {
-            const stageRes = await axios.post("/api/akutansi/jurnal/stage-from-billing", {
-                no_rawat: payload.no_rawat,
-            });
+            const stageRes = await axios.post(
+                "/api/akutansi/jurnal/stage-from-billing",
+                {
+                    no_rawat: payload.no_rawat,
+                }
+            );
             stagingSuccess = true;
         } catch (e) {
-            const errorMsg = e?.response?.data?.message ||
+            const errorMsg =
+                e?.response?.data?.message ||
                 "Gagal menyiapkan staging jurnal. Pastikan mapping rekening debet/kredit di config/akutansi.php.";
-            notify(errorMsg);
+            notifyError(errorMsg);
             console.error("Error staging jurnal:", e?.response?.data);
             // Jangan lanjut ke posting jika staging gagal
             return;
@@ -982,12 +1078,15 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                     }
                 );
                 if (postRes?.data?.no_jurnal) {
-                    notify(`Posting jurnal berhasil: ${postRes.data.no_jurnal}`);
+                    notify(
+                        `Posting jurnal berhasil: ${postRes.data.no_jurnal}`
+                    );
                 }
             } catch (e) {
-                const errorMsg = e?.response?.data?.message ||
+                const errorMsg =
+                    e?.response?.data?.message ||
                     "Posting jurnal gagal. Periksa keseimbangan debet/kredit atau data staging.";
-                notify(errorMsg);
+                notifyError(errorMsg);
                 console.error("Error posting jurnal:", e?.response?.data);
                 // Log detail error untuk debugging
                 if (e?.response?.status === 400) {
@@ -1003,7 +1102,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         // Refresh UI
         setShowCreate(false);
         await loadData();
-        
+
         // Refresh status permintaan jika tab aktif
         if (activeTab === "permintaan") {
             await loadRequests();
@@ -1039,7 +1138,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         );
         const twp = Math.round(Number(totalWithPpn) || 0);
         if (sumPay !== twp) {
-            notify(
+            notifyWarning(
                 `Jumlah Bayar (${currency.format(
                     Number(bayar) || 0
                 )}) + Piutang (${currency.format(
@@ -1076,7 +1175,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                     return false;
                 }
                 // Cegah duplikasi berdasarkan kombinasi no + status
-                const key = `${it.no || ''}_${it.status || '-'}`;
+                const key = `${it.no || ""}_${it.status || "-"}`;
                 if (seenItems.has(key)) {
                     return false;
                 }
@@ -1094,10 +1193,12 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                 tambahan: Number(it.tambahan || 0),
                 status: it.status || "-",
             }));
-        
+
         // Hitung subtotal dari selectedItems untuk validasi
         const calculatedSubtotal = selectedItems.reduce((sum, it) => {
-            const total = (Number(it.biaya || 0) * Number(it.jumlah || 1)) + Number(it.tambahan || 0);
+            const total =
+                Number(it.biaya || 0) * Number(it.jumlah || 1) +
+                Number(it.tambahan || 0);
             return sum + total;
         }, 0);
 
@@ -1118,37 +1219,49 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                     gt
                 )}.`
             );
-            
+
             // PERBAIKAN: Reload data dari backend setelah snapshot untuk mendapatkan total yang benar
             // Ini memastikan bahwa frontend menggunakan total yang sama dengan backend
             await loadData();
-            
+
             // PERBAIKAN: Jika total snapshot berbeda dengan perhitungan UI, peringatkan user
             // dan sesuaikan nominal bayar jika diperlukan
             if (Math.abs(gt - calculatedSubtotal) > 0.01) {
                 const difference = gt - calculatedSubtotal;
-                console.warn('Detail perbedaan total snapshot vs UI:', {
+                console.warn("Detail perbedaan total snapshot vs UI:", {
                     snapshotTotal: gt,
                     uiTotal: calculatedSubtotal,
                     difference: difference,
                     selectedItemsCount: selectedItems.length,
                 });
-                
+
                 // Jika total snapshot lebih kecil dari UI, dan bayar sudah diisi sesuai UI total,
                 // sesuaikan bayar ke total snapshot untuk menghindari error validasi
                 if (difference < 0 && Number(bayar) > 0) {
-                    const newTotalWithPpn = Math.round(gt * (1 + (Number(ppnPercent) || 0) / 100));
-                    if (Math.abs(Number(bayar) - (calculatedSubtotal * (1 + (Number(ppnPercent) || 0) / 100))) < 0.01) {
+                    const newTotalWithPpn = Math.round(
+                        gt * (1 + (Number(ppnPercent) || 0) / 100)
+                    );
+                    if (
+                        Math.abs(
+                            Number(bayar) -
+                                calculatedSubtotal *
+                                    (1 + (Number(ppnPercent) || 0) / 100)
+                        ) < 0.01
+                    ) {
                         // User memasukkan bayar sesuai dengan total UI lama, sesuaikan ke total baru
                         setBayar(newTotalWithPpn);
-                        notify(
-                            `Total tagihan berubah setelah snapshot (${currency.format(calculatedSubtotal)} -> ${currency.format(gt)}). Nominal bayar telah disesuaikan.`
+                        notifyInfo(
+                            `Total tagihan berubah setelah snapshot (${currency.format(
+                                calculatedSubtotal
+                            )} -> ${currency.format(
+                                gt
+                            )}). Nominal bayar telah disesuaikan.`
                         );
                     }
                 }
             }
         } catch (e) {
-            notify(
+            notifyError(
                 e?.response?.data?.message ||
                     "Snapshot billing gagal. Pastikan data sumber tersedia dan belum ada nota_jalan."
             );
@@ -1161,14 +1274,25 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             const createNotaRes = await axios.post("/api/akutansi/nota-jalan", {
                 no_rawat: noRawat,
                 tanggal: todayDateString(),
-                jam: nowDateTimeString().split(' ')[1] || new Date().toTimeString().slice(0, 8),
+                jam:
+                    nowDateTimeString().split(" ")[1] ||
+                    new Date().toTimeString().slice(0, 8),
             });
             noNota = createNotaRes?.data?.no_nota || null;
             if (noNota) notify(`Nota jalan dibuat: ${noNota}`);
         } catch (e) {
-            const errorMsg = e?.response?.data?.message || e?.message || "Gagal membuat nota_jalan setelah snapshot";
-            console.error("Gagal membuat nota_jalan setelah snapshot:", errorMsg, e?.response?.data);
-            notify(`Gagal membuat nota_jalan: ${errorMsg}. Anda dapat membuatnya manual dari menu terkait.`);
+            const errorMsg =
+                e?.response?.data?.message ||
+                e?.message ||
+                "Gagal membuat nota_jalan setelah snapshot";
+            console.error(
+                "Gagal membuat nota_jalan setelah snapshot:",
+                errorMsg,
+                e?.response?.data
+            );
+            notifyError(
+                `Gagal membuat nota_jalan: ${errorMsg}. Anda dapat membuatnya manual dari menu terkait.`
+            );
             // Jangan lanjut jika gagal membuat nota_jalan
             return;
         }
@@ -1176,20 +1300,24 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         // 3) Stage jurnal dari total billing dengan pemecahan debit & PPN
         let stagingSuccess = false;
         try {
-            const stageRes = await axios.post("/api/akutansi/jurnal/stage-from-billing", {
-                no_rawat: noRawat,
-                akun_bayar: akunBayar || null,
-                akun_piutang: akunPiutang || null,
-                bayar: Number(bayar) || 0,
-                piutang: Number(piutang) || 0,
-                ppn_percent: Number(ppnPercent) || 0,
-                // Akun Pendapatan (kredit) tidak dikirim dari UI; backend akan memilih otomatis dari master rekening
-            });
+            const stageRes = await axios.post(
+                "/api/akutansi/jurnal/stage-from-billing",
+                {
+                    no_rawat: noRawat,
+                    akun_bayar: akunBayar || null,
+                    akun_piutang: akunPiutang || null,
+                    bayar: Number(bayar) || 0,
+                    piutang: Number(piutang) || 0,
+                    ppn_percent: Number(ppnPercent) || 0,
+                    // Akun Pendapatan (kredit) tidak dikirim dari UI; backend akan memilih otomatis dari master rekening
+                }
+            );
             stagingSuccess = true;
         } catch (e) {
-            const errorMsg = e?.response?.data?.message ||
+            const errorMsg =
+                e?.response?.data?.message ||
                 "Gagal menyiapkan staging jurnal. Pastikan mapping rekening debet/kredit di config/akutansi.php.";
-            notify(errorMsg);
+            notifyError(errorMsg);
             console.error("Error staging jurnal:", e?.response?.data);
             // Jangan lanjut ke posting jika staging gagal
             return;
@@ -1209,22 +1337,33 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                     }
                 );
                 if (postRes?.data?.no_jurnal) {
-                    notify(`Posting jurnal berhasil: ${postRes.data.no_jurnal}`);
-                    
+                    notify(
+                        `Posting jurnal berhasil: ${postRes.data.no_jurnal}`
+                    );
+
                     // Update reg_periksa.status_bayar menjadi "Sudah Bayar" setelah posting jurnal berhasil
                     try {
-                        await axios.put(`/api/reg-periksa/${encodeURIComponent(noRawat)}/status-bayar`, {
-                            status_bayar: 'Sudah Bayar'
-                        });
+                        await axios.put(
+                            `/api/reg-periksa/${encodeURIComponent(
+                                noRawat
+                            )}/status-bayar`,
+                            {
+                                status_bayar: "Sudah Bayar",
+                            }
+                        );
                     } catch (updateError) {
-                        console.warn("Gagal update status_bayar di reg_periksa:", updateError?.response?.data);
+                        console.warn(
+                            "Gagal update status_bayar di reg_periksa:",
+                            updateError?.response?.data
+                        );
                         // Jangan gagalkan proses jika update status_bayar gagal
                     }
                 }
             } catch (e) {
-                const errorMsg = e?.response?.data?.message ||
+                const errorMsg =
+                    e?.response?.data?.message ||
                     "Posting jurnal gagal. Periksa keseimbangan debet/kredit atau data staging.";
-                notify(errorMsg);
+                notifyError(errorMsg);
                 console.error("Error posting jurnal:", e?.response?.data);
                 // Log detail error untuk debugging
                 if (e?.response?.status === 400) {
@@ -1239,14 +1378,14 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
 
         // 5) Pesan tambahan sesuai kondisi pembayaran (placeholder untuk aturan Java)
         if (piutang > 0) {
-            notify(
+            notifyInfo(
                 `Terdapat piutang sebesar ${currency.format(
                     piutang
                 )}. Pastikan penagihan/rekonsiliasi dilakukan.`
             );
         }
         if (kembali > 0) {
-            notify(
+            notifyWarning(
                 `Uang kembali sebesar ${currency.format(
                     kembali
                 )}. Catatan: fitur multi-cara bayar belum didukung di UI ini, dan pada Java jika cara bayar > 1 maka kembali wajib 0.`
@@ -1255,7 +1394,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
 
         // Refresh UI
         await loadData();
-        
+
         // Refresh status permintaan jika tab aktif
         if (activeTab === "permintaan") {
             await loadRequests();
@@ -1264,9 +1403,10 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
 
     const handleUpdate = async (noindex, payload) => {
         await axios.put(`/api/akutansi/billing/${noindex}`, payload);
+        notify("Item billing diperbarui");
         setEditItem(null);
         await loadData();
-        
+
         // Refresh status permintaan jika tab aktif
         if (activeTab === "permintaan") {
             await loadRequests();
@@ -1275,15 +1415,16 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
 
     const handleDelete = async (row) => {
         if (row?.source !== "billing" || !row?.noindex) {
-            alert(
+            notifyInfo(
                 "Item ini berasal dari preview otomatis (belum ada snapshot billing). Silakan lakukan Posting Billing di kasir untuk membuat snapshot sebelum bisa edit/hapus di sini."
             );
             return;
         }
         if (!confirm(`Hapus item "${row.nm_perawatan}"?`)) return;
         await axios.delete(`/api/akutansi/billing/${row.noindex}`);
+        notify("Item billing dihapus");
         await loadData();
-        
+
         // Refresh status permintaan jika tab aktif
         if (activeTab === "permintaan") {
             await loadRequests();
@@ -1300,47 +1441,53 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             return;
         }
 
-        const recalculated = items.reduce((acc, item) => {
-            const status = item.status || '-';
-            const totalbiaya = Number(item.totalbiaya || 0);
-            if (!acc.by_status[status]) {
-                acc.by_status[status] = { count: 0, total: 0 };
-            }
-            acc.by_status[status].count += 1;
-            acc.by_status[status].total += totalbiaya;
-            acc.grand_total += totalbiaya;
-            return acc;
-        }, { by_status: {}, grand_total: 0 });
+        const recalculated = items.reduce(
+            (acc, item) => {
+                const status = item.status || "-";
+                const totalbiaya = Number(item.totalbiaya || 0);
+                if (!acc.by_status[status]) {
+                    acc.by_status[status] = { count: 0, total: 0 };
+                }
+                acc.by_status[status].count += 1;
+                acc.by_status[status].total += totalbiaya;
+                acc.grand_total += totalbiaya;
+                return acc;
+            },
+            { by_status: {}, grand_total: 0 }
+        );
 
-        console.log('useEffect summary: Recalculated dari items:', {
+        console.log("useEffect summary: Recalculated dari items:", {
             itemsCount: items.length,
             grandTotal: recalculated.grand_total,
-            byStatus: recalculated.by_status
+            byStatus: recalculated.by_status,
         });
 
         setSummary({
             by_status: recalculated.by_status,
-            grand_total: round(recalculated.grand_total, 2)
+            grand_total: round(recalculated.grand_total, 2),
         });
     }, [items]);
 
     React.useEffect(() => {
         if (initialNoRawat) {
             // Normalisasi no_rawat dari props (decode jika ada encoding)
-            const normalized = decodeURIComponent(initialNoRawat || '').trim();
+            const normalized = decodeURIComponent(initialNoRawat || "").trim();
             setNoRawat(normalized);
         }
     }, [initialNoRawat]);
-    
+
     // Load data otomatis saat noRawat berubah atau saat component mount dengan initialNoRawat
     // Catatan: loadData tidak dimasukkan ke dependency untuk menghindari infinite loop
     // karena loadData menggunakan q dan statusFilter yang bisa berubah
     React.useEffect(() => {
-        if (noRawat && noRawat.trim() !== '') {
-            console.log('useEffect: noRawat berubah, memanggil loadData untuk:', noRawat);
+        if (noRawat && noRawat.trim() !== "") {
+            console.log(
+                "useEffect: noRawat berubah, memanggil loadData untuk:",
+                noRawat
+            );
             loadData();
         } else {
-            console.log('useEffect: noRawat kosong atau tidak valid');
+            console.log("useEffect: noRawat kosong atau tidak valid");
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [noRawat]);
@@ -1472,7 +1619,8 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                 </span>
                             </p>
                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                Dokter: {invoice.visit?.dokter} • Poli: {invoice.visit?.poli}
+                                Dokter: {invoice.visit?.dokter} • Poli:{" "}
+                                {invoice.visit?.poli}
                             </p>
                         </motion.div>
                         <motion.div
@@ -1489,7 +1637,9 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                             </p>
                             {invoice.nota && (
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                    Nota {invoice.nota?.jenis}: {invoice.nota?.no_nota} • {invoice.nota?.tanggal} {invoice.nota?.jam}
+                                    Nota {invoice.nota?.jenis}:{" "}
+                                    {invoice.nota?.no_nota} •{" "}
+                                    {invoice.nota?.tanggal} {invoice.nota?.jam}
                                 </p>
                             )}
                         </motion.div>
@@ -1521,7 +1671,11 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                     className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"
                                     layoutId="activeTab"
                                     initial={false}
-                                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                    transition={{
+                                        type: "spring",
+                                        stiffness: 500,
+                                        damping: 30,
+                                    }}
                                 />
                             )}
                         </motion.button>
@@ -1541,7 +1695,11 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                     className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"
                                     layoutId="activeTab"
                                     initial={false}
-                                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                    transition={{
+                                        type: "spring",
+                                        stiffness: 500,
+                                        damping: 30,
+                                    }}
                                 />
                             )}
                         </motion.button>
@@ -1561,7 +1719,11 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                     className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"
                                     layoutId="activeTab"
                                     initial={false}
-                                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                    transition={{
+                                        type: "spring",
+                                        stiffness: 500,
+                                        damping: 30,
+                                    }}
                                 />
                             )}
                         </motion.button>
@@ -1599,7 +1761,9 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                     <div className="relative">
                                         <input
                                             value={q}
-                                            onChange={(e) => setQ(e.target.value)}
+                                            onChange={(e) =>
+                                                setQ(e.target.value)
+                                            }
                                             placeholder="Cari item…"
                                             className="rounded-lg border border-gray-300/50 dark:border-gray-600/50 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm px-3 py-2 pl-9 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
                                         />
@@ -1711,16 +1875,30 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                     <table className="min-w-full text-sm">
                         <thead>
                             <tr className="bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Tanggal</th>
+                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                    Tanggal
+                                </th>
                                 <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     Tagihan/Tindakan/Terapi
                                 </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Biaya</th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Jml</th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Tambahan</th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Total</th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Kategori</th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Aksi</th>
+                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                    Biaya
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                    Jml
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                    Tambahan
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                    Total
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                    Kategori
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                    Aksi
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1736,7 +1914,9 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                             animate={{ opacity: 1 }}
                                         >
                                             <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-                                            <span className="text-sm text-gray-600 dark:text-gray-400">Memuat data...</span>
+                                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                                                Memuat data...
+                                            </span>
                                         </motion.div>
                                     </td>
                                 </tr>
@@ -1750,7 +1930,8 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                         >
                                             <Database className="w-12 h-12 text-gray-400" />
                                             <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
-                                                Tidak ada item billing untuk no. rawat ini.
+                                                Tidak ada item billing untuk no.
+                                                rawat ini.
                                             </span>
                                         </motion.div>
                                     </td>
@@ -1760,16 +1941,27 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                     {items
                                         .filter((row) => {
                                             // Normalisasi untuk perbandingan
-                                            const normalizedNoRawat = decodeURIComponent(noRawat || '').trim();
-                                            const rowNoRawat = (row.no_rawat || '').trim();
-                                            
+                                            const normalizedNoRawat =
+                                                decodeURIComponent(
+                                                    noRawat || ""
+                                                ).trim();
+                                            const rowNoRawat = (
+                                                row.no_rawat || ""
+                                            ).trim();
+
                                             // Filter ketat: hanya tampilkan item dengan no_rawat yang sesuai
-                                            if (rowNoRawat !== normalizedNoRawat) {
-                                                console.warn('Item dengan no_rawat tidak sesuai diabaikan di tabel:', {
-                                                    expected: normalizedNoRawat,
-                                                    actual: rowNoRawat,
-                                                    item: row
-                                                });
+                                            if (
+                                                rowNoRawat !== normalizedNoRawat
+                                            ) {
+                                                console.warn(
+                                                    "Item dengan no_rawat tidak sesuai diabaikan di tabel:",
+                                                    {
+                                                        expected:
+                                                            normalizedNoRawat,
+                                                        actual: rowNoRawat,
+                                                        item: row,
+                                                    }
+                                                );
                                                 return false;
                                             }
                                             return true;
@@ -1781,96 +1973,130 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                                 reactKey = `noindex-${row.noindex}`;
                                             } else {
                                                 // Gunakan kombinasi field untuk key unik jika tidak ada noindex
-                                                const tglByr = row.tgl_byr || '';
-                                                const no = row.no || '';
-                                                const status = row.status || '';
-                                                const nmPerawatan = row.nm_perawatan || '';
+                                                const tglByr =
+                                                    row.tgl_byr || "";
+                                                const no = row.no || "";
+                                                const status = row.status || "";
+                                                const nmPerawatan =
+                                                    row.nm_perawatan || "";
                                                 const biaya = row.biaya || 0;
                                                 const jumlah = row.jumlah || 0;
                                                 reactKey = `temp-${no}-${status}-${tglByr}-${nmPerawatan}-${biaya}-${jumlah}-${idx}`;
                                             }
                                             return (
                                                 <motion.tr
-                                            key={reactKey}
-                                            className="border-b border-gray-100/50 dark:border-gray-700/30 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 dark:hover:from-gray-700/50 dark:hover:to-gray-800/50 transition-all duration-200 group"
-                                            initial={{ opacity: 0, x: -20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            exit={{ opacity: 0, x: 20 }}
-                                            transition={{ delay: idx * 0.02 }}
-                                            whileHover={{ scale: 1.01 }}
-                                        >
-                                            <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
-                                                {formatTanggal(row.tgl_byr)}
-                                            </td>
-                                            <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
-                                                {row.nm_perawatan}
-                                            </td>
-                                            <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
-                                                {currency.format(row.biaya || 0)}
-                                            </td>
-                                            <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
-                                                {number.format(row.jumlah || 0)}
-                                            </td>
-                                            <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
-                                                {currency.format(row.tambahan || 0)}
-                                            </td>
-                                            <td className="px-4 py-3 font-semibold text-blue-600 dark:text-blue-400">
-                                                {currency.format(row.totalbiaya || 0)}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <motion.span
-                                                    className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 text-gray-700 dark:text-gray-300 ring-1 ring-gray-200 dark:ring-gray-700"
-                                                    whileHover={{ scale: 1.05 }}
+                                                    key={reactKey}
+                                                    className="border-b border-gray-100/50 dark:border-gray-700/30 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 dark:hover:from-gray-700/50 dark:hover:to-gray-800/50 transition-all duration-200 group"
+                                                    initial={{
+                                                        opacity: 0,
+                                                        x: -20,
+                                                    }}
+                                                    animate={{
+                                                        opacity: 1,
+                                                        x: 0,
+                                                    }}
+                                                    exit={{ opacity: 0, x: 20 }}
+                                                    transition={{
+                                                        delay: idx * 0.02,
+                                                    }}
+                                                    whileHover={{ scale: 1.01 }}
                                                 >
-                                                    {row.status}
-                                                </motion.span>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <div className="flex items-center gap-2">
-                                                    <motion.button
-                                                        onClick={() =>
-                                                            setEditItem(row)
-                                                        }
-                                                        disabled={
-                                                            row?.source !==
-                                                            "billing"
-                                                        }
-                                                        title={
-                                                            row?.source !==
-                                                            "billing"
-                                                                ? "Tidak bisa edit: item preview (belum snapshot billing)"
-                                                                : "Edit"
-                                                        }
-                                                        className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                                        whileHover={{ scale: 1.1 }}
-                                                        whileTap={{ scale: 0.9 }}
-                                                        aria-label="Edit"
-                                                    >
-                                                        <Pencil className="w-4 h-4" />
-                                                    </motion.button>
-                                                    <motion.button
-                                                        onClick={() =>
-                                                            handleDelete(row)
-                                                        }
-                                                        disabled={
-                                                            row?.source !==
-                                                            "billing"
-                                                        }
-                                                        title={
-                                                            row?.source !==
-                                                            "billing"
-                                                                ? "Tidak bisa hapus: item preview (belum snapshot billing)"
-                                                                : "Hapus"
-                                                        }
-                                                        className="p-2 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                                        whileHover={{ scale: 1.1 }}
-                                                        whileTap={{ scale: 0.9 }}
-                                                        aria-label="Delete"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </motion.button>
-                                                </div>
-                                            </td>
+                                                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                                                        {formatTanggal(
+                                                            row.tgl_byr
+                                                        )}
+                                                    </td>
+                                                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
+                                                        {row.nm_perawatan}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                                                        {currency.format(
+                                                            row.biaya || 0
+                                                        )}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                                                        {number.format(
+                                                            row.jumlah || 0
+                                                        )}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                                                        {currency.format(
+                                                            row.tambahan || 0
+                                                        )}
+                                                    </td>
+                                                    <td className="px-4 py-3 font-semibold text-blue-600 dark:text-blue-400">
+                                                        {currency.format(
+                                                            row.totalbiaya || 0
+                                                        )}
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        <motion.span
+                                                            className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 text-gray-700 dark:text-gray-300 ring-1 ring-gray-200 dark:ring-gray-700"
+                                                            whileHover={{
+                                                                scale: 1.05,
+                                                            }}
+                                                        >
+                                                            {row.status}
+                                                        </motion.span>
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <motion.button
+                                                                onClick={() =>
+                                                                    setEditItem(
+                                                                        row
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    row?.source !==
+                                                                    "billing"
+                                                                }
+                                                                title={
+                                                                    row?.source !==
+                                                                    "billing"
+                                                                        ? "Tidak bisa edit: item preview (belum snapshot billing)"
+                                                                        : "Edit"
+                                                                }
+                                                                className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                                whileHover={{
+                                                                    scale: 1.1,
+                                                                }}
+                                                                whileTap={{
+                                                                    scale: 0.9,
+                                                                }}
+                                                                aria-label="Edit"
+                                                            >
+                                                                <Pencil className="w-4 h-4" />
+                                                            </motion.button>
+                                                            <motion.button
+                                                                onClick={() =>
+                                                                    handleDelete(
+                                                                        row
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    row?.source !==
+                                                                    "billing"
+                                                                }
+                                                                title={
+                                                                    row?.source !==
+                                                                    "billing"
+                                                                        ? "Tidak bisa hapus: item preview (belum snapshot billing)"
+                                                                        : "Hapus"
+                                                                }
+                                                                className="p-2 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                                whileHover={{
+                                                                    scale: 1.1,
+                                                                }}
+                                                                whileTap={{
+                                                                    scale: 0.9,
+                                                                }}
+                                                                aria-label="Delete"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </motion.button>
+                                                        </div>
+                                                    </td>
                                                 </motion.tr>
                                             );
                                         })}
@@ -1935,7 +2161,9 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                         <BillingForm
                             initial={{
                                 no_rawat: editItem.no_rawat,
-                                tgl_byr: normalizeDateForInput(editItem.tgl_byr),
+                                tgl_byr: normalizeDateForInput(
+                                    editItem.tgl_byr
+                                ),
                                 no: editItem.no,
                                 nm_perawatan: editItem.nm_perawatan,
                                 pemisah: editItem.pemisah,
@@ -2002,8 +2230,13 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice }) {
     const totalWithPpn = React.useMemo(() => {
         const t = subtotal || 0;
         const p = Number(ppnPercent) || 0;
-        return Math.round(t * (1 + p / 100));
+        const ppnNominal = Math.round(t * (p / 100) * 100) / 100;
+        return Math.round((t + ppnNominal) * 100) / 100;
     }, [subtotal, ppnPercent]);
+
+    React.useEffect(() => {
+        setBayar(totalWithPpn || 0);
+    }, [totalWithPpn]);
 
     const kembali = React.useMemo(() => {
         const k = Number(bayar) - (totalWithPpn || 0);
@@ -2078,12 +2311,8 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice }) {
                 <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto] gap-2">
                     <Field label="Bayar : Rp">
                         <input
-                            type="number"
-                            step="1"
-                            value={bayar}
-                            onChange={(e) =>
-                                setBayar(Number(e.target.value) || 0)
-                            }
+                            readOnly
+                            value={currency.format(bayar || 0)}
                             className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
                         />
                     </Field>
@@ -2201,10 +2430,18 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice }) {
                     disabled={!noRawat || !invoice?.nota?.no_nota}
                     onClick={() => {
                         if (noRawat) {
-                            router.visit(`/akutansi/nota-jalan?no_rawat=${encodeURIComponent(noRawat)}`);
+                            router.visit(
+                                `/akutansi/nota-jalan?no_rawat=${encodeURIComponent(
+                                    noRawat
+                                )}`
+                            );
                         }
                     }}
-                    title={!noRawat || !invoice?.nota?.no_nota ? "Nota belum tersedia. Simpan terlebih dahulu." : "Cetak Nota"}
+                    title={
+                        !noRawat || !invoice?.nota?.no_nota
+                            ? "Nota belum tersedia. Simpan terlebih dahulu."
+                            : "Cetak Nota"
+                    }
                 >
                     Nota
                 </button>
@@ -2242,7 +2479,8 @@ function StatusPermintaanTab({
             {/* Header dengan tombol refresh */}
             <div className="flex items-center justify-between mb-4">
                 <div className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                    Status Permintaan untuk No. Rawat: <span className="font-mono">{noRawat}</span>
+                    Status Permintaan untuk No. Rawat:{" "}
+                    <span className="font-mono">{noRawat}</span>
                 </div>
                 {onRefresh && (
                     <motion.button
@@ -2292,35 +2530,58 @@ function StatusPermintaanTab({
                     <div className="space-y-2">
                         {lab.map((p) => {
                             // Tentukan status untuk ditampilkan: gunakan status dari backend jika ada, atau cek tgl_hasil
-                            const statusDisplay = p.status || (p.sudah_dilayani ? 'Sudah Dilayani' : 'Belum Dilayani');
-                            const isSudahDilayani = p.sudah_dilayani || (p.tgl_hasil && p.tgl_hasil !== '0000-00-00' && p.tgl_hasil !== null);
-                            
+                            const statusDisplay =
+                                p.status ||
+                                (p.sudah_dilayani
+                                    ? "Sudah Dilayani"
+                                    : "Belum Dilayani");
+                            const isSudahDilayani =
+                                p.sudah_dilayani ||
+                                (p.tgl_hasil &&
+                                    p.tgl_hasil !== "0000-00-00" &&
+                                    p.tgl_hasil !== null);
+
                             return (
                                 <div
                                     key={`lab-${p.noorder}`}
                                     className={`rounded-xl border p-3 ${
-                                        isSudahDilayani 
-                                            ? 'border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-900/20' 
-                                            : 'border-gray-200 dark:border-gray-700'
+                                        isSudahDilayani
+                                            ? "border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-900/20"
+                                            : "border-gray-200 dark:border-gray-700"
                                     }`}
                                 >
                                     <div className="flex items-center justify-between">
                                         <div className="text-sm font-semibold">
-                                            Order {p.noorder} • {formatTanggal(p.tgl_permintaan)}{" "}
-                                            {p.jam_permintaan ? (typeof p.jam_permintaan === 'string' && p.jam_permintaan.includes('T') 
-                                                ? new Date(p.jam_permintaan).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
-                                                : p.jam_permintaan) : ''}
+                                            Order {p.noorder} •{" "}
+                                            {formatTanggal(p.tgl_permintaan)}{" "}
+                                            {p.jam_permintaan
+                                                ? typeof p.jam_permintaan ===
+                                                      "string" &&
+                                                  p.jam_permintaan.includes("T")
+                                                    ? new Date(
+                                                          p.jam_permintaan
+                                                      ).toLocaleTimeString(
+                                                          "id-ID",
+                                                          {
+                                                              hour: "2-digit",
+                                                              minute: "2-digit",
+                                                          }
+                                                      )
+                                                    : p.jam_permintaan
+                                                : ""}
                                         </div>
-                                        <div className={`text-xs font-semibold px-2 py-1 rounded ${
-                                            isSudahDilayani
-                                                ? 'text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/50'
-                                                : 'text-gray-500 bg-gray-100 dark:bg-gray-800'
-                                        }`}>
+                                        <div
+                                            className={`text-xs font-semibold px-2 py-1 rounded ${
+                                                isSudahDilayani
+                                                    ? "text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/50"
+                                                    : "text-gray-500 bg-gray-100 dark:bg-gray-800"
+                                            }`}
+                                        >
                                             Status: {statusDisplay}
                                         </div>
                                     </div>
                                     <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                                        {p.diagnosa_klinis || '-'}
+                                        {p.diagnosa_klinis || "-"}
                                     </div>
                                 </div>
                             );

@@ -590,8 +590,15 @@ class NotaJalanController extends Controller
         $itemsFromFrontend = $request->has('items') && is_array($request->input('items')) && count($request->input('items')) > 0;
 
         foreach ($items as $it) {
-            // Buat key unik berdasarkan kombinasi no + status untuk deduplikasi
-            $uniqueKey = ($it['no'] ?? '').'_'.($it['status'] ?? '-');
+            $uniqueKey = implode('_', [
+                trim((string)($it['no'] ?? '')),
+                trim((string)($it['status'] ?? '-')),
+                trim((string)($it['tgl_byr'] ?? '')),
+                trim((string)($it['nm_perawatan'] ?? '')),
+                number_format((float)($it['biaya'] ?? 0), 2, '.', ''),
+                number_format((float)($it['jumlah'] ?? 1), 2, '.', ''),
+                number_format((float)($it['tambahan'] ?? 0), 2, '.', ''),
+            ]);
 
             // Skip jika sudah ada item dengan kombinasi no + status yang sama
             if (isset($seenKeys[$uniqueKey])) {
