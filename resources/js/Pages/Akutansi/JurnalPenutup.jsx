@@ -188,32 +188,34 @@ export default function JurnalPenutupPage() {
         let ikhtisarDebit = 0;
         let ikhtisarCredit = 0;
         rItems.forEach((it) => {
-            // Hindari duplikasi: akun Ikhtisar dipakai sebagai agregator, tidak ditutup sebagai akun nominal
             if (String(it.kd_rek) === String(form.ikhtisar_kd_rek)) return;
             const amt = Math.abs(Number(it.saldo_akhir || 0));
-            if (amt <= 0) return; // skip nol
+            if (amt <= 0) return;
             const bal = (it.balance || "D").toUpperCase();
             if (bal === "K") {
-                // Pendapatan: Debet akun pendapatan, Kredit Ikhtisar
                 rows.push({ kd_rek: it.kd_rek, debet: amt, kredit: 0 });
                 ikhtisarCredit += amt;
             } else {
-                // Beban: Kredit akun beban, Debet Ikhtisar
                 rows.push({ kd_rek: it.kd_rek, debet: 0, kredit: amt });
                 ikhtisarDebit += amt;
             }
         });
 
-        const net = ikhtisarCredit - ikhtisarDebit; // >0 profit, <0 loss
+        if (Math.round(ikhtisarDebit * 100) > 0) {
+            rows.push({ kd_rek: form.ikhtisar_kd_rek, debet: ikhtisarDebit, kredit: 0 });
+        }
+        if (Math.round(ikhtisarCredit * 100) > 0) {
+            rows.push({ kd_rek: form.ikhtisar_kd_rek, debet: 0, kredit: ikhtisarCredit });
+        }
+
+        const net = ikhtisarCredit - ikhtisarDebit;
         if (net > 0) {
-            // Profit: Debet Ikhtisar, Kredit Modal
             rows.push({ kd_rek: form.ikhtisar_kd_rek, debet: net, kredit: 0 });
             rows.push({ kd_rek: form.modal_kd_rek, debet: 0, kredit: net });
         } else if (net < 0) {
-            // Loss: Debet Modal, Kredit Ikhtisar
             const loss = Math.abs(net);
-            rows.push({ kd_rek: form.modal_kd_rek, debet: loss, kredit: 0 });
             rows.push({ kd_rek: form.ikhtisar_kd_rek, debet: 0, kredit: loss });
+            rows.push({ kd_rek: form.modal_kd_rek, debet: loss, kredit: 0 });
         }
 
         return rows;
