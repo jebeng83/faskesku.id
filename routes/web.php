@@ -178,19 +178,21 @@ Route::middleware('auth')->group(function () {
         // IMPORTANT: Place static routes BEFORE dynamic catch-all to avoid shadowing
         // Akutansi API: Preview Jurnal Penutup
         Route::get('/jurnal/closing-preview', [JurnalController::class, 'closingPreview'])->name('api.akutansi.jurnal.closing-preview');
+        // Akutansi API: Kandidat akun untuk Ikhtisar & Modal
+        Route::get('/jurnal/closing-candidates', [JurnalController::class, 'closingCandidates'])->name('api.akutansi.jurnal.closing-candidates');
         // Akutansi API: Single Posting Point dari tampjurnal
         Route::post('/jurnal/preview', [JurnalController::class, 'previewFromTemp'])->name('api.akutansi.jurnal.preview');
         Route::post('/jurnal/post', [JurnalController::class, 'postFromTemp'])->name('api.akutansi.jurnal.post');
         // Dynamic show/update/destroy must come AFTER static routes
         Route::get('/jurnal/{no_jurnal}', [JurnalController::class, 'show'])
-            ->where('no_jurnal', '^(?!closing-preview$).*$')
+            ->where('no_jurnal', '^(?!closing-(?:preview|candidates)$).*$')
             ->name('api.akutansi.jurnal.show');
         Route::post('/jurnal', [JurnalController::class, 'store'])->name('api.akutansi.jurnal.store');
         Route::put('/jurnal/{no_jurnal}', [JurnalController::class, 'update'])
-            ->where('no_jurnal', '^(?!closing-preview$).*$')
+            ->where('no_jurnal', '^(?!closing-(?:preview|candidates)$).*$')
             ->name('api.akutansi.jurnal.update');
         Route::delete('/jurnal/{no_jurnal}', [JurnalController::class, 'destroy'])
-            ->where('no_jurnal', '^(?!closing-preview$).*$')
+            ->where('no_jurnal', '^(?!closing-(?:preview|candidates)$).*$')
             ->name('api.akutansi.jurnal.destroy');
 
         // Akutansi API: Cash Flow aggregation

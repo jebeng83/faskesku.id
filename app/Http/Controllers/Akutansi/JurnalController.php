@@ -607,8 +607,18 @@ class JurnalController extends Controller
             'period' => ['required', 'string', 'in:year,month,day'],
             'month' => ['nullable', 'integer', 'min:1', 'max:12'],
             'date' => ['nullable', 'date'],
-            'ikhtisar_kd_rek' => ['required', 'string', 'exists:rekening,kd_rek'],
-            'modal_kd_rek' => ['required', 'string', 'exists:rekening,kd_rek'],
+            'ikhtisar_kd_rek' => [
+                'required', 'string',
+                Rule::exists('rekening', 'kd_rek')->where(function ($q) {
+                    $q->where('tipe', 'R');
+                }),
+            ],
+            'modal_kd_rek' => [
+                'required', 'string',
+                Rule::exists('rekening', 'kd_rek')->where(function ($q) {
+                    $q->where('tipe', 'M');
+                }),
+            ],
         ]);
 
         $thn = (string) $validated['thn'];
@@ -704,15 +714,18 @@ class JurnalController extends Controller
             }
         }
 
-        // Baris ringkasan Ikhtisar terhadap Modal/Saldo Laba
+        if (round($ikhtisarDebit, 2) > 0) {
+            $closingRows[] = ['kd_rek' => $ikhtisar, 'debet' => $ikhtisarDebit, 'kredit' => 0];
+        }
+        if (round($ikhtisarCredit, 2) > 0) {
+            $closingRows[] = ['kd_rek' => $ikhtisar, 'debet' => 0, 'kredit' => $ikhtisarCredit];
+        }
         $net = $ikhtisarCredit - $ikhtisarDebit; // >0 laba, <0 rugi
         if (round($net, 2) !== 0.0) {
             if ($net > 0) {
-                // Laba → Debet Ikhtisar, Kredit Modal
                 $closingRows[] = ['kd_rek' => $ikhtisar, 'debet' => $net, 'kredit' => 0];
                 $closingRows[] = ['kd_rek' => $modal, 'debet' => 0, 'kredit' => $net];
             } else {
-                // Rugi → Kredit Ikhtisar, Debet Modal
                 $amt = abs($net);
                 $closingRows[] = ['kd_rek' => $ikhtisar, 'debet' => 0, 'kredit' => $amt];
                 $closingRows[] = ['kd_rek' => $modal, 'debet' => $amt, 'kredit' => 0];
@@ -743,6 +756,50 @@ class JurnalController extends Controller
             'totals' => ['debet' => $totDebet, 'kredit' => $totKredit, 'balanced' => $balanced],
             'net' => $net,
             'profit' => ($net > 0),
+        ]);
+    }
+
+    public function closingCandidates(\Illuminate\Http\Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+        $limit = (int) $request->query('limit', 50);
+        $limit = $limit > 0 ? $limit : 50;
+
+        $ikhtisarQuery = \Illuminate\Support\Facades\DB::table('rekening')
+            ->where('tipe', 'R');
+        $modalQuery = \Illuminate\Support\Facades\DB::table('rekening')
+            ->where('tipe', 'M');
+
+        if ($q !== '') {
+            $like = "%$q%";
+            $ikhtisarQuery->where(function ($w) use ($like) {
+                $w->where('kd_rek', 'like', $like)
+                  ->orWhere('nm_rek', 'like', $like);
+            });
+            $modalQuery->where(function ($w) use ($like) {
+                $w->where('kd_rek', 'like', $like)
+                  ->orWhere('nm_rek', 'like', $like);
+            });
+        }
+
+        $ikhtisar = $ikhtisarQuery
+            ->select(['kd_rek', 'nm_rek', 'balance'])
+            ->orderBy('kd_rek')
+            ->limit($limit)
+            ->get();
+        $modal = $modalQuery
+            ->select(['kd_rek', 'nm_rek', 'balance'])
+            ->orderBy('kd_rek')
+            ->limit($limit)
+            ->get();
+
+        return response()->json([
+            'filters' => [
+                'q' => $q,
+                'limit' => $limit,
+            ],
+            'ikhtisar' => $ikhtisar,
+            'modal' => $modal,
         ]);
     }
 
