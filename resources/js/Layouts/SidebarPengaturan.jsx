@@ -13,6 +13,8 @@ import {
     Building2,
     User,
     LogIn,
+    Users,
+    FileText,
 } from "lucide-react";
 
 // Theme toggle terkontrol, state diangkat ke parent agar sinkron di semua instance
@@ -168,6 +170,9 @@ export default function SidebarPengaturan({ title = "Pengaturan", children }) {
             userIndex: safeRoute("users.index", "/users"),
             userLogin: safeRoute("login", "/login"),
             userMapping: safeRoute("permissions.index", "/permissions"),
+            // Kepegawaian
+            employeesIndex: safeRoute("employees.index", "/employees"),
+            sipPegawaiIndex: safeRoute("sip-pegawai.index", "/sip-pegawai"),
         }),
         []
     );
@@ -285,6 +290,27 @@ export default function SidebarPengaturan({ title = "Pengaturan", children }) {
                             icon={NotebookTabs}
                             label="Mapping"
                             active={isActive(paths.userMapping)}
+                        />
+                    </Section>
+
+                    {/* Kepegawaian */}
+                    <Section
+                        title="Kepegawaian"
+                        collapsed={isSidebarCollapsed}
+                    >
+                        <NavItem
+                            collapsed={isSidebarCollapsed}
+                            href={paths.employeesIndex}
+                            icon={Users}
+                            label="Pegawai"
+                            active={isActive(paths.employeesIndex)}
+                        />
+                        <NavItem
+                            collapsed={isSidebarCollapsed}
+                            href={paths.sipPegawaiIndex}
+                            icon={FileText}
+                            label="SIP Pegawai"
+                            active={isActive(paths.sipPegawaiIndex)}
                         />
                     </Section>
 

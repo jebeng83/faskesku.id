@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Akutansi;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Services\Akutansi\JournalService;
 use App\Services\Akutansi\JurnalPostingService;
-use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class JurnalController extends Controller
@@ -43,8 +43,8 @@ class JurnalController extends Controller
             $like = "%$q%";
             $query->where(function ($w) use ($like) {
                 $w->where('jurnal.no_jurnal', 'like', $like)
-                  ->orWhere('jurnal.no_bukti', 'like', $like)
-                  ->orWhere('jurnal.keterangan', 'like', $like);
+                    ->orWhere('jurnal.no_bukti', 'like', $like)
+                    ->orWhere('jurnal.keterangan', 'like', $like);
             });
         }
         if ($jenis !== '') {
@@ -114,7 +114,7 @@ class JurnalController extends Controller
     public function stageFromBilling(Request $request)
     {
         $noRawat = $request->input('no_rawat');
-        if (!$noRawat) {
+        if (! $noRawat) {
             return response()->json(['message' => 'no_rawat wajib diisi'], 422);
         }
 
@@ -153,10 +153,10 @@ class JurnalController extends Controller
         $kdDebetPiutang = $request->input('akun_piutang.kd_rek')
             ?? $this->findDefaultPiutang();
 
-        if ($bayar > 0 && !$kdDebetBayar) {
+        if ($bayar > 0 && ! $kdDebetBayar) {
             return response()->json(['message' => 'Akun Bayar (kas/bank) wajib diisi untuk nominal bayar > 0. Pilih dari UI, atau lengkapi master rekening untuk akun Kas/Bank (kode awal 1).'], 422);
         }
-        if ($piutang > 0 && !$kdDebetPiutang) {
+        if ($piutang > 0 && ! $kdDebetPiutang) {
             return response()->json(['message' => 'Akun Piutang tidak ditemukan otomatis. Pilih dari UI atau lengkapi master rekening (nm_rek mengandung "Piutang" atau kd_rek diawali 112, balance=D).'], 422);
         }
 
@@ -172,7 +172,7 @@ class JurnalController extends Controller
             ?? $this->findPendapatanByPrefix('42')
             ?? $this->findPendapatanByPrefix('43')
             ?? $this->findPendapatanByName();
-        if (!$kdKreditPendapatan) {
+        if (! $kdKreditPendapatan) {
             return response()->json([
                 'message' => 'Akun pendapatan tidak ditemukan. Sistem memilih berdasarkan sumber layanan (Ranap=41, Ralan=42, Operasional Lain=43). Lengkapi master rekening atau kirim kd_rek_kredit pada payload.',
             ], 422);
@@ -189,7 +189,7 @@ class JurnalController extends Controller
 
         // Ambil akun PPN Keluaran dari set_akun jika tersedia
         $kdKreditPpn = DB::table('set_akun')->value('PPN_Keluaran');
-        if (!$kdKreditPpn && $ppnNominal > 0) {
+        if (! $kdKreditPpn && $ppnNominal > 0) {
             // Jika tidak ada pengaturan, tetap lanjut dengan memperingatkan user bahwa PPN akan digabung ke pendapatan
             // Untuk menjaga keseimbangan, tambahkan PPN ke pendapatan jika akun PPN tidak tersedia
             $kdKreditPpn = null;
@@ -202,15 +202,16 @@ class JurnalController extends Controller
         $nmKreditRegistrasi = $kdKreditRegistrasi ? (DB::table('rekening')->where('kd_rek', $kdKreditRegistrasi)->value('nm_rek') ?? 'Pendapatan Registrasi') : null;
         $nmKreditPpn = $kdKreditPpn ? (DB::table('rekening')->where('kd_rek', $kdKreditPpn)->value('nm_rek') ?? 'PPN Keluaran') : null;
 
-        // Tulis ke staging tampjurnal: kosongkan dulu
+        // Tulis ke staging tampjurnal: kosongkan dulu (termasuk tampjurnal2 untuk menghindari data lama)
         DB::table('tampjurnal')->truncate();
+        DB::table('tampjurnal2')->truncate();
 
         // Debet: kas/bank
         if ($bayar > 0 && $kdDebetBayar) {
             DB::table('tampjurnal')->insert([
                 'kd_rek' => $kdDebetBayar,
                 'nm_rek' => $nmDebetBayar,
-                'debet'  => $bayar,
+                'debet' => $bayar,
                 'kredit' => 0,
             ]);
         }
@@ -220,7 +221,7 @@ class JurnalController extends Controller
             DB::table('tampjurnal')->insert([
                 'kd_rek' => $kdDebetPiutang,
                 'nm_rek' => $nmDebetPiutang,
-                'debet'  => $piutang,
+                'debet' => $piutang,
                 'kredit' => 0,
             ]);
         }
@@ -231,7 +232,7 @@ class JurnalController extends Controller
             DB::table('tampjurnal')->insert([
                 'kd_rek' => $kdKreditPendapatan,
                 'nm_rek' => $nmKreditPendapatan,
-                'debet'  => 0,
+                'debet' => 0,
                 'kredit' => $pendapatanTanpaRegistrasi,
             ]);
         }
@@ -241,7 +242,7 @@ class JurnalController extends Controller
             DB::table('tampjurnal')->insert([
                 'kd_rek' => $kdKreditRegistrasi ?: $kdKreditPendapatan,
                 'nm_rek' => $kdKreditRegistrasi ? $nmKreditRegistrasi : $nmKreditPendapatan,
-                'debet'  => 0,
+                'debet' => 0,
                 'kredit' => $registrasiSubtotal,
             ]);
         }
@@ -252,7 +253,7 @@ class JurnalController extends Controller
                 DB::table('tampjurnal')->insert([
                     'kd_rek' => $kdKreditPpn,
                     'nm_rek' => $nmKreditPpn,
-                    'debet'  => 0,
+                    'debet' => 0,
                     'kredit' => $ppnNominal,
                 ]);
             } else {
@@ -260,12 +261,107 @@ class JurnalController extends Controller
                 DB::table('tampjurnal')->insert([
                     'kd_rek' => $kdKreditPendapatan,
                     'nm_rek' => $nmKreditPendapatan,
-                    'debet'  => 0,
+                    'debet' => 0,
                     'kredit' => $ppnNominal,
                 ]);
             }
         }
 
+        // Validasi keseimbangan sebelum return
+        $totalDebet = $bayar + $piutang;
+        $totalKredit = $pendapatanTanpaRegistrasi + $registrasiSubtotal + $ppnNominal;
+        
+        // Round untuk perbandingan
+        $totalDebetRounded = round($totalDebet, 2);
+        $totalKreditRounded = round($totalKredit, 2);
+        
+        // Validasi ulang keseimbangan setelah insert ke tampjurnal
+        $actualAgg = DB::table('tampjurnal')
+            ->select(DB::raw('IFNULL(SUM(debet),0) AS debet'), DB::raw('IFNULL(SUM(kredit),0) AS kredit'))
+            ->first();
+        
+        $actualDebet = round((float)($actualAgg->debet ?? 0), 2);
+        $actualKredit = round((float)($actualAgg->kredit ?? 0), 2);
+        $selisih = $actualKredit - $actualDebet;
+        
+        if (abs($selisih) > 0.01) {
+            \Log::warning('Keseimbangan debet/kredit tidak sama saat staging billing, melakukan penyesuaian', [
+                'no_rawat' => $noRawat,
+                'total_debet' => $actualDebet,
+                'total_kredit' => $actualKredit,
+                'selisih' => $selisih,
+            ]);
+            
+            // Sesuaikan dengan menambahkan/mengurangi selisih ke akun yang sesuai
+            if ($selisih > 0) {
+                // Kredit lebih besar dari debet, tambahkan selisih ke debet (kas/bank atau piutang)
+                if ($bayar > 0 && $kdDebetBayar) {
+                    // Tambahkan ke kas/bank terlebih dahulu
+                    DB::table('tampjurnal')
+                        ->where('kd_rek', $kdDebetBayar)
+                        ->where('debet', '>', 0)
+                        ->update(['debet' => DB::raw("debet + {$selisih}")]);
+                } elseif ($piutang > 0 && $kdDebetPiutang) {
+                    // Jika tidak ada kas/bank, tambahkan ke piutang
+                    DB::table('tampjurnal')
+                        ->where('kd_rek', $kdDebetPiutang)
+                        ->where('debet', '>', 0)
+                        ->update(['debet' => DB::raw("debet + {$selisih}")]);
+                } else {
+                    // Jika tidak ada debet yang tersedia, kurangi dari kredit pendapatan
+                    DB::table('tampjurnal')
+                        ->where('kd_rek', $kdKreditPendapatan)
+                        ->where('kredit', '>', 0)
+                        ->orderBy('kredit', 'desc')
+                        ->limit(1)
+                        ->update(['kredit' => DB::raw("GREATEST(0, kredit - {$selisih})")]);
+                }
+            } else {
+                // Debet lebih besar dari kredit, tambahkan selisih ke kredit (pendapatan)
+                $absSelisih = abs($selisih);
+                $existingKredit = DB::table('tampjurnal')
+                    ->where('kd_rek', $kdKreditPendapatan)
+                    ->where('kredit', '>', 0)
+                    ->sum('kredit');
+                
+                if ($existingKredit > 0) {
+                    // Tambahkan ke pendapatan yang sudah ada
+                    DB::table('tampjurnal')
+                        ->where('kd_rek', $kdKreditPendapatan)
+                        ->where('kredit', '>', 0)
+                        ->orderBy('kredit', 'desc')
+                        ->limit(1)
+                        ->update(['kredit' => DB::raw("kredit + {$absSelisih}")]);
+                } else {
+                    // Jika tidak ada pendapatan yang sudah ada, buat baris baru
+                    DB::table('tampjurnal')->insert([
+                        'kd_rek' => $kdKreditPendapatan,
+                        'nm_rek' => $nmKreditPendapatan,
+                        'debet' => 0,
+                        'kredit' => $absSelisih,
+                    ]);
+                }
+            }
+            
+            // Validasi ulang setelah penyesuaian
+            $finalAgg = DB::table('tampjurnal')
+                ->select(DB::raw('IFNULL(SUM(debet),0) AS debet'), DB::raw('IFNULL(SUM(kredit),0) AS kredit'))
+                ->first();
+            
+            $finalDebet = round((float)($finalAgg->debet ?? 0), 2);
+            $finalKredit = round((float)($finalAgg->kredit ?? 0), 2);
+            $finalSelisih = abs($finalKredit - $finalDebet);
+            
+            if ($finalSelisih > 0.01) {
+                \Log::error('Gagal menyeimbangkan debet/kredit setelah penyesuaian', [
+                    'no_rawat' => $noRawat,
+                    'final_debet' => $finalDebet,
+                    'final_kredit' => $finalKredit,
+                    'final_selisih' => $finalSelisih,
+                ]);
+            }
+        }
+        
         return response()->json([
             'status' => 'ok',
             'message' => 'Staging tampjurnal dari billing berhasil (debet bayar/piutang, kredit pendapatan + opsi PPN)',
@@ -282,9 +378,10 @@ class JurnalController extends Controller
                 'kredit_ppn' => $kdKreditPpn,
                 'kredit_registrasi' => $kdKreditRegistrasi,
             ],
-            'breakdown' => [
-                'pendapatan_tanpa_registrasi' => $pendapatanTanpaRegistrasi,
-                'registrasi' => $registrasiSubtotal,
+            'balance_check' => [
+                'total_debet' => round($bayar + $piutang, 2),
+                'total_kredit' => round($pendapatanTanpaRegistrasi + $registrasiSubtotal + $ppnNominal, 2),
+                'balanced' => abs(round($bayar + $piutang, 2) - round($pendapatanTanpaRegistrasi + $registrasiSubtotal + $ppnNominal, 2)) <= 0.01,
             ],
         ]);
     }
@@ -301,12 +398,15 @@ class JurnalController extends Controller
                 ->where('balance', 'D')
                 ->where(function ($w) {
                     $w->where('nm_rek', 'like', '%KAS%')
-                      ->orWhere('nm_rek', 'like', '%BANK%')
-                      ->orWhere('kd_rek', 'like', '11%');
+                        ->orWhere('nm_rek', 'like', '%BANK%')
+                        ->orWhere('kd_rek', 'like', '11%');
                 })
                 ->orderBy('kd_rek');
             $kas = $q->value('kd_rek');
-            if ($kas) { return $kas; }
+            if ($kas) {
+                return $kas;
+            }
+
             return DB::table('rekening')
                 ->where('balance', 'D')
                 ->where('kd_rek', 'like', '1%')
@@ -330,7 +430,9 @@ class JurnalController extends Controller
                 ->where('nm_rek', 'like', '%Piutang%')
                 ->orderBy('kd_rek')
                 ->value('kd_rek');
-            if ($piutangByName) { return $piutangByName; }
+            if ($piutangByName) {
+                return $piutangByName;
+            }
 
             // Fallback by code prefix 112 (Piutang Usaha)
             return DB::table('rekening')
@@ -351,8 +453,13 @@ class JurnalController extends Controller
     {
         try {
             $status = DB::table('reg_periksa')->where('no_rawat', $noRawat)->value('status_lanjut');
-            if ($status === 'Ranap') { return $this->findPendapatanByPrefix('41'); }
-            if ($status === 'Ralan') { return $this->findPendapatanByPrefix('42'); }
+            if ($status === 'Ranap') {
+                return $this->findPendapatanByPrefix('41');
+            }
+            if ($status === 'Ralan') {
+                return $this->findPendapatanByPrefix('42');
+            }
+
             return $this->findPendapatanByPrefix('43');
         } catch (\Throwable $e) {
             return null;
@@ -371,14 +478,17 @@ class JurnalController extends Controller
                 ->where('kd_rek', $prefix)
                 ->where('balance', 'K')
                 ->value('kd_rek');
-            if ($exact) { return $exact; }
+            if ($exact) {
+                return $exact;
+            }
 
             // Cari akun spesifik di bawah prefix
             $row = DB::table('rekening')
-                ->where('kd_rek', 'like', $prefix . '%')
+                ->where('kd_rek', 'like', $prefix.'%')
                 ->where('balance', 'K')
                 ->orderBy('kd_rek')
                 ->value('kd_rek');
+
             return $row ?: null;
         } catch (\Throwable $e) {
             return null;
@@ -408,7 +518,7 @@ class JurnalController extends Controller
     public function postStaging(Request $request, JournalService $service)
     {
         $noBukti = $request->input('no_bukti');
-        if (!$noBukti) {
+        if (! $noBukti) {
             return response()->json(['message' => 'no_bukti wajib diisi'], 422);
         }
 
@@ -419,6 +529,7 @@ class JurnalController extends Controller
         if ($result['status'] !== 'ok') {
             return response()->json($result, 400);
         }
+
         return response()->json($result);
     }
 
@@ -430,10 +541,11 @@ class JurnalController extends Controller
     {
         try {
             $data = $service->preview();
+
             return response()->json($data);
         } catch (\Throwable $e) {
             return response()->json([
-                'message' => 'Gagal mengambil preview staging jurnal: ' . $e->getMessage(),
+                'message' => 'Gagal mengambil preview staging jurnal: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -451,12 +563,35 @@ class JurnalController extends Controller
 
         try {
             $result = $service->post($noBukti, $keterangan, $tgl);
+
             return response()->json($result, 201);
-        } catch (\Throwable $e) {
-            // Validasi keseimbangan atau staging kosong akan melempar exception dengan pesan yang informatif
+        } catch (\RuntimeException $e) {
+            // Validasi keseimbangan atau staging kosong akan melempar RuntimeException dengan pesan yang informatif
+            Log::warning('Posting jurnal gagal', [
+                'no_bukti' => $noBukti,
+                'keterangan' => $keterangan,
+                'error' => $e->getMessage(),
+            ]);
+
             return response()->json([
-                'message' => 'Gagal posting jurnal: ' . $e->getMessage(),
+                'success' => false,
+                'message' => 'Gagal posting jurnal: '.$e->getMessage(),
+                'error' => $e->getMessage(),
             ], 400);
+        } catch (\Throwable $e) {
+            // Error lainnya
+            Log::error('Posting jurnal error', [
+                'no_bukti' => $noBukti,
+                'keterangan' => $keterangan,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal posting jurnal: '.$e->getMessage(),
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -525,7 +660,8 @@ class JurnalController extends Controller
             ->keyBy('kd_rek');
 
         $closingRows = [];
-        $ikhtisarDebit = 0.0; $ikhtisarCredit = 0.0;
+        $ikhtisarDebit = 0.0;
+        $ikhtisarCredit = 0.0;
 
         foreach ($rows as $row) {
             $sum_debet = (float) ($mutasi[$row->kd_rek]->sum_debet ?? 0);
@@ -540,7 +676,9 @@ class JurnalController extends Controller
             }
 
             $saldo_akhir = (float) $row->saldo_awal + ($mutasi_debet - $mutasi_kredit);
-            if (round($saldo_akhir, 2) === 0.0) { continue; }
+            if (round($saldo_akhir, 2) === 0.0) {
+                continue;
+            }
 
             // Tutup akun nominal ke Ikhtisar Laba Rugi
             if ($row->balance === 'K') {
@@ -582,7 +720,8 @@ class JurnalController extends Controller
         }
 
         // Hitung total
-        $totDebet = 0.0; $totKredit = 0.0;
+        $totDebet = 0.0;
+        $totKredit = 0.0;
         foreach ($closingRows as $r) {
             $totDebet += (float) ($r['debet'] ?? 0);
             $totKredit += (float) ($r['kredit'] ?? 0);
@@ -614,7 +753,7 @@ class JurnalController extends Controller
     public function show(string $no_jurnal)
     {
         $header = \App\Models\Akutansi\Jurnal::query()->where('no_jurnal', $no_jurnal)->first();
-        if (!$header) {
+        if (! $header) {
             return response()->json(['message' => 'Jurnal tidak ditemukan'], 404);
         }
 
@@ -625,14 +764,18 @@ class JurnalController extends Controller
             ->orderBy('detailjurnal.kd_rek')
             ->get();
 
-        $debet = 0.0; $kredit = 0.0;
-        foreach ($details as $d) { $debet += (float) ($d->debet ?? 0); $kredit += (float) ($d->kredit ?? 0); }
+        $debet = 0.0;
+        $kredit = 0.0;
+        foreach ($details as $d) {
+            $debet += (float) ($d->debet ?? 0);
+            $kredit += (float) ($d->kredit ?? 0);
+        }
         $balanced = (round($debet, 2) === round($kredit, 2));
 
         return response()->json([
             'header' => $header,
             'details' => $details,
-            'totals' => [ 'debet' => $debet, 'kredit' => $kredit, 'balanced' => $balanced ],
+            'totals' => ['debet' => $debet, 'kredit' => $kredit, 'balanced' => $balanced],
         ]);
     }
 
@@ -661,11 +804,15 @@ class JurnalController extends Controller
             $request->validate([
                 'ikhtisar_kd_rek' => [
                     'required', 'string',
-                    Rule::exists('rekening', 'kd_rek')->where(function ($q) { $q->where('tipe', 'R'); })
+                    Rule::exists('rekening', 'kd_rek')->where(function ($q) {
+                        $q->where('tipe', 'R');
+                    }),
                 ],
                 'modal_kd_rek' => [
                     'required', 'string',
-                    Rule::exists('rekening', 'kd_rek')->where(function ($q) { $q->where('tipe', 'M'); })
+                    Rule::exists('rekening', 'kd_rek')->where(function ($q) {
+                        $q->where('tipe', 'M');
+                    }),
                 ],
                 'closing_period' => ['required', 'string', 'in:year,month,day'],
                 'closing_year' => ['required', 'regex:/^\d{4}$/'],
@@ -686,14 +833,14 @@ class JurnalController extends Controller
             $closingDate = $request->input('closing_date');
 
             $exists = false;
-            if (!empty($data['no_bukti'])) {
+            if (! empty($data['no_bukti'])) {
                 $exists = \Illuminate\Support\Facades\DB::table('jurnal')
                     ->where('jenis', 'C')
                     ->where('no_bukti', $data['no_bukti'])
                     ->exists();
             }
 
-            if (!$exists) {
+            if (! $exists) {
                 if ($closingPeriod === 'day' && is_string($closingDate) && $closingDate !== '') {
                     $exists = \Illuminate\Support\Facades\DB::table('jurnal')
                         ->where('jenis', 'C')
@@ -719,13 +866,14 @@ class JurnalController extends Controller
 
             if ($exists) {
                 return response()->json([
-                    'message' => 'Jurnal penutup untuk periode ini sudah ada. Gunakan nomor bukti lain atau pilih periode berbeda.'
+                    'message' => 'Jurnal penutup untuk periode ini sudah ada. Gunakan nomor bukti lain atau pilih periode berbeda.',
                 ], 409);
             }
         }
 
         // Validasi Debet/Kredit per baris dan total seimbang
-        $debet = 0.0; $kredit = 0.0;
+        $debet = 0.0;
+        $kredit = 0.0;
         foreach ($data['details'] as $row) {
             $deb = (float) ($row['debet'] ?? 0);
             $kre = (float) ($row['kredit'] ?? 0);
@@ -735,7 +883,8 @@ class JurnalController extends Controller
             if ($deb > 0 && $kre > 0) {
                 return response()->json(['message' => 'Debet dan Kredit tidak boleh keduanya > 0 dalam satu baris'], 422);
             }
-            $debet += $deb; $kredit += $kre;
+            $debet += $deb;
+            $kredit += $kre;
         }
         if (round($debet, 2) !== round($kredit, 2)) {
             return response()->json(['message' => 'Total Debet dan Kredit harus seimbang'], 422);
@@ -744,14 +893,14 @@ class JurnalController extends Controller
         // Generate nomor jurnal harian: JR + yyyymmdd + 6 digit urut
         $tgl = \Carbon\Carbon::parse($data['tgl_jurnal'])->format('Y-m-d');
         $jam = $data['jam_jurnal'];
-        $prefix = 'JR' . str_replace('-', '', $tgl);
+        $prefix = 'JR'.str_replace('-', '', $tgl);
         $max = \Illuminate\Support\Facades\DB::table('jurnal')
             ->where('tgl_jurnal', $tgl)
             ->select(\Illuminate\Support\Facades\DB::raw('IFNULL(MAX(CONVERT(RIGHT(no_jurnal,6),SIGNED)),0) AS max_no'))
             ->value('max_no');
         $next = ((int) $max) + 1;
         $noSuffix = str_pad((string) $next, 6, '0', STR_PAD_LEFT);
-        $noJurnal = $prefix . $noSuffix;
+        $noJurnal = $prefix.$noSuffix;
 
         // Simpan header & detail dalam transaksi
         \Illuminate\Support\Facades\DB::transaction(function () use ($noJurnal, $data, $tgl, $jam, $request) {
@@ -773,7 +922,7 @@ class JurnalController extends Controller
                     'kredit' => (float) ($row['kredit'] ?? 0),
                 ];
             }
-            if (!empty($detailRows)) {
+            if (! empty($detailRows)) {
                 \Illuminate\Support\Facades\DB::table('detailjurnal')->insert($detailRows);
             }
 
@@ -787,7 +936,8 @@ class JurnalController extends Controller
                 $modal = (string) $request->input('modal_kd_rek');
 
                 // Hitung net profit/loss dari baris Modal
-                $sumModalDebit = 0.0; $sumModalCredit = 0.0;
+                $sumModalDebit = 0.0;
+                $sumModalCredit = 0.0;
                 foreach ($detailRows as $dr) {
                     if ($dr['kd_rek'] === $modal) {
                         $sumModalDebit += (float) $dr['debet'];
@@ -821,7 +971,7 @@ class JurnalController extends Controller
     public function update(Request $request, string $no_jurnal)
     {
         $j = \App\Models\Akutansi\Jurnal::query()->where('no_jurnal', $no_jurnal)->first();
-        if (!$j) {
+        if (! $j) {
             return response()->json(['message' => 'Jurnal tidak ditemukan'], 404);
         }
 
@@ -837,23 +987,40 @@ class JurnalController extends Controller
         ]);
 
         // Update header
-        if (array_key_exists('no_bukti', $validated)) { $j->no_bukti = $validated['no_bukti']; }
-        if (array_key_exists('tgl_jurnal', $validated) && $validated['tgl_jurnal']) { $j->tgl_jurnal = $validated['tgl_jurnal']; }
-        if (array_key_exists('jam_jurnal', $validated) && $validated['jam_jurnal']) { $j->jam_jurnal = $validated['jam_jurnal']; }
-        if (array_key_exists('keterangan', $validated)) { $j->keterangan = $validated['keterangan']; }
+        if (array_key_exists('no_bukti', $validated)) {
+            $j->no_bukti = $validated['no_bukti'];
+        }
+        if (array_key_exists('tgl_jurnal', $validated) && $validated['tgl_jurnal']) {
+            $j->tgl_jurnal = $validated['tgl_jurnal'];
+        }
+        if (array_key_exists('jam_jurnal', $validated) && $validated['jam_jurnal']) {
+            $j->jam_jurnal = $validated['jam_jurnal'];
+        }
+        if (array_key_exists('keterangan', $validated)) {
+            $j->keterangan = $validated['keterangan'];
+        }
         $j->save();
 
         // Jika jenis U dan ada details dalam payload → replace seluruh detail
         if ($j->jenis === 'U' && isset($validated['details']) && is_array($validated['details'])) {
             // Validasi keseimbangan
-            $debet = 0.0; $kredit = 0.0;
+            $debet = 0.0;
+            $kredit = 0.0;
             foreach ($validated['details'] as $row) {
-                $deb = (float) ($row['debet'] ?? 0); $kre = (float) ($row['kredit'] ?? 0);
-                if ($deb <= 0 && $kre <= 0) { return response()->json(['message' => 'Setiap baris harus memiliki Debet atau Kredit > 0'], 422); }
-                if ($deb > 0 && $kre > 0) { return response()->json(['message' => 'Debet dan Kredit tidak boleh keduanya > 0 dalam satu baris'], 422); }
-                $debet += $deb; $kredit += $kre;
+                $deb = (float) ($row['debet'] ?? 0);
+                $kre = (float) ($row['kredit'] ?? 0);
+                if ($deb <= 0 && $kre <= 0) {
+                    return response()->json(['message' => 'Setiap baris harus memiliki Debet atau Kredit > 0'], 422);
+                }
+                if ($deb > 0 && $kre > 0) {
+                    return response()->json(['message' => 'Debet dan Kredit tidak boleh keduanya > 0 dalam satu baris'], 422);
+                }
+                $debet += $deb;
+                $kredit += $kre;
             }
-            if (round($debet, 2) !== round($kredit, 2)) { return response()->json(['message' => 'Total Debet dan Kredit harus seimbang'], 422); }
+            if (round($debet, 2) !== round($kredit, 2)) {
+                return response()->json(['message' => 'Total Debet dan Kredit harus seimbang'], 422);
+            }
 
             \Illuminate\Support\Facades\DB::transaction(function () use ($no_jurnal, $validated) {
                 \Illuminate\Support\Facades\DB::table('detailjurnal')->where('no_jurnal', $no_jurnal)->delete();
@@ -866,7 +1033,7 @@ class JurnalController extends Controller
                         'kredit' => (float) ($row['kredit'] ?? 0),
                     ];
                 }
-                if (!empty($rows)) {
+                if (! empty($rows)) {
                     \Illuminate\Support\Facades\DB::table('detailjurnal')->insert($rows);
                 }
             });
@@ -881,8 +1048,12 @@ class JurnalController extends Controller
     public function destroy(string $no_jurnal)
     {
         $j = \App\Models\Akutansi\Jurnal::query()->where('no_jurnal', $no_jurnal)->first();
-        if (!$j) { return response()->json(['message' => 'Jurnal tidak ditemukan'], 404); }
-        if ($j->jenis !== 'U') { return response()->json(['message' => 'Jurnal hasil posting (jenis P/C) tidak boleh dihapus'], 409); }
+        if (! $j) {
+            return response()->json(['message' => 'Jurnal tidak ditemukan'], 404);
+        }
+        if ($j->jenis !== 'U') {
+            return response()->json(['message' => 'Jurnal hasil posting (jenis P/C) tidak boleh dihapus'], 409);
+        }
 
         \Illuminate\Support\Facades\DB::transaction(function () use ($no_jurnal) {
             \Illuminate\Support\Facades\DB::table('detailjurnal')->where('no_jurnal', $no_jurnal)->delete();

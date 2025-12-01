@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Head, Link, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import AppLayout from "@/Layouts/AppLayout";
+import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
 import ResponsiveTable from "@/Components/ResponsiveTable";
 import ActionDropdown from "@/Components/ActionDropdown";
 import Pagination from "@/Components/Pagination";
@@ -166,7 +166,7 @@ export default function Index({ employees, filters }) {
 	};
 
 	return (
-		<AppLayout>
+		<SidebarPengaturan title="Kepegawaian">
 			<Head title="Data Pegawai" />
 
             <div className="space-y-6 -mt-6 -mx-6 p-6">
@@ -453,6 +453,6 @@ export default function Index({ employees, filters }) {
 					onClose={() => setShowAlert(false)}
 				/>
 			</div>
-		</AppLayout>
+		</SidebarPengaturan>
 	);
 }

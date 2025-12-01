@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::search
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:718
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:788
 * @route '/pegawai/search'
 */
 export const search = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ search.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::search
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:718
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:788
 * @route '/pegawai/search'
 */
 search.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ search.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::search
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:718
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:788
 * @route '/pegawai/search'
 */
 search.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ search.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::search
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:718
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:788
 * @route '/pegawai/search'
 */
 search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

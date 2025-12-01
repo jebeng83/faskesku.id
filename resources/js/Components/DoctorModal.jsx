@@ -375,7 +375,7 @@ export default function DoctorModal({
 				initial="hidden"
 				animate="visible"
 				exit="exit"
-				className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+				className="fixed inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md flex items-center justify-center p-4 z-50"
 				onClick={handleClose}
 			>
 				<motion.div
@@ -383,22 +383,26 @@ export default function DoctorModal({
 					initial="hidden"
 					animate="visible"
 					exit="exit"
-					className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden"
+					className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-xl shadow-2xl border border-white/20 dark:border-gray-700/50 w-full max-w-4xl max-h-[90vh] overflow-hidden"
 					onClick={(e) => e.stopPropagation()}
 				>
 					{/* Header */}
-					<div className="bg-gray-900 p-6 flex justify-between items-center">
+					<div className="relative px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm flex justify-between items-center">
 						<div className="flex items-center gap-3">
-							<div className="p-2 bg-white bg-opacity-20 rounded-lg">
-								<UserIcon className="h-6 w-6 text-black" />
-							</div>
+							<motion.div
+								className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
+								whileHover={{ rotate: 90, scale: 1.1 }}
+								transition={{ duration: 0.3 }}
+							>
+								<UserIcon className="h-5 w-5 text-white" />
+							</motion.div>
 							<div>
-								<h3 className="text-xl font-semibold text-white">
+								<h3 className="text-xl font-bold text-gray-900 dark:text-white">
 									{mode === "create"
 										? "Tambah Dokter Baru"
 										: "Edit Data Dokter"}
 								</h3>
-								<p className="text-gray-300 text-sm">
+								<p className="text-gray-600 dark:text-gray-400 text-sm">
 									{mode === "create"
 										? "Lengkapi form untuk menambahkan dokter baru"
 										: `Mengubah data untuk ${doctor?.nm_dokter}`}
@@ -409,7 +413,7 @@ export default function DoctorModal({
 							whileHover={{ scale: 1.1 }}
 							whileTap={{ scale: 0.9 }}
 							onClick={handleClose}
-							className="p-2 text-gray-400 hover:text-black hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
+							className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
 						>
 							<XMarkIcon className="h-6 w-6" />
 						</motion.button>
@@ -986,7 +990,7 @@ export default function DoctorModal({
 								whileTap={{ scale: 0.95 }}
 								type="submit"
 								disabled={processing}
-								className="px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center gap-2"
+								className="px-6 py-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white rounded-lg shadow-lg shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium flex items-center gap-2"
 							>
 								{processing && (
 									<motion.div

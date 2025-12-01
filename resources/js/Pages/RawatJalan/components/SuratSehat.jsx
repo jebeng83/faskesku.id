@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Head, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
+import { todayDateString } from '@/tools/datetime';
 
 export default function SuratSehat({ rawatJalan, patient, dokter }) {
     const [formData, setFormData] = useState({
         no_surat: '',
         no_rawat: rawatJalan?.no_rawat || '',
-        tanggalsurat: new Date().toISOString().slice(0, 10),
+        tanggalsurat: todayDateString(),
         berat: '',
         tinggi: '',
         tensi: '',

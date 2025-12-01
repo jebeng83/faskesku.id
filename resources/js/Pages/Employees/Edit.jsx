@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect, useState } from "react";
 import { Head, Link, router, useForm } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import AppLayout from "@/Layouts/AppLayout";
+import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
 import SearchableSelect from "@/Components/SearchableSelect";
 import { toast } from "@/tools/toast";
 
@@ -136,7 +136,7 @@ export default function Edit({ employee, refs = {} }) {
     };
 
     return (
-        <AppLayout>
+        <SidebarPengaturan title="Kepegawaian">
             <Head title="Edit Pegawai" />
 
             <div className="py-6">
@@ -835,6 +835,6 @@ export default function Edit({ employee, refs = {} }) {
                     </form>
                 </div>
             </div>
-        </AppLayout>
+        </SidebarPengaturan>
     );
 }

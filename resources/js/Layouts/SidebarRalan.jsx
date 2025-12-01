@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import { Stethoscope, Hospital, Gauge, HeartPulse, ChevronDown, ChevronRight } from 'lucide-react';
+import { Stethoscope, Hospital, Gauge, HeartPulse, ChevronDown, ChevronRight, Receipt } from 'lucide-react';
 
 // Sidebar khusus modul Rawat Jalan dengan pola tampilan seperti LanjutanRalanLayout
 export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
@@ -72,6 +72,11 @@ export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
           icon: <Hospital className="w-4 h-4" />,
         },
         {
+          label: 'Tarif Ralan',
+          href: route('daftar-tarif.index', { category: 'rawat-jalan', search: '', status: '1' }),
+          icon: <Receipt className="w-4 h-4" />,
+        },
+        {
           label: 'Satu Sehat',
           href: route('satusehat.interoperabilitas.rajal.encounter'),
           icon: <HeartPulse className="w-4 h-4" />,
@@ -83,9 +88,9 @@ export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
   const isActive = (href) => {
     try {
       const u = new URL(href, window.location.origin);
-      return window.location.pathname === u.pathname;
+      return (url || window.location.pathname).startsWith(u.pathname);
     } catch {
-      return url === href || window.location.pathname === href;
+      return (url || window.location.pathname).startsWith(href);
     }
   };
 

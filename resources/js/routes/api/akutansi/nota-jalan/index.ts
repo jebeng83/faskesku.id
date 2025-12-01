@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::exists
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:20
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:32
 * @route '/api/akutansi/nota-jalan/exists'
 */
 export const exists = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ exists.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::exists
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:20
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:32
 * @route '/api/akutansi/nota-jalan/exists'
 */
 exists.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ exists.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::exists
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:20
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:32
 * @route '/api/akutansi/nota-jalan/exists'
 */
 exists.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ exists.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::exists
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:20
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:32
 * @route '/api/akutansi/nota-jalan/exists'
 */
 exists.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ exists.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::store
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:36
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:49
 * @route '/api/akutansi/nota-jalan'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +60,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::store
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:36
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:49
 * @route '/api/akutansi/nota-jalan'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::store
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:36
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:49
 * @route '/api/akutansi/nota-jalan'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -79,7 +79,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::snapshot
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:104
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:438
 * @route '/api/akutansi/nota-jalan/snapshot'
 */
 export const snapshot = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -94,7 +94,7 @@ snapshot.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::snapshot
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:104
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:438
 * @route '/api/akutansi/nota-jalan/snapshot'
 */
 snapshot.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ snapshot.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::snapshot
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:104
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:438
 * @route '/api/akutansi/nota-jalan/snapshot'
 */
 snapshot.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -112,8 +112,70 @@ snapshot.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
+* @see \App\Http\Controllers\Akutansi\NotaJalanController::pdf
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:807
+* @route '/api/akutansi/nota-jalan/{no_rawat}/pdf'
+*/
+export const pdf = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: pdf.url(args, options),
+    method: 'get',
+})
+
+pdf.definition = {
+    methods: ["get","head"],
+    url: '/api/akutansi/nota-jalan/{no_rawat}/pdf',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Akutansi\NotaJalanController::pdf
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:807
+* @route '/api/akutansi/nota-jalan/{no_rawat}/pdf'
+*/
+pdf.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { no_rawat: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            no_rawat: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        no_rawat: args.no_rawat,
+    }
+
+    return pdf.definition.url
+            .replace('{no_rawat}', parsedArgs.no_rawat.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Akutansi\NotaJalanController::pdf
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:807
+* @route '/api/akutansi/nota-jalan/{no_rawat}/pdf'
+*/
+pdf.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: pdf.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Akutansi\NotaJalanController::pdf
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:807
+* @route '/api/akutansi/nota-jalan/{no_rawat}/pdf'
+*/
+pdf.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: pdf.url(args, options),
+    method: 'head',
+})
+
+/**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::show
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:0
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:651
 * @route '/api/akutansi/nota-jalan/{no_rawat}'
 */
 export const show = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -128,7 +190,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::show
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:0
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:651
 * @route '/api/akutansi/nota-jalan/{no_rawat}'
 */
 show.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -155,7 +217,7 @@ show.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] |
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::show
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:0
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:651
 * @route '/api/akutansi/nota-jalan/{no_rawat}'
 */
 show.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -165,7 +227,7 @@ show.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] |
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::show
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:0
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:651
 * @route '/api/akutansi/nota-jalan/{no_rawat}'
 */
 show.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -229,6 +291,7 @@ const notaJalan = {
     exists: Object.assign(exists, exists),
     store: Object.assign(store, store),
     snapshot: Object.assign(snapshot, snapshot),
+    pdf: Object.assign(pdf, pdf),
     show: Object.assign(show, show),
     destroy: Object.assign(destroy, destroy),
 }

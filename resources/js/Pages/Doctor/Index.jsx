@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
 import DoctorModal from "@/Components/DoctorModal";
 import DoctorDetail from "@/Components/DoctorDetail";
-import { Plus, Search, Pencil, Trash, Stethoscope } from "lucide-react";
+import { Plus, Search, Pencil, Trash, Stethoscope, User as UserIcon } from "lucide-react";
 import { router } from "@inertiajs/react";
 
 const containerVariants = {
@@ -143,7 +143,6 @@ useEffect(() => {
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Manajemen Dokter</h2>
-                <p className="text-gray-600 dark:text-gray-400 mt-1">Kelola data dokter rumah sakit</p>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-3">
@@ -175,37 +174,45 @@ useEffect(() => {
 						variants={itemVariants}
 						className="relative bg-white/95 dark:bg-gray-900/85 rounded-2xl shadow-xl shadow-blue-500/5 overflow-hidden border border-gray-200/70 dark:border-gray-800 col-span-12 lg:col-span-5"
 					>
-						{/* Overlay gradient + top accent bar for premium feel */}
+						{/* Overlay gradient for premium feel */}
 						<div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-purple-500/10" />
-                        <div className="absolute top-2 left-4 right-4 h-2 rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 shadow-sm ring-1 ring-black/5 dark:ring-white/10 z-20" />
 						<div className="relative z-[1]">
-						{/* Search & Filters Header */}
-						<div className="bg-gradient-to-r from-gray-900 via-gray-900 to-gray-800 p-6">
-							<div className="flex items-center justify-between mb-4">
-								<h3 className="text-lg font-semibold text-white">
-									Daftar Dokter ({filteredDoctors.length})
+						{/* Search & Filters Header - Card Header Compact Design */}
+						<div className="relative px-4 py-2.5 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm flex flex-col gap-2">
+							<div className="flex items-center justify-between flex-shrink-0">
+								<h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+									<motion.div
+										className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
+										whileHover={{ rotate: 90, scale: 1.1 }}
+										transition={{ duration: 0.3 }}
+									>
+										<Stethoscope className="w-4 h-4 text-white" />
+									</motion.div>
+									<span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+										Daftar Dokter ({filteredDoctors.length})
+									</span>
 								</h3>
-								<div className="hidden lg:flex items-center gap-2 text-xs text-gray-300">
-									<span className="px-2 py-1 rounded-lg bg-white/10 ring-1 ring-white/20">Spesialis: {filterSpesialis === "all" ? "Semua" : getSpesialisName(filterSpesialis)}</span>
-									<span className="px-2 py-1 rounded-lg bg-white/10 ring-1 ring-white/20">Status: {filterStatus === "all" ? "Semua" : filterStatus === "aktif" ? "Aktif" : "Non-Aktif"}</span>
+								<div className="hidden lg:flex items-center gap-2 text-xs">
+									<span className="px-2 py-1 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 ring-1 ring-gray-200/50 dark:ring-gray-700/50">Spesialis: {filterSpesialis === "all" ? "Semua" : getSpesialisName(filterSpesialis)}</span>
+									<span className="px-2 py-1 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 ring-1 ring-gray-200/50 dark:ring-gray-700/50">Status: {filterStatus === "all" ? "Semua" : filterStatus === "aktif" ? "Aktif" : "Non-Aktif"}</span>
 								</div>
 							</div>
-							<div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+							<div className="grid grid-cols-1 md:grid-cols-5 gap-2 flex-shrink-0">
 								<div className="relative md:col-span-2">
-									<Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+									<Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
 									<input
 										type="text"
 										placeholder="Cari dokter (nama/kode)…"
 										value={searchTerm}
 										onChange={(e) => setSearchTerm(e.target.value)}
-										className="w-full pl-10 pr-4 py-3 bg-gray-800/90 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent"
+										className="w-full pl-8 pr-3 py-2 text-sm bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all"
 									/>
 								</div>
-								<div className="flex items-center gap-3">
+								<div className="flex items-center gap-2 md:col-span-3">
 									<select
 										value={filterSpesialis}
 										onChange={(e) => setFilterSpesialis(e.target.value)}
-										className="flex-1 px-3 py-3 rounded-lg bg-gray-800/90 border border-gray-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+										className="flex-1 px-2 py-2 text-sm rounded-lg bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all"
 									>
 										<option value="all">Semua Spesialis</option>
 										{Array.isArray(spesialisList) && spesialisList.map((s) => (
@@ -215,7 +222,7 @@ useEffect(() => {
 									<select
 										value={filterStatus}
 										onChange={(e) => setFilterStatus(e.target.value)}
-										className="px-3 py-3 rounded-lg bg-gray-800/90 border border-gray-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+										className="flex-1 px-2 py-2 text-sm rounded-lg bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all"
 									>
 										<option value="all">Semua Status</option>
 										<option value="aktif">Aktif</option>
@@ -321,10 +328,31 @@ useEffect(() => {
 					</motion.div>
 
 					{/* Right Side - Doctor Detail */}
-					<motion.div variants={itemVariants} className="col-span-12 lg:col-span-7">
-						<div className="relative overflow-hidden rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/85 backdrop-blur-xl p-6 shadow-xl shadow-blue-500/5">
-							<div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-							<div className="relative">
+					<motion.div
+						variants={itemVariants}
+						className="relative bg-white/95 dark:bg-gray-900/85 rounded-2xl shadow-xl shadow-blue-500/5 overflow-hidden border border-gray-200/70 dark:border-gray-800 col-span-12 lg:col-span-7"
+					>
+						{/* Overlay gradient for premium feel */}
+						<div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-purple-500/10" />
+						<div className="relative z-[1]">
+							{/* Header - Card Header Compact Design */}
+							<div className="relative px-4 py-2.5 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm flex items-center">
+								<h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+									<motion.div
+										className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
+										whileHover={{ rotate: 90, scale: 1.1 }}
+										transition={{ duration: 0.3 }}
+									>
+										<UserIcon className="w-4 h-4 text-white" />
+									</motion.div>
+									<span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+										Informasi Dokter
+									</span>
+								</h3>
+							</div>
+
+							{/* Doctor Detail Content */}
+							<div className="flex-1">
 								<DoctorDetail doctor={selectedDoctor} />
 							</div>
 						</div>

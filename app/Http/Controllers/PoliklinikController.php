@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Poliklinik;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 
 class PoliklinikController extends Controller
@@ -122,5 +123,38 @@ class PoliklinikController extends Controller
         $statusText = $validated['status'] === '1' ? 'diaktifkan' : 'dinonaktifkan';
 
         return to_route('poliklinik.index', [], 303)->with('success', "Poliklinik berhasil {$statusText}");
+    }
+
+    /**
+     * Generate auto code for poliklinik dengan format UXXXX
+     */
+    public function generateKode()
+    {
+        try {
+            // Get the last poliklinik code dengan format UXXXX
+            // Urutkan berdasarkan angka setelah "U" secara numerik, bukan string
+            $lastPoliklinik = Poliklinik::where('kd_poli', 'like', 'U%')
+                ->orderByRaw('CAST(SUBSTRING(kd_poli, 2) AS UNSIGNED) DESC')
+                ->first();
+            
+            if (!$lastPoliklinik) {
+                $newCode = 'U0001';
+            } else {
+                // Extract number from last code (format: UXXXX)
+                $lastNumber = (int) substr($lastPoliklinik->kd_poli, 1);
+                $newNumber = $lastNumber + 1;
+                $newCode = 'U' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+            }
+
+            return response()->json([
+                'success' => true,
+                'kode' => $newCode
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal generate kode poliklinik'
+            ], 500);
+        }
     }
 }

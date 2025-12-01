@@ -3,6 +3,7 @@ import { route } from 'ziggy-js';
 import SearchableSelect from '../../../Components/SearchableSelect.jsx';
 import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
 
 export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) {
     // UI/UX variants (guided by docs/UI_UX_IMPROVEMENTS_GUIDE.md)
@@ -31,7 +32,9 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
         rest: { scale: 1, y: 0 },
         hover: prefersReducedMotion ? { scale: 1, y: 0 } : { scale: 1.01, y: -2, transition: { duration: 0.25, ease: 'easeOut' } }
     };
-    const now = useMemo(() => new Date(), []);
+    // Gunakan helper untuk mendapatkan tanggal/waktu dengan timezone yang benar
+    const nowDateString = todayDateString();
+    const nowTimeString = nowDateTimeString().split(' ')[1].substring(0, 5);
     // Template kustom yang lebih rinci
     const customTemplates = useMemo(() => ([
         {
@@ -503,8 +506,8 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
         return map;
     }, [customTemplates]);
     const [formData, setFormData] = useState({
-        tgl_perawatan: now.toISOString().slice(0, 10),
-        jam_rawat: now.toTimeString().slice(0, 5),
+        tgl_perawatan: nowDateString,
+        jam_rawat: nowTimeString,
         suhu_tubuh: '',
         tensi: '',
         nadi: '',
@@ -1389,7 +1392,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                 </div>
 
                 {/* Baris bawah: card lain tetap penuh lebar seperti sebelumnya */}
-                <div className="space-y-4 md:space-y-6 mt-4 md:mt-6">
+                <div className="space-y-3 md:space-y-4 mt-3 md:mt-4">
                     {/* Alergi & Petugas Pemeriksa diletakkan tepat di bawah Informasi Dasar sebagai card penuh lebar */}
                     <motion.div variants={itemVariants} className="relative z-10 overflow-visible rounded-2xl bg-white/85 dark:bg-gray-800/85 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 p-4 md:p-6">
                         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
@@ -1733,14 +1736,17 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                                 if (parts.length === 3) {
                                                     if (parts[0].length === 2 && parts[2].length === 4) {
                                                         const dt = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
-                                                        return dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+                                                        const tz = getAppTimeZone();
+                                                        return dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', timeZone: tz });
                                                     }
                                                     const dt = new Date(d);
-                                                    return dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+                                                    const tz = getAppTimeZone();
+                                                    return dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', timeZone: tz });
                                                 }
                                             }
                                         const dt = new Date(d);
-                                        return dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+                                        const tz = getAppTimeZone();
+                                        return dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', timeZone: tz });
                                     } catch { return String(d); }
                                 };
                                     
@@ -1776,7 +1782,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                         } catch { return String(d); }
                                     };
                                     
-                                const todayStr = fmtIdDate(new Date());
+                                const todayStr = fmtIdDate(new Date()); // fmtIdDate sudah menggunakan timezone dari getAppTimeZone
                                     const tglEstStr = tglEstRujuk ? fmtIdDateShort(tglEstRujuk) : '-';
                                     
                                     // Hitung tanggal validitas (90 hari dari tglEstRujuk)
@@ -1800,7 +1806,14 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                             }
                                             const tglValiditas = new Date(tglEstDate);
                                             tglValiditas.setDate(tglValiditas.getDate() + 90);
-                                            tglValiditasStr = fmtIdDateShort(tglValiditas.toISOString().split('T')[0]);
+                                            // Gunakan helper untuk mendapatkan tanggal dengan timezone yang benar
+                                            const tz = getAppTimeZone();
+                                            const dateParts = tglValiditas.toLocaleDateString('en-GB', { timeZone: tz }).split('/');
+                                            if (dateParts.length === 3) {
+                                                tglValiditasStr = fmtIdDateShort(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
+                                            } else {
+                                                tglValiditasStr = fmtIdDateShort(tglValiditas.toISOString().split('T')[0]);
+                                            }
                                         } catch (e) {
                                             tglValiditasStr = '-';
                                         }
@@ -2179,7 +2192,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
             {bridgingOpen && (
                 <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto">
                     <div className="absolute inset-0 bg-black/50" onClick={closeBridgingModal}></div>
-                    <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-7xl mx-4 my-8 flex flex-col max-h-[88vh] overflow-hidden">
+                    <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-full mx-2 sm:mx-4 my-4 sm:my-8 flex flex-col max-h-[88vh] overflow-hidden">
                         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                             <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">Bridging PCare</h3>
                             <button onClick={closeBridgingModal} className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white">
@@ -2188,12 +2201,12 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                 </svg>
                             </button>
                         </div>
-                        <div className="p-4 md:p-6 space-y-6 overflow-y-auto flex-1">
+                        <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1 overflow-x-hidden">
                             {/* 1. Pendaftaran PCare */}
-                            <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg p-3 md:p-4">
+                            <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg p-3 sm:p-4 overflow-x-hidden">
                                 <h4 className="text-sm font-semibold text-indigo-800 dark:text-indigo-300 mb-2">Pendaftaran PCare</h4>
                                 {pcarePendaftaran ? (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm text-gray-700 dark:text-gray-200">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 sm:gap-x-4 gap-y-2 text-sm text-gray-700 dark:text-gray-200">
                                         <div><span className="font-medium">No Rawat:</span> {pcarePendaftaran.no_rawat}</div>
                                         <div><span className="font-medium">No Kartu:</span> {pcarePendaftaran.noKartu || pcarePendaftaran.no_kartu || '-'}</div>
                                         <div><span className="font-medium">Tgl Daftar:</span> {pcarePendaftaran.tglDaftar || '-'}</div>
@@ -2218,7 +2231,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                         {kunjunganPreview && (
                                             <div className="space-y-4 md:space-y-5">
                                                 {/* 1 baris: No Kartu BPJS, Tanggal Daftar, KD Poli, KD Dokter */}
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
                                                     <div>
                                                         <label className="block text-xs font-medium mb-1">No Kartu BPJS</label>
                                                         <input type="text" value={kunjunganPreview.noKartu || ''} onChange={(e) => updateKunjunganField('noKartu', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
@@ -2248,7 +2261,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                                 </div>
 
                                                 {/* 1 baris: Keluhan, Anamnesa */}
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                                                     <div>
                                                         <label className="block text-xs font-medium mb-1">Keluhan</label>
                                                         <textarea value={kunjunganPreview.keluhan || ''} onChange={(e) => updateKunjunganField('keluhan', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm"></textarea>
@@ -2260,7 +2273,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                                 </div>
 
                                                 {/* 1 baris: Sistole, Diastole, Berat, Tinggi */}
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
                                                     <div>
                                                         <label className="block text-xs font-medium mb-1">Sistole</label>
                                                         <input type="number" value={kunjunganPreview.sistole ?? ''} onChange={(e) => updateKunjunganField('sistole', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
@@ -2280,7 +2293,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                                 </div>
 
                                                 {/* 1 baris: Resp Rate, Heart Rate, Lingkar Perut, Suhu */}
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
                                                     <div>
                                                         <label className="block text-xs font-medium mb-1">Resp Rate</label>
                                                         <input type="number" value={kunjunganPreview.respRate ?? ''} onChange={(e) => updateKunjunganField('respRate', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
@@ -2300,7 +2313,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                                 </div>
 
                                                 {/* 1 baris: Tanggal Pulang, Poli Rujuk Internal, Terapi Non Obat, BMHP */}
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
                                                     <div>
                                                         <label className="block text-xs font-medium mb-1">Tanggal Pulang</label>
                                                         <input type="date" value={toInputDate(kunjunganPreview.tglPulang)} onChange={(e) => updateKunjunganField('tglPulang', fromInputDate(e.target.value))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
@@ -2320,7 +2333,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                                 </div>
 
                                                 {/* 1 baris: Status Pulang, Diagnosa Utama, Diagnosa 2, Diagnosa 3 */}
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
                                                     <div>
                                                         <label className="block text-xs font-medium mb-1">Status Pulang (kdStatusPulang)</label>
                                                         <SearchableSelect
@@ -2404,7 +2417,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                                 </div>
 
                                                 {/* 1 baris: Alergi Makan, Alergi Udara, Alergi Obat, KD Prognosa, KD Sadar */}
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
                                                     <div>
                                                         <label className="block text-xs font-medium mb-1">Alergi Makan</label>
                                                         <SearchableSelect
@@ -2523,7 +2536,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                 {rujukanActive && (
                                     <div className="space-y-3 text-sm">
                                         {/* Baris 1: Tanggal Estimasi Rujuk, Spesialis, Sub Spesialis */}
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
                                             <div>
                                                 <label className="block text-xs font-medium mb-1">Tanggal Estimasi Rujuk</label>
                                                 <input type="date" value={rujukForm.tglEstRujuk} onChange={(e) => setRujukForm((p) => ({ ...p, tglEstRujuk: e.target.value }))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
@@ -2763,9 +2776,9 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Mulai dengan menambahkan pemeriksaan pertama.</p>
                         </div>
                     ) : (
-                        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full text-sm">
+                        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden w-full">
+                            <div className="overflow-x-auto w-full max-w-full">
+                                <table className="w-full text-sm table-auto">
                                     <thead className="bg-gray-50 dark:bg-gray-700/50">
                                         <tr className="text-left text-gray-600 dark:text-gray-300">
                                             <th className="px-4 py-3 font-medium">Tanggal</th>
@@ -2782,11 +2795,15 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                         {list.map((row, idx) => (
                                             <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                                                 <td className="px-4 py-3 text-gray-900 dark:text-white font-medium">
-                                                    {new Date(row.tgl_perawatan).toLocaleDateString('id-ID', {
-                                                        day: '2-digit',
-                                                        month: 'short',
-                                                        year: 'numeric'
-                                                    })}
+                                                    {(() => {
+                                                        const tz = getAppTimeZone();
+                                                        return new Date(row.tgl_perawatan).toLocaleDateString('id-ID', {
+                                                            timeZone: tz,
+                                                            day: '2-digit',
+                                                            month: 'short',
+                                                            year: 'numeric'
+                                                        });
+                                                    })()}
                                                 </td>
                                                 <td className="px-4 py-3 text-gray-900 dark:text-white font-mono">{String(row.jam_rawat).substring(0,5)}</td>
                                                 <td className="px-4 py-3 text-gray-700 dark:text-gray-300">

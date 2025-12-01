@@ -1,5 +1,7 @@
 import React from "react";
 import axios from "axios";
+import { Link, router } from "@inertiajs/react";
+import { route } from "ziggy-js";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Receipt,
@@ -20,9 +22,11 @@ import {
     AlertCircle,
     Database,
     RefreshCw,
+    CreditCard,
 } from "lucide-react";
 import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
 import SearchableSelect from "@/Components/SearchableSelect";
+import { todayDateString, getAppTimeZone, nowDateTimeString } from "@/tools/datetime";
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -58,6 +62,105 @@ const currency = new Intl.NumberFormat("id-ID", {
 });
 const number = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 2 });
 
+// Fungsi helper untuk membulatkan angka ke n desimal
+function round(value, decimals = 2) {
+    return Math.round((value + Number.EPSILON) * Math.pow(10, decimals)) / Math.pow(10, decimals);
+}
+
+// Fungsi untuk normalisasi tanggal ke format yyyy-MM-dd untuk input type="date"
+// Menggunakan timezone aplikasi (Asia/Jakarta) untuk konsistensi
+function normalizeDateForInput(dateValue, useAppTimezone = true) {
+    if (!dateValue) return '';
+    // Jika sudah format yyyy-MM-dd, return langsung
+    if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+        return dateValue;
+    }
+    // Jika format ISO datetime string, ambil bagian tanggal saja dengan timezone
+    if (typeof dateValue === 'string' && dateValue.includes('T')) {
+        if (useAppTimezone) {
+            try {
+                const tz = getAppTimeZone();
+                const date = new Date(dateValue);
+                return date.toLocaleDateString('en-CA', { timeZone: tz });
+            } catch (e) {
+                // Fallback ke split jika parsing gagal
+                return dateValue.split('T')[0];
+            }
+        }
+        return dateValue.split('T')[0];
+    }
+    // Jika Date object, konversi ke yyyy-MM-dd dengan timezone
+    if (dateValue instanceof Date) {
+        if (useAppTimezone) {
+            try {
+                const tz = getAppTimeZone();
+                return dateValue.toLocaleDateString('en-CA', { timeZone: tz });
+            } catch (e) {
+                // Fallback ke ISO jika parsing gagal
+                return dateValue.toISOString().slice(0, 10);
+            }
+        }
+        return dateValue.toISOString().slice(0, 10);
+    }
+    // Coba parse sebagai tanggal
+    try {
+        const date = new Date(dateValue);
+        if (!isNaN(date.getTime())) {
+            if (useAppTimezone) {
+                try {
+                    const tz = getAppTimeZone();
+                    return date.toLocaleDateString('en-CA', { timeZone: tz });
+                } catch (e) {
+                    // Fallback ke ISO jika parsing gagal
+                    return date.toISOString().slice(0, 10);
+                }
+            }
+            return date.toISOString().slice(0, 10);
+        }
+    } catch (e) {
+        // Ignore
+    }
+    return '';
+}
+
+// Fungsi untuk format tanggal menjadi format Indonesia (DD/MM/YYYY)
+function formatTanggal(dateString) {
+    if (!dateString) return "-";
+    
+    try {
+        // Handle berbagai format input
+        let date;
+        
+        // Jika format ISO dengan timezone (2025-11-24T17:00:00.000000Z)
+        if (dateString.includes("T")) {
+            date = new Date(dateString);
+        }
+        // Jika format YYYY-MM-DD
+        else if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            date = new Date(dateString + "T00:00:00");
+        }
+        // Format lainnya, coba parse langsung
+        else {
+            date = new Date(dateString);
+        }
+        
+        // Validasi apakah date valid
+        if (isNaN(date.getTime())) {
+            return dateString; // Return as-is jika tidak bisa di-parse
+        }
+        
+        // Format menjadi DD/MM/YYYY
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = date.getFullYear();
+        
+        return `${day}/${month}/${year}`;
+    } catch (e) {
+        // Jika error, return as-is
+        return dateString;
+    }
+}
+
 function Field({ label, children, icon: Icon }) {
     return (
         <div className="space-y-2">
@@ -73,7 +176,7 @@ function Field({ label, children, icon: Icon }) {
 function BillingForm({ initial = {}, statusOptions = [], onSubmit, onCancel }) {
     const [form, setForm] = React.useState({
         no_rawat: initial.no_rawat || "",
-        tgl_byr: initial.tgl_byr || new Date().toISOString().slice(0, 10),
+        tgl_byr: normalizeDateForInput(initial.tgl_byr) || todayDateString(),
         no: initial.no || "",
         nm_perawatan: initial.nm_perawatan || "",
         pemisah: initial.pemisah ?? "-",
@@ -387,76 +490,180 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
     };
 
     const loadData = async () => {
-        if (!noRawat) return;
+        if (!noRawat || noRawat.trim() === '') {
+            console.log('loadData: noRawat kosong, skip loading');
+            return;
+        }
+        
+        console.log('loadData: Memuat data untuk no_rawat:', noRawat);
         setLoading(true);
         setError(null);
         try {
             // Header info invoice (visit + nota)
             // Gunakan encodeURI agar karakter '/' pada no_rawat tidak di-encode menjadi %2F
             const invUrl = buildUrl(`/akutansi/invoice/${encodeURI(noRawat)}`);
+            console.log('loadData: Fetching invoice dari:', invUrl);
             const invRes = await axios.get(invUrl, {
                 headers: { Accept: "application/json" },
             });
             setInvoice(invRes.data);
+            console.log('loadData: Invoice data diterima:', invRes.data);
 
             // Items untuk CRUD (butuh noindex)
+            // Tambahkan filter tanggal hari ini untuk memastikan hanya data hari ini yang ditampilkan
+            const today = todayDateString();
             const apiUrl = buildUrl("/api/akutansi/billing", {
                 no_rawat: noRawat,
                 q,
                 status: statusFilter,
+                start_date: today, // Filter mulai dari tanggal hari ini
+                end_date: today,   // Filter sampai tanggal hari ini
             });
+            console.log('loadData: Fetching billing dari:', apiUrl);
             const apiRes = await axios.get(apiUrl);
-            const baseItems = apiRes.data.items || [];
+            console.log('loadData: Billing response:', {
+                itemsCount: apiRes.data.items?.length || 0,
+                items: apiRes.data.items,
+                summary: apiRes.data.summary
+            });
+            let baseItems = apiRes.data.items || [];
+            
+            // Normalisasi no_rawat untuk perbandingan (decode jika ada encoding)
+            const normalizedNoRawat = decodeURIComponent(noRawat || '').trim();
+            
+            // Validasi: Pastikan hanya item dengan no_rawat yang sesuai yang ditampilkan
+            // Filter ketat untuk mencegah duplikasi dari tanggal lain
+            baseItems = baseItems.filter((item) => {
+                // Normalisasi no_rawat dari item
+                const itemNoRawat = (item.no_rawat || '').trim();
+                
+                // Pastikan no_rawat sesuai dengan yang diminta (perbandingan case-sensitive)
+                if (itemNoRawat !== normalizedNoRawat) {
+                    console.warn(`Item dengan no_rawat tidak sesuai diabaikan:`, {
+                        expected: normalizedNoRawat,
+                        actual: itemNoRawat,
+                        item: item
+                    });
+                    return false;
+                }
+                return true;
+            });
+            
+            // Deduplication: Hapus item duplikat berdasarkan kombinasi field unik
+            // PRIORITAS: Gunakan kombinasi no + status + tgl_byr + nm_perawatan + biaya + jumlah + tambahan
+            // karena data bisa duplikat dengan noindex berbeda di database
+            const seenItems = new Map();
+            const deduplicatedItems = [];
+            
+            baseItems.forEach((item) => {
+                // Normalisasi field untuk konsistensi
+                const tglByr = String(item.tgl_byr || '').trim();
+                const no = String(item.no || '').trim();
+                const status = String(item.status || '').trim();
+                const nmPerawatan = String(item.nm_perawatan || '').trim();
+                const biaya = Number(item.biaya || 0);
+                const jumlah = Number(item.jumlah || 0);
+                const tambahan = Number(item.tambahan || 0);
+                
+                // Buat key unik berdasarkan kombinasi field (bukan noindex karena bisa berbeda untuk duplikat)
+                const uniqueKey = `${no}_${status}_${tglByr}_${nmPerawatan}_${biaya}_${jumlah}_${tambahan}`;
+                
+                // Cek apakah item sudah pernah muncul
+                if (!seenItems.has(uniqueKey)) {
+                    seenItems.set(uniqueKey, item); // Simpan item pertama yang ditemukan
+                    deduplicatedItems.push(item);
+                } else {
+                    const existingItem = seenItems.get(uniqueKey);
+                    console.warn('Item duplikat diabaikan:', {
+                        uniqueKey,
+                        existing_noindex: existingItem?.noindex,
+                        duplicate_noindex: item.noindex,
+                        item: {
+                            no: item.no,
+                            status: item.status,
+                            nm_perawatan: item.nm_perawatan,
+                            tgl_byr: item.tgl_byr,
+                            biaya: item.biaya,
+                            jumlah: item.jumlah,
+                            tambahan: item.tambahan,
+                        }
+                    });
+                }
+            });
+            
+            baseItems = deduplicatedItems;
+            const duplicatesRemoved = (apiRes.data.items?.length || 0) - baseItems.length;
+            console.log(`✅ Deduplication: ${apiRes.data.items?.length || 0} items -> ${baseItems.length} items (${duplicatesRemoved} duplikat dihapus)`);
+            
+            if (duplicatesRemoved > 0) {
+                console.warn(`⚠️ Peringatan: ${duplicatesRemoved} item duplikat ditemukan dan dihapus. Periksa database untuk data duplikat.`);
+            }
+            
             const baseSummary = apiRes.data.summary || {
                 by_status: {},
                 grand_total: 0,
             };
-            setItems(baseItems);
-            setSummary(baseSummary);
-
-            // Jika mode preview (belum ada snapshot billing), lengkapi dengan data obat dari resep
-            if (baseItems.length > 0 && baseItems[0]?.source === "preview") {
-                try {
-                    setMergingObatPreview(true);
-                    setMergeError(null);
-                    const { extraItems, extraSummary } = await buildObatPreview(
-                        noRawat
-                    );
-                    if (extraItems.length > 0) {
-                        // Gabungkan items dan summary
-                        setItems((prev) => [...prev, ...extraItems]);
-                        setSummary((prev) => {
-                            const byStatus = { ...(prev?.by_status || {}) };
-                            const existing = byStatus["Obat"] || {
-                                total: 0,
-                                count: 0,
-                            };
-                            byStatus["Obat"] = {
-                                total:
-                                    Number(existing.total || 0) +
-                                    Number(extraSummary.total || 0),
-                                count:
-                                    Number(existing.count || 0) +
-                                    Number(extraSummary.count || 0),
-                            };
-                            return {
-                                by_status: byStatus,
-                                grand_total:
-                                    Number(prev?.grand_total || 0) +
-                                    Number(extraSummary.total || 0),
-                            };
-                        });
-                    }
-                } catch (merErr) {
-                    // Jangan gagal total, cukup catat error agar admin tahu
-                    setMergeError(
-                        merErr?.message ||
-                            "Gagal memuat preview obat dari resep"
-                    );
-                } finally {
-                    setMergingObatPreview(false);
+            
+            // Recalculate summary berdasarkan items yang sudah difilter
+            const recalculatedSummary = baseItems.reduce((acc, item) => {
+                const status = item.status || '-';
+                const totalbiaya = Number(item.totalbiaya || 0);
+                if (!acc.by_status[status]) {
+                    acc.by_status[status] = { count: 0, total: 0 };
                 }
-            }
+                acc.by_status[status].count += 1;
+                acc.by_status[status].total += totalbiaya;
+                acc.grand_total += totalbiaya;
+                return acc;
+            }, { by_status: {}, grand_total: 0 });
+            
+            console.log('loadData: Setelah filter, baseItems count:', baseItems.length);
+            console.log('loadData: Recalculated summary:', recalculatedSummary);
+            console.log('loadData: Sample items totalbiaya:', baseItems.slice(0, 3).map(i => ({ 
+                nm: i.nm_perawatan, 
+                status: i.status, 
+                totalbiaya: i.totalbiaya 
+            })));
+            
+            // DEBUG: Log item obat yang diterima dari backend
+            const obatItemsFromBackend = baseItems.filter(item => item.status === 'Obat');
+            console.log('🔍 DEBUG: Item obat dari backend', {
+                total_obat_items: obatItemsFromBackend.length,
+                items: obatItemsFromBackend.map(item => ({
+                    no: item.no,
+                    kode_brng: item.kode_brng,
+                    nm_perawatan: item.nm_perawatan,
+                    no_faktur: item.no_faktur,
+                    tgl_byr: item.tgl_byr,
+                    jam: item.jam,
+                    jumlah: item.jumlah,
+                    totalbiaya: item.totalbiaya,
+                    source: item.source,
+                })),
+            });
+            
+            // Set items - useEffect akan menghitung ulang summary secara otomatis
+            setItems(baseItems);
+            
+            console.log('loadData: Data berhasil dimuat:', {
+                itemsCount: baseItems.length,
+                expectedGrandTotal: round(recalculatedSummary.grand_total, 2)
+            });
+            
+            // Refresh status permintaan jika tab aktif (setelah billing data ter-load)
+            // Note: useEffect akan handle refresh otomatis saat items.length berubah
+
+            // PERBAIKAN: Nonaktifkan buildObatPreview karena mengambil data dari resep yang belum diserahkan
+            // Data obat sudah diambil di backend dari detail_pemberian_obat yang berarti sudah diserahkan
+            // Item obat hanya akan tampil setelah diserahkan (setelah masuk ke detail_pemberian_obat)
+            // 
+            // Catatan: buildObatPreview mengambil dari API resep yang bisa termasuk resep belum diserahkan,
+            // sehingga menyebabkan item obat muncul padahal belum diserahkan.
+            // 
+            // const isPreviewMode = baseItems.length === 0 || (baseItems.length > 0 && baseItems[0]?.source === "preview");
+            // if (isPreviewMode) {
+            //     ... buildObatPreview code disabled ...
+            // }
         } catch (e) {
             setError(
                 e?.response?.data?.message || e?.message || "Gagal memuat data"
@@ -522,9 +729,43 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             return false;
         }
         // Validasi pembayaran & piutang dasar
-        if ((Number(bayar) || 0) > (Number(totalWithPpn) || 0)) {
+        const nominalBayar = Number(bayar) || 0;
+        const nominalPiutang = Number(piutang) || 0;
+        const totalTagihan = Number(totalWithPpn) || 0;
+        
+        // Hitung uang kembali dan piutang yang seharusnya
+        const uangKembaliHitung = nominalBayar > totalTagihan ? nominalBayar - totalTagihan : 0;
+        const piutangHitung = nominalBayar < totalTagihan ? totalTagihan - nominalBayar : 0;
+        
+        // Validasi: jika ada piutang, nominal piutang harus sesuai dengan perhitungan
+        if (nominalPiutang > 0 && Math.abs(nominalPiutang - piutangHitung) > 0.01) {
+            notify(
+                `Piutang yang diisi (${currency.format(nominalPiutang)}) tidak sesuai dengan perhitungan (${currency.format(piutangHitung)}).`
+            );
+            return false;
+        }
+        
+        // Validasi: jika ada uang kembali, harus sesuai dengan perhitungan
+        if (uangKembaliHitung > 0 && nominalPiutang > 0) {
+            notify(
+                "Tidak boleh ada uang kembali dan piutang sekaligus. Periksa kembali nominal bayar."
+            );
+            return false;
+        }
+        
+        // Validasi: uang kembali harus = 0 sebelum menyimpan (sesuai requirement)
+        if (uangKembaliHitung > 0) {
             notify(
                 "Nominal bayar melebihi total tagihan + PPN. Atur kembali agar uang kembali = 0 sebelum menyimpan."
+            );
+            return false;
+        }
+        
+        // Validasi: bayar + piutang harus sama dengan total tagihan
+        const totalPembayaran = nominalBayar + nominalPiutang;
+        if (Math.abs(totalPembayaran - totalTagihan) > 0.01) {
+            notify(
+                `Jumlah Bayar (${currency.format(nominalBayar)}) + Piutang (${currency.format(nominalPiutang)}) harus sama dengan Total Tagihan (${currency.format(totalTagihan)}).`
             );
             return false;
         }
@@ -643,7 +884,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                 noindex: `preview-obat-${val.kode_brng}`,
                 source: "preview",
                 no_rawat: rawatNo,
-                tgl_byr: val.tgl_byr || "",
+                tgl_byr: normalizeDateForInput(val.tgl_byr) || todayDateString(),
                 no: noKeterangan || "-",
                 nm_perawatan: val.nama_brng || val.kode_brng,
                 pemisah: "-",
@@ -665,6 +906,8 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         if (!noRawat) return;
         setLoadingRequests(true);
         try {
+            // Ambil permintaan lab, radiologi, dan resep
+            // Backend sudah memfilter berdasarkan billing/preview (hanya menampilkan yang sesuai tagihan nota)
             const [labRes, radRes, resepRes] = await Promise.all([
                 axios.get(`/api/permintaan-lab/rawat/${encodeURI(noRawat)}`),
                 axios.get(
@@ -698,49 +941,73 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             const createNotaRes = await axios.post("/api/akutansi/nota-jalan", {
                 no_rawat: payload.no_rawat,
                 tanggal: payload.tgl_byr,
-                jam: new Date().toTimeString().slice(0, 8),
+                jam: nowDateTimeString().split(' ')[1] || new Date().toTimeString().slice(0, 8),
             });
             noNota = createNotaRes?.data?.no_nota || noNota;
         } catch (e) {
-            console.warn("Gagal membuat nota_jalan:", e?.message);
+            const errorMsg = e?.response?.data?.message || e?.message || "Gagal membuat nota_jalan";
+            console.error("Gagal membuat nota_jalan:", errorMsg, e?.response?.data);
+            notify(`Gagal membuat nota_jalan: ${errorMsg}`);
+            // Jangan lanjut jika gagal membuat nota_jalan
+            return;
         }
 
         // 3) Stage jurnal dari total billing pasien ini
+        let stagingSuccess = false;
         try {
-            await axios.post("/api/akutansi/jurnal/stage-from-billing", {
+            const stageRes = await axios.post("/api/akutansi/jurnal/stage-from-billing", {
                 no_rawat: payload.no_rawat,
             });
+            stagingSuccess = true;
         } catch (e) {
-            notify(
-                e?.response?.data?.message ||
-                    "Gagal menyiapkan staging jurnal. Pastikan mapping rekening debet/kredit di config/akutansi.php."
-            );
+            const errorMsg = e?.response?.data?.message ||
+                "Gagal menyiapkan staging jurnal. Pastikan mapping rekening debet/kredit di config/akutansi.php.";
+            notify(errorMsg);
+            console.error("Error staging jurnal:", e?.response?.data);
+            // Jangan lanjut ke posting jika staging gagal
+            return;
         }
 
         // 4) Posting jurnal (balik) dengan no_bukti = no_nota (jika ada)
-        try {
-            const bukti = noNota || `BILL-${payload.no_rawat}`;
-            const postRes = await axios.post(
-                "/api/akutansi/jurnal/post-staging",
-                {
-                    no_bukti: bukti,
-                    jenis: "U",
-                    keterangan: `Posting otomatis Billing ${payload.no_rawat}`,
+        // Hanya posting jika staging berhasil
+        if (stagingSuccess) {
+            try {
+                const bukti = noNota || `BILL-${payload.no_rawat}`;
+                const postRes = await axios.post(
+                    "/api/akutansi/jurnal/post-staging",
+                    {
+                        no_bukti: bukti,
+                        jenis: "U",
+                        keterangan: `Posting otomatis Billing ${payload.no_rawat}`,
+                    }
+                );
+                if (postRes?.data?.no_jurnal) {
+                    notify(`Posting jurnal berhasil: ${postRes.data.no_jurnal}`);
                 }
-            );
-            if (postRes?.data?.no_jurnal) {
-                notify(`Posting jurnal berhasil: ${postRes.data.no_jurnal}`);
+            } catch (e) {
+                const errorMsg = e?.response?.data?.message ||
+                    "Posting jurnal gagal. Periksa keseimbangan debet/kredit atau data staging.";
+                notify(errorMsg);
+                console.error("Error posting jurnal:", e?.response?.data);
+                // Log detail error untuk debugging
+                if (e?.response?.status === 400) {
+                    console.error("Detail error 400:", {
+                        status: e?.response?.status,
+                        data: e?.response?.data,
+                        message: e?.response?.data?.message,
+                    });
+                }
             }
-        } catch (e) {
-            notify(
-                e?.response?.data?.message ||
-                    "Posting jurnal gagal. Periksa keseimbangan debet/kredit atau data staging."
-            );
         }
 
         // Refresh UI
         setShowCreate(false);
         await loadData();
+        
+        // Refresh status permintaan jika tab aktif
+        if (activeTab === "permintaan") {
+            await loadRequests();
+        }
     };
 
     // Flow: Snapshot billing dari pilihan kategori, buat nota_jalan, lalu stage & post jurnal
@@ -754,6 +1021,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         piutang,
         akunBayar,
         akunPiutang,
+        setBayar, // Tambahkan setBayar untuk menyesuaikan nominal bayar setelah snapshot
     }) => {
         const ok = await validateBeforeSnapshot({
             selectedCategories,
@@ -799,11 +1067,25 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         });
 
         // Filter items yang sedang ditampilkan di halaman Billing sesuai status pilih
+        // Pastikan tidak ada duplikasi berdasarkan kombinasi no + status
+        const seenItems = new Set();
         const selectedItems = (items || [])
-            .filter((it) => allowedStatus[it?.status ?? "-"])
+            .filter((it) => {
+                // Filter berdasarkan status yang diizinkan
+                if (!allowedStatus[it?.status ?? "-"]) {
+                    return false;
+                }
+                // Cegah duplikasi berdasarkan kombinasi no + status
+                const key = `${it.no || ''}_${it.status || '-'}`;
+                if (seenItems.has(key)) {
+                    return false;
+                }
+                seenItems.add(key);
+                return true;
+            })
             .map((it) => ({
                 no_rawat: noRawat,
-                tgl_byr: it.tgl_byr || new Date().toISOString().slice(0, 10),
+                tgl_byr: normalizeDateForInput(it.tgl_byr) || todayDateString(),
                 no: it.no || null,
                 nm_perawatan: it.nm_perawatan || (it.no ?? "Item"),
                 pemisah: it.pemisah || "-",
@@ -812,6 +1094,12 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                 tambahan: Number(it.tambahan || 0),
                 status: it.status || "-",
             }));
+        
+        // Hitung subtotal dari selectedItems untuk validasi
+        const calculatedSubtotal = selectedItems.reduce((sum, it) => {
+            const total = (Number(it.biaya || 0) * Number(it.jumlah || 1)) + Number(it.tambahan || 0);
+            return sum + total;
+        }, 0);
 
         try {
             const snapRes = await axios.post(
@@ -830,14 +1118,34 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                     gt
                 )}.`
             );
-            if (Math.round(gt) !== Math.round(Number(subtotal || 0))) {
-                notify(
-                    `Peringatan: Total snapshot (${currency.format(
-                        gt
-                    )}) berbeda dengan perhitungan UI (${currency.format(
-                        subtotal || 0
-                    )}). Pastikan filter kategori dan data sumber konsisten.`
-                );
+            
+            // PERBAIKAN: Reload data dari backend setelah snapshot untuk mendapatkan total yang benar
+            // Ini memastikan bahwa frontend menggunakan total yang sama dengan backend
+            await loadData();
+            
+            // PERBAIKAN: Jika total snapshot berbeda dengan perhitungan UI, peringatkan user
+            // dan sesuaikan nominal bayar jika diperlukan
+            if (Math.abs(gt - calculatedSubtotal) > 0.01) {
+                const difference = gt - calculatedSubtotal;
+                console.warn('Detail perbedaan total snapshot vs UI:', {
+                    snapshotTotal: gt,
+                    uiTotal: calculatedSubtotal,
+                    difference: difference,
+                    selectedItemsCount: selectedItems.length,
+                });
+                
+                // Jika total snapshot lebih kecil dari UI, dan bayar sudah diisi sesuai UI total,
+                // sesuaikan bayar ke total snapshot untuk menghindari error validasi
+                if (difference < 0 && Number(bayar) > 0) {
+                    const newTotalWithPpn = Math.round(gt * (1 + (Number(ppnPercent) || 0) / 100));
+                    if (Math.abs(Number(bayar) - (calculatedSubtotal * (1 + (Number(ppnPercent) || 0) / 100))) < 0.01) {
+                        // User memasukkan bayar sesuai dengan total UI lama, sesuaikan ke total baru
+                        setBayar(newTotalWithPpn);
+                        notify(
+                            `Total tagihan berubah setelah snapshot (${currency.format(calculatedSubtotal)} -> ${currency.format(gt)}). Nominal bayar telah disesuaikan.`
+                        );
+                    }
+                }
             }
         } catch (e) {
             notify(
@@ -852,21 +1160,23 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         try {
             const createNotaRes = await axios.post("/api/akutansi/nota-jalan", {
                 no_rawat: noRawat,
-                tanggal: new Date().toISOString().slice(0, 10),
-                jam: new Date().toTimeString().slice(0, 8),
+                tanggal: todayDateString(),
+                jam: nowDateTimeString().split(' ')[1] || new Date().toTimeString().slice(0, 8),
             });
             noNota = createNotaRes?.data?.no_nota || null;
             if (noNota) notify(`Nota jalan dibuat: ${noNota}`);
         } catch (e) {
-            notify(
-                e?.response?.data?.message ||
-                    "Gagal membuat nota_jalan setelah snapshot. Anda dapat membuatnya manual dari menu terkait."
-            );
+            const errorMsg = e?.response?.data?.message || e?.message || "Gagal membuat nota_jalan setelah snapshot";
+            console.error("Gagal membuat nota_jalan setelah snapshot:", errorMsg, e?.response?.data);
+            notify(`Gagal membuat nota_jalan: ${errorMsg}. Anda dapat membuatnya manual dari menu terkait.`);
+            // Jangan lanjut jika gagal membuat nota_jalan
+            return;
         }
 
         // 3) Stage jurnal dari total billing dengan pemecahan debit & PPN
+        let stagingSuccess = false;
         try {
-            await axios.post("/api/akutansi/jurnal/stage-from-billing", {
+            const stageRes = await axios.post("/api/akutansi/jurnal/stage-from-billing", {
                 no_rawat: noRawat,
                 akun_bayar: akunBayar || null,
                 akun_piutang: akunPiutang || null,
@@ -875,32 +1185,56 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                 ppn_percent: Number(ppnPercent) || 0,
                 // Akun Pendapatan (kredit) tidak dikirim dari UI; backend akan memilih otomatis dari master rekening
             });
+            stagingSuccess = true;
         } catch (e) {
-            notify(
-                e?.response?.data?.message ||
-                    "Gagal menyiapkan staging jurnal. Pastikan mapping rekening debet/kredit di config/akutansi.php."
-            );
+            const errorMsg = e?.response?.data?.message ||
+                "Gagal menyiapkan staging jurnal. Pastikan mapping rekening debet/kredit di config/akutansi.php.";
+            notify(errorMsg);
+            console.error("Error staging jurnal:", e?.response?.data);
+            // Jangan lanjut ke posting jika staging gagal
+            return;
         }
 
         // 4) Posting jurnal dengan no_bukti = no_nota (jika ada)
-        try {
-            const bukti = noNota || `BILL-${noRawat}`;
-            const postRes = await axios.post(
-                "/api/akutansi/jurnal/post-staging",
-                {
-                    no_bukti: bukti,
-                    jenis: "U",
-                    keterangan: `Posting otomatis Billing ${noRawat}`,
+        // Hanya posting jika staging berhasil
+        if (stagingSuccess) {
+            try {
+                const bukti = noNota || `BILL-${noRawat}`;
+                const postRes = await axios.post(
+                    "/api/akutansi/jurnal/post-staging",
+                    {
+                        no_bukti: bukti,
+                        jenis: "U",
+                        keterangan: `Posting otomatis Billing ${noRawat}`,
+                    }
+                );
+                if (postRes?.data?.no_jurnal) {
+                    notify(`Posting jurnal berhasil: ${postRes.data.no_jurnal}`);
+                    
+                    // Update reg_periksa.status_bayar menjadi "Sudah Bayar" setelah posting jurnal berhasil
+                    try {
+                        await axios.put(`/api/reg-periksa/${encodeURIComponent(noRawat)}/status-bayar`, {
+                            status_bayar: 'Sudah Bayar'
+                        });
+                    } catch (updateError) {
+                        console.warn("Gagal update status_bayar di reg_periksa:", updateError?.response?.data);
+                        // Jangan gagalkan proses jika update status_bayar gagal
+                    }
                 }
-            );
-            if (postRes?.data?.no_jurnal) {
-                notify(`Posting jurnal berhasil: ${postRes.data.no_jurnal}`);
+            } catch (e) {
+                const errorMsg = e?.response?.data?.message ||
+                    "Posting jurnal gagal. Periksa keseimbangan debet/kredit atau data staging.";
+                notify(errorMsg);
+                console.error("Error posting jurnal:", e?.response?.data);
+                // Log detail error untuk debugging
+                if (e?.response?.status === 400) {
+                    console.error("Detail error 400:", {
+                        status: e?.response?.status,
+                        data: e?.response?.data,
+                        message: e?.response?.data?.message,
+                    });
+                }
             }
-        } catch (e) {
-            notify(
-                e?.response?.data?.message ||
-                    "Posting jurnal gagal. Periksa keseimbangan debet/kredit atau data staging."
-            );
         }
 
         // 5) Pesan tambahan sesuai kondisi pembayaran (placeholder untuk aturan Java)
@@ -921,12 +1255,22 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
 
         // Refresh UI
         await loadData();
+        
+        // Refresh status permintaan jika tab aktif
+        if (activeTab === "permintaan") {
+            await loadRequests();
+        }
     };
 
     const handleUpdate = async (noindex, payload) => {
         await axios.put(`/api/akutansi/billing/${noindex}`, payload);
         setEditItem(null);
         await loadData();
+        
+        // Refresh status permintaan jika tab aktif
+        if (activeTab === "permintaan") {
+            await loadRequests();
+        }
     };
 
     const handleDelete = async (row) => {
@@ -939,19 +1283,75 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         if (!confirm(`Hapus item "${row.nm_perawatan}"?`)) return;
         await axios.delete(`/api/akutansi/billing/${row.noindex}`);
         await loadData();
+        
+        // Refresh status permintaan jika tab aktif
+        if (activeTab === "permintaan") {
+            await loadRequests();
+        }
     };
+
+    // Recalculate summary setiap kali items berubah untuk memastikan Grand Total selalu akurat
+    React.useEffect(() => {
+        if (items.length === 0) {
+            setSummary({
+                by_status: {},
+                grand_total: 0,
+            });
+            return;
+        }
+
+        const recalculated = items.reduce((acc, item) => {
+            const status = item.status || '-';
+            const totalbiaya = Number(item.totalbiaya || 0);
+            if (!acc.by_status[status]) {
+                acc.by_status[status] = { count: 0, total: 0 };
+            }
+            acc.by_status[status].count += 1;
+            acc.by_status[status].total += totalbiaya;
+            acc.grand_total += totalbiaya;
+            return acc;
+        }, { by_status: {}, grand_total: 0 });
+
+        console.log('useEffect summary: Recalculated dari items:', {
+            itemsCount: items.length,
+            grandTotal: recalculated.grand_total,
+            byStatus: recalculated.by_status
+        });
+
+        setSummary({
+            by_status: recalculated.by_status,
+            grand_total: round(recalculated.grand_total, 2)
+        });
+    }, [items]);
 
     React.useEffect(() => {
         if (initialNoRawat) {
-            setNoRawat(initialNoRawat);
+            // Normalisasi no_rawat dari props (decode jika ada encoding)
+            const normalized = decodeURIComponent(initialNoRawat || '').trim();
+            setNoRawat(normalized);
         }
     }, [initialNoRawat]);
+    
+    // Load data otomatis saat noRawat berubah atau saat component mount dengan initialNoRawat
+    // Catatan: loadData tidak dimasukkan ke dependency untuk menghindari infinite loop
+    // karena loadData menggunakan q dan statusFilter yang bisa berubah
+    React.useEffect(() => {
+        if (noRawat && noRawat.trim() !== '') {
+            console.log('useEffect: noRawat berubah, memanggil loadData untuk:', noRawat);
+            loadData();
+        } else {
+            console.log('useEffect: noRawat kosong atau tidak valid');
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [noRawat]);
 
+    // Refresh status permintaan setiap kali tab dibuka, noRawat berubah, atau items billing berubah
     React.useEffect(() => {
         if (activeTab === "permintaan" && noRawat) {
+            // Refresh setiap kali tab dibuka, noRawat berubah, atau items billing berubah
             loadRequests();
         }
-    }, [activeTab, noRawat]);
+    }, [activeTab, noRawat, items.length]); // Trigger saat tab/noRawat/items berubah
 
     return (
         <motion.div
@@ -985,9 +1385,6 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                             >
                                 Billing Pasien
                             </motion.h1>
-                            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                                Kelola rincian biaya pasien berdasarkan snapshot tabel billing.
-                            </p>
                         </div>
                     </div>
                     <div className="flex flex-col md:flex-row items-stretch gap-3">
@@ -1003,6 +1400,18 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                             />
                             <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                         </div>
+                        <motion.div
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                        >
+                            <Link
+                                href={route("akutansi.kasir-ralan.page")}
+                                className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 hover:from-green-700 hover:via-emerald-700 hover:to-teal-700 shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30 transition-all duration-300 text-white font-semibold text-sm"
+                            >
+                                <CreditCard className="w-4 h-4" />
+                                Data Kasir
+                            </Link>
+                        </motion.div>
                         <motion.button
                             onClick={loadData}
                             disabled={loading}
@@ -1250,6 +1659,8 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                     <PembayaranTab
                         summary={summary}
                         categoryMap={CATEGORY_MAP}
+                        noRawat={noRawat}
+                        invoice={invoice}
                         onSave={({
                             selectedCategories,
                             ppnPercent,
@@ -1260,6 +1671,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                             piutang,
                             akunBayar,
                             akunPiutang,
+                            setBayar, // Tambahkan setBayar dari PembayaranTab
                         }) =>
                             handleSnapshot({
                                 selectedCategories,
@@ -1271,6 +1683,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                 piutang,
                                 akunBayar,
                                 akunPiutang,
+                                setBayar, // Tambahkan setBayar untuk menyesuaikan nominal bayar setelah snapshot
                             })
                         }
                     />
@@ -1283,6 +1696,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                         rad={radRequests}
                         resep={resepRequests}
                         loading={loadingRequests}
+                        onRefresh={() => loadRequests()}
                     />
                 )}
             </motion.div>
@@ -1298,7 +1712,6 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                         <thead>
                             <tr className="bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">
                                 <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Tanggal</th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Keterangan</th>
                                 <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     Tagihan/Tindakan/Terapi
                                 </th>
@@ -1314,7 +1727,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                             {loading ? (
                                 <tr>
                                     <td
-                                        colSpan={9}
+                                        colSpan={8}
                                         className="px-4 py-12 text-center"
                                     >
                                         <motion.div
@@ -1344,9 +1757,41 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                 </tr>
                             ) : (
                                 <AnimatePresence>
-                                    {items.map((row, idx) => (
-                                        <motion.tr
-                                            key={row.noindex ?? `temp-${idx}`}
+                                    {items
+                                        .filter((row) => {
+                                            // Normalisasi untuk perbandingan
+                                            const normalizedNoRawat = decodeURIComponent(noRawat || '').trim();
+                                            const rowNoRawat = (row.no_rawat || '').trim();
+                                            
+                                            // Filter ketat: hanya tampilkan item dengan no_rawat yang sesuai
+                                            if (rowNoRawat !== normalizedNoRawat) {
+                                                console.warn('Item dengan no_rawat tidak sesuai diabaikan di tabel:', {
+                                                    expected: normalizedNoRawat,
+                                                    actual: rowNoRawat,
+                                                    item: row
+                                                });
+                                                return false;
+                                            }
+                                            return true;
+                                        })
+                                        .map((row, idx) => {
+                                            // Buat key unik untuk React
+                                            let reactKey;
+                                            if (row.noindex) {
+                                                reactKey = `noindex-${row.noindex}`;
+                                            } else {
+                                                // Gunakan kombinasi field untuk key unik jika tidak ada noindex
+                                                const tglByr = row.tgl_byr || '';
+                                                const no = row.no || '';
+                                                const status = row.status || '';
+                                                const nmPerawatan = row.nm_perawatan || '';
+                                                const biaya = row.biaya || 0;
+                                                const jumlah = row.jumlah || 0;
+                                                reactKey = `temp-${no}-${status}-${tglByr}-${nmPerawatan}-${biaya}-${jumlah}-${idx}`;
+                                            }
+                                            return (
+                                                <motion.tr
+                                            key={reactKey}
                                             className="border-b border-gray-100/50 dark:border-gray-700/30 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 dark:hover:from-gray-700/50 dark:hover:to-gray-800/50 transition-all duration-200 group"
                                             initial={{ opacity: 0, x: -20 }}
                                             animate={{ opacity: 1, x: 0 }}
@@ -1355,10 +1800,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                             whileHover={{ scale: 1.01 }}
                                         >
                                             <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
-                                                {row.tgl_byr}
-                                            </td>
-                                            <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
-                                                {row.no || "-"}
+                                                {formatTanggal(row.tgl_byr)}
                                             </td>
                                             <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
                                                 {row.nm_perawatan}
@@ -1429,8 +1871,9 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                                     </motion.button>
                                                 </div>
                                             </td>
-                                        </motion.tr>
-                                    ))}
+                                                </motion.tr>
+                                            );
+                                        })}
                                 </AnimatePresence>
                             )}
                         </tbody>
@@ -1492,7 +1935,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                         <BillingForm
                             initial={{
                                 no_rawat: editItem.no_rawat,
-                                tgl_byr: editItem.tgl_byr,
+                                tgl_byr: normalizeDateForInput(editItem.tgl_byr),
                                 no: editItem.no,
                                 nm_perawatan: editItem.nm_perawatan,
                                 pemisah: editItem.pemisah,
@@ -1522,7 +1965,7 @@ BillingPage.layout = (page) => (
  * Tab: Pembayaran
  * Menampilkan rangkuman pembayaran dengan pilihan komponen biaya yang disertakan.
  */
-function PembayaranTab({ summary, categoryMap, onSave }) {
+function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice }) {
     const [selected, setSelected] = React.useState(() =>
         // Default: semua komponen aktif (mirip notaralan=="Yes")
         (Array.isArray(categoryMap) ? categoryMap : []).map((c) => c.label)
@@ -1722,6 +2165,7 @@ function PembayaranTab({ summary, categoryMap, onSave }) {
                             totalWithPpn,
                             kembali,
                             piutang,
+                            setBayar, // Tambahkan setBayar untuk menyesuaikan nominal bayar setelah snapshot
                             // Kirim detail akun sesuai sumber Akun Bayar/Akun Piutang
                             akunBayar: akunBayar
                                 ? {
@@ -1753,8 +2197,14 @@ function PembayaranTab({ summary, categoryMap, onSave }) {
                     Simpan
                 </button>
                 <button
-                    className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800"
-                    disabled
+                    className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={!noRawat || !invoice?.nota?.no_nota}
+                    onClick={() => {
+                        if (noRawat) {
+                            router.visit(`/akutansi/nota-jalan?no_rawat=${encodeURIComponent(noRawat)}`);
+                        }
+                    }}
+                    title={!noRawat || !invoice?.nota?.no_nota ? "Nota belum tersedia. Simpan terlebih dahulu." : "Cetak Nota"}
                 >
                     Nota
                 </button>
@@ -1785,11 +2235,41 @@ function StatusPermintaanTab({
     rad = [],
     resep = [],
     loading,
+    onRefresh,
 }) {
     return (
         <div className="space-y-6">
+            {/* Header dengan tombol refresh */}
+            <div className="flex items-center justify-between mb-4">
+                <div className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    Status Permintaan untuk No. Rawat: <span className="font-mono">{noRawat}</span>
+                </div>
+                {onRefresh && (
+                    <motion.button
+                        onClick={onRefresh}
+                        disabled={loading || !noRawat}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 text-white font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        whileHover={{ scale: loading || !noRawat ? 1 : 1.02 }}
+                        whileTap={{ scale: loading || !noRawat ? 1 : 0.98 }}
+                    >
+                        {loading ? (
+                            <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Memuat…
+                            </>
+                        ) : (
+                            <>
+                                <RefreshCw className="w-4 h-4" />
+                                Refresh
+                            </>
+                        )}
+                    </motion.button>
+                )}
+            </div>
+
             {loading && (
-                <div className="text-sm text-gray-600 dark:text-gray-300">
+                <div className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
                     Memuat status permintaan…
                 </div>
             )}
@@ -1810,34 +2290,41 @@ function StatusPermintaanTab({
                     </div>
                 ) : (
                     <div className="space-y-2">
-                        {lab.map((p) => (
-                            <div
-                                key={`lab-${p.noorder}`}
-                                className="rounded-xl border border-gray-200 dark:border-gray-700 p-3"
-                            >
-                                <div className="flex items-center justify-between">
-                                    <div className="text-sm font-semibold">
-                                        Order {p.noorder} • {p.tgl_permintaan}{" "}
-                                        {p.jam_permintaan}
+                        {lab.map((p) => {
+                            // Tentukan status untuk ditampilkan: gunakan status dari backend jika ada, atau cek tgl_hasil
+                            const statusDisplay = p.status || (p.sudah_dilayani ? 'Sudah Dilayani' : 'Belum Dilayani');
+                            const isSudahDilayani = p.sudah_dilayani || (p.tgl_hasil && p.tgl_hasil !== '0000-00-00' && p.tgl_hasil !== null);
+                            
+                            return (
+                                <div
+                                    key={`lab-${p.noorder}`}
+                                    className={`rounded-xl border p-3 ${
+                                        isSudahDilayani 
+                                            ? 'border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-900/20' 
+                                            : 'border-gray-200 dark:border-gray-700'
+                                    }`}
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div className="text-sm font-semibold">
+                                            Order {p.noorder} • {formatTanggal(p.tgl_permintaan)}{" "}
+                                            {p.jam_permintaan ? (typeof p.jam_permintaan === 'string' && p.jam_permintaan.includes('T') 
+                                                ? new Date(p.jam_permintaan).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+                                                : p.jam_permintaan) : ''}
+                                        </div>
+                                        <div className={`text-xs font-semibold px-2 py-1 rounded ${
+                                            isSudahDilayani
+                                                ? 'text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/50'
+                                                : 'text-gray-500 bg-gray-100 dark:bg-gray-800'
+                                        }`}>
+                                            Status: {statusDisplay}
+                                        </div>
                                     </div>
-                                    <div className="text-xs text-gray-500">
-                                        Status: {p.status}
+                                    <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                        {p.diagnosa_klinis || '-'}
                                     </div>
                                 </div>
-                                <div className="text-xs text-gray-600 dark:text-gray-400">
-                                    {p.diagnosa_klinis}
-                                </div>
-                                <ul className="mt-2 text-sm list-disc pl-6">
-                                    {p.detail_tests?.map((d, idx) => (
-                                        <li
-                                            key={`lab-${p.noorder}-${d.kd_jenis_prw}-${idx}`}
-                                        >
-                                            {d.nm_perawatan} • {d.stts_bayar}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>

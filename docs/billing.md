@@ -229,3 +229,357 @@ Untuk memenuhi kebutuhan “posting jurnal balik” setelah aksi simpan di halam
 Catatan:
 - Alur di atas adalah implementasi minimal agar “posting jurnal balik” terjadi setelah simpan item billing. Implementasi penuh (meniru `isSimpan()` Java: memasukkan komponen biaya per kategori ke staging dan membuat nota pembayaran terperinci) tetap direncanakan di modul Kasir.
 - Bila Anda memiliki mapping akun per kategori (Laborat, Radiologi, Obat, Administrasi, Sarpras, Tarif Dokter/Perawat, dsb.), endpoint `stage-from-billing` dapat dikembangkan untuk menyusun baris staging lebih rinci per komponen biaya.
+
+---
+
+## Menghindari Error "Total Debet dan Kredit gabungan tidak sama"
+
+Error **"Total Debet dan Kredit gabungan tidak sama"** terjadi ketika `JurnalPostingService::post()` menggabungkan data dari `tampjurnal` dan `tampjurnal2`, tetapi total debet tidak sama dengan total kredit. Error ini biasanya disebabkan oleh:
+
+1. **Data lama di staging tidak dibersihkan** sebelum membuat staging baru
+2. **Komposisi jurnal tidak seimbang** (debet ≠ kredit) saat dibuat oleh composer
+3. **Staging dari operasi sebelumnya masih tersisa** dan tercampur dengan staging baru
+
+### Best Practices untuk Menghindari Error
+
+#### 1. **Backend: Controller - Bersihkan Staging Sebelum Membuat Staging Baru**
+
+**WAJIB:** Sebelum memanggil composer untuk membuat staging baru, bersihkan kedua tabel staging (`tampjurnal` dan `tampjurnal2`).
+
+**Contoh Implementasi di Controller:**
+
+```php
+public function stageJurnalRalan(Request $request)
+{
+    $validated = $request->validate([
+        'no_rawat' => ['required', 'string'],
+    ]);
+
+    try {
+        // PENTING: Bersihkan staging lama sebelum membuat staging baru
+        // JurnalPostingService menggabungkan tampjurnal + tampjurnal2,
+        // jadi keduanya harus dibersihkan untuk menghindari ketidakseimbangan
+        DB::table('tampjurnal')->delete();
+        DB::table('tampjurnal2')->delete();
+
+        /** @var TampJurnalComposerRalan $composer */
+        $composer = app(TampJurnalComposerRalan::class);
+        $result = $composer->composeForNoRawat($validated['no_rawat']);
+
+        $balanced = round($result['debet'], 2) === round($result['kredit'], 2);
+
+        // Validasi tambahan: pastikan debet dan kredit seimbang
+        if (!$balanced) {
+            Log::warning('Staging jurnal tidak seimbang', [
+                'no_rawat' => $validated['no_rawat'],
+                'debet' => $result['debet'],
+                'kredit' => $result['kredit'],
+                'selisih' => abs($result['debet'] - $result['kredit']),
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'meta' => [
+                'debet' => $result['debet'],
+                'kredit' => $result['kredit'],
+                'balanced' => $balanced,
+                'lines' => count($result['lines']),
+            ],
+            'lines' => $result['lines'],
+            'message' => 'Staging jurnal berhasil disusun',
+        ], 201);
+    } catch (\Throwable $e) {
+        Log::error('Gagal menyusun staging jurnal', [
+            'no_rawat' => $validated['no_rawat'] ?? null,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal menyusun staging jurnal: ' . $e->getMessage(),
+        ], 500);
+    }
+}
+```
+
+**Contoh untuk Permintaan Lab:**
+
+```php
+public function stageJurnalLab(Request $request)
+{
+    $validated = $request->validate([
+        'noorder' => ['required', 'string'],
+    ]);
+
+    try {
+        // PENTING: Bersihkan staging lama
+        DB::table('tampjurnal')->delete();
+        DB::table('tampjurnal2')->delete();
+
+        /** @var TampJurnalComposerLab $composer */
+        $composer = app(TampJurnalComposerLab::class);
+        $result = $composer->composeForNoOrder($validated['noorder']);
+
+        $balanced = round($result['debet'], 2) === round($result['kredit'], 2);
+
+        if (!$balanced) {
+            Log::warning('Staging jurnal lab tidak seimbang', [
+                'noorder' => $validated['noorder'],
+                'debet' => $result['debet'],
+                'kredit' => $result['kredit'],
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'meta' => [
+                'debet' => $result['debet'],
+                'kredit' => $result['kredit'],
+                'balanced' => $balanced,
+            ],
+        ], 201);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal menyusun staging jurnal: ' . $e->getMessage(),
+        ], 500);
+    }
+}
+```
+
+#### 2. **Backend: Composer - Validasi Keseimbangan Sebelum Menulis ke Staging**
+
+**WAJIB:** Di dalam composer, validasi bahwa debet dan kredit seimbang **sebelum** menulis ke staging. Jika tidak seimbang, lempar `RuntimeException` dengan pesan detail.
+
+**Contoh Implementasi di Composer:**
+
+```php
+public function composeForNoRawat(string $noRawat): array
+{
+    // ... agregasi data dan pembuatan lines ...
+
+    if (empty($lines)) {
+        return ['debet' => 0.0, 'kredit' => 0.0, 'lines' => []];
+    }
+
+    // Hitung total debet dan kredit untuk validasi
+    $totDeb = 0.0;
+    $totKre = 0.0;
+    foreach ($lines as $l) {
+        $totDeb += $l['debet'];
+        $totKre += $l['kredit'];
+    }
+
+    // Validasi: pastikan debet dan kredit seimbang sebelum menulis ke staging
+    if (round($totDeb, 2) !== round($totKre, 2)) {
+        throw new \RuntimeException(
+            sprintf(
+                'Komposisi jurnal tidak seimbang: Debet = %s, Kredit = %s, Selisih = %s. Periksa konfigurasi akun di set_akun_ralan.',
+                number_format($totDeb, 2, '.', ','),
+                number_format($totKre, 2, '.', ','),
+                number_format(abs($totDeb - $totKre), 2, '.', ',')
+            )
+        );
+    }
+
+    // Tulis ke staging tampjurnal2 (kosongkan dulu agar idempoten)
+    // Catatan: tampjurnal sudah dibersihkan di controller sebelum memanggil composer ini
+    DB::table('tampjurnal2')->delete();
+    DB::table('tampjurnal2')->insert(array_map(function ($l) {
+        return [
+            'kd_rek' => $l['kd_rek'],
+            'nm_rek' => null,
+            'debet' => $l['debet'],
+            'kredit' => $l['kredit'],
+        ];
+    }, $lines));
+
+    return ['debet' => $totDeb, 'kredit' => $totKre, 'lines' => $lines];
+}
+```
+
+**Catatan Penting:**
+- Composer hanya membersihkan `tampjurnal2` (atau `tampjurnal` sesuai kebutuhan)
+- Controller harus membersihkan **kedua** staging (`tampjurnal` dan `tampjurnal2`) sebelum memanggil composer
+- Validasi keseimbangan dilakukan **sebelum** menulis ke staging, bukan setelahnya
+
+#### 3. **Frontend: Validasi Staging Sebelum Posting**
+
+**WAJIB:** Di frontend, validasi bahwa staging berhasil dan seimbang sebelum melanjutkan ke posting jurnal.
+
+**Contoh Implementasi di Frontend (React):**
+
+```javascript
+// Setelah simpan tindakan/resep/lab berhasil, otomatis susun staging dan posting jurnal
+try {
+    setPostingLoading(true);
+    const stageRes = await axios.post('/api/tarif-tindakan/stage-ralan', {
+        token,
+        no_rawat: noRawat,
+    });
+
+    // Validasi staging: pastikan success, meta ada, dan balanced = true
+    if (!stageRes.data || !stageRes.data.success) {
+        const errMsg = stageRes.data?.message || 'Staging jurnal gagal. Posting dibatalkan.';
+        setAlertConfig({
+            type: 'error',
+            title: 'Staging Gagal',
+            message: errMsg,
+            autoClose: true,
+        });
+        setShowAlert(true);
+        setPostingLoading(false);
+        return; // STOP: jangan lanjutkan ke posting
+    }
+
+    if (!stageRes.data.meta || !stageRes.data.meta.balanced) {
+        const debet = stageRes.data.meta?.debet || 0;
+        const kredit = stageRes.data.meta?.kredit || 0;
+        const selisih = Math.abs(debet - kredit);
+        const errMsg = stageRes.data?.message || 
+            `Staging jurnal tidak seimbang. Debet: ${debet.toLocaleString('id-ID')}, Kredit: ${kredit.toLocaleString('id-ID')}, Selisih: ${selisih.toLocaleString('id-ID')}. Posting dibatalkan.`;
+        console.error('Staging tidak seimbang:', {
+            debet,
+            kredit,
+            selisih,
+            meta: stageRes.data.meta,
+        });
+        setAlertConfig({
+            type: 'error',
+            title: 'Staging Tidak Seimbang',
+            message: errMsg,
+            autoClose: true,
+        });
+        setShowAlert(true);
+        setPostingLoading(false);
+        return; // STOP: jangan lanjutkan ke posting
+    }
+
+    // Staging berhasil dan seimbang, lanjutkan ke posting
+    try {
+        const postRes = await axios.post('/api/akutansi/jurnal/post', {
+            no_bukti: noRawat,
+            keterangan: `Posting otomatis tindakan Rawat Jalan no_rawat ${noRawat}`,
+        });
+
+        if (postRes.status === 201 && postRes.data && postRes.data.no_jurnal) {
+            // Success
+        } else {
+            // Handle error
+        }
+    } catch (postError) {
+        // Handle posting error
+    }
+} catch (e) {
+    // Handle staging error
+}
+```
+
+#### 4. **Backend: JurnalPostingService - Validasi Final**
+
+`JurnalPostingService::post()` sudah memiliki validasi keseimbangan sebelum posting. Validasi ini akan melempar `RuntimeException` jika:
+- Staging kosong (`jml <= 0`)
+- Total debet atau kredit <= 0
+- Total debet tidak sama dengan total kredit
+
+**Tidak perlu mengubah `JurnalPostingService`**, tetapi pastikan error handling di frontend menangani `RuntimeException` dengan baik.
+
+### Checklist untuk Developer
+
+Saat membuat composer jurnal baru atau memperbaiki composer yang ada, pastikan:
+
+- [ ] **Controller membersihkan `tampjurnal` dan `tampjurnal2`** sebelum memanggil composer
+- [ ] **Composer menghitung total debet dan kredit** sebelum menulis ke staging
+- [ ] **Composer memvalidasi keseimbangan** dan melempar `RuntimeException` jika tidak seimbang
+- [ ] **Composer hanya membersihkan staging yang digunakannya** (`tampjurnal` atau `tampjurnal2`)
+- [ ] **Controller menambahkan logging** untuk warning jika staging tidak seimbang
+- [ ] **Frontend memvalidasi `success` dan `balanced`** sebelum melanjutkan ke posting
+- [ ] **Frontend menampilkan pesan error yang informatif** (debet, kredit, selisih) jika tidak seimbang
+- [ ] **Frontend tidak melanjutkan posting** jika staging tidak seimbang
+
+### Contoh Alur Kerja yang Benar
+
+```
+1. User klik Simpan (Tindakan/Resep/Lab)
+   ↓
+2. Simpan data ke database (rawat_jl_dr, resep_obat, permintaan_lab, dll.)
+   ↓
+3. Controller: Bersihkan tampjurnal & tampjurnal2
+   ↓
+4. Controller: Panggil composer untuk membuat staging baru
+   ↓
+5. Composer: Agregasi data dan buat lines jurnal
+   ↓
+6. Composer: Hitung total debet dan kredit
+   ↓
+7. Composer: Validasi keseimbangan (debet == kredit)
+   ├─ Jika tidak seimbang → Lempar RuntimeException
+   └─ Jika seimbang → Tulis ke staging (tampjurnal2)
+   ↓
+8. Controller: Return response dengan meta.balanced = true/false
+   ↓
+9. Frontend: Validasi success dan balanced
+   ├─ Jika tidak success atau tidak balanced → STOP, tampilkan error
+   └─ Jika success dan balanced → Lanjutkan ke posting
+   ↓
+10. Frontend: POST /api/akutansi/jurnal/post
+   ↓
+11. JurnalPostingService: Validasi final keseimbangan
+   ├─ Jika tidak seimbang → Lempar RuntimeException (400)
+   └─ Jika seimbang → Posting ke jurnal/detailjurnal
+```
+
+### Troubleshooting
+
+**Error: "Total Debet dan Kredit gabungan tidak sama"**
+
+**Kemungkinan Penyebab:**
+1. Data lama di `tampjurnal` atau `tampjurnal2` tidak dibersihkan sebelum staging baru
+2. Komposisi jurnal di composer tidak seimbang (periksa perhitungan agregasi)
+3. Konfigurasi akun di `set_akun_ralan` tidak lengkap atau salah
+4. Ada operasi lain yang menulis ke staging secara bersamaan
+
+**Solusi:**
+1. Pastikan controller membersihkan **kedua** staging sebelum memanggil composer
+2. Periksa composer: pastikan setiap debet memiliki kredit yang seimbang
+3. Periksa konfigurasi akun di `set_akun_ralan`: pastikan semua akun yang diperlukan sudah terisi
+4. Periksa log untuk melihat nilai debet, kredit, dan selisih
+5. Gunakan transaksi database (`DB::beginTransaction()`) jika diperlukan untuk isolasi
+
+**Contoh Query untuk Debugging:**
+
+```sql
+-- Cek isi staging saat ini
+SELECT 'tampjurnal' AS tabel, COUNT(*) AS jumlah, 
+       SUM(COALESCE(debet,0)) AS total_debet, 
+       SUM(COALESCE(kredit,0)) AS total_kredit
+FROM tampjurnal
+UNION ALL
+SELECT 'tampjurnal2' AS tabel, COUNT(*) AS jumlah,
+       SUM(COALESCE(debet,0)) AS total_debet,
+       SUM(COALESCE(kredit,0)) AS total_kredit
+FROM tampjurnal2;
+
+-- Cek detail baris staging
+SELECT 'tampjurnal' AS tabel, kd_rek, debet, kredit FROM tampjurnal
+UNION ALL
+SELECT 'tampjurnal2' AS tabel, kd_rek, debet, kredit FROM tampjurnal2
+ORDER BY kd_rek;
+```
+
+### Referensi File
+
+- **Composer:**
+  - `app/Services/Akutansi/TampJurnalComposerRalan.php` - Tindakan Rawat Jalan
+  - `app/Services/Akutansi/TampJurnalComposerResepRalan.php` - Resep Obat Rawat Jalan
+  - `app/Services/Akutansi/TampJurnalComposerLab.php` - Permintaan Laboratorium
+- **Controller:**
+  - `app/Http/Controllers/TarifTindakanController.php` - `stageJurnalRalan()`
+  - `app/Http/Controllers/PermintaanLabController.php` - `stageJurnalLab()`
+  - `app/Http/Controllers/RawatJalan/ResepController.php` - Auto posting resep
+- **Service:**
+  - `app/Services/Akutansi/JurnalPostingService.php` - Posting dari staging ke jurnal
+- **Frontend:**
+  - `resources/js/Pages/RawatJalan/components/TarifTindakan.jsx` - Contoh validasi staging
+  - `resources/js/Pages/RawatJalan/components/PermintaanLab.jsx` - Contoh validasi staging

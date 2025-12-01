@@ -92,11 +92,27 @@ class TarifTindakanController extends Controller
         ]);
 
         try {
+            // Bersihkan staging lama sebelum membuat staging baru
+            // Penting: JurnalPostingService menggabungkan tampjurnal + tampjurnal2,
+            // jadi keduanya harus dibersihkan untuk menghindari ketidakseimbangan
+            DB::table('tampjurnal')->delete();
+            DB::table('tampjurnal2')->delete();
+
             /** @var TampJurnalComposerRalan $composer */
             $composer = app(TampJurnalComposerRalan::class);
             $result = $composer->composeForNoRawat($validated['no_rawat']);
 
             $balanced = round($result['debet'], 2) === round($result['kredit'], 2);
+
+            // Validasi tambahan: pastikan debet dan kredit seimbang
+            if (!$balanced) {
+                Log::warning('Staging jurnal tidak seimbang', [
+                    'no_rawat' => $validated['no_rawat'],
+                    'debet' => $result['debet'],
+                    'kredit' => $result['kredit'],
+                    'selisih' => abs($result['debet'] - $result['kredit']),
+                ]);
+            }
 
             return response()->json([
                 'success' => true,
@@ -110,6 +126,11 @@ class TarifTindakanController extends Controller
                 'message' => 'Staging jurnal (tampjurnal2) berhasil disusun untuk rawat jalan umum',
             ], 201);
         } catch (\Throwable $e) {
+            Log::error('Gagal menyusun staging jurnal', [
+                'no_rawat' => $validated['no_rawat'] ?? null,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menyusun staging jurnal: ' . $e->getMessage(),

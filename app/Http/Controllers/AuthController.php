@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 
@@ -21,9 +24,10 @@ class AuthController extends Controller
                 // Ambil record aktif jika ada, jika tidak, ambil record pertama
                 // Catatan: di UI/validasi kita menggunakan nilai 'Yes'/'No'.
                 // Untuk kompatibilitas dengan variasi data lama ('yes'/'no'), gunakan pencarian case-insensitive.
+                // FIXED: Menggunakan parameter binding untuk mencegah SQL injection
                 $active = DB::table('setting')
                     ->select('nama_instansi', 'wallpaper', 'aktifkan')
-                    ->whereRaw('LOWER(aktifkan) = "yes"')
+                    ->whereRaw('LOWER(aktifkan) = ?', ['yes'])
                     ->first();
 
                 if (!$active) {
@@ -60,6 +64,23 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+        // Rate limiting untuk login
+        $key = 'login.' . $request->ip();
+        
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            $seconds = RateLimiter::availableIn($key);
+            
+            Log::warning('Login rate limit exceeded', [
+                'ip' => $request->ip(),
+                'username' => $request->input('username'),
+                'user_agent' => $request->userAgent(),
+            ]);
+            
+            return back()->withErrors([
+                'username' => "Terlalu banyak percobaan login. Silakan coba lagi dalam {$seconds} detik.",
+            ])->onlyInput('username');
+        }
+
         $credentials = $request->validate([
             'username' => ['required', 'string'],
             'password' => ['required'],
@@ -71,11 +92,31 @@ class AuthController extends Controller
                                 ->first();
 
         if ($user && \Illuminate\Support\Facades\Hash::check($credentials['password'], $user->password)) {
+            // Reset rate limiter setelah login berhasil
+            RateLimiter::clear($key);
+            
             Auth::login($user, $request->boolean('remember'));
             $request->session()->regenerate();
+            
+            Log::info('Successful login', [
+                'user_id' => $user->id,
+                'username' => $user->username,
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+            
             // Setelah login, arahkan ke Dashboard
             return redirect()->route('dashboard');
         }
+
+        // Increment rate limiter untuk failed attempt
+        RateLimiter::hit($key, 60); // 60 seconds decay
+        
+        Log::warning('Failed login attempt', [
+            'username' => $credentials['username'],
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return back()->withErrors([
             'username' => 'Kredensial tidak valid.',

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Alert from '@/Components/Alert';
 import ConfirmationAlert from '@/Components/ConfirmationAlert';
+import { todayDateString, nowDateTimeString } from '@/tools/datetime';
 
 const TarifTindakan = ({ token, noRkmMedis, noRawat }) => {
     const [activeTab, setActiveTab] = useState('dokter');
@@ -217,8 +218,8 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat }) => {
         try {
             setLoading(true);
             let endpoint = '';
-            const currentDate = new Date().toISOString().split('T')[0];
-            const currentTime = new Date().toTimeString().split(' ')[0];
+            const currentDate = todayDateString();
+            const currentTime = nowDateTimeString().split(' ')[1].substring(0, 8);
 
             switch (activeTab) {
                 case 'dokter':
@@ -269,8 +270,9 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat }) => {
                         no_rawat: noRawat,
                     });
 
-                    if (!(stageRes.data && stageRes.data.success && stageRes.data.meta && stageRes.data.meta.balanced)) {
-                        const errMsg = stageRes.data?.message || 'Staging jurnal gagal atau tidak seimbang. Posting dibatalkan.';
+                    // Validasi staging: pastikan success, meta ada, dan balanced = true
+                    if (!stageRes.data || !stageRes.data.success) {
+                        const errMsg = stageRes.data?.message || 'Staging jurnal gagal. Posting dibatalkan.';
                         setAlertConfig({
                             type: 'error',
                             title: 'Staging Gagal',
@@ -278,8 +280,36 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat }) => {
                             autoClose: true,
                         });
                         setShowAlert(true);
-                    } else {
-                        // Jalankan posting jurnal
+                        setPostingLoading(false);
+                        return;
+                    }
+
+                    if (!stageRes.data.meta || !stageRes.data.meta.balanced) {
+                        const debet = stageRes.data.meta?.debet || 0;
+                        const kredit = stageRes.data.meta?.kredit || 0;
+                        const selisih = Math.abs(debet - kredit);
+                        const errMsg = stageRes.data?.message || 
+                            `Staging jurnal tidak seimbang. Debet: ${debet.toLocaleString('id-ID')}, Kredit: ${kredit.toLocaleString('id-ID')}, Selisih: ${selisih.toLocaleString('id-ID')}. Posting dibatalkan.`;
+                        console.error('Staging tidak seimbang:', {
+                            debet,
+                            kredit,
+                            selisih,
+                            meta: stageRes.data.meta,
+                        });
+                        setAlertConfig({
+                            type: 'error',
+                            title: 'Staging Tidak Seimbang',
+                            message: errMsg,
+                            autoClose: true,
+                        });
+                        setShowAlert(true);
+                        setPostingLoading(false);
+                        return;
+                    }
+
+                    // Staging berhasil dan seimbang, lanjutkan ke posting
+                    // Jalankan posting jurnal
+                    try {
                         const postRes = await axios.post('/api/akutansi/jurnal/post', {
                             no_bukti: noRawat,
                             keterangan: `Posting otomatis tindakan Rawat Jalan no_rawat ${noRawat}${noRkmMedis ? ` (RM ${noRkmMedis})` : ''}`,
@@ -296,7 +326,13 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat }) => {
                             });
                             setShowAlert(true);
                         } else {
-                            const errMsg = postRes.data?.message || 'Posting jurnal gagal.';
+                            // Error dari backend (400, 500, dll)
+                            const errMsg = postRes.data?.message || `Posting jurnal gagal (Status: ${postRes.status}).`;
+                            console.warn('Posting jurnal gagal:', {
+                                status: postRes.status,
+                                data: postRes.data,
+                                message: errMsg
+                            });
                             setAlertConfig({
                                 type: 'error',
                                 title: 'Posting Gagal',
@@ -305,10 +341,21 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat }) => {
                             });
                             setShowAlert(true);
                         }
+                    } catch (postError) {
+                        // Network error atau parsing error
+                        console.error('Auto Stage→Post error:', postError);
+                        const errMsg = postError?.response?.data?.message || postError?.message || 'Gagal melakukan posting jurnal otomatis.';
+                        setAlertConfig({
+                            type: 'error',
+                            title: 'Posting Error',
+                            message: errMsg,
+                            autoClose: true,
+                        });
+                        setShowAlert(true);
                     }
                 } catch (e) {
                     console.error('Auto Stage→Post error:', e);
-                    const errMsg = e.response?.data?.message || e.message || 'Gagal melakukan Staging/Posting jurnal otomatis.';
+                    const errMsg = e?.response?.data?.message || e?.message || 'Gagal melakukan Staging/Posting jurnal otomatis.';
                     setAlertConfig({
                         type: 'error',
                         title: 'Error',

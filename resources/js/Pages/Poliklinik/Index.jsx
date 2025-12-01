@@ -126,13 +126,10 @@ export default function PoliklinikIndex() {
               </motion.div>
               <div>
                 <motion.h1
-                  className="text-3xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
+                  className="text-3xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
                 >
                   Poliklinik
                 </motion.h1>
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                  Kelola data poliklinik dan tarif registrasi
-                </p>
               </div>
             </div>
 

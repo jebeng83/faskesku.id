@@ -35,7 +35,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::byRawat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:316
+* @see app/Http/Controllers/PermintaanRadiologiController.php:317
 * @route '/api/permintaan-radiologi/rawat/{no_rawat}'
 */
 export const byRawat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -50,7 +50,7 @@ byRawat.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::byRawat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:316
+* @see app/Http/Controllers/PermintaanRadiologiController.php:317
 * @route '/api/permintaan-radiologi/rawat/{no_rawat}'
 */
 byRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -77,7 +77,7 @@ byRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::byRawat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:316
+* @see app/Http/Controllers/PermintaanRadiologiController.php:317
 * @route '/api/permintaan-radiologi/rawat/{no_rawat}'
 */
 byRawat.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -87,7 +87,7 @@ byRawat.get = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::byRawat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:316
+* @see app/Http/Controllers/PermintaanRadiologiController.php:317
 * @route '/api/permintaan-radiologi/rawat/{no_rawat}'
 */
 byRawat.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -97,7 +97,7 @@ byRawat.head = (args: { no_rawat: string | number } | [no_rawat: string | number
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::riwayat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:379
+* @see app/Http/Controllers/PermintaanRadiologiController.php:433
 * @route '/api/permintaan-radiologi/riwayat/{no_rawat}'
 */
 export const riwayat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -112,7 +112,7 @@ riwayat.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::riwayat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:379
+* @see app/Http/Controllers/PermintaanRadiologiController.php:433
 * @route '/api/permintaan-radiologi/riwayat/{no_rawat}'
 */
 riwayat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -139,7 +139,7 @@ riwayat.url = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::riwayat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:379
+* @see app/Http/Controllers/PermintaanRadiologiController.php:433
 * @route '/api/permintaan-radiologi/riwayat/{no_rawat}'
 */
 riwayat.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -149,7 +149,7 @@ riwayat.get = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::riwayat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:379
+* @see app/Http/Controllers/PermintaanRadiologiController.php:433
 * @route '/api/permintaan-radiologi/riwayat/{no_rawat}'
 */
 riwayat.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
