@@ -169,53 +169,59 @@ const TopNavbar = React.memo(function TopNavbar() {
                             {instansi}
                         </span>
                     </Link>
-                    <nav className="hidden md:flex items-center gap-5 text-sm">
+                    <nav className="hidden md:flex items-center gap-1">
                         <Link
                             href={route("registration.index")}
-                            className="inline-flex items-center gap-1.5 text-slate-700 dark:text-gray-300 hover:text-blue-600 transition-colors"
+                            className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
                         >
-                            <UserPlus className="w-4 h-4" />
-                            <span>Pendaftaran</span>
+                            <UserPlus className="w-4 h-4 transition-transform group-hover:scale-110" />
+                            <span className="relative">
+                                Pendaftaran
+                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
+                            </span>
                         </Link>
                         <Link
                             href={route("rawat-jalan.index")}
-                            className="inline-flex items-center gap-1.5 text-slate-700 dark:text-gray-300 hover:text-blue-600 transition-colors"
+                            className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
                         >
-                            <Stethoscope className="w-4 h-4" />
-                            <span>Rawat Jalan</span>
+                            <Stethoscope className="w-4 h-4 transition-transform group-hover:scale-110" />
+                            <span className="relative">
+                                Rawat Jalan
+                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
+                            </span>
                         </Link>
                         <Link
                             href={route("laboratorium.index")}
-                            className="inline-flex items-center gap-1.5 text-slate-700 dark:text-gray-300 hover:text-blue-600 transition-colors"
+                            className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
                         >
-                            <FlaskConical className="w-4 h-4" />
-                            <span>Laborat</span>
+                            <FlaskConical className="w-4 h-4 transition-transform group-hover:scale-110" />
+                            <span className="relative">
+                                Laborat
+                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
+                            </span>
                         </Link>
                         <Link
                             href={route("farmasi.permintaan-resep")}
-                            className="inline-flex items-center gap-1.5 text-slate-700 dark:text-gray-300 hover:text-blue-600 transition-colors"
+                            className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
                         >
-                            <Pill className="w-4 h-4" />
-                            <span>Farmasi</span>
+                            <Pill className="w-4 h-4 transition-transform group-hover:scale-110" />
+                            <span className="relative">
+                                Farmasi
+                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
+                            </span>
                         </Link>
                         <Link
                             href={route("akutansi.kasir-ralan.page")}
-                            className="inline-flex items-center gap-1.5 text-slate-700 dark:text-gray-300 hover:text-blue-600 transition-colors"
+                            className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
                         >
-                            <CreditCard className="w-4 h-4" />
-                            <span>Kasir</span>
+                            <CreditCard className="w-4 h-4 transition-transform group-hover:scale-110" />
+                            <span className="relative">
+                                Kasir
+                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
+                            </span>
                         </Link>
                     </nav>
                     <div className="flex items-center gap-2">
-                        <Link
-                            href="/pembayaran"
-                            className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700"
-                        >
-                            <CreditCard className="w-4 h-4" />
-                            <span className="text-xs font-semibold">
-                                Billing
-                            </span>
-                        </Link>
                         <button
                             onClick={() => {
                                 try {
@@ -239,10 +245,10 @@ const TopNavbar = React.memo(function TopNavbar() {
                                     console.error("Logout error:", error);
                                 }
                             }}
-                            className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-slate-900/80 text-white hover:bg-slate-900"
+                            className="group inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900/90 dark:bg-slate-800 text-white hover:bg-slate-800 dark:hover:bg-slate-700 transition-all duration-200 shadow-sm hover:shadow-md"
                         >
-                            <LogOut className="w-4 h-4" />
-                            <span className="text-xs font-semibold">
+                            <LogOut className="w-4 h-4 transition-transform group-hover:scale-110" />
+                            <span className="text-sm font-medium">
                                 Keluar
                             </span>
                         </button>
@@ -875,38 +881,6 @@ export default function Dashboard() {
                                     Selamat datang di{" "}
                                     {namaInstansi || "Faskesku.id"}
                                 </h1>
-                                {/* CTA bergaya  */}
-                                <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-                                    <Link
-                                        href={safeRoute(
-                                            "registration.lanjutan"
-                                        )}
-                                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white shadow"
-                                    >
-                                        <UserPlus className="w-4 h-4" />
-                                        <span className="text-sm font-semibold">
-                                            Pendaftaran
-                                        </span>
-                                    </Link>
-                                    <Link
-                                        href={safeRoute("rawat-jalan.index")}
-                                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/20 hover:bg-white/30 ring-1 ring-white/40 text-white"
-                                    >
-                                        <Stethoscope className="w-4 h-4" />
-                                        <span className="text-sm font-semibold">
-                                            Rawat Jalan
-                                        </span>
-                                    </Link>
-                                    <Link
-                                        href={safeRoute("laboratorium.index")}
-                                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/20 hover:bg-white/30 ring-1 ring-white/40 text-white"
-                                    >
-                                        <FlaskConical className="w-4 h-4" />
-                                        <span className="text-sm font-semibold">
-                                            Laboratorium
-                                        </span>
-                                    </Link>
-                                </div>
 
                                 {/* Nama Faskes (opsional) */}
                                 {(props?.settings?.nama_instansi ||

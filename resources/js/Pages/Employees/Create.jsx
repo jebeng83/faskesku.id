@@ -1,10 +1,111 @@
-import React, { useMemo } from "react";
-import { Head, Link, useForm } from "@inertiajs/react";
+import React, { useMemo, useState, useEffect } from "react";
+import { Head, Link, useForm, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import AppLayout from "@/Layouts/AppLayout";
+import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
 import SearchableSelect from "@/Components/SearchableSelect";
 
 export default function Create({ refs = {} }) {
+    const [showJenjangJabatanModal, setShowJenjangJabatanModal] = useState(false);
+    const [jenjangJabatanOptions, setJenjangJabatanOptions] = useState(
+        (refs.jnjJabatan || []).map((r) => ({ value: r.kode, label: `${r.kode} - ${r.nama}` }))
+    );
+
+    const [showDepartemenModal, setShowDepartemenModal] = useState(false);
+    const [departemenOptions, setDepartemenOptions] = useState(
+        (refs.departemen || []).map((r) => ({ value: r.dep_id, label: `${r.dep_id} - ${r.nama}` }))
+    );
+
+    const [showBidangModal, setShowBidangModal] = useState(false);
+    const [bidangOptions, setBidangOptions] = useState(
+        (refs.bidang || []).map((r) => ({ value: r.nama, label: r.nama }))
+    );
+
+    const [showPendidikanModal, setShowPendidikanModal] = useState(false);
+    const [pendidikanOptions, setPendidikanOptions] = useState(
+        (refs.pendidikan || []).map((r) => ({ value: r.tingkat, label: r.tingkat }))
+    );
+
+    const [showResikoKerjaModal, setShowResikoKerjaModal] = useState(false);
+    const [resikoKerjaOptions, setResikoKerjaOptions] = useState(
+        (refs.resikoKerja || []).map((r) => ({ value: r.kode_resiko, label: `${r.kode_resiko} - ${r.nama_resiko}` }))
+    );
+
+    const [showKelompokJabatanModal, setShowKelompokJabatanModal] = useState(false);
+    const [kelompokJabatanOptions, setKelompokJabatanOptions] = useState(
+        (refs.kelompokJabatan || []).map((r) => ({ value: r.kode_kelompok, label: `${r.kode_kelompok} - ${r.nama_kelompok}` }))
+    );
+
+    const [showEmergencyIndexModal, setShowEmergencyIndexModal] = useState(false);
+    const [emergencyIndexOptions, setEmergencyIndexOptions] = useState(
+        (refs.emergencyIndex || []).map((r) => ({ value: r.kode_emergency, label: `${r.kode_emergency} - ${r.nama_emergency || r.emergency || ''}` }))
+    );
+
+    const [showBankModal, setShowBankModal] = useState(false);
+    const [bankOptions, setBankOptions] = useState(
+        (refs.bank || []).map((r) => ({ value: r.namabank, label: r.namabank }))
+    );
+
+    const [showSttsWpModal, setShowSttsWpModal] = useState(false);
+    const [sttsWpOptions, setSttsWpOptions] = useState(
+        (refs.sttsWp || []).map((r) => ({ value: r.stts, label: `${r.stts}${r.ktg ? ` - ${r.ktg}` : ""}` }))
+    );
+
+    const [showSttsKerjaModal, setShowSttsKerjaModal] = useState(false);
+    const [sttsKerjaOptions, setSttsKerjaOptions] = useState(
+        (refs.sttsKerja || []).map((r) => ({ value: r.stts, label: `${r.stts}${r.ktg ? ` - ${r.ktg}` : ""}` }))
+    );
+
+    // Sinkronisasi options ketika refs berubah
+    useEffect(() => {
+        const newOptions = (refs.jnjJabatan || []).map((r) => ({ value: r.kode, label: `${r.kode} - ${r.nama}` }));
+        setJenjangJabatanOptions(newOptions);
+    }, [refs.jnjJabatan]);
+
+    useEffect(() => {
+        const newOptions = (refs.departemen || []).map((r) => ({ value: r.dep_id, label: `${r.dep_id} - ${r.nama}` }));
+        setDepartemenOptions(newOptions);
+    }, [refs.departemen]);
+
+    useEffect(() => {
+        const newOptions = (refs.bidang || []).map((r) => ({ value: r.nama, label: r.nama }));
+        setBidangOptions(newOptions);
+    }, [refs.bidang]);
+
+    useEffect(() => {
+        const newOptions = (refs.pendidikan || []).map((r) => ({ value: r.tingkat, label: r.tingkat }));
+        setPendidikanOptions(newOptions);
+    }, [refs.pendidikan]);
+
+    useEffect(() => {
+        const newOptions = (refs.resikoKerja || []).map((r) => ({ value: r.kode_resiko, label: `${r.kode_resiko} - ${r.nama_resiko}` }));
+        setResikoKerjaOptions(newOptions);
+    }, [refs.resikoKerja]);
+
+    useEffect(() => {
+        const newOptions = (refs.kelompokJabatan || []).map((r) => ({ value: r.kode_kelompok, label: `${r.kode_kelompok} - ${r.nama_kelompok}` }));
+        setKelompokJabatanOptions(newOptions);
+    }, [refs.kelompokJabatan]);
+
+    useEffect(() => {
+        const newOptions = (refs.emergencyIndex || []).map((r) => ({ value: r.kode_emergency, label: `${r.kode_emergency} - ${r.nama_emergency || r.emergency || ''}` }));
+        setEmergencyIndexOptions(newOptions);
+    }, [refs.emergencyIndex]);
+
+    useEffect(() => {
+        const newOptions = (refs.bank || []).map((r) => ({ value: r.namabank, label: r.namabank }));
+        setBankOptions(newOptions);
+    }, [refs.bank]);
+
+    useEffect(() => {
+        const newOptions = (refs.sttsWp || []).map((r) => ({ value: r.stts, label: `${r.stts}${r.ktg ? ` - ${r.ktg}` : ""}` }));
+        setSttsWpOptions(newOptions);
+    }, [refs.sttsWp]);
+
+    useEffect(() => {
+        const newOptions = (refs.sttsKerja || []).map((r) => ({ value: r.stts, label: `${r.stts}${r.ktg ? ` - ${r.ktg}` : ""}` }));
+        setSttsKerjaOptions(newOptions);
+    }, [refs.sttsKerja]);
+
     const { data, setData, post, processing, errors } = useForm({
         // Data utama
         nik: "",
@@ -41,19 +142,9 @@ export default function Create({ refs = {} }) {
 
     // Opsi referensi untuk SearchableSelect
     const options = useMemo(() => {
-        const jnjJabatan = (refs.jnjJabatan || []).map((r) => ({ value: r.kode, label: `${r.kode} - ${r.nama}` }));
-        const kelompokJabatan = (refs.kelompokJabatan || []).map((r) => ({ value: r.kode_kelompok, label: `${r.kode_kelompok} - ${r.nama_kelompok}` }));
-        const resikoKerja = (refs.resikoKerja || []).map((r) => ({ value: r.kode_resiko, label: `${r.kode_resiko} - ${r.nama_resiko}` }));
-        const departemen = (refs.departemen || []).map((r) => ({ value: r.dep_id, label: `${r.dep_id} - ${r.nama}` }));
-        const indexins = departemen; // gunakan daftar departemen yang sama
-        const bidang = (refs.bidang || []).map((r) => ({ value: r.nama, label: r.nama }));
-        const sttsWp = (refs.sttsWp || []).map((r) => ({ value: r.stts, label: `${r.stts}${r.ktg ? ` - ${r.ktg}` : ""}` }));
-        const sttsKerja = (refs.sttsKerja || []).map((r) => ({ value: r.stts, label: `${r.stts}${r.ktg ? ` - ${r.ktg}` : ""}` }));
-        const pendidikan = (refs.pendidikan || []).map((r) => ({ value: r.tingkat, label: r.tingkat }));
-        const bank = (refs.bank || []).map((r) => ({ value: r.namabank, label: r.namabank }));
-        const emergencyIndex = (refs.emergencyIndex || []).map((r) => ({ value: r.kode_emergency, label: `${r.kode_emergency} - ${r.emergency}` }));
-        return { jnjJabatan, kelompokJabatan, resikoKerja, departemen, indexins, bidang, sttsWp, sttsKerja, pendidikan, bank, emergencyIndex };
-    }, [refs]);
+        const indexins = departemenOptions; // gunakan daftar departemen yang sama
+        return { jnjJabatan: jenjangJabatanOptions, kelompokJabatan: kelompokJabatanOptions, resikoKerja: resikoKerjaOptions, departemen: departemenOptions, indexins, bidang: bidangOptions, sttsWp: sttsWpOptions, sttsKerja: sttsKerjaOptions, pendidikan: pendidikanOptions, bank: bankOptions, emergencyIndex: emergencyIndexOptions };
+    }, [refs, jenjangJabatanOptions, departemenOptions, bidangOptions, pendidikanOptions, resikoKerjaOptions, kelompokJabatanOptions, emergencyIndexOptions, bankOptions, sttsWpOptions, sttsKerjaOptions]);
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
@@ -62,8 +153,648 @@ export default function Create({ refs = {} }) {
 		});
 	};
 
+	// Form untuk tambah Jenjang Jabatan
+	const jenjangJabatanForm = useForm({
+		kode: "",
+		nama: "",
+		tnj: "",
+		indek: "",
+	});
+
+	// Form untuk tambah Departemen
+	const departemenForm = useForm({
+		dep_id: "",
+		nama: "",
+	});
+
+	// Form untuk tambah Bidang
+	const bidangForm = useForm({
+		nama: "",
+	});
+
+	// Form untuk tambah Pendidikan
+	const pendidikanForm = useForm({
+		tingkat: "",
+		indek: "",
+		gapok1: "",
+		kenaikan: "",
+		maksimal: "",
+	});
+
+	// Form untuk tambah Resiko Kerja
+	const resikoKerjaForm = useForm({
+		kode_resiko: "",
+		nama_resiko: "",
+		indek: "",
+	});
+
+	// Form untuk tambah Kelompok Jabatan
+	const kelompokJabatanForm = useForm({
+		kode_kelompok: "",
+		nama_kelompok: "",
+		indek: "",
+	});
+
+	// Form untuk tambah Emergency Index
+	const emergencyIndexForm = useForm({
+		kode_emergency: "",
+		nama_emergency: "",
+		indek: "",
+	});
+
+	// Form untuk tambah Bank
+	const bankForm = useForm({
+		namabank: "",
+	});
+
+	// Form untuk tambah Status WP
+	const sttsWpForm = useForm({
+		stts: "",
+		ktg: "",
+	});
+
+	// Form untuk tambah Status Kerja
+	const sttsKerjaForm = useForm({
+		stts: "",
+		ktg: "",
+		indek: "",
+		hakcuti: "",
+	});
+
+	const handleTambahSttsKerja = (e) => {
+		e.preventDefault();
+		sttsKerjaForm.post(route("stts-kerja.store"), {
+			preserveScroll: true,
+			preserveState: true,
+			onSuccess: (page) => {
+				// Cek apakah ada data status kerja yang baru dibuat dari flash message
+				const createdData = page.props.flash?.sttsKerjaCreated;
+				if (createdData) {
+					const newStts = createdData.stts;
+					if (newStts) {
+						setData("stts_kerja", newStts);
+						// Tambahkan ke options secara langsung
+						const newOption = {
+							value: newStts,
+							label: `${newStts}${sttsKerjaForm.data.ktg ? ` - ${sttsKerjaForm.data.ktg}` : ""}`,
+						};
+						setSttsKerjaOptions((prev) => {
+							// Cek apakah sudah ada, jika belum tambahkan
+							const exists = prev.find((opt) => opt.value === newStts);
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				} else {
+					// Fallback: gunakan data dari form
+					const newStts = sttsKerjaForm.data.stts;
+					if (newStts) {
+						setData("stts_kerja", newStts);
+						const newOption = {
+							value: newStts,
+							label: `${newStts}${sttsKerjaForm.data.ktg ? ` - ${sttsKerjaForm.data.ktg}` : ""}`,
+						};
+						setSttsKerjaOptions((prev) => {
+							const exists = prev.find((opt) => opt.value === newStts);
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				}
+				// Tutup modal dan reset form
+				setShowSttsKerjaModal(false);
+				sttsKerjaForm.reset();
+				// Reload refs untuk sinkronisasi dengan server
+				router.reload({ only: ["refs"], preserveScroll: true, preserveState: true });
+			},
+			onError: () => {
+				// Tetap buka modal jika ada error agar user bisa melihat error
+				// Error akan otomatis ditampilkan oleh Inertia form
+			},
+		});
+	};
+
+	const handleTambahSttsWp = (e) => {
+		e.preventDefault();
+		sttsWpForm.post(route("stts-wp.store"), {
+			preserveScroll: true,
+			preserveState: true,
+			onSuccess: (page) => {
+				// Cek apakah ada data status WP yang baru dibuat dari flash message
+				const createdData = page.props.flash?.sttsWpCreated;
+				if (createdData) {
+					const newStts = createdData.stts;
+					if (newStts) {
+						setData("stts_wp", newStts);
+						// Tambahkan ke options secara langsung
+						const newOption = {
+							value: newStts,
+							label: `${newStts}${sttsWpForm.data.ktg ? ` - ${sttsWpForm.data.ktg}` : ""}`,
+						};
+						setSttsWpOptions((prev) => {
+							// Cek apakah sudah ada, jika belum tambahkan
+							const exists = prev.find((opt) => opt.value === newStts);
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				} else {
+					// Fallback: gunakan data dari form
+					const newStts = sttsWpForm.data.stts;
+					if (newStts) {
+						setData("stts_wp", newStts);
+						const newOption = {
+							value: newStts,
+							label: `${newStts}${sttsWpForm.data.ktg ? ` - ${sttsWpForm.data.ktg}` : ""}`,
+						};
+						setSttsWpOptions((prev) => {
+							const exists = prev.find((opt) => opt.value === newStts);
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				}
+				// Tutup modal dan reset form
+				setShowSttsWpModal(false);
+				sttsWpForm.reset();
+				// Reload refs untuk sinkronisasi dengan server
+				router.reload({ only: ["refs"], preserveScroll: true, preserveState: true });
+			},
+			onError: () => {
+				// Tetap buka modal jika ada error agar user bisa melihat error
+				// Error akan otomatis ditampilkan oleh Inertia form
+			},
+		});
+	};
+
+	const handleTambahBank = (e) => {
+		e.preventDefault();
+		bankForm.post(route("bank.store"), {
+			preserveScroll: true,
+			preserveState: true,
+			onSuccess: (page) => {
+				// Cek apakah ada data bank yang baru dibuat dari flash message
+				const createdData = page.props.flash?.bankCreated;
+				if (createdData) {
+					const newNamabank = createdData.namabank;
+					if (newNamabank) {
+						setData("bpd", newNamabank);
+						// Tambahkan ke options secara langsung
+						const newOption = {
+							value: newNamabank,
+							label: newNamabank,
+						};
+						setBankOptions((prev) => {
+							// Cek apakah sudah ada, jika belum tambahkan
+							const exists = prev.find((opt) => opt.value === newNamabank);
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				} else {
+					// Fallback: gunakan data dari form
+					const newNamabank = bankForm.data.namabank;
+					if (newNamabank) {
+						setData("bpd", newNamabank);
+						const newOption = {
+							value: newNamabank,
+							label: newNamabank,
+						};
+						setBankOptions((prev) => {
+							const exists = prev.find((opt) => opt.value === newNamabank);
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				}
+				// Tutup modal dan reset form
+				setShowBankModal(false);
+				bankForm.reset();
+				// Reload refs untuk sinkronisasi dengan server
+				router.reload({ only: ["refs"], preserveScroll: true, preserveState: true });
+			},
+			onError: () => {
+				// Tetap buka modal jika ada error agar user bisa melihat error
+				// Error akan otomatis ditampilkan oleh Inertia form
+			},
+		});
+	};
+
+	const handleTambahEmergencyIndex = (e) => {
+		e.preventDefault();
+		emergencyIndexForm.post(route("emergency-index.store"), {
+			preserveScroll: true,
+			preserveState: true,
+			onSuccess: (page) => {
+				// Cek apakah ada data emergency index yang baru dibuat dari flash message
+				const createdData = page.props.flash?.emergencyIndexCreated;
+				if (createdData) {
+					const newKodeEmergency = createdData.kode_emergency;
+					if (newKodeEmergency) {
+						setData("kode_emergency", newKodeEmergency);
+						// Tambahkan ke options secara langsung
+						const newOption = {
+							value: newKodeEmergency,
+							label: `${newKodeEmergency} - ${emergencyIndexForm.data.nama_emergency}`,
+						};
+						setEmergencyIndexOptions((prev) => {
+							// Cek apakah sudah ada, jika belum tambahkan
+							const exists = prev.find((opt) => opt.value === newKodeEmergency);
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				} else {
+					// Fallback: gunakan data dari form
+					const newKodeEmergency = emergencyIndexForm.data.kode_emergency;
+					if (newKodeEmergency) {
+						setData("kode_emergency", newKodeEmergency);
+						const newOption = {
+							value: newKodeEmergency,
+							label: `${newKodeEmergency} - ${emergencyIndexForm.data.nama_emergency}`,
+						};
+						setEmergencyIndexOptions((prev) => {
+							const exists = prev.find((opt) => opt.value === newKodeEmergency);
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				}
+				// Tutup modal dan reset form
+				setShowEmergencyIndexModal(false);
+				emergencyIndexForm.reset();
+				// Reload refs untuk sinkronisasi dengan server
+				router.reload({ only: ["refs"], preserveScroll: true, preserveState: true });
+			},
+			onError: () => {
+				// Tetap buka modal jika ada error agar user bisa melihat error
+				// Error akan otomatis ditampilkan oleh Inertia form
+			},
+		});
+	};
+
+	const handleTambahKelompokJabatan = (e) => {
+		e.preventDefault();
+		kelompokJabatanForm.post(route("kelompok-jabatan.store"), {
+			preserveScroll: true,
+			preserveState: true,
+			onSuccess: (page) => {
+				// Cek apakah ada data kelompok jabatan yang baru dibuat dari flash message
+				const createdData = page.props.flash?.kelompokJabatanCreated;
+				if (createdData) {
+					const newKodeKelompok = createdData.kode_kelompok;
+					if (newKodeKelompok) {
+						setData("kode_kelompok", newKodeKelompok);
+						// Tambahkan ke options secara langsung
+						const newOption = {
+							value: newKodeKelompok,
+							label: `${newKodeKelompok} - ${kelompokJabatanForm.data.nama_kelompok}`,
+						};
+						setKelompokJabatanOptions((prev) => {
+							// Cek apakah sudah ada, jika belum tambahkan
+							const exists = prev.find((opt) => opt.value === newKodeKelompok);
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				} else {
+					// Fallback: gunakan data dari form
+					const newKodeKelompok = kelompokJabatanForm.data.kode_kelompok;
+					if (newKodeKelompok) {
+						setData("kode_kelompok", newKodeKelompok);
+						const newOption = {
+							value: newKodeKelompok,
+							label: `${newKodeKelompok} - ${kelompokJabatanForm.data.nama_kelompok}`,
+						};
+						setKelompokJabatanOptions((prev) => {
+							const exists = prev.find((opt) => opt.value === newKodeKelompok);
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				}
+				// Tutup modal dan reset form
+				setShowKelompokJabatanModal(false);
+				kelompokJabatanForm.reset();
+				// Reload refs untuk sinkronisasi dengan server
+				router.reload({ only: ["refs"], preserveScroll: true, preserveState: true });
+			},
+			onError: () => {
+				// Tetap buka modal jika ada error agar user bisa melihat error
+				// Error akan otomatis ditampilkan oleh Inertia form
+			},
+		});
+	};
+
+	const handleTambahResikoKerja = (e) => {
+		e.preventDefault();
+		resikoKerjaForm.post(route("resiko-kerja.store"), {
+			preserveScroll: true,
+			preserveState: true,
+			onSuccess: (page) => {
+				// Cek apakah ada data resiko kerja yang baru dibuat dari flash message
+				const createdData = page.props.flash?.resikoKerjaCreated;
+				if (createdData) {
+					const newKodeResiko = createdData.kode_resiko;
+					if (newKodeResiko) {
+						setData("kode_resiko", newKodeResiko);
+						// Tambahkan ke options secara langsung
+						const newOption = {
+							value: newKodeResiko,
+							label: `${newKodeResiko} - ${resikoKerjaForm.data.nama_resiko}`,
+						};
+						setResikoKerjaOptions((prev) => {
+							// Cek apakah sudah ada, jika belum tambahkan
+							const exists = prev.find((opt) => opt.value === newKodeResiko);
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				} else {
+					// Fallback: gunakan data dari form
+					const newKodeResiko = resikoKerjaForm.data.kode_resiko;
+					if (newKodeResiko) {
+						setData("kode_resiko", newKodeResiko);
+						const newOption = {
+							value: newKodeResiko,
+							label: `${newKodeResiko} - ${resikoKerjaForm.data.nama_resiko}`,
+						};
+						setResikoKerjaOptions((prev) => {
+							const exists = prev.find((opt) => opt.value === newKodeResiko);
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				}
+				// Tutup modal dan reset form
+				setShowResikoKerjaModal(false);
+				resikoKerjaForm.reset();
+				// Reload refs untuk sinkronisasi dengan server
+				router.reload({ only: ["refs"], preserveScroll: true, preserveState: true });
+			},
+			onError: () => {
+				// Tetap buka modal jika ada error agar user bisa melihat error
+				// Error akan otomatis ditampilkan oleh Inertia form
+			},
+		});
+	};
+
+	const handleTambahPendidikan = (e) => {
+		e.preventDefault();
+		pendidikanForm.post(route("pendidikan.store"), {
+			preserveScroll: true,
+			preserveState: true,
+			onSuccess: (page) => {
+				// Cek apakah ada data pendidikan yang baru dibuat dari flash message
+				const createdData = page.props.flash?.pendidikanCreated;
+				if (createdData) {
+					const newTingkat = createdData.tingkat;
+					if (newTingkat) {
+						setData("pendidikan", newTingkat);
+						// Tambahkan ke options secara langsung
+						const newOption = {
+							value: newTingkat,
+							label: newTingkat,
+						};
+						setPendidikanOptions((prev) => {
+							// Cek apakah sudah ada, jika belum tambahkan
+							const exists = prev.find((opt) => opt.value === newTingkat);
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				} else {
+					// Fallback: gunakan data dari form
+					const newTingkat = pendidikanForm.data.tingkat;
+					if (newTingkat) {
+						setData("pendidikan", newTingkat);
+						const newOption = {
+							value: newTingkat,
+							label: newTingkat,
+						};
+						setPendidikanOptions((prev) => {
+							const exists = prev.find((opt) => opt.value === newTingkat);
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				}
+				// Tutup modal dan reset form
+				setShowPendidikanModal(false);
+				pendidikanForm.reset();
+				// Reload refs untuk sinkronisasi dengan server
+				router.reload({ only: ["refs"], preserveScroll: true, preserveState: true });
+			},
+			onError: () => {
+				// Tetap buka modal jika ada error agar user bisa melihat error
+				// Error akan otomatis ditampilkan oleh Inertia form
+			},
+		});
+	};
+
+	const handleTambahBidang = (e) => {
+		e.preventDefault();
+		bidangForm.post(route("bidang.store"), {
+			preserveScroll: true,
+			preserveState: true,
+			onSuccess: (page) => {
+				// Cek apakah ada data bidang yang baru dibuat dari flash message
+				const createdData = page.props.flash?.bidangCreated;
+				if (createdData) {
+					const newNama = createdData.nama;
+					if (newNama) {
+						setData("bidang", newNama);
+						// Tambahkan ke options secara langsung
+						const newOption = {
+							value: newNama,
+							label: newNama,
+						};
+						setBidangOptions((prev) => {
+							// Cek apakah sudah ada, jika belum tambahkan
+							const exists = prev.find((opt) => opt.value === newNama);
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				} else {
+					// Fallback: gunakan data dari form
+					const newNama = bidangForm.data.nama;
+					if (newNama) {
+						setData("bidang", newNama);
+						const newOption = {
+							value: newNama,
+							label: newNama,
+						};
+						setBidangOptions((prev) => {
+							const exists = prev.find((opt) => opt.value === newNama);
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				}
+				// Tutup modal dan reset form
+				setShowBidangModal(false);
+				bidangForm.reset();
+				// Reload refs untuk sinkronisasi dengan server
+				router.reload({ only: ["refs"], preserveScroll: true, preserveState: true });
+			},
+			onError: () => {
+				// Tetap buka modal jika ada error agar user bisa melihat error
+				// Error akan otomatis ditampilkan oleh Inertia form
+			},
+		});
+	};
+
+	const handleTambahDepartemen = (e) => {
+		e.preventDefault();
+		departemenForm.post(route("departemen.store"), {
+			preserveScroll: true,
+			preserveState: true,
+			onSuccess: (page) => {
+				// Cek apakah ada data departemen yang baru dibuat dari flash message
+				const createdData = page.props.flash?.departemenCreated;
+				if (createdData) {
+					const newDepId = createdData.dep_id;
+					const newNama = createdData.nama;
+					if (newDepId) {
+						setData("departemen", newDepId);
+						// Tambahkan ke options secara langsung
+						const newOption = {
+							value: newDepId,
+							label: `${newDepId} - ${newNama}`,
+						};
+						setDepartemenOptions((prev) => {
+							// Cek apakah sudah ada, jika belum tambahkan
+							const exists = prev.find((opt) => opt.value === newDepId);
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				} else {
+					// Fallback: gunakan data dari form
+					const newDepId = departemenForm.data.dep_id;
+					if (newDepId) {
+						setData("departemen", newDepId);
+						const newOption = {
+							value: newDepId,
+							label: `${newDepId} - ${departemenForm.data.nama}`,
+						};
+						setDepartemenOptions((prev) => {
+							const exists = prev.find((opt) => opt.value === newDepId);
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				}
+				// Tutup modal dan reset form
+				setShowDepartemenModal(false);
+				departemenForm.reset();
+				// Reload refs untuk sinkronisasi dengan server
+				router.reload({ only: ["refs"], preserveScroll: true, preserveState: true });
+			},
+			onError: () => {
+				// Tetap buka modal jika ada error agar user bisa melihat error
+				// Error akan otomatis ditampilkan oleh Inertia form
+			},
+		});
+	};
+
+	const handleTambahJenjangJabatan = (e) => {
+		e.preventDefault();
+		jenjangJabatanForm.post(route("jenjang-jabatan.store"), {
+			preserveScroll: true,
+			preserveState: true,
+			onSuccess: (page) => {
+				// Cek apakah ada data jenjang jabatan yang baru dibuat dari flash message
+				const createdData = page.props.flash?.jenjangJabatanCreated;
+				if (createdData) {
+					const newKode = createdData.kode;
+					const newNama = createdData.nama;
+					if (newKode) {
+						setData("jnj_jabatan", newKode);
+						// Tambahkan ke options secara langsung
+						const newOption = {
+							value: newKode,
+							label: `${newKode} - ${newNama}`,
+						};
+						setJenjangJabatanOptions((prev) => {
+							// Cek apakah sudah ada, jika belum tambahkan
+							const exists = prev.find((opt) => opt.value === newKode);
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				} else {
+					// Fallback: gunakan data dari form
+					const newKode = jenjangJabatanForm.data.kode;
+					if (newKode) {
+						setData("jnj_jabatan", newKode);
+						const newOption = {
+							value: newKode,
+							label: `${newKode} - ${jenjangJabatanForm.data.nama}`,
+						};
+						setJenjangJabatanOptions((prev) => {
+							const exists = prev.find((opt) => opt.value === newKode);
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				}
+				// Tutup modal dan reset form
+				setShowJenjangJabatanModal(false);
+				jenjangJabatanForm.reset();
+				// Reload refs untuk sinkronisasi dengan server
+				router.reload({ only: ["refs"], preserveScroll: true, preserveState: true });
+			},
+			onError: () => {
+				// Tetap buka modal jika ada error agar user bisa melihat error
+				// Error akan otomatis ditampilkan oleh Inertia form
+			},
+		});
+	};
+
 	return (
-		<AppLayout>
+		<SidebarPengaturan title="Kepegawaian">
 			<Head title="Tambah Pegawai Baru" />
 
 			<div className="py-6">
@@ -127,118 +858,325 @@ export default function Create({ refs = {} }) {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Jenjang Jabatan</label>
-                                <SearchableSelect
-                                    options={options.jnjJabatan}
-                                    value={data.jnj_jabatan}
-                                    onChange={(v) => setData("jnj_jabatan", v)}
-                                    placeholder="Pilih jenjang jabatan"
-                                    searchPlaceholder="Cari kode/nama jenjang jabatan"
-                                    error={!!errors.jnj_jabatan}
-                                />
+                                <div className="flex gap-2">
+                                    <div className="flex-1">
+                                        <SearchableSelect
+                                            options={options.jnjJabatan}
+                                            value={data.jnj_jabatan}
+                                            onChange={(v) => setData("jnj_jabatan", v)}
+                                            placeholder="Pilih jenjang jabatan"
+                                            searchPlaceholder="Cari kode/nama jenjang jabatan"
+                                            error={!!errors.jnj_jabatan}
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowJenjangJabatanModal(true)}
+                                        className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                                        title="Tambah Jenjang Jabatan Baru"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            fill="currentColor"
+                                            className="w-5 h-5"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
                                 {errors.jnj_jabatan && (<p className="mt-1 text-sm text-red-600">{errors.jnj_jabatan}</p>)}
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Departemen</label>
-                                <SearchableSelect
-                                    options={options.departemen}
-                                    value={data.departemen}
-                                    onChange={(v) => setData("departemen", v)}
-                                    placeholder="Pilih departemen"
-                                    searchPlaceholder="Cari kode/nama departemen"
-                                    error={!!errors.departemen}
-                                />
+                                <div className="flex gap-2">
+                                    <div className="flex-1">
+                                        <SearchableSelect
+                                            options={options.departemen}
+                                            value={data.departemen}
+                                            onChange={(v) => setData("departemen", v)}
+                                            placeholder="Pilih departemen"
+                                            searchPlaceholder="Cari kode/nama departemen"
+                                            error={!!errors.departemen}
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowDepartemenModal(true)}
+                                        className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                                        title="Tambah Departemen Baru"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            fill="currentColor"
+                                            className="w-5 h-5"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
                                 {errors.departemen && (<p className="mt-1 text-sm text-red-600">{errors.departemen}</p>)}
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Bidang</label>
-                                <SearchableSelect
-                                    options={options.bidang}
-                                    value={data.bidang}
-                                    onChange={(v) => setData("bidang", v)}
-                                    placeholder="Pilih bidang"
-                                    searchPlaceholder="Cari nama bidang"
-                                    error={!!errors.bidang}
-                                />
+                                <div className="flex gap-2">
+                                    <div className="flex-1">
+                                        <SearchableSelect
+                                            options={options.bidang}
+                                            value={data.bidang}
+                                            onChange={(v) => setData("bidang", v)}
+                                            placeholder="Pilih bidang"
+                                            searchPlaceholder="Cari nama bidang"
+                                            error={!!errors.bidang}
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowBidangModal(true)}
+                                        className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                                        title="Tambah Bidang Baru"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            fill="currentColor"
+                                            className="w-5 h-5"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
                                 {errors.bidang && (<p className="mt-1 text-sm text-red-600">{errors.bidang}</p>)}
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status WP</label>
-                                <SearchableSelect
-                                    options={options.sttsWp}
-                                    value={data.stts_wp}
-                                    onChange={(v) => setData("stts_wp", v)}
-                                    placeholder="Pilih status WP"
-                                    searchPlaceholder="Cari status WP"
-                                    error={!!errors.stts_wp}
-                                />
+                                <div className="flex gap-2">
+                                    <div className="flex-1">
+                                        <SearchableSelect
+                                            options={options.sttsWp}
+                                            value={data.stts_wp}
+                                            onChange={(v) => setData("stts_wp", v)}
+                                            placeholder="Pilih status WP"
+                                            searchPlaceholder="Cari status WP"
+                                            error={!!errors.stts_wp}
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowSttsWpModal(true)}
+                                        className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                                        title="Tambah Status WP Baru"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            fill="currentColor"
+                                            className="w-5 h-5"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
                                 {errors.stts_wp && (<p className="mt-1 text-sm text-red-600">{errors.stts_wp}</p>)}
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status Kerja</label>
-                                <SearchableSelect
-                                    options={options.sttsKerja}
-                                    value={data.stts_kerja}
-                                    onChange={(v) => setData("stts_kerja", v)}
-                                    placeholder="Pilih status kerja"
-                                    searchPlaceholder="Cari status kerja"
-                                    error={!!errors.stts_kerja}
-                                />
+                                <div className="flex gap-2">
+                                    <div className="flex-1">
+                                        <SearchableSelect
+                                            options={options.sttsKerja}
+                                            value={data.stts_kerja}
+                                            onChange={(v) => setData("stts_kerja", v)}
+                                            placeholder="Pilih status kerja"
+                                            searchPlaceholder="Cari status kerja"
+                                            error={!!errors.stts_kerja}
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowSttsKerjaModal(true)}
+                                        className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                                        title="Tambah Status Kerja Baru"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            fill="currentColor"
+                                            className="w-5 h-5"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
                                 {errors.stts_kerja && (<p className="mt-1 text-sm text-red-600">{errors.stts_kerja}</p>)}
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pendidikan</label>
-                                <SearchableSelect
-                                    options={options.pendidikan}
-                                    value={data.pendidikan}
-                                    onChange={(v) => setData("pendidikan", v)}
-                                    placeholder="Pilih pendidikan"
-                                    searchPlaceholder="Cari tingkat pendidikan"
-                                    error={!!errors.pendidikan}
-                                />
+                                <div className="flex gap-2">
+                                    <div className="flex-1">
+                                        <SearchableSelect
+                                            options={options.pendidikan}
+                                            value={data.pendidikan}
+                                            onChange={(v) => setData("pendidikan", v)}
+                                            placeholder="Pilih pendidikan"
+                                            searchPlaceholder="Cari tingkat pendidikan"
+                                            error={!!errors.pendidikan}
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPendidikanModal(true)}
+                                        className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                                        title="Tambah Pendidikan Baru"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            fill="currentColor"
+                                            className="w-5 h-5"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
                                 {errors.pendidikan && (<p className="mt-1 text-sm text-red-600">{errors.pendidikan}</p>)}
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Kelompok Jabatan</label>
-                                <SearchableSelect
-                                    options={options.kelompokJabatan}
-                                    value={data.kode_kelompok}
-                                    onChange={(v) => setData("kode_kelompok", v)}
-                                    placeholder="Pilih kelompok jabatan"
-                                    searchPlaceholder="Cari kode/nama kelompok"
-                                    error={!!errors.kode_kelompok}
-                                />
+                                <div className="flex gap-2">
+                                    <div className="flex-1">
+                                        <SearchableSelect
+                                            options={options.kelompokJabatan}
+                                            value={data.kode_kelompok}
+                                            onChange={(v) => setData("kode_kelompok", v)}
+                                            placeholder="Pilih kelompok jabatan"
+                                            searchPlaceholder="Cari kode/nama kelompok"
+                                            error={!!errors.kode_kelompok}
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowKelompokJabatanModal(true)}
+                                        className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                                        title="Tambah Kelompok Jabatan Baru"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            fill="currentColor"
+                                            className="w-5 h-5"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
                                 {errors.kode_kelompok && (<p className="mt-1 text-sm text-red-600">{errors.kode_kelompok}</p>)}
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Resiko Kerja</label>
-                                <SearchableSelect
-                                    options={options.resikoKerja}
-                                    value={data.kode_resiko}
-                                    onChange={(v) => setData("kode_resiko", v)}
-                                    placeholder="Pilih resiko kerja"
-                                    searchPlaceholder="Cari kode/nama resiko"
-                                    error={!!errors.kode_resiko}
-                                />
+                                <div className="flex gap-2">
+                                    <div className="flex-1">
+                                        <SearchableSelect
+                                            options={options.resikoKerja}
+                                            value={data.kode_resiko}
+                                            onChange={(v) => setData("kode_resiko", v)}
+                                            placeholder="Pilih resiko kerja"
+                                            searchPlaceholder="Cari kode/nama resiko"
+                                            error={!!errors.kode_resiko}
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowResikoKerjaModal(true)}
+                                        className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                                        title="Tambah Resiko Kerja Baru"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            fill="currentColor"
+                                            className="w-5 h-5"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
                                 {errors.kode_resiko && (<p className="mt-1 text-sm text-red-600">{errors.kode_resiko}</p>)}
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Emergency Index</label>
-                                <SearchableSelect
-                                    options={options.emergencyIndex}
-                                    value={data.kode_emergency}
-                                    onChange={(v) => setData("kode_emergency", v)}
-                                    placeholder="Pilih emergency index"
-                                    searchPlaceholder="Cari kode/nama emergency"
-                                    error={!!errors.kode_emergency}
-                                />
+                                <div className="flex gap-2">
+                                    <div className="flex-1">
+                                        <SearchableSelect
+                                            options={options.emergencyIndex}
+                                            value={data.kode_emergency}
+                                            onChange={(v) => setData("kode_emergency", v)}
+                                            placeholder="Pilih emergency index"
+                                            searchPlaceholder="Cari kode/nama emergency"
+                                            error={!!errors.kode_emergency}
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowEmergencyIndexModal(true)}
+                                        className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                                        title="Tambah Emergency Index Baru"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            fill="currentColor"
+                                            className="w-5 h-5"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
                                 {errors.kode_emergency && (<p className="mt-1 text-sm text-red-600">{errors.kode_emergency}</p>)}
                             </div>
 
@@ -346,14 +1284,37 @@ export default function Create({ refs = {} }) {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Bank (BPD)</label>
-                                <SearchableSelect
-                                    options={options.bank}
-                                    value={data.bpd}
-                                    onChange={(v) => setData("bpd", v)}
-                                    placeholder="Pilih bank"
-                                    searchPlaceholder="Cari nama bank"
-                                    error={!!errors.bpd}
-                                />
+                                <div className="flex gap-2">
+                                    <div className="flex-1">
+                                        <SearchableSelect
+                                            options={options.bank}
+                                            value={data.bpd}
+                                            onChange={(v) => setData("bpd", v)}
+                                            placeholder="Pilih bank"
+                                            searchPlaceholder="Cari nama bank"
+                                            error={!!errors.bpd}
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowBankModal(true)}
+                                        className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                                        title="Tambah Bank Baru"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            fill="currentColor"
+                                            className="w-5 h-5"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
                                 {errors.bpd && (<p className="mt-1 text-sm text-red-600">{errors.bpd}</p>)}
                             </div>
 
@@ -885,8 +1846,1082 @@ export default function Create({ refs = {} }) {
 							</div>
 						</div>
 					</form>
+
+					{/* Modal Tambah Jenjang Jabatan */}
+					{showJenjangJabatanModal && (
+						<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+							<div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 border border-gray-200 dark:border-gray-700">
+								<div className="p-6">
+									<div className="flex justify-between items-center mb-4">
+										<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+											Tambah Jenjang Jabatan Baru
+										</h3>
+										<button
+											type="button"
+											onClick={() => {
+												setShowJenjangJabatanModal(false);
+												jenjangJabatanForm.reset();
+											}}
+											className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+										>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth="2"
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												className="w-6 h-6"
+											>
+												<line x1="18" y1="6" x2="6" y2="18"></line>
+												<line x1="6" y1="6" x2="18" y2="18"></line>
+											</svg>
+										</button>
+									</div>
+
+									<form onSubmit={handleTambahJenjangJabatan} className="space-y-4">
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Kode *
+											</label>
+											<input
+												type="text"
+												value={jenjangJabatanForm.data.kode}
+												onChange={(e) => jenjangJabatanForm.setData("kode", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan kode"
+												maxLength="10"
+												required
+											/>
+											{jenjangJabatanForm.errors.kode && (
+												<p className="mt-1 text-sm text-red-600">{jenjangJabatanForm.errors.kode}</p>
+											)}
+										</div>
+
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Nama *
+											</label>
+											<input
+												type="text"
+												value={jenjangJabatanForm.data.nama}
+												onChange={(e) => jenjangJabatanForm.setData("nama", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan nama jenjang jabatan"
+												maxLength="50"
+												required
+											/>
+											{jenjangJabatanForm.errors.nama && (
+												<p className="mt-1 text-sm text-red-600">{jenjangJabatanForm.errors.nama}</p>
+											)}
+										</div>
+
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Tunjangan *
+											</label>
+											<input
+												type="number"
+												step="0.01"
+												value={jenjangJabatanForm.data.tnj}
+												onChange={(e) => jenjangJabatanForm.setData("tnj", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan tunjangan"
+												required
+											/>
+											{jenjangJabatanForm.errors.tnj && (
+												<p className="mt-1 text-sm text-red-600">{jenjangJabatanForm.errors.tnj}</p>
+											)}
+										</div>
+
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Indek
+											</label>
+											<input
+												type="number"
+												value={jenjangJabatanForm.data.indek}
+												onChange={(e) => jenjangJabatanForm.setData("indek", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan indek (opsional)"
+											/>
+											{jenjangJabatanForm.errors.indek && (
+												<p className="mt-1 text-sm text-red-600">{jenjangJabatanForm.errors.indek}</p>
+											)}
+										</div>
+
+										<div className="flex justify-end gap-3 pt-4">
+											<button
+												type="button"
+												onClick={() => {
+													setShowJenjangJabatanModal(false);
+													jenjangJabatanForm.reset();
+												}}
+												className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+											>
+												Batal
+											</button>
+											<button
+												type="submit"
+												disabled={jenjangJabatanForm.processing}
+												className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
+											>
+												{jenjangJabatanForm.processing ? "Menyimpan..." : "Simpan"}
+											</button>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					)}
+
+					{/* Modal Tambah Departemen */}
+					{showDepartemenModal && (
+						<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+							<div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 border border-gray-200 dark:border-gray-700">
+								<div className="p-6">
+									<div className="flex justify-between items-center mb-4">
+										<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+											Tambah Departemen Baru
+										</h3>
+										<button
+											type="button"
+											onClick={() => {
+												setShowDepartemenModal(false);
+												departemenForm.reset();
+											}}
+											className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+										>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth="2"
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												className="w-6 h-6"
+											>
+												<line x1="18" y1="6" x2="6" y2="18"></line>
+												<line x1="6" y1="6" x2="18" y2="18"></line>
+											</svg>
+										</button>
+									</div>
+
+									<form onSubmit={handleTambahDepartemen} className="space-y-4">
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Kode Departemen *
+											</label>
+											<input
+												type="text"
+												value={departemenForm.data.dep_id}
+												onChange={(e) => departemenForm.setData("dep_id", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan kode departemen"
+												maxLength="4"
+												required
+											/>
+											{departemenForm.errors.dep_id && (
+												<p className="mt-1 text-sm text-red-600">{departemenForm.errors.dep_id}</p>
+											)}
+										</div>
+
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Nama Departemen *
+											</label>
+											<input
+												type="text"
+												value={departemenForm.data.nama}
+												onChange={(e) => departemenForm.setData("nama", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan nama departemen"
+												maxLength="25"
+												required
+											/>
+											{departemenForm.errors.nama && (
+												<p className="mt-1 text-sm text-red-600">{departemenForm.errors.nama}</p>
+											)}
+										</div>
+
+										<div className="flex justify-end gap-3 pt-4">
+											<button
+												type="button"
+												onClick={() => {
+													setShowDepartemenModal(false);
+													departemenForm.reset();
+												}}
+												className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+											>
+												Batal
+											</button>
+											<button
+												type="submit"
+												disabled={departemenForm.processing}
+												className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
+											>
+												{departemenForm.processing ? "Menyimpan..." : "Simpan"}
+											</button>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					)}
+
+					{/* Modal Tambah Bidang */}
+					{showBidangModal && (
+						<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+							<div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 border border-gray-200 dark:border-gray-700">
+								<div className="p-6">
+									<div className="flex justify-between items-center mb-4">
+										<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+											Tambah Bidang Baru
+										</h3>
+										<button
+											type="button"
+											onClick={() => {
+												setShowBidangModal(false);
+												bidangForm.reset();
+											}}
+											className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+										>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth="2"
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												className="w-6 h-6"
+											>
+												<line x1="18" y1="6" x2="6" y2="18"></line>
+												<line x1="6" y1="6" x2="18" y2="18"></line>
+											</svg>
+										</button>
+									</div>
+
+									<form onSubmit={handleTambahBidang} className="space-y-4">
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Nama Bidang *
+											</label>
+											<input
+												type="text"
+												value={bidangForm.data.nama}
+												onChange={(e) => bidangForm.setData("nama", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan nama bidang"
+												maxLength="15"
+												required
+											/>
+											{bidangForm.errors.nama && (
+												<p className="mt-1 text-sm text-red-600">{bidangForm.errors.nama}</p>
+											)}
+										</div>
+
+										<div className="flex justify-end gap-3 pt-4">
+											<button
+												type="button"
+												onClick={() => {
+													setShowBidangModal(false);
+													bidangForm.reset();
+												}}
+												className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+											>
+												Batal
+											</button>
+											<button
+												type="submit"
+												disabled={bidangForm.processing}
+												className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
+											>
+												{bidangForm.processing ? "Menyimpan..." : "Simpan"}
+											</button>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					)}
+
+					{/* Modal Tambah Pendidikan */}
+					{showPendidikanModal && (
+						<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+							<div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 border border-gray-200 dark:border-gray-700">
+								<div className="p-6">
+									<div className="flex justify-between items-center mb-4">
+										<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+											Tambah Pendidikan Baru
+										</h3>
+										<button
+											type="button"
+											onClick={() => {
+												setShowPendidikanModal(false);
+												pendidikanForm.reset();
+											}}
+											className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+										>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth="2"
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												className="w-6 h-6"
+											>
+												<line x1="18" y1="6" x2="6" y2="18"></line>
+												<line x1="6" y1="6" x2="18" y2="18"></line>
+											</svg>
+										</button>
+									</div>
+
+									<form onSubmit={handleTambahPendidikan} className="space-y-4">
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Tingkat Pendidikan *
+											</label>
+											<input
+												type="text"
+												value={pendidikanForm.data.tingkat}
+												onChange={(e) => pendidikanForm.setData("tingkat", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan tingkat pendidikan (contoh: S1, S2, D3, dll)"
+												maxLength="80"
+												required
+											/>
+											{pendidikanForm.errors.tingkat && (
+												<p className="mt-1 text-sm text-red-600">{pendidikanForm.errors.tingkat}</p>
+											)}
+										</div>
+
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Indek
+											</label>
+											<input
+												type="number"
+												value={pendidikanForm.data.indek}
+												onChange={(e) => pendidikanForm.setData("indek", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan indek (opsional)"
+											/>
+											{pendidikanForm.errors.indek && (
+												<p className="mt-1 text-sm text-red-600">{pendidikanForm.errors.indek}</p>
+											)}
+										</div>
+
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Gaji Pokok 1
+											</label>
+											<input
+												type="number"
+												step="0.01"
+												value={pendidikanForm.data.gapok1}
+												onChange={(e) => pendidikanForm.setData("gapok1", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan gaji pokok 1 (opsional)"
+											/>
+											{pendidikanForm.errors.gapok1 && (
+												<p className="mt-1 text-sm text-red-600">{pendidikanForm.errors.gapok1}</p>
+											)}
+										</div>
+
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Kenaikan
+											</label>
+											<input
+												type="number"
+												step="0.01"
+												value={pendidikanForm.data.kenaikan}
+												onChange={(e) => pendidikanForm.setData("kenaikan", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan kenaikan (opsional)"
+											/>
+											{pendidikanForm.errors.kenaikan && (
+												<p className="mt-1 text-sm text-red-600">{pendidikanForm.errors.kenaikan}</p>
+											)}
+										</div>
+
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Maksimal
+											</label>
+											<input
+												type="number"
+												value={pendidikanForm.data.maksimal}
+												onChange={(e) => pendidikanForm.setData("maksimal", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan maksimal (opsional)"
+											/>
+											{pendidikanForm.errors.maksimal && (
+												<p className="mt-1 text-sm text-red-600">{pendidikanForm.errors.maksimal}</p>
+											)}
+										</div>
+
+										<div className="flex justify-end gap-3 pt-4">
+											<button
+												type="button"
+												onClick={() => {
+													setShowPendidikanModal(false);
+													pendidikanForm.reset();
+												}}
+												className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+											>
+												Batal
+											</button>
+											<button
+												type="submit"
+												disabled={pendidikanForm.processing}
+												className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
+											>
+												{pendidikanForm.processing ? "Menyimpan..." : "Simpan"}
+											</button>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					)}
+
+					{/* Modal Tambah Resiko Kerja */}
+					{showResikoKerjaModal && (
+						<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+							<div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 border border-gray-200 dark:border-gray-700">
+								<div className="p-6">
+									<div className="flex justify-between items-center mb-4">
+										<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+											Tambah Resiko Kerja Baru
+										</h3>
+										<button
+											type="button"
+											onClick={() => {
+												setShowResikoKerjaModal(false);
+												resikoKerjaForm.reset();
+											}}
+											className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+										>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth="2"
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												className="w-6 h-6"
+											>
+												<line x1="18" y1="6" x2="6" y2="18"></line>
+												<line x1="6" y1="6" x2="18" y2="18"></line>
+											</svg>
+										</button>
+									</div>
+
+									<form onSubmit={handleTambahResikoKerja} className="space-y-4">
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Kode Resiko *
+											</label>
+											<input
+												type="text"
+												value={resikoKerjaForm.data.kode_resiko}
+												onChange={(e) => resikoKerjaForm.setData("kode_resiko", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan kode resiko (maksimal 3 karakter)"
+												maxLength="3"
+												required
+											/>
+											{resikoKerjaForm.errors.kode_resiko && (
+												<p className="mt-1 text-sm text-red-600">{resikoKerjaForm.errors.kode_resiko}</p>
+											)}
+										</div>
+
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Nama Resiko *
+											</label>
+											<input
+												type="text"
+												value={resikoKerjaForm.data.nama_resiko}
+												onChange={(e) => resikoKerjaForm.setData("nama_resiko", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan nama resiko"
+												maxLength="100"
+												required
+											/>
+											{resikoKerjaForm.errors.nama_resiko && (
+												<p className="mt-1 text-sm text-red-600">{resikoKerjaForm.errors.nama_resiko}</p>
+											)}
+										</div>
+
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Indek
+											</label>
+											<input
+												type="number"
+												value={resikoKerjaForm.data.indek}
+												onChange={(e) => resikoKerjaForm.setData("indek", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan indek (opsional)"
+											/>
+											{resikoKerjaForm.errors.indek && (
+												<p className="mt-1 text-sm text-red-600">{resikoKerjaForm.errors.indek}</p>
+											)}
+										</div>
+
+										<div className="flex justify-end gap-3 pt-4">
+											<button
+												type="button"
+												onClick={() => {
+													setShowResikoKerjaModal(false);
+													resikoKerjaForm.reset();
+												}}
+												className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+											>
+												Batal
+											</button>
+											<button
+												type="submit"
+												disabled={resikoKerjaForm.processing}
+												className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
+											>
+												{resikoKerjaForm.processing ? "Menyimpan..." : "Simpan"}
+											</button>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					)}
+
+					{/* Modal Tambah Kelompok Jabatan */}
+					{showKelompokJabatanModal && (
+						<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+							<div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 border border-gray-200 dark:border-gray-700">
+								<div className="p-6">
+									<div className="flex justify-between items-center mb-4">
+										<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+											Tambah Kelompok Jabatan Baru
+										</h3>
+										<button
+											type="button"
+											onClick={() => {
+												setShowKelompokJabatanModal(false);
+												kelompokJabatanForm.reset();
+											}}
+											className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+										>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth="2"
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												className="w-6 h-6"
+											>
+												<line x1="18" y1="6" x2="6" y2="18"></line>
+												<line x1="6" y1="6" x2="18" y2="18"></line>
+											</svg>
+										</button>
+									</div>
+
+									<form onSubmit={handleTambahKelompokJabatan} className="space-y-4">
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Kode Kelompok *
+											</label>
+											<input
+												type="text"
+												value={kelompokJabatanForm.data.kode_kelompok}
+												onChange={(e) => kelompokJabatanForm.setData("kode_kelompok", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan kode kelompok (maksimal 3 karakter)"
+												maxLength="3"
+												required
+											/>
+											{kelompokJabatanForm.errors.kode_kelompok && (
+												<p className="mt-1 text-sm text-red-600">{kelompokJabatanForm.errors.kode_kelompok}</p>
+											)}
+										</div>
+
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Nama Kelompok *
+											</label>
+											<input
+												type="text"
+												value={kelompokJabatanForm.data.nama_kelompok}
+												onChange={(e) => kelompokJabatanForm.setData("nama_kelompok", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan nama kelompok"
+												maxLength="100"
+												required
+											/>
+											{kelompokJabatanForm.errors.nama_kelompok && (
+												<p className="mt-1 text-sm text-red-600">{kelompokJabatanForm.errors.nama_kelompok}</p>
+											)}
+										</div>
+
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Indek
+											</label>
+											<input
+												type="number"
+												value={kelompokJabatanForm.data.indek}
+												onChange={(e) => kelompokJabatanForm.setData("indek", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan indek (opsional)"
+											/>
+											{kelompokJabatanForm.errors.indek && (
+												<p className="mt-1 text-sm text-red-600">{kelompokJabatanForm.errors.indek}</p>
+											)}
+										</div>
+
+										<div className="flex justify-end gap-3 pt-4">
+											<button
+												type="button"
+												onClick={() => {
+													setShowKelompokJabatanModal(false);
+													kelompokJabatanForm.reset();
+												}}
+												className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+											>
+												Batal
+											</button>
+											<button
+												type="submit"
+												disabled={kelompokJabatanForm.processing}
+												className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
+											>
+												{kelompokJabatanForm.processing ? "Menyimpan..." : "Simpan"}
+											</button>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					)}
+
+					{/* Modal Tambah Emergency Index */}
+					{showEmergencyIndexModal && (
+						<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+							<div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 border border-gray-200 dark:border-gray-700">
+								<div className="p-6">
+									<div className="flex justify-between items-center mb-4">
+										<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+											Tambah Emergency Index Baru
+										</h3>
+										<button
+											type="button"
+											onClick={() => {
+												setShowEmergencyIndexModal(false);
+												emergencyIndexForm.reset();
+											}}
+											className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+										>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth="2"
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												className="w-6 h-6"
+											>
+												<line x1="18" y1="6" x2="6" y2="18"></line>
+												<line x1="6" y1="6" x2="18" y2="18"></line>
+											</svg>
+										</button>
+									</div>
+
+									<form onSubmit={handleTambahEmergencyIndex} className="space-y-4">
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Kode Emergency *
+											</label>
+											<input
+												type="text"
+												value={emergencyIndexForm.data.kode_emergency}
+												onChange={(e) => emergencyIndexForm.setData("kode_emergency", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan kode emergency (maksimal 3 karakter)"
+												maxLength="3"
+												required
+											/>
+											{emergencyIndexForm.errors.kode_emergency && (
+												<p className="mt-1 text-sm text-red-600">{emergencyIndexForm.errors.kode_emergency}</p>
+											)}
+										</div>
+
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Nama Emergency *
+											</label>
+											<input
+												type="text"
+												value={emergencyIndexForm.data.nama_emergency}
+												onChange={(e) => emergencyIndexForm.setData("nama_emergency", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan nama emergency"
+												maxLength="100"
+												required
+											/>
+											{emergencyIndexForm.errors.nama_emergency && (
+												<p className="mt-1 text-sm text-red-600">{emergencyIndexForm.errors.nama_emergency}</p>
+											)}
+										</div>
+
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Indek
+											</label>
+											<input
+												type="number"
+												value={emergencyIndexForm.data.indek}
+												onChange={(e) => emergencyIndexForm.setData("indek", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan indek (opsional)"
+											/>
+											{emergencyIndexForm.errors.indek && (
+												<p className="mt-1 text-sm text-red-600">{emergencyIndexForm.errors.indek}</p>
+											)}
+										</div>
+
+										<div className="flex justify-end gap-3 pt-4">
+											<button
+												type="button"
+												onClick={() => {
+													setShowEmergencyIndexModal(false);
+													emergencyIndexForm.reset();
+												}}
+												className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+											>
+												Batal
+											</button>
+											<button
+												type="submit"
+												disabled={emergencyIndexForm.processing}
+												className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
+											>
+												{emergencyIndexForm.processing ? "Menyimpan..." : "Simpan"}
+											</button>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					)}
+
+					{/* Modal Tambah Bank */}
+					{showBankModal && (
+						<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+							<div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 border border-gray-200 dark:border-gray-700">
+								<div className="p-6">
+									<div className="flex justify-between items-center mb-4">
+										<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+											Tambah Bank Baru
+										</h3>
+										<button
+											type="button"
+											onClick={() => {
+												setShowBankModal(false);
+												bankForm.reset();
+											}}
+											className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+										>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth="2"
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												className="w-6 h-6"
+											>
+												<line x1="18" y1="6" x2="6" y2="18"></line>
+												<line x1="6" y1="6" x2="18" y2="18"></line>
+											</svg>
+										</button>
+									</div>
+
+									<form onSubmit={handleTambahBank} className="space-y-4">
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Nama Bank *
+											</label>
+											<input
+												type="text"
+												value={bankForm.data.namabank}
+												onChange={(e) => bankForm.setData("namabank", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan nama bank"
+												maxLength="50"
+												required
+											/>
+											{bankForm.errors.namabank && (
+												<p className="mt-1 text-sm text-red-600">{bankForm.errors.namabank}</p>
+											)}
+										</div>
+
+										<div className="flex justify-end gap-3 pt-4">
+											<button
+												type="button"
+												onClick={() => {
+													setShowBankModal(false);
+													bankForm.reset();
+												}}
+												className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+											>
+												Batal
+											</button>
+											<button
+												type="submit"
+												disabled={bankForm.processing}
+												className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
+											>
+												{bankForm.processing ? "Menyimpan..." : "Simpan"}
+											</button>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					)}
+
+					{/* Modal Tambah Status WP */}
+					{showSttsWpModal && (
+						<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+							<div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 border border-gray-200 dark:border-gray-700">
+								<div className="p-6">
+									<div className="flex justify-between items-center mb-4">
+										<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+											Tambah Status WP Baru
+										</h3>
+										<button
+											type="button"
+											onClick={() => {
+												setShowSttsWpModal(false);
+												sttsWpForm.reset();
+											}}
+											className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+										>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth="2"
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												className="w-6 h-6"
+											>
+												<line x1="18" y1="6" x2="6" y2="18"></line>
+												<line x1="6" y1="6" x2="18" y2="18"></line>
+											</svg>
+										</button>
+									</div>
+
+									<form onSubmit={handleTambahSttsWp} className="space-y-4">
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Status WP *
+											</label>
+											<input
+												type="text"
+												value={sttsWpForm.data.stts}
+												onChange={(e) => sttsWpForm.setData("stts", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan status WP (maksimal 5 karakter)"
+												maxLength="5"
+												required
+											/>
+											{sttsWpForm.errors.stts && (
+												<p className="mt-1 text-sm text-red-600">{sttsWpForm.errors.stts}</p>
+											)}
+										</div>
+
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Kategori
+											</label>
+											<input
+												type="text"
+												value={sttsWpForm.data.ktg}
+												onChange={(e) => sttsWpForm.setData("ktg", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan kategori (opsional)"
+												maxLength="50"
+											/>
+											{sttsWpForm.errors.ktg && (
+												<p className="mt-1 text-sm text-red-600">{sttsWpForm.errors.ktg}</p>
+											)}
+										</div>
+
+										<div className="flex justify-end gap-3 pt-4">
+											<button
+												type="button"
+												onClick={() => {
+													setShowSttsWpModal(false);
+													sttsWpForm.reset();
+												}}
+												className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+											>
+												Batal
+											</button>
+											<button
+												type="submit"
+												disabled={sttsWpForm.processing}
+												className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
+											>
+												{sttsWpForm.processing ? "Menyimpan..." : "Simpan"}
+											</button>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					)}
+
+					{/* Modal Tambah Status Kerja */}
+					{showSttsKerjaModal && (
+						<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+							<div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 border border-gray-200 dark:border-gray-700">
+								<div className="p-6">
+									<div className="flex justify-between items-center mb-4">
+										<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+											Tambah Status Kerja Baru
+										</h3>
+										<button
+											type="button"
+											onClick={() => {
+												setShowSttsKerjaModal(false);
+												sttsKerjaForm.reset();
+											}}
+											className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+										>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth="2"
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												className="w-6 h-6"
+											>
+												<line x1="18" y1="6" x2="6" y2="18"></line>
+												<line x1="6" y1="6" x2="18" y2="18"></line>
+											</svg>
+										</button>
+									</div>
+
+									<form onSubmit={handleTambahSttsKerja} className="space-y-4">
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Status Kerja *
+											</label>
+											<input
+												type="text"
+												value={sttsKerjaForm.data.stts}
+												onChange={(e) => sttsKerjaForm.setData("stts", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan status kerja (maksimal 3 karakter)"
+												maxLength="3"
+												required
+											/>
+											{sttsKerjaForm.errors.stts && (
+												<p className="mt-1 text-sm text-red-600">{sttsKerjaForm.errors.stts}</p>
+											)}
+										</div>
+
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Kategori
+											</label>
+											<input
+												type="text"
+												value={sttsKerjaForm.data.ktg}
+												onChange={(e) => sttsKerjaForm.setData("ktg", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan kategori (opsional)"
+												maxLength="20"
+											/>
+											{sttsKerjaForm.errors.ktg && (
+												<p className="mt-1 text-sm text-red-600">{sttsKerjaForm.errors.ktg}</p>
+											)}
+										</div>
+
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Indek
+											</label>
+											<input
+												type="number"
+												value={sttsKerjaForm.data.indek}
+												onChange={(e) => sttsKerjaForm.setData("indek", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan indek (opsional)"
+											/>
+											{sttsKerjaForm.errors.indek && (
+												<p className="mt-1 text-sm text-red-600">{sttsKerjaForm.errors.indek}</p>
+											)}
+										</div>
+
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Hak Cuti
+											</label>
+											<input
+												type="number"
+												value={sttsKerjaForm.data.hakcuti}
+												onChange={(e) => sttsKerjaForm.setData("hakcuti", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan hak cuti (opsional)"
+											/>
+											{sttsKerjaForm.errors.hakcuti && (
+												<p className="mt-1 text-sm text-red-600">{sttsKerjaForm.errors.hakcuti}</p>
+											)}
+										</div>
+
+										<div className="flex justify-end gap-3 pt-4">
+											<button
+												type="button"
+												onClick={() => {
+													setShowSttsKerjaModal(false);
+													sttsKerjaForm.reset();
+												}}
+												className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+											>
+												Batal
+											</button>
+											<button
+												type="submit"
+												disabled={sttsKerjaForm.processing}
+												className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
+											>
+												{sttsKerjaForm.processing ? "Menyimpan..." : "Simpan"}
+											</button>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					)}
 				</div>
 			</div>
-		</AppLayout>
+		</SidebarPengaturan>
 	);
 }

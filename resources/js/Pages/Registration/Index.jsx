@@ -102,6 +102,13 @@ export default function Registration({
         raw: "",
     });
 
+    // State untuk dropdown menu aksi per baris
+    const [openDropdown, setOpenDropdown] = useState(null);
+
+    // State untuk popup menu cetak
+    const [isPrintMenuOpen, setIsPrintMenuOpen] = useState(false);
+    const [selectedRegForPrint, setSelectedRegForPrint] = useState(null);
+
     const openBpjsPopup = ({ status, message, data, raw }) => {
         setBpjsPopup({
             status: typeof status === "number" ? status : null,
@@ -750,6 +757,54 @@ export default function Registration({
     useEffect(() => {
         setStats(calculateStats(registrations));
     }, []);
+
+    // Close dropdown saat klik di luar
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (openDropdown && !event.target.closest('.action-dropdown')) {
+                setOpenDropdown(null);
+            }
+        }
+
+        if (openDropdown) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [openDropdown]);
+
+    // Fungsi untuk membuka popup menu cetak
+    const openPrintMenu = (reg) => {
+        setSelectedRegForPrint(reg);
+        setIsPrintMenuOpen(true);
+        setOpenDropdown(null);
+    };
+
+    // Fungsi untuk menutup popup menu cetak
+    const closePrintMenu = () => {
+        setIsPrintMenuOpen(false);
+        setSelectedRegForPrint(null);
+    };
+
+    // Fungsi untuk cetak registrasi
+    const handlePrintRegistration = (reg) => {
+        try {
+            // Coba gunakan route jika tersedia, fallback ke URL langsung
+            let printUrl = `/registration/${reg.no_rawat}/print`;
+            try {
+                printUrl = route('registration.print', reg.no_rawat);
+            } catch (_) {
+                // Fallback ke URL langsung jika route tidak tersedia
+            }
+            window.open(printUrl, '_blank');
+            closePrintMenu();
+        } catch (error) {
+            console.error('Error opening print window:', error);
+            alert('Gagal membuka halaman cetak registrasi');
+        }
+    };
 
     // Cancel registration, sambil mengirim status panggil (2 = Tidak Hadir) ke Mobile JKN jika penjamin BPJS
     const handleCancelRegistration = async (regOrNoRawat) => {
@@ -2258,32 +2313,114 @@ export default function Registration({
                                                     ).toLocaleString("id-ID")}
                                                 </td>
                                                 <td className="px-3 py-2 text-center">
-                                                    <div className="flex items-center justify-center gap-2">
+                                                    <div className="relative action-dropdown">
                                                         <button
-                                                            onClick={() =>
-                                                                openDetailModal(
-                                                                    reg
-                                                                )
-                                                            }
-                                                            className="px-2 py-1 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setOpenDropdown(
+                                                                    openDropdown === reg.no_rawat
+                                                                        ? null
+                                                                        : reg.no_rawat
+                                                                );
+                                                            }}
+                                                            className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+                                                            title="Aksi"
                                                         >
-                                                            Detail
-                                                        </button>
-                                                        {reg.stts ===
-                                                            "Belum" && (
-                                                            <button
-                                                                onClick={(
-                                                                    e
-                                                                ) => {
-                                                                    e.stopPropagation();
-                                                                    handleCancelRegistration(
-                                                                        reg
-                                                                    );
-                                                                }}
-                                                                className="px-2 py-1 text-xs font-medium bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
+                                                            <svg
+                                                                className="w-5 h-5"
+                                                                fill="none"
+                                                                stroke="currentColor"
+                                                                viewBox="0 0 24 24"
                                                             >
-                                                                Batal
-                                                            </button>
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    strokeWidth={2}
+                                                                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                        {openDropdown === reg.no_rawat && (
+                                                            <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-10">
+                                                                <div className="py-1">
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            openDetailModal(reg);
+                                                                            setOpenDropdown(null);
+                                                                        }}
+                                                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                                                                    >
+                                                                        <svg
+                                                                            className="w-4 h-4"
+                                                                            fill="none"
+                                                                            stroke="currentColor"
+                                                                            viewBox="0 0 24 24"
+                                                                        >
+                                                                            <path
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                                strokeWidth={2}
+                                                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                                                            />
+                                                                            <path
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                                strokeWidth={2}
+                                                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                                                            />
+                                                                        </svg>
+                                                                        Detail
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            openPrintMenu(reg);
+                                                                        }}
+                                                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                                                                    >
+                                                                        <svg
+                                                                            className="w-4 h-4"
+                                                                            fill="none"
+                                                                            stroke="currentColor"
+                                                                            viewBox="0 0 24 24"
+                                                                        >
+                                                                            <path
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                                strokeWidth={2}
+                                                                                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                                                                            />
+                                                                        </svg>
+                                                                        Cetak
+                                                                    </button>
+                                                                    {reg.stts === "Belum" && (
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                handleCancelRegistration(reg);
+                                                                                setOpenDropdown(null);
+                                                                            }}
+                                                                            className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
+                                                                        >
+                                                                            <svg
+                                                                                className="w-4 h-4"
+                                                                                fill="none"
+                                                                                stroke="currentColor"
+                                                                                viewBox="0 0 24 24"
+                                                                            >
+                                                                                <path
+                                                                                    strokeLinecap="round"
+                                                                                    strokeLinejoin="round"
+                                                                                    strokeWidth={2}
+                                                                                    d="M6 18L18 6M6 6l12 12"
+                                                                                />
+                                                                            </svg>
+                                                                            Batal
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            </div>
                                                         )}
                                                     </div>
                                                 </td>
@@ -3485,6 +3622,178 @@ export default function Registration({
                 patient={editPatient || selectedPatient}
                 onSuccess={handleEditSuccess}
             />
+
+            {/* Print Menu Popup */}
+            <AnimatePresence>
+                {isPrintMenuOpen && selectedRegForPrint && (
+                    <motion.div
+                        className="fixed inset-0 bg-black/20 backdrop-blur-md flex items-center justify-center z-[9999] p-4"
+                        initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+                        animate={{ opacity: 1, backdropFilter: "blur(12px)" }}
+                        exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+                        transition={{
+                            duration: 0.3,
+                            ease: "easeOut",
+                        }}
+                        onClick={closePrintMenu}
+                    >
+                        <motion.div
+                            className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 max-w-md w-full"
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            transition={{
+                                duration: 0.3,
+                                type: "spring",
+                                stiffness: 200,
+                                damping: 20,
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {/* Header */}
+                            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                        Menu Cetak
+                                    </h3>
+                                    <button
+                                        onClick={closePrintMenu}
+                                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                                    >
+                                        <svg
+                                            className="w-6 h-6"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M6 18L18 6M6 6l12 12"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                    No. Rawat: {selectedRegForPrint.no_rawat}
+                                </p>
+                            </div>
+
+                            {/* Menu Items */}
+                            <div className="p-4">
+                                <div className="space-y-2">
+                                    {/* Cetak Registrasi */}
+                                    <motion.button
+                                        onClick={() => handlePrintRegistration(selectedRegForPrint)}
+                                        className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition-colors flex items-center gap-3"
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                    >
+                                        <div className="flex-shrink-0 w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                            <svg
+                                                className="w-5 h-5 text-blue-600 dark:text-blue-400"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                                                />
+                                            </svg>
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="font-medium">Cetak Registrasi</div>
+                                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                Cetak formulir registrasi pasien
+                                            </div>
+                                        </div>
+                                    </motion.button>
+
+                                    {/* Cetak Kartu Berobat - Placeholder untuk menu cetak lainnya */}
+                                    <motion.button
+                                        onClick={() => {
+                                            // TODO: Implement cetak kartu berobat
+                                            alert('Fitur cetak kartu berobat akan segera tersedia');
+                                        }}
+                                        className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 rounded-lg transition-colors flex items-center gap-3"
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                    >
+                                        <div className="flex-shrink-0 w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                                            <svg
+                                                className="w-5 h-5 text-green-600 dark:text-green-400"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"
+                                                />
+                                            </svg>
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="font-medium">Cetak Kartu Berobat</div>
+                                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                Cetak kartu berobat pasien
+                                            </div>
+                                        </div>
+                                    </motion.button>
+
+                                    {/* Cetak Rincian Biaya - Placeholder untuk menu cetak lainnya */}
+                                    <motion.button
+                                        onClick={() => {
+                                            // TODO: Implement cetak rincian biaya
+                                            alert('Fitur cetak rincian biaya akan segera tersedia');
+                                        }}
+                                        className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-600 dark:hover:text-purple-400 rounded-lg transition-colors flex items-center gap-3"
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                    >
+                                        <div className="flex-shrink-0 w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                                            <svg
+                                                className="w-5 h-5 text-purple-600 dark:text-purple-400"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                />
+                                            </svg>
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="font-medium">Cetak Rincian Biaya</div>
+                                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                Cetak rincian biaya registrasi
+                                            </div>
+                                        </div>
+                                    </motion.button>
+                                </div>
+                            </div>
+
+                            {/* Footer */}
+                            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                                <button
+                                    onClick={closePrintMenu}
+                                    className="w-full px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors"
+                                >
+                                    Tutup
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Quick Create Penjab Modal */}
             <PenjabQuickCreateModal

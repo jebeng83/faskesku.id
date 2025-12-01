@@ -101,8 +101,29 @@ class TampJurnalComposerRalan
             return ['debet' => 0.0, 'kredit' => 0.0, 'lines' => []];
         }
 
+        // Hitung total debet dan kredit untuk validasi
+        $totDeb = 0.0;
+        $totKre = 0.0;
+        foreach ($lines as $l) {
+            $totDeb += $l['debet'];
+            $totKre += $l['kredit'];
+        }
+
+        // Validasi: pastikan debet dan kredit seimbang sebelum menulis ke staging
+        if (round($totDeb, 2) !== round($totKre, 2)) {
+            throw new \RuntimeException(
+                sprintf(
+                    'Komposisi jurnal tidak seimbang: Debet = %s, Kredit = %s, Selisih = %s. Periksa konfigurasi akun di set_akun_ralan.',
+                    number_format($totDeb, 2, '.', ','),
+                    number_format($totKre, 2, '.', ','),
+                    number_format(abs($totDeb - $totKre), 2, '.', ',')
+                )
+            );
+        }
+
         // Tulis ke staging tampjurnal2 (kosongkan dulu agar idempoten untuk no_rawat ini)
         // Catatan: tampjurnal2 tidak memiliki no_rawat kolom, sehingga pengosongan bersifat global.
+        // Catatan: tampjurnal sudah dibersihkan di controller sebelum memanggil composer ini
         DB::table('tampjurnal2')->delete();
         DB::table('tampjurnal2')->insert(array_map(function ($l) {
             return [
@@ -112,9 +133,6 @@ class TampJurnalComposerRalan
                 'kredit' => $l['kredit'],
             ];
         }, $lines));
-
-        $totDeb = 0.0; $totKre = 0.0;
-        foreach ($lines as $l) { $totDeb += $l['debet']; $totKre += $l['kredit']; }
 
         return ['debet' => $totDeb, 'kredit' => $totKre, 'lines' => $lines];
     }

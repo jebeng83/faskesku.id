@@ -64,19 +64,55 @@ class KategoriPerawatanController extends Controller
             'nm_kategori.max' => 'Nama kategori maksimal 30 karakter.'
         ]);
 
+        // Handle error validasi untuk popup (Inertia request)
         if ($validator->fails()) {
+            // Untuk request dari Inertia (popup), return redirect back dengan errors
+            if ($request->header('X-Inertia')) {
+                return redirect()->back()
+                    ->withErrors($validator)
+                    ->withInput();
+            }
+            // Untuk request JSON biasa (non-Inertia)
+            if ($request->expectsJson() || $request->wantsJson()) {
+                return response()->json(['errors' => $validator->errors()], 422);
+            }
             return back()->withErrors($validator)->withInput();
         }
 
         try {
-            KategoriPerawatan::create([
+            $kategori = KategoriPerawatan::create([
                 'kd_kategori' => $request->kd_kategori,
                 'nm_kategori' => $request->nm_kategori
             ]);
 
+            // Return response untuk Inertia (popup)
+            if ($request->header('X-Inertia')) {
+                return redirect()->back()
+                    ->with('success', 'Kategori Perawatan berhasil ditambahkan.')
+                    ->with('kategoriPerawatanCreated', [
+                        'kd_kategori' => $kategori->kd_kategori,
+                        'nm_kategori' => $kategori->nm_kategori,
+                    ]);
+            }
+
+            // Return response untuk JSON biasa
+            if ($request->expectsJson() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Kategori perawatan berhasil ditambahkan.',
+                    'data' => $kategori,
+                ], 201);
+            }
+
+            // Default redirect untuk form biasa
             return redirect()->route('kategori-perawatan.index')
                            ->with('success', 'Kategori perawatan berhasil ditambahkan.');
         } catch (\Exception $e) {
+            if ($request->header('X-Inertia')) {
+                return redirect()->back()
+                    ->withErrors(['error' => 'Terjadi kesalahan saat menyimpan data.'])
+                    ->withInput();
+            }
             return back()->withErrors(['error' => 'Terjadi kesalahan saat menyimpan data.'])
                         ->withInput();
         }
@@ -171,16 +207,19 @@ class KategoriPerawatanController extends Controller
     public function generateKode()
     {
         try {
-            // Get the last kategori code
-            $lastKategori = KategoriPerawatan::orderBy('kd_kategori', 'desc')->first();
+            // Get the last kategori code dengan format KPXXX
+            // Urutkan berdasarkan angka setelah "KP" secara numerik, bukan string
+            $lastKategori = KategoriPerawatan::where('kd_kategori', 'like', 'KP%')
+                ->orderByRaw('CAST(SUBSTRING(kd_kategori, 3) AS UNSIGNED) DESC')
+                ->first();
             
             if (!$lastKategori) {
-                $newCode = 'KT001';
+                $newCode = 'KP001';
             } else {
-                // Extract number from last code
+                // Extract number from last code (format: KPXXX)
                 $lastNumber = (int) substr($lastKategori->kd_kategori, 2);
                 $newNumber = $lastNumber + 1;
-                $newCode = 'KT' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+                $newCode = 'KP' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
             }
 
             return response()->json([

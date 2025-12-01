@@ -5,6 +5,8 @@ window.axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 // Pastikan cookie sesi dikirim pada request XHR antar port (mis. Vite dev server -> Laravel)
 // Ini membantu mencegah 419 (CSRF token mismatch) akibat cookie sesi tidak terkirim.
 window.axios.defaults.withCredentials = true;
+// Set Accept header untuk Sanctum stateful API authentication
+window.axios.defaults.headers.common["Accept"] = "application/json";
 
 // --- Ziggy URL/Port Auto-Sync ---
 // Beberapa environment lokal sering berpindah port (mis. 8000, 8016, dsb.).

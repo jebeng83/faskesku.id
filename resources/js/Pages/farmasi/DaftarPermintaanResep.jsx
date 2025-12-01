@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Head } from "@inertiajs/react";
+import { motion, AnimatePresence } from "framer-motion";
 import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/Card";
 import Button from "@/Components/ui/Button";
@@ -9,10 +10,22 @@ import {
     SelectContent,
     SelectItem,
     SelectTrigger,
-    SelectValue,
+    SelectValue as BaseSelectValue,
 } from "@/Components/ui/Select";
 import Badge from "@/Components/ui/Badge";
-import { Filter, Search, Eye, ClipboardList, Pill } from "lucide-react";
+import { Filter, Search, Eye, ClipboardList, Pill, Printer, Loader2, Inbox } from "lucide-react";
+import QRCode from "qrcode";
+
+// Custom SelectValue yang menampilkan label berdasarkan value
+const CustomSelectValue = ({ placeholder, selectedValue, getLabel, value }) => {
+    const currentValue = selectedValue || value;
+    const displayValue = currentValue && getLabel ? getLabel(currentValue) : currentValue;
+    return (
+        <span className="block truncate">
+            {displayValue || placeholder}
+        </span>
+    );
+};
 
 /**
  * Daftar Permintaan Resep
@@ -24,20 +37,57 @@ import { Filter, Search, Eye, ClipboardList, Pill } from "lucide-react";
  * - Kolom Validasi belum tersedia di model saat ini; yang ditampilkan adalah status penyerahan.
  */
 const DaftarPermintaanResep = () => {
+    // Helper untuk mendapatkan tanggal hari ini dalam format YYYY-MM-DD
+    // Menggunakan timezone Asia/Jakarta (UTC+7)
     const todayStr = () => {
-        const d = new Date();
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, "0");
-        const dd = String(d.getDate()).padStart(2, "0");
-        return `${yyyy}-${mm}-${dd}`;
+        try {
+            return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+        } catch {
+            // Fallback jika toLocaleDateString tidak didukung
+            const now = new Date();
+            const formatter = new Intl.DateTimeFormat('en-CA', {
+                timeZone: 'Asia/Jakarta',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+            return formatter.format(now);
+        }
     };
+    
+    // Helper untuk mendapatkan tanggal N hari yang lalu dalam format YYYY-MM-DD
+    // Menggunakan timezone Asia/Jakarta (UTC+7)
     const minusDaysStr = (days) => {
-        const d = new Date();
-        d.setDate(d.getDate() - days);
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, "0");
-        const dd = String(d.getDate()).padStart(2, "0");
-        return `${yyyy}-${mm}-${dd}`;
+        try {
+            const now = new Date();
+            // Kurangi hari dalam millisecond
+            const pastDate = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));
+            return pastDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+        } catch {
+            // Fallback jika toLocaleDateString tidak didukung
+            const now = new Date();
+            const pastDate = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));
+            const formatter = new Intl.DateTimeFormat('en-CA', {
+                timeZone: 'Asia/Jakarta',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+            return formatter.format(pastDate);
+        }
+    };
+
+    // Helper untuk mendapatkan label berdasarkan value
+    const getJenisLabel = (value) => {
+        const map = {
+            ralan: "Rawat Jalan",
+            ranap: "Rawat Inap",
+        };
+        return map[value] || value;
+    };
+
+    const getStatusTerlayaniLabel = (value) => {
+        return value || "Pilih status";
     };
 
     const [filters, setFilters] = useState({
@@ -47,7 +97,7 @@ const DaftarPermintaanResep = () => {
         dokter: "",
         poli: "",
         // mengikuti pola Java: filter status terlayani (Semua/Belum/Sudah)
-        status_perawatan: "Semua",
+        status_perawatan: "Belum Terlayani",
         // pencarian bebas
         q: "",
         // parameter tambahan untuk ranap
@@ -71,6 +121,8 @@ const DaftarPermintaanResep = () => {
     const [detailContext, setDetailContext] = useState({
         kd_poli: "",
         kd_bangsal: "",
+        nm_pasien: "",
+        no_rkm_medis: "",
     });
     // Cache stok info per item obat (map: kode_brng -> {loading, data, error, expanded})
     const [stokInfoMap, setStokInfoMap] = useState({});
@@ -79,8 +131,32 @@ const DaftarPermintaanResep = () => {
         // Restore last used filters
         try {
             const saved = localStorage.getItem("permintaanResepFilters");
-            if (saved) setFilters(JSON.parse(saved));
-        } catch (_) {}
+            const today = todayStr();
+            
+            if (saved) {
+                const parsedFilters = JSON.parse(saved);
+                // Selalu gunakan tanggal hari ini untuk start_date dan end_date
+                // Ini memastikan filter selalu menggunakan tanggal terkini
+                parsedFilters.start_date = today;
+                parsedFilters.end_date = today;
+                setFilters(parsedFilters);
+            } else {
+                // Jika tidak ada saved filters, set default dengan tanggal hari ini
+                setFilters(prev => ({
+                    ...prev,
+                    start_date: today,
+                    end_date: today
+                }));
+            }
+        } catch (_) {
+            // Jika error, set default dengan tanggal hari ini
+            const today = todayStr();
+            setFilters(prev => ({
+                ...prev,
+                start_date: today,
+                end_date: today
+            }));
+        }
     }, []);
 
     useEffect(() => {
@@ -213,6 +289,8 @@ const DaftarPermintaanResep = () => {
                 setDetailContext({
                     kd_poli: rowContext?.kd_poli || "",
                     kd_bangsal: rowContext?.kd_bangsal || "",
+                    nm_pasien: rowContext?.nm_pasien || "",
+                    no_rkm_medis: rowContext?.no_rkm_medis || "",
                 });
                 // Reset stok info cache ketika membuka resep baru
                 setStokInfoMap({});
@@ -293,6 +371,682 @@ const DaftarPermintaanResep = () => {
         }
     };
 
+    // Fungsi untuk cetak etiket obat
+    const cetakEtiket = async () => {
+        if (!selectedResep || !selectedResep.detail_obat || selectedResep.detail_obat.length === 0) {
+            alert("Tidak ada obat untuk dicetak etiketnya");
+            return;
+        }
+
+        // Ambil kop dari tabel setting
+        let kopData = {
+            nama_instansi: "",
+            alamat_instansi: "",
+            kabupaten: "",
+            propinsi: "",
+        };
+
+        try {
+            const res = await fetch("/setting/app");
+            if (res.ok) {
+                const json = await res.json();
+                if (json.data && json.data.length > 0) {
+                    kopData = json.data[0];
+                }
+            }
+        } catch (e) {
+            console.warn("Gagal memuat data setting", e);
+        }
+
+        // Ambil data apoteker dari tabel sip_pegawai dengan jnj_jabatan = 'Apt'
+        let apotekerData = {
+            nik: "",
+            nama: "",
+            no_sip: "",
+        };
+
+        try {
+            const apotekerRes = await fetch("/api/sip-pegawai/apoteker");
+            if (apotekerRes.ok) {
+                const apotekerJson = await apotekerRes.json();
+                if (apotekerJson.success && apotekerJson.data) {
+                    apotekerData = apotekerJson.data;
+                }
+            }
+        } catch (e) {
+            console.warn("Gagal memuat data apoteker", e);
+        }
+
+        const printWindow = window.open("", "_blank", "width=800,height=600");
+        if (!printWindow) {
+            alert("Popup diblokir. Izinkan popup untuk mencetak etiket.");
+            return;
+        }
+
+        // Ambil data pasien dari berbagai kemungkinan field (termasuk dari detailContext)
+        const namaPasien = selectedResep.nm_pasien || 
+                          selectedResep.nama_pasien || 
+                          selectedResep.pasien?.nm_pasien ||
+                          selectedResep.pasien?.nama_pasien ||
+                          detailContext.nm_pasien ||
+                          "";
+        const noRM = selectedResep.no_rkm_medis || 
+                    selectedResep.no_rkm || 
+                    selectedResep.pasien?.no_rkm_medis ||
+                    selectedResep.pasien?.no_rkm ||
+                    detailContext.no_rkm_medis ||
+                    "";
+        const noResep = selectedResep.no_resep || "-";
+        const tglResep = formatDate(selectedResep.tgl_peresepan) || "-";
+        const jamResep = formatTime(selectedResep.jam_peresepan) || "-";
+
+        // Buat kop dari setting - hanya nama instansi saja
+        const kop = kopData.nama_instansi || "ETIKET OBAT";
+
+        // Ambil data apoteker dari API
+        const apotekerNik = apotekerData.nik || "";
+        const apotekerNama = apotekerData.nama || "";
+        const apotekerSipa = apotekerData.no_sip || "";
+
+        // Ukuran etiket: 70mm x 40mm
+        const etiketWidth = "70mm";
+        const etiketHeight = "40mm";
+
+        let htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Cetak Etiket Obat</title>
+                <style>
+                    * {
+                        margin: 0;
+                        padding: 0;
+                        box-sizing: border-box;
+                    }
+                    body {
+                        font-family: Arial, sans-serif;
+                        padding: 5mm;
+                    }
+                    .etiket-container {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fill, ${etiketWidth});
+                        gap: 3mm;
+                        justify-content: center;
+                    }
+                    .etiket {
+                        width: ${etiketWidth};
+                        height: ${etiketHeight};
+                        border: 1px solid #000;
+                        padding: 2mm;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: space-between;
+                        background: white;
+                        page-break-inside: avoid;
+                        box-sizing: border-box;
+                        overflow: hidden;
+                    }
+                    .kop {
+                        font-size: 6pt;
+                        font-weight: bold;
+                        text-align: center;
+                        margin-bottom: 1mm;
+                        line-height: 1.2;
+                    }
+                    .apoteker-info {
+                        font-size: 6pt;
+                        text-align: center;
+                        margin-bottom: 0.5mm;
+                        line-height: 1.2;
+                    }
+                    .divider {
+                        border-top: 1px solid #000;
+                        margin: 0.5mm 0;
+                    }
+                    .info-resep-header {
+                        font-size: 7pt;
+                        margin-bottom: 1.5mm;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+                    .no-resep {
+                        flex: 1;
+                    }
+                    .tgl-resep {
+                        margin-left: 3mm;
+                        white-space: nowrap;
+                    }
+                    .nama-obat {
+                        font-size: 8pt;
+                        font-weight: bold;
+                        text-align: center;
+                        margin: 1mm 0 0.5mm 0;
+                        word-wrap: break-word;
+                        line-height: 1.3;
+                    }
+                    .divider-dashed {
+                        border-top: 1px dashed #666;
+                        margin: 0.5mm 0;
+                    }
+                    .aturan-pakai {
+                        font-size: 8pt;
+                        font-weight: bold;
+                        text-align: center;
+                        margin: 0.5mm 0 1.5mm 0;
+                        word-wrap: break-word;
+                        line-height: 1.3;
+                    }
+                    .footer-section {
+                        margin-top: auto;
+                        padding-top: 1mm;
+                    }
+                    .info-pasien {
+                        font-size: 7pt;
+                        margin-bottom: 0.5mm;
+                    }
+                    .info-obat {
+                        font-size: 7pt;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+                    .jml-obat {
+                        flex: 1;
+                    }
+                    .ed-obat {
+                        margin-left: 3mm;
+                        white-space: nowrap;
+                    }
+                    @media print {
+                        @page {
+                            size: ${etiketWidth} ${etiketHeight};
+                            margin: 0;
+                        }
+                        body {
+                            margin: 0;
+                            padding: 0;
+                        }
+                        .etiket-container {
+                            display: block;
+                            gap: 0;
+                            padding: 0;
+                            margin: 0;
+                        }
+                        .etiket {
+                            width: ${etiketWidth};
+                            height: ${etiketHeight};
+                            margin: 0;
+                            padding: 2mm;
+                            border: 1px solid #000;
+                            page-break-after: always;
+                            page-break-inside: avoid;
+                            break-after: page;
+                            box-sizing: border-box;
+                            overflow: hidden;
+                        }
+                        .etiket:last-child {
+                            page-break-after: always;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="etiket-container">
+        `;
+
+        selectedResep.detail_obat.forEach((obat) => {
+            const namaObat = obat.nama_brng || "-";
+            const aturanPakai = obat.aturan_pakai || "-";
+            const jumlahObat = obat.jml || "-";
+            const satuanObat = obat.satuan || "";
+            // Ambil expire date dari databarang yang sudah di-join melalui resep_dokter
+            // Data expire sudah diformat sebagai Y-m-d dari backend
+            const expireDate = obat.expire || null;
+
+            htmlContent += `
+                    <div class="etiket">
+                        <div class="kop">
+                            ${kop}
+                        </div>
+                        <div class="apoteker-info">
+                            Apoteker: ${apotekerNama || apotekerNik || ""}<br/>
+                            SIPA: ${apotekerSipa || ""}
+                        </div>
+                        <div class="divider"></div>
+                        <div class="info-resep-header">
+                            <span class="no-resep">No: ${noResep}</span>
+                            <span class="tgl-resep">Tanggal: ${tglResep}</span>
+                        </div>
+                        <div class="nama-obat">
+                            ${namaObat}
+                        </div>
+                        <div class="divider-dashed"></div>
+                        <div class="aturan-pakai">
+                            ${aturanPakai || ""}
+                        </div>
+                        <div class="divider"></div>
+                        <div class="footer-section">
+                            <div class="info-pasien">
+                                nama: ${namaPasien || ""}
+                            </div>
+                            <div class="info-obat">
+                                <span class="jml-obat">Jml: ${jumlahObat} ${satuanObat}</span>
+                                <span class="ed-obat">ED: ${expireDate && expireDate !== "0000-00-00" ? formatDate(expireDate) : "-"}</span>
+                            </div>
+                        </div>
+                    </div>
+            `;
+        });
+
+        htmlContent += `
+                </div>
+                <script>
+                    window.onload = function() {
+                        window.print();
+                    };
+                </script>
+            </body>
+            </html>
+        `;
+
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+    };
+
+    // Fungsi untuk cetak resep
+    const cetakResep = async () => {
+        if (!selectedResep || !selectedResep.detail_obat || selectedResep.detail_obat.length === 0) {
+            alert("Tidak ada obat untuk dicetak resepnya");
+            return;
+        }
+
+        // Ambil kop dari tabel setting
+        let kopData = {
+            nama_instansi: "",
+            alamat_instansi: "",
+            kabupaten: "",
+            propinsi: "",
+            logo: "",
+        };
+
+        try {
+            const res = await fetch("/setting/app");
+            if (res.ok) {
+                const json = await res.json();
+                if (json.data && json.data.length > 0) {
+                    kopData = json.data[0];
+                }
+            }
+        } catch (e) {
+            console.warn("Gagal memuat data setting", e);
+        }
+
+        const printWindow = window.open("", "_blank", "width=800,height=600");
+        if (!printWindow) {
+            alert("Popup diblokir. Izinkan popup untuk mencetak resep.");
+            return;
+        }
+
+        // Ambil data pasien
+        const namaPasien = selectedResep.nm_pasien || 
+                          selectedResep.nama_pasien || 
+                          selectedResep.pasien?.nm_pasien ||
+                          selectedResep.pasien?.nama_pasien ||
+                          detailContext.nm_pasien ||
+                          "";
+        const noRM = selectedResep.no_rkm_medis || 
+                    selectedResep.no_rkm || 
+                    selectedResep.pasien?.no_rkm_medis ||
+                    selectedResep.pasien?.no_rkm ||
+                    detailContext.no_rkm_medis ||
+                    "";
+        const noResep = selectedResep.no_resep || "-";
+        const tglResep = formatDate(selectedResep.tgl_peresepan) || "-";
+        const jamResep = formatTime(selectedResep.jam_peresepan) || "-";
+        const namaDokter = selectedResep.nama_dokter || selectedResep.dokter?.nm_dokter || "-";
+        const noRawat = selectedResep.no_rawat || "-";
+
+        // Buat kop surat lengkap
+        const kop = kopData.nama_instansi || "RESEP OBAT";
+        // Logo diambil dari endpoint jika ada logo_size
+        const logoUrl = kopData.logo_size && kopData.logo_size > 0 
+            ? `/setting/app/${encodeURIComponent(kop)}/logo?t=${Date.now()}`
+            : "";
+        const alamat = kopData.alamat_instansi || "";
+        const kabupaten = kopData.kabupaten || "";
+        const propinsi = kopData.propinsi || "";
+        
+        // Format alamat lengkap
+        let alamatLengkap = "";
+        if (alamat) {
+            alamatLengkap += alamat;
+        }
+        if (kabupaten) {
+            if (alamatLengkap) alamatLengkap += "<br/>";
+            alamatLengkap += kabupaten;
+        }
+        if (propinsi) {
+            if (alamatLengkap && !kabupaten) alamatLengkap += "<br/>";
+            if (kabupaten) alamatLengkap += ", ";
+            alamatLengkap += propinsi;
+        }
+
+        // Generate QR code di frontend menggunakan library qrcode
+        let qrCodeSvg = "";
+        const qrText = `Dokumen ini ditandatangani secara elektronik oleh ${namaDokter} pada tanggal ${tglResep} Jam ${jamResep} di ${kop}`;
+        
+        try {
+            // Generate QR code sebagai SVG
+            qrCodeSvg = await QRCode.toString(qrText, {
+                type: 'svg',
+                width: 100,
+                margin: 1,
+                errorCorrectionLevel: 'H'
+            });
+            console.log("QR code berhasil di-generate");
+        } catch (e) {
+            console.error("Gagal generate QR code:", e);
+        }
+        
+        let htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Cetak Resep</title>
+                <style>
+                    * {
+                        margin: 0;
+                        padding: 0;
+                        box-sizing: border-box;
+                    }
+                    body {
+                        font-family: Arial, sans-serif;
+                        font-size: 12pt;
+                        padding: 10mm;
+                        line-height: 1.6;
+                        width: 10.5cm;
+                        height: 16.5cm;
+                        margin: 0 auto;
+                        border: 2px solid #000;
+                        position: relative;
+                    }
+                    .kop-container {
+                        display: flex;
+                        align-items: center;
+                        justify-content: flex-start;
+                        margin-bottom: 3px;
+                    }
+                    .logo {
+                        width: 50px;
+                        height: 50px;
+                        object-fit: contain;
+                        margin-right: 8px;
+                        flex-shrink: 0;
+                    }
+                    .kop-wrapper {
+                        flex: 1;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                    }
+                    .kop {
+                        text-align: left;
+                        font-weight: bold;
+                        font-size: 12pt;
+                        margin-bottom: 2px;
+                        line-height: 1.2;
+                    }
+                    .alamat {
+                        text-align: left;
+                        font-size: 9pt;
+                        margin-bottom: 5px;
+                        line-height: 1.3;
+                    }
+                    .divider {
+                        border-top: 1px solid #000;
+                        margin: 10px 0;
+                    }
+                    .info-section {
+                        display: flex;
+                        justify-content: space-between;
+                        margin-bottom: 8px;
+                        font-size: 9pt;
+                        line-height: 1.3;
+                    }
+                    .info-left {
+                        flex: 1;
+                    }
+                    .info-left div,
+                    .info-right div {
+                        margin-bottom: 2px;
+                    }
+                    .info-right {
+                        flex: 1;
+                        text-align: right;
+                    }
+                    .resep-title {
+                        text-align: center;
+                        font-weight: bold;
+                        font-size: 16pt;
+                        margin: 5px 0 10px 0;
+                    }
+                    .resep-item {
+                        margin-bottom: 12px;
+                        font-size: 9pt;
+                        line-height: 1.3;
+                    }
+                    .resep-line {
+                        margin-bottom: 3px;
+                    }
+                    .resep-r {
+                        display: inline-block;
+                        width: 30px;
+                    }
+                    .obat-name {
+                        font-weight: bold;
+                        font-size: 9pt;
+                    }
+                    .obat-jumlah {
+                        margin-left: 10px;
+                        font-size: 9pt;
+                    }
+                    .aturan-pakai {
+                        margin-left: 30px;
+                        margin-top: 3px;
+                        border-top: 1px dashed #000;
+                        padding-top: 3px;
+                        font-size: 9pt;
+                    }
+                    .signature-section {
+                        position: absolute;
+                        bottom: 10mm;
+                        right: 10mm;
+                        text-align: center;
+                        font-size: 9pt;
+                    }
+                    .signature-dokter {
+                        margin-bottom: 5px;
+                        font-weight: bold;
+                    }
+                    .qrcode-container {
+                        margin-top: 5px;
+                    }
+                    .qrcode-container svg {
+                        width: 60px;
+                        height: 60px;
+                    }
+                    @media print {
+                        body {
+                            padding: 10mm;
+                            margin: 0;
+                            width: 10.5cm;
+                            height: 16.5cm;
+                            border: 2px solid #000;
+                        }
+                        @page {
+                            size: 10.5cm 16.5cm;
+                            margin: 0;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="kop-container">
+                    ${logoUrl ? `<img src="${logoUrl}" alt="Logo" class="logo" />` : ''}
+                    <div class="kop-wrapper">
+                        <div class="kop">
+                            ${kop}
+                        </div>
+                        <div class="alamat">
+                            ${alamatLengkap}
+                        </div>
+                    </div>
+                </div>
+                <div class="divider"></div>
+                <div class="info-section">
+                    <div class="info-left">
+                        <div><strong>Nama Pasien:</strong> ${namaPasien || "-"}</div>
+                        <div><strong>No. RM:</strong> ${noRM || "-"}</div>
+                        <div><strong>No. Rawat:</strong> ${noRawat || "-"}</div>
+                    </div>
+                    <div class="info-right">
+                        <div><strong>No. Resep:</strong> ${noResep}</div>
+                        <div><strong>Tanggal:</strong> ${tglResep}</div>
+                        <div><strong>Jam:</strong> ${jamResep}</div>
+                        <div><strong>Dokter:</strong> ${namaDokter}</div>
+                    </div>
+                </div>
+                <div class="divider"></div>
+                <div class="resep-title">RESEP</div>
+        `;
+
+        // Tambahkan setiap obat
+        selectedResep.detail_obat.forEach((obat) => {
+            const namaObat = obat.nama_brng || "-";
+            const jumlahObat = obat.jml || "-";
+            const satuanObat = obat.satuan || "";
+            const aturanPakai = obat.aturan_pakai || "-";
+
+            htmlContent += `
+                <div class="resep-item">
+                    <div class="resep-line">
+                        <span class="resep-r">R/</span>
+                        <span class="obat-name">${namaObat}</span>
+                        <span class="obat-jumlah">(${jumlahObat} ${satuanObat})</span>
+                    </div>
+                    <div class="aturan-pakai">
+                        ${aturanPakai}
+                    </div>
+                </div>
+            `;
+        });
+
+        // Inject QR code SVG langsung ke HTML jika ada
+        const qrCodeHtml = qrCodeSvg ? qrCodeSvg : '<div style="width: 60px; height: 60px; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 8pt; color: #999;">QR Code</div>';
+        
+        htmlContent += `
+                <div class="signature-section">
+                    <div class="qrcode-container">
+                        ${qrCodeHtml}
+                    </div>
+                </div>
+                <script>
+                    window.onload = function() {
+                        window.print();
+                    };
+                </script>
+            </body>
+            </html>
+        `;
+
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+    };
+
+    // Fungsi untuk menyimpan Validasi (Tgl & Jam Validasi) saat klik "Proses Penyerahan"
+    const handleValidasi = async () => {
+        if (!selectedResep) return;
+        setSaving(true);
+        try {
+            // Gunakan timezone Asia/Jakarta untuk mendapatkan tanggal dan waktu saat ini
+            const now = new Date();
+            const dateFormatter = new Intl.DateTimeFormat('en-CA', {
+                timeZone: 'Asia/Jakarta',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+            const timeFormatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'Asia/Jakarta',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            const todayISO = dateFormatter.format(now);
+            const timeStr = timeFormatter.format(now);
+
+            // Update Validasi (tgl_perawatan & jam) di backend
+            const resp = await fetch(
+                `/api/resep/${encodeURIComponent(selectedResep.no_resep)}/validasi`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        tgl_validasi: todayISO,
+                        jam_validasi: timeStr,
+                    }),
+                }
+            );
+
+            if (!resp.ok) {
+                // Jika endpoint tidak ada, hanya update di frontend
+                console.warn("Endpoint validasi tidak tersedia, hanya update di frontend");
+            } else {
+                const json = await resp.json();
+                if (!json.success) {
+                    throw new Error(json.message || "Gagal menyimpan validasi");
+                }
+            }
+
+            // Update di frontend (tgl_perawatan & jam untuk validasi)
+            const tglValidasiBaru = todayISO;
+            const jamValidasiBaru = timeStr;
+
+            setSelectedResep((prev) => ({
+                ...prev,
+                // Tgl/Jam Validasi: gunakan kolom yang tersedia pada model saat ini (tgl_perawatan & jam)
+                tgl_perawatan: tglValidasiBaru,
+                jam: jamValidasiBaru,
+            }));
+
+            // Sinkronkan juga ke list hasil pencarian
+            setData((prev) => {
+                if (!Array.isArray(prev)) return prev;
+                return prev.map((row) => {
+                    if (row.no_resep !== selectedResep.no_resep) return row;
+                    return {
+                        ...row,
+                        // Tgl/Jam Validasi pada list menggunakan tgl_perawatan & jam
+                        tgl_perawatan: tglValidasiBaru,
+                        jam: jamValidasiBaru,
+                    };
+                });
+            });
+
+            // Buka modal konfirmasi penyerahan setelah validasi berhasil
+            setConfirmOpen(true);
+        } catch (e) {
+            alert(e.message || "Gagal menyimpan validasi");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    // Fungsi untuk menyimpan Penyerahan (Tgl & Jam Penyerahan) saat klik "Ya Serahkan"
     const handlePenyerahan = async () => {
         if (!selectedResep) return;
         setSaving(true);
@@ -334,29 +1088,33 @@ const DaftarPermintaanResep = () => {
             if (!json.success) {
                 throw new Error(json.message || "Gagal memproses penyerahan");
             }
-            // Perbarui informasi penyerahan, validasi, dan status pada modal dan daftar
+            
+            // Perbarui informasi penyerahan dan status pada modal dan daftar
+            // Gunakan timezone Asia/Jakarta untuk mendapatkan tanggal dan waktu saat ini
             const now = new Date();
-            const yyyy = now.getFullYear();
-            const mm = String(now.getMonth() + 1).padStart(2, "0");
-            const dd = String(now.getDate()).padStart(2, "0");
-            const hh = String(now.getHours()).padStart(2, "0");
-            const mi = String(now.getMinutes()).padStart(2, "0");
-            const ss = String(now.getSeconds()).padStart(2, "0");
-            const todayISO = `${yyyy}-${mm}-${dd}`;
-            const timeStr = `${hh}:${mi}:${ss}`;
+            const dateFormatter = new Intl.DateTimeFormat('en-CA', {
+                timeZone: 'Asia/Jakarta',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+            const timeFormatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'Asia/Jakarta',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            const todayISO = dateFormatter.format(now);
+            const timeStr = timeFormatter.format(now);
 
             const tglPenyerahanBaru = json.data?.tgl_penyerahan || todayISO;
             const jamPenyerahanBaru = json.data?.jam_penyerahan || timeStr;
-            const tglValidasiBaru = json.data?.tgl_validasi || todayISO;
-            const jamValidasiBaru = json.data?.jam_validasi || timeStr;
 
             setSelectedResep((prev) => ({
                 ...prev,
                 tgl_penyerahan: tglPenyerahanBaru,
                 jam_penyerahan: jamPenyerahanBaru,
-                // Tgl/Jam Validasi: gunakan kolom yang tersedia pada model saat ini (tgl_perawatan & jam)
-                tgl_perawatan: tglValidasiBaru,
-                jam: jamValidasiBaru,
                 status_perawatan: "Sudah Terlayani",
             }));
 
@@ -369,9 +1127,6 @@ const DaftarPermintaanResep = () => {
                         ...row,
                         tgl_penyerahan: tglPenyerahanBaru,
                         jam_penyerahan: jamPenyerahanBaru,
-                        // Tgl/Jam Validasi pada list menggunakan tgl_perawatan & jam
-                        tgl_perawatan: tglValidasiBaru,
-                        jam: jamValidasiBaru,
                         status_perawatan: "Sudah Terlayani",
                     };
                 });
@@ -529,17 +1284,13 @@ const DaftarPermintaanResep = () => {
                         <h1 className="text-2xl font-bold text-gray-900">
                             Daftar Permintaan Resep
                         </h1>
-                        <p className="text-gray-600">
-                            Muat permintaan resep berdasarkan No. Rawat atau No.
-                            RM pasien
-                        </p>
                     </div>
                 </div>
 
                 {/* Filter Section */}
-                <Card className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5">
+                <Card className="relative overflow-visible rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5">
                     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-                    <CardHeader className="relative bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-600/50">
+                    <CardHeader className="relative z-0 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-600/50">
                         <CardTitle className="flex items-center gap-2">
                             <Filter className="h-5 w-5" />
                             <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
@@ -547,9 +1298,9 @@ const DaftarPermintaanResep = () => {
                             </span>
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-8">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <div>
+                    <CardContent className="p-8 overflow-visible">
+                        <div className="grid grid-cols-5 gap-4">
+                            <div className="relative z-[9999]" style={{ zIndex: 9999 }}>
                                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
                                     Jenis
                                 </label>
@@ -558,11 +1309,16 @@ const DaftarPermintaanResep = () => {
                                     onValueChange={(v) =>
                                         handleFilterChange("jenis", v)
                                     }
+                                    className="z-[9999]"
                                 >
                                     <SelectTrigger className="focus:ring-2 focus:ring-blue-500/50 border-gray-300 dark:border-gray-600">
-                                        <SelectValue placeholder="Pilih jenis" />
+                                        <CustomSelectValue 
+                                            placeholder="Pilih jenis"
+                                            getLabel={getJenisLabel}
+                                            value={filters.jenis}
+                                        />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="z-[9999]">
                                         <SelectItem value="ralan">
                                             Rawat Jalan
                                         </SelectItem>
@@ -604,7 +1360,7 @@ const DaftarPermintaanResep = () => {
                                     className="dark:border-gray-600 focus:ring-2 focus:ring-blue-500/50"
                                 />
                             </div>
-                            <div>
+                            <div className="hidden">
                                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
                                     No. Rawat
                                 </label>
@@ -620,7 +1376,7 @@ const DaftarPermintaanResep = () => {
                                     className="dark:border-gray-600 focus:ring-2 focus:ring-blue-500/50"
                                 />
                             </div>
-                            <div>
+                            <div className="hidden">
                                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
                                     No. RM (No. Rekam Medis)
                                 </label>
@@ -636,7 +1392,7 @@ const DaftarPermintaanResep = () => {
                                     className="dark:border-gray-600 focus:ring-2 focus:ring-blue-500/50"
                                 />
                             </div>
-                            <div>
+                            <div className="hidden">
                                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
                                     Dokter (nm_dokter)
                                 </label>
@@ -652,7 +1408,7 @@ const DaftarPermintaanResep = () => {
                                     className="dark:border-gray-600 focus:ring-2 focus:ring-blue-500/50"
                                 />
                             </div>
-                            <div>
+                            <div className="hidden">
                                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
                                     Poli/Bangsal
                                 </label>
@@ -668,7 +1424,7 @@ const DaftarPermintaanResep = () => {
                                     className="dark:border-gray-600 focus:ring-2 focus:ring-blue-500/50"
                                 />
                             </div>
-                            <div>
+                            <div className="relative z-[9999]" style={{ zIndex: 9999 }}>
                                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
                                     Status Terlayani
                                 </label>
@@ -680,11 +1436,16 @@ const DaftarPermintaanResep = () => {
                                             v
                                         )
                                     }
+                                    className="z-[9999]"
                                 >
                                     <SelectTrigger className="focus:ring-2 focus:ring-blue-500/50 border-gray-300 dark:border-gray-600">
-                                        <SelectValue placeholder="Pilih status" />
+                                        <CustomSelectValue 
+                                            placeholder="Pilih status"
+                                            getLabel={getStatusTerlayaniLabel}
+                                            value={filters.status_perawatan}
+                                        />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="z-[9999]">
                                         <SelectItem value="Semua">
                                             Semua
                                         </SelectItem>
@@ -697,46 +1458,9 @@ const DaftarPermintaanResep = () => {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            {filters.jenis === "ranap" && (
-                                <>
-                                    <div>
-                                        <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
-                                            Kode Bangsal (opsional)
-                                        </label>
-                                        <Input
-                                            placeholder="Misal: B01"
-                                            value={filters.kd_bangsal}
-                                            onChange={(e) =>
-                                                handleFilterChange(
-                                                    "kd_bangsal",
-                                                    e.target.value
-                                                )
-                                            }
-                                            className="dark:border-gray-600 focus:ring-2 focus:ring-blue-500/50"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
-                                            Kode Depo (opsional)
-                                        </label>
-                                        <Input
-                                            placeholder="Misal: D01"
-                                            value={filters.kd_depo}
-                                            onChange={(e) =>
-                                                handleFilterChange(
-                                                    "kd_depo",
-                                                    e.target.value
-                                                )
-                                            }
-                                            className="dark:border-gray-600 focus:ring-2 focus:ring-blue-500/50"
-                                        />
-                                    </div>
-                                </>
-                            )}
-                            <div className="md:col-span-2 lg:col-span-3">
+                            <div>
                                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
-                                    Pencarian bebas (No
-                                    Resep/Rawat/RM/Pasien/Dokter/Penjamin)
+                                    Pencarian bebas
                                 </label>
                                 <Input
                                     placeholder="Ketik kata kunci..."
@@ -747,7 +1471,45 @@ const DaftarPermintaanResep = () => {
                                     className="dark:border-gray-600 focus:ring-2 focus:ring-blue-500/50"
                                 />
                             </div>
-                            <div>
+                            {filters.jenis === "ranap" && (
+                                <>
+                                    <div className="col-span-5 grid grid-cols-2 gap-4 mt-4">
+                                        <div>
+                                            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
+                                                Kode Bangsal (opsional)
+                                            </label>
+                                            <Input
+                                                placeholder="Misal: B01"
+                                                value={filters.kd_bangsal}
+                                                onChange={(e) =>
+                                                    handleFilterChange(
+                                                        "kd_bangsal",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                className="dark:border-gray-600 focus:ring-2 focus:ring-blue-500/50"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
+                                                Kode Depo (opsional)
+                                            </label>
+                                            <Input
+                                                placeholder="Misal: D01"
+                                                value={filters.kd_depo}
+                                                onChange={(e) =>
+                                                    handleFilterChange(
+                                                        "kd_depo",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                className="dark:border-gray-600 focus:ring-2 focus:ring-blue-500/50"
+                                            />
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                            <div className="hidden">
                                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
                                     Limit
                                 </label>
@@ -810,228 +1572,333 @@ const DaftarPermintaanResep = () => {
                 </Card>
 
                 {/* Data Table */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Hasil Pencarian</CardTitle>
-                        <p className="text-sm text-gray-600">
-                            Menampilkan {data.length} data resep
-                        </p>
-                    </CardHeader>
-                    <CardContent>
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                    className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5"
+                >
+                    {/* Top border gradient */}
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                    
+                    {/* Card Header - Compact Design */}
+                    <div className="relative px-4 py-2.5 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                <motion.div
+                                    className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
+                                    whileHover={{ rotate: 90, scale: 1.1 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <Eye className="w-4 h-4 text-white" />
+                                </motion.div>
+                                <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                    Hasil Pencarian
+                                </span>
+                            </h3>
+                            <motion.span
+                                className="text-sm text-gray-600 dark:text-gray-400 font-medium"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.2 }}
+                            >
+                                {data.length} data resep
+                            </motion.span>
+                        </div>
+                    </div>
+                    
+                    {/* Card Content */}
+                    <div className="relative p-6">
                         {loading ? (
-                            <div className="flex justify-center py-8">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                            </div>
+                            <motion.div
+                                className="flex flex-col items-center justify-center gap-3 py-12"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                            >
+                                <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                                <span className="text-sm text-gray-600 dark:text-gray-400">Memuat data...</span>
+                            </motion.div>
                         ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full border-collapse border border-gray-200">
+                            <div className="overflow-x-auto rounded-xl border border-gray-200/50 dark:border-gray-700/50 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+                                <table className="w-full text-sm">
                                     <thead>
-                                        <tr className="bg-stone-700 text-white">
-                                            <th className="border border-gray-200 px-4 py-2 text-center">
+                                        <tr className="bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">
+                                            <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
                                                 No. Resep
                                             </th>
-                                            <th className="border border-gray-200 px-4 py-2 text-center">
+                                            <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
                                                 Tgl. Peresepan
                                             </th>
-                                            <th className="border border-gray-200 px-4 py-2 text-center">
-                                                Jam Peresepan
-                                            </th>
-                                            <th className="border border-gray-200 px-4 py-2 text-center">
+                                            <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
                                                 No. Rawat
                                             </th>
-                                            <th className="border border-gray-200 px-4 py-2 text-center">
+                                            <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
                                                 No. RM
                                             </th>
-                                            <th className="border border-gray-200 px-4 py-2 text-center">
+                                            <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
                                                 Pasien
                                             </th>
-                                            <th className="border border-gray-200 px-4 py-2 text-center">
+                                            <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
                                                 Dokter Peresep
                                             </th>
                                             {filters.jenis === "ralan" ? (
-                                                <th className="border border-gray-200 px-4 py-2 text-center">
+                                                <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
                                                     Poli/Unit
                                                 </th>
                                             ) : (
-                                                <th className="border border-gray-200 px-4 py-2 text-center">
+                                                <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
                                                     Ruang/Kamar
                                                 </th>
                                             )}
-                                            <th className="border border-gray-200 px-4 py-2 text-center">
+                                            <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
                                                 Status Terlayani
                                             </th>
-                                            <th className="border border-gray-200 px-4 py-2 text-center">
+                                            <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
                                                 Jenis Bayar
                                             </th>
-                                            <th className="border border-gray-200 px-4 py-2 text-center">
+                                            <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
                                                 Tgl. Validasi
                                             </th>
-                                            <th className="border border-gray-200 px-4 py-2 text-center">
-                                                Jam Validasi
-                                            </th>
-                                            <th className="border border-gray-200 px-4 py-2 text-center">
+                                            <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
                                                 Tgl. Penyerahan
                                             </th>
-                                            <th className="border border-gray-200 px-4 py-2 text-center">
-                                                Jam Penyerahan
-                                            </th>
-                                            <th className="border border-gray-200 px-4 py-2 text-center">
+                                            <th className="px-4 py-3 text-center font-semibold text-gray-700 dark:text-gray-300">
                                                 Aksi
                                             </th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {data.length === 0 ? (
-                                            <tr>
-                                                <td
-                                                    colSpan={15}
-                                                    className="border border-gray-200 px-4 py-8 text-center text-gray-500"
+                                        <AnimatePresence>
+                                            {data.length === 0 ? (
+                                                <motion.tr
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    exit={{ opacity: 0 }}
                                                 >
-                                                    Belum ada data. Masukkan No.
-                                                    Rawat atau No. RM lalu klik
-                                                    Cari atau gunakan filter
-                                                    tanggal lalu klik Cari.
-                                                </td>
-                                            </tr>
-                                        ) : (
-                                            data.map((item) => {
-                                                const statusLabel =
-                                                    item.status_perawatan ===
-                                                    "Sudah"
-                                                        ? "Sudah Terlayani"
-                                                        : item.status_perawatan ===
-                                                          "Belum"
-                                                        ? "Belum Terlayani"
-                                                        : item.status_perawatan ||
-                                                          "Belum Terlayani";
-                                                const sudah =
-                                                    statusLabel ===
-                                                    "Sudah Terlayani";
-                                                return (
-                                                    <tr
-                                                        key={item.no_resep}
-                                                        className={`hover:bg-gray-50 ${
-                                                            sudah
-                                                                ? "bg-green-50"
-                                                                : ""
-                                                        }`}
+                                                    <td
+                                                        colSpan={12}
+                                                        className="px-4 py-12 text-center"
                                                     >
-                                                        <td className="border border-gray-200 px-4 py-2 font-mono">
-                                                            {item.no_resep}
-                                                        </td>
-                                                        <td className="border border-gray-200 px-4 py-2">
-                                                            {formatDate(
-                                                                item.tgl_peresepan
-                                                            )}
-                                                        </td>
-                                                        <td className="border border-gray-200 px-4 py-2">
-                                                            {formatTime(
-                                                                item.jam_peresepan
-                                                            )}
-                                                        </td>
-                                                        <td className="border border-gray-200 px-4 py-2 font-mono">
-                                                            {item.no_rawat}
-                                                        </td>
-                                                        <td className="border border-gray-200 px-4 py-2 text-center">
-                                                            {item.no_rkm_medis ||
-                                                                "-"}
-                                                        </td>
-                                                        <td className="border border-gray-200 px-4 py-2">
-                                                            {item.nm_pasien ||
-                                                                "-"}
-                                                        </td>
-                                                        <td className="border border-gray-200 px-4 py-2">
-                                                            {item.nm_dokter ||
-                                                                item.nama_dokter ||
-                                                                "-"}
-                                                        </td>
-                                                        <td className="border border-gray-200 px-4 py-2">
-                                                            {filters.jenis ===
-                                                            "ralan"
-                                                                ? item.nm_poli ||
-                                                                  "-"
-                                                                : item.nm_bangsal ||
-                                                                  "-"}
-                                                        </td>
-                                                        <td className="border border-gray-200 px-4 py-2">
-                                                            <Badge
-                                                                variant="outline"
-                                                                className={
-                                                                    sudah
-                                                                        ? "bg-green-100 text-green-800 border-green-300"
-                                                                        : ""
-                                                                }
-                                                            >
-                                                                {statusLabel}
-                                                            </Badge>
-                                                        </td>
-                                                        <td className="border border-gray-200 px-4 py-2">
-                                                            {item.png_jawab ||
-                                                                "-"}
-                                                        </td>
-                                                        <td className="border border-gray-200 px-4 py-2">
-                                                            {formatDate(
-                                                                item.tgl_perawatan
-                                                            )}
-                                                        </td>
-                                                        <td className="border border-gray-200 px-4 py-2">
-                                                            {formatTime(
-                                                                item.jam
-                                                            )}
-                                                        </td>
-                                                        <td className="border border-gray-200 px-4 py-2">
-                                                            {formatDate(
-                                                                item.tgl_penyerahan
-                                                            )}
-                                                        </td>
-                                                        <td className="border border-gray-200 px-4 py-2">
-                                                            {formatTime(
-                                                                item.jam_penyerahan
-                                                            )}
-                                                        </td>
-                                                        <td className="border border-gray-200 px-4 py-2 text-center">
-                                                            <Button
-                                                                size="sm"
-                                                                variant="outline"
-                                                                className="flex items-center gap-1"
-                                                                onClick={() =>
-                                                                    openDetail(
-                                                                        item.no_resep,
-                                                                        item
-                                                                    )
-                                                                }
-                                                            >
-                                                                <Eye className="h-3 w-3" />{" "}
-                                                                Detail
-                                                            </Button>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })
-                                        )}
+                                                        <motion.div
+                                                            className="flex flex-col items-center justify-center gap-3"
+                                                            initial={{ opacity: 0, y: 10 }}
+                                                            animate={{ opacity: 1, y: 0 }}
+                                                        >
+                                                            <Inbox className="w-12 h-12 text-gray-400 dark:text-gray-600" />
+                                                            <div className="text-gray-600 dark:text-gray-400">
+                                                                <p className="font-semibold mb-1">Belum ada data</p>
+                                                                <p className="text-sm">
+                                                                    Masukkan No. Rawat atau No. RM lalu klik Cari atau gunakan filter tanggal lalu klik Cari.
+                                                                </p>
+                                                            </div>
+                                                        </motion.div>
+                                                    </td>
+                                                </motion.tr>
+                                            ) : (
+                                                data.map((item, idx) => {
+                                                    // Cek apakah sudah ada tanggal dan jam penyerahan
+                                                    // Pengecekan yang lebih robust untuk berbagai format data
+                                                    const tglPenyerahan = item.tgl_penyerahan;
+                                                    const jamPenyerahan = item.jam_penyerahan;
+                                                    const sudahAdaPenyerahan = 
+                                                        tglPenyerahan && 
+                                                        jamPenyerahan &&
+                                                        tglPenyerahan !== null &&
+                                                        jamPenyerahan !== null &&
+                                                        tglPenyerahan !== undefined &&
+                                                        jamPenyerahan !== undefined &&
+                                                        String(tglPenyerahan).trim() !== "" &&
+                                                        String(jamPenyerahan).trim() !== "" &&
+                                                        String(tglPenyerahan).trim() !== "-" &&
+                                                        String(jamPenyerahan).trim() !== "-";
+                                                    
+                                                    // Tentukan status berdasarkan penyerahan atau status_perawatan
+                                                    // Prioritas: jika sudah ada penyerahan, maka status = Sudah Terlayani
+                                                    const statusLabel =
+                                                        sudahAdaPenyerahan
+                                                            ? "Sudah Terlayani"
+                                                            : item.status_perawatan ===
+                                                              "Sudah"
+                                                            ? "Sudah Terlayani"
+                                                            : item.status_perawatan ===
+                                                              "Belum"
+                                                            ? "Belum Terlayani"
+                                                            : item.status_perawatan ||
+                                                              "Belum Terlayani";
+                                                    const sudah =
+                                                        statusLabel ===
+                                                        "Sudah Terlayani";
+                                                    return (
+                                                        <motion.tr
+                                                            key={item.no_resep}
+                                                            className={`border-b border-gray-100/50 dark:border-gray-700/30 transition-all duration-200 group ${
+                                                                sudah
+                                                                    ? "bg-gradient-to-r from-green-50/50 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/20"
+                                                                    : "hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 dark:hover:from-gray-700/50 dark:hover:to-gray-800/50"
+                                                            }`}
+                                                            initial={{ opacity: 0, x: -20 }}
+                                                            animate={{ opacity: 1, x: 0 }}
+                                                            exit={{ opacity: 0, x: 20 }}
+                                                            transition={{ delay: idx * 0.02 }}
+                                                            whileHover={{ scale: 1.001 }}
+                                                        >
+                                                            <td className="px-4 py-3">
+                                                                <motion.span
+                                                                    className="inline-flex items-center px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 text-blue-700 dark:text-blue-300 ring-1 ring-blue-200 dark:ring-blue-800 font-mono text-xs font-bold"
+                                                                    whileHover={{ scale: 1.05 }}
+                                                                >
+                                                                    {item.no_resep}
+                                                                </motion.span>
+                                                            </td>
+                                                            <td className="px-4 py-3">
+                                                                <div className="font-medium text-gray-900 dark:text-white">
+                                                                    {formatDate(item.tgl_peresepan)}
+                                                                </div>
+                                                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                                    {formatTime(item.jam_peresepan)}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-4 py-3">
+                                                                <span className="font-mono text-sm text-gray-700 dark:text-gray-300">
+                                                                    {item.no_rawat}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-4 py-3">
+                                                                <span className="text-gray-700 dark:text-gray-300">
+                                                                    {item.no_rkm_medis || "-"}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-4 py-3">
+                                                                <span className="text-gray-900 dark:text-white font-medium">
+                                                                    {item.nm_pasien || "-"}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-4 py-3">
+                                                                <span className="text-gray-700 dark:text-gray-300">
+                                                                    {item.nm_dokter ||
+                                                                        item.nama_dokter ||
+                                                                        "-"}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-4 py-3">
+                                                                <span className="text-gray-700 dark:text-gray-300">
+                                                                    {filters.jenis ===
+                                                                    "ralan"
+                                                                        ? item.nm_poli ||
+                                                                          "-"
+                                                                        : item.nm_bangsal ||
+                                                                          "-"}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-4 py-3">
+                                                                <motion.span
+                                                                    className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold ${
+                                                                        sudah
+                                                                            ? "bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 text-green-700 dark:text-green-300 ring-1 ring-green-200 dark:ring-green-800"
+                                                                            : "bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/30 dark:to-amber-900/30 text-yellow-700 dark:text-yellow-300 ring-1 ring-yellow-200 dark:ring-yellow-800"
+                                                                    }`}
+                                                                    whileHover={{ scale: 1.05 }}
+                                                                >
+                                                                    {statusLabel}
+                                                                </motion.span>
+                                                            </td>
+                                                            <td className="px-4 py-3">
+                                                                <span className="text-gray-700 dark:text-gray-300">
+                                                                    {item.png_jawab || "-"}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-4 py-3">
+                                                                {item.tgl_perawatan ? (
+                                                                    <>
+                                                                        <div className="font-medium text-gray-900 dark:text-white">
+                                                                            {formatDate(item.tgl_perawatan)}
+                                                                        </div>
+                                                                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                                            {formatTime(item.jam)}
+                                                                        </div>
+                                                                    </>
+                                                                ) : (
+                                                                    <span className="text-gray-400 dark:text-gray-600">-</span>
+                                                                )}
+                                                            </td>
+                                                            <td className="px-4 py-3">
+                                                                {item.tgl_penyerahan ? (
+                                                                    <>
+                                                                        <div className="font-medium text-gray-900 dark:text-white">
+                                                                            {formatDate(item.tgl_penyerahan)}
+                                                                        </div>
+                                                                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                                            {formatTime(item.jam_penyerahan)}
+                                                                        </div>
+                                                                    </>
+                                                                ) : (
+                                                                    <span className="text-gray-400 dark:text-gray-600">-</span>
+                                                                )}
+                                                            </td>
+                                                            <td className="px-4 py-3 text-center">
+                                                                <motion.button
+                                                                    onClick={() =>
+                                                                        openDetail(
+                                                                            item.no_resep,
+                                                                            item
+                                                                        )
+                                                                    }
+                                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/90 dark:bg-gray-700/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium transition-all duration-200"
+                                                                    whileHover={{ scale: 1.05 }}
+                                                                    whileTap={{ scale: 0.95 }}
+                                                                >
+                                                                    <Eye className="h-3.5 w-3.5" />
+                                                                    Detail
+                                                                </motion.button>
+                                                            </td>
+                                                        </motion.tr>
+                                                    );
+                                                })
+                                            )}
+                                        </AnimatePresence>
                                     </tbody>
                                 </table>
                             </div>
                         )}
-                    </CardContent>
-                </Card>
+                    </div>
+                </motion.div>
 
                 {/* Detail Modal */}
                 {showDetail && selectedResep && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white rounded-lg p-6 max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                    <div className="fixed inset-0 flex items-center justify-center z-50" style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
+                        <div className="bg-white rounded-lg p-6 max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-lg font-semibold flex items-center gap-2">
                                     <Pill className="h-4 w-4" /> Detail Resep #
                                     {selectedResep.no_resep}
                                 </h3>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setShowDetail(false)}
-                                >
-                                    Tutup
-                                </Button>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={cetakEtiket}
+                                        className="flex items-center gap-2"
+                                    >
+                                        <Printer className="h-4 w-4" />
+                                        Cetak Etiket
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={cetakResep}
+                                        className="flex items-center gap-2"
+                                    >
+                                        <Printer className="h-4 w-4" />
+                                        Cetak Resep
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setShowDetail(false)}
+                                    >
+                                        Tutup
+                                    </Button>
+                                </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
@@ -2030,9 +2897,10 @@ const DaftarPermintaanResep = () => {
                                             saving ||
                                             (selectedResep?.tgl_penyerahan &&
                                                 selectedResep?.tgl_penyerahan !==
-                                                    "0000-00-00")
+                                                    "0000-00-00" &&
+                                                selectedResep?.tgl_penyerahan !== "")
                                         }
-                                        onClick={() => setConfirmOpen(true)}
+                                        onClick={handleValidasi}
                                     >
                                         {saving
                                             ? "Memproses..."

@@ -11,6 +11,7 @@ import bukuBesar from './buku-besar'
 import neraca from './neraca'
 import cashflow from './cashflow'
 import billing from './billing'
+import notaJalan from './nota-jalan'
 import kasirRalan from './kasir-ralan'
 /**
 * @see \App\Http\Controllers\Akutansi\AkutansiController::invoice
@@ -88,6 +89,7 @@ const akutansi = {
     neraca: Object.assign(neraca, neraca),
     cashflow: Object.assign(cashflow, cashflow),
     billing: Object.assign(billing, billing),
+    notaJalan: Object.assign(notaJalan, notaJalan),
     kasirRalan: Object.assign(kasirRalan, kasirRalan),
 }
 

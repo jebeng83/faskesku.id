@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\KategoriPerawatanController::generateKode
-* @see app/Http/Controllers/KategoriPerawatanController.php:171
+* @see app/Http/Controllers/KategoriPerawatanController.php:207
 * @route '/kategori-perawatan/generate-kode'
 */
 export const generateKode = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ generateKode.definition = {
 
 /**
 * @see \App\Http\Controllers\KategoriPerawatanController::generateKode
-* @see app/Http/Controllers/KategoriPerawatanController.php:171
+* @see app/Http/Controllers/KategoriPerawatanController.php:207
 * @route '/kategori-perawatan/generate-kode'
 */
 generateKode.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ generateKode.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\KategoriPerawatanController::generateKode
-* @see app/Http/Controllers/KategoriPerawatanController.php:171
+* @see app/Http/Controllers/KategoriPerawatanController.php:207
 * @route '/kategori-perawatan/generate-kode'
 */
 generateKode.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ generateKode.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\KategoriPerawatanController::generateKode
-* @see app/Http/Controllers/KategoriPerawatanController.php:171
+* @see app/Http/Controllers/KategoriPerawatanController.php:207
 * @route '/kategori-perawatan/generate-kode'
 */
 generateKode.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -167,7 +167,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\KategoriPerawatanController::show
-* @see app/Http/Controllers/KategoriPerawatanController.php:88
+* @see app/Http/Controllers/KategoriPerawatanController.php:124
 * @route '/kategori-perawatan/{kategori_perawatan}'
 */
 export const show = (args: { kategori_perawatan: string | number } | [kategori_perawatan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -182,7 +182,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\KategoriPerawatanController::show
-* @see app/Http/Controllers/KategoriPerawatanController.php:88
+* @see app/Http/Controllers/KategoriPerawatanController.php:124
 * @route '/kategori-perawatan/{kategori_perawatan}'
 */
 show.url = (args: { kategori_perawatan: string | number } | [kategori_perawatan: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -209,7 +209,7 @@ show.url = (args: { kategori_perawatan: string | number } | [kategori_perawatan:
 
 /**
 * @see \App\Http\Controllers\KategoriPerawatanController::show
-* @see app/Http/Controllers/KategoriPerawatanController.php:88
+* @see app/Http/Controllers/KategoriPerawatanController.php:124
 * @route '/kategori-perawatan/{kategori_perawatan}'
 */
 show.get = (args: { kategori_perawatan: string | number } | [kategori_perawatan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -219,7 +219,7 @@ show.get = (args: { kategori_perawatan: string | number } | [kategori_perawatan:
 
 /**
 * @see \App\Http\Controllers\KategoriPerawatanController::show
-* @see app/Http/Controllers/KategoriPerawatanController.php:88
+* @see app/Http/Controllers/KategoriPerawatanController.php:124
 * @route '/kategori-perawatan/{kategori_perawatan}'
 */
 show.head = (args: { kategori_perawatan: string | number } | [kategori_perawatan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -229,7 +229,7 @@ show.head = (args: { kategori_perawatan: string | number } | [kategori_perawatan
 
 /**
 * @see \App\Http\Controllers\KategoriPerawatanController::edit
-* @see app/Http/Controllers/KategoriPerawatanController.php:100
+* @see app/Http/Controllers/KategoriPerawatanController.php:136
 * @route '/kategori-perawatan/{kategori_perawatan}/edit'
 */
 export const edit = (args: { kategori_perawatan: string | number } | [kategori_perawatan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -244,7 +244,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\KategoriPerawatanController::edit
-* @see app/Http/Controllers/KategoriPerawatanController.php:100
+* @see app/Http/Controllers/KategoriPerawatanController.php:136
 * @route '/kategori-perawatan/{kategori_perawatan}/edit'
 */
 edit.url = (args: { kategori_perawatan: string | number } | [kategori_perawatan: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -271,7 +271,7 @@ edit.url = (args: { kategori_perawatan: string | number } | [kategori_perawatan:
 
 /**
 * @see \App\Http\Controllers\KategoriPerawatanController::edit
-* @see app/Http/Controllers/KategoriPerawatanController.php:100
+* @see app/Http/Controllers/KategoriPerawatanController.php:136
 * @route '/kategori-perawatan/{kategori_perawatan}/edit'
 */
 edit.get = (args: { kategori_perawatan: string | number } | [kategori_perawatan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -281,7 +281,7 @@ edit.get = (args: { kategori_perawatan: string | number } | [kategori_perawatan:
 
 /**
 * @see \App\Http\Controllers\KategoriPerawatanController::edit
-* @see app/Http/Controllers/KategoriPerawatanController.php:100
+* @see app/Http/Controllers/KategoriPerawatanController.php:136
 * @route '/kategori-perawatan/{kategori_perawatan}/edit'
 */
 edit.head = (args: { kategori_perawatan: string | number } | [kategori_perawatan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -291,7 +291,7 @@ edit.head = (args: { kategori_perawatan: string | number } | [kategori_perawatan
 
 /**
 * @see \App\Http\Controllers\KategoriPerawatanController::update
-* @see app/Http/Controllers/KategoriPerawatanController.php:113
+* @see app/Http/Controllers/KategoriPerawatanController.php:149
 * @route '/kategori-perawatan/{kategori_perawatan}'
 */
 export const update = (args: { kategori_perawatan: string | number } | [kategori_perawatan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -306,7 +306,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\KategoriPerawatanController::update
-* @see app/Http/Controllers/KategoriPerawatanController.php:113
+* @see app/Http/Controllers/KategoriPerawatanController.php:149
 * @route '/kategori-perawatan/{kategori_perawatan}'
 */
 update.url = (args: { kategori_perawatan: string | number } | [kategori_perawatan: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -333,7 +333,7 @@ update.url = (args: { kategori_perawatan: string | number } | [kategori_perawata
 
 /**
 * @see \App\Http\Controllers\KategoriPerawatanController::update
-* @see app/Http/Controllers/KategoriPerawatanController.php:113
+* @see app/Http/Controllers/KategoriPerawatanController.php:149
 * @route '/kategori-perawatan/{kategori_perawatan}'
 */
 update.put = (args: { kategori_perawatan: string | number } | [kategori_perawatan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -343,7 +343,7 @@ update.put = (args: { kategori_perawatan: string | number } | [kategori_perawata
 
 /**
 * @see \App\Http\Controllers\KategoriPerawatanController::update
-* @see app/Http/Controllers/KategoriPerawatanController.php:113
+* @see app/Http/Controllers/KategoriPerawatanController.php:149
 * @route '/kategori-perawatan/{kategori_perawatan}'
 */
 update.patch = (args: { kategori_perawatan: string | number } | [kategori_perawatan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -353,7 +353,7 @@ update.patch = (args: { kategori_perawatan: string | number } | [kategori_perawa
 
 /**
 * @see \App\Http\Controllers\KategoriPerawatanController::destroy
-* @see app/Http/Controllers/KategoriPerawatanController.php:149
+* @see app/Http/Controllers/KategoriPerawatanController.php:185
 * @route '/kategori-perawatan/{kategori_perawatan}'
 */
 export const destroy = (args: { kategori_perawatan: string | number } | [kategori_perawatan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -368,7 +368,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\KategoriPerawatanController::destroy
-* @see app/Http/Controllers/KategoriPerawatanController.php:149
+* @see app/Http/Controllers/KategoriPerawatanController.php:185
 * @route '/kategori-perawatan/{kategori_perawatan}'
 */
 destroy.url = (args: { kategori_perawatan: string | number } | [kategori_perawatan: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -395,7 +395,7 @@ destroy.url = (args: { kategori_perawatan: string | number } | [kategori_perawat
 
 /**
 * @see \App\Http\Controllers\KategoriPerawatanController::destroy
-* @see app/Http/Controllers/KategoriPerawatanController.php:149
+* @see app/Http/Controllers/KategoriPerawatanController.php:185
 * @route '/kategori-perawatan/{kategori_perawatan}'
 */
 destroy.delete = (args: { kategori_perawatan: string | number } | [kategori_perawatan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

@@ -78,6 +78,58 @@ findByNoRawat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 })
 
 /**
+* @see \App\Http\Controllers\API\RegPeriksaController::updateStatusBayar
+* @see app/Http/Controllers/API/RegPeriksaController.php:283
+* @route '/api/reg-periksa/{regPeriksa}/status-bayar'
+*/
+export const updateStatusBayar = (args: { regPeriksa: string | number } | [regPeriksa: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+    url: updateStatusBayar.url(args, options),
+    method: 'put',
+})
+
+updateStatusBayar.definition = {
+    methods: ["put"],
+    url: '/api/reg-periksa/{regPeriksa}/status-bayar',
+} satisfies RouteDefinition<["put"]>
+
+/**
+* @see \App\Http\Controllers\API\RegPeriksaController::updateStatusBayar
+* @see app/Http/Controllers/API/RegPeriksaController.php:283
+* @route '/api/reg-periksa/{regPeriksa}/status-bayar'
+*/
+updateStatusBayar.url = (args: { regPeriksa: string | number } | [regPeriksa: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { regPeriksa: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            regPeriksa: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        regPeriksa: args.regPeriksa,
+    }
+
+    return updateStatusBayar.definition.url
+            .replace('{regPeriksa}', parsedArgs.regPeriksa.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\API\RegPeriksaController::updateStatusBayar
+* @see app/Http/Controllers/API/RegPeriksaController.php:283
+* @route '/api/reg-periksa/{regPeriksa}/status-bayar'
+*/
+updateStatusBayar.put = (args: { regPeriksa: string | number } | [regPeriksa: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+    url: updateStatusBayar.url(args, options),
+    method: 'put',
+})
+
+/**
 * @see \App\Http\Controllers\API\RegPeriksaController::show
 * @see app/Http/Controllers/API/RegPeriksaController.php:196
 * @route '/api/reg-periksa/{regPeriksa}'
@@ -205,7 +257,7 @@ update.put = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa:
 
 /**
 * @see \App\Http\Controllers\API\RegPeriksaController::destroy
-* @see app/Http/Controllers/API/RegPeriksaController.php:283
+* @see app/Http/Controllers/API/RegPeriksaController.php:328
 * @route '/api/reg-periksa/{regPeriksa}'
 */
 export const destroy = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa: string | { no_rawat: string } ] | string | { no_rawat: string }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -220,7 +272,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\API\RegPeriksaController::destroy
-* @see app/Http/Controllers/API/RegPeriksaController.php:283
+* @see app/Http/Controllers/API/RegPeriksaController.php:328
 * @route '/api/reg-periksa/{regPeriksa}'
 */
 destroy.url = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa: string | { no_rawat: string } ] | string | { no_rawat: string }, options?: RouteQueryOptions) => {
@@ -253,7 +305,7 @@ destroy.url = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa
 
 /**
 * @see \App\Http\Controllers\API\RegPeriksaController::destroy
-* @see app/Http/Controllers/API/RegPeriksaController.php:283
+* @see app/Http/Controllers/API/RegPeriksaController.php:328
 * @route '/api/reg-periksa/{regPeriksa}'
 */
 destroy.delete = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa: string | { no_rawat: string } ] | string | { no_rawat: string }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -263,7 +315,7 @@ destroy.delete = (args: { regPeriksa: string | { no_rawat: string } } | [regPeri
 
 /**
 * @see \App\Http\Controllers\API\RegPeriksaController::hitungUmur
-* @see app/Http/Controllers/API/RegPeriksaController.php:303
+* @see app/Http/Controllers/API/RegPeriksaController.php:348
 * @route '/api/reg-periksa/hitung-umur'
 */
 export const hitungUmur = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -278,7 +330,7 @@ hitungUmur.definition = {
 
 /**
 * @see \App\Http\Controllers\API\RegPeriksaController::hitungUmur
-* @see app/Http/Controllers/API/RegPeriksaController.php:303
+* @see app/Http/Controllers/API/RegPeriksaController.php:348
 * @route '/api/reg-periksa/hitung-umur'
 */
 hitungUmur.url = (options?: RouteQueryOptions) => {
@@ -287,7 +339,7 @@ hitungUmur.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\RegPeriksaController::hitungUmur
-* @see app/Http/Controllers/API/RegPeriksaController.php:303
+* @see app/Http/Controllers/API/RegPeriksaController.php:348
 * @route '/api/reg-periksa/hitung-umur'
 */
 hitungUmur.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -297,7 +349,7 @@ hitungUmur.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\API\RegPeriksaController::getStatistik
-* @see app/Http/Controllers/API/RegPeriksaController.php:338
+* @see app/Http/Controllers/API/RegPeriksaController.php:383
 * @route '/api/reg-periksa/statistik'
 */
 export const getStatistik = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -312,7 +364,7 @@ getStatistik.definition = {
 
 /**
 * @see \App\Http\Controllers\API\RegPeriksaController::getStatistik
-* @see app/Http/Controllers/API/RegPeriksaController.php:338
+* @see app/Http/Controllers/API/RegPeriksaController.php:383
 * @route '/api/reg-periksa/statistik'
 */
 getStatistik.url = (options?: RouteQueryOptions) => {
@@ -321,7 +373,7 @@ getStatistik.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\RegPeriksaController::getStatistik
-* @see app/Http/Controllers/API/RegPeriksaController.php:338
+* @see app/Http/Controllers/API/RegPeriksaController.php:383
 * @route '/api/reg-periksa/statistik'
 */
 getStatistik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -331,7 +383,7 @@ getStatistik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\API\RegPeriksaController::getStatistik
-* @see app/Http/Controllers/API/RegPeriksaController.php:338
+* @see app/Http/Controllers/API/RegPeriksaController.php:383
 * @route '/api/reg-periksa/statistik'
 */
 getStatistik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -341,7 +393,7 @@ getStatistik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\API\RegPeriksaController::getFilterData
-* @see app/Http/Controllers/API/RegPeriksaController.php:374
+* @see app/Http/Controllers/API/RegPeriksaController.php:419
 * @route '/api/reg-periksa/filter-data'
 */
 export const getFilterData = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -356,7 +408,7 @@ getFilterData.definition = {
 
 /**
 * @see \App\Http\Controllers\API\RegPeriksaController::getFilterData
-* @see app/Http/Controllers/API/RegPeriksaController.php:374
+* @see app/Http/Controllers/API/RegPeriksaController.php:419
 * @route '/api/reg-periksa/filter-data'
 */
 getFilterData.url = (options?: RouteQueryOptions) => {
@@ -365,7 +417,7 @@ getFilterData.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\RegPeriksaController::getFilterData
-* @see app/Http/Controllers/API/RegPeriksaController.php:374
+* @see app/Http/Controllers/API/RegPeriksaController.php:419
 * @route '/api/reg-periksa/filter-data'
 */
 getFilterData.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -375,7 +427,7 @@ getFilterData.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\API\RegPeriksaController::getFilterData
-* @see app/Http/Controllers/API/RegPeriksaController.php:374
+* @see app/Http/Controllers/API/RegPeriksaController.php:419
 * @route '/api/reg-periksa/filter-data'
 */
 getFilterData.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -383,6 +435,6 @@ getFilterData.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
     method: 'head',
 })
 
-const RegPeriksaController = { store, findByNoRawat, show, update, destroy, hitungUmur, getStatistik, getFilterData }
+const RegPeriksaController = { store, findByNoRawat, updateStatusBayar, show, update, destroy, hitungUmur, getStatistik, getFilterData }
 
 export default RegPeriksaController

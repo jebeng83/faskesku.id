@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Head, Link, useForm, Form } from "@inertiajs/react";
+import { Head, Link, useForm, Form, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
 import SelectWithAdd from "@/Components/SelectWithAdd";
@@ -43,6 +43,10 @@ export default function Create() {
     const [sukuOptions, setSukuOptions] = useState([]);
     const [bahasaOptions, setBahasaOptions] = useState([]);
     const [cacatOptions, setCacatOptions] = useState([]);
+    const [showPerusahaanPasienModal, setShowPerusahaanPasienModal] = useState(false);
+    const [showBahasaPasienModal, setShowBahasaPasienModal] = useState(false);
+    const [showSukuBangsaModal, setShowSukuBangsaModal] = useState(false);
+    const [showCacatFisikModal, setShowCacatFisikModal] = useState(false);
 
 	// Address states - now handled by WilayahSearchableSelect components
 
@@ -71,11 +75,8 @@ export default function Create() {
         perusahaan_pasien: "",
         perusahaan_pasien_text: "",
         suku_bangsa: "",
-        suku_bangsa_text: "",
         bahasa_pasien: "",
-        bahasa_pasien_text: "",
         cacat_fisik: "",
-        cacat_fisik_text: "",
         nip: "",
     });
 
@@ -227,6 +228,308 @@ export default function Create() {
 		loadPenjabOptions();
 	};
 
+	// Form untuk tambah Perusahaan Pasien
+	const perusahaanPasienForm = useForm({
+		kode_perusahaan: "",
+		nama_perusahaan: "",
+		alamat: "",
+		kota: "",
+		no_telp: "",
+	});
+
+	// Form untuk tambah Bahasa Pasien
+	const bahasaPasienForm = useForm({
+		nama_bahasa: "",
+	});
+
+	// Form untuk tambah Suku Bangsa
+	const sukuBangsaForm = useForm({
+		nama_suku_bangsa: "",
+	});
+
+	// Form untuk tambah Cacat Fisik
+	const cacatFisikForm = useForm({
+		nama_cacat: "",
+	});
+
+	// Handler untuk submit popup Perusahaan Pasien
+	const handleTambahPerusahaanPasien = (e) => {
+		e.preventDefault();
+		perusahaanPasienForm.post(route("perusahaan-pasien.store"), {
+			preserveScroll: true,
+			preserveState: true,
+			onSuccess: (page) => {
+				// Cek apakah ada data yang baru dibuat dari flash message
+				const createdData = page.props.flash?.perusahaanPasienCreated;
+				if (createdData) {
+					const newKode = createdData.kode_perusahaan;
+					const newNama = createdData.nama_perusahaan;
+					if (newKode) {
+						// Set value ke form utama
+						setData("perusahaan_pasien", newKode);
+						
+						// Tambahkan ke options dropdown
+						const newOption = {
+							value: newKode,
+							label: `${newKode} - ${newNama}`,
+						};
+						setPerusahaanOptions((prev) => {
+							// Cek apakah sudah ada, jika belum tambahkan
+							const exists = prev.find((opt) => opt.value === newKode);
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				} else {
+					// Fallback: gunakan data dari form
+					const newKode = perusahaanPasienForm.data.kode_perusahaan;
+					if (newKode) {
+						setData("perusahaan_pasien", newKode);
+						const newOption = {
+							value: newKode,
+							label: `${newKode} - ${perusahaanPasienForm.data.nama_perusahaan}`,
+						};
+						setPerusahaanOptions((prev) => {
+							const exists = prev.find((opt) => opt.value === newKode);
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				}
+				
+				// Tutup modal dan reset form
+				setShowPerusahaanPasienModal(false);
+				perusahaanPasienForm.reset();
+				
+				// Reload perusahaan options dari API
+				const loadPerusahaanOptions = async () => {
+					try {
+						const response = await fetch('/api/perusahaan-pasien');
+						if (response.ok) {
+							const result = await response.json();
+							setPerusahaanOptions((result.data || []).map((d) => ({ value: d.value, label: d.label })));
+						}
+					} catch (error) {
+						console.error('Error loading perusahaan options:', error);
+					}
+				};
+				loadPerusahaanOptions();
+			},
+			onError: () => {
+				// Tetap buka modal jika ada error agar user bisa melihat error
+				// Error akan otomatis ditampilkan oleh Inertia form
+			},
+		});
+	};
+
+	// Handler untuk submit popup Bahasa Pasien
+	const handleTambahBahasaPasien = (e) => {
+		e.preventDefault();
+		bahasaPasienForm.post(route("bahasa-pasien.store"), {
+			preserveScroll: true,
+			preserveState: true,
+			onSuccess: (page) => {
+				// Cek apakah ada data yang baru dibuat dari flash message
+				const createdData = page.props.flash?.bahasaPasienCreated;
+				if (createdData) {
+					const newId = createdData.id;
+					const newNama = createdData.nama_bahasa;
+					if (newId) {
+						// Set value ke form utama
+						setData("bahasa_pasien", newId.toString());
+						
+						// Tambahkan ke options dropdown
+						const newOption = {
+							value: newId.toString(),
+							label: newNama,
+						};
+						setBahasaOptions((prev) => {
+							// Cek apakah sudah ada, jika belum tambahkan
+							const exists = prev.find((opt) => opt.value === newId.toString());
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				} else {
+					// Fallback: gunakan data dari form
+					const newNama = bahasaPasienForm.data.nama_bahasa;
+					if (newNama) {
+						// Untuk fallback, kita perlu mendapatkan ID dari server
+						// Tapi karena kita tidak punya ID, kita akan reload options
+					}
+				}
+				
+				// Tutup modal dan reset form
+				setShowBahasaPasienModal(false);
+				bahasaPasienForm.reset();
+				
+				// Reload bahasa options dari API
+				const loadBahasaOptions = async () => {
+					try {
+						const response = await fetch('/api/bahasa-pasien');
+						if (response.ok) {
+							const result = await response.json();
+							setBahasaOptions((result.data || []).map((d) => ({ value: d.value, label: d.label })));
+							// Set value jika ada createdData
+							if (createdData && createdData.id) {
+								setData("bahasa_pasien", createdData.id.toString());
+							}
+						}
+					} catch (error) {
+						console.error('Error loading bahasa options:', error);
+					}
+				};
+				loadBahasaOptions();
+			},
+			onError: () => {
+				// Tetap buka modal jika ada error agar user bisa melihat error
+				// Error akan otomatis ditampilkan oleh Inertia form
+			},
+		});
+	};
+
+	// Handler untuk submit popup Suku Bangsa
+	const handleTambahSukuBangsa = (e) => {
+		e.preventDefault();
+		sukuBangsaForm.post(route("suku-bangsa.store"), {
+			preserveScroll: true,
+			preserveState: true,
+			onSuccess: (page) => {
+				// Cek apakah ada data yang baru dibuat dari flash message
+				const createdData = page.props.flash?.sukuBangsaCreated;
+				if (createdData) {
+					const newId = createdData.id;
+					const newNama = createdData.nama_suku_bangsa;
+					if (newId) {
+						// Set value ke form utama
+						setData("suku_bangsa", newId.toString());
+						
+						// Tambahkan ke options dropdown
+						const newOption = {
+							value: newId.toString(),
+							label: newNama,
+						};
+						setSukuOptions((prev) => {
+							// Cek apakah sudah ada, jika belum tambahkan
+							const exists = prev.find((opt) => opt.value === newId.toString());
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				} else {
+					// Fallback: gunakan data dari form
+					const newNama = sukuBangsaForm.data.nama_suku_bangsa;
+					if (newNama) {
+						// Untuk fallback, kita perlu mendapatkan ID dari server
+						// Tapi karena kita tidak punya ID, kita akan reload options
+					}
+				}
+				
+				// Tutup modal dan reset form
+				setShowSukuBangsaModal(false);
+				sukuBangsaForm.reset();
+				
+				// Reload suku options dari API
+				const loadSukuOptions = async () => {
+					try {
+						const response = await fetch('/api/suku-bangsa');
+						if (response.ok) {
+							const result = await response.json();
+							setSukuOptions((result.data || []).map((d) => ({ value: d.value, label: d.label })));
+							// Set value jika ada createdData
+							if (createdData && createdData.id) {
+								setData("suku_bangsa", createdData.id.toString());
+							}
+						}
+					} catch (error) {
+						console.error('Error loading suku options:', error);
+					}
+				};
+				loadSukuOptions();
+			},
+			onError: () => {
+				// Tetap buka modal jika ada error agar user bisa melihat error
+				// Error akan otomatis ditampilkan oleh Inertia form
+			},
+		});
+	};
+
+	// Handler untuk submit popup Cacat Fisik
+	const handleTambahCacatFisik = (e) => {
+		e.preventDefault();
+		cacatFisikForm.post(route("cacat-fisik.store"), {
+			preserveScroll: true,
+			preserveState: true,
+			onSuccess: (page) => {
+				// Cek apakah ada data yang baru dibuat dari flash message
+				const createdData = page.props.flash?.cacatFisikCreated;
+				if (createdData) {
+					const newId = createdData.id;
+					const newNama = createdData.nama_cacat;
+					if (newId) {
+						// Set value ke form utama
+						setData("cacat_fisik", newId.toString());
+						
+						// Tambahkan ke options dropdown
+						const newOption = {
+							value: newId.toString(),
+							label: newNama,
+						};
+						setCacatOptions((prev) => {
+							// Cek apakah sudah ada, jika belum tambahkan
+							const exists = prev.find((opt) => opt.value === newId.toString());
+							if (!exists) {
+								return [...prev, newOption];
+							}
+							return prev;
+						});
+					}
+				} else {
+					// Fallback: gunakan data dari form
+					const newNama = cacatFisikForm.data.nama_cacat;
+					if (newNama) {
+						// Untuk fallback, kita perlu mendapatkan ID dari server
+						// Tapi karena kita tidak punya ID, kita akan reload options
+					}
+				}
+				
+				// Tutup modal dan reset form
+				setShowCacatFisikModal(false);
+				cacatFisikForm.reset();
+				
+				// Reload cacat options dari API
+				const loadCacatOptions = async () => {
+					try {
+						const response = await fetch('/api/cacat-fisik');
+						if (response.ok) {
+							const result = await response.json();
+							setCacatOptions((result.data || []).map((d) => ({ value: d.value, label: d.label })));
+							// Set value jika ada createdData
+							if (createdData && createdData.id) {
+								setData("cacat_fisik", createdData.id.toString());
+							}
+						}
+					} catch (error) {
+						console.error('Error loading cacat options:', error);
+					}
+				};
+				loadCacatOptions();
+			},
+			onError: () => {
+				// Tetap buka modal jika ada error agar user bisa melihat error
+				// Error akan otomatis ditampilkan oleh Inertia form
+			},
+		});
+	};
+
 	// Handle wilayah change - automatically set all address fields
 	const handleWilayahChange = async (event) => {
 		const value = event.target.value;
@@ -280,13 +583,10 @@ export default function Create() {
                                 </motion.div>
                                 <div>
                                     <motion.h1
-                                        className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
+                                        className="text-2xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
                                     >
                                         Tambah Pasien Baru
                                     </motion.h1>
-                                    <p className="mt-0.5 text-xs text-gray-600 dark:text-gray-300">
-                                        Masukkan data pasien baru ke dalam sistem
-                                    </p>
                                 </div>
                             </div>
                             <Link
@@ -903,114 +1203,170 @@ export default function Create() {
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                             Perusahaan Pasien *
                                         </label>
-                                        <SearchableSelect
-                                            options={perusahaanOptions}
-                                            value={data.perusahaan_pasien}
-                                            onChange={(val) => {
-                                                setData('perusahaan_pasien', val);
-                                            }}
-                                            placeholder="Pilih atau cari perusahaan pasien"
-                                            searchPlaceholder="Ketik nama_perusahaan untuk mencari..."
-                                            displayKey="label"
-                                            valueKey="value"
-                                            error={!!getErrorMessage('perusahaan_pasien')}
-                                        />
+                                        <div className="flex gap-2">
+                                            <div className="flex-1">
+                                                <SearchableSelect
+                                                    options={perusahaanOptions}
+                                                    value={data.perusahaan_pasien}
+                                                    onChange={(val) => {
+                                                        setData('perusahaan_pasien', val);
+                                                    }}
+                                                    placeholder="Pilih atau cari perusahaan pasien"
+                                                    searchPlaceholder="Ketik nama_perusahaan untuk mencari..."
+                                                    displayKey="label"
+                                                    valueKey="value"
+                                                    error={!!getErrorMessage('perusahaan_pasien')}
+                                                />
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPerusahaanPasienModal(true)}
+                                                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                                                title="Tambah Perusahaan Pasien Baru"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    viewBox="0 0 24 24"
+                                                    fill="currentColor"
+                                                    className="w-5 h-5"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+                                                        clipRule="evenodd"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        </div>
                                         {getErrorMessage('perusahaan_pasien') && (
                                             <p className="mt-1 text-sm text-red-600">{getErrorMessage('perusahaan_pasien')}</p>
                                         )}
                                     </div>
 
-                                    {/* Suku Bangsa: Dropdown + Textbox Join */}
+                                    {/* Suku Bangsa: Dropdown dengan Popup */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                             Suku Bangsa *
                                         </label>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                            <SearchableSelect
-                                                options={sukuOptions}
-                                                value={data.suku_bangsa}
-                                                onChange={(val) => {
-                                                    setData('suku_bangsa', val);
-                                                    setData('suku_bangsa_text', findLabelByValue(sukuOptions, val));
-                                                }}
-                                                placeholder="Pilih suku bangsa"
-                                                error={!!getErrorMessage('suku_bangsa')}
-                                            />
-                                            <input
-                                                type="text"
-                                                name="suku_bangsa_text"
-                                                value={data.suku_bangsa_text}
-                                                onChange={(e) => setData('suku_bangsa_text', e.target.value)}
-                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                placeholder="Isi suku bangsa (manual)"
-                                            />
+                                        <div className="flex gap-2">
+                                            <div className="flex-1">
+                                                <SearchableSelect
+                                                    options={sukuOptions}
+                                                    value={data.suku_bangsa}
+                                                    onChange={(val) => {
+                                                        setData('suku_bangsa', val);
+                                                    }}
+                                                    placeholder="Pilih suku bangsa"
+                                                    error={!!getErrorMessage('suku_bangsa')}
+                                                />
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowSukuBangsaModal(true)}
+                                                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                                                title="Tambah Suku Bangsa Baru"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    viewBox="0 0 24 24"
+                                                    fill="currentColor"
+                                                    className="w-5 h-5"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+                                                        clipRule="evenodd"
+                                                    />
+                                                </svg>
+                                            </button>
                                         </div>
                                         {getErrorMessage('suku_bangsa') && (
                                             <p className="mt-1 text-sm text-red-600">{getErrorMessage('suku_bangsa')}</p>
                                         )}
-                                        <p className="mt-1 text-xs text-gray-500">Jika tidak ada di daftar, isi manual di kolom sebelah.</p>
                                     </div>
 
-                                    {/* Bahasa Pasien: Dropdown + Textbox Join */}
+                                    {/* Bahasa Pasien: Dropdown dengan Popup */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                             Bahasa Pasien *
                                         </label>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                            <SearchableSelect
-                                                options={bahasaOptions}
-                                                value={data.bahasa_pasien}
-                                                onChange={(val) => {
-                                                    setData('bahasa_pasien', val);
-                                                    setData('bahasa_pasien_text', findLabelByValue(bahasaOptions, val));
-                                                }}
-                                                placeholder="Pilih bahasa pasien"
-                                                error={!!getErrorMessage('bahasa_pasien')}
-                                            />
-                                            <input
-                                                type="text"
-                                                name="bahasa_pasien_text"
-                                                value={data.bahasa_pasien_text}
-                                                onChange={(e) => setData('bahasa_pasien_text', e.target.value)}
-                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                placeholder="Isi bahasa pasien (manual)"
-                                            />
+                                        <div className="flex gap-2">
+                                            <div className="flex-1">
+                                                <SearchableSelect
+                                                    options={bahasaOptions}
+                                                    value={data.bahasa_pasien}
+                                                    onChange={(val) => {
+                                                        setData('bahasa_pasien', val);
+                                                    }}
+                                                    placeholder="Pilih bahasa pasien"
+                                                    error={!!getErrorMessage('bahasa_pasien')}
+                                                />
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowBahasaPasienModal(true)}
+                                                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                                                title="Tambah Bahasa Pasien Baru"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    viewBox="0 0 24 24"
+                                                    fill="currentColor"
+                                                    className="w-5 h-5"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+                                                        clipRule="evenodd"
+                                                    />
+                                                </svg>
+                                            </button>
                                         </div>
                                         {getErrorMessage('bahasa_pasien') && (
                                             <p className="mt-1 text-sm text-red-600">{getErrorMessage('bahasa_pasien')}</p>
                                         )}
-                                        <p className="mt-1 text-xs text-gray-500">Jika tidak ada di daftar, isi manual di kolom sebelah.</p>
                                     </div>
 
-                                    {/* Cacat Fisik: Dropdown + Textbox Join */}
+                                    {/* Cacat Fisik: Dropdown dengan Popup */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                             Cacat Fisik *
                                         </label>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                            <SearchableSelect
-                                                options={cacatOptions}
-                                                value={data.cacat_fisik}
-                                                onChange={(val) => {
-                                                    setData('cacat_fisik', val);
-                                                    setData('cacat_fisik_text', findLabelByValue(cacatOptions, val));
-                                                }}
-                                                placeholder="Pilih cacat fisik"
-                                                error={!!getErrorMessage('cacat_fisik')}
-                                            />
-                                            <input
-                                                type="text"
-                                                name="cacat_fisik_text"
-                                                value={data.cacat_fisik_text}
-                                                onChange={(e) => setData('cacat_fisik_text', e.target.value)}
-                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                placeholder="Isi cacat fisik (manual)"
-                                            />
+                                        <div className="flex gap-2">
+                                            <div className="flex-1">
+                                                <SearchableSelect
+                                                    options={cacatOptions}
+                                                    value={data.cacat_fisik}
+                                                    onChange={(val) => {
+                                                        setData('cacat_fisik', val);
+                                                    }}
+                                                    placeholder="Pilih cacat fisik"
+                                                    error={!!getErrorMessage('cacat_fisik')}
+                                                />
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowCacatFisikModal(true)}
+                                                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                                                title="Tambah Cacat Fisik Baru"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    viewBox="0 0 24 24"
+                                                    fill="currentColor"
+                                                    className="w-5 h-5"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+                                                        clipRule="evenodd"
+                                                    />
+                                                </svg>
+                                            </button>
                                         </div>
                                         {getErrorMessage('cacat_fisik') && (
                                             <p className="mt-1 text-sm text-red-600">{getErrorMessage('cacat_fisik')}</p>
                                         )}
-                                        <p className="mt-1 text-xs text-gray-500">Jika tidak ada di daftar, isi manual di kolom sebelah.</p>
                                     </div>
 
                                     {/* NIP (opsional) */}
@@ -1074,6 +1430,419 @@ export default function Create() {
 						onClose={() => setIsPenjabModalOpen(false)}
 						onSuccess={handlePenjabSuccess}
 					/>
+
+					{/* Modal Tambah Perusahaan Pasien */}
+					{showPerusahaanPasienModal && (
+						<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+							<div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 border border-gray-200 dark:border-gray-700">
+								<div className="p-6">
+									{/* Header */}
+									<div className="flex justify-between items-center mb-4">
+										<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+											Tambah Perusahaan Pasien Baru
+										</h3>
+										<button
+											type="button"
+											onClick={() => {
+												setShowPerusahaanPasienModal(false);
+												perusahaanPasienForm.reset();
+											}}
+											className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+										>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth="2"
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												className="w-6 h-6"
+											>
+												<line x1="18" y1="6" x2="6" y2="18"></line>
+												<line x1="6" y1="6" x2="18" y2="18"></line>
+											</svg>
+										</button>
+									</div>
+
+									{/* Form */}
+									<form onSubmit={handleTambahPerusahaanPasien} className="space-y-4">
+										{/* Kode Perusahaan */}
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Kode Perusahaan *
+											</label>
+											<input
+												type="text"
+												value={perusahaanPasienForm.data.kode_perusahaan}
+												onChange={(e) => perusahaanPasienForm.setData("kode_perusahaan", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan kode perusahaan"
+												maxLength="8"
+												required
+											/>
+											{perusahaanPasienForm.errors.kode_perusahaan && (
+												<p className="mt-1 text-sm text-red-600">
+													{perusahaanPasienForm.errors.kode_perusahaan}
+												</p>
+											)}
+										</div>
+
+										{/* Nama Perusahaan */}
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Nama Perusahaan *
+											</label>
+											<input
+												type="text"
+												value={perusahaanPasienForm.data.nama_perusahaan}
+												onChange={(e) => perusahaanPasienForm.setData("nama_perusahaan", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan nama perusahaan"
+												maxLength="70"
+												required
+											/>
+											{perusahaanPasienForm.errors.nama_perusahaan && (
+												<p className="mt-1 text-sm text-red-600">
+													{perusahaanPasienForm.errors.nama_perusahaan}
+												</p>
+											)}
+										</div>
+
+										{/* Alamat */}
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Alamat
+											</label>
+											<textarea
+												value={perusahaanPasienForm.data.alamat}
+												onChange={(e) => perusahaanPasienForm.setData("alamat", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white resize-none"
+												placeholder="Masukkan alamat perusahaan"
+												rows="3"
+												maxLength="100"
+											/>
+											{perusahaanPasienForm.errors.alamat && (
+												<p className="mt-1 text-sm text-red-600">
+													{perusahaanPasienForm.errors.alamat}
+												</p>
+											)}
+										</div>
+
+										{/* Kota */}
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Kota
+											</label>
+											<input
+												type="text"
+												value={perusahaanPasienForm.data.kota}
+												onChange={(e) => perusahaanPasienForm.setData("kota", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan kota"
+												maxLength="40"
+											/>
+											{perusahaanPasienForm.errors.kota && (
+												<p className="mt-1 text-sm text-red-600">
+													{perusahaanPasienForm.errors.kota}
+												</p>
+											)}
+										</div>
+
+										{/* No. Telepon */}
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												No. Telepon
+											</label>
+											<input
+												type="text"
+												value={perusahaanPasienForm.data.no_telp}
+												onChange={(e) => perusahaanPasienForm.setData("no_telp", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan nomor telepon"
+												maxLength="27"
+											/>
+											{perusahaanPasienForm.errors.no_telp && (
+												<p className="mt-1 text-sm text-red-600">
+													{perusahaanPasienForm.errors.no_telp}
+												</p>
+											)}
+										</div>
+
+										{/* Actions */}
+										<div className="flex justify-end gap-3 pt-4">
+											<button
+												type="button"
+												onClick={() => {
+													setShowPerusahaanPasienModal(false);
+													perusahaanPasienForm.reset();
+												}}
+												className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+											>
+												Batal
+											</button>
+											<button
+												type="submit"
+												disabled={perusahaanPasienForm.processing}
+												className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
+											>
+												{perusahaanPasienForm.processing ? "Menyimpan..." : "Simpan"}
+											</button>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					)}
+
+					{/* Modal Tambah Bahasa Pasien */}
+					{showBahasaPasienModal && (
+						<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+							<div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 border border-gray-200 dark:border-gray-700">
+								<div className="p-6">
+									{/* Header */}
+									<div className="flex justify-between items-center mb-4">
+										<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+											Tambah Bahasa Pasien Baru
+										</h3>
+										<button
+											type="button"
+											onClick={() => {
+												setShowBahasaPasienModal(false);
+												bahasaPasienForm.reset();
+											}}
+											className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+										>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth="2"
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												className="w-6 h-6"
+											>
+												<line x1="18" y1="6" x2="6" y2="18"></line>
+												<line x1="6" y1="6" x2="18" y2="18"></line>
+											</svg>
+										</button>
+									</div>
+
+									{/* Form */}
+									<form onSubmit={handleTambahBahasaPasien} className="space-y-4">
+										{/* Nama Bahasa */}
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Nama Bahasa *
+											</label>
+											<input
+												type="text"
+												value={bahasaPasienForm.data.nama_bahasa}
+												onChange={(e) => bahasaPasienForm.setData("nama_bahasa", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan nama bahasa"
+												maxLength="30"
+												required
+											/>
+											{bahasaPasienForm.errors.nama_bahasa && (
+												<p className="mt-1 text-sm text-red-600">
+													{bahasaPasienForm.errors.nama_bahasa}
+												</p>
+											)}
+										</div>
+
+										{/* Actions */}
+										<div className="flex justify-end gap-3 pt-4">
+											<button
+												type="button"
+												onClick={() => {
+													setShowBahasaPasienModal(false);
+													bahasaPasienForm.reset();
+												}}
+												className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+											>
+												Batal
+											</button>
+											<button
+												type="submit"
+												disabled={bahasaPasienForm.processing}
+												className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
+											>
+												{bahasaPasienForm.processing ? "Menyimpan..." : "Simpan"}
+											</button>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					)}
+
+					{/* Modal Tambah Suku Bangsa */}
+					{showSukuBangsaModal && (
+						<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+							<div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 border border-gray-200 dark:border-gray-700">
+								<div className="p-6">
+									{/* Header */}
+									<div className="flex justify-between items-center mb-4">
+										<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+											Tambah Suku Bangsa Baru
+										</h3>
+										<button
+											type="button"
+											onClick={() => {
+												setShowSukuBangsaModal(false);
+												sukuBangsaForm.reset();
+											}}
+											className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+										>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth="2"
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												className="w-6 h-6"
+											>
+												<line x1="18" y1="6" x2="6" y2="18"></line>
+												<line x1="6" y1="6" x2="18" y2="18"></line>
+											</svg>
+										</button>
+									</div>
+
+									{/* Form */}
+									<form onSubmit={handleTambahSukuBangsa} className="space-y-4">
+										{/* Nama Suku Bangsa */}
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Nama Suku Bangsa *
+											</label>
+											<input
+												type="text"
+												value={sukuBangsaForm.data.nama_suku_bangsa}
+												onChange={(e) => sukuBangsaForm.setData("nama_suku_bangsa", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan nama suku bangsa"
+												maxLength="30"
+												required
+											/>
+											{sukuBangsaForm.errors.nama_suku_bangsa && (
+												<p className="mt-1 text-sm text-red-600">
+													{sukuBangsaForm.errors.nama_suku_bangsa}
+												</p>
+											)}
+										</div>
+
+										{/* Actions */}
+										<div className="flex justify-end gap-3 pt-4">
+											<button
+												type="button"
+												onClick={() => {
+													setShowSukuBangsaModal(false);
+													sukuBangsaForm.reset();
+												}}
+												className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+											>
+												Batal
+											</button>
+											<button
+												type="submit"
+												disabled={sukuBangsaForm.processing}
+												className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
+											>
+												{sukuBangsaForm.processing ? "Menyimpan..." : "Simpan"}
+											</button>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					)}
+
+					{/* Modal Tambah Cacat Fisik */}
+					{showCacatFisikModal && (
+						<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+							<div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 border border-gray-200 dark:border-gray-700">
+								<div className="p-6">
+									{/* Header */}
+									<div className="flex justify-between items-center mb-4">
+										<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+											Tambah Cacat Fisik Baru
+										</h3>
+										<button
+											type="button"
+											onClick={() => {
+												setShowCacatFisikModal(false);
+												cacatFisikForm.reset();
+											}}
+											className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+										>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												strokeWidth="2"
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												className="w-6 h-6"
+											>
+												<line x1="18" y1="6" x2="6" y2="18"></line>
+												<line x1="6" y1="6" x2="18" y2="18"></line>
+											</svg>
+										</button>
+									</div>
+
+									{/* Form */}
+									<form onSubmit={handleTambahCacatFisik} className="space-y-4">
+										{/* Nama Cacat */}
+										<div>
+											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												Nama Cacat Fisik *
+											</label>
+											<input
+												type="text"
+												value={cacatFisikForm.data.nama_cacat}
+												onChange={(e) => cacatFisikForm.setData("nama_cacat", e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+												placeholder="Masukkan nama cacat fisik"
+												maxLength="30"
+												required
+											/>
+											{cacatFisikForm.errors.nama_cacat && (
+												<p className="mt-1 text-sm text-red-600">
+													{cacatFisikForm.errors.nama_cacat}
+												</p>
+											)}
+										</div>
+
+										{/* Actions */}
+										<div className="flex justify-end gap-3 pt-4">
+											<button
+												type="button"
+												onClick={() => {
+													setShowCacatFisikModal(false);
+													cacatFisikForm.reset();
+												}}
+												className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+											>
+												Batal
+											</button>
+											<button
+												type="submit"
+												disabled={cacatFisikForm.processing}
+												className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
+											>
+												{cacatFisikForm.processing ? "Menyimpan..." : "Simpan"}
+											</button>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					)}
 				</div>
 			</motion.div>
 		</LanjutanRegistrasiLayout>

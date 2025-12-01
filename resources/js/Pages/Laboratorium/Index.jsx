@@ -11,8 +11,18 @@ import Modal from "@/Components/Modal";
 import { Search, Plus, Eye, Trash2, Clock, ClipboardList, RefreshCw, Printer } from "lucide-react";
 
 // Helper function untuk mendapatkan tanggal hari ini dalam format YYYY-MM-DD
+// Menggunakan timezone Asia/Jakarta (UTC+7)
 const getTodayDate = () => {
-    return new Date().toISOString().split('T')[0];
+    const now = new Date();
+    // Gunakan Intl.DateTimeFormat untuk mendapatkan tanggal dalam timezone Asia/Jakarta
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Jakarta',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    });
+    // Format: YYYY-MM-DD (en-CA locale menghasilkan format ISO)
+    return formatter.format(now);
 };
 
 // Framer Motion Variants
@@ -280,9 +290,25 @@ export default function Index({ permintaanLab, dokters = [], filters = {}, flash
         }
         
         setSelectedPermintaan(item);
+        // Gunakan timezone Asia/Jakarta untuk tanggal dan waktu default
         const now = new Date();
-        const defaultDate = now.toISOString().slice(0, 10);
-        const defaultTime = now.toTimeString().slice(0, 5);
+        // Format tanggal dalam timezone Asia/Jakarta
+        const dateFormatter = new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'Asia/Jakarta',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        });
+        const defaultDate = dateFormatter.format(now);
+        
+        // Format waktu dalam timezone Asia/Jakarta
+        const timeFormatter = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'Asia/Jakarta',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
+        const defaultTime = timeFormatter.format(now);
         
         // Gunakan tanggal/jam sampel yang sudah ada jika ada, atau default
         setSampleDate(
@@ -928,12 +954,12 @@ export default function Index({ permintaanLab, dokters = [], filters = {}, flash
                         {/* Header */}
                         <motion.div
                             variants={itemVariants}
-                            className="relative p-8 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm"
+                            className="relative px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm"
                         >
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                 <div>
                                     <motion.h1
-                                        className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
+                                        className="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
                                         initial={{ opacity: 0, x: -20 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ duration: 0.6, delay: 0.2 }}

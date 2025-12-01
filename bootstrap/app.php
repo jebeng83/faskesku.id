@@ -12,9 +12,24 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Security headers middleware untuk semua requests
+        $middleware->web(prepend: [
+            \App\Http\Middleware\SecurityHeadersMiddleware::class,
+        ]);
+        
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
+            \App\Http\Middleware\SecurityLoggingMiddleware::class,
         ]);
+
+        // API rate limiting
+        $middleware->api(prepend: [
+            \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
+        ]);
+        
+        // Sanctum stateful API untuk Inertia.js SPA authentication
+        // Ini memungkinkan API routes menggunakan session-based authentication
+        $middleware->statefulApi();
 
         // Ensure method spoofing is enabled
         $middleware->validateCsrfTokens(except: [

@@ -525,6 +525,41 @@ class RawatJalanController extends Controller
 
         DB::table('pemeriksaan_ralan')->insert($validated);
 
+        // Update status reg_periksa.stts menjadi 'Sudah' setelah pemeriksaan tersimpan
+        // Ketika pemeriksaan disimpan, status harus menjadi 'Sudah'
+        try {
+            $regPeriksa = DB::table('reg_periksa')
+                ->where('no_rawat', $validated['no_rawat'])
+                ->first();
+            
+            if ($regPeriksa) {
+                $currentStts = $regPeriksa->stts ?? 'Belum';
+                
+                // Selalu update menjadi 'Sudah' ketika pemeriksaan disimpan
+                $updated = DB::table('reg_periksa')
+                    ->where('no_rawat', $validated['no_rawat'])
+                    ->update(['stts' => 'Sudah']);
+                
+                \Illuminate\Support\Facades\Log::info('Berhasil update status reg_periksa menjadi Sudah setelah simpan pemeriksaan', [
+                    'no_rawat' => $validated['no_rawat'],
+                    'previous_stts' => $currentStts,
+                    'new_stts' => 'Sudah',
+                    'rows_affected' => $updated,
+                ]);
+            } else {
+                \Illuminate\Support\Facades\Log::warning('reg_periksa tidak ditemukan untuk update status', [
+                    'no_rawat' => $validated['no_rawat'],
+                ]);
+            }
+        } catch (\Throwable $e) {
+            // Log error tapi jangan gagalkan response karena pemeriksaan sudah tersimpan
+            \Illuminate\Support\Facades\Log::error('Gagal update status reg_periksa setelah simpan pemeriksaan', [
+                'no_rawat' => $validated['no_rawat'],
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
+
         return response()->json(['message' => 'Pemeriksaan tersimpan']);
     }
 
@@ -593,6 +628,41 @@ class RawatJalanController extends Controller
 
         if ($updated === 0) {
             return response()->json(['message' => 'Data tidak ditemukan atau tidak berubah'], 404);
+        }
+
+        // Update status reg_periksa.stts menjadi 'Sudah' setelah pemeriksaan diupdate
+        // Ketika pemeriksaan diupdate, status harus menjadi 'Sudah'
+        try {
+            $regPeriksa = DB::table('reg_periksa')
+                ->where('no_rawat', $key['no_rawat'])
+                ->first();
+            
+            if ($regPeriksa) {
+                $currentStts = $regPeriksa->stts ?? 'Belum';
+                
+                // Selalu update menjadi 'Sudah' ketika pemeriksaan diupdate
+                $updatedReg = DB::table('reg_periksa')
+                    ->where('no_rawat', $key['no_rawat'])
+                    ->update(['stts' => 'Sudah']);
+                
+                \Illuminate\Support\Facades\Log::info('Berhasil update status reg_periksa menjadi Sudah setelah update pemeriksaan', [
+                    'no_rawat' => $key['no_rawat'],
+                    'previous_stts' => $currentStts,
+                    'new_stts' => 'Sudah',
+                    'rows_affected' => $updatedReg,
+                ]);
+            } else {
+                \Illuminate\Support\Facades\Log::warning('reg_periksa tidak ditemukan untuk update status', [
+                    'no_rawat' => $key['no_rawat'],
+                ]);
+            }
+        } catch (\Throwable $e) {
+            // Log error tapi jangan gagalkan response karena pemeriksaan sudah diupdate
+            \Illuminate\Support\Facades\Log::error('Gagal update status reg_periksa setelah update pemeriksaan', [
+                'no_rawat' => $key['no_rawat'],
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
         }
 
         return response()->json(['message' => 'Pemeriksaan diperbarui']);

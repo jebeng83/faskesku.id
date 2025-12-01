@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:139
 * @route '/akutansi/neraca'
 */
 export const page = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ page.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:139
 * @route '/akutansi/neraca'
 */
 page.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ page.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:139
 * @route '/akutansi/neraca'
 */
 page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:139
 * @route '/akutansi/neraca'
 */
 page.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

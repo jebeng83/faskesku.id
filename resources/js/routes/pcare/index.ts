@@ -12,7 +12,7 @@ import peserta from './peserta'
 import kunjungan from './kunjungan'
 import setting from './setting'
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:741
 * @route '/pcare'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -26,7 +26,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:741
 * @route '/pcare'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -34,7 +34,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:741
 * @route '/pcare'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -43,7 +43,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:741
 * @route '/pcare'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

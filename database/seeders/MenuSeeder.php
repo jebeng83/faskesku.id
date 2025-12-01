@@ -281,6 +281,44 @@ class MenuSeeder extends Seeder
             'description' => 'Pengelolaan struktur menu sidebar',
         ]);
 
+        // Kepegawaian menu (parent)
+        $kepegawaian = Menu::create([
+            'name' => 'Kepegawaian',
+            'slug' => 'kepegawaian',
+            'icon' => 'fas fa-user-tie',
+            'parent_id' => $administration->id,
+            'sort_order' => 4,
+            'is_active' => true,
+            'description' => 'Pengelolaan data kepegawaian',
+        ]);
+
+        // Kepegawaian sub-menus
+        Menu::create([
+            'name' => 'Pegawai',
+            'slug' => 'pegawai',
+            'icon' => 'fas fa-users',
+            'route' => 'employees.index',
+            'url' => route('employees.index'),
+            'parent_id' => $kepegawaian->id,
+            'sort_order' => 1,
+            'is_active' => true,
+            'permission_name' => 'employees.index',
+            'description' => 'Pengelolaan data pegawai',
+        ]);
+
+        Menu::create([
+            'name' => 'SIP Pegawai',
+            'slug' => 'sip-pegawai',
+            'icon' => 'fas fa-file-medical',
+            'route' => 'sip-pegawai.index',
+            'url' => route('sip-pegawai.index'),
+            'parent_id' => $kepegawaian->id,
+            'sort_order' => 2,
+            'is_active' => true,
+            'permission_name' => 'sip-pegawai.index',
+            'description' => 'Pengelolaan Surat Izin Praktik (SIP) pegawai',
+        ]);
+
         // Note: Farmasi submenu entries are intentionally omitted to keep sidebar clean.
 
         // Profile menu (separate from main navigation)

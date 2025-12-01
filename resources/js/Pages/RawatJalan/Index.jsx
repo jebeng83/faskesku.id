@@ -4,6 +4,7 @@ import { route } from 'ziggy-js';
 import { setRawatJalanFilters, clearRawatJalanFilters } from '@/tools/rawatJalanFilters';
 import SidebarRalan from '@/Layouts/SidebarRalan';
 import { motion } from 'framer-motion';
+import { todayDateString, getAppTimeZone } from '@/tools/datetime';
 import {
   PlusIcon,
   FunnelIcon,
@@ -110,7 +111,7 @@ function DropdownItem({ children, onClick, icon, variant = "default" }) {
 
 export default function Index({ rawatJalan, statusOptions, statusBayarOptions, filters, dokterOptions = [], poliOptions = [] }) {
     const [searchParams, setSearchParams] = useState({
-        tanggal: filters.tanggal || new Date().toISOString().slice(0,10),
+        tanggal: filters.tanggal || todayDateString(),
         status: filters.status || '',
         status_bayar: filters.status_bayar || '',
         nama_pasien: filters.nama_pasien || '',
@@ -184,7 +185,12 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
 
     const formatDate = (date) => {
         if (!date) return '-';
-        return new Date(date).toLocaleDateString('id-ID');
+        try {
+            const tz = getAppTimeZone();
+            return new Date(date).toLocaleDateString('id-ID', { timeZone: tz });
+        } catch (e) {
+            return new Date(date).toLocaleDateString('id-ID');
+        }
     };
 
     const formatTime = (time) => {
@@ -206,19 +212,20 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
 
             <div className="px-4 sm:px-6 lg:px-8">
                 {/* Page Header with Gradient */}
-                <div className="mb-8">
-                    <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl p-8 text-white">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h1 className="text-2xl font-bold mb-2">
-                                    Data Rawat Jalan
-                                </h1>
-
-                            </div>
-                            
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="relative px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm rounded-lg mb-6"
+                >
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                            <h1 className="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                                Data Rawat Jalan
+                            </h1>
                         </div>
                     </div>
-                </div>
+                </motion.div>
 
                 {/* GitHub-style Simple Filter */}
                 <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-3 mb-4">

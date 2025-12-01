@@ -15,6 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Services\Akutansi\JurnalPostingService;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class ResepController extends Controller
 {
@@ -170,6 +171,71 @@ class ResepController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Event validasi resep: menyimpan tgl/jam validasi tanpa mengurangi stok.
+     * Validasi dilakukan sebelum penyerahan untuk menandai bahwa resep sudah divalidasi.
+     */
+    public function validasi(Request $request, string $noResep): JsonResponse
+    {
+        try {
+            DB::beginTransaction();
+
+            // Validasi input
+            $request->validate([
+                'tgl_validasi' => 'nullable|date',
+                'jam_validasi' => 'nullable|date_format:H:i:s',
+            ]);
+
+            // Cari resep
+            $resep = ResepObat::where('no_resep', $noResep)->first();
+            if (!$resep) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Resep tidak ditemukan'
+                ], 404);
+            }
+
+            // Gunakan waktu saat ini jika tidak dikirimkan
+            $nowDate = Carbon::now()->format('Y-m-d');
+            $nowTime = Carbon::now()->format('H:i:s');
+            
+            $tglValidasi = $request->input('tgl_validasi', $nowDate);
+            $jamValidasi = $request->input('jam_validasi', $nowTime);
+
+            // Update tgl_perawatan & jam di resep_obat (digunakan untuk validasi)
+            // Catatan: Kolom tgl_perawatan & jam di resep_obat digunakan untuk menyimpan validasi
+            $resep->tgl_perawatan = $tglValidasi;
+            $resep->jam = $jamValidasi;
+            $resep->save();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Validasi resep berhasil disimpan',
+                'data' => [
+                    'no_resep' => $resep->no_resep,
+                    'tgl_validasi' => $resep->tgl_perawatan,
+                    'jam_validasi' => $resep->jam,
+                ]
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi payload gagal',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Error validasi resep: ' . $e->getMessage(), [ 'no_resep' => $noResep ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat validasi resep: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -499,7 +565,8 @@ class ResepController extends Controller
                                 'jml' => $detail->jml,
                                 'aturan_pakai' => $detail->aturan_pakai,
                                 'satuan' => $detail->databarang->kode_satbesar ?? '',
-                                'harga' => $detail->databarang->h_beli ?? 0
+                                'harga' => $detail->databarang->h_beli ?? 0,
+                                'expire' => $detail->databarang->expire ?? null
                             ];
                         })
                     ];
@@ -595,7 +662,8 @@ class ResepController extends Controller
                                 'jml' => $detail->jml,
                                 'aturan_pakai' => $detail->aturan_pakai,
                                 'satuan' => $detail->databarang->kode_satbesar ?? '',
-                                'harga' => $detail->databarang->h_beli ?? 0
+                                'harga' => $detail->databarang->h_beli ?? 0,
+                                'expire' => $detail->databarang->expire ?? null
                             ];
                         })
                     ];
@@ -625,6 +693,7 @@ class ResepController extends Controller
     public function getResep($noResep): JsonResponse
     {
         try {
+            // Pastikan relasi databarang dimuat dengan benar
             $resepObat = ResepObat::with(['resepDokter.databarang', 'dokter'])
                 ->where('no_resep', $noResep)
                 ->first();
@@ -702,6 +771,31 @@ class ResepController extends Controller
                 $tarif = (float)($detail->databarang->ralan ?? 0);
                 $jumlah = (float)($detail->jml ?? 0);
                 $subtotal = round($tarif * $jumlah, 2);
+                
+                // Ambil expire date dari databarang
+                // Coba dari relasi terlebih dahulu, jika tidak ada ambil langsung dari database
+                $expireDate = null;
+                if ($detail->databarang && $detail->databarang->expire) {
+                    // Jika expire adalah Carbon instance, format sebagai Y-m-d
+                    $expireDate = is_string($detail->databarang->expire) 
+                        ? $detail->databarang->expire 
+                        : $detail->databarang->expire->format('Y-m-d');
+                } else {
+                    // Fallback: ambil langsung dari database jika relasi tidak bekerja
+                    try {
+                        $expireFromDb = DB::table('databarang')
+                            ->where('kode_brng', $detail->kode_brng)
+                            ->value('expire');
+                        if ($expireFromDb && $expireFromDb !== '0000-00-00') {
+                            $expireDate = is_string($expireFromDb) 
+                                ? $expireFromDb 
+                                : (is_object($expireFromDb) ? $expireFromDb->format('Y-m-d') : null);
+                        }
+                    } catch (\Throwable $th) {
+                        // Abaikan error
+                    }
+                }
+                
                 return [
                     'kode_brng' => $detail->kode_brng,
                     'nama_brng' => $detail->databarang->nama_brng ?? 'Obat tidak ditemukan',
@@ -712,7 +806,8 @@ class ResepController extends Controller
                     'tarif' => $tarif,
                     'subtotal' => $subtotal,
                     'embalase' => $embalasePerObat,
-                    'tuslah' => $tuslahPerObat
+                    'tuslah' => $tuslahPerObat,
+                    'expire' => $expireDate
                 ];
             });
 
@@ -1211,6 +1306,44 @@ class ResepController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat menghapus resep: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Generate QR code untuk tanda tangan elektronik dokter
+     */
+    public function generateQrCode(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'dokter' => 'required|string',
+                'tanggal' => 'required|string',
+                'instansi' => 'required|string',
+            ]);
+
+            $dokter = $request->input('dokter');
+            $tanggal = $request->input('tanggal');
+            $instansi = $request->input('instansi');
+
+            // Buat teks untuk QR code
+            $qrText = "Dokumen ini ditandatangani secara elektronik oleh {$dokter} pada tanggal {$tanggal} di {$instansi}";
+
+            // Generate QR code sebagai SVG
+            $qrCodeSvg = QrCode::size(100)
+                ->errorCorrection('H')
+                ->format('svg')
+                ->generate($qrText);
+
+            return response()->json([
+                'success' => true,
+                'svg' => $qrCodeSvg
+            ], 200, [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ], 500);
         }
     }

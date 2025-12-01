@@ -6,6 +6,10 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +26,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Force HTTPS di production
+        if (config('app.env') === 'production') {
+            URL::forceScheme('https');
+        }
+
         // Ensure PHP uses the configured application timezone
         try {
             $tz = config('app.timezone');
@@ -78,5 +87,11 @@ class AppServiceProvider extends ServiceProvider
         } catch (\Throwable $e) {
             Log::warning('Failed to ensure Wayfinder directories exist: '.$e->getMessage());
         }
+
+        // Define API rate limiter
+        // Rate limiter untuk API endpoints: 60 requests per minute per user atau IP
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        });
     }
 }

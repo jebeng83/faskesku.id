@@ -278,6 +278,51 @@ class RegPeriksaController extends Controller
     }
 
     /**
+     * Update status_bayar saja untuk registrasi periksa
+     */
+    public function updateStatusBayar(Request $request, string $regPeriksa): JsonResponse
+    {
+        try {
+            // Decode no_rawat untuk menangani encoding dari frontend
+            $noRawat = urldecode($regPeriksa);
+            
+            $request->validate([
+                'status_bayar' => 'required|in:Sudah Bayar,Belum Bayar',
+            ]);
+
+            $regPeriksaModel = RegPeriksa::where('no_rawat', $noRawat)->first();
+
+            if (!$regPeriksaModel) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data registrasi periksa tidak ditemukan untuk nomor rawat yang diberikan'
+                ], 404);
+            }
+
+            $regPeriksaModel->update([
+                'status_bayar' => $request->status_bayar
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data' => $regPeriksaModel,
+                'message' => 'Status bayar berhasil diperbarui menjadi: ' . $request->status_bayar
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui status bayar: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Delete registrasi periksa
      */
     public function destroy(RegPeriksa $regPeriksa): JsonResponse

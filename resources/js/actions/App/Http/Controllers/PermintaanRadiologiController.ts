@@ -79,7 +79,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::getByNoRawat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:316
+* @see app/Http/Controllers/PermintaanRadiologiController.php:317
 * @route '/api/permintaan-radiologi/rawat/{no_rawat}'
 */
 export const getByNoRawat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ getByNoRawat.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::getByNoRawat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:316
+* @see app/Http/Controllers/PermintaanRadiologiController.php:317
 * @route '/api/permintaan-radiologi/rawat/{no_rawat}'
 */
 getByNoRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -121,7 +121,7 @@ getByNoRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | nu
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::getByNoRawat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:316
+* @see app/Http/Controllers/PermintaanRadiologiController.php:317
 * @route '/api/permintaan-radiologi/rawat/{no_rawat}'
 */
 getByNoRawat.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -131,7 +131,7 @@ getByNoRawat.get = (args: { no_rawat: string | number } | [no_rawat: string | nu
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::getByNoRawat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:316
+* @see app/Http/Controllers/PermintaanRadiologiController.php:317
 * @route '/api/permintaan-radiologi/rawat/{no_rawat}'
 */
 getByNoRawat.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -141,7 +141,7 @@ getByNoRawat.head = (args: { no_rawat: string | number } | [no_rawat: string | n
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::getRiwayat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:379
+* @see app/Http/Controllers/PermintaanRadiologiController.php:433
 * @route '/api/permintaan-radiologi/riwayat/{no_rawat}'
 */
 export const getRiwayat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -156,7 +156,7 @@ getRiwayat.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::getRiwayat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:379
+* @see app/Http/Controllers/PermintaanRadiologiController.php:433
 * @route '/api/permintaan-radiologi/riwayat/{no_rawat}'
 */
 getRiwayat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -183,7 +183,7 @@ getRiwayat.url = (args: { no_rawat: string | number } | [no_rawat: string | numb
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::getRiwayat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:379
+* @see app/Http/Controllers/PermintaanRadiologiController.php:433
 * @route '/api/permintaan-radiologi/riwayat/{no_rawat}'
 */
 getRiwayat.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -193,7 +193,7 @@ getRiwayat.get = (args: { no_rawat: string | number } | [no_rawat: string | numb
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::getRiwayat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:379
+* @see app/Http/Controllers/PermintaanRadiologiController.php:433
 * @route '/api/permintaan-radiologi/riwayat/{no_rawat}'
 */
 getRiwayat.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -26,6 +26,11 @@ class PermissionSeeder extends Seeder
             'create-employees',
             'edit-employees',
             'delete-employees',
+            'employees.index',
+            'employees.view',
+            'employees.create',
+            'employees.edit',
+            'employees.delete',
 
             // Doctor Management
             'view-doctors',
@@ -87,6 +92,8 @@ class PermissionSeeder extends Seeder
             'patient.view',
             'patients.index',
             'employee.view',
+            'employees.index',
+            'employees.view',
             'registration.view',
             'reg-periksa.view',
             'reg-periksa.index',
@@ -131,6 +138,17 @@ class PermissionSeeder extends Seeder
             'delete-jadwal',
             // Menu route permission alias
             'jadwal.index',
+
+            // SIP Pegawai permissions
+            'view-sip-pegawai',
+            'create-sip-pegawai',
+            'edit-sip-pegawai',
+            'delete-sip-pegawai',
+            'sip-pegawai.index',
+            'sip-pegawai.view',
+            'sip-pegawai.create',
+            'sip-pegawai.edit',
+            'sip-pegawai.delete',
         ];
 
         foreach ($permissions as $permission) {

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\PenjabController::index
-* @see app/Http/Controllers/PenjabController.php:12
+* @see app/Http/Controllers/PenjabController.php:13
 * @route '/penjab'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\PenjabController::index
-* @see app/Http/Controllers/PenjabController.php:12
+* @see app/Http/Controllers/PenjabController.php:13
 * @route '/penjab'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PenjabController::index
-* @see app/Http/Controllers/PenjabController.php:12
+* @see app/Http/Controllers/PenjabController.php:13
 * @route '/penjab'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PenjabController::index
-* @see app/Http/Controllers/PenjabController.php:12
+* @see app/Http/Controllers/PenjabController.php:13
 * @route '/penjab'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\PenjabController::store
-* @see app/Http/Controllers/PenjabController.php:33
+* @see app/Http/Controllers/PenjabController.php:34
 * @route '/penjab'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +60,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\PenjabController::store
-* @see app/Http/Controllers/PenjabController.php:33
+* @see app/Http/Controllers/PenjabController.php:34
 * @route '/penjab'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PenjabController::store
-* @see app/Http/Controllers/PenjabController.php:33
+* @see app/Http/Controllers/PenjabController.php:34
 * @route '/penjab'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -79,7 +79,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\PenjabController::update
-* @see app/Http/Controllers/PenjabController.php:61
+* @see app/Http/Controllers/PenjabController.php:108
 * @route '/penjab/{kd_pj}'
 */
 export const update = (args: { kd_pj: string | number } | [kd_pj: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -94,7 +94,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\PenjabController::update
-* @see app/Http/Controllers/PenjabController.php:61
+* @see app/Http/Controllers/PenjabController.php:108
 * @route '/penjab/{kd_pj}'
 */
 update.url = (args: { kd_pj: string | number } | [kd_pj: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -121,7 +121,7 @@ update.url = (args: { kd_pj: string | number } | [kd_pj: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\PenjabController::update
-* @see app/Http/Controllers/PenjabController.php:61
+* @see app/Http/Controllers/PenjabController.php:108
 * @route '/penjab/{kd_pj}'
 */
 update.put = (args: { kd_pj: string | number } | [kd_pj: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -131,7 +131,7 @@ update.put = (args: { kd_pj: string | number } | [kd_pj: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\PenjabController::toggleStatus
-* @see app/Http/Controllers/PenjabController.php:78
+* @see app/Http/Controllers/PenjabController.php:125
 * @route '/penjab/{kd_pj}/toggle-status'
 */
 export const toggleStatus = (args: { kd_pj: string | number } | [kd_pj: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -146,7 +146,7 @@ toggleStatus.definition = {
 
 /**
 * @see \App\Http\Controllers\PenjabController::toggleStatus
-* @see app/Http/Controllers/PenjabController.php:78
+* @see app/Http/Controllers/PenjabController.php:125
 * @route '/penjab/{kd_pj}/toggle-status'
 */
 toggleStatus.url = (args: { kd_pj: string | number } | [kd_pj: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -173,7 +173,7 @@ toggleStatus.url = (args: { kd_pj: string | number } | [kd_pj: string | number ]
 
 /**
 * @see \App\Http\Controllers\PenjabController::toggleStatus
-* @see app/Http/Controllers/PenjabController.php:78
+* @see app/Http/Controllers/PenjabController.php:125
 * @route '/penjab/{kd_pj}/toggle-status'
 */
 toggleStatus.patch = (args: { kd_pj: string | number } | [kd_pj: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -181,6 +181,50 @@ toggleStatus.patch = (args: { kd_pj: string | number } | [kd_pj: string | number
     method: 'patch',
 })
 
-const PenjabController = { index, store, update, toggleStatus }
+/**
+* @see \App\Http\Controllers\PenjabController::generateKode
+* @see app/Http/Controllers/PenjabController.php:143
+* @route '/penjab/generate-kode'
+*/
+export const generateKode = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: generateKode.url(options),
+    method: 'get',
+})
+
+generateKode.definition = {
+    methods: ["get","head"],
+    url: '/penjab/generate-kode',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\PenjabController::generateKode
+* @see app/Http/Controllers/PenjabController.php:143
+* @route '/penjab/generate-kode'
+*/
+generateKode.url = (options?: RouteQueryOptions) => {
+    return generateKode.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PenjabController::generateKode
+* @see app/Http/Controllers/PenjabController.php:143
+* @route '/penjab/generate-kode'
+*/
+generateKode.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: generateKode.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\PenjabController::generateKode
+* @see app/Http/Controllers/PenjabController.php:143
+* @route '/penjab/generate-kode'
+*/
+generateKode.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: generateKode.url(options),
+    method: 'head',
+})
+
+const PenjabController = { index, store, update, toggleStatus, generateKode }
 
 export default PenjabController

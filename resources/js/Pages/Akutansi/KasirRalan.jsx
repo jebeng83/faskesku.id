@@ -3,6 +3,7 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Receipt, Search, Filter, RefreshCw, Calendar, User, Building2, CreditCard, FileText, Loader2, AlertCircle, Database } from 'lucide-react';
 import SidebarKeuangan from '@/Layouts/SidebarKeuangan';
+import { todayDateString, getAppTimeZone } from '@/tools/datetime';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -46,11 +47,25 @@ function Field({ label, children, icon: Icon }) {
 }
 
 function useDateRangeDefaults() {
-  const today = new Date();
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(today.getDate() - 7);
-  const fmt = (d) => d.toISOString().slice(0, 10);
-  return { start: fmt(sevenDaysAgo), end: fmt(today) };
+  // Gunakan timezone aplikasi (Asia/Jakarta) untuk konsistensi
+  const today = todayDateString(); // Tanggal hari ini dengan timezone Asia/Jakarta
+  
+  // Hitung tanggal 7 hari yang lalu dengan timezone yang sama
+  const tz = getAppTimeZone();
+  const todayDate = new Date();
+  const sevenDaysAgoDate = new Date();
+  sevenDaysAgoDate.setDate(todayDate.getDate() - 7);
+  
+  // Format tanggal 7 hari yang lalu dengan timezone aplikasi
+  let sevenDaysAgo;
+  try {
+    sevenDaysAgo = sevenDaysAgoDate.toLocaleDateString('en-CA', { timeZone: tz });
+  } catch (e) {
+    // Fallback ke ISO jika parsing gagal
+    sevenDaysAgo = sevenDaysAgoDate.toISOString().slice(0, 10);
+  }
+  
+  return { start: sevenDaysAgo, end: today };
 }
 
 export default function KasirRalanPage() {
@@ -70,13 +85,23 @@ export default function KasirRalanPage() {
   const [error, setError] = React.useState('');
 
   // Buat daftar tanggal di antara startDate dan endDate (inklusif)
+  // Menggunakan timezone aplikasi (Asia/Jakarta) untuk konsistensi
   const makeDateList = React.useCallback((start, end) => {
-    const s = new Date(start);
-    const e = new Date(end);
+    const tz = getAppTimeZone();
+    const s = new Date(start + 'T00:00:00'); // Parse sebagai tanggal lokal
+    const e = new Date(end + 'T23:59:59'); // Parse sebagai tanggal lokal
     const days = [];
     const cur = new Date(s);
+    
     while (cur <= e) {
-      days.push(cur.toISOString().slice(0, 10));
+      try {
+        // Format tanggal dengan timezone aplikasi
+        const dateStr = cur.toLocaleDateString('en-CA', { timeZone: tz });
+        days.push(dateStr);
+      } catch (e) {
+        // Fallback ke ISO jika parsing gagal
+        days.push(cur.toISOString().slice(0, 10));
+      }
       cur.setDate(cur.getDate() + 1);
     }
     return days;
@@ -103,6 +128,13 @@ export default function KasirRalanPage() {
             status_poli: undefined,
             search: q || undefined,
             per_page: 100,
+            // Tambahkan timestamp untuk cache-busting dan memastikan data selalu fresh
+            _t: Date.now(),
+          },
+          // Pastikan tidak menggunakan cache
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
           },
         })
       );
@@ -115,8 +147,28 @@ export default function KasirRalanPage() {
         return Array.isArray(payload?.data) ? payload.data : [];
       });
 
+      // Debug: Log sample data untuk memastikan field stts ada
+      if (items.length > 0) {
+        console.log('KasirRalan: Sample data dari API:', {
+          sample: items[0],
+          total_items: items.length,
+          sample_stts: items[0]?.stts,
+          sample_status_bayar: items[0]?.status_bayar,
+        });
+      }
+
       // Filter client-side: hanya Ralan
       const ralanOnly = items.filter((it) => (it?.status_lanjut || it?.status_lanjut) === 'Ralan');
+      
+      // Debug: Log setelah filter Ralan
+      if (ralanOnly.length > 0) {
+        console.log('KasirRalan: Setelah filter Ralan:', {
+          total_ralan: ralanOnly.length,
+          sample_ralan: ralanOnly[0],
+          sample_ralan_stts: ralanOnly[0]?.stts,
+        });
+      }
+      
       setRows(ralanOnly);
     } catch (e) {
       setError(e?.message || 'Gagal memuat data');
@@ -126,10 +178,9 @@ export default function KasirRalanPage() {
   }, [makeDateList, startDate, endDate, crPoli, crPtg, status, q]);
 
   React.useEffect(() => {
-    // Load awal
+    // Load data saat filter berubah atau saat komponen mount
     loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loadData]);
 
   // Terapkan filter tambahan di sisi klien (nama poli, dokter, penjamin, status bayar, dll.)
   const filtered = React.useMemo(() => {
@@ -155,7 +206,21 @@ export default function KasirRalanPage() {
 
     // Status (reg_periksa.stts)
     if (status !== 'Semua') {
-      data = data.filter((r) => (r?.stts || '') === status);
+      const beforeFilter = data.length;
+      data = data.filter((r) => {
+        const rStts = r?.stts || '';
+        const matches = rStts === status;
+        // Debug: Log jika ada data dengan stts yang tidak sesuai filter
+        if (!matches && rStts) {
+          console.log('KasirRalan: Item tidak sesuai filter status', {
+            no_rawat: r?.no_rawat,
+            stts: rStts,
+            filter_status: status,
+          });
+        }
+        return matches;
+      });
+      console.log(`KasirRalan: Filter status "${status}": ${beforeFilter} -> ${data.length} items`);
     }
 
     // Status Bayar
@@ -222,35 +287,21 @@ export default function KasirRalanPage() {
       animate="visible"
       className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 px-4 sm:px-6 lg:px-12 xl:px-16 py-6 md:py-8"
     >
-      {/* Header dengan Glassmorphism */}
+      {/* Page Header Compact dengan Gradien */}
       <motion.div
         variants={itemVariants}
-        className="relative overflow-hidden rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 p-6 md:p-8 mb-6"
+        className="relative px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm rounded-lg mb-6"
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-purple-500/10" />
-        <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <motion.div
-              className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/25"
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <motion.h1
+              className="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <Receipt className="w-6 h-6 text-white" />
-            </motion.div>
-            <div>
-              <motion.h1
-                className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-              >
-                Kasir Rawat Jalan
-              </motion.h1>
-              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                Daftar pasien sesuai filter. Sumber data: reg_periksa (server-side) dengan join pasien/dokter/poliklinik/penjamin.
-              </p>
-            </div>
+              Kasir Rawat Jalan
+            </motion.h1>
           </div>
         </div>
       </motion.div>

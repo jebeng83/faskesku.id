@@ -182,7 +182,45 @@ const cardHoverVariants = {
 
 ## 3. Komponen Header
 
-### 3.1 Header dengan Glassmorphism
+### 3.1 Page Header Compact dengan Gradien (Standar Baru)
+
+**Pola Lengkap untuk Page Header:**
+```jsx
+<motion.div
+  variants={itemVariants}
+  className="relative px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm rounded-lg mb-6"
+>
+  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div>
+      <motion.h1
+        className="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+      >
+        Judul Halaman
+      </motion.h1>
+    </div>
+  </div>
+</motion.div>
+```
+
+**Elemen Penting:**
+- **Padding**: `px-6 py-4` (compact, bukan `p-8`)
+- **Background**: Gradien lembut `from-blue-50/80 via-indigo-50/80 to-purple-50/80` dengan opacity 80%
+- **Dark Mode**: `dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80`
+- **Backdrop Blur**: `backdrop-blur-sm` untuk efek glassmorphism
+- **Border**: `border-b border-gray-200/50` dengan opacity 50%
+- **Rounded**: `rounded-lg` untuk sudut membulat
+- **Font Size**: `text-xl sm:text-2xl` (responsive)
+- **Text Gradient**: `bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent`
+- **Animation**: Fade in + slide dari kiri dengan delay 0.2s
+
+**Referensi Implementasi:**
+- `resources/js/Pages/Laboratorium/Index.jsx` (line 955-973)
+- `resources/js/Pages/RawatJalan/Index.jsx` (line 209-222)
+
+### 3.2 Header dengan Glassmorphism (Untuk Card Header)
 
 **Pola Lengkap:**
 ```jsx
@@ -205,7 +243,7 @@ const cardHoverVariants = {
 - `absolute inset-0` - Overlay gradient menutupi seluruh area
 - `relative` pada content - Agar content berada di atas overlay
 
-### 3.2 Icon dengan Gradient Background
+### 3.3 Icon dengan Gradient Background
 
 **Pola:**
 ```jsx
@@ -224,9 +262,21 @@ const cardHoverVariants = {
 - Shadow dengan warna matching
 - Animasi entrance terpisah
 
-### 3.3 Gradient Text
+### 3.4 Gradient Text
 
-**Pola:**
+**Pola untuk Page Header (Compact):**
+```jsx
+<motion.h1
+  className="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
+  initial={{ opacity: 0, x: -20 }}
+  animate={{ opacity: 1, x: 0 }}
+  transition={{ duration: 0.6, delay: 0.2 }}
+>
+  Judul Halaman
+</motion.h1>
+```
+
+**Pola untuk Section Header (Larger):**
 ```jsx
 <motion.h1
   className="text-3xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
@@ -239,6 +289,8 @@ const cardHoverVariants = {
 - `bg-gradient-to-r` - Gradient horizontal
 - `bg-clip-text` - Clip gradient ke text
 - `text-transparent` - Buat text transparan agar gradient terlihat
+- **Page Header**: Gunakan `text-xl sm:text-2xl` untuk compact design
+- **Section Header**: Gunakan `text-3xl sm:text-4xl` untuk emphasis lebih besar
 
 ---
 
@@ -668,11 +720,51 @@ className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark
 
 ### 13.3 Konsistensi Typography
 
+- **Page Headers**: `text-xl sm:text-2xl` (compact design dengan gradien text)
 - Card Headers: `text-lg` (compact design)
 - Section Headers: `text-xl`, `text-2xl`, `text-3xl`, `text-4xl`
 - Body: `text-sm`, `text-base`
 - Labels: `text-sm font-semibold`
 - Helpers: `text-xs`
+
+### 13.3.0 Page Header Compact (Standar Baru)
+
+Untuk semua Page Header (header utama di halaman), gunakan pola berikut agar konsisten dan compact:
+
+- **Padding**: `px-6 py-4` (bukan `p-8`)
+- **Background**: Gradien lembut `from-blue-50/80 via-indigo-50/80 to-purple-50/80`
+- **Dark Mode**: `dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80`
+- **Backdrop Blur**: `backdrop-blur-sm`
+- **Border**: `border-b border-gray-200/50 dark:border-gray-700/50`
+- **Rounded**: `rounded-lg`
+- **Font Size**: `text-xl sm:text-2xl`
+- **Text Gradient**: `bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent`
+- **Animation**: Fade in + slide dari kiri dengan delay 0.2s
+
+**Contoh Implementasi:**
+```jsx
+<motion.div
+  variants={itemVariants}
+  className="relative px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm rounded-lg mb-6"
+>
+  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div>
+      <motion.h1
+        className="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+      >
+        Judul Halaman
+      </motion.h1>
+    </div>
+  </div>
+</motion.div>
+```
+
+**Referensi:**
+- `resources/js/Pages/Laboratorium/Index.jsx` (line 955-973)
+- `resources/js/Pages/RawatJalan/Index.jsx` (line 209-222)
 
 ### 13.3.1 Ukuran Card Header (Compact Design)
 
@@ -725,6 +817,7 @@ Saat membuat menu baru, pastikan:
 - [ ] Menambahkan entrance animations dengan stagger
 - [ ] Menambahkan hover effects pada interactive elements
 - [ ] Menggunakan consistent spacing dan typography
+- [ ] **Page Header menggunakan pola compact**: `px-6 py-4`, `text-xl sm:text-2xl`, gradien background `from-blue-50/80 via-indigo-50/80 to-purple-50/80`, gradien text `from-blue-600 via-indigo-600 to-purple-600`
 - [ ] **Card Header menggunakan ukuran compact**: `px-4 py-2.5`, `text-lg`, icon `w-4 h-4`, `p-1.5`, `gap-2`
 - [ ] Menambahkan loading states
 - [ ] Menambahkan empty states

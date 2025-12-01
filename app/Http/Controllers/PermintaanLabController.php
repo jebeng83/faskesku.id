@@ -11,6 +11,7 @@ use App\Models\PermintaanDetailPermintaanLab;
 use App\Models\PermintaanLab;
 use App\Models\RegPeriksa;
 use App\Models\TemplateLaboratorium;
+use App\Models\User;
 use App\Services\Akutansi\TampJurnalComposerLab;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -18,6 +19,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -853,7 +855,10 @@ class PermintaanLabController extends Controller
                 $hasSample = ! $isInvalidDate;
             }
 
-            $isAdmin = auth()->user()?->hasRole('Admin Utama') || auth()->user()?->hasRole('Super Admin');
+            $currentUser = Auth::user();
+            $isAdmin = ($currentUser instanceof User) && (
+                $currentUser->hasRole('Admin Utama') || $currentUser->hasRole('Super Admin')
+            );
 
             if ($hasSample && ! $isAdmin) {
                 $message = 'Tidak dapat menghapus permintaan yang sudah diambil sampelnya. Hanya Admin Utama yang dapat menghapus.';
@@ -944,6 +949,7 @@ class PermintaanLabController extends Controller
 
     /**
      * Get permintaan lab by no_rawat
+     * Menampilkan hanya permintaan lab yang sesuai dengan tagihan nota (ada di billing)
      */
     public function getByNoRawat($noRawat): JsonResponse
     {
@@ -951,12 +957,117 @@ class PermintaanLabController extends Controller
             // Decode noRawat untuk menangani encoding dari frontend
             $decodedNoRawat = urldecode($noRawat);
 
-            $permintaanList = PermintaanLab::with(['regPeriksa.patient', 'dokter', 'detailPermintaan.jenisPerawatan'])
+            // Cek apakah sudah ada snapshot billing untuk no_rawat ini
+            $hasSnapshotBilling = DB::table('billing')
                 ->where('no_rawat', $decodedNoRawat)
+                ->exists();
+
+            $noorderDiBilling = [];
+            
+            if ($hasSnapshotBilling) {
+                // Jika sudah ada snapshot billing, ambil hanya noorder yang ada di billing dengan status 'Laborat'
+                $noorderDiBilling = DB::table('billing')
+                    ->where('no_rawat', $decodedNoRawat)
+                    ->where('status', 'Laborat')
+                    ->whereNotNull('no')
+                    ->where('no', '!=', '')
+                    ->distinct()
+                    ->pluck('no')
+                    ->filter(function ($no) {
+                        // Filter hanya yang formatnya seperti noorder (PLYYYYMMDDNNNN)
+                        return is_string($no) && (str_starts_with($no, 'PL') || preg_match('/^PL\d{8}\d{4}$/', $no));
+                    })
+                    ->unique()
+                    ->values()
+                    ->all();
+            } else {
+                // Jika belum ada snapshot billing (mode preview), ambil noorder dari permintaan_detail_permintaan_lab
+                // yang akan muncul di preview billing (mengikuti logika BillingController)
+                // Agregasi per noorder dan kd_jenis_prw untuk mendapatkan total biaya per jenis pemeriksaan per permintaan
+                $noorderDiBilling = DB::table('permintaan_detail_permintaan_lab')
+                    ->join('permintaan_lab', 'permintaan_detail_permintaan_lab.noorder', '=', 'permintaan_lab.noorder')
+                    ->join('jns_perawatan_lab', 'permintaan_detail_permintaan_lab.kd_jenis_prw', '=', 'jns_perawatan_lab.kd_jenis_prw')
+                    ->where('permintaan_lab.no_rawat', $decodedNoRawat)
+                    ->where('permintaan_lab.status', 'ralan') // Hanya untuk rawat jalan (sesuai BillingController)
+                    ->distinct()
+                    ->pluck('permintaan_lab.noorder')
+                    ->values()
+                    ->all();
+            }
+
+            // Filter permintaan lab berdasarkan noorder yang ada di billing/preview
+            $query = PermintaanLab::with(['regPeriksa.patient', 'dokter', 'detailPermintaan.jenisPerawatan'])
+                ->where('no_rawat', $decodedNoRawat);
+            
+            if (!empty($noorderDiBilling)) {
+                // Hanya tampilkan permintaan lab yang noorder-nya ada di billing/preview
+                $query->whereIn('noorder', $noorderDiBilling);
+                
+                // Log untuk debugging
+                Log::info('PermintaanLabController getByNoRawat: Filter berdasarkan billing', [
+                    'no_rawat' => $decodedNoRawat,
+                    'has_snapshot' => $hasSnapshotBilling,
+                    'noorder_count' => count($noorderDiBilling),
+                    'noorder_list' => $noorderDiBilling,
+                ]);
+            } else {
+                // Jika tidak ada data di billing/preview, return empty array
+                Log::info('PermintaanLabController getByNoRawat: Tidak ada data di billing/preview', [
+                    'no_rawat' => $decodedNoRawat,
+                    'has_snapshot' => $hasSnapshotBilling,
+                ]);
+                return response()->json([
+                    'success' => true,
+                    'data' => [],
+                    'total' => 0,
+                    'message' => 'Tidak ada permintaan laboratorium yang sesuai dengan tagihan nota',
+                ]);
+            }
+
+            $permintaanList = $query
                 ->orderBy('tgl_permintaan', 'desc')
                 ->orderBy('jam_permintaan', 'desc')
                 ->get()
                 ->map(function ($permintaan) {
+                    // Tentukan status "sudah dilayani" berdasarkan tgl_hasil dan jam_hasil
+                    $tglHasil = $permintaan->tgl_hasil;
+                    $jamHasil = $permintaan->jam_hasil;
+                    
+                    // Cek apakah hasil sudah tersedia
+                    $hasHasil = false;
+                    if ($tglHasil && $tglHasil !== '0000-00-00' && $tglHasil !== null) {
+                        // Cek juga apakah tanggal hasil valid (bukan tanggal default/invalid)
+                        try {
+                            $dateStr = is_string($tglHasil) ? $tglHasil : (string) $tglHasil;
+                            $invalidDates = ['0000-00-00', '0000-00-00 00:00:00', '-0001-11-30', '1970-01-01'];
+                            $isInvalid = false;
+                            foreach ($invalidDates as $invalid) {
+                                if (str_contains($dateStr, $invalid)) {
+                                    $isInvalid = true;
+                                    break;
+                                }
+                            }
+                            if (!$isInvalid && !str_starts_with(trim($dateStr), '-')) {
+                                $hasHasil = true;
+                            }
+                        } catch (\Exception $e) {
+                            // Jika error parsing, anggap belum ada hasil
+                            $hasHasil = false;
+                        }
+                    }
+                    
+                    // Gunakan method hasHasilTersedia() jika tersedia untuk validasi lebih akurat
+                    if (method_exists($permintaan, 'hasHasilTersedia')) {
+                        try {
+                            $hasHasil = $permintaan->hasHasilTersedia();
+                        } catch (\Exception $e) {
+                            // Jika method error, gunakan hasil dari pengecekan manual di atas
+                        }
+                    }
+                    
+                    // Tentukan status label
+                    $statusLabel = $hasHasil ? 'Sudah Dilayani' : ($permintaan->status ?? 'Belum Dilayani');
+                    
                     return [
                         'noorder' => $permintaan->noorder,
                         'no_rawat' => $permintaan->no_rawat,
@@ -966,8 +1077,10 @@ class PermintaanLabController extends Controller
                         'jam_sampel' => $permintaan->jam_sampel,
                         'tgl_hasil' => $permintaan->tgl_hasil,
                         'jam_hasil' => $permintaan->jam_hasil,
-                        'dokter_perujuk' => '-',
-                        'status' => $permintaan->status,
+                        'dokter_perujuk' => $permintaan->dokter_perujuk ?? '-',
+                        'status' => $statusLabel, // Status yang lebih jelas
+                        'status_raw' => $permintaan->status, // Status asli dari database
+                        'sudah_dilayani' => $hasHasil, // Flag boolean untuk kemudahan filter di frontend
                         'informasi_tambahan' => $permintaan->informasi_tambahan,
                         'diagnosa_klinis' => $permintaan->diagnosa_klinis,
                         'pasien' => [
@@ -978,12 +1091,54 @@ class PermintaanLabController extends Controller
                             'kd_dokter' => $permintaan->dokter->kd_dokter ?? '',
                             'nm_dokter' => $permintaan->dokter->nm_dokter ?? '',
                         ],
-                        'detail_tests' => $permintaan->detailPermintaan->map(function ($detail) {
+                        'detail_tests' => $permintaan->detailPermintaan->map(function ($detail) use ($permintaan) {
+                            // Ambil hasil pemeriksaan dari detail_periksa_lab berdasarkan no_rawat, kd_jenis_prw, tgl_periksa, dan jam
+                            // Validasi berdasarkan kombinasi lengkap: no_rawat, kd_jenis_prw, id_template, tgl_periksa, jam
+                            // Gunakan kombinasi tgl_periksa dan jam terbaru untuk setiap id_template
+                            $hasilPemeriksaan = DB::table('detail_periksa_lab')
+                                ->join('template_laboratorium', 'detail_periksa_lab.id_template', '=', 'template_laboratorium.id_template')
+                                ->where('detail_periksa_lab.no_rawat', $permintaan->no_rawat)
+                                ->where('detail_periksa_lab.kd_jenis_prw', $detail->kd_jenis_prw)
+                                ->whereNotNull('detail_periksa_lab.nilai')
+                                ->where('detail_periksa_lab.nilai', '!=', '')
+                                ->select(
+                                    'detail_periksa_lab.id_template',
+                                    'detail_periksa_lab.nilai',
+                                    'detail_periksa_lab.nilai_rujukan',
+                                    'detail_periksa_lab.keterangan',
+                                    'detail_periksa_lab.tgl_periksa',
+                                    'detail_periksa_lab.jam',
+                                    'template_laboratorium.Pemeriksaan as pemeriksaan',
+                                    'template_laboratorium.satuan'
+                                )
+                                ->orderBy('detail_periksa_lab.tgl_periksa', 'desc')
+                                ->orderBy('detail_periksa_lab.jam', 'desc')
+                                ->get()
+                                ->unique(function ($hasil) {
+                                    // Gunakan kombinasi id_template untuk unique
+                                    // Ini memastikan hanya satu hasil per id_template (yang terbaru karena sudah di-order)
+                                    return $hasil->id_template;
+                                })
+                                ->values()
+                                ->map(function ($hasil) {
+                                    return [
+                                        'id_template' => $hasil->id_template,
+                                        'pemeriksaan' => $hasil->pemeriksaan ?? '',
+                                        'nilai' => $hasil->nilai ?? '',
+                                        'satuan' => $hasil->satuan ?? '',
+                                        'nilai_rujukan' => $hasil->nilai_rujukan ?? '',
+                                        'keterangan' => $hasil->keterangan ?? '',
+                                        'tgl_periksa' => $hasil->tgl_periksa ?? null,
+                                        'jam' => $hasil->jam ?? null,
+                                    ];
+                                });
+                            
                             return [
                                 'kd_jenis_prw' => $detail->kd_jenis_prw,
                                 'nm_perawatan' => $detail->jenisPerawatan->nm_perawatan ?? '',
                                 'biaya' => $detail->jenisPerawatan->total_byrdr ?? 0,
                                 'stts_bayar' => $detail->stts_bayar,
+                                'hasil_pemeriksaan' => $hasilPemeriksaan, // Tambahkan hasil pemeriksaan
                             ];
                         }),
                     ];
@@ -996,6 +1151,11 @@ class PermintaanLabController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('PermintaanLabController getByNoRawat error', [
+                'no_rawat' => $noRawat ?? null,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengambil data permintaan laboratorium: '.$e->getMessage(),

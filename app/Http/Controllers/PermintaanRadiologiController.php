@@ -312,15 +312,69 @@ class PermintaanRadiologiController extends Controller
 
     /**
      * Get permintaan radiologi by no_rawat
+     * Menampilkan hanya permintaan radiologi yang sesuai dengan tagihan nota (ada di billing)
      */
     public function getByNoRawat($noRawat): JsonResponse
     {
         try {
             // Decode noRawat untuk menangani encoding dari frontend
             $decodedNoRawat = urldecode($noRawat);
-            
-            $permintaanList = PermintaanRadiologi::with(['regPeriksa.patient', 'dokter', 'detailPermintaan.jenisPerawatan'])
+
+            // Cek apakah sudah ada snapshot billing untuk no_rawat ini
+            $hasSnapshotBilling = DB::table('billing')
                 ->where('no_rawat', $decodedNoRawat)
+                ->exists();
+
+            $noorderDiBilling = [];
+            
+            if ($hasSnapshotBilling) {
+                // Jika sudah ada snapshot billing, ambil hanya noorder yang ada di billing dengan status 'Radiologi'
+                $noorderDiBilling = DB::table('billing')
+                    ->where('no_rawat', $decodedNoRawat)
+                    ->where('status', 'Radiologi')
+                    ->whereNotNull('no')
+                    ->where('no', '!=', '')
+                    ->distinct()
+                    ->pluck('no')
+                    ->filter(function ($no) {
+                        // Filter hanya yang formatnya seperti noorder (PRYYYYMMDDNNNN)
+                        return is_string($no) && (str_starts_with($no, 'PR') || preg_match('/^PR\d{8}\d{4}$/', $no));
+                    })
+                    ->unique()
+                    ->values()
+                    ->all();
+            } else {
+                // Jika belum ada snapshot billing (mode preview), ambil noorder dari permintaan_pemeriksaan_radiologi
+                // yang akan muncul di preview billing (mengikuti logika BillingController)
+                $noorderDiBilling = DB::table('permintaan_pemeriksaan_radiologi')
+                    ->join('permintaan_radiologi', 'permintaan_pemeriksaan_radiologi.noorder', '=', 'permintaan_radiologi.noorder')
+                    ->join('jns_perawatan_radiologi', 'permintaan_pemeriksaan_radiologi.kd_jenis_prw', '=', 'jns_perawatan_radiologi.kd_jenis_prw')
+                    ->where('permintaan_radiologi.no_rawat', $decodedNoRawat)
+                    ->where('permintaan_radiologi.status', 'ralan') // Hanya untuk rawat jalan
+                    ->distinct()
+                    ->pluck('permintaan_radiologi.noorder')
+                    ->values()
+                    ->all();
+            }
+
+            // Filter permintaan radiologi berdasarkan noorder yang ada di billing/preview
+            $query = PermintaanRadiologi::with(['regPeriksa.patient', 'dokter', 'detailPermintaan.jenisPerawatan'])
+                ->where('no_rawat', $decodedNoRawat);
+            
+            if (!empty($noorderDiBilling)) {
+                // Hanya tampilkan permintaan radiologi yang noorder-nya ada di billing/preview
+                $query->whereIn('noorder', $noorderDiBilling);
+            } else {
+                // Jika tidak ada data di billing/preview, return empty array
+                return response()->json([
+                    'success' => true,
+                    'data' => [],
+                    'total' => 0,
+                    'message' => 'Tidak ada permintaan radiologi yang sesuai dengan tagihan nota',
+                ]);
+            }
+            
+            $permintaanList = $query
                 ->orderBy('tgl_permintaan', 'desc')
                 ->orderBy('jam_permintaan', 'desc')
                 ->get()

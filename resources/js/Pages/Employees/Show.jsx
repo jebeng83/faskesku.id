@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Head, Link } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import AppLayout from "@/Layouts/AppLayout";
+import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
 import { motion } from "framer-motion";
 import { Toaster } from "@/Components/ui";
 
@@ -16,7 +16,7 @@ export default function Show({ employee }) {
 
   if (!employee) {
     return (
-      <AppLayout>
+      <SidebarPengaturan title="Kepegawaian">
         <Head title="Detail Pegawai" />
         <Toaster toasts={toasts} onRemove={removeToast} />
         <div className="py-6">
@@ -34,12 +34,12 @@ export default function Show({ employee }) {
           </div>
           </div>
         </div>
-      </AppLayout>
+      </SidebarPengaturan>
     );
   }
 
   return (
-    <AppLayout>
+    <SidebarPengaturan title="Kepegawaian">
       <Head title={`Detail Pegawai - ${employee.nama ?? employee.nik ?? "-"}`} />
       {/* Global toaster */}
       <Toaster toasts={toasts} onRemove={removeToast} />
@@ -253,6 +253,6 @@ export default function Show({ employee }) {
           </motion.div>
         </div>
       </div>
-    </AppLayout>
+    </SidebarPengaturan>
   );
 }
