@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import CopyResep from "./CopyResep";
-import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
+import {
+    todayDateString,
+    nowDateTimeString,
+    getAppTimeZone,
+} from "@/tools/datetime";
 
 export default function Resep({
     token = "",
@@ -36,7 +40,7 @@ export default function Resep({
     const [loadingDokterPJ, setLoadingDokterPJ] = useState(false);
     const [dokterPJError, setDokterPJError] = useState(null);
     const [riwayatResep, setRiwayatResep] = useState([]);
-    const [showRiwayatResep, setShowRiwayatResep] = useState(true);
+    const [showRiwayatResep, setShowRiwayatResep] = useState(false);
     const [loadingRiwayat, setLoadingRiwayat] = useState(false);
     const [deletingResep, setDeletingResep] = useState(null);
     const [hasMoreResep, setHasMoreResep] = useState(false);
@@ -461,7 +465,9 @@ export default function Resep({
         const tz = getAppTimeZone();
         const deleteInfo = `Resep tanggal ${new Date(
             resep.tgl_peresepan
-        ).toLocaleDateString("id-ID", { timeZone: tz })} ${resep.jam_peresepan}`;
+        ).toLocaleDateString("id-ID", { timeZone: tz })} ${
+            resep.jam_peresepan
+        }`;
         if (!confirm(`Apakah Anda yakin ingin menghapus ${deleteInfo}?`)) {
             return;
         }
@@ -567,7 +573,7 @@ export default function Resep({
                 const jamPenyerahan =
                     data.jam_penyerahan ||
                     resep.jam_penyerahan ||
-                    nowDateTimeString().split(' ')[1].substring(0, 8);
+                    nowDateTimeString().split(" ")[1].substring(0, 8);
 
                 alert(
                     "Penyerahan obat berhasil diproses. Stok telah diperbarui."
@@ -774,7 +780,7 @@ export default function Resep({
                     </div>
                 </div>
             </div>
-            
+
             {/* Tab Navigation */}
             <div className="flex border-b border-gray-200 dark:border-gray-700">
                 <button
@@ -800,15 +806,315 @@ export default function Resep({
                     Resep Racikan
                 </button>
             </div>
-            
+
             {activeTab === "resep" && (
-            <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-6">
-                {/* Dokter Penanggung Jawab - ditampilkan sesuai reg_periksa.kd_dokter (join dokter untuk nm_dokter) */}
-                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-6">
+                    {/* Dokter Penanggung Jawab - ditampilkan sesuai reg_periksa.kd_dokter (join dokter untuk nm_dokter) */}
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <svg
+                                    className="w-4 h-4 inline mr-1"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                    />
+                                </svg>
+                                Dokter Penanggung Jawab
+                            </label>
+                            {loadingDokterPJ ? (
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                    Memuat...
+                                </span>
+                            ) : dokterPJError ? (
+                                <span className="text-xs text-red-600 dark:text-red-400">
+                                    {dokterPJError}
+                                </span>
+                            ) : null}
+                        </div>
+                        <div className="mt-1 mb-3">
+                            <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                                {loadingDokterPJ
+                                    ? "Memuat..."
+                                    : dokterPJ?.nm_dokter || "-"}
+                            </p>
+                            {dokterPJ?.kd_dokter && (
+                                <p className="text-xs text-gray-600 dark:text-gray-400">
+                                    Kode: {dokterPJ.kd_dokter}
+                                </p>
+                            )}
+                        </div>
+                        {/* Tetap tampilkan dropdown untuk mengubah dokter jika diperlukan, default mengikuti reg_periksa */}
+                        <select
+                            value={selectedDokter}
+                            onChange={(e) => setSelectedDokter(e.target.value)}
+                            className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:shadow-md transition-all"
+                            required
+                            disabled={loadingDokter}
+                        >
+                            {loadingDokter ? (
+                                <option value="">Memuat dokter...</option>
+                            ) : (
+                                <>
+                                    <option value="">Pilih Dokter</option>
+                                    {dokterOptions.map((dokter) => (
+                                        <option
+                                            key={dokter.kd_dokter}
+                                            value={dokter.kd_dokter}
+                                        >
+                                            {dokter.nm_dokter}
+                                        </option>
+                                    ))}
+                                </>
+                            )}
+                        </select>
+                    </div>
+
+                    {/* Input Resep Section */}
+                    <div className="space-y-4">
+                        <h4 className="text-lg font-bold text-gray-900 dark:text-white">
+                            Input Resep
+                        </h4>
+
+                        {/* Table Header */}
+                        <div className="grid grid-cols-12 gap-4 mb-2">
+                            <div className="col-span-5">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Nama Obat
+                                </label>
+                            </div>
+                            <div className="col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Jml
+                                </label>
+                            </div>
+                            <div className="col-span-4">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Aturan Pakai
+                                </label>
+                            </div>
+                            <div className="col-span-1"></div>
+                        </div>
+
+                        {/* Items Rows */}
+                        {items.map((item, index) => (
+                            <div
+                                key={item.id}
+                                className="grid grid-cols-12 gap-4 items-start"
+                            >
+                                {/* Nama Obat */}
+                                <div className="col-span-5 relative dropdown-container">
+                                    <input
+                                        type="text"
+                                        value={item.namaObat}
+                                        onChange={(e) => {
+                                            updateItem(
+                                                item.id,
+                                                "namaObat",
+                                                e.target.value
+                                            );
+                                            setSearchObat((prev) => ({
+                                                ...prev,
+                                                [item.id]: e.target.value,
+                                            }));
+                                            setShowDropdown((prev) => ({
+                                                ...prev,
+                                                [item.id]: true,
+                                            }));
+                                        }}
+                                        onFocus={() => {
+                                            setShowDropdown((prev) => ({
+                                                ...prev,
+                                                [item.id]: true,
+                                            }));
+                                            if (
+                                                !searchObat[item.id] &&
+                                                kdPoli
+                                            ) {
+                                                fetchObat();
+                                            }
+                                        }}
+                                        className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:shadow-md transition-all"
+                                        placeholder="Pilih Obat"
+                                        required
+                                    />
+
+                                    {/* Dropdown Autocomplete */}
+                                    {showDropdown[item.id] && (
+                                        <div className="absolute z-20 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                                            {loadingObat && (
+                                                <div className="p-3 text-center text-gray-500 dark:text-gray-400 flex items-center justify-center">
+                                                    <svg
+                                                        className="animate-spin -ml-1 mr-2 h-4 w-4"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <circle
+                                                            className="opacity-25"
+                                                            cx="12"
+                                                            cy="12"
+                                                            r="10"
+                                                            stroke="currentColor"
+                                                            strokeWidth="4"
+                                                        ></circle>
+                                                        <path
+                                                            className="opacity-75"
+                                                            fill="currentColor"
+                                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                        ></path>
+                                                    </svg>
+                                                    Mencari obat...
+                                                </div>
+                                            )}
+                                            {!loadingObat &&
+                                                obatOptions.length === 0 && (
+                                                    <div className="p-3 text-center text-gray-500 dark:text-gray-400">
+                                                        {!kdPoli
+                                                            ? "Data poli tidak tersedia"
+                                                            : searchObat[
+                                                                  item.id
+                                                              ] &&
+                                                              searchObat[
+                                                                  item.id
+                                                              ].length >= 2
+                                                            ? "Obat tidak ditemukan"
+                                                            : "Ketik untuk mencari obat atau klik untuk melihat semua"}
+                                                    </div>
+                                                )}
+                                            {!loadingObat &&
+                                                obatOptions.length > 0 &&
+                                                obatOptions.map((obat) => (
+                                                    <div
+                                                        key={obat.kode_brng}
+                                                        className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b dark:border-gray-600 last:border-b-0 transition-colors"
+                                                        onClick={() => {
+                                                            selectObat(
+                                                                item.id,
+                                                                obat
+                                                            );
+                                                            setShowDropdown(
+                                                                (prev) => ({
+                                                                    ...prev,
+                                                                    [item.id]: false,
+                                                                })
+                                                            );
+                                                        }}
+                                                    >
+                                                        <div className="flex items-start justify-between">
+                                                            <div className="flex-1">
+                                                                <div className="font-medium text-gray-900 dark:text-white text-sm">
+                                                                    {
+                                                                        obat.nama_brng
+                                                                    }
+                                                                </div>
+                                                                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                                                        {
+                                                                            obat.kode_brng
+                                                                        }
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Jumlah */}
+                                <div className="col-span-2">
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={item.jumlah || ""}
+                                        onChange={(e) => {
+                                            const jumlah =
+                                                parseInt(e.target.value) || "";
+                                            updateItem(
+                                                item.id,
+                                                "jumlah",
+                                                jumlah
+                                            );
+                                        }}
+                                        className={`w-full py-2.5 px-3 rounded-lg border-2 shadow-sm focus:ring-2 focus:shadow-md transition-all ${
+                                            item.jumlah > item.stokTersedia &&
+                                            item.stokTersedia > 0
+                                                ? "border-red-500 focus:ring-red-500 focus:border-red-500 bg-red-50 dark:bg-red-900/20 text-gray-900 dark:text-white"
+                                                : "border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-green-500 focus:border-green-500"
+                                        }`}
+                                        placeholder={
+                                            index === 0 ? "Jml" : "Jumlah"
+                                        }
+                                        max={item.stokTersedia || undefined}
+                                        required
+                                    />
+                                </div>
+
+                                {/* Aturan Pakai */}
+                                <div className="col-span-4">
+                                    <input
+                                        type="text"
+                                        value={item.aturanPakai}
+                                        onChange={(e) =>
+                                            updateItem(
+                                                item.id,
+                                                "aturanPakai",
+                                                e.target.value
+                                            )
+                                        }
+                                        className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:shadow-md transition-all"
+                                        placeholder="Aturan Pakai"
+                                        required
+                                    />
+                                </div>
+
+                                {/* Tombol Hapus - hanya untuk baris kedua dan seterusnya */}
+                                <div className="col-span-1 flex justify-end">
+                                    {index > 0 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => removeItem(item.id)}
+                                            className="inline-flex items-center justify-center w-8 h-8 rounded text-white bg-red-500 hover:bg-red-600 transition-colors"
+                                            title="Hapus baris"
+                                        >
+                                            <svg
+                                                className="w-4 h-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M20 12H4"
+                                                />
+                                            </svg>
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                        {/* Tombol Tambah Baris - Hijau dengan ikon + */}
+                        <button
+                            type="button"
+                            onClick={addItem}
+                            className="inline-flex items-center justify-center w-12 h-12 rounded-lg text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                            title="Tambah baris"
+                        >
                             <svg
-                                className="w-4 h-4 inline mr-1"
+                                className="w-6 h-6"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -817,283 +1123,67 @@ export default function Resep({
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
                                     strokeWidth={2}
-                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                                 />
                             </svg>
-                            Dokter Penanggung Jawab
-                        </label>
-                        {loadingDokterPJ ? (
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                                Memuat...
-                            </span>
-                        ) : dokterPJError ? (
-                            <span className="text-xs text-red-600 dark:text-red-400">
-                                {dokterPJError}
-                            </span>
-                        ) : null}
-                    </div>
-                    <div className="mt-1 mb-3">
-                        <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                            {loadingDokterPJ
-                                ? "Memuat..."
-                                : dokterPJ?.nm_dokter || "-"}
-                        </p>
-                        {dokterPJ?.kd_dokter && (
-                            <p className="text-xs text-gray-600 dark:text-gray-400">
-                                Kode: {dokterPJ.kd_dokter}
-                            </p>
-                        )}
-                    </div>
-                    {/* Tetap tampilkan dropdown untuk mengubah dokter jika diperlukan, default mengikuti reg_periksa */}
-                    <select
-                        value={selectedDokter}
-                        onChange={(e) => setSelectedDokter(e.target.value)}
-                        className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:shadow-md transition-all"
-                        required
-                        disabled={loadingDokter}
-                    >
-                        {loadingDokter ? (
-                            <option value="">Memuat dokter...</option>
-                        ) : (
-                            <>
-                                <option value="">Pilih Dokter</option>
-                                {dokterOptions.map((dokter) => (
-                                    <option
-                                        key={dokter.kd_dokter}
-                                        value={dokter.kd_dokter}
-                                    >
-                                        {dokter.nm_dokter}
-                                    </option>
-                                ))}
-                            </>
-                        )}
-                    </select>
-                </div>
+                        </button>
 
-                {/* Input Resep Section */}
-                <div className="space-y-4">
-                    <h4 className="text-lg font-bold text-gray-900 dark:text-white">
-                        Input Resep
-                    </h4>
-                    
-                    {/* Table Header */}
-                    <div className="grid grid-cols-12 gap-4 mb-2">
-                        <div className="col-span-5">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Nama Obat
-                            </label>
-                        </div>
-                        <div className="col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Jml
-                            </label>
-                        </div>
-                        <div className="col-span-4">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Aturan Pakai
-                            </label>
-                        </div>
-                        <div className="col-span-1"></div>
-                    </div>
-                    
-                    {/* Items Rows */}
-                    {items.map((item, index) => (
-                        <div key={item.id} className="grid grid-cols-12 gap-4 items-start">
-                            {/* Nama Obat */}
-                            <div className="col-span-5 relative dropdown-container">
-                                <input
-                                    type="text"
-                                    value={item.namaObat}
-                                    onChange={(e) => {
-                                        updateItem(
-                                            item.id,
-                                            "namaObat",
-                                            e.target.value
-                                        );
-                                        setSearchObat((prev) => ({
-                                            ...prev,
-                                            [item.id]: e.target.value,
-                                        }));
-                                        setShowDropdown((prev) => ({
-                                            ...prev,
-                                            [item.id]: true,
-                                        }));
-                                    }}
-                                    onFocus={() => {
-                                        setShowDropdown((prev) => ({
-                                            ...prev,
-                                            [item.id]: true,
-                                        }));
-                                        if (
-                                            !searchObat[item.id] &&
-                                            kdPoli
-                                        ) {
-                                            fetchObat();
-                                        }
-                                    }}
-                                    className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:shadow-md transition-all"
-                                    placeholder="Pilih Obat"
-                                    required
-                                />
-                                
-                                {/* Dropdown Autocomplete */}
-                                {showDropdown[item.id] && (
-                                    <div className="absolute z-20 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xl max-h-60 overflow-y-auto">
-                                        {loadingObat && (
-                                            <div className="p-3 text-center text-gray-500 dark:text-gray-400 flex items-center justify-center">
-                                                <svg
-                                                    className="animate-spin -ml-1 mr-2 h-4 w-4"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <circle
-                                                        className="opacity-25"
-                                                        cx="12"
-                                                        cy="12"
-                                                        r="10"
-                                                        stroke="currentColor"
-                                                        strokeWidth="4"
-                                                    ></circle>
-                                                    <path
-                                                        className="opacity-75"
-                                                        fill="currentColor"
-                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                                    ></path>
-                                                </svg>
-                                                Mencari obat...
-                                            </div>
-                                        )}
-                                        {!loadingObat &&
-                                            obatOptions.length === 0 && (
-                                                <div className="p-3 text-center text-gray-500 dark:text-gray-400">
-                                                    {!kdPoli
-                                                        ? "Data poli tidak tersedia"
-                                                        : searchObat[
-                                                              item.id
-                                                          ] &&
-                                                          searchObat[
-                                                              item.id
-                                                          ].length >= 2
-                                                        ? "Obat tidak ditemukan"
-                                                        : "Ketik untuk mencari obat atau klik untuk melihat semua"}
-                                                </div>
-                                            )}
-                                        {!loadingObat &&
-                                            obatOptions.length > 0 &&
-                                            obatOptions.map((obat) => (
-                                                <div
-                                                    key={obat.kode_brng}
-                                                    className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b dark:border-gray-600 last:border-b-0 transition-colors"
-                                                    onClick={() => {
-                                                        selectObat(
-                                                            item.id,
-                                                            obat
-                                                        );
-                                                        setShowDropdown((prev) => ({
-                                                            ...prev,
-                                                            [item.id]: false,
-                                                        }));
-                                                    }}
-                                                >
-                                                    <div className="flex items-start justify-between">
-                                                        <div className="flex-1">
-                                                            <div className="font-medium text-gray-900 dark:text-white text-sm">
-                                                                {obat.nama_brng}
-                                                            </div>
-                                                            <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                                                                    {obat.kode_brng}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                    </div>
-                                )}
-                            </div>
-                            
-                            {/* Jumlah */}
-                            <div className="col-span-2">
-                                <input
-                                    type="number"
-                                    min="1"
-                                    value={item.jumlah || ""}
-                                    onChange={(e) => {
-                                        const jumlah =
-                                            parseInt(e.target.value) || "";
-                                        updateItem(item.id, "jumlah", jumlah);
-                                    }}
-                                    className={`w-full py-2.5 px-3 rounded-lg border-2 shadow-sm focus:ring-2 focus:shadow-md transition-all ${
-                                        item.jumlah > item.stokTersedia &&
-                                        item.stokTersedia > 0
-                                            ? "border-red-500 focus:ring-red-500 focus:border-red-500 bg-red-50 dark:bg-red-900/20 text-gray-900 dark:text-white"
-                                            : "border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-green-500 focus:border-green-500"
-                                    }`}
-                                    placeholder={index === 0 ? "Jml" : "Jumlah"}
-                                    max={item.stokTersedia || undefined}
-                                    required
-                                />
-                            </div>
-                            
-                            {/* Aturan Pakai */}
-                            <div className="col-span-4">
-                                <input
-                                    type="text"
-                                    value={item.aturanPakai}
-                                    onChange={(e) =>
-                                        updateItem(
-                                            item.id,
-                                            "aturanPakai",
-                                            e.target.value
-                                        )
-                                    }
-                                    className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:shadow-md transition-all"
-                                    placeholder="Aturan Pakai"
-                                    required
-                                />
-                            </div>
-                            
-                            {/* Tombol Hapus - hanya untuk baris kedua dan seterusnya */}
-                            <div className="col-span-1 flex justify-end">
-                                {index > 0 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => removeItem(item.id)}
-                                        className="inline-flex items-center justify-center w-8 h-8 rounded text-white bg-red-500 hover:bg-red-600 transition-colors"
-                                        title="Hapus baris"
+                        {/* Tombol Simpan - Biru */}
+                        <button
+                            type="submit"
+                            disabled={isSubmitting || items.length === 0}
+                            className="inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <svg
+                                        className="animate-spin -ml-1 mr-2 h-4 w-4"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
                                     >
-                                        <svg
-                                            className="w-4 h-4"
-                                            fill="none"
+                                        <circle
+                                            className="opacity-25"
+                                            cx="12"
+                                            cy="12"
+                                            r="10"
                                             stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M20 12H4"
-                                            />
-                                        </svg>
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                                            strokeWidth="4"
+                                        ></circle>
+                                        <path
+                                            className="opacity-75"
+                                            fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                        ></path>
+                                    </svg>
+                                    Menyimpan...
+                                </>
+                            ) : (
+                                "Simpan"
+                            )}
+                        </button>
+                    </div>
+                </form>
+            )}
 
-                <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                    {/* Tombol Tambah Baris - Hijau dengan ikon + */}
-                    <button
-                        type="button"
-                        onClick={addItem}
-                        className="inline-flex items-center justify-center w-12 h-12 rounded-lg text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
-                        title="Tambah baris"
-                    >
+            {activeTab === "resep-racikan" && (
+                <div className="p-4 md:p-6">
+                    <p className="text-gray-600 dark:text-gray-400">
+                        Formulir Resep Racikan akan ditampilkan di sini.
+                    </p>
+                </div>
+            )}
+
+            {/* Kontrol tampil/sembunyi Riwayat Resep */}
+            <div className="mt-6 px-4 md:px-6">
+                <button
+                    type="button"
+                    onClick={() => setShowRiwayatResep((v) => !v)}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-gray-300/60 dark:border-gray-600/60 bg-white dark:bg-gray-700 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
+                >
+                    {showRiwayatResep ? (
                         <svg
-                            className="w-6 h-6"
+                            className="w-4 h-4"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -1102,56 +1192,29 @@ export default function Resep({
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 strokeWidth={2}
-                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                d="M5 15l7-7 7 7"
                             />
                         </svg>
-                    </button>
-                    
-                    {/* Tombol Simpan - Biru */}
-                    <button
-                        type="submit"
-                        disabled={isSubmitting || items.length === 0}
-                        className="inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-                    >
-                        {isSubmitting ? (
-                            <>
-                                <svg
-                                    className="animate-spin -ml-1 mr-2 h-4 w-4"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <circle
-                                        className="opacity-25"
-                                        cx="12"
-                                        cy="12"
-                                        r="10"
-                                        stroke="currentColor"
-                                        strokeWidth="4"
-                                    ></circle>
-                                    <path
-                                        className="opacity-75"
-                                        fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                    ></path>
-                                </svg>
-                                Menyimpan...
-                            </>
-                        ) : (
-                            "Simpan"
-                        )}
-                    </button>
-                </div>
-            </form>
-            )}
-            
-            {activeTab === "resep-racikan" && (
-                <div className="p-4 md:p-6">
-                    <p className="text-gray-600 dark:text-gray-400">
-                        Formulir Resep Racikan akan ditampilkan di sini.
-                    </p>
-                </div>
-            )}
+                    ) : (
+                        <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 9l-7 7-7-7"
+                            />
+                        </svg>
+                    )}
+                    {showRiwayatResep
+                        ? "Sembunyikan Riwayat Resep"
+                        : "Tampilkan Riwayat Resep"}
+                </button>
+            </div>
 
             {/* Tampilan Riwayat Resep */}
             {showRiwayatResep && (
@@ -1577,7 +1640,9 @@ export default function Resep({
                                     const tz = getAppTimeZone();
                                     return new Date(
                                         savedResep.tgl_peresepan
-                                    ).toLocaleDateString("id-ID", { timeZone: tz });
+                                    ).toLocaleDateString("id-ID", {
+                                        timeZone: tz,
+                                    });
                                 })()}
                             </div>
                             <div>
