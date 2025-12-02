@@ -245,6 +245,38 @@ Route::middleware('auth:sanctum')->group(function () {
         ]);
     })->name('api.sip-pegawai.apoteker');
 
+    // SIP Pegawai yang akan habis dalam 30 hari
+    Route::get('/sip-pegawai/expiring', function () {
+        $now = now()->startOfDay();
+        $limit = now()->addDays(30)->endOfDay();
+
+        $rows = \App\Models\Kepegawaian\SipPegawai::where('status', '1')
+            ->whereNotNull('masa_berlaku')
+            ->whereBetween('masa_berlaku', [$now, $limit])
+            ->with(['employee' => function ($q) {
+                $q->select('nik', 'nama', 'jbtn');
+            }])
+            ->orderBy('masa_berlaku')
+            ->get();
+
+        $data = $rows->map(function ($r) use ($now) {
+            $days = $r->masa_berlaku ? $now->diffInDays($r->masa_berlaku, false) : null;
+            return [
+                'nik' => $r->nik,
+                'nama' => $r->employee->nama ?? '',
+                'jabatan' => $r->employee->jbtn ?? '',
+                'masa_berlaku' => optional($r->masa_berlaku)->format('Y-m-d'),
+                'days_remaining' => $days,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'count' => $data->count(),
+            'data' => $data,
+        ]);
+    })->name('api.sip-pegawai.expiring');
+
     Route::prefix('pcare')->group(function () {
         Route::get('/ping', [PcareController::class, 'ping'])->name('api.pcare.ping');
         Route::match(['get', 'post', 'put', 'delete'], '/proxy/{endpoint}', [PcareController::class, 'proxy'])

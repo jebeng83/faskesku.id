@@ -248,9 +248,7 @@ const TopNavbar = React.memo(function TopNavbar() {
                             className="group inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900/90 dark:bg-slate-800 text-white hover:bg-slate-800 dark:hover:bg-slate-700 transition-all duration-200 shadow-sm hover:shadow-md"
                         >
                             <LogOut className="w-4 h-4 transition-transform group-hover:scale-110" />
-                            <span className="text-sm font-medium">
-                                Keluar
-                            </span>
+                            <span className="text-sm font-medium">Keluar</span>
                         </button>
                     </div>
                 </div>
@@ -821,6 +819,58 @@ export default function Dashboard() {
             icon: Bell,
         },
     ];
+    const [notes, setNotes] = useState([]);
+    const [newNote, setNewNote] = useState("");
+    useEffect(() => {
+        try {
+            const s = localStorage.getItem("dashboardStickyNotes");
+            setNotes(s ? JSON.parse(s) : []);
+        } catch (_) {}
+    }, []);
+    useEffect(() => {
+        try {
+            localStorage.setItem("dashboardStickyNotes", JSON.stringify(notes));
+        } catch (_) {}
+    }, [notes]);
+    const addNote = () => {
+        const t = String(newNote || "").trim();
+        if (!t) return;
+        setNotes((n) => [{ id: Date.now(), text: t }, ...n].slice(0, 20));
+        setNewNote("");
+    };
+    const removeNote = (id) => {
+        setNotes((n) => n.filter((i) => i.id !== id));
+    };
+    const [sipExpiring, setSipExpiring] = useState([]);
+    useEffect(() => {
+        let active = true;
+        const controller = new AbortController();
+        (async () => {
+            try {
+                const res = await fetch("/api/sip-pegawai/expiring", {
+                    signal: controller.signal,
+                    headers: { Accept: "application/json" },
+                });
+                const json = await res.json();
+                if (!active) return;
+                const list = Array.isArray(json?.data) ? json.data : [];
+                setSipExpiring(list);
+            } catch (_) {
+                if (active) setSipExpiring([]);
+            }
+        })();
+        return () => {
+            active = false;
+            controller.abort();
+        };
+    }, []);
+    const mapLat = Number(props?.map_coords?.latitude);
+    const mapLng = Number(props?.map_coords?.longitude);
+    const mapUrl = `https://www.google.com/maps?q=${
+        Number.isFinite(mapLat) ? mapLat : -7.535561951939349
+    },${
+        Number.isFinite(mapLng) ? mapLng : 111.05827946682133
+    }&hl=id&z=17&output=embed`;
     return (
         <>
             <Head title="Faskesku · Selamat Datang">
@@ -853,6 +903,111 @@ export default function Dashboard() {
                     initial={enableMotion ? "hidden" : false}
                     animate={enableMotion ? "visible" : false}
                 >
+                    <div className="fixed top-20 right-4 z-40">
+                        <div className="relative w-64">
+                            <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-3.5 h-3.5 bg-red-600 rounded-full shadow ring-2 ring-red-300 z-50" />
+                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-1 h-5 bg-red-700 rounded-full blur-[0.5px] z-50" />
+                            <div className="absolute -left-3 -bottom-3 w-full h-full rounded-md bg-yellow-200 ring-1 ring-yellow-300 -rotate-2 shadow -z-10 pointer-events-none" />
+                            <div className="relative rounded-md bg-yellow-100 ring-1 ring-yellow-300 shadow-xl rotate-1 z-30 mt-2">
+                                <div className="rounded-t-md bg-yellow-200/60 ring-1 ring-yellow-300 px-3 py-2 text-xs font-semibold text-slate-800">
+                                    Sticky Notes
+                                </div>
+                                <div className="px-3 pt-2 pb-3 space-y-2">
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            value={newNote}
+                                            onChange={(e) =>
+                                                setNewNote(e.target.value)
+                                            }
+                                            placeholder="Tulis catatan…"
+                                            className="flex-1 rounded-sm border border-yellow-300 bg-yellow-50 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                        />
+                                        <button
+                                            onClick={addNote}
+                                            className="rounded-sm bg-amber-500 hover:bg-amber-600 text-white text-xs px-2 py-1"
+                                        >
+                                            Tambah
+                                        </button>
+                                    </div>
+                                    <div className="max-h-40 overflow-auto pr-1">
+                                        {notes.length === 0 ? (
+                                            <div className="text-[11px] text-slate-600">
+                                                Belum ada catatan
+                                            </div>
+                                        ) : (
+                                            <ul className="space-y-1">
+                                                {notes.map((n) => (
+                                                    <li
+                                                        key={n.id}
+                                                        className="group flex items-start gap-2 rounded-sm bg-yellow-50 border border-yellow-200 px-2 py-1 text-[11px] text-slate-800"
+                                                    >
+                                                        <span className="flex-1">
+                                                            {n.text}
+                                                        </span>
+                                                        <button
+                                                            onClick={() =>
+                                                                removeNote(n.id)
+                                                            }
+                                                            className="opacity-60 group-hover:opacity-100 text-red-600"
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <section className="relative overflow-hidden rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/85 backdrop-blur-xl p-3 shadow-xl shadow-blue-500/5">
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-orange-500 to-red-500" />
+                        <div className="flex items-center gap-2 mb-2">
+                            <Sparkles className="w-4 h-4 text-amber-600" />
+                            <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                                Informasi SIP Pegawai (≤ 30 hari)
+                            </span>
+                        </div>
+                        {sipExpiring.length > 0 ? (
+                            <marquee
+                                behavior="scroll"
+                                direction="left"
+                                scrollamount="5"
+                            >
+                                {sipExpiring.map((item, idx) => (
+                                    <span
+                                        key={`${item.nik}-${idx}`}
+                                        className="inline-flex items-center text-sm text-gray-800 dark:text-gray-200 mr-8"
+                                    >
+                                        <span className="font-semibold">
+                                            {item.nama || "-"}
+                                        </span>
+                                        <span className="mx-2">•</span>
+                                        <span>{item.jabatan || "-"}</span>
+                                        <span className="mx-2">•</span>
+                                        <span>
+                                            berlaku s/d{" "}
+                                            {item.masa_berlaku || "-"}
+                                        </span>
+                                        {typeof item.days_remaining ===
+                                            "number" &&
+                                            item.days_remaining >= 0 && (
+                                                <span className="ml-2 text-xs text-amber-600">
+                                                    ({item.days_remaining} hari
+                                                    lagi)
+                                                </span>
+                                            )}
+                                    </span>
+                                ))}
+                            </marquee>
+                        ) : (
+                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                                Tidak ada pegawai dengan masa berlaku SIP dalam
+                                30 hari.
+                            </div>
+                        )}
+                    </section>
                     {/* Panel statistik dipindah ke atas footer */}
                     {/* Hero dengan gaya frosted glass yang lebih modern, elegan, dan profesional */}
                     <motion.section
@@ -1250,6 +1405,24 @@ export default function Dashboard() {
                                 </div>
                             </motion.div>
                         ))}
+                    </section>
+                    <section className="relative overflow-hidden rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/85 backdrop-blur-xl p-6 shadow-xl shadow-blue-500/5">
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                            Lokasi UPT Puskesmas Kerjo
+                        </h3>
+                        <div className="rounded-xl overflow-hidden">
+                            <iframe
+                                title="Lokasi UPT Puskesmas Kerjo"
+                                src={mapUrl}
+                                width="100%"
+                                height="480"
+                                loading="lazy"
+                                referrerPolicy="no-referrer-when-downgrade"
+                                style={{ border: 0 }}
+                                allowFullScreen
+                            />
+                        </div>
                     </section>
                     <Footer />
                 </motion.div>

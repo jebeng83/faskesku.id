@@ -70,8 +70,11 @@ class HandleInertiaRequests
                 'permissions' => fn() => $this->sanitizeUtf8($request->user() ? $request->user()->getAllPermissions()->pluck('name')->toArray() : []),
             ],
             'menu_hierarchy' => fn() => $this->sanitizeUtf8($request->user() ? Menu::getMenuHierarchy($request->user()->id)->toArray() : []),
-            // Ensure current_menu (Eloquent model) is converted to array and sanitized
             'current_menu' => fn() => $this->sanitizeUtf8(($cm = $request->attributes->get('current_menu')) ? (method_exists($cm, 'toArray') ? $cm->toArray() : $cm) : null),
+            'map_coords' => fn() => [
+                'latitude' => ($lat = env('LATITUDE')) !== null && $lat !== '' && is_numeric($lat) ? (float) $lat : null,
+                'longitude' => ($lng = env('LONGITUDE')) !== null && $lng !== '' && is_numeric($lng) ? (float) $lng : null,
+            ],
         ]);
 
         return $next($request);
