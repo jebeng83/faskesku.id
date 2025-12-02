@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
+import update603324 from './update'
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::index
 * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:16
@@ -298,58 +299,6 @@ update.put = (args: { kode: string | number } | [kode: string | number ] | strin
 })
 
 /**
-* @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::update
-* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:141
-* @route '/jenjang-jabatan/{kode}'
-*/
-export const update = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
-    url: update.url(args, options),
-    method: 'patch',
-})
-
-update.definition = {
-    methods: ["patch"],
-    url: '/jenjang-jabatan/{kode}',
-} satisfies RouteDefinition<["patch"]>
-
-/**
-* @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::update
-* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:141
-* @route '/jenjang-jabatan/{kode}'
-*/
-update.url = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { kode: args }
-    }
-
-    if (Array.isArray(args)) {
-        args = {
-            kode: args[0],
-        }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-        kode: args.kode,
-    }
-
-    return update.definition.url
-            .replace('{kode}', parsedArgs.kode.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::update
-* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:141
-* @route '/jenjang-jabatan/{kode}'
-*/
-update.patch = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
-    url: update.url(args, options),
-    method: 'patch',
-})
-
-/**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::destroy
 * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:178
 * @route '/jenjang-jabatan/{kode}'
@@ -407,7 +356,7 @@ const jenjangJabatan = {
     store: Object.assign(store, store),
     show: Object.assign(show, show),
     edit: Object.assign(edit, edit),
-    update: Object.assign(update, update),
+    update: Object.assign(update, update603324),
     destroy: Object.assign(destroy, destroy),
 }
 

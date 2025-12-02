@@ -2,18 +2,22 @@ import { defineConfig } from "vite";
 import laravel from "laravel-vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { wayfinder } from "@laravel/vite-plugin-wayfinder";
+let wayfinderPluginFactory = null;
+try {
+    const mod = await import("@laravel/vite-plugin-wayfinder");
+    wayfinderPluginFactory = mod.wayfinder || null;
+} catch {}
 
-export default defineConfig({
-	plugins: [
-		laravel({
-			input: ["resources/css/app.css", "resources/js/app.jsx"],
-			refresh: true,
-		}),
-		tailwindcss(),
-		react(),
-		wayfinder(),
-	],
+export default defineConfig(() => ({
+    plugins: [
+        laravel({
+            input: ["resources/css/app.css", "resources/js/app.jsx"],
+            refresh: true,
+        }),
+        tailwindcss(),
+        react(),
+        ...(wayfinderPluginFactory ? [wayfinderPluginFactory()] : []),
+    ],
 	build: {
 		// Increase warning threshold and split vendor libraries into separate chunks
 		chunkSizeWarningLimit: 1024,
@@ -32,10 +36,17 @@ export default defineConfig({
 			},
 		},
 	},
-	server: {
-	 	host: '127.0.0.1',
-	 	port: Number(process.env.VITE_PORT || process.env.PORT || 5177),
-	 	strictPort: false,
-	 	// Do not hardcode HMR port; let Vite use the actual dev server port to avoid mismatches
-	},
-});
+    server: {
+        host: '127.0.0.1',
+        port: Number(process.env.VITE_PORT || process.env.PORT || 5177),
+        strictPort: false,
+        cors: true,
+        origin: process.env.VITE_DEV_ORIGIN || undefined,
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET,OPTIONS',
+            'Access-Control-Allow-Headers': '*',
+        },
+        // Do not hardcode HMR port; let Vite use the actual dev server port to avoid mismatches
+    },
+}));

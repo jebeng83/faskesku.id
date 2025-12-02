@@ -196,7 +196,7 @@ export default function SidebarPengaturan({ title = "Pengaturan", children }) {
         <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
             {/* Sidebar */}
             <aside
-                className={`fixed top-0 left-0 h-full bg-gradient-to-b from-blue-600 via-blue-700 to-blue-800 dark:from-blue-900 dark:via-blue-950 dark:to-black shadow-2xl border-r border-blue-500/20 dark:border-blue-800 z-40 transition-all duration-300 ${
+                className={`fixed top-0 left-0 h-full overflow-y-auto bg-gradient-to-b from-blue-600 via-blue-700 to-blue-800 dark:from-blue-900 dark:via-blue-950 dark:to-black shadow-2xl border-r border-blue-500/20 dark:border-blue-800 z-40 transition-all duration-300 ${
                     isSidebarOpen
                         ? "w-64 translate-x-0"
                         : isSidebarCollapsed

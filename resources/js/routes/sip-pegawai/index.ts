@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
+import update603324 from './update'
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::index
 * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:18
@@ -298,58 +299,6 @@ update.put = (args: { nik: string | number } | [nik: string | number ] | string 
 })
 
 /**
-* @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::update
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:148
-* @route '/sip-pegawai/{nik}'
-*/
-export const update = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
-    url: update.url(args, options),
-    method: 'patch',
-})
-
-update.definition = {
-    methods: ["patch"],
-    url: '/sip-pegawai/{nik}',
-} satisfies RouteDefinition<["patch"]>
-
-/**
-* @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::update
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:148
-* @route '/sip-pegawai/{nik}'
-*/
-update.url = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { nik: args }
-    }
-
-    if (Array.isArray(args)) {
-        args = {
-            nik: args[0],
-        }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-        nik: args.nik,
-    }
-
-    return update.definition.url
-            .replace('{nik}', parsedArgs.nik.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::update
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:148
-* @route '/sip-pegawai/{nik}'
-*/
-update.patch = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
-    url: update.url(args, options),
-    method: 'patch',
-})
-
-/**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::destroy
 * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:186
 * @route '/sip-pegawai/{nik}'
@@ -407,7 +356,7 @@ const sipPegawai = {
     store: Object.assign(store, store),
     show: Object.assign(show, show),
     edit: Object.assign(edit, edit),
-    update: Object.assign(update, update),
+    update: Object.assign(update, update603324),
     destroy: Object.assign(destroy, destroy),
 }
 
