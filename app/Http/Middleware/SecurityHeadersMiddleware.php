@@ -38,7 +38,7 @@ class SecurityHeadersMiddleware
                 "font-src 'self' data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.gstatic.com https://fonts.googleapis.com; " .
                 "connect-src 'self' http://127.0.0.1:5177 http://localhost:5177 ws://127.0.0.1:5177 ws://localhost:5177 http://127.0.0.1:8000 ws://127.0.0.1:8000; " .
                 "worker-src 'self' blob:; " .
-                "frame-src 'self';";
+                "frame-src 'self' https://www.google.com https://maps.google.com;";
         } else {
             // CSP untuk production - lebih ketat
             $csp = "default-src 'self'; " .
@@ -47,7 +47,7 @@ class SecurityHeadersMiddleware
                 "img-src 'self' data: https:; " .
                 "font-src 'self' data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.gstatic.com https://fonts.googleapis.com; " .
                 "connect-src 'self'; " .
-                "frame-src 'self';";
+                "frame-src 'self' https://www.google.com https://maps.google.com;";
         }
         
         $response->headers->set('Content-Security-Policy', $csp);
