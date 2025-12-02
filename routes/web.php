@@ -92,6 +92,10 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
+    Route::get('/docs/{section?}', function ($section = null) {
+        return Inertia::render('Docs', ['section' => $section]);
+    })->name('docs');
+
     // Akutansi: preview invoice berbasis billing/nota
     Route::get('/akutansi/invoice/{no_rawat}', [AkutansiController::class, 'invoice'])
         ->where('no_rawat', '.*')
