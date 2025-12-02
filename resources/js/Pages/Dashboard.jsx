@@ -874,11 +874,26 @@ export default function Dashboard() {
     }, []);
     const mapLat = Number(props?.map_coords?.latitude);
     const mapLng = Number(props?.map_coords?.longitude);
-    const mapUrl = `https://www.google.com/maps?q=${
-        Number.isFinite(mapLat) ? mapLat : -7.535561951939349
-    },${
-        Number.isFinite(mapLng) ? mapLng : 111.05827946682133
-    }&hl=id&z=17&output=embed`;
+    const finalLat = Number.isFinite(mapLat) ? mapLat : -7.535561951939349;
+    const finalLng = Number.isFinite(mapLng) ? mapLng : 111.05827946682133;
+    const embedKey = String(
+        import.meta?.env?.VITE_GOOGLE_MAPS_EMBED_KEY || ""
+    ).trim();
+    const staticOnly =
+        String(
+            import.meta?.env?.VITE_GOOGLE_MAPS_STATIC_ONLY || ""
+        ).toLowerCase() === "true";
+    const staticUrl =
+        embedKey && staticOnly
+            ? `https://maps.googleapis.com/maps/api/staticmap?center=${finalLat},${finalLng}&zoom=17&size=800x480&maptype=roadmap&markers=color:red%7C${finalLat},${finalLng}&key=${encodeURIComponent(
+                  embedKey
+              )}`
+            : "";
+    const mapUrl = embedKey
+        ? `https://www.google.com/maps/embed/v1/view?key=${encodeURIComponent(
+              embedKey
+          )}&center=${finalLat},${finalLng}&zoom=17&maptype=roadmap`
+        : `https://maps.google.com/maps?ll=${finalLat},${finalLng}&z=17&t=m&hl=id&output=embed`;
     return (
         <>
             <Head title="Faskesku · Selamat Datang">
@@ -1420,16 +1435,35 @@ export default function Dashboard() {
                             Lokasi UPT Puskesmas Kerjo
                         </h3>
                         <div className="rounded-xl overflow-hidden">
-                            <iframe
-                                title="Lokasi UPT Puskesmas Kerjo"
-                                src={mapUrl}
-                                width="100%"
-                                height="480"
-                                loading="lazy"
-                                referrerPolicy="no-referrer-when-downgrade"
-                                style={{ border: 0 }}
-                                allowFullScreen
-                            />
+                            {staticUrl ? (
+                                <a
+                                    href={`https://www.google.com/maps/search/?api=1&query=${finalLat},${finalLng}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    <img
+                                        src={staticUrl}
+                                        alt="Lokasi UPT Puskesmas Kerjo"
+                                        style={{
+                                            width: "100%",
+                                            height: 480,
+                                            border: 0,
+                                            display: "block",
+                                        }}
+                                    />
+                                </a>
+                            ) : (
+                                <iframe
+                                    title="Lokasi UPT Puskesmas Kerjo"
+                                    src={mapUrl}
+                                    width="100%"
+                                    height="480"
+                                    loading="lazy"
+                                    referrerPolicy="strict-origin-when-cross-origin"
+                                    style={{ border: 0 }}
+                                    allowFullScreen
+                                />
+                            )}
                         </div>
                     </section>
                     <Footer />

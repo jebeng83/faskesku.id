@@ -398,7 +398,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{kode}', [JenjangJabatanController::class, 'show'])->name('show');
         Route::get('/{kode}/edit', [JenjangJabatanController::class, 'edit'])->name('edit');
         Route::put('/{kode}', [JenjangJabatanController::class, 'update'])->name('update');
-        Route::patch('/{kode}', [JenjangJabatanController::class, 'update'])->name('update');
+        Route::patch('/{kode}', [JenjangJabatanController::class, 'update'])->name('update.patch');
         Route::delete('/{kode}', [JenjangJabatanController::class, 'destroy'])->name('destroy');
     });
 
@@ -410,7 +410,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{nik}', [SipPegawaiController::class, 'show'])->name('show');
         Route::get('/{nik}/edit', [SipPegawaiController::class, 'edit'])->name('edit');
         Route::put('/{nik}', [SipPegawaiController::class, 'update'])->name('update');
-        Route::patch('/{nik}', [SipPegawaiController::class, 'update'])->name('update');
+        Route::patch('/{nik}', [SipPegawaiController::class, 'update'])->name('update.patch');
         Route::delete('/{nik}', [SipPegawaiController::class, 'destroy'])->name('destroy');
     });
 

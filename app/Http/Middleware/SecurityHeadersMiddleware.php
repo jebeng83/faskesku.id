@@ -28,6 +28,15 @@ class SecurityHeadersMiddleware
         // Untuk development: izinkan Vite dev server dan CDN
         // Untuk production: lebih ketat
         $isDevelopment = config('app.env') === 'local' || config('app.debug');
+        $viteHosts = array_filter(array_map('trim', explode(',', env('VITE_DEV_HOSTS', ''))));
+        $viteHttp = [];
+        $viteWs = [];
+        foreach ($viteHosts as $h) {
+            if ($h !== '') {
+                $viteHttp[] = 'http://' . $h;
+                $viteWs[] = 'ws://' . $h;
+            }
+        }
         
         if ($isDevelopment) {
             // CSP untuk development - lebih fleksibel untuk Vite HMR dan CDN
@@ -38,16 +47,34 @@ class SecurityHeadersMiddleware
                 "font-src 'self' data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.gstatic.com https://fonts.googleapis.com; " .
                 "connect-src 'self' http://127.0.0.1:5177 http://localhost:5177 ws://127.0.0.1:5177 ws://localhost:5177 http://127.0.0.1:8000 ws://127.0.0.1:8000; " .
                 "worker-src 'self' blob:; " .
-                "frame-src 'self' https://www.google.com https://maps.google.com;";
+                "frame-src 'self' https://www.google.com https://maps.google.com";
+            if (!empty($viteHttp) || !empty($viteWs)) {
+                $csp = rtrim($csp, ';') . '; ' .
+                    (empty($viteHttp) ? '' : ("style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com http://127.0.0.1:5177 http://localhost:5177 " . implode(' ', $viteHttp) . '; ')) .
+                    ("script-src 'self' 'unsafe-inline' 'unsafe-eval' http://127.0.0.1:5177 http://localhost:5177 " . implode(' ', array_merge($viteHttp, $viteWs)) . '; ') .
+                    ("connect-src 'self' http://127.0.0.1:5177 http://localhost:5177 ws://127.0.0.1:5177 ws://localhost:5177 http://127.0.0.1:8000 ws://127.0.0.1:8000 " . implode(' ', array_merge($viteHttp, $viteWs)) . ';');
+            }
         } else {
             // CSP untuk production - lebih ketat
+            $style = "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com";
+            if (!empty($viteHttp)) {
+                $style .= ' ' . implode(' ', $viteHttp);
+            }
+            $script = "script-src 'self' 'unsafe-inline'";
+            if (!empty($viteHttp) || !empty($viteWs)) {
+                $script .= ' ' . implode(' ', array_merge($viteHttp, $viteWs));
+            }
+            $connect = "connect-src 'self'";
+            if (!empty($viteHttp) || !empty($viteWs)) {
+                $connect .= ' ' . implode(' ', array_merge($viteHttp, $viteWs));
+            }
             $csp = "default-src 'self'; " .
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " .
-                "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com; " .
+                $script . "; " .
+                $style . "; " .
                 "img-src 'self' data: https:; " .
                 "font-src 'self' data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.gstatic.com https://fonts.googleapis.com; " .
-                "connect-src 'self'; " .
-                "frame-src 'self' https://www.google.com https://maps.google.com;";
+                $connect . "; " .
+                "frame-src 'self' https://www.google.com https://maps.google.com";
         }
         
         $response->headers->set('Content-Security-Policy', $csp);
