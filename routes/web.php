@@ -9,6 +9,7 @@ use App\Http\Controllers\Akutansi\CashFlowController;
 use App\Http\Controllers\Akutansi\JurnalController;
 use App\Http\Controllers\Akutansi\RekeningController;
 use App\Http\Controllers\Akutansi\SetAkunController;
+use App\Http\Controllers\Akutansi\SetoranBankController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DaftarTarifController;
 use App\Http\Controllers\DoctorController;
@@ -105,6 +106,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/akutansi/rekening', [RekeningController::class, 'page'])
         ->name('akutansi.rekening.page');
 
+    // Akutansi: Home page (Inertia)
+    Route::get('/akutansi/home', function () {
+        return Inertia::render('Akutansi/Home');
+    })->name('akutansi.home.page');
+
     // Akutansi: Rekening Tahun (Saldo Awal per Tahun) page (Inertia)
     Route::get('/akutansi/rekening-tahun', function () {
         return Inertia::render('Akutansi/RekeningTahun');
@@ -135,6 +141,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/akutansi/jurnal-penutup', [JurnalController::class, 'penutupPage'])
         ->name('akutansi.jurnal-penutup.page');
 
+    // Akutansi: Setoran Bank page (Inertia)
+    Route::get('/akutansi/setoran-bank', [JurnalController::class, 'setoranBankPage'])
+        ->name('akutansi.setoran-bank.page');
+
     // Akutansi: Buku Besar (General Ledger) page (Inertia)
     Route::get('/akutansi/buku-besar', [BukuBesarController::class, 'page'])
         ->name('akutansi.buku-besar.page');
@@ -143,6 +153,21 @@ Route::middleware('auth')->group(function () {
     Route::get('/akutansi/neraca', function () {
         return Inertia::render('Akutansi/Neraca');
     })->name('akutansi.neraca.page');
+
+    // Akutansi: Detail Jurnal page (Inertia)
+    Route::get('/akutansi/detail-jurnal', function () {
+        return Inertia::render('Akutansi/DetailJurnal');
+    })->name('akutansi.detail-jurnal.page');
+
+    // Akutansi: Mutasi Rekening page (Inertia)
+    Route::get('/akutansi/mutasi-rekening', function () {
+        return Inertia::render('Akutansi/MutasiRekening');
+    })->name('akutansi.mutasi-rekening.page');
+
+    // Akutansi: Mutasi Kas page (Inertia)
+    Route::get('/akutansi/mutasi-kas', function () {
+        return Inertia::render('Akutansi/MutasiKas');
+    })->name('akutansi.mutasi-kas.page');
 
     // Akutansi: Cash Flow page (Inertia)
     Route::get('/akutansi/cashflow', [CashFlowController::class, 'page'])
@@ -222,6 +247,17 @@ Route::middleware('auth')->group(function () {
         Route::post('/akun-piutang', [AkunPiutangController::class, 'store'])->name('api.akutansi.akun-piutang.store');
         Route::put('/akun-piutang/{nama_bayar}', [AkunPiutangController::class, 'update'])->name('api.akutansi.akun-piutang.update');
         Route::delete('/akun-piutang/{nama_bayar}', [AkunPiutangController::class, 'destroy'])->name('api.akutansi.akun-piutang.destroy');
+
+        // Setoran Bank: stage & post via single posting service
+        Route::post('/setoran-bank/stage', [JurnalController::class, 'setoranBankStage'])->name('api.akutansi.setoran-bank.stage');
+        Route::post('/setoran-bank/post', [JurnalController::class, 'setoranBankPost'])->name('api.akutansi.setoran-bank.post');
+        Route::get('/setoran-bank', [SetoranBankController::class, 'index'])->name('api.akutansi.setoran-bank.index');
+        Route::post('/setoran-bank', [SetoranBankController::class, 'store'])->name('api.akutansi.setoran-bank.store');
+        Route::get('/setoran-bank/{id}', [SetoranBankController::class, 'show'])->name('api.akutansi.setoran-bank.show');
+        Route::put('/setoran-bank/{id}', [SetoranBankController::class, 'update'])->name('api.akutansi.setoran-bank.update');
+        Route::delete('/setoran-bank/{id}', [SetoranBankController::class, 'destroy'])->name('api.akutansi.setoran-bank.destroy');
+        Route::post('/setoran-bank/{id}/stage', [SetoranBankController::class, 'stage'])->name('api.akutansi.setoran-bank.stage-by-id');
+        Route::post('/setoran-bank/{id}/post', [SetoranBankController::class, 'post'])->name('api.akutansi.setoran-bank.post-by-id');
 
         // Nota Jalan & Detail Nota Jalan
         Route::get('/nota-jalan/{no_rawat}', [\App\Http\Controllers\Akutansi\NotaJalanController::class, 'show'])
@@ -511,6 +547,10 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('Profile/index');
     })->name('profile.menu');
 
+    Route::get('/profile/home', function () {
+        return Inertia::render('Profile/Home');
+    })->name('profile.home');
+
     // Application Settings (CRUD generic untuk tabel `setting`)
     Route::prefix('setting')->name('setting.')->group(function () {
         Route::get('/', [SettingController::class, 'index'])->name('index');
@@ -655,6 +695,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/farmasi/data-opname', function () {
             return Inertia::render('farmasi/DataOpname');
         })->name('farmasi.data-opname');
+        Route::get('/cetak/data-opname', function () {
+            return Inertia::render('farmasi/CetakFarmasi/DataOpname');
+        })->name('cetak.data-opname');
+        Route::get('/farmasi/cetak/data-opname', function () {
+            return Inertia::render('farmasi/CetakFarmasi/DataOpname');
+        })->name('farmasi.cetak.data-opname');
         // Data Obat (DataBarang) CRUD routes with auto-code via props.nextCode
         Route::get('/data-obat', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'index'])->name('data-obat');
         Route::post('/data-obat', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'store'])->name('data-obat.store');
@@ -742,6 +788,11 @@ Route::middleware('auth')->group(function () {
         Route::delete('/jenis-obat/{kdjns}', [\App\Http\Controllers\Farmasi\JenisObatController::class, 'destroy'])->name('jenis-obat.destroy');
     });
     // Pcare routes
+    // Global alias: allow direct access to '/cetak/data-opname' and forward to Farmasi route
+    Route::get('/cetak/data-opname', function () {
+        return redirect()->to(route('farmasi.cetak.data-opname', request()->query()));
+    });
+
     Route::prefix('pcare')->name('pcare.')->group(function () {
         // Landing page
         Route::get('/', function () {

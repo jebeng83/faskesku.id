@@ -509,6 +509,11 @@ Gunakan kombinasi `no_rawat + jenis + tgl/jam + kd_jenis_prw` untuk mencegah dou
 - `GET /api/akutansi/cashflow` - Laporan arus kas
 - `GET /api/akutansi/neraca` - Laporan neraca/laba rugi
 
+### 7.7 Setoran Bank
+- `POST /api/akutansi/setoran-bank/stage` — Menyiapkan baris staging di `tampjurnal` untuk setoran kas ke bank. Payload: `tanggal`, `no_bukti`, `keterangan`, `kd_rek_kas`, `kd_rek_bank`, `nominal`.
+- `POST /api/akutansi/setoran-bank/post` — Posting dari staging menggunakan layanan posting jurnal. Opsional payload: `tanggal`, `no_bukti`, `keterangan`.
+- Alternatif: `POST /api/akutansi/setoran-bank` — Kombinasi stage+post dalam satu transaksi untuk alur sederhana.
+
 ---
 
 ## 8. Pola Desain & Implementasi
@@ -693,6 +698,43 @@ foreach ($jurnalEntries as $entry) {
 
 ---
 
+## 12. Setoran Bank
+
+**Definisi:** Memindahkan saldo dari akun Kas Tunai ke akun Bank sebagai setoran.
+
+**Sumber Data & Konfigurasi:**
+- `rekening` (tipe, balance, hierarki) untuk memilih akun Kas (`tipe='N'`, `balance='D'`, biasanya mengandung kata "Kas") dan akun Bank (`tipe='N'`, `balance='D'`, biasanya mengandung kata "Bank").
+- Endpoint pencarian rekening untuk autocomplete: `SetAkunController::rekening` di `app/Http/Controllers/Akutansi/SetAkunController.php:150`.
+
+**Komposisi Jurnal (Setoran Kas → Bank):**
+- Debet: `Bank` = `nominal`
+- Kredit: `Kas` = `nominal`
+
+**Guard Rails:**
+- Akun Kas dan Bank harus berbeda dan bertipe `N` dengan `balance='D'`.
+- `nominal > 0` dan hasil komposisi harus `debet == kredit`.
+- Simpan `no_bukti` dan `keterangan` untuk audit trail.
+
+**Alur Backend:**
+1. Stage ke `tampjurnal`:
+   - Baris 1: `{ kd_rek: kd_rek_bank, debet: nominal, kredit: 0 }`
+   - Baris 2: `{ kd_rek: kd_rek_kas, debet: 0, kredit: nominal }`
+2. Posting ke `jurnal/detailjurnal` menggunakan `JurnalPostingService::post(no_bukti, keterangan, tanggal)` di `app/Services/Akutansi/JurnalPostingService.php:97`–`146`.
+3. `tampjurnal` dikosongkan otomatis setelah posting.
+
+**Desain UI (Inertia React):**
+- Form dengan field: `Tanggal`, `No Bukti`, `Keterangan`, `Akun Kas` (autocomplete), `Akun Bank` (autocomplete), `Nominal`.
+- Tombol aksi: `Stage & Post` (atau pisah `Stage` dan `Post`).
+- Validasi inline, state loading/error, dan animasi ringan mengikuti pedoman `docs/UI_UX_IMPROVEMENTS_GUIDE.md` (lihat referensi di halaman akuntansi lain seperti `BukuBesar.jsx`).
+
+**Integrasi Laporan:**
+- Mutasi Kas: Setoran akan tampil sebagai `Kredit` pada akun Kas dan `Debet` pada akun Bank.
+- Cash Flow: Pergerakan kas masuk/keluar ikut teragregasi sesuai definisi di `app/Http/Controllers/Akutansi/CashFlowController.php:60`–`76` dan `83`–`100`.
+
+**Catatan Opsional (Biaya Admin Bank):**
+- Jika bank mengenakan biaya administrasi saat setoran, catat sebagai transaksi terpisah: Debet `Beban Administrasi Bank`, Kredit `Kas/Bank` sesuai sumber biaya.
+
+
 ## 11. Kesimpulan
 
 Modul Akuntansi Faskesku ID adalah sistem keuangan terintegrasi yang mengikuti prinsip double-entry bookkeeping dengan integrasi erat ke modul operasional (Billing, Lab, Radiologi, Farmasi). Sistem ini menggunakan pola staging (`tampjurnal`) untuk validasi sebelum posting, snapshot (`billing`) untuk integritas data historis, dan hierarki COA untuk fleksibilitas struktur akun.
@@ -710,3 +752,158 @@ Modul Akuntansi Faskesku ID adalah sistem keuangan terintegrasi yang mengikuti p
 - Optimasi query untuk laporan besar
 
 Dengan mengikuti best practices yang telah didokumentasikan dan guard rails yang direkomendasikan, modul akuntansi ini dapat berkembang menjadi sistem keuangan yang robust, mudah diaudit, dan siap untuk skala produksi.
+## 5. Mutasi Rekening
+
+- Definisi: "Mutasi rekening" adalah pergerakan Debet/Kredit suatu akun dalam periode tertentu, yang bersumber dari baris `detailjurnal` dan terikat pada tanggal `jurnal.tgl_jurnal`. Mutasi dipakai untuk menyusun Neraca, Buku Besar, Arus Kas, dan Jurnal Penutup.
+- Sumber data: `jurnal` (header tanggal/jenis), `detailjurnal` (baris debet/kredit), `rekening` (tipe & balance), `rekeningtahun` (saldo awal per tahun).
+- Formula per akun berdasarkan `balance`:
+  - Akun `balance = 'D'`: `mutasi_debet = SUM(debet)`, `mutasi_kredit = SUM(kredit)`, `saldo_akhir = saldo_awal + (mutasi_debet - mutasi_kredit)`.
+  - Akun `balance = 'K'`: `mutasi_debet = SUM(kredit)`, `mutasi_kredit = SUM(debet)`, `saldo_akhir = saldo_awal + (mutasi_debet - mutasi_kredit)`.
+- Perbedaan rentang tanggal antar fitur:
+  - Listing Saldo Awal & Mutasi (YTD): Akumulasi dari awal tahun sampai akhir periode yang dipilih. Lihat `app/Http/Controllers/Akutansi/RekeningTahunController.php:54`–`66` untuk penentuan rentang, dan mapping mutasi berdasarkan `balance` di `app/Http/Controllers/Akutansi/RekeningTahunController.php:81`–`89`.
+  - Buku Besar (running balance): Menentukan `saldo_awal_periode = saldo_awal_tahun ± akumulasi sebelum periode` lalu menghitung saldo berjalan dari baris transaksi periode tampil. Lihat `app/Http/Controllers/Akutansi/BukuBesarController.php:65`, `82`–`96`, dan rumus saldo awal periode di `app/Http/Controllers/Akutansi/BukuBesarController.php:99`–`105`.
+  - Jurnal Penutup (per-periode, bukan YTD): Mutasi hanya untuk hari/bulan/tahun yang dipilih, kemudian ditutup ke Ikhtisar dan Modal. Penentuan rentang periode di `app/Http/Controllers/Akutansi/JurnalController.php:631`–`650`, agregasi mutasi per akun di `app/Http/Controllers/Akutansi/JurnalController.php:663`–`671`, dan mapping mutasi berdasarkan `balance` di `app/Http/Controllers/Akutansi/JurnalController.php:680`–`688`.
+  - Arus Kas (Cash Flow): Menggunakan pergerakan bersih (kredit−debet untuk akun `balance = 'K'`, debet−kredit untuk akun `balance = 'D'`) ditambah saldo awal terkait akun tipe `R`. Lihat `app/Http/Controllers/Akutansi/CashFlowController.php:60`–`76` dan `app/Http/Controllers/Akutansi/CashFlowController.php:83`–`100`.
+- Konsumsi di Frontend:
+  - Neraca harian menggunakan `mutasi_debet - mutasi_kredit` sebagai "Transaksi Hari Ini", sedangkan tampilan periode menampilkan `saldo_akhir`. Contoh referensi di `resources/js/Pages/Akutansi/Neraca.jsx:641`–`653` dan `resources/js/Pages/Akutansi/Neraca.jsx:723`–`735`.
+
+### Referensi Kode
+
+## 6. Mutasi Kas
+
+- Definisi: "Mutasi Kas" adalah pergerakan kas masuk dan kas keluar dalam periode tertentu. Implementasi di sistem menyajikan arus kas berbasis pergerakan akun pendapatan dan beban (pendekatan tidak langsung), ditambah saldo awal kas/akun terkait.
+- Sumber data: `rekening` (tipe & balance), `rekeningtahun` (saldo awal), `jurnal` dan `detailjurnal` (baris debet/kredit).
+- Komponen utama Arus Kas:
+  - Kas Awal: akumulasi saldo awal akun Neraca dengan `balance = 'D'` pada rentang tahun yang mencakup periode. Lihat `app/Http/Controllers/Akutansi/CashFlowController.php:37`–`app/Http/Controllers/Akutansi/CashFlowController.php:47`.
+  - Kas Masuk: pergerakan akun Pendapatan (`tipe = 'R'`, `balance = 'K'`) selama periode, dihitung `SUM(kredit) - SUM(debet)`, kemudian ditambah saldo awal akun terkait `R`. Lihat `app/Http/Controllers/Akutansi/CashFlowController.php:60`–`app/Http/Controllers/Akutansi/CashFlowController.php:76`.
+  - Kas Keluar: pergerakan akun Beban (`tipe = 'R'`, `balance = 'D'`) selama periode, dihitung `SUM(debet) - SUM(kredit)`, kemudian ditambah saldo awal akun terkait `R`. Lihat `app/Http/Controllers/Akutansi/CashFlowController.php:83`–`app/Http/Controllers/Akutansi/CashFlowController.php:100`.
+  - Kas Akhir: `kas_awal + kas_masuk − kas_keluar`. Lihat `app/Http/Controllers/Akutansi/CashFlowController.php:104`–`app/Http/Controllers/Akutansi/CashFlowController.php:117`.
+
+- Penerimaan kas (contoh jurnal operasional):
+  - Billing Ralan: staging jurnal mengisi Debet ke Kas/Bank dan Debet ke Piutang lalu Kredit ke Pendapatan/PPN/Registrasi. Deteksi default Kas/Bank: `app/Http/Controllers/Akutansi/JurnalController.php:390`–`app/Http/Controllers/Akutansi/JurnalController.php:418`. Penulisan Debet Kas: `app/Http/Controllers/Akutansi/JurnalController.php:209`–`app/Http/Controllers/Akutansi/JurnalController.php:217`. Ringkasan dan cek keseimbangan: `app/Http/Controllers/Akutansi/JurnalController.php:365`–`app/Http/Controllers/Akutansi/JurnalController.php:387`.
+  - Penjualan Obat Bebas: Debet Kas/Bank (akun bayar), Kredit Penjualan/PPN, plus HPP vs Persediaan. Lihat `app/Http/Controllers/Farmasi/PenjualanController.php:88`–`app/Http/Controllers/Farmasi/PenjualanController.php:95`.
+
+- Pengeluaran kas (contoh jurnal operasional):
+  - Pembelian Obat: Debet Pengadaan/PPN Masukan, Kredit Akun Bayar (Kas/Bank). Lihat `app/Http/Controllers/Farmasi/PembelianController.php:91`–`app/Http/Controllers/Farmasi/PembelianController.php:96`.
+
+- Ledger kas per akun: Mutasi kas spesifik per akun kas/bank dapat ditelusuri via Buku Besar dengan filter `kd_rek` untuk akun kas/bank. Perhitungan saldo awal periode dan saldo berjalan: `app/Http/Controllers/Akutansi/BukuBesarController.php:99`–`app/Http/Controllers/Akutansi/BukuBesarController.php:106` dan running balance di `app/Http/Controllers/Akutansi/BukuBesarController.php:144`–`app/Http/Controllers/Akutansi/BukuBesarController.php:161`.
+
+- Konsumsi di Frontend:
+  - Komponen CashFlow menampilkan Kas Awal, Kas Masuk, Kas Keluar, Kas Akhir dengan data dari endpoint backend. Lihat `resources/js/Pages/Akutansi/CashFlow.jsx:135`–`resources/js/Pages/Akutansi/CashFlow.jsx:149` untuk ringkasan dan `resources/js/Pages/Akutansi/CashFlow.jsx:154`–`resources/js/Pages/Akutansi/CashFlow.jsx:165` untuk tiga seksi utama.
+- RekeningTahunController@index: penentuan rentang YTD dan mapping mutasi `balance` D/K di `app/Http/Controllers/Akutansi/RekeningTahunController.php:54`–`66`, `81`–`89`.
+- BukuBesarController@index: akumulasi sebelum periode dan saldo awal periode di `app/Http/Controllers/Akutansi/BukuBesarController.php:82`–`106`.
+- JurnalController@closingPreview: agregasi mutasi per-periode dan penggunaan untuk jurnal penutup di `app/Http/Controllers/Akutansi/JurnalController.php:631`–`671`, `680`–`689`.
+- CashFlowController@index: pergerakan kas masuk/keluar berbasis mutasi di `app/Http/Controllers/Akutansi/CashFlowController.php:60`–`100`.
+# Analisa Modul Akuntansi
+
+Dokumen ini merangkum struktur halaman frontend modul Akuntansi, endpoint backend yang relevan, model database terkait, serta referensi teknis untuk implementasi "Detail Jurnal".
+
+## Struktur Halaman Frontend (resources/js/Pages/Akutansi)
+
+- Home.jsx — halaman indeks modul Akutansi berbasis kartu dan 4 tab
+- Rekening.jsx — daftar dan pengelolaan COA
+- RekeningTahun.jsx — saldo awal per tahun
+- PengaturanRekening.jsx — konfigurasi mapping akun
+- AkunBayar.jsx — mapping metode pembayaran → akun
+- AkunPiutang.jsx — mapping piutang → akun
+- Jurnal.jsx — daftar jurnal, tambah jurnal umum, detail & edit, posting dari tampjurnal
+- JurnalPenyesuaian.jsx — halaman khusus penyesuaian
+- JurnalPenutup.jsx — halaman khusus penutup
+- BukuBesar.jsx — general ledger per akun
+- CashFlow.jsx — arus kas teragregasi
+- MutasiRekening.jsx — mutasi pada akun nominal
+- MutasiKas.jsx — mutasi pada akun kas
+- Billing.jsx — data billing + integrasi posting
+- KasirRalan.jsx — transaksi kasir ralan
+- NotaJalan.jsx — invoice rawat jalan
+- SetoranBank.jsx — setoran kas ke bank dengan staging dan posting
+
+Referensi UI umum:
+
+- Sidebar modul: `resources/js/Layouts/SidebarKeuangan.jsx`
+- Komponen tabel: `resources/js/Components/ui/Table.jsx`
+- Pola animasi: Framer Motion digunakan di beberapa halaman (mis. Home.jsx, SetoranBank.jsx)
+
+## Model & Tabel Database
+
+- Jurnal: `app/Models/Akutansi/Jurnal.php`
+- DetailJurnal: `app/Models/Akutansi/DetailJurnal.php`
+- Rekening: `app/Models/Akutansi/Rekening.php`
+- SetoranBank: `app/Models/Akutansi/SetoranBank.php`
+- Migrasi SetoranBank: `database/migrations/2025_12_03_000001_create_setoran_bank_table.php`
+
+Kolom kunci untuk detail jurnal:
+
+- Tabel `detailjurnal`: `no_jurnal`, `kd_rek`, `debet`, `kredit`
+- Join nama akun dari `rekening` via `kd_rek`
+
+## Endpoint Backend Utama (routes/web.php)
+
+- Jurnal list: `GET /api/akutansi/jurnal` → filter `q`, `from`, `to`, `jenis`, paginasi
+- Jurnal detail: `GET /api/akutansi/jurnal/{no_jurnal}` → header + baris detail + totals
+- Jurnal create: `POST /api/akutansi/jurnal` → simpan header & details (jenis `U`/`P`/`C`)
+- Jurnal update: `PUT /api/akutansi/jurnal/{no_jurnal}` → edit header, dan untuk `jenis=U` replace seluruh details
+- Jurnal delete: `DELETE /api/akutansi/jurnal/{no_jurnal}` → hanya untuk `jenis=U`
+- Posting dari staging: `POST /api/akutansi/jurnal/preview` dan `POST /api/akutansi/jurnal/post`
+- Setoran Bank: CRUD di `/api/akutansi/setoran-bank` + `/{id}/stage` + `/{id}/post`
+
+Rujukan controller:
+
+- `app/Http/Controllers/Akutansi/JurnalController.php`
+- `app/Http/Controllers/Akutansi/SetoranBankController.php`
+
+## Referensi Implementasi "Detail Jurnal"
+
+Kebutuhan umum:
+
+- Tampilkan header jurnal (tanggal, jam, bukti, jenis, keterangan)
+- Tampilkan baris detail (kd_rek, nm_rek, debet, kredit) + total dan status seimbang
+- Izinkan edit detail hanya untuk `jenis='U'`; `jenis='P'/'C'` readonly
+
+API yang digunakan:
+
+- Ambil detail: `GET /api/akutansi/jurnal/{no_jurnal}`
+- Simpan perubahan (jika `jenis='U'`): `PUT /api/akutansi/jurnal/{no_jurnal}` dengan payload `details`
+
+Contoh pola frontend (rujukan langsung):
+
+- Buka detail: `resources/js/Pages/Akutansi/Jurnal.jsx` → fungsi `openDetail` memanggil endpoint detail dan menampilkan modal
+- Edit & validasi: fungsi `handleUpdateSelected` melakukan validasi keseimbangan dan mengirim `PUT` untuk menyimpan
+- Tabel baris detail: tabel di modal detail menampilkan `kd_rek`, `nm_rek`, `debet`, `kredit`, lengkap dengan total dan indikator seimbang
+
+Komponen & gaya UI:
+
+- Gunakan layout `SidebarKeuangan` untuk konsistensi
+- Gunakan `Table.jsx` untuk tabel; atau markup HTML tabel seragam seperti di `Jurnal.jsx`
+- Terapkan format angka lokal `id-ID` untuk kolom jumlah
+
+## Rancangan Halaman DetailJurnal.jsx
+
+Tujuan: halaman mandiri untuk melihat dan (bila `jenis='U'`) mengedit detail jurnal tertentu, melengkapi modal di `Jurnal.jsx`.
+
+Sketsa fitur:
+
+- Param `no_jurnal` (query/route) untuk memuat data awal via `GET /api/akutansi/jurnal/{no_jurnal}`
+- Header form: tanggal, waktu, no bukti, keterangan, jenis (readonly)
+- Grid detail: daftar baris dengan pilihan `kd_rek`, input angka `debet`/`kredit`, aksi tambah/hapus baris
+- Validasi: setiap baris harus memiliki salah satu nilai > 0; total debet == total kredit
+- Aksi simpan: `PUT /api/akutansi/jurnal/{no_jurnal}`; hanya aktif untuk `jenis='U'`
+
+Catatan routing:
+
+- Sidebar memuat tautan `/akutansi/detail-jurnal`. Pastikan route Inertia tersedia:
+  - `Route::get('/akutansi/detail-jurnal', fn () => Inertia::render('Akutansi/DetailJurnal'))->name('akutansi.detail-jurnal.page');`
+
+## Praktik Baik
+
+- Hindari mengedit jurnal hasil posting (`jenis='P'`) dan penutup (`jenis='C'`)
+- Gunakan validasi keseimbangan sebelum menyimpan
+- Logika generate `no_jurnal` tersentral di backend; frontend cukup menyiapkan payload yang valid
+
+## Tautan Teknis Cepat
+
+- Detail API: `app/Http/Controllers/Akutansi/JurnalController.php:896–923`
+- Update API: `app/Http/Controllers/Akutansi/JurnalController.php:1114–1186`
+- Daftar API jurnal: `routes/web.php:195–216`
+- Modal detail contoh: `resources/js/Pages/Akutansi/Jurnal.jsx:526–725`
+- Komponen tabel: `resources/js/Components/ui/Table.jsx:1–65`

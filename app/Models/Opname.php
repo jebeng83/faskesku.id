@@ -12,7 +12,10 @@ class Opname extends Model
 
     protected $table = 'opname';
 
-    protected $connection = 'fufufafa';
+    public function getConnectionName()
+    {
+        return config('database.default');
+    }
 
     protected $primaryKey = null;
 

@@ -1,3 +1,4 @@
+import PembelianController from './PembelianController'
 import SetHargaObatController from './SetHargaObatController'
 import DataBarangController from './DataBarangController'
 import KategoriBarangController from './KategoriBarangController'
@@ -10,6 +11,7 @@ import KonversiSatuanController from './KonversiSatuanController'
 import JenisObatController from './JenisObatController'
 
 const Farmasi = {
+    PembelianController: Object.assign(PembelianController, PembelianController),
     SetHargaObatController: Object.assign(SetHargaObatController, SetHargaObatController),
     DataBarangController: Object.assign(DataBarangController, DataBarangController),
     KategoriBarangController: Object.assign(KategoriBarangController, KategoriBarangController),
