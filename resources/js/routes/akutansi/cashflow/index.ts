@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Akutansi\CashFlowController::page
-* @see app/Http/Controllers/Akutansi/CashFlowController.php:18
+* @see app/Http/Controllers/Akutansi/CashFlowController.php:19
 * @route '/akutansi/cashflow'
 */
 export const page = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ page.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\CashFlowController::page
-* @see app/Http/Controllers/Akutansi/CashFlowController.php:18
+* @see app/Http/Controllers/Akutansi/CashFlowController.php:19
 * @route '/akutansi/cashflow'
 */
 page.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ page.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Akutansi\CashFlowController::page
-* @see app/Http/Controllers/Akutansi/CashFlowController.php:18
+* @see app/Http/Controllers/Akutansi/CashFlowController.php:19
 * @route '/akutansi/cashflow'
 */
 page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\CashFlowController::page
-* @see app/Http/Controllers/Akutansi/CashFlowController.php:18
+* @see app/Http/Controllers/Akutansi/CashFlowController.php:19
 * @route '/akutansi/cashflow'
 */
 page.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

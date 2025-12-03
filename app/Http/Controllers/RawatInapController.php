@@ -13,7 +13,7 @@ class RawatInapController extends Controller
     public function index(Request $request)
     {
         return Inertia::render('RawatInap/Index', [
-            'title' => 'Data Rawat Inap'
+            'title' => 'Data Rawat Inap',
         ]);
     }
 
@@ -23,7 +23,7 @@ class RawatInapController extends Controller
     public function create()
     {
         return Inertia::render('RawatInap/Create', [
-            'title' => 'Tambah Data Rawat Inap'
+            'title' => 'Tambah Data Rawat Inap',
         ]);
     }
 
@@ -43,7 +43,7 @@ class RawatInapController extends Controller
     public function show(string $id)
     {
         return Inertia::render('RawatInap/Show', [
-            'title' => 'Detail Rawat Inap'
+            'title' => 'Detail Rawat Inap',
         ]);
     }
 
@@ -53,7 +53,7 @@ class RawatInapController extends Controller
     public function edit(string $id)
     {
         return Inertia::render('RawatInap/Edit', [
-            'title' => 'Edit Data Rawat Inap'
+            'title' => 'Edit Data Rawat Inap',
         ]);
     }
 

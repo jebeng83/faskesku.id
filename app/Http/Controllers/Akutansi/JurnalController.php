@@ -270,20 +270,20 @@ class JurnalController extends Controller
         // Validasi keseimbangan sebelum return
         $totalDebet = $bayar + $piutang;
         $totalKredit = $pendapatanTanpaRegistrasi + $registrasiSubtotal + $ppnNominal;
-        
+
         // Round untuk perbandingan
         $totalDebetRounded = round($totalDebet, 2);
         $totalKreditRounded = round($totalKredit, 2);
-        
+
         // Validasi ulang keseimbangan setelah insert ke tampjurnal
         $actualAgg = DB::table('tampjurnal')
             ->select(DB::raw('IFNULL(SUM(debet),0) AS debet'), DB::raw('IFNULL(SUM(kredit),0) AS kredit'))
             ->first();
-        
-        $actualDebet = round((float)($actualAgg->debet ?? 0), 2);
-        $actualKredit = round((float)($actualAgg->kredit ?? 0), 2);
+
+        $actualDebet = round((float) ($actualAgg->debet ?? 0), 2);
+        $actualKredit = round((float) ($actualAgg->kredit ?? 0), 2);
         $selisih = $actualKredit - $actualDebet;
-        
+
         if (abs($selisih) > 0.01) {
             \Log::warning('Keseimbangan debet/kredit tidak sama saat staging billing, melakukan penyesuaian', [
                 'no_rawat' => $noRawat,
@@ -291,7 +291,7 @@ class JurnalController extends Controller
                 'total_kredit' => $actualKredit,
                 'selisih' => $selisih,
             ]);
-            
+
             // Sesuaikan dengan menambahkan/mengurangi selisih ke akun yang sesuai
             if ($selisih > 0) {
                 // Kredit lebih besar dari debet, tambahkan selisih ke debet (kas/bank atau piutang)
@@ -323,7 +323,7 @@ class JurnalController extends Controller
                     ->where('kd_rek', $kdKreditPendapatan)
                     ->where('kredit', '>', 0)
                     ->sum('kredit');
-                
+
                 if ($existingKredit > 0) {
                     // Tambahkan ke pendapatan yang sudah ada
                     DB::table('tampjurnal')
@@ -342,16 +342,16 @@ class JurnalController extends Controller
                     ]);
                 }
             }
-            
+
             // Validasi ulang setelah penyesuaian
             $finalAgg = DB::table('tampjurnal')
                 ->select(DB::raw('IFNULL(SUM(debet),0) AS debet'), DB::raw('IFNULL(SUM(kredit),0) AS kredit'))
                 ->first();
-            
-            $finalDebet = round((float)($finalAgg->debet ?? 0), 2);
-            $finalKredit = round((float)($finalAgg->kredit ?? 0), 2);
+
+            $finalDebet = round((float) ($finalAgg->debet ?? 0), 2);
+            $finalKredit = round((float) ($finalAgg->kredit ?? 0), 2);
             $finalSelisih = abs($finalKredit - $finalDebet);
-            
+
             if ($finalSelisih > 0.01) {
                 \Log::error('Gagal menyeimbangkan debet/kredit setelah penyesuaian', [
                     'no_rawat' => $noRawat,
@@ -361,7 +361,7 @@ class JurnalController extends Controller
                 ]);
             }
         }
-        
+
         return response()->json([
             'status' => 'ok',
             'message' => 'Staging tampjurnal dari billing berhasil (debet bayar/piutang, kredit pendapatan + opsi PPN)',
@@ -774,11 +774,11 @@ class JurnalController extends Controller
             $like = "%$q%";
             $ikhtisarQuery->where(function ($w) use ($like) {
                 $w->where('kd_rek', 'like', $like)
-                  ->orWhere('nm_rek', 'like', $like);
+                    ->orWhere('nm_rek', 'like', $like);
             });
             $modalQuery->where(function ($w) use ($like) {
                 $w->where('kd_rek', 'like', $like)
-                  ->orWhere('nm_rek', 'like', $like);
+                    ->orWhere('nm_rek', 'like', $like);
             });
         }
 

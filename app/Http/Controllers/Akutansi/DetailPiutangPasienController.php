@@ -1,12 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Akutansi;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use App\Models\Akutansi\DetailPiutangPasien;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class DetailPiutangPasienController extends Controller
 {
@@ -69,6 +70,7 @@ class DetailPiutangPasienController extends Controller
         ]);
         $row->fill($data);
         $row->save();
+
         return response()->json(['message' => 'Detail piutang pasien diperbarui', 'item' => $row]);
     }
 
@@ -81,6 +83,7 @@ class DetailPiutangPasienController extends Controller
             ->where('nama_bayar', $nama_bayar)
             ->firstOrFail();
         $row->delete();
+
         return response()->json(['message' => 'Detail piutang pasien dihapus']);
     }
 }

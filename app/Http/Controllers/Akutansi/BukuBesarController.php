@@ -1,14 +1,15 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Akutansi;
 
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
-use Carbon\Carbon;
 
 class BukuBesarController extends Controller
 {
@@ -43,18 +44,18 @@ class BukuBesarController extends Controller
             return response()->json(['message' => 'kd_rek dan year wajib diisi'], 422);
         }
         // Validasi minimal format numerik tahun/bulan/tanggal
-        if (!preg_match('/^\d{4}$/', $year)) {
+        if (! preg_match('/^\d{4}$/', $year)) {
             return response()->json(['message' => 'Format year tidak valid (YYYY)'], 422);
         }
-        if ($month !== null && !preg_match('/^(0[1-9]|1[0-2])$/', (string) $month)) {
+        if ($month !== null && ! preg_match('/^(0[1-9]|1[0-2])$/', (string) $month)) {
             return response()->json(['message' => 'Format month tidak valid (MM)'], 422);
         }
-        if ($day !== null && !preg_match('/^(0[1-9]|[12][0-9]|3[01])$/', (string) $day)) {
+        if ($day !== null && ! preg_match('/^(0[1-9]|[12][0-9]|3[01])$/', (string) $day)) {
             return response()->json(['message' => 'Format day tidak valid (DD)'], 422);
         }
 
         $rekening = DB::table('rekening')->where('kd_rek', $kdRek)->first();
-        if (!$rekening) {
+        if (! $rekening) {
             return response()->json(['message' => 'Rekening tidak ditemukan'], 404);
         }
         $balanceCode = strtoupper((string) ($rekening->balance ?? 'D')); // D atau K
@@ -67,14 +68,14 @@ class BukuBesarController extends Controller
             ->sum('saldo_awal') ?? 0);
 
         // Hitung akumulasi transaksi sebelum periode yang diminta (untuk saldo awal periode)
-        $startOfYear = Carbon::createFromFormat('Y-m-d', $year . '-01-01');
+        $startOfYear = Carbon::createFromFormat('Y-m-d', $year.'-01-01');
         $cutoff = null; // tanggal terakhir sebelum periode view
         if ($month === null) {
             // Jika tidak ada month, maka periode adalah sepanjang tahun → saldo awal periode cukup dari rekeningtahun
             $cutoff = null;
         } else {
             // Jika ada month (dan mungkin day), tentukan tanggal cutoff = tanggal view awal - 1 hari
-            $viewStart = Carbon::createFromFormat('Y-m-d', $year . '-' . $month . '-' . ($day ? $day : '01'));
+            $viewStart = Carbon::createFromFormat('Y-m-d', $year.'-'.$month.'-'.($day ? $day : '01'));
             $cutoff = $viewStart->copy()->subDay();
         }
 
@@ -104,12 +105,12 @@ class BukuBesarController extends Controller
         }
 
         // Bangun filter baris jurnal untuk periode tampilan
-        $pattern = $year . '%';
+        $pattern = $year.'%';
         if ($month !== null) {
-            $pattern = $year . '-' . $month . '%';
+            $pattern = $year.'-'.$month.'%';
         }
         if ($month !== null && $day !== null) {
-            $pattern = $year . '-' . $month . '-' . $day . '%';
+            $pattern = $year.'-'.$month.'-'.$day.'%';
         }
 
         $items = DB::table('jurnal')
@@ -180,4 +181,3 @@ class BukuBesarController extends Controller
         ]);
     }
 }
-

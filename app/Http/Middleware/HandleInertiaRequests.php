@@ -2,11 +2,11 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Menu;
 use Closure;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
-use App\Models\Menu;
 
 class HandleInertiaRequests
 {
@@ -29,7 +29,7 @@ class HandleInertiaRequests
             } else {
                 // Detect common legacy encodings and convert to UTF-8
                 $enc = function_exists('mb_detect_encoding')
-                    ? @mb_detect_encoding($value, ['UTF-8','ISO-8859-1','Windows-1252','ASCII'], true)
+                    ? @mb_detect_encoding($value, ['UTF-8', 'ISO-8859-1', 'Windows-1252', 'ASCII'], true)
                     : null;
                 if ($enc) {
                     $sv = @mb_convert_encoding($value, 'UTF-8', $enc);
@@ -40,20 +40,24 @@ class HandleInertiaRequests
             }
             // Strip control characters that may break JSON
             $sv = preg_replace('/[\x00-\x1F\x7F]/u', '', $sv ?? $value);
+
             return $sv ?? $value;
         }
         if (is_array($value)) {
             foreach ($value as $k => $v) {
                 $value[$k] = $this->sanitizeUtf8($v);
             }
+
             return $value;
         }
         if (is_object($value)) {
             foreach (get_object_vars($value) as $k => $v) {
                 $value->{$k} = $this->sanitizeUtf8($v);
             }
+
             return $value;
         }
+
         return $value;
     }
 
@@ -61,17 +65,17 @@ class HandleInertiaRequests
     {
         Inertia::share([
             'flash' => [
-                'success' => fn() => $this->sanitizeUtf8($request->session()->get('success')),
-                'error' => fn() => $this->sanitizeUtf8($request->session()->get('error')),
+                'success' => fn () => $this->sanitizeUtf8($request->session()->get('success')),
+                'error' => fn () => $this->sanitizeUtf8($request->session()->get('error')),
             ],
-            'errors' => fn() => $this->sanitizeUtf8($request->session()->get('errors') ? $request->session()->get('errors')->getBag('default')->getMessages() : (object) []),
+            'errors' => fn () => $this->sanitizeUtf8($request->session()->get('errors') ? $request->session()->get('errors')->getBag('default')->getMessages() : (object) []),
             'auth' => [
-                'user' => fn() => $this->sanitizeUtf8($request->user() ? $request->user()->load('employee')->only('id', 'name', 'username', 'email', 'nik', 'employee') : null),
-                'permissions' => fn() => $this->sanitizeUtf8($request->user() ? $request->user()->getAllPermissions()->pluck('name')->toArray() : []),
+                'user' => fn () => $this->sanitizeUtf8($request->user() ? $request->user()->load('employee')->only('id', 'name', 'username', 'email', 'nik', 'employee') : null),
+                'permissions' => fn () => $this->sanitizeUtf8($request->user() ? $request->user()->getAllPermissions()->pluck('name')->toArray() : []),
             ],
-            'menu_hierarchy' => fn() => $this->sanitizeUtf8($request->user() ? Menu::getMenuHierarchy($request->user()->id)->toArray() : []),
-            'current_menu' => fn() => $this->sanitizeUtf8(($cm = $request->attributes->get('current_menu')) ? (method_exists($cm, 'toArray') ? $cm->toArray() : $cm) : null),
-            'map_coords' => fn() => [
+            'menu_hierarchy' => fn () => $this->sanitizeUtf8($request->user() ? Menu::getMenuHierarchy($request->user()->id)->toArray() : []),
+            'current_menu' => fn () => $this->sanitizeUtf8(($cm = $request->attributes->get('current_menu')) ? (method_exists($cm, 'toArray') ? $cm->toArray() : $cm) : null),
+            'map_coords' => fn () => [
                 'latitude' => ($lat = env('LATITUDE')) !== null && $lat !== '' && is_numeric($lat) ? (float) $lat : null,
                 'longitude' => ($lng = env('LONGITUDE')) !== null && $lng !== '' && is_numeric($lng) ? (float) $lng : null,
             ],

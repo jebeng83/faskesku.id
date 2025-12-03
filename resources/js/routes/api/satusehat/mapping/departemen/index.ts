@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::index
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:368
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:373
 * @route '/api/satusehat/mapping/departemen'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::index
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:368
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:373
 * @route '/api/satusehat/mapping/departemen'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::index
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:368
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:373
 * @route '/api/satusehat/mapping/departemen'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::index
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:368
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:373
 * @route '/api/satusehat/mapping/departemen'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::store
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:398
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:403
 * @route '/api/satusehat/mapping/departemen'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +60,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::store
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:398
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:403
 * @route '/api/satusehat/mapping/departemen'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::store
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:398
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:403
 * @route '/api/satusehat/mapping/departemen'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -79,7 +79,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::update
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:495
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:500
 * @route '/api/satusehat/mapping/departemen/{dep_id}'
 */
 export const update = (args: { dep_id: string | number } | [dep_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -94,7 +94,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::update
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:495
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:500
 * @route '/api/satusehat/mapping/departemen/{dep_id}'
 */
 update.url = (args: { dep_id: string | number } | [dep_id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -121,7 +121,7 @@ update.url = (args: { dep_id: string | number } | [dep_id: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::update
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:495
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:500
 * @route '/api/satusehat/mapping/departemen/{dep_id}'
 */
 update.put = (args: { dep_id: string | number } | [dep_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -131,7 +131,7 @@ update.put = (args: { dep_id: string | number } | [dep_id: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::destroy
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:524
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:529
 * @route '/api/satusehat/mapping/departemen/{dep_id}'
 */
 export const destroy = (args: { dep_id: string | number } | [dep_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -146,7 +146,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::destroy
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:524
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:529
 * @route '/api/satusehat/mapping/departemen/{dep_id}'
 */
 destroy.url = (args: { dep_id: string | number } | [dep_id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -173,7 +173,7 @@ destroy.url = (args: { dep_id: string | number } | [dep_id: string | number ] | 
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::destroy
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:524
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:529
 * @route '/api/satusehat/mapping/departemen/{dep_id}'
 */
 destroy.delete = (args: { dep_id: string | number } | [dep_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

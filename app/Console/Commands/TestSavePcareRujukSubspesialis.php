@@ -40,6 +40,7 @@ class TestSavePcareRujukSubspesialis extends Command
         // Cek apakah tabel ada
         if (! Schema::hasTable('pcare_rujuk_subspesialis')) {
             $this->error('Tabel pcare_rujuk_subspesialis tidak ditemukan!');
+
             return Command::FAILURE;
         }
 
@@ -47,6 +48,7 @@ class TestSavePcareRujukSubspesialis extends Command
         $reg = DB::table('reg_periksa')->where('no_rawat', $noRawat)->first();
         if (! $reg) {
             $this->error("Data reg_periksa tidak ditemukan untuk no_rawat: {$noRawat}");
+
             return Command::FAILURE;
         }
 
@@ -57,6 +59,7 @@ class TestSavePcareRujukSubspesialis extends Command
             $payload = json_decode($payloadJson, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 $this->error('Invalid JSON payload: '.json_last_error_msg());
+
                 return Command::FAILURE;
             }
         } else {
@@ -112,18 +115,18 @@ class TestSavePcareRujukSubspesialis extends Command
 
         // Panggil fungsi savePcareRujukSubspesialis
         try {
-            $controller = new PcareController();
+            $controller = new PcareController;
             $reflection = new \ReflectionClass($controller);
             $method = $reflection->getMethod('savePcareRujukSubspesialis');
             $method->setAccessible(true);
 
             $this->info("\nMemanggil savePcareRujukSubspesialis...");
-            
+
             // Enable error reporting untuk menangkap semua error
             $oldErrorReporting = error_reporting(E_ALL);
             $oldDisplayErrors = ini_get('display_errors');
             ini_set('display_errors', '1');
-            
+
             try {
                 $method->invoke($controller, $noRawat, $payload, $noKunjungan);
                 $this->info('✓ Fungsi savePcareRujukSubspesialis dipanggil tanpa error');
@@ -138,7 +141,7 @@ class TestSavePcareRujukSubspesialis extends Command
 
             // Tunggu sebentar untuk memastikan query selesai
             sleep(1);
-            
+
             // Cek hasil di database
             $saved = DB::table('pcare_rujuk_subspesialis')
                 ->where('no_rawat', $noRawat)
@@ -166,34 +169,34 @@ class TestSavePcareRujukSubspesialis extends Command
                 );
             } else {
                 $this->warn("\n⚠ Data tidak ditemukan di tabel setelah penyimpanan.");
-                $this->line("Mencoba cek log untuk error detail...");
-                
+                $this->line('Mencoba cek log untuk error detail...');
+
                 // Cek log terakhir
                 $logFile = storage_path('logs/laravel-'.date('Y-m-d').'.log');
                 if (file_exists($logFile)) {
                     $logContent = file_get_contents($logFile);
                     $lines = explode("\n", $logContent);
                     $recentLines = array_slice($lines, -10);
-                    $errorLines = array_filter($recentLines, function($line) {
-                        return stripos($line, 'error') !== false || 
+                    $errorLines = array_filter($recentLines, function ($line) {
+                        return stripos($line, 'error') !== false ||
                                stripos($line, 'pcare_rujuk_subspesialis') !== false ||
                                stripos($line, 'Exception') !== false;
                     });
-                    
-                    if (!empty($errorLines)) {
-                        $this->warn("Error terakhir di log:");
+
+                    if (! empty($errorLines)) {
+                        $this->warn('Error terakhir di log:');
                         foreach ($errorLines as $line) {
                             $this->line($line);
                         }
                     }
                 }
-                
+
                 // Cek struktur tabel dan kolom yang tersedia
                 $this->line("\nMencoba cek struktur tabel...");
                 try {
                     $columns = Schema::getColumnListing('pcare_rujuk_subspesialis');
-                    $this->info("Kolom yang tersedia di tabel: ".implode(', ', array_slice($columns, 0, 10)).(count($columns) > 10 ? '...' : ''));
-                    
+                    $this->info('Kolom yang tersedia di tabel: '.implode(', ', array_slice($columns, 0, 10)).(count($columns) > 10 ? '...' : ''));
+
                     // Cek apakah ada masalah dengan kolom yang digunakan
                     $this->line("\nMencoba insert langsung untuk debugging...");
                     $testData = [
@@ -202,10 +205,10 @@ class TestSavePcareRujukSubspesialis extends Command
                         'nm_pasien' => 'TEST',
                     ];
                     DB::table('pcare_rujuk_subspesialis')->insert($testData);
-                    $this->info("✓ Insert langsung berhasil, kemungkinan masalah di safeUpsert");
+                    $this->info('✓ Insert langsung berhasil, kemungkinan masalah di safeUpsert');
                     // Hapus data test
                     DB::table('pcare_rujuk_subspesialis')->where('no_rawat', $noRawat)->delete();
-                    
+
                     // Coba updateOrInsert langsung
                     $this->line("\nMencoba updateOrInsert langsung...");
                     $updateData = [
@@ -220,14 +223,14 @@ class TestSavePcareRujukSubspesialis extends Command
                     );
                     $check = DB::table('pcare_rujuk_subspesialis')->where('no_rawat', $noRawat)->first();
                     if ($check) {
-                        $this->info("✓ updateOrInsert langsung berhasil!");
+                        $this->info('✓ updateOrInsert langsung berhasil!');
                         $this->line("Data tersimpan: noKunjungan={$check->noKunjungan}, nm_pasien={$check->nm_pasien}");
                         // Hapus data test
                         DB::table('pcare_rujuk_subspesialis')->where('no_rawat', $noRawat)->delete();
                     }
                 } catch (\Exception $e) {
-                    $this->error("✗ Error: ".$e->getMessage());
-                    $this->error("File: ".$e->getFile().":".$e->getLine());
+                    $this->error('✗ Error: '.$e->getMessage());
+                    $this->error('File: '.$e->getFile().':'.$e->getLine());
                 }
             }
 
@@ -235,6 +238,7 @@ class TestSavePcareRujukSubspesialis extends Command
         } catch (\Throwable $e) {
             $this->error('Error: '.$e->getMessage());
             $this->error('Trace: '.$e->getTraceAsString());
+
             return Command::FAILURE;
         }
     }

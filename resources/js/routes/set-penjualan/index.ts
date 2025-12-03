@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::store
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:223
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:225
 * @route '/farmasi/set-penjualan'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::store
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:223
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:225
 * @route '/farmasi/set-penjualan'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::store
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:223
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:225
 * @route '/farmasi/set-penjualan'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::destroy
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:276
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:280
 * @route '/farmasi/set-penjualan/{kdjns}'
 */
 export const destroy = (args: { kdjns: string | number } | [kdjns: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -50,7 +50,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::destroy
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:276
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:280
 * @route '/farmasi/set-penjualan/{kdjns}'
 */
 destroy.url = (args: { kdjns: string | number } | [kdjns: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -77,7 +77,7 @@ destroy.url = (args: { kdjns: string | number } | [kdjns: string | number ] | st
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::destroy
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:276
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:280
 * @route '/farmasi/set-penjualan/{kdjns}'
 */
 destroy.delete = (args: { kdjns: string | number } | [kdjns: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

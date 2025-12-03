@@ -11,7 +11,9 @@ class IndustriFarmasi extends Model
 
     // Primary key is a non-incrementing string
     protected $primaryKey = 'kode_industri';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     // Table does not have timestamps

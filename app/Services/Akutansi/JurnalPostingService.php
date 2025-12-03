@@ -45,11 +45,13 @@ class JurnalPostingService
         $all = $rows1->concat($rows2)
             ->groupBy('kd_rek')
             ->map(function ($group) {
-                $deb = 0.0; $kre = 0.0;
+                $deb = 0.0;
+                $kre = 0.0;
                 foreach ($group as $r) {
                     $deb += (float) ($r->debet ?? 0);
                     $kre += (float) ($r->kredit ?? 0);
                 }
+
                 return [
                     'kd_rek' => (string) ($group[0]->kd_rek ?? ''),
                     'debet' => $deb,
@@ -59,7 +61,7 @@ class JurnalPostingService
             ->values();
 
         // Lengkapi nm_rek dari master rekening jika tersedia
-        $kdList = $all->map(fn($r) => $r['kd_rek'])->filter()->values()->all();
+        $kdList = $all->map(fn ($r) => $r['kd_rek'])->filter()->values()->all();
         $nmMap = empty($kdList) ? [] : DB::table('rekening')->whereIn('kd_rek', $kdList)->pluck('nm_rek', 'kd_rek')->all();
 
         $lines = $all->map(function ($r) use ($nmMap) {
@@ -87,10 +89,9 @@ class JurnalPostingService
     /**
      * Posting isi tampjurnal ke jurnal/detailjurnal dalam satu transaksi.
      *
-     * @param string|null $no_bukti
-     * @param string|null $keterangan
-     * @param string|null $tgl_jurnal Format Y-m-d; default hari ini
+     * @param  string|null  $tgl_jurnal  Format Y-m-d; default hari ini
      * @return array{no_jurnal:string}
+     *
      * @throws \Throwable
      */
     public function post(?string $no_bukti = null, ?string $keterangan = null, ?string $tgl_jurnal = null): array
@@ -123,7 +124,7 @@ class JurnalPostingService
 
         return DB::transaction(function () use ($tgl, $jam, $jenis, $no_bukti, $keterangan) {
             // Generate nomor jurnal harian: JR + yyyymmdd + 6 digit urut
-            $prefix = 'JR' . str_replace('-', '', $tgl);
+            $prefix = 'JR'.str_replace('-', '', $tgl);
             $max = DB::table('jurnal')
                 ->lockForUpdate()
                 ->where('tgl_jurnal', $tgl)
@@ -131,7 +132,7 @@ class JurnalPostingService
                 ->value('max_no');
             $next = ((int) $max) + 1;
             $noSuffix = str_pad((string) $next, 6, '0', STR_PAD_LEFT);
-            $noJurnal = $prefix . $noSuffix;
+            $noJurnal = $prefix.$noSuffix;
 
             // Header jurnal
             DB::table('jurnal')->insert([
@@ -154,11 +155,13 @@ class JurnalPostingService
             $grouped = $rows1->concat($rows2)
                 ->groupBy('kd_rek')
                 ->map(function ($group) {
-                    $deb = 0.0; $kre = 0.0;
+                    $deb = 0.0;
+                    $kre = 0.0;
                     foreach ($group as $r) {
                         $deb += (float) ($r->debet ?? 0);
                         $kre += (float) ($r->kredit ?? 0);
                     }
+
                     return [
                         'kd_rek' => (string) ($group[0]->kd_rek ?? ''),
                         'debet' => $deb,
@@ -176,7 +179,7 @@ class JurnalPostingService
                     'kredit' => (float) ($r['kredit'] ?? 0),
                 ];
             }
-            if (!empty($detailRows)) {
+            if (! empty($detailRows)) {
                 DB::table('detailjurnal')->insert($detailRows);
             }
 

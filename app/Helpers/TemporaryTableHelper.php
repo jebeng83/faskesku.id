@@ -40,6 +40,7 @@ class TemporaryTableHelper
     public static function purge(string $table, int|string $sessionKey): int
     {
         $cfg = self::config($table);
+
         return DB::table($table)->where($cfg['pk'], $sessionKey)->delete();
     }
 
@@ -53,6 +54,7 @@ class TemporaryTableHelper
     {
         $cfg = self::config($table);
         $row = self::normalizeRow($cfg, $sessionKey, $data);
+
         return DB::table($table)->insert($row);
     }
 
@@ -70,6 +72,7 @@ class TemporaryTableHelper
             return 0;
         }
         DB::table($table)->insert($payload);
+
         return count($payload);
     }
 
@@ -79,6 +82,7 @@ class TemporaryTableHelper
     public static function getRows(string $table, int|string $sessionKey): array
     {
         $cfg = self::config($table);
+
         return DB::table($table)->where($cfg['pk'], $sessionKey)->orderBy($cfg['pk'])->get()->toArray();
     }
 
@@ -104,6 +108,7 @@ class TemporaryTableHelper
                 }
             }
         }
+
         return $row;
     }
 
@@ -122,14 +127,18 @@ class TemporaryTableHelper
     {
         $cols = [];
         for ($i = 1; $i <= $count; $i++) {
-            $cols[] = 'temp' . $i;
+            $cols[] = 'temp'.$i;
         }
+
         return $cols;
     }
 
     protected static function isAssoc(array $arr): bool
     {
-        if ([] === $arr) return false;
+        if ($arr === []) {
+            return false;
+        }
+
         return array_keys($arr) !== range(0, count($arr) - 1);
     }
 }

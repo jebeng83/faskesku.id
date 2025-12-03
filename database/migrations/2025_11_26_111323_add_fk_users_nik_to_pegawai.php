@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (! \Illuminate\Support\Facades\Schema::hasTable('pegawai')) {
+            return;
+        }
+        if (\Illuminate\Support\Facades\DB::connection()->getDriverName() === 'sqlite') {
+            return;
+        }
         Schema::table('users', function (Blueprint $table) {
-            // Ensure column exists and add foreign key: users.nik -> pegawai.nik
-            // users.nik is nullable; FK allows NULLs
             $table->foreign('nik')
                 ->references('nik')
                 ->on('pegawai')

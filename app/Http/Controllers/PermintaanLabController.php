@@ -17,9 +17,9 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -963,7 +963,7 @@ class PermintaanLabController extends Controller
                 ->exists();
 
             $noorderDiBilling = [];
-            
+
             if ($hasSnapshotBilling) {
                 // Jika sudah ada snapshot billing, ambil hanya noorder yang ada di billing dengan status 'Laborat'
                 $noorderDiBilling = DB::table('billing')
@@ -998,11 +998,11 @@ class PermintaanLabController extends Controller
             // Filter permintaan lab berdasarkan noorder yang ada di billing/preview
             $query = PermintaanLab::with(['regPeriksa.patient', 'dokter', 'detailPermintaan.jenisPerawatan'])
                 ->where('no_rawat', $decodedNoRawat);
-            
-            if (!empty($noorderDiBilling)) {
+
+            if (! empty($noorderDiBilling)) {
                 // Hanya tampilkan permintaan lab yang noorder-nya ada di billing/preview
                 $query->whereIn('noorder', $noorderDiBilling);
-                
+
                 // Log untuk debugging
                 Log::info('PermintaanLabController getByNoRawat: Filter berdasarkan billing', [
                     'no_rawat' => $decodedNoRawat,
@@ -1016,6 +1016,7 @@ class PermintaanLabController extends Controller
                     'no_rawat' => $decodedNoRawat,
                     'has_snapshot' => $hasSnapshotBilling,
                 ]);
+
                 return response()->json([
                     'success' => true,
                     'data' => [],
@@ -1032,7 +1033,7 @@ class PermintaanLabController extends Controller
                     // Tentukan status "sudah dilayani" berdasarkan tgl_hasil dan jam_hasil
                     $tglHasil = $permintaan->tgl_hasil;
                     $jamHasil = $permintaan->jam_hasil;
-                    
+
                     // Cek apakah hasil sudah tersedia
                     $hasHasil = false;
                     if ($tglHasil && $tglHasil !== '0000-00-00' && $tglHasil !== null) {
@@ -1047,7 +1048,7 @@ class PermintaanLabController extends Controller
                                     break;
                                 }
                             }
-                            if (!$isInvalid && !str_starts_with(trim($dateStr), '-')) {
+                            if (! $isInvalid && ! str_starts_with(trim($dateStr), '-')) {
                                 $hasHasil = true;
                             }
                         } catch (\Exception $e) {
@@ -1055,7 +1056,7 @@ class PermintaanLabController extends Controller
                             $hasHasil = false;
                         }
                     }
-                    
+
                     // Gunakan method hasHasilTersedia() jika tersedia untuk validasi lebih akurat
                     if (method_exists($permintaan, 'hasHasilTersedia')) {
                         try {
@@ -1064,10 +1065,10 @@ class PermintaanLabController extends Controller
                             // Jika method error, gunakan hasil dari pengecekan manual di atas
                         }
                     }
-                    
+
                     // Tentukan status label
                     $statusLabel = $hasHasil ? 'Sudah Dilayani' : ($permintaan->status ?? 'Belum Dilayani');
-                    
+
                     return [
                         'noorder' => $permintaan->noorder,
                         'no_rawat' => $permintaan->no_rawat,
@@ -1132,7 +1133,7 @@ class PermintaanLabController extends Controller
                                         'jam' => $hasil->jam ?? null,
                                     ];
                                 });
-                            
+
                             return [
                                 'kd_jenis_prw' => $detail->kd_jenis_prw,
                                 'nm_perawatan' => $detail->jenisPerawatan->nm_perawatan ?? '',
@@ -1156,6 +1157,7 @@ class PermintaanLabController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengambil data permintaan laboratorium: '.$e->getMessage(),

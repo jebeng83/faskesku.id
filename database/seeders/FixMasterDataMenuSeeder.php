@@ -10,7 +10,7 @@ class FixMasterDataMenuSeeder extends Seeder
 {
     public function run(): void
     {
-        if (!Schema::hasTable('menus')) {
+        if (! Schema::hasTable('menus')) {
             return;
         }
 
@@ -32,7 +32,7 @@ class FixMasterDataMenuSeeder extends Seeder
             ->orderByDesc('id')
             ->first();
 
-        if (!$masterMenu) {
+        if (! $masterMenu) {
             // Jika tidak ditemukan, tidak melakukan apa pun agar seeder aman di semua environment.
             return;
         }
@@ -48,7 +48,7 @@ class FixMasterDataMenuSeeder extends Seeder
             $update['url'] = '/master-data';
         }
 
-        if (!empty($update)) {
+        if (! empty($update)) {
             DB::table($menusTable)->where('id', $masterId)->update($update);
         }
 
@@ -60,7 +60,7 @@ class FixMasterDataMenuSeeder extends Seeder
 
         // Nonaktifkan anak-anaknya bila ada kolom status/aktif
         $statusColumns = collect(['active', 'is_active', 'status', 'enabled'])->filter(fn ($col) => Schema::hasColumn('menus', $col))->values()->all();
-        if (!empty($statusColumns)) {
+        if (! empty($statusColumns)) {
             $updates = [];
             foreach ($statusColumns as $col) {
                 // Untuk kolom 'status' seringkali 1/0 atau 'active'/'inactive'. Di sini set ke 0.
@@ -70,5 +70,3 @@ class FixMasterDataMenuSeeder extends Seeder
         }
     }
 }
-
-

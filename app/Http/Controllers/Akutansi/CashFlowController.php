@@ -1,12 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Akutansi;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
@@ -22,9 +23,6 @@ class CashFlowController extends Controller
 
     /**
      * Cash flow aggregation based on jurnal, detailjurnal, rekening, and rekeningtahun.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function index(Request $request): JsonResponse
     {
@@ -75,6 +73,7 @@ class CashFlowController extends Controller
             $open = (float) ($openingR[$row->kd_rek]->opening ?? 0);
             $amount = (float) ($row->movement) + $open;
             $row->amount = $amount;
+
             return $row;
         });
 
@@ -96,6 +95,7 @@ class CashFlowController extends Controller
             $open = (float) ($openingR[$row->kd_rek]->opening ?? 0);
             $amount = (float) ($row->movement) + $open;
             $row->amount = $amount;
+
             return $row;
         });
 

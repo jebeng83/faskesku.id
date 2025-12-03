@@ -7,8 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class Jurnal extends Model
 {
     protected $table = 'jurnal';
+
     protected $primaryKey = 'no_jurnal';
+
     public $incrementing = false;
+
     public $timestamps = false;
 
     protected $fillable = [

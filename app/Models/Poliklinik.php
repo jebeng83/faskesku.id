@@ -2,18 +2,22 @@
 
 namespace App\Models;
 
+use App\Models\RawatJalan\RawatJalan;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\RawatJalan\RawatJalan;
 
 class Poliklinik extends Model
 {
     use HasFactory;
 
     protected $table = 'poliklinik';
+
     protected $primaryKey = 'kd_poli';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -21,13 +25,13 @@ class Poliklinik extends Model
         'nm_poli',
         'registrasi',
         'registrasilama',
-        'status'
+        'status',
     ];
 
     protected $casts = [
         'registrasi' => 'double',
         'registrasilama' => 'double',
-        'status' => 'string'
+        'status' => 'string',
     ];
 
     // Scope untuk poliklinik aktif

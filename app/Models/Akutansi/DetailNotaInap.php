@@ -2,8 +2,8 @@
 
 namespace App\Models\Akutansi;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Models\RegPeriksa;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Model untuk tabel detail_nota_inap
@@ -12,8 +12,11 @@ use App\Models\RegPeriksa;
 class DetailNotaInap extends Model
 {
     protected $table = 'detail_nota_inap';
+
     protected $primaryKey = ['no_rawat', 'nama_bayar'];
+
     public $incrementing = false;
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -47,12 +50,13 @@ class DetailNotaInap extends Model
     protected function setKeysForSaveQuery($query)
     {
         $keys = $this->getKeyName();
-        if (!is_array($keys)) {
+        if (! is_array($keys)) {
             return parent::setKeysForSaveQuery($query);
         }
         foreach ($keys as $keyName) {
             $query->where($keyName, '=', $this->getKeyForSaveQuery($keyName));
         }
+
         return $query;
     }
 
@@ -64,6 +68,7 @@ class DetailNotaInap extends Model
         if (isset($this->original[$keyName])) {
             return $this->original[$keyName];
         }
+
         return $this->getAttribute($keyName);
     }
 }

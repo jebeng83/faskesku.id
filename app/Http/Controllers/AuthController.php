@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
@@ -30,7 +29,7 @@ class AuthController extends Controller
                     ->whereRaw('LOWER(aktifkan) = ?', ['yes'])
                     ->first();
 
-                if (!$active) {
+                if (! $active) {
                     $active = DB::table('setting')
                         ->select('nama_instansi', 'wallpaper', 'aktifkan')
                         ->first();
@@ -41,13 +40,13 @@ class AuthController extends Controller
                     $blob = $active->wallpaper ?? null;
                     if ($blob) {
                         // Pastikan blob dalam bentuk string
-                        if (!is_string($blob) && is_resource($blob)) {
+                        if (! is_string($blob) && is_resource($blob)) {
                             $blob = stream_get_contents($blob);
                         }
 
                         if (is_string($blob)) {
                             $mime = $this->detectImageMime($blob) ?? 'image/jpeg';
-                            $wallpaperDataUrl = 'data:' . $mime . ';base64,' . base64_encode($blob);
+                            $wallpaperDataUrl = 'data:'.$mime.';base64,'.base64_encode($blob);
                         }
                     }
                 }
@@ -65,17 +64,17 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         // Rate limiting untuk login
-        $key = 'login.' . $request->ip();
-        
+        $key = 'login.'.$request->ip();
+
         if (RateLimiter::tooManyAttempts($key, 5)) {
             $seconds = RateLimiter::availableIn($key);
-            
+
             Log::warning('Login rate limit exceeded', [
                 'ip' => $request->ip(),
                 'username' => $request->input('username'),
                 'user_agent' => $request->userAgent(),
             ]);
-            
+
             return back()->withErrors([
                 'username' => "Terlalu banyak percobaan login. Silakan coba lagi dalam {$seconds} detik.",
             ])->onlyInput('username');
@@ -88,30 +87,30 @@ class AuthController extends Controller
 
         // Coba cari user berdasarkan username atau email
         $user = \App\Models\User::where('username', $credentials['username'])
-                                ->orWhere('email', $credentials['username'])
-                                ->first();
+            ->orWhere('email', $credentials['username'])
+            ->first();
 
         if ($user && \Illuminate\Support\Facades\Hash::check($credentials['password'], $user->password)) {
             // Reset rate limiter setelah login berhasil
             RateLimiter::clear($key);
-            
+
             Auth::login($user, $request->boolean('remember'));
             $request->session()->regenerate();
-            
+
             Log::info('Successful login', [
                 'user_id' => $user->id,
                 'username' => $user->username,
                 'ip' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);
-            
+
             // Setelah login, arahkan ke Dashboard
             return redirect()->route('dashboard');
         }
 
         // Increment rate limiter untuk failed attempt
         RateLimiter::hit($key, 60); // 60 seconds decay
-        
+
         Log::warning('Failed login attempt', [
             'username' => $credentials['username'],
             'ip' => $request->ip(),
@@ -128,6 +127,7 @@ class AuthController extends Controller
         Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect()->route('login');
     }
 
@@ -136,7 +136,7 @@ class AuthController extends Controller
      */
     protected function detectImageMime($blob): ?string
     {
-        if (!is_string($blob)) {
+        if (! is_string($blob)) {
             if (is_resource($blob)) {
                 $blob = stream_get_contents($blob);
             } else {
@@ -146,15 +146,26 @@ class AuthController extends Controller
 
         $bytes = substr($blob, 0, 12);
         // PNG
-        if (strncmp($bytes, "\x89PNG\r\n\x1A\n", 8) === 0) return 'image/png';
+        if (strncmp($bytes, "\x89PNG\r\n\x1A\n", 8) === 0) {
+            return 'image/png';
+        }
         // JPEG (SOI 0xFFD8)
-        if (strlen($bytes) >= 2 && ord($bytes[0]) === 0xFF && ord($bytes[1]) === 0xD8) return 'image/jpeg';
+        if (strlen($bytes) >= 2 && ord($bytes[0]) === 0xFF && ord($bytes[1]) === 0xD8) {
+            return 'image/jpeg';
+        }
         // GIF
-        if (strncmp($bytes, 'GIF87a', 6) === 0 || strncmp($bytes, 'GIF89a', 6) === 0) return 'image/gif';
+        if (strncmp($bytes, 'GIF87a', 6) === 0 || strncmp($bytes, 'GIF89a', 6) === 0) {
+            return 'image/gif';
+        }
         // WebP (RIFF....WEBP)
-        if (strncmp($bytes, 'RIFF', 4) === 0 && strncmp(substr($bytes, 8, 4), 'WEBP', 4) === 0) return 'image/webp';
+        if (strncmp($bytes, 'RIFF', 4) === 0 && strncmp(substr($bytes, 8, 4), 'WEBP', 4) === 0) {
+            return 'image/webp';
+        }
         // BMP (BM)
-        if (strncmp($bytes, 'BM', 2) === 0) return 'image/bmp';
+        if (strncmp($bytes, 'BM', 2) === 0) {
+            return 'image/bmp';
+        }
+
         return null;
     }
 }

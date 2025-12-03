@@ -27,8 +27,9 @@ class DescribeSettingTable extends \Illuminate\Console\Command
      */
     public function handle(): int
     {
-        if (!\Illuminate\Support\Facades\Schema::hasTable('setting')) {
+        if (! \Illuminate\Support\Facades\Schema::hasTable('setting')) {
             $this->error('Table `setting` not found.');
+
             return 1; // FAILURE
         }
 
@@ -36,6 +37,7 @@ class DescribeSettingTable extends \Illuminate\Console\Command
             $columns = \Illuminate\Support\Facades\DB::select('SHOW COLUMNS FROM `setting`');
         } catch (\Throwable $e) {
             $this->error('Failed to describe table: '.$e->getMessage());
+
             return 1; // FAILURE
         }
 

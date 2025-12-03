@@ -2,8 +2,8 @@
 
 namespace App\Traits;
 
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -21,7 +21,7 @@ trait BpjsTraits
         $row = DB::table('setting_bridging_bpjs')->first();
         // Fallback tambahan: beberapa instalasi menyimpan kode_ppk pada tabel 'setting'
         $setting = DB::table('setting')->first();
-    
+
         return [
             // Gunakan config() agar nilai dari .env tetap tersedia saat config di-cache
             'base_url' => config('bpjs.pcare.base_url'),
@@ -82,8 +82,9 @@ trait BpjsTraits
      */
     protected function generateSignature(string $consId, string $secretKey, string $timestamp): string
     {
-        $data = $consId . '&' . $timestamp;
+        $data = $consId.'&'.$timestamp;
         $raw = hash_hmac('sha256', $data, $secretKey, true);
+
         return base64_encode($raw);
     }
 
@@ -92,7 +93,8 @@ trait BpjsTraits
      */
     protected function generateAuthorization(string $user, string $pass, string $appCode): string
     {
-        $plain = $user . ':' . $pass . ':' . $appCode;
+        $plain = $user.':'.$pass.':'.$appCode;
+
         return base64_encode($plain);
     }
 
@@ -112,7 +114,7 @@ trait BpjsTraits
             'X-signature' => $signature,
             // PCare REST mensyaratkan header X-authorization dengan prefix "Basic "
             // dan nilai Base64(username:password:kdAplikasi)
-            'X-authorization' => 'Basic ' . $authorization,
+            'X-authorization' => 'Basic '.$authorization,
             'user_key' => $cfg['user_key'],
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
@@ -139,7 +141,7 @@ trait BpjsTraits
         if ($baseUrl === '') {
             throw new \InvalidArgumentException('Base URL PCare belum dikonfigurasi. Set BPJS_PCARE_BASE_URL di .env untuk server ini.');
         }
-        $url = $baseUrl . '/' . ltrim($endpoint, '/');
+        $url = $baseUrl.'/'.ltrim($endpoint, '/');
 
         // Sanitasi header sebelum logging (hindari kredensial sensitif)
         $sanitizedHeaders = [
@@ -173,7 +175,7 @@ trait BpjsTraits
         // Tambahkan timeout dan opsi DNS fallback via CURLOPT_RESOLVE (bila di-set di .env)
         $baseHttpOptions = [];
         // Query params
-        if (!empty($query)) {
+        if (! empty($query)) {
             $baseHttpOptions['query'] = $query;
         }
         // Timeouts (konfigurable via env; gunakan default yang aman)
@@ -212,7 +214,7 @@ trait BpjsTraits
         }));
         // Fallback single resolve untuk kompatibilitas
         $forceResolve = env('BPJS_PCARE_FORCE_RESOLVE');
-        if (empty($resolveList) && !empty($forceResolve)) {
+        if (empty($resolveList) && ! empty($forceResolve)) {
             $resolveList = [$forceResolve];
         }
 
@@ -226,12 +228,12 @@ trait BpjsTraits
         $attemptResolveUsed = null;
 
         // Jika ada daftar IP fallback, coba satu per satu hingga sukses
-        $attemptsPool = !empty($resolveList) ? $resolveList : [null];
+        $attemptsPool = ! empty($resolveList) ? $resolveList : [null];
         foreach ($attemptsPool as $resolveEntry) {
             $attempt++;
             $httpOptions = $baseHttpOptions;
             $curlOptions = $baseCurlOptions;
-            if (!empty($resolveEntry)) {
+            if (! empty($resolveEntry)) {
                 $curlOptions[CURLOPT_RESOLVE] = [$resolveEntry];
                 Log::channel('bpjs')->warning('PCare attempt using CURLOPT_RESOLVE', [
                     'attempt' => $attempt,
@@ -241,7 +243,7 @@ trait BpjsTraits
             } else {
                 $attemptResolveUsed = null;
             }
-            if (!empty($curlOptions)) {
+            if (! empty($curlOptions)) {
                 $httpOptions['curl'] = $curlOptions;
             }
 
@@ -294,12 +296,13 @@ trait BpjsTraits
                 ]);
                 // Lanjut ke IP berikutnya jika ada
                 $response = null;
+
                 continue;
             }
         }
 
         // Jika semua percobaan gagal, lempar exception terakhir
-        if (!$response && $lastException) {
+        if (! $response && $lastException) {
             throw $lastException;
         }
 
@@ -334,13 +337,13 @@ trait BpjsTraits
     {
         $cfg = $this->mobilejknConfig();
         $missing = [];
-        foreach (['cons_id','cons_pwd','user_key'] as $key) {
+        foreach (['cons_id', 'cons_pwd', 'user_key'] as $key) {
             if (empty($cfg[$key])) {
                 $missing[] = $key;
             }
         }
-        if (!empty($missing)) {
-            throw new \InvalidArgumentException('Missing MobileJKN config: ' . implode(', ', $missing));
+        if (! empty($missing)) {
+            throw new \InvalidArgumentException('Missing MobileJKN config: '.implode(', ', $missing));
         }
         $timestamp = $overrideTimestamp ?: $this->generateTimestamp();
         $signature = $this->generateSignature($cfg['cons_id'], $cfg['cons_pwd'], $timestamp);
@@ -373,7 +376,7 @@ trait BpjsTraits
             throw new \InvalidArgumentException('Base URL Mobile JKN belum dikonfigurasi di database (kolom base_url_mobilejkn).');
         }
         $headers = array_merge($this->buildMobileJknHeaders($overrideTimestamp), $extraHeaders);
-        $url = rtrim($cfg['base_url'], '/') . '/' . ltrim($endpoint, '/');
+        $url = rtrim($cfg['base_url'], '/').'/'.ltrim($endpoint, '/');
 
         $sanitizedHeaders = [
             'X-cons-id' => (string) ($headers['X-cons-id'] ?? ''),
@@ -403,7 +406,7 @@ trait BpjsTraits
         // Build HTTP client with optional timeouts and DNS fallback
         $httpOptions = [];
         // Query params
-        if (!empty($query)) {
+        if (! empty($query)) {
             $httpOptions['query'] = $query;
         }
         // Timeouts (optional, configurable via env)
@@ -413,7 +416,7 @@ trait BpjsTraits
         $httpOptions['timeout'] = $timeout;
         // Optional forced DNS resolve to mitigate local DNS issues
         $forceResolve = env('BPJS_MOBILEJKN_FORCE_RESOLVE');
-        if (!empty($forceResolve)) {
+        if (! empty($forceResolve)) {
             // Example value: apijkn.bpjs-kesehatan.go.id:443:118.97.79.198
             $httpOptions['curl'] = [CURLOPT_RESOLVE => [$forceResolve]];
             Log::channel('bpjs')->warning('MobileJKN using CURLOPT_RESOLVE fallback', [
@@ -470,6 +473,7 @@ trait BpjsTraits
         $encryptMethod = 'AES-256-CBC';
         $keyHash = hex2bin(hash('sha256', $key));
         $iv = substr(hex2bin(hash('sha256', $key)), 0, 16);
+
         return openssl_decrypt(base64_decode($encrypted), $encryptMethod, $keyHash, OPENSSL_RAW_DATA, $iv) ?: '';
     }
 
@@ -486,6 +490,7 @@ trait BpjsTraits
                 return $string;
             }
         }
+
         return $string; // fallback when library is not installed
     }
 
@@ -499,7 +504,7 @@ trait BpjsTraits
         $wrapper = json_decode($body, true);
         if (is_array($wrapper) && array_key_exists('response', $wrapper) && is_string($wrapper['response'])) {
             $cfg = $this->pcareConfig();
-            $key = $cfg['cons_id'] . $cfg['cons_pwd'] . $timestamp;
+            $key = $cfg['cons_id'].$cfg['cons_pwd'].$timestamp;
             $decrypted = $this->stringDecrypt($key, $wrapper['response']);
             // Try LZString decompress (some catalogs compress after decrypt)
             $decompressed = $this->decompressLzString($decrypted ?: $wrapper['response']);
@@ -507,15 +512,17 @@ trait BpjsTraits
 
             // Replace 'response' with decoded array/string for UI convenience
             $wrapper['response'] = $decodedResponse ?? $decompressed;
+
             return $wrapper;
         }
 
         // Fallback: try decrypting the whole body (legacy behavior)
         $cfg = $this->pcareConfig();
-        $key = $cfg['cons_id'] . $cfg['cons_pwd'] . $timestamp;
+        $key = $cfg['cons_id'].$cfg['cons_pwd'].$timestamp;
         $decrypted = $this->stringDecrypt($key, $body);
         $result = $this->decompressLzString($decrypted ?: $body);
         $decoded = json_decode($result, true);
+
         return $decoded ?? $result;
     }
 
@@ -527,19 +534,21 @@ trait BpjsTraits
         $wrapper = json_decode($body, true);
         if (is_array($wrapper) && array_key_exists('response', $wrapper) && is_string($wrapper['response'])) {
             $cfg = $this->mobilejknConfig();
-            $key = $cfg['cons_id'] . $cfg['cons_pwd'] . $timestamp;
+            $key = $cfg['cons_id'].$cfg['cons_pwd'].$timestamp;
             $decrypted = $this->stringDecrypt($key, $wrapper['response']);
             $decompressed = $this->decompressLzString($decrypted ?: $wrapper['response']);
             $decodedResponse = json_decode($decompressed, true);
             $wrapper['response'] = $decodedResponse ?? $decompressed;
+
             return $wrapper;
         }
 
         $cfg = $this->mobilejknConfig();
-        $key = $cfg['cons_id'] . $cfg['cons_pwd'] . $timestamp;
+        $key = $cfg['cons_id'].$cfg['cons_pwd'].$timestamp;
         $decrypted = $this->stringDecrypt($key, $body);
         $result = $this->decompressLzString($decrypted ?: $body);
         $decoded = json_decode($result, true);
+
         return $decoded ?? $result;
     }
 }

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Akutansi\PiutangPasienController::index
-* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:18
+* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:19
 * @route '/api/akutansi/piutang-pasien'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\PiutangPasienController::index
-* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:18
+* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:19
 * @route '/api/akutansi/piutang-pasien'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Akutansi\PiutangPasienController::index
-* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:18
+* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:19
 * @route '/api/akutansi/piutang-pasien'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\PiutangPasienController::index
-* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:18
+* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:19
 * @route '/api/akutansi/piutang-pasien'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\PiutangPasienController::show
-* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:63
+* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:64
 * @route '/api/akutansi/piutang-pasien/{no_rawat}'
 */
 export const show = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,7 +60,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\PiutangPasienController::show
-* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:63
+* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:64
 * @route '/api/akutansi/piutang-pasien/{no_rawat}'
 */
 show.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -87,7 +87,7 @@ show.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] |
 
 /**
 * @see \App\Http\Controllers\Akutansi\PiutangPasienController::show
-* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:63
+* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:64
 * @route '/api/akutansi/piutang-pasien/{no_rawat}'
 */
 show.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -97,7 +97,7 @@ show.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] |
 
 /**
 * @see \App\Http\Controllers\Akutansi\PiutangPasienController::show
-* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:63
+* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:64
 * @route '/api/akutansi/piutang-pasien/{no_rawat}'
 */
 show.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -107,7 +107,7 @@ show.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] 
 
 /**
 * @see \App\Http\Controllers\Akutansi\PiutangPasienController::store
-* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:87
+* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:88
 * @route '/api/akutansi/piutang-pasien'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -122,7 +122,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\PiutangPasienController::store
-* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:87
+* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:88
 * @route '/api/akutansi/piutang-pasien'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -131,7 +131,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Akutansi\PiutangPasienController::store
-* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:87
+* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:88
 * @route '/api/akutansi/piutang-pasien'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -141,7 +141,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\PiutangPasienController::update
-* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:126
+* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:127
 * @route '/api/akutansi/piutang-pasien/{no_rawat}'
 */
 export const update = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -156,7 +156,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\PiutangPasienController::update
-* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:126
+* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:127
 * @route '/api/akutansi/piutang-pasien/{no_rawat}'
 */
 update.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -183,7 +183,7 @@ update.url = (args: { no_rawat: string | number } | [no_rawat: string | number ]
 
 /**
 * @see \App\Http\Controllers\Akutansi\PiutangPasienController::update
-* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:126
+* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:127
 * @route '/api/akutansi/piutang-pasien/{no_rawat}'
 */
 update.put = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -193,7 +193,7 @@ update.put = (args: { no_rawat: string | number } | [no_rawat: string | number ]
 
 /**
 * @see \App\Http\Controllers\Akutansi\PiutangPasienController::destroy
-* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:155
+* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:156
 * @route '/api/akutansi/piutang-pasien/{no_rawat}'
 */
 export const destroy = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -208,7 +208,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\PiutangPasienController::destroy
-* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:155
+* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:156
 * @route '/api/akutansi/piutang-pasien/{no_rawat}'
 */
 destroy.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -235,7 +235,7 @@ destroy.url = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\Akutansi\PiutangPasienController::destroy
-* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:155
+* @see app/Http/Controllers/Akutansi/PiutangPasienController.php:156
 * @route '/api/akutansi/piutang-pasien/{no_rawat}'
 */
 destroy.delete = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

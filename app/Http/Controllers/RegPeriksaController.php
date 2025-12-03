@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\RegPeriksa;
-use App\Models\Patient;
 use App\Models\Dokter;
-use App\Models\Poliklinik;
+use App\Models\Patient;
 use App\Models\Penjab;
+use App\Models\Poliklinik;
+use App\Models\RegPeriksa;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Carbon\Carbon;
 
 class RegPeriksaController extends Controller
 {
@@ -21,7 +21,7 @@ class RegPeriksaController extends Controller
             ->paginate(10);
 
         return Inertia::render('RegPeriksa/Index', [
-            'regPeriksa' => $regPeriksa
+            'regPeriksa' => $regPeriksa,
         ]);
     }
 
@@ -36,7 +36,7 @@ class RegPeriksaController extends Controller
             'patients' => $patients,
             'dokters' => $dokters,
             'polikliniks' => $polikliniks,
-            'penjabs' => $penjabs
+            'penjabs' => $penjabs,
         ]);
     }
 
@@ -53,7 +53,7 @@ class RegPeriksaController extends Controller
             'biaya_reg' => 'required|numeric|min:0',
             'status_lanjut' => 'required|in:Ralan,Ranap',
             'status_bayar' => 'required|in:Sudah Bayar,Belum Bayar',
-            'status_poli' => 'required|in:Lama,Baru'
+            'status_poli' => 'required|in:Lama,Baru',
         ]);
 
         // Generate nomor registrasi dan rawat
@@ -97,7 +97,7 @@ class RegPeriksaController extends Controller
         $regPeriksa->load(['pasien', 'dokter', 'poliklinik', 'penjab']);
 
         return Inertia::render('RegPeriksa/Show', [
-            'regPeriksa' => $regPeriksa
+            'regPeriksa' => $regPeriksa,
         ]);
     }
 
@@ -113,7 +113,7 @@ class RegPeriksaController extends Controller
             'patients' => $patients,
             'dokters' => $dokters,
             'polikliniks' => $polikliniks,
-            'penjabs' => $penjabs
+            'penjabs' => $penjabs,
         ]);
     }
 
@@ -131,7 +131,7 @@ class RegPeriksaController extends Controller
             'status_lanjut' => 'required|in:Ralan,Ranap',
             'status_bayar' => 'required|in:Sudah Bayar,Belum Bayar',
             'status_poli' => 'required|in:Lama,Baru',
-            'stts' => 'required|in:Belum,Sudah,Batal,Berkas Diterima,Dirujuk,Meninggal,Dirawat,Pulang Paksa'
+            'stts' => 'required|in:Belum,Sudah,Batal,Berkas Diterima,Dirujuk,Meninggal,Dirawat,Pulang Paksa',
         ]);
 
         $regPeriksa->update($request->all());
@@ -151,7 +151,7 @@ class RegPeriksaController extends Controller
     public function hitungUmur(Request $request)
     {
         $patient = Patient::find($request->no_rkm_medis);
-        if (!$patient) {
+        if (! $patient) {
             return response()->json(['error' => 'Pasien tidak ditemukan'], 404);
         }
 
@@ -174,7 +174,7 @@ class RegPeriksaController extends Controller
             'ralan' => $ralan,
             'ranap' => $ranap,
             'sudah_bayar' => $sudahBayar,
-            'belum_bayar' => $belumBayar
+            'belum_bayar' => $belumBayar,
         ]);
     }
 }

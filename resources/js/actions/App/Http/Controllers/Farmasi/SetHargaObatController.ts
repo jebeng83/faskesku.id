@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
 * @route '/api/set-harga-obat'
 */
 const getPercentageDatad6bb6e085ea43cb89f88eead49a50c62 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ getPercentageDatad6bb6e085ea43cb89f88eead49a50c62.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
 * @route '/api/set-harga-obat'
 */
 getPercentageDatad6bb6e085ea43cb89f88eead49a50c62.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ getPercentageDatad6bb6e085ea43cb89f88eead49a50c62.url = (options?: RouteQueryOpt
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
 * @route '/api/set-harga-obat'
 */
 getPercentageDatad6bb6e085ea43cb89f88eead49a50c62.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ getPercentageDatad6bb6e085ea43cb89f88eead49a50c62.get = (options?: RouteQueryOpt
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
 * @route '/api/set-harga-obat'
 */
 getPercentageDatad6bb6e085ea43cb89f88eead49a50c62.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ getPercentageDatad6bb6e085ea43cb89f88eead49a50c62.head = (options?: RouteQueryOp
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
 * @route '/farmasi/set-harga-obat/json'
 */
 const getPercentageData3f776a6ffcf1045714a07bb1ca44f250 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,7 +60,7 @@ getPercentageData3f776a6ffcf1045714a07bb1ca44f250.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
 * @route '/farmasi/set-harga-obat/json'
 */
 getPercentageData3f776a6ffcf1045714a07bb1ca44f250.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ getPercentageData3f776a6ffcf1045714a07bb1ca44f250.url = (options?: RouteQueryOpt
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
 * @route '/farmasi/set-harga-obat/json'
 */
 getPercentageData3f776a6ffcf1045714a07bb1ca44f250.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -79,7 +79,7 @@ getPercentageData3f776a6ffcf1045714a07bb1ca44f250.get = (options?: RouteQueryOpt
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
 * @route '/farmasi/set-harga-obat/json'
 */
 getPercentageData3f776a6ffcf1045714a07bb1ca44f250.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -94,7 +94,7 @@ export const getPercentageData = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::storePenjualanPerBarang
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:291
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:296
 * @route '/farmasi/set-penjualan-barang'
 */
 export const storePenjualanPerBarang = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -109,7 +109,7 @@ storePenjualanPerBarang.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::storePenjualanPerBarang
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:291
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:296
 * @route '/farmasi/set-penjualan-barang'
 */
 storePenjualanPerBarang.url = (options?: RouteQueryOptions) => {
@@ -118,7 +118,7 @@ storePenjualanPerBarang.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::storePenjualanPerBarang
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:291
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:296
 * @route '/farmasi/set-penjualan-barang'
 */
 storePenjualanPerBarang.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -128,7 +128,7 @@ storePenjualanPerBarang.post = (options?: RouteQueryOptions): RouteDefinition<'p
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::showPenjualanPerBarang
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:361
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:369
 * @route '/farmasi/set-penjualan-barang/{kode_brng}'
 */
 export const showPenjualanPerBarang = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -143,7 +143,7 @@ showPenjualanPerBarang.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::showPenjualanPerBarang
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:361
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:369
 * @route '/farmasi/set-penjualan-barang/{kode_brng}'
 */
 showPenjualanPerBarang.url = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -170,7 +170,7 @@ showPenjualanPerBarang.url = (args: { kode_brng: string | number } | [kode_brng:
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::showPenjualanPerBarang
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:361
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:369
 * @route '/farmasi/set-penjualan-barang/{kode_brng}'
 */
 showPenjualanPerBarang.get = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -180,7 +180,7 @@ showPenjualanPerBarang.get = (args: { kode_brng: string | number } | [kode_brng:
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::showPenjualanPerBarang
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:361
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:369
 * @route '/farmasi/set-penjualan-barang/{kode_brng}'
 */
 showPenjualanPerBarang.head = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -190,7 +190,7 @@ showPenjualanPerBarang.head = (args: { kode_brng: string | number } | [kode_brng
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::destroyPenjualanPerBarang
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:347
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:354
 * @route '/farmasi/set-penjualan-barang/{kode_brng}'
 */
 export const destroyPenjualanPerBarang = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -205,7 +205,7 @@ destroyPenjualanPerBarang.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::destroyPenjualanPerBarang
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:347
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:354
 * @route '/farmasi/set-penjualan-barang/{kode_brng}'
 */
 destroyPenjualanPerBarang.url = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -232,7 +232,7 @@ destroyPenjualanPerBarang.url = (args: { kode_brng: string | number } | [kode_br
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::destroyPenjualanPerBarang
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:347
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:354
 * @route '/farmasi/set-penjualan-barang/{kode_brng}'
 */
 destroyPenjualanPerBarang.delete = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -242,7 +242,7 @@ destroyPenjualanPerBarang.delete = (args: { kode_brng: string | number } | [kode
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::showPenjualanUmum
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:404
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:412
 * @route '/farmasi/set-penjualan-umum'
 */
 export const showPenjualanUmum = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -257,7 +257,7 @@ showPenjualanUmum.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::showPenjualanUmum
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:404
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:412
 * @route '/farmasi/set-penjualan-umum'
 */
 showPenjualanUmum.url = (options?: RouteQueryOptions) => {
@@ -266,7 +266,7 @@ showPenjualanUmum.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::showPenjualanUmum
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:404
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:412
 * @route '/farmasi/set-penjualan-umum'
 */
 showPenjualanUmum.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -276,7 +276,7 @@ showPenjualanUmum.get = (options?: RouteQueryOptions): RouteDefinition<'get'> =>
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::showPenjualanUmum
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:404
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:412
 * @route '/farmasi/set-penjualan-umum'
 */
 showPenjualanUmum.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -286,7 +286,7 @@ showPenjualanUmum.head = (options?: RouteQueryOptions): RouteDefinition<'head'> 
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::showPenjualanPerJenis
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:451
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:460
 * @route '/farmasi/set-penjualan/{kdjns}'
 */
 export const showPenjualanPerJenis = (args: { kdjns: string | number } | [kdjns: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -301,7 +301,7 @@ showPenjualanPerJenis.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::showPenjualanPerJenis
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:451
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:460
 * @route '/farmasi/set-penjualan/{kdjns}'
 */
 showPenjualanPerJenis.url = (args: { kdjns: string | number } | [kdjns: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -328,7 +328,7 @@ showPenjualanPerJenis.url = (args: { kdjns: string | number } | [kdjns: string |
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::showPenjualanPerJenis
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:451
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:460
 * @route '/farmasi/set-penjualan/{kdjns}'
 */
 showPenjualanPerJenis.get = (args: { kdjns: string | number } | [kdjns: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -338,7 +338,7 @@ showPenjualanPerJenis.get = (args: { kdjns: string | number } | [kdjns: string |
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::showPenjualanPerJenis
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:451
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:460
 * @route '/farmasi/set-penjualan/{kdjns}'
 */
 showPenjualanPerJenis.head = (args: { kdjns: string | number } | [kdjns: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -348,7 +348,7 @@ showPenjualanPerJenis.head = (args: { kdjns: string | number } | [kdjns: string 
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::index
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:18
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:17
 * @route '/farmasi/set-harga-obat'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -363,7 +363,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::index
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:18
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:17
 * @route '/farmasi/set-harga-obat'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -372,7 +372,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::index
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:18
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:17
 * @route '/farmasi/set-harga-obat'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -382,7 +382,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::index
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:18
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:17
 * @route '/farmasi/set-harga-obat'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -392,7 +392,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::update
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:108
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:107
 * @route '/farmasi/set-harga-obat'
 */
 export const update = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -407,7 +407,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::update
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:108
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:107
 * @route '/farmasi/set-harga-obat'
 */
 update.url = (options?: RouteQueryOptions) => {
@@ -416,7 +416,7 @@ update.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::update
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:108
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:107
 * @route '/farmasi/set-harga-obat'
 */
 update.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -460,7 +460,7 @@ updatePenjualanUmum.post = (options?: RouteQueryOptions): RouteDefinition<'post'
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::storePenjualanPerJenis
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:223
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:225
 * @route '/farmasi/set-penjualan'
 */
 export const storePenjualanPerJenis = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -475,7 +475,7 @@ storePenjualanPerJenis.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::storePenjualanPerJenis
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:223
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:225
 * @route '/farmasi/set-penjualan'
 */
 storePenjualanPerJenis.url = (options?: RouteQueryOptions) => {
@@ -484,7 +484,7 @@ storePenjualanPerJenis.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::storePenjualanPerJenis
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:223
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:225
 * @route '/farmasi/set-penjualan'
 */
 storePenjualanPerJenis.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -494,7 +494,7 @@ storePenjualanPerJenis.post = (options?: RouteQueryOptions): RouteDefinition<'po
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::destroyPenjualanPerJenis
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:276
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:280
 * @route '/farmasi/set-penjualan/{kdjns}'
 */
 export const destroyPenjualanPerJenis = (args: { kdjns: string | number } | [kdjns: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -509,7 +509,7 @@ destroyPenjualanPerJenis.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::destroyPenjualanPerJenis
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:276
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:280
 * @route '/farmasi/set-penjualan/{kdjns}'
 */
 destroyPenjualanPerJenis.url = (args: { kdjns: string | number } | [kdjns: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -536,7 +536,7 @@ destroyPenjualanPerJenis.url = (args: { kdjns: string | number } | [kdjns: strin
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::destroyPenjualanPerJenis
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:276
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:280
 * @route '/farmasi/set-penjualan/{kdjns}'
 */
 destroyPenjualanPerJenis.delete = (args: { kdjns: string | number } | [kdjns: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

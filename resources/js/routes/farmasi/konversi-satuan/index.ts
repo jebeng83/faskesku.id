@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Farmasi\KonversiSatuanController::index
-* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:13
+* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:12
 * @route '/farmasi/konversi-satuan'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\KonversiSatuanController::index
-* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:13
+* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:12
 * @route '/farmasi/konversi-satuan'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\KonversiSatuanController::index
-* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:13
+* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:12
 * @route '/farmasi/konversi-satuan'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\KonversiSatuanController::index
-* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:13
+* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:12
 * @route '/farmasi/konversi-satuan'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\KonversiSatuanController::store
-* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:49
+* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:48
 * @route '/farmasi/konversi-satuan'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +60,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\KonversiSatuanController::store
-* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:49
+* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:48
 * @route '/farmasi/konversi-satuan'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\KonversiSatuanController::store
-* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:49
+* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:48
 * @route '/farmasi/konversi-satuan'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -79,7 +79,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\KonversiSatuanController::update
-* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:86
+* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:85
 * @route '/farmasi/konversi-satuan/{kode_sat}/{sat_konversi}/{nilai}/{nilai_konversi}'
 */
 export const update = (args: { kode_sat: string | number, sat_konversi: string | number, nilai: string | number, nilai_konversi: string | number } | [kode_sat: string | number, sat_konversi: string | number, nilai: string | number, nilai_konversi: string | number ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -94,7 +94,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\KonversiSatuanController::update
-* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:86
+* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:85
 * @route '/farmasi/konversi-satuan/{kode_sat}/{sat_konversi}/{nilai}/{nilai_konversi}'
 */
 update.url = (args: { kode_sat: string | number, sat_konversi: string | number, nilai: string | number, nilai_konversi: string | number } | [kode_sat: string | number, sat_konversi: string | number, nilai: string | number, nilai_konversi: string | number ], options?: RouteQueryOptions) => {
@@ -126,7 +126,7 @@ update.url = (args: { kode_sat: string | number, sat_konversi: string | number, 
 
 /**
 * @see \App\Http\Controllers\Farmasi\KonversiSatuanController::update
-* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:86
+* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:85
 * @route '/farmasi/konversi-satuan/{kode_sat}/{sat_konversi}/{nilai}/{nilai_konversi}'
 */
 update.put = (args: { kode_sat: string | number, sat_konversi: string | number, nilai: string | number, nilai_konversi: string | number } | [kode_sat: string | number, sat_konversi: string | number, nilai: string | number, nilai_konversi: string | number ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({

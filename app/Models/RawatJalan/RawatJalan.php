@@ -2,18 +2,22 @@
 
 namespace App\Models\RawatJalan;
 
+use App\Models\Patient;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Patient;
 
 class RawatJalan extends Model
 {
     use HasFactory;
 
     protected $table = 'reg_periksa';
+
     protected $primaryKey = 'no_rawat';
+
     public $incrementing = false; // kunci utama bertipe string (bukan auto-increment)
+
     protected $keyType = 'string';
+
     public $timestamps = false; // Nonaktifkan created_at dan updated_at
 
     protected $fillable = [
@@ -35,14 +39,14 @@ class RawatJalan extends Model
         'umurdaftar',
         'sttsumur',
         'status_bayar',
-        'status_poli'
+        'status_poli',
     ];
 
     protected $casts = [
         'tgl_registrasi' => 'date',
         'jam_reg' => 'datetime:H:i:s',
         'biaya_reg' => 'decimal:2',
-        'umurdaftar' => 'integer'
+        'umurdaftar' => 'integer',
     ];
 
     // Relasi dengan model Patient
@@ -110,10 +114,11 @@ class RawatJalan extends Model
             'Dirujuk' => 'badge-primary',
             'Meninggal' => 'badge-dark',
             'Dirawat' => 'badge-primary',
-            'Pulang Paksa' => 'badge-warning'
+            'Pulang Paksa' => 'badge-warning',
         ];
 
         $class = $badges[$this->stts] ?? 'badge-secondary';
+
         return "<span class='badge {$class}'>{$this->stts}</span>";
     }
 
@@ -124,18 +129,18 @@ class RawatJalan extends Model
     {
         // Cari nomor urut terakhir untuk tanggal dan dokter tersebut
         $lastRecord = self::where('tgl_registrasi', \Carbon\Carbon::parse($tanggal)->format('Y-m-d'))
-                         ->where('kd_dokter', $kd_dokter)
-                         ->orderBy('no_reg', 'desc')
-                         ->first();
-        
+            ->where('kd_dokter', $kd_dokter)
+            ->orderBy('no_reg', 'desc')
+            ->first();
+
         if ($lastRecord && $lastRecord->no_reg) {
             // Ambil 2 digit terakhir dari no_reg
             $lastNo = substr($lastRecord->no_reg, -2);
-            $nextNo = str_pad((int)$lastNo + 1, 2, '0', STR_PAD_LEFT);
+            $nextNo = str_pad((int) $lastNo + 1, 2, '0', STR_PAD_LEFT);
         } else {
             $nextNo = '01';
         }
-        
+
         return $nextNo;
     }
 
@@ -146,21 +151,21 @@ class RawatJalan extends Model
     {
         $tgl = \Carbon\Carbon::parse($tanggal);
         $tglFormatted = $tgl->format('Y/m/d');
-        
+
         // Cari nomor urut terakhir untuk tanggal tersebut
         $lastRecord = self::where('tgl_registrasi', $tgl->format('Y-m-d'))
-                         ->orderBy('no_rawat', 'desc')
-                         ->first();
-        
+            ->orderBy('no_rawat', 'desc')
+            ->first();
+
         if ($lastRecord && $lastRecord->no_rawat) {
             // Ambil 5 digit terakhir dari no_rawat
             $lastNo = substr($lastRecord->no_rawat, -5);
-            $nextNo = str_pad((int)$lastNo + 1, 5, '0', STR_PAD_LEFT);
+            $nextNo = str_pad((int) $lastNo + 1, 5, '0', STR_PAD_LEFT);
         } else {
             $nextNo = '00001';
         }
-        
-        return $tglFormatted . '/' . $nextNo;
+
+        return $tglFormatted.'/'.$nextNo;
     }
 
     /**
@@ -170,9 +175,9 @@ class RawatJalan extends Model
     {
         // Cek apakah pasien sudah pernah berobat sebelumnya
         $existingRecord = self::where('no_rkm_medis', $no_rkm_medis)
-                             ->where('tgl_registrasi', '<', \Carbon\Carbon::now()->format('Y-m-d'))
-                             ->first();
-        
+            ->where('tgl_registrasi', '<', \Carbon\Carbon::now()->format('Y-m-d'))
+            ->first();
+
         return $existingRecord ? 'Lama' : 'Baru';
     }
 }

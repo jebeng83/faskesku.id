@@ -11,8 +11,11 @@ use Illuminate\Database\Eloquent\Model;
 class SetAkun2 extends Model
 {
     protected $table = 'set_akun2';
+
     public $timestamps = false;
+
     public $incrementing = false;
+
     protected $primaryKey = 'id'; // placeholder
 
     protected $fillable = [

@@ -2,19 +2,23 @@
 
 namespace App\Models;
 
+use App\Models\RawatJalan\RawatJalan;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
-use App\Models\RawatJalan\RawatJalan;
 
 class Patient extends Model
 {
     use HasFactory;
 
     protected $table = 'pasien';
+
     protected $primaryKey = 'no_rkm_medis';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -87,8 +91,9 @@ class Patient extends Model
             'MENIKAH' => 'Menikah',
             'JANDA' => 'Janda',
             'DUDHA' => 'Duda',
-            'JOMBLO' => 'Jomblo'
+            'JOMBLO' => 'Jomblo',
         ];
+
         return $status[$this->stts_nikah] ?? $this->stts_nikah;
     }
 
@@ -109,8 +114,9 @@ class Patient extends Model
             'S1' => 'Sarjana',
             'S2' => 'Magister',
             'S3' => 'Doktor',
-            '-' => 'Tidak Diketahui'
+            '-' => 'Tidak Diketahui',
         ];
+
         return $pendidikan[$this->pnd] ?? $this->pnd;
     }
 
@@ -124,10 +130,19 @@ class Patient extends Model
     public function getAlamatPjLengkapAttribute()
     {
         $alamat = $this->alamatpj;
-        if ($this->kelurahanpj) $alamat .= ', ' . $this->kelurahanpj;
-        if ($this->kecamatanpj) $alamat .= ', ' . $this->kecamatanpj;
-        if ($this->kabupatenpj) $alamat .= ', ' . $this->kabupatenpj;
-        if ($this->propinsipj) $alamat .= ', ' . $this->propinsipj;
+        if ($this->kelurahanpj) {
+            $alamat .= ', '.$this->kelurahanpj;
+        }
+        if ($this->kecamatanpj) {
+            $alamat .= ', '.$this->kecamatanpj;
+        }
+        if ($this->kabupatenpj) {
+            $alamat .= ', '.$this->kabupatenpj;
+        }
+        if ($this->propinsipj) {
+            $alamat .= ', '.$this->propinsipj;
+        }
+
         return $alamat;
     }
 
@@ -161,7 +176,7 @@ class Patient extends Model
     // Method untuk menghitung umur otomatis dari tgl_lahir
     public function calculateAge()
     {
-        if (!$this->tgl_lahir) {
+        if (! $this->tgl_lahir) {
             return null;
         }
 
@@ -173,11 +188,11 @@ class Patient extends Model
         $days = $today->copy()->subYears($years)->subMonths($months)->diffInDays($birthDate);
 
         if ($years > 0) {
-            return $years . ' Th';
+            return $years.' Th';
         } elseif ($months > 0) {
-            return $months . ' Bl';
+            return $months.' Bl';
         } else {
-            return $days . ' Hr';
+            return $days.' Hr';
         }
     }
 
@@ -191,13 +206,14 @@ class Patient extends Model
         } else {
             $newNumber = 1;
         }
+
         return str_pad($newNumber, 6, '0', STR_PAD_LEFT);
     }
 
     // Static method untuk menghitung umur dari tanggal lahir
     public static function calculateAgeFromDate($tgl_lahir)
     {
-        if (!$tgl_lahir) {
+        if (! $tgl_lahir) {
             return null;
         }
 
@@ -219,14 +235,14 @@ class Patient extends Model
             // Bangun string hasil ringkas
             $parts = [];
             if ($years > 0) {
-                $parts[] = $years . ' Th';
+                $parts[] = $years.' Th';
             }
             if ($months > 0) {
-                $parts[] = $months . ' Bl';
+                $parts[] = $months.' Bl';
             }
             if ($days > 0 || empty($parts)) {
                 // jika semua nol (lahir hari ini), tampilkan 0 Hr
-                $parts[] = max(0, $days) . ' Hr';
+                $parts[] = max(0, $days).' Hr';
             }
 
             return implode(' ', $parts);

@@ -13,7 +13,7 @@ class IGDController extends Controller
     public function index(Request $request)
     {
         return Inertia::render('IGD/Index', [
-            'title' => 'Data IGD (Instalasi Gawat Darurat)'
+            'title' => 'Data IGD (Instalasi Gawat Darurat)',
         ]);
     }
 
@@ -23,7 +23,7 @@ class IGDController extends Controller
     public function create()
     {
         return Inertia::render('IGD/Create', [
-            'title' => 'Tambah Data IGD'
+            'title' => 'Tambah Data IGD',
         ]);
     }
 
@@ -43,7 +43,7 @@ class IGDController extends Controller
     public function show(string $id)
     {
         return Inertia::render('IGD/Show', [
-            'title' => 'Detail IGD'
+            'title' => 'Detail IGD',
         ]);
     }
 
@@ -53,7 +53,7 @@ class IGDController extends Controller
     public function edit(string $id)
     {
         return Inertia::render('IGD/Edit', [
-            'title' => 'Edit Data IGD'
+            'title' => 'Edit Data IGD',
         ]);
     }
 

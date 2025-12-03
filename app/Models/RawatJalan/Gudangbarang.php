@@ -2,16 +2,21 @@
 
 namespace App\Models\RawatJalan;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Models\Bangsal;
-use App\Models\RawatJalan\Databarang;
+use Illuminate\Database\Eloquent\Model;
 
 class Gudangbarang extends Model
 {
     protected $table = 'gudangbarang';
+
+    protected $connection = 'fufufafa';
+
     protected $primaryKey = ['kode_brng', 'kd_bangsal', 'no_batch', 'no_faktur'];
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -19,11 +24,11 @@ class Gudangbarang extends Model
         'kd_bangsal',
         'stok',
         'no_batch',
-        'no_faktur'
+        'no_faktur',
     ];
 
     protected $casts = [
-        'stok' => 'float'
+        'stok' => 'float',
     ];
 
     // Override getKeyName untuk composite key
@@ -36,18 +41,20 @@ class Gudangbarang extends Model
     public function getKey()
     {
         $key = [];
-        foreach ($this->getKeyName() as $keyName) {
+        foreach ((array) $this->getKeyName() as $keyName) {
             $key[$keyName] = $this->getAttribute($keyName);
         }
+
         return $key;
     }
 
     // Override setKeysForSaveQuery untuk composite key
     protected function setKeysForSaveQuery($query)
     {
-        foreach ($this->getKeyName() as $keyName) {
+        foreach ((array) $this->getKeyName() as $keyName) {
             $query->where($keyName, '=', $this->getAttribute($keyName));
         }
+
         return $query;
     }
 
@@ -79,7 +86,7 @@ class Gudangbarang extends Model
     public static function getTotalStokByBarangBangsal($kodeBarang, $kdBangsal)
     {
         return static::where('kode_brng', $kodeBarang)
-                    ->where('kd_bangsal', $kdBangsal)
-                    ->sum('stok');
+            ->where('kd_bangsal', $kdBangsal)
+            ->sum('stok');
     }
 }

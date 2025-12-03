@@ -8,10 +8,10 @@ use App\Models\RawatJlDr;
 use App\Models\RawatJlDrpr;
 use App\Models\RawatJlPr;
 use App\Models\RegPeriksa;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class BillingController extends Controller
 {
@@ -68,14 +68,14 @@ class BillingController extends Controller
         ]);
 
         $noRawat = $request->string('no_rawat');
-        
+
         // Normalisasi no_rawat: decode jika ada encoding, trim whitespace
         $noRawat = trim(urldecode($noRawat));
-        
+
         // Ambil informasi reg_periksa untuk validasi tanggal, jam, dan no_rkm_medis
         $regPeriksa = RegPeriksa::where('no_rawat', $noRawat)->first();
-        
-        if (!$regPeriksa) {
+
+        if (! $regPeriksa) {
             return response()->json([
                 'items' => [],
                 'summary' => [
@@ -84,7 +84,7 @@ class BillingController extends Controller
                 ],
             ]);
         }
-        
+
         // Filter ketat berdasarkan no_rawat yang diberikan
         // Pastikan menggunakan exact match untuk menghindari data dari no_rawat lain
         // Catatan: Validasi tanggal akan dilakukan di PHP setelah query untuk fleksibilitas lebih baik
@@ -238,13 +238,13 @@ class BillingController extends Controller
                     } catch (\Exception $e) {
                         $tglPeriksa = is_string($item->tgl_periksa) ? substr($item->tgl_periksa, 0, 10) : '';
                     }
-                    
+
                     try {
                         $jam = Carbon::parse($item->jam)->format('H:i:s');
                     } catch (\Exception $e) {
                         $jam = is_string($item->jam) ? $item->jam : '';
                     }
-                    
+
                     return sprintf(
                         '%s|%s|%s|%s',
                         $item->no_rawat ?? '',
@@ -255,14 +255,14 @@ class BillingController extends Controller
                 })
                 ->map(function ($group) use ($noRawat) {
                     $first = $group->first();
-                    
+
                     // Gunakan biaya dari periksa_lab jika ada, jika tidak gunakan total_byr dari jns_perawatan_lab
                     $biayaPerJenis = (float) ($first->biaya ?? $first->total_byr ?? 0);
-                    
+
                     // Validasi: jumlah selalu = 1 untuk setiap kombinasi unik
                     // Tidak peduli berapa banyak template dalam jenis yang sama, tetap dihitung sebagai 1 item
                     $jumlah = 1;
-                    
+
                     // Total biaya = biaya per jenis (karena jumlah = 1)
                     $totalBiaya = $biayaPerJenis;
 
@@ -328,7 +328,7 @@ class BillingController extends Controller
             Log::info('BillingController: Data obat dari detail_pemberian_obat', [
                 'no_rawat' => $noRawat,
                 'total_rows' => $obatDetails->count(),
-                'items' => $obatDetails->map(function($item) {
+                'items' => $obatDetails->map(function ($item) {
                     return [
                         'kode_brng' => $item->kode_brng,
                         'nama_brng' => $item->nama_brng,
@@ -352,20 +352,20 @@ class BillingController extends Controller
                 // Selaraskan dengan snapshot & jurnal: gunakan formula biaya_obat * jml + (embalase + tuslah)
                 // Hindari double-count jika kolom `total` sudah termasuk tambahan
                 $totalBiaya = round(($biayaObat * $jml) + $tambahan, 2);
-                
+
                 // Format nama: nama_brng (nama_jenis) sesuai Java
                 $nmPerawatan = $item->nama_brng ?? $item->kode_brng ?? '';
                 if ($item->nama_jenis) {
-                    $nmPerawatan .= ' (' . $item->nama_jenis . ')';
+                    $nmPerawatan .= ' ('.$item->nama_jenis.')';
                 }
 
                 // Buat identifier unik untuk setiap item berdasarkan kombinasi primary key
                 // Primary key: tgl_perawatan, jam, no_rawat, kode_brng, no_batch, no_faktur
                 // Gunakan no_faktur jika ada (lebih readable), jika tidak gunakan kombinasi lengkap dengan no_rawat
-                $noIdentifier = !empty($item->no_faktur) 
-                    ? $item->no_faktur 
-                    : ($item->tgl_perawatan ?? '') . '_' . ($item->jam ?? '') . '_' . ($item->kode_brng ?? '') . '_' . ($item->no_batch ?? '') . '_' . $noRawat;
-                
+                $noIdentifier = ! empty($item->no_faktur)
+                    ? $item->no_faktur
+                    : ($item->tgl_perawatan ?? '').'_'.($item->jam ?? '').'_'.($item->kode_brng ?? '').'_'.($item->no_batch ?? '').'_'.$noRawat;
+
                 return [
                     'noindex' => null,
                     'no_rawat' => $noRawat,
@@ -389,7 +389,7 @@ class BillingController extends Controller
             Log::info('BillingController: Item obat setelah mapping', [
                 'no_rawat' => $noRawat,
                 'total_items' => $obatItems->count(),
-                'items' => $obatItems->map(function($item) {
+                'items' => $obatItems->map(function ($item) {
                     return [
                         'no' => $item['no'],
                         'kode_brng' => $item['kode_brng'],
@@ -410,14 +410,14 @@ class BillingController extends Controller
                 ->concat($ralanPr)
                 ->concat($laboratItems)
                 ->concat($obatItems);
-            
+
             // Filter ketat berdasarkan no_rawat dan validasi tanggal untuk memastikan tidak ada data dari tanggal lain
             $items = $allPreviewItems->filter(function ($item) use ($noRawat, $regPeriksa) {
                 // Validasi 1: no_rawat harus sesuai
                 if (($item['no_rawat'] ?? '') !== $noRawat) {
                     return false;
                 }
-                
+
                 // Validasi 2: jika ada tgl_byr, pastikan >= tgl_registrasi
                 if (isset($item['tgl_byr']) && $item['tgl_byr']) {
                     try {
@@ -430,6 +430,7 @@ class BillingController extends Controller
                                 'tgl_registrasi' => $regPeriksa->tgl_registrasi,
                                 'item' => $item,
                             ]);
+
                             return false;
                         }
                     } catch (\Exception $e) {
@@ -441,7 +442,7 @@ class BillingController extends Controller
                         ]);
                     }
                 }
-                
+
                 return true;
             })->values();
         } else {
@@ -455,14 +456,15 @@ class BillingController extends Controller
                         'actual' => $b->no_rawat,
                         'noindex' => $b->noindex,
                     ]);
+
                     return false;
                 }
-                
+
                 // Validasi 2: tgl_byr harus >= tgl_registrasi (tidak boleh lebih lama dari tanggal registrasi)
                 // Ini mencegah menampilkan data dari tanggal sebelumnya yang mungkin salah input
                 $tglByr = Carbon::parse($b->tgl_byr);
                 $tglReg = Carbon::parse($regPeriksa->tgl_registrasi);
-                
+
                 if ($tglByr->lt($tglReg)) {
                     Log::warning('Item billing dengan tgl_byr lebih lama dari tgl_registrasi diabaikan', [
                         'no_rawat' => $noRawat,
@@ -470,9 +472,10 @@ class BillingController extends Controller
                         'tgl_byr' => $b->tgl_byr,
                         'tgl_registrasi' => $regPeriksa->tgl_registrasi,
                     ]);
+
                     return false;
                 }
-                
+
                 return true;
             })->map(function ($b) {
                 return [
@@ -498,7 +501,7 @@ class BillingController extends Controller
             if (($item['no_rawat'] ?? '') !== $noRawat) {
                 return false;
             }
-            
+
             // Validasi 2: jika ada tgl_byr, pastikan >= tgl_registrasi
             if (isset($item['tgl_byr']) && $item['tgl_byr']) {
                 try {
@@ -511,10 +514,10 @@ class BillingController extends Controller
                     // Jika parsing tanggal gagal, tetap tampilkan item (fallback)
                 }
             }
-            
+
             return true;
         })->values();
-        
+
         $summaryByStatus = $filteredItems->groupBy('status')->map(function ($rows) {
             return [
                 'count' => $rows->count(),
@@ -523,13 +526,13 @@ class BillingController extends Controller
         });
 
         // DEBUG: Log final items yang dikembalikan ke frontend
-        $obatItemsFinal = $filteredItems->filter(function($item) {
+        $obatItemsFinal = $filteredItems->filter(function ($item) {
             return ($item['status'] ?? '') === 'Obat';
         });
         Log::info('BillingController: Final response items obat', [
             'no_rawat' => $noRawat,
             'total_obat_items' => $obatItemsFinal->count(),
-            'obat_items' => $obatItemsFinal->map(function($item) {
+            'obat_items' => $obatItemsFinal->map(function ($item) {
                 return [
                     'no' => $item['no'],
                     'kode_brng' => $item['kode_brng'] ?? 'N/A',

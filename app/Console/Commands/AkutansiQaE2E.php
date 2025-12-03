@@ -35,8 +35,8 @@ class AkutansiQaE2E extends Command
     public function handle(): int
     {
         $noRawat = $this->argument('no_rawat');
-        $mode = strtolower((string)$this->option('mode')) ?: 'auto';
-        $limit = (int)$this->option('limit') ?: 1;
+        $mode = strtolower((string) $this->option('mode')) ?: 'auto';
+        $limit = (int) $this->option('limit') ?: 1;
 
         $this->info('=== QA/E2E Akuntansi Ralan ===');
         $this->line('Mode: '.$mode.' | no_rawat: '.($noRawat ?: '-')." | limit: {$limit}");
@@ -44,7 +44,7 @@ class AkutansiQaE2E extends Command
         // 1) Validasi tabel penting
         $requiredTables = ['set_akun_ralan', 'rekening', 'jns_perawatan', 'rawat_jl_dr', 'rawat_jl_pr', 'rawat_jl_drpr', 'tampjurnal', 'jurnal', 'detailjurnal'];
         foreach ($requiredTables as $t) {
-            if (!Schema::hasTable($t)) {
+            if (! Schema::hasTable($t)) {
                 $this->warn("⚠ Tabel {$t} tidak ditemukan. QA/E2E akan terbatas.");
             } else {
                 $this->info("✓ Tabel {$t} tersedia");
@@ -88,17 +88,23 @@ class AkutansiQaE2E extends Command
         try {
             if ($mode === 'auto' || $mode === 'dr') {
                 $q = DB::table('rawat_jl_dr')->orderByDesc('tgl_perawatan')->orderByDesc('jam_rawat');
-                if ($noRawat) $q->where('no_rawat', $noRawat);
+                if ($noRawat) {
+                    $q->where('no_rawat', $noRawat);
+                }
                 $targets['dr'] = $q->limit($limit)->get();
             }
             if ($mode === 'auto' || $mode === 'pr') {
                 $q = DB::table('rawat_jl_pr')->orderByDesc('tgl_perawatan')->orderByDesc('jam_rawat');
-                if ($noRawat) $q->where('no_rawat', $noRawat);
+                if ($noRawat) {
+                    $q->where('no_rawat', $noRawat);
+                }
                 $targets['pr'] = $q->limit($limit)->get();
             }
             if ($mode === 'auto' || $mode === 'drpr') {
                 $q = DB::table('rawat_jl_drpr')->orderByDesc('tgl_perawatan')->orderByDesc('jam_rawat');
-                if ($noRawat) $q->where('no_rawat', $noRawat);
+                if ($noRawat) {
+                    $q->where('no_rawat', $noRawat);
+                }
                 $targets['drpr'] = $q->limit($limit)->get();
             }
         } catch (\Throwable $e) {
@@ -108,15 +114,17 @@ class AkutansiQaE2E extends Command
         foreach ($targets as $type => $rows) {
             if (empty($rows)) {
                 $this->warn("Tidak ada data tindakan untuk {$type}");
+
                 continue;
             }
             $this->info("\nAnalisis tindakan: {$type}");
             foreach ($rows as $row) {
-                $this->analyzeTindakanRow($type, (array)$row, $mapping);
+                $this->analyzeTindakanRow($type, (array) $row, $mapping);
             }
         }
 
         $this->info("\nSelesai QA/E2E diagnostik. Lihat hasil di atas.");
+
         return 0;
     }
 
@@ -133,13 +141,13 @@ class AkutansiQaE2E extends Command
 
         // Ambil jenis perawatan untuk komponen biaya
         $jenis = $kdJenis ? DB::table('jns_perawatan')->where('kd_jenis_prw', $kdJenis)->first() : null;
-        $material = (float)($jenis->material ?? 0);
-        $bhp = (float)($jenis->bhp ?? 0);
-        $tarifDr = (float)($jenis->tarif_tindakandr ?? ($row['tarif_tindakandr'] ?? 0));
-        $tarifPr = (float)($jenis->tarif_tindakanpr ?? ($row['tarif_tindakanpr'] ?? 0));
-        $kso = (float)($jenis->kso ?? 0);
-        $manajemen = (float)($jenis->menejemen ?? 0);
-        $biayaRawat = (float)($row['biaya_rawat'] ?? $jenis->total_byrdr ?? $jenis->total_byrpr ?? $jenis->total_byrdrpr ?? 0);
+        $material = (float) ($jenis->material ?? 0);
+        $bhp = (float) ($jenis->bhp ?? 0);
+        $tarifDr = (float) ($jenis->tarif_tindakandr ?? ($row['tarif_tindakandr'] ?? 0));
+        $tarifPr = (float) ($jenis->tarif_tindakanpr ?? ($row['tarif_tindakanpr'] ?? 0));
+        $kso = (float) ($jenis->kso ?? 0);
+        $manajemen = (float) ($jenis->menejemen ?? 0);
+        $biayaRawat = (float) ($row['biaya_rawat'] ?? $jenis->total_byrdr ?? $jenis->total_byrpr ?? $jenis->total_byrdrpr ?? 0);
 
         // Komposisi jurnal yang diharapkan (ringkas)
         $expected = [];
@@ -174,18 +182,19 @@ class AkutansiQaE2E extends Command
         }
 
         // Tampilkan komposisi yang diharapkan
-        $this->table(['kd_rek', 'Pos', 'Debet', 'Kredit'], array_map(function($x){
+        $this->table(['kd_rek', 'Pos', 'Debet', 'Kredit'], array_map(function ($x) {
             $x['kd_rek'] = $x['kd_rek'] ?: '-';
-            $x['debet'] = number_format((float)$x['debet'], 2, '.', ',');
-            $x['kredit'] = number_format((float)$x['kredit'], 2, '.', ',');
+            $x['debet'] = number_format((float) $x['debet'], 2, '.', ',');
+            $x['kredit'] = number_format((float) $x['kredit'], 2, '.', ',');
+
             return $x;
         }, $expected));
 
         // Validasi keseimbangan teoretis
-        $sumDebet = array_sum(array_map(fn($x) => (float)$x['debet'], $expected));
-        $sumKredit = array_sum(array_map(fn($x) => (float)$x['kredit'], $expected));
+        $sumDebet = array_sum(array_map(fn ($x) => (float) $x['debet'], $expected));
+        $sumKredit = array_sum(array_map(fn ($x) => (float) $x['kredit'], $expected));
         $balanced = abs($sumDebet - $sumKredit) < 0.0001;
-        $this->info(sprintf("Teoretis Debet: %s | Kredit: %s | %s",
+        $this->info(sprintf('Teoretis Debet: %s | Kredit: %s | %s',
             number_format($sumDebet, 2, '.', ','),
             number_format($sumKredit, 2, '.', ','),
             $balanced ? 'SEIMBANG' : 'TIDAK SEIMBANG')
@@ -196,17 +205,17 @@ class AkutansiQaE2E extends Command
             $journals = DB::table('jurnal')->where('no_bukti', $noRawat)->orderByDesc('tgl_jurnal')->limit(5)->get();
             if ($journals->isEmpty()) {
                 $this->warn("⚠ Belum ada jurnal dengan no_bukti = {$noRawat}");
-                $this->line("Rekomendasi: Implementasikan Single Posting Point saat simpan tindakan untuk memanggil JurnalPostingService.");
+                $this->line('Rekomendasi: Implementasikan Single Posting Point saat simpan tindakan untuk memanggil JurnalPostingService.');
             } else {
-                $this->info("✓ Ditemukan jurnal terkait (top 5):");
+                $this->info('✓ Ditemukan jurnal terkait (top 5):');
                 foreach ($journals as $j) {
                     $dj = DB::table('detailjurnal')->where('no_jurnal', $j->no_jurnal)->selectRaw('SUM(debet) AS debet, SUM(kredit) AS kredit')->first();
-                    $this->line(sprintf("- %s | %s %s | Debet=%s Kredit=%s",
+                    $this->line(sprintf('- %s | %s %s | Debet=%s Kredit=%s',
                         $j->no_jurnal,
                         $j->tgl_jurnal,
                         $j->jam_jurnal ?? '-',
-                        number_format((float)($dj->debet ?? 0), 2, '.', ','),
-                        number_format((float)($dj->kredit ?? 0), 2, '.', ',')
+                        number_format((float) ($dj->debet ?? 0), 2, '.', ','),
+                        number_format((float) ($dj->kredit ?? 0), 2, '.', ',')
                     ));
                 }
             }

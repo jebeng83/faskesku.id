@@ -123,7 +123,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\AkunBayarController::update
-* @see app/Http/Controllers/Akutansi/AkunBayarController.php:74
+* @see app/Http/Controllers/Akutansi/AkunBayarController.php:75
 * @route '/api/akutansi/akun-bayar/{nama_bayar}'
 */
 export const update = (args: { nama_bayar: string | number } | [nama_bayar: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -138,7 +138,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\AkunBayarController::update
-* @see app/Http/Controllers/Akutansi/AkunBayarController.php:74
+* @see app/Http/Controllers/Akutansi/AkunBayarController.php:75
 * @route '/api/akutansi/akun-bayar/{nama_bayar}'
 */
 update.url = (args: { nama_bayar: string | number } | [nama_bayar: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -165,7 +165,7 @@ update.url = (args: { nama_bayar: string | number } | [nama_bayar: string | numb
 
 /**
 * @see \App\Http\Controllers\Akutansi\AkunBayarController::update
-* @see app/Http/Controllers/Akutansi/AkunBayarController.php:74
+* @see app/Http/Controllers/Akutansi/AkunBayarController.php:75
 * @route '/api/akutansi/akun-bayar/{nama_bayar}'
 */
 update.put = (args: { nama_bayar: string | number } | [nama_bayar: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -175,7 +175,7 @@ update.put = (args: { nama_bayar: string | number } | [nama_bayar: string | numb
 
 /**
 * @see \App\Http\Controllers\Akutansi\AkunBayarController::destroy
-* @see app/Http/Controllers/Akutansi/AkunBayarController.php:88
+* @see app/Http/Controllers/Akutansi/AkunBayarController.php:90
 * @route '/api/akutansi/akun-bayar/{nama_bayar}'
 */
 export const destroy = (args: { nama_bayar: string | number } | [nama_bayar: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -190,7 +190,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\AkunBayarController::destroy
-* @see app/Http/Controllers/Akutansi/AkunBayarController.php:88
+* @see app/Http/Controllers/Akutansi/AkunBayarController.php:90
 * @route '/api/akutansi/akun-bayar/{nama_bayar}'
 */
 destroy.url = (args: { nama_bayar: string | number } | [nama_bayar: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -217,7 +217,7 @@ destroy.url = (args: { nama_bayar: string | number } | [nama_bayar: string | num
 
 /**
 * @see \App\Http\Controllers\Akutansi\AkunBayarController::destroy
-* @see app/Http/Controllers/Akutansi/AkunBayarController.php:88
+* @see app/Http/Controllers/Akutansi/AkunBayarController.php:90
 * @route '/api/akutansi/akun-bayar/{nama_bayar}'
 */
 destroy.delete = (args: { nama_bayar: string | number } | [nama_bayar: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

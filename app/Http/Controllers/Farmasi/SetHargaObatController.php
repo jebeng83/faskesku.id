@@ -1,14 +1,13 @@
 <?php
 
 namespace App\Http\Controllers\Farmasi;
-use App\Http\Controllers\Controller;
 
+use App\Http\Controllers\Controller;
 // use App\Models\SetPenjualanUmum; // legacy mapping to setpenjualanumum
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
 
 class SetHargaObatController extends Controller
 {
@@ -21,7 +20,7 @@ class SetHargaObatController extends Controller
             // Ambil data dari tabel set_harga_obat (sesuai permintaan)
             $hargaObat = DB::table('set_harga_obat')->first();
 
-            if (!$hargaObat) {
+            if (! $hargaObat) {
                 // Jika belum ada data, buat data default satu baris
                 // Ambil struktur kolom untuk memastikan kolom tersedia
                 $schema = DB::select('DESCRIBE set_harga_obat');
@@ -57,7 +56,7 @@ class SetHargaObatController extends Controller
 
             // Ambil pengaturan harga umum dari tabel setpenjualanumum
             $penjualanUmum = DB::table('setpenjualanumum')->first();
-            if (!$penjualanUmum) {
+            if (! $penjualanUmum) {
                 // Inisialisasi baris default jika kosong
                 DB::table('setpenjualanumum')->insert([
                     'ralan' => 20,
@@ -97,7 +96,7 @@ class SetHargaObatController extends Controller
             ]);
         } catch (\Exception $e) {
             return Inertia::render('farmasi/SetHargaObat', [
-                'error' => 'Terjadi kesalahan saat mengambil data: ' . $e->getMessage()
+                'error' => 'Terjadi kesalahan saat mengambil data: '.$e->getMessage(),
             ]);
         }
     }
@@ -123,7 +122,7 @@ class SetHargaObatController extends Controller
         }
 
         // Kolom numeric opsional: hanya validasi jika memang ada di tabel
-        $numericKeys = ['ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan'];
+        $numericKeys = ['ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan'];
         foreach ($numericKeys as $key) {
             if (in_array($key, $columns, true)) {
                 $rules[$key] = 'required|numeric|min:0';
@@ -160,12 +159,13 @@ class SetHargaObatController extends Controller
                 DB::table('set_harga_obat')->insert($filtered);
             }
             DB::commit();
-            
+
             return redirect()->back()->with('success', 'Pengaturan harga obat berhasil disimpan');
         } catch (\Exception $e) {
             DB::rollBack();
+
             // Kembalikan sebagai validation error agar Inertia memicu onError di frontend
-            return redirect()->back()->withErrors(['general' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+            return redirect()->back()->withErrors(['general' => 'Terjadi kesalahan: '.$e->getMessage()]);
         }
     }
 
@@ -199,7 +199,7 @@ class SetHargaObatController extends Controller
 
             // Casting to double (float) untuk konsistensi
             foreach ($data as $key => $value) {
-                $data[$key] = (double) $value;
+                $data[$key] = (float) $value;
             }
 
             $existing = DB::table('setpenjualanumum')->first();
@@ -210,10 +210,12 @@ class SetHargaObatController extends Controller
             }
 
             DB::commit();
+
             return redirect()->back()->with('success', 'Pengaturan harga umum berhasil disimpan');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->withErrors(['general' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+
+            return redirect()->back()->withErrors(['general' => 'Terjadi kesalahan: '.$e->getMessage()]);
         }
     }
 
@@ -250,8 +252,8 @@ class SetHargaObatController extends Controller
             $data['kdjns'] = strtoupper(trim($data['kdjns']));
 
             // Casting ke double untuk konsistensi penyimpanan
-            foreach (['ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan'] as $key) {
-                $data[$key] = (double) $data[$key];
+            foreach (['ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan'] as $key) {
+                $data[$key] = (float) $data[$key];
             }
 
             // Upsert ke tabel setpenjualan berdasarkan kdjns
@@ -263,10 +265,12 @@ class SetHargaObatController extends Controller
             }
 
             DB::commit();
+
             return redirect()->back()->with('success', 'Pengaturan harga per jenis berhasil disimpan');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->withErrors(['general' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+
+            return redirect()->back()->withErrors(['general' => 'Terjadi kesalahan: '.$e->getMessage()]);
         }
     }
 
@@ -278,9 +282,10 @@ class SetHargaObatController extends Controller
         try {
             $kode = strtoupper(trim($kdjns));
             DB::table('setpenjualan')->where('kdjns', $kode)->delete();
+
             return redirect()->back()->with('success', 'Pengaturan harga per jenis berhasil dihapus');
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['general' => 'Gagal menghapus: ' . $e->getMessage()]);
+            return redirect()->back()->withErrors(['general' => 'Gagal menghapus: '.$e->getMessage()]);
         }
     }
 
@@ -316,8 +321,8 @@ class SetHargaObatController extends Controller
             $data['kode_brng'] = strtoupper(trim($data['kode_brng']));
 
             // Cast numeric fields to double
-            foreach (['ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan'] as $key) {
-                $data[$key] = (double) $data[$key];
+            foreach (['ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan'] as $key) {
+                $data[$key] = (float) $data[$key];
             }
 
             // Upsert to setpenjualanperbarang by kode_brng
@@ -334,10 +339,12 @@ class SetHargaObatController extends Controller
             }
 
             DB::commit();
+
             return redirect()->back()->with('success', 'Pengaturan harga per barang berhasil disimpan ke setpenjualanperbarang');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->withErrors(['general' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+
+            return redirect()->back()->withErrors(['general' => 'Terjadi kesalahan: '.$e->getMessage()]);
         }
     }
 
@@ -349,9 +356,10 @@ class SetHargaObatController extends Controller
         try {
             $kode = strtoupper(trim($kode_brng));
             DB::table('setpenjualanperbarang')->where('kode_brng', $kode)->delete();
+
             return redirect()->back()->with('success', 'Pengaturan harga per barang berhasil dihapus');
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['general' => 'Gagal menghapus: ' . $e->getMessage()]);
+            return redirect()->back()->withErrors(['general' => 'Gagal menghapus: '.$e->getMessage()]);
         }
     }
 
@@ -366,7 +374,7 @@ class SetHargaObatController extends Controller
                 ->where('kode_brng', $kode)
                 ->first();
 
-            if (!$row) {
+            if (! $row) {
                 // Jika belum ada pengaturan, kembalikan default kosong agar frontend bisa menampilkan kosong tanpa error
                 return response()->json([
                     'success' => true,
@@ -378,22 +386,22 @@ class SetHargaObatController extends Controller
                 'success' => true,
                 'data' => [
                     'kode_brng' => $row->kode_brng,
-                    'ralan' => (double) $row->ralan,
-                    'kelas1' => (double) $row->kelas1,
-                    'kelas2' => (double) $row->kelas2,
-                    'kelas3' => (double) $row->kelas3,
-                    'utama' => (double) $row->utama,
-                    'vip' => (double) $row->vip,
-                    'vvip' => (double) $row->vvip,
-                    'beliluar' => (double) $row->beliluar,
-                    'jualbebas' => (double) $row->jualbebas,
-                    'karyawan' => (double) $row->karyawan,
+                    'ralan' => (float) $row->ralan,
+                    'kelas1' => (float) $row->kelas1,
+                    'kelas2' => (float) $row->kelas2,
+                    'kelas3' => (float) $row->kelas3,
+                    'utama' => (float) $row->utama,
+                    'vip' => (float) $row->vip,
+                    'vvip' => (float) $row->vvip,
+                    'beliluar' => (float) $row->beliluar,
+                    'jualbebas' => (float) $row->jualbebas,
+                    'karyawan' => (float) $row->karyawan,
                 ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -405,7 +413,7 @@ class SetHargaObatController extends Controller
     {
         try {
             $row = DB::table('setpenjualanumum')->first();
-            if (!$row) {
+            if (! $row) {
                 // Inisialisasi default bila kosong
                 $defaults = [
                     'ralan' => 20,
@@ -422,25 +430,26 @@ class SetHargaObatController extends Controller
                 DB::table('setpenjualanumum')->insert($defaults);
                 $row = (object) $defaults;
             }
+
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'ralan' => (double) $row->ralan,
-                    'kelas1' => (double) $row->kelas1,
-                    'kelas2' => (double) $row->kelas2,
-                    'kelas3' => (double) $row->kelas3,
-                    'utama' => (double) $row->utama,
-                    'vip' => (double) $row->vip,
-                    'vvip' => (double) $row->vvip,
-                    'beliluar' => (double) $row->beliluar,
-                    'jualbebas' => (double) $row->jualbebas,
-                    'karyawan' => (double) $row->karyawan,
+                    'ralan' => (float) $row->ralan,
+                    'kelas1' => (float) $row->kelas1,
+                    'kelas2' => (float) $row->kelas2,
+                    'kelas3' => (float) $row->kelas3,
+                    'utama' => (float) $row->utama,
+                    'vip' => (float) $row->vip,
+                    'vvip' => (float) $row->vvip,
+                    'beliluar' => (float) $row->beliluar,
+                    'jualbebas' => (float) $row->jualbebas,
+                    'karyawan' => (float) $row->karyawan,
                 ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -454,7 +463,7 @@ class SetHargaObatController extends Controller
             $kode = strtoupper(trim($kdjns));
             // Jika jenis tidak ditemukan, kembalikan data null (hindari 404 agar frontend bisa fallback)
             $existsJenis = DB::table('jenis')->where('kdjns', $kode)->exists();
-            if (!$existsJenis) {
+            if (! $existsJenis) {
                 return response()->json([
                     'success' => true,
                     'data' => null,
@@ -462,7 +471,7 @@ class SetHargaObatController extends Controller
             }
 
             $row = DB::table('setpenjualan')->where('kdjns', $kode)->first();
-            if (!$row) {
+            if (! $row) {
                 return response()->json([
                     'success' => true,
                     'data' => null,
@@ -473,22 +482,22 @@ class SetHargaObatController extends Controller
                 'success' => true,
                 'data' => [
                     'kdjns' => $kode,
-                    'ralan' => (double) $row->ralan,
-                    'kelas1' => (double) $row->kelas1,
-                    'kelas2' => (double) $row->kelas2,
-                    'kelas3' => (double) $row->kelas3,
-                    'utama' => (double) $row->utama,
-                    'vip' => (double) $row->vip,
-                    'vvip' => (double) $row->vvip,
-                    'beliluar' => (double) $row->beliluar,
-                    'jualbebas' => (double) $row->jualbebas,
-                    'karyawan' => (double) $row->karyawan,
+                    'ralan' => (float) $row->ralan,
+                    'kelas1' => (float) $row->kelas1,
+                    'kelas2' => (float) $row->kelas2,
+                    'kelas3' => (float) $row->kelas3,
+                    'utama' => (float) $row->utama,
+                    'vip' => (float) $row->vip,
+                    'vvip' => (float) $row->vvip,
+                    'beliluar' => (float) $row->beliluar,
+                    'jualbebas' => (float) $row->jualbebas,
+                    'karyawan' => (float) $row->karyawan,
                 ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -500,7 +509,7 @@ class SetHargaObatController extends Controller
     {
         try {
             $hargaObat = DB::table('set_harga_obat')->first();
-            if (!$hargaObat) {
+            if (! $hargaObat) {
                 DB::table('set_harga_obat')->insert([
                     'ralan' => 20,
                     'kelas1' => 20,
@@ -515,15 +524,15 @@ class SetHargaObatController extends Controller
                 ]);
                 $hargaObat = DB::table('set_harga_obat')->first();
             }
-            
+
             return response()->json([
                 'success' => true,
-                'data' => $hargaObat
+                'data' => $hargaObat,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan saat mengambil data: '.$e->getMessage(),
             ], 500);
         }
     }

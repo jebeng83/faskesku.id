@@ -1,12 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Akutansi;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
 
 class RekeningTahunController extends Controller
@@ -31,9 +32,9 @@ class RekeningTahunController extends Controller
         if ($q !== '') {
             $baseQuery->where(function ($w) use ($q) {
                 $w->where('rekening.kd_rek', 'like', "%$q%")
-                  ->orWhere('rekening.nm_rek', 'like', "%$q%")
-                  ->orWhere('rekening.tipe', 'like', "%$q%")
-                  ->orWhere('rekening.balance', 'like', "%$q%");
+                    ->orWhere('rekening.nm_rek', 'like', "%$q%")
+                    ->orWhere('rekening.tipe', 'like', "%$q%")
+                    ->orWhere('rekening.balance', 'like', "%$q%");
             });
         }
 

@@ -2,9 +2,9 @@
 
 namespace App\Models\Akutansi;
 
-use Illuminate\Database\Eloquent\Model;
-use App\Models\RegPeriksa;
 use App\Models\Patient;
+use App\Models\RegPeriksa;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Model untuk tabel piutang_pasien
@@ -12,9 +12,13 @@ use App\Models\Patient;
 class PiutangPasien extends Model
 {
     protected $table = 'piutang_pasien';
+
     protected $primaryKey = 'no_rawat';
+
     public $incrementing = false;
+
     public $timestamps = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [

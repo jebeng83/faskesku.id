@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\DaftarTarifController::updateTemplates
-* @see app/Http/Controllers/DaftarTarifController.php:625
+* @see app/Http/Controllers/DaftarTarifController.php:638
 * @route '/daftar-tarif/laboratorium/{kd_jenis_prw}/templates'
 */
 export const updateTemplates = (args: { kd_jenis_prw: string | number } | [kd_jenis_prw: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -16,7 +16,7 @@ updateTemplates.definition = {
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::updateTemplates
-* @see app/Http/Controllers/DaftarTarifController.php:625
+* @see app/Http/Controllers/DaftarTarifController.php:638
 * @route '/daftar-tarif/laboratorium/{kd_jenis_prw}/templates'
 */
 updateTemplates.url = (args: { kd_jenis_prw: string | number } | [kd_jenis_prw: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ updateTemplates.url = (args: { kd_jenis_prw: string | number } | [kd_jenis_prw: 
 
 /**
 * @see \App\Http\Controllers\DaftarTarifController::updateTemplates
-* @see app/Http/Controllers/DaftarTarifController.php:625
+* @see app/Http/Controllers/DaftarTarifController.php:638
 * @route '/daftar-tarif/laboratorium/{kd_jenis_prw}/templates'
 */
 updateTemplates.put = (args: { kd_jenis_prw: string | number } | [kd_jenis_prw: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({

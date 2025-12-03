@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Models\Akutansi;
@@ -11,7 +12,9 @@ class RekeningTahun extends Model
 
     // Tabel tidak memiliki primary key auto-increment standar
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -25,4 +28,3 @@ class RekeningTahun extends Model
         return $this->belongsTo(Rekening::class, 'kd_rek', 'kd_rek');
     }
 }
-

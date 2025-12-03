@@ -2,14 +2,14 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -65,9 +65,9 @@ class AppServiceProvider extends ServiceProvider
         // This prevents "No such file or directory" errors when Wayfinder tries to write route files
         try {
             $routesBasePath = resource_path('js/routes');
-            
+
             // Ensure base directories exist
-            if (!File::isDirectory($routesBasePath)) {
+            if (! File::isDirectory($routesBasePath)) {
                 File::makeDirectory($routesBasePath, 0755, true);
             }
 
@@ -79,8 +79,8 @@ class AppServiceProvider extends ServiceProvider
             ];
 
             foreach ($commonDirs as $dir) {
-                $fullPath = $routesBasePath . '/' . $dir;
-                if (!File::isDirectory($fullPath)) {
+                $fullPath = $routesBasePath.'/'.$dir;
+                if (! File::isDirectory($fullPath)) {
                     File::makeDirectory($fullPath, 0755, true);
                 }
             }

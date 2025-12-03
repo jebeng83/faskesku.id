@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Bangsal;
+use App\Models\DataBarang;
 use App\Models\Opname;
 use App\Models\RawatJalan\Gudangbarang as GudangBarang;
-use App\Models\DataBarang;
-use App\Models\Bangsal;
 use App\Models\RiwayatTransaksiGudangBarang;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -35,12 +35,12 @@ class OpnameController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $lokasi
+                'data' => $lokasi,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil data lokasi: ' . $e->getMessage()
+                'message' => 'Gagal mengambil data lokasi: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -53,11 +53,11 @@ class OpnameController extends Controller
         try {
             $kdBangsal = $request->input('kd_bangsal');
             $search = $request->input('search');
-            
-            if (!$kdBangsal) {
+
+            if (! $kdBangsal) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Kode bangsal harus diisi'
+                    'message' => 'Kode bangsal harus diisi',
                 ], 400);
             }
 
@@ -84,9 +84,9 @@ class OpnameController extends Controller
 
             // Tambahkan filter pencarian jika ada
             if ($search && strlen($search) >= 2) {
-                $query->where(function($q) use ($search) {
-                    $q->where('databarang.nama_brng', 'LIKE', '%' . $search . '%')
-                      ->orWhere('gudangbarang.kode_brng', 'LIKE', '%' . $search . '%');
+                $query->where(function ($q) use ($search) {
+                    $q->where('databarang.nama_brng', 'LIKE', '%'.$search.'%')
+                        ->orWhere('gudangbarang.kode_brng', 'LIKE', '%'.$search.'%');
                 });
             }
 
@@ -96,12 +96,12 @@ class OpnameController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $dataBarang
+                'data' => $dataBarang,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil data barang: ' . $e->getMessage()
+                'message' => 'Gagal mengambil data barang: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -114,8 +114,8 @@ class OpnameController extends Controller
         try {
             // Log request data untuk debugging
             Log::info('Opname store method called');
-            Log::info('Request data: ' . json_encode($request->all()));
-            
+            Log::info('Request data: '.json_encode($request->all()));
+
             // Validasi input
             $validator = Validator::make($request->all(), [
                 'tanggal' => 'required|date',
@@ -126,14 +126,14 @@ class OpnameController extends Controller
                 'items.*.real' => 'required|numeric|min:0',
                 'items.*.h_beli' => 'required|numeric|min:0',
                 'items.*.no_batch' => 'nullable|string',
-                'items.*.no_faktur' => 'nullable|string'
+                'items.*.no_faktur' => 'nullable|string',
             ]);
 
             if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Validasi gagal',
-                    'errors' => $validator->errors()
+                    'errors' => $validator->errors(),
                 ], 422);
             }
 
@@ -141,11 +141,29 @@ class OpnameController extends Controller
 
             foreach ($request->items as $item) {
                 // Debug: Log each item data
-                Log::info('Processing item: ' . json_encode($item));
-                
-                // Ambil stok sistem dari gudangbarang
+                Log::info('Processing item: '.json_encode($item));
+
+                // Normalisasi batch/faktur ke string kosong untuk kolom NOT NULL
+                $noBatch = isset($item['no_batch']) && $item['no_batch'] !== null ? (string) $item['no_batch'] : '';
+                $noFaktur = isset($item['no_faktur']) && $item['no_faktur'] !== null ? (string) $item['no_faktur'] : '';
+
+                // Ambil stok sistem dari gudangbarang dengan memperhatikan batch/faktur (null vs '')
                 $gudangBarang = GudangBarang::where('kode_brng', $item['kode_brng'])
                     ->where('kd_bangsal', $request->kd_bangsal)
+                    ->where(function ($q) use ($noBatch) {
+                        if ($noBatch === '') {
+                            $q->whereNull('no_batch')->orWhere('no_batch', '');
+                        } else {
+                            $q->where('no_batch', $noBatch);
+                        }
+                    })
+                    ->where(function ($q) use ($noFaktur) {
+                        if ($noFaktur === '') {
+                            $q->whereNull('no_faktur')->orWhere('no_faktur', '');
+                        } else {
+                            $q->where('no_faktur', $noFaktur);
+                        }
+                    })
                     ->first();
 
                 $stokSistem = $gudangBarang ? $gudangBarang->stok : 0;
@@ -169,21 +187,21 @@ class OpnameController extends Controller
                     'nomilebih' => $nominalLebih,
                     'keterangan' => $request->keterangan,
                     'kd_bangsal' => $request->kd_bangsal,
-                    'no_batch' => $item['no_batch'] ?? '',
-                    'no_faktur' => $item['no_faktur'] ?? ''
+                    'no_batch' => $noBatch,
+                    'no_faktur' => $noFaktur,
                 ];
-                
+
                 // Debug: Log data before insert
-                Log::info('Data to insert: ' . json_encode($opnameData));
-                
+                Log::info('Data to insert: '.json_encode($opnameData));
+
                 // Insert or update data opname
                 Opname::updateOrCreate(
                     [
                         'kode_brng' => $item['kode_brng'],
                         'tanggal' => $request->tanggal,
                         'kd_bangsal' => $request->kd_bangsal,
-                        'no_batch' => $item['no_batch'] ?? '',
-                        'no_faktur' => $item['no_faktur'] ?? ''
+                        'no_batch' => $noBatch,
+                        'no_faktur' => $noFaktur,
                     ],
                     [
                         'h_beli' => $item['h_beli'],
@@ -193,7 +211,7 @@ class OpnameController extends Controller
                         'lebih' => $lebih,
                         'nomihilang' => $nominalHilang,
                         'nomilebih' => $nominalLebih,
-                        'keterangan' => $request->keterangan
+                        'keterangan' => $request->keterangan,
                     ]
                 );
 
@@ -202,26 +220,26 @@ class OpnameController extends Controller
                     [
                         'kode_brng' => $item['kode_brng'],
                         'kd_bangsal' => $request->kd_bangsal,
-                        'no_batch' => $item['no_batch'] ?? '',
-                        'no_faktur' => $item['no_faktur'] ?? ''
+                        'no_batch' => $noBatch,
+                        'no_faktur' => $noFaktur,
                     ],
                     [
-                        'stok' => $real
+                        'stok' => $real,
                     ]
                 );
-                
+
                 // Catat audit trail
                 if ($gudangBarang && $gudangBarang->exists) {
                     // Update existing record
                     RiwayatTransaksiGudangBarang::catatUpdate(
                         $item['kode_brng'],
                         $request->kd_bangsal,
-                        $item['no_batch'] ?? '',
-                        $item['no_faktur'] ?? '',
+                        $noBatch ?? '',
+                        $noFaktur ?? '',
                         $stokSistem,
                         $real,
                         'opname',
-                        'Stok opname: ' . ($request->keterangan ?? 'Opname tanggal ' . $request->tanggal),
+                        'Stok opname: '.($request->keterangan ?? 'Opname tanggal '.$request->tanggal),
                         $gudangBarang->toArray(),
                         $gudangBarangUpdated->toArray()
                     );
@@ -230,32 +248,33 @@ class OpnameController extends Controller
                     RiwayatTransaksiGudangBarang::catatInsert(
                         $item['kode_brng'],
                         $request->kd_bangsal,
-                        $item['no_batch'] ?? '',
-                        $item['no_faktur'] ?? '',
+                        $noBatch ?? '',
+                        $noFaktur ?? '',
                         $real,
                         'opname',
-                        'Stok opname: ' . ($request->keterangan ?? 'Opname tanggal ' . $request->tanggal),
+                        'Stok opname: '.($request->keterangan ?? 'Opname tanggal '.$request->tanggal),
                         $gudangBarangUpdated->toArray()
                     );
                 }
-                
-                Log::info('Updated gudangbarang stok for: ' . $item['kode_brng'] . ' to: ' . $real);
-                Log::info('Audit trail recorded for: ' . $item['kode_brng']);
+
+                Log::info('Updated gudangbarang stok for: '.$item['kode_brng'].' to: '.$real);
+                Log::info('Audit trail recorded for: '.$item['kode_brng']);
             }
 
             DB::connection('fufufafa')->commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Data stok opname berhasil disimpan'
+                'message' => 'Data stok opname berhasil disimpan',
             ]);
         } catch (\Exception $e) {
             DB::connection('fufufafa')->rollback();
-            Log::error('Error saving opname: ' . $e->getMessage());
-            Log::error('Stack trace: ' . $e->getTraceAsString());
+            Log::error('Error saving opname: '.$e->getMessage());
+            Log::error('Stack trace: '.$e->getTraceAsString());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menyimpan data stok opname: ' . $e->getMessage()
+                'message' => 'Gagal menyimpan data stok opname: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -308,12 +327,12 @@ class OpnameController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $data
+                'data' => $data,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil data opname: ' . $e->getMessage()
+                'message' => 'Gagal mengambil data opname: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -327,11 +346,11 @@ class OpnameController extends Controller
         try {
             $kdBangsal = $request->input('kd_bangsal');
             $search = $request->input('search');
-            
-            if (!$kdBangsal) {
+
+            if (! $kdBangsal) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Kode bangsal harus diisi'
+                    'message' => 'Kode bangsal harus diisi',
                 ], 400);
             }
 
@@ -364,9 +383,9 @@ class OpnameController extends Controller
 
             // Tambahkan filter pencarian jika ada
             if ($search && strlen($search) >= 2) {
-                $query->where(function($q) use ($search) {
-                    $q->where('databarang.nama_brng', 'LIKE', '%' . $search . '%')
-                      ->orWhere('opname.kode_brng', 'LIKE', '%' . $search . '%');
+                $query->where(function ($q) use ($search) {
+                    $q->where('databarang.nama_brng', 'LIKE', '%'.$search.'%')
+                        ->orWhere('opname.kode_brng', 'LIKE', '%'.$search.'%');
                 });
             }
 
@@ -377,12 +396,12 @@ class OpnameController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $data
+                'data' => $data,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mencari data opname: ' . $e->getMessage()
+                'message' => 'Gagal mencari data opname: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -395,19 +414,19 @@ class OpnameController extends Controller
     {
         try {
             $items = $request->input('items');
-            if (!is_array($items) || count($items) === 0) {
+            if (! is_array($items) || count($items) === 0) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Daftar item yang akan dihapus kosong'
+                    'message' => 'Daftar item yang akan dihapus kosong',
                 ], 422);
             }
 
             // Validasi setiap item
             foreach ($items as $i => $item) {
-                if (!isset($item['kd_bangsal'], $item['tanggal'], $item['kode_brng'])) {
+                if (! isset($item['kd_bangsal'], $item['tanggal'], $item['kode_brng'])) {
                     return response()->json([
                         'success' => false,
-                        'message' => "Item ke-" . ($i+1) . " tidak valid: kd_bangsal, tanggal, dan kode_brng wajib diisi"
+                        'message' => 'Item ke-'.($i + 1).' tidak valid: kd_bangsal, tanggal, dan kode_brng wajib diisi',
                     ], 422);
                 }
             }
@@ -429,7 +448,7 @@ class OpnameController extends Controller
                     ->where('kode_brng', $kodeBrng);
 
                 // Match no_batch (handle '', null)
-                $query->where(function($q) use ($noBatch) {
+                $query->where(function ($q) use ($noBatch) {
                     if ($noBatch === '' || $noBatch === null) {
                         $q->whereNull('no_batch')->orWhere('no_batch', '');
                     } else {
@@ -438,7 +457,7 @@ class OpnameController extends Controller
                 });
 
                 // Match no_faktur (handle '', null)
-                $query->where(function($q) use ($noFaktur) {
+                $query->where(function ($q) use ($noFaktur) {
                     if ($noFaktur === '' || $noFaktur === null) {
                         $q->whereNull('no_faktur')->orWhere('no_faktur', '');
                     } else {
@@ -456,13 +475,14 @@ class OpnameController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Berhasil menghapus data opname',
-                'deleted_count' => $deleted
+                'deleted_count' => $deleted,
             ]);
         } catch (\Exception $e) {
             DB::connection('fufufafa')->rollback();
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menghapus data opname: ' . $e->getMessage()
+                'message' => 'Gagal menghapus data opname: '.$e->getMessage(),
             ], 500);
         }
     }

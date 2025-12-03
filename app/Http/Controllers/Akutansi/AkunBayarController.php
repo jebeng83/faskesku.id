@@ -1,15 +1,15 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Akutansi;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Akutansi\AkunBayar;
-use App\Models\Akutansi\Rekening;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
-use Illuminate\Http\JsonResponse;
 
 class AkunBayarController extends Controller
 {
@@ -62,11 +62,12 @@ class AkunBayarController extends Controller
         ]);
 
         // Normalisasi ppn: jika null, set 0
-        if (!isset($data['ppn']) || $data['ppn'] === '') {
+        if (! isset($data['ppn']) || $data['ppn'] === '') {
             $data['ppn'] = 0;
         }
 
         $created = AkunBayar::create($data);
+
         return response()->json(['message' => 'Akun Bayar created', 'data' => $created], 201);
     }
 
@@ -81,6 +82,7 @@ class AkunBayarController extends Controller
         $row->kd_rek = $data['kd_rek'];
         $row->ppn = $data['ppn'] ?? 0;
         $row->save();
+
         return response()->json(['message' => 'Akun Bayar updated', 'data' => $row]);
     }
 
@@ -90,6 +92,7 @@ class AkunBayarController extends Controller
         $row = AkunBayar::findOrFail($nama_bayar);
         // Catatan: bisa ditambahkan proteksi jika ada transaksi yang menggunakan nama_bayar ini
         $row->delete();
+
         return response()->json(['message' => 'Akun Bayar deleted']);
     }
 }

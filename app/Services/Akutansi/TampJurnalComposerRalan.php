@@ -13,7 +13,6 @@ class TampJurnalComposerRalan
     /**
      * Compose dan tulis ke staging tampjurnal2 untuk no_rawat tertentu.
      *
-     * @param string $noRawat
      * @return array{debet:float,kredit:float,lines:array<int,array{kd_rek:string,debet:float,kredit:float}>}
      */
     public function composeForNoRawat(string $noRawat): array
@@ -44,7 +43,7 @@ class TampJurnalComposerRalan
 
         // Validasi pemetaan akun
         $akun = DB::table('set_akun_ralan')->first();
-        if (!$akun) {
+        if (! $akun) {
             throw new \RuntimeException('Pengaturan akun rawat jalan (set_akun_ralan) tidak ditemukan.');
         }
 

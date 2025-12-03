@@ -77,6 +77,7 @@ class JenjangJabatanController extends Controller
             if ($request->expectsJson() || $request->wantsJson()) {
                 return response()->json(['errors' => $validator->errors()], 422);
             }
+
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();

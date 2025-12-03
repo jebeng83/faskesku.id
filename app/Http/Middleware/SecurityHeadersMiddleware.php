@@ -19,7 +19,7 @@ class SecurityHeadersMiddleware
 
         // Force HTTPS di production
         if (config('app.env') === 'production') {
-            $response->headers->set('Strict-Transport-Security', 
+            $response->headers->set('Strict-Transport-Security',
                 'max-age=31536000; includeSubDomains; preload'
             );
         }
@@ -33,50 +33,50 @@ class SecurityHeadersMiddleware
         $viteWs = [];
         foreach ($viteHosts as $h) {
             if ($h !== '') {
-                $viteHttp[] = 'http://' . $h;
-                $viteWs[] = 'ws://' . $h;
+                $viteHttp[] = 'http://'.$h;
+                $viteWs[] = 'ws://'.$h;
             }
         }
-        
+
         if ($isDevelopment) {
             // CSP untuk development - lebih fleksibel untuk Vite HMR dan CDN
-            $csp = "default-src 'self'; " .
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://127.0.0.1:5177 http://localhost:5177 ws://127.0.0.1:5177 ws://localhost:5177; " .
-                "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com http://127.0.0.1:5177 http://localhost:5177; " .
-                "img-src 'self' data: https: http:; " .
-                "font-src 'self' data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.gstatic.com https://fonts.googleapis.com; " .
-                "connect-src 'self' http://127.0.0.1:5177 http://localhost:5177 ws://127.0.0.1:5177 ws://localhost:5177 http://127.0.0.1:8000 ws://127.0.0.1:8000; " .
-                "worker-src 'self' blob:; " .
+            $csp = "default-src 'self'; ".
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://127.0.0.1:5177 http://localhost:5177 ws://127.0.0.1:5177 ws://localhost:5177; ".
+                "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com http://127.0.0.1:5177 http://localhost:5177; ".
+                "img-src 'self' data: https: http:; ".
+                "font-src 'self' data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.gstatic.com https://fonts.googleapis.com; ".
+                "connect-src 'self' http://127.0.0.1:5177 http://localhost:5177 ws://127.0.0.1:5177 ws://localhost:5177 http://127.0.0.1:8000 ws://127.0.0.1:8000; ".
+                "worker-src 'self' blob:; ".
                 "frame-src 'self' https://www.google.com https://maps.google.com";
-            if (!empty($viteHttp) || !empty($viteWs)) {
-                $csp = rtrim($csp, ';') . '; ' .
-                    (empty($viteHttp) ? '' : ("style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com http://127.0.0.1:5177 http://localhost:5177 " . implode(' ', $viteHttp) . '; ')) .
-                    ("script-src 'self' 'unsafe-inline' 'unsafe-eval' http://127.0.0.1:5177 http://localhost:5177 " . implode(' ', array_merge($viteHttp, $viteWs)) . '; ') .
-                    ("connect-src 'self' http://127.0.0.1:5177 http://localhost:5177 ws://127.0.0.1:5177 ws://localhost:5177 http://127.0.0.1:8000 ws://127.0.0.1:8000 " . implode(' ', array_merge($viteHttp, $viteWs)) . ';');
+            if (! empty($viteHttp) || ! empty($viteWs)) {
+                $csp = rtrim($csp, ';').'; '.
+                    (empty($viteHttp) ? '' : ("style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com http://127.0.0.1:5177 http://localhost:5177 ".implode(' ', $viteHttp).'; ')).
+                    ("script-src 'self' 'unsafe-inline' 'unsafe-eval' http://127.0.0.1:5177 http://localhost:5177 ".implode(' ', array_merge($viteHttp, $viteWs)).'; ').
+                    ("connect-src 'self' http://127.0.0.1:5177 http://localhost:5177 ws://127.0.0.1:5177 ws://localhost:5177 http://127.0.0.1:8000 ws://127.0.0.1:8000 ".implode(' ', array_merge($viteHttp, $viteWs)).';');
             }
         } else {
             // CSP untuk production - lebih ketat
             $style = "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com";
-            if (!empty($viteHttp)) {
-                $style .= ' ' . implode(' ', $viteHttp);
+            if (! empty($viteHttp)) {
+                $style .= ' '.implode(' ', $viteHttp);
             }
             $script = "script-src 'self' 'unsafe-inline'";
-            if (!empty($viteHttp) || !empty($viteWs)) {
-                $script .= ' ' . implode(' ', array_merge($viteHttp, $viteWs));
+            if (! empty($viteHttp) || ! empty($viteWs)) {
+                $script .= ' '.implode(' ', array_merge($viteHttp, $viteWs));
             }
             $connect = "connect-src 'self'";
-            if (!empty($viteHttp) || !empty($viteWs)) {
-                $connect .= ' ' . implode(' ', array_merge($viteHttp, $viteWs));
+            if (! empty($viteHttp) || ! empty($viteWs)) {
+                $connect .= ' '.implode(' ', array_merge($viteHttp, $viteWs));
             }
-            $csp = "default-src 'self'; " .
-                $script . "; " .
-                $style . "; " .
-                "img-src 'self' data: https:; " .
-                "font-src 'self' data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.gstatic.com https://fonts.googleapis.com; " .
-                $connect . "; " .
+            $csp = "default-src 'self'; ".
+                $script.'; '.
+                $style.'; '.
+                "img-src 'self' data: https:; ".
+                "font-src 'self' data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.gstatic.com https://fonts.googleapis.com; ".
+                $connect.'; '.
                 "frame-src 'self' https://www.google.com https://maps.google.com";
         }
-        
+
         $response->headers->set('Content-Security-Policy', $csp);
 
         // X-Content-Type-Options

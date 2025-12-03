@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Doctor;
+use Illuminate\Database\Seeder;
 
 class DoctorSeeder extends Seeder
 {
@@ -112,7 +111,7 @@ class DoctorSeeder extends Seeder
                 'alumni' => 'Universitas Brawijaya',
                 'no_ijn_praktek' => 'SIP/987/DKI/2023',
                 'status' => '1',
-            ]
+            ],
         ];
 
         foreach ($doctors as $doctor) {

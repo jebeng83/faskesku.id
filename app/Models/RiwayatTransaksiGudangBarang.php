@@ -11,8 +11,9 @@ class RiwayatTransaksiGudangBarang extends Model
     use HasFactory;
 
     protected $connection = 'fufufafa';
+
     protected $table = 'riwayat_transaksi_gudangbarang';
-    
+
     protected $fillable = [
         'kode_brng',
         'kd_bangsal',
@@ -27,7 +28,7 @@ class RiwayatTransaksiGudangBarang extends Model
         'sumber_transaksi',
         'data_sebelum',
         'data_sesudah',
-        'waktu_transaksi'
+        'waktu_transaksi',
     ];
 
     protected $casts = [
@@ -36,7 +37,7 @@ class RiwayatTransaksiGudangBarang extends Model
         'selisih' => 'double',
         'data_sebelum' => 'array',
         'data_sesudah' => 'array',
-        'waktu_transaksi' => 'datetime'
+        'waktu_transaksi' => 'datetime',
     ];
 
     /**
@@ -82,7 +83,7 @@ class RiwayatTransaksiGudangBarang extends Model
             'sumber_transaksi' => $sumber_transaksi,
             'data_sebelum' => null,
             'data_sesudah' => $data_lengkap,
-            'waktu_transaksi' => now()
+            'waktu_transaksi' => now(),
         ]);
     }
 
@@ -105,7 +106,7 @@ class RiwayatTransaksiGudangBarang extends Model
             'sumber_transaksi' => $sumber_transaksi,
             'data_sebelum' => $data_sebelum,
             'data_sesudah' => $data_sesudah,
-            'waktu_transaksi' => now()
+            'waktu_transaksi' => now(),
         ]);
     }
 
@@ -128,7 +129,7 @@ class RiwayatTransaksiGudangBarang extends Model
             'sumber_transaksi' => $sumber_transaksi,
             'data_sebelum' => $data_lengkap,
             'data_sesudah' => null,
-            'waktu_transaksi' => now()
+            'waktu_transaksi' => now(),
         ]);
     }
 

@@ -7,8 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class DetailNotaJalan extends Model
 {
     protected $table = 'detail_nota_jalan';
+
     protected $primaryKey = ['no_rawat', 'nama_bayar'];
+
     public $incrementing = false;
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -37,7 +40,7 @@ class DetailNotaJalan extends Model
     protected function setKeysForSaveQuery($query)
     {
         $keys = $this->getKeyName();
-        if (!is_array($keys)) {
+        if (! is_array($keys)) {
             return parent::setKeysForSaveQuery($query);
         }
 

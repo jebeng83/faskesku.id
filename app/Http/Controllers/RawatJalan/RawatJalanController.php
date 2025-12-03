@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\RawatJalan;
 
 use App\Http\Controllers\Controller;
+use App\Models\Dokter;
 use App\Models\Patient;
+use App\Models\Penjab;
 use App\Models\Poliklinik;
 use App\Models\RawatJalan\RawatJalan;
-use App\Models\Dokter;
-use App\Models\Penjab;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class RawatJalanController extends Controller
 {
@@ -38,7 +38,7 @@ class RawatJalanController extends Controller
             : Carbon::today()->toDateString();
 
         // Filter berdasarkan tanggal (gunakan default jika tidak ada)
-        if (!empty($appliedDate)) {
+        if (! empty($appliedDate)) {
             $query->where('reg_periksa.tgl_registrasi', $appliedDate);
         }
 
@@ -54,8 +54,8 @@ class RawatJalanController extends Controller
 
         // Filter berdasarkan nama pasien
         if ($request->filled('nama_pasien')) {
-            $query->whereHas('patient', function($q) use ($request) {
-                $q->where('nm_pasien', 'like', '%' . $request->nama_pasien . '%');
+            $query->whereHas('patient', function ($q) use ($request) {
+                $q->where('nm_pasien', 'like', '%'.$request->nama_pasien.'%');
             });
         }
 
@@ -64,7 +64,7 @@ class RawatJalanController extends Controller
             $query->where('reg_periksa.kd_dokter', $request->kd_dokter);
         }
         if ($request->filled('nama_dokter')) {
-            $query->where('dokter.nm_dokter', 'like', '%' . $request->nama_dokter . '%');
+            $query->where('dokter.nm_dokter', 'like', '%'.$request->nama_dokter.'%');
         }
 
         // Filter berdasarkan poliklinik (kode atau nama)
@@ -72,12 +72,12 @@ class RawatJalanController extends Controller
             $query->where('reg_periksa.kd_poli', $request->kd_poli);
         }
         if ($request->filled('nama_poli')) {
-            $query->where('poliklinik.nm_poli', 'like', '%' . $request->nama_poli . '%');
+            $query->where('poliklinik.nm_poli', 'like', '%'.$request->nama_poli.'%');
         }
 
         $rawatJalan = $query->orderBy('reg_periksa.tgl_registrasi', 'desc')
-                           ->orderBy('reg_periksa.jam_reg', 'desc')
-                           ->paginate(15);
+            ->orderBy('reg_periksa.jam_reg', 'desc')
+            ->paginate(15);
 
         $statusOptions = [
             'Belum' => 'Belum',
@@ -87,12 +87,12 @@ class RawatJalanController extends Controller
             'Dirujuk' => 'Dirujuk',
             'Meninggal' => 'Meninggal',
             'Dirawat' => 'Dirawat',
-            'Pulang Paksa' => 'Pulang Paksa'
+            'Pulang Paksa' => 'Pulang Paksa',
         ];
 
         $statusBayarOptions = [
             'Sudah Bayar' => 'Sudah Bayar',
-            'Belum Bayar' => 'Belum Bayar'
+            'Belum Bayar' => 'Belum Bayar',
         ];
 
         // Ambil opsi dokter dan poliklinik untuk dropdown statis
@@ -112,7 +112,7 @@ class RawatJalanController extends Controller
             'filters' => array_merge(
                 $request->only(['tanggal', 'status', 'status_bayar', 'nama_pasien', 'kd_dokter', 'kd_poli', 'nama_dokter', 'nama_poli']),
                 ['tanggal' => $appliedDate]
-            )
+            ),
         ]);
     }
 
@@ -125,7 +125,7 @@ class RawatJalanController extends Controller
         $polikliniks = Poliklinik::aktif()->orderBy('nm_poli')->get();
         $dokters = Dokter::aktif()->orderBy('nm_dokter')->get();
         $penjaabs = Penjab::aktif()->orderBy('png_jawab')->get();
-        
+
         $statusOptions = [
             'Belum' => 'Belum',
             'Sudah' => 'Sudah',
@@ -134,34 +134,34 @@ class RawatJalanController extends Controller
             'Dirujuk' => 'Dirujuk',
             'Meninggal' => 'Meninggal',
             'Dirawat' => 'Dirawat',
-            'Pulang Paksa' => 'Pulang Paksa'
+            'Pulang Paksa' => 'Pulang Paksa',
         ];
 
         $statusDaftarOptions = [
             '-' => '-',
             'Lama' => 'Lama',
-            'Baru' => 'Baru'
+            'Baru' => 'Baru',
         ];
 
         $statusLanjutOptions = [
             'Ralan' => 'Ralan',
-            'Ranap' => 'Ranap'
+            'Ranap' => 'Ranap',
         ];
 
         $statusBayarOptions = [
             'Sudah Bayar' => 'Sudah Bayar',
-            'Belum Bayar' => 'Belum Bayar'
+            'Belum Bayar' => 'Belum Bayar',
         ];
 
         $statusPoliOptions = [
             'Lama' => 'Lama',
-            'Baru' => 'Baru'
+            'Baru' => 'Baru',
         ];
 
         $sttsumurOptions = [
             'Th' => 'Tahun',
             'Bl' => 'Bulan',
-            'Hr' => 'Hari'
+            'Hr' => 'Hari',
         ];
 
         $keputusanOptions = [
@@ -173,7 +173,7 @@ class RawatJalanController extends Controller
             'MERAH' => 'MERAH',
             'HITAM' => 'HITAM',
             'MJKN' => 'MJKN',
-            'CHECK-IN' => 'CHECK-IN'
+            'CHECK-IN' => 'CHECK-IN',
         ];
 
         return Inertia::render('RawatJalan/Create', [
@@ -187,7 +187,7 @@ class RawatJalanController extends Controller
             'statusBayarOptions' => $statusBayarOptions,
             'statusPoliOptions' => $statusPoliOptions,
             'sttsumurOptions' => $sttsumurOptions,
-            'keputusanOptions' => $keputusanOptions
+            'keputusanOptions' => $keputusanOptions,
         ]);
     }
 
@@ -215,7 +215,7 @@ class RawatJalanController extends Controller
         $rawat = null;
         if ($noRawat) {
             $rawat = RawatJalan::with('patient')
-                ->when($noRkmMedis, fn($q) => $q->where('no_rkm_medis', $noRkmMedis))
+                ->when($noRkmMedis, fn ($q) => $q->where('no_rkm_medis', $noRkmMedis))
                 ->where('no_rawat', $noRawat)
                 ->first();
         } elseif ($noRkmMedis) {
@@ -265,7 +265,7 @@ class RawatJalanController extends Controller
                 ->orderByDesc('tgl_registrasi')
                 ->orderByDesc('jam_reg')
                 ->limit(25)
-                ->get(['no_rawat','tgl_registrasi','jam_reg','kd_dokter','kd_poli','stts','status_bayar']);
+                ->get(['no_rawat', 'tgl_registrasi', 'jam_reg', 'kd_dokter', 'kd_poli', 'stts', 'status_bayar']);
         }
 
         return response()->json([
@@ -290,7 +290,7 @@ class RawatJalanController extends Controller
             $noRM = $decoded['no_rkm_medis'] ?? $noRM;
         }
 
-        if (!$noRM) {
+        if (! $noRM) {
             return response()->json(['data' => []]);
         }
 
@@ -331,7 +331,7 @@ class RawatJalanController extends Controller
             $noRawat = $decoded['no_rawat'] ?? $noRawat;
         }
 
-        if (!$noRawat) {
+        if (! $noRawat) {
             return response()->json(['data' => []]);
         }
 
@@ -340,7 +340,7 @@ class RawatJalanController extends Controller
             ->orderByDesc('tgl_perawatan')
             ->orderByDesc('jam_rawat')
             ->get([
-                'no_rawat','tgl_perawatan','jam_rawat','suhu_tubuh','tensi','nadi','respirasi','tinggi','berat','spo2','gcs','kesadaran','keluhan','pemeriksaan','alergi','lingkar_perut','rtl','penilaian','instruksi','evaluasi','nip'
+                'no_rawat', 'tgl_perawatan', 'jam_rawat', 'suhu_tubuh', 'tensi', 'nadi', 'respirasi', 'tinggi', 'berat', 'spo2', 'gcs', 'kesadaran', 'keluhan', 'pemeriksaan', 'alergi', 'lingkar_perut', 'rtl', 'penilaian', 'instruksi', 'evaluasi', 'nip',
             ]);
 
         return response()->json(['data' => $rows]);
@@ -355,10 +355,10 @@ class RawatJalanController extends Controller
             ->join('databarang', 'detail_pemberian_obat.kode_brng', '=', 'databarang.kode_brng')
             ->where('detail_pemberian_obat.no_rawat', $noRawat)
             ->where('detail_pemberian_obat.status', 'Ralan')
-            ->select('databarang.nama_brng', 'detail_pemberian_obat.jml','detail_pemberian_obat.kode_brng','detail_pemberian_obat.tgl_perawatan','detail_pemberian_obat.jam')
+            ->select('databarang.nama_brng', 'detail_pemberian_obat.jml', 'detail_pemberian_obat.kode_brng', 'detail_pemberian_obat.tgl_perawatan', 'detail_pemberian_obat.jam')
             ->get();
 
-        foreach($dataobat as $obat) {
+        foreach ($dataobat as $obat) {
             $aturan = DB::table('aturan_pakai')
                 ->where('kode_brng', $obat->kode_brng)
                 ->where('no_rawat', $noRawat)
@@ -399,6 +399,7 @@ class RawatJalanController extends Controller
     public function getPemeriksaanLabPublic(Request $request, $no_rawat)
     {
         $rows = self::getPemeriksaanLab($no_rawat);
+
         return response()->json(['data' => $rows]);
     }
 
@@ -410,12 +411,12 @@ class RawatJalanController extends Controller
         // Ambil dua sumber terpisah lalu gabungkan di PHP untuk menghindari isu UNION/ORDER BY
         $periksa = DB::table('periksa_radiologi')
             ->where('no_rawat', $noRawat)
-            ->get(['no_rawat','tgl_periksa','jam']);
+            ->get(['no_rawat', 'tgl_periksa', 'jam']);
 
         // Tabel hasil_radiologi: no_rawat, tgl_periksa, jam, hasil (tanpa kolom keterangan)
         $hasil = DB::table('hasil_radiologi')
             ->where('no_rawat', $noRawat)
-            ->get(['no_rawat','tgl_periksa','jam','hasil']);
+            ->get(['no_rawat', 'tgl_periksa', 'jam', 'hasil']);
 
         // Index hasil by composite key (tgl_periksa + jam)
         $keyedHasil = [];
@@ -433,7 +434,7 @@ class RawatJalanController extends Controller
                 'tgl_periksa' => $p->tgl_periksa,
                 'jam' => $p->jam,
                 'hasil' => isset($h->hasil) ? $h->hasil : '',
-                'keterangan' => ''
+                'keterangan' => '',
             ];
             // Tandai terpakai
             unset($keyedHasil[$key]);
@@ -446,14 +447,15 @@ class RawatJalanController extends Controller
                 'tgl_periksa' => $h->tgl_periksa,
                 'jam' => $h->jam,
                 'hasil' => isset($h->hasil) ? $h->hasil : '',
-                'keterangan' => ''
+                'keterangan' => '',
             ];
         }
 
         // Urutkan desc berdasarkan tanggal dan jam
-        usort($merged, function($a, $b) {
+        usort($merged, function ($a, $b) {
             $da = strtotime($a->tgl_periksa.' '.($a->jam ?? '00:00:00'));
             $db = strtotime($b->tgl_periksa.' '.($b->jam ?? '00:00:00'));
+
             return $db <=> $da;
         });
 
@@ -466,6 +468,7 @@ class RawatJalanController extends Controller
     public function getRadiologiPublic(Request $request, $no_rawat)
     {
         $rows = self::getRadiologi($no_rawat);
+
         return response()->json(['data' => $rows]);
     }
 
@@ -531,15 +534,15 @@ class RawatJalanController extends Controller
             $regPeriksa = DB::table('reg_periksa')
                 ->where('no_rawat', $validated['no_rawat'])
                 ->first();
-            
+
             if ($regPeriksa) {
                 $currentStts = $regPeriksa->stts ?? 'Belum';
-                
+
                 // Selalu update menjadi 'Sudah' ketika pemeriksaan disimpan
                 $updated = DB::table('reg_periksa')
                     ->where('no_rawat', $validated['no_rawat'])
                     ->update(['stts' => 'Sudah']);
-                
+
                 \Illuminate\Support\Facades\Log::info('Berhasil update status reg_periksa menjadi Sudah setelah simpan pemeriksaan', [
                     'no_rawat' => $validated['no_rawat'],
                     'previous_stts' => $currentStts,
@@ -618,7 +621,7 @@ class RawatJalanController extends Controller
         ]);
 
         $key = $validated['key'];
-        $data = $request->only(['suhu_tubuh','tensi','nadi','respirasi','tinggi','berat','spo2','gcs','kesadaran','keluhan','pemeriksaan','alergi','lingkar_perut','rtl','penilaian','instruksi','evaluasi','nip']);
+        $data = $request->only(['suhu_tubuh', 'tensi', 'nadi', 'respirasi', 'tinggi', 'berat', 'spo2', 'gcs', 'kesadaran', 'keluhan', 'pemeriksaan', 'alergi', 'lingkar_perut', 'rtl', 'penilaian', 'instruksi', 'evaluasi', 'nip']);
 
         $updated = DB::table('pemeriksaan_ralan')
             ->where('no_rawat', $key['no_rawat'])
@@ -636,15 +639,15 @@ class RawatJalanController extends Controller
             $regPeriksa = DB::table('reg_periksa')
                 ->where('no_rawat', $key['no_rawat'])
                 ->first();
-            
+
             if ($regPeriksa) {
                 $currentStts = $regPeriksa->stts ?? 'Belum';
-                
+
                 // Selalu update menjadi 'Sudah' ketika pemeriksaan diupdate
                 $updatedReg = DB::table('reg_periksa')
                     ->where('no_rawat', $key['no_rawat'])
                     ->update(['stts' => 'Sudah']);
-                
+
                 \Illuminate\Support\Facades\Log::info('Berhasil update status reg_periksa menjadi Sudah setelah update pemeriksaan', [
                     'no_rawat' => $key['no_rawat'],
                     'previous_stts' => $currentStts,
@@ -686,11 +689,12 @@ class RawatJalanController extends Controller
             ->get(['diagnosa_pasien.kd_penyakit', 'penyakit.nm_penyakit', 'diagnosa_pasien.prioritas']);
 
         $data = $rows->map(function ($row) {
-            $type = ((string)$row->prioritas === '1') ? 'utama' : 'sekunder';
+            $type = ((string) $row->prioritas === '1') ? 'utama' : 'sekunder';
+
             return [
                 'kode' => $row->kd_penyakit,
                 'nama' => $row->nm_penyakit,
-                'prioritas' => (string)$row->prioritas,
+                'prioritas' => (string) $row->prioritas,
                 'type' => $type,
             ];
         });
@@ -742,7 +746,7 @@ class RawatJalanController extends Controller
                 $row = [
                     'no_rawat' => $no_rawat,
                     'kd_penyakit' => $item['kode'],
-                    'prioritas' => (string)$prioritas,
+                    'prioritas' => (string) $prioritas,
                 ];
 
                 // Beberapa skema memiliki kolom 'status' (Ralan/Ranap). Sertakan bila ada.
@@ -766,11 +770,12 @@ class RawatJalanController extends Controller
                 ->get(['diagnosa_pasien.kd_penyakit', 'penyakit.nm_penyakit', 'diagnosa_pasien.prioritas']);
 
             $data = $rows->map(function ($row) {
-                $type = ((string)$row->prioritas === '1') ? 'utama' : 'sekunder';
+                $type = ((string) $row->prioritas === '1') ? 'utama' : 'sekunder';
+
                 return [
                     'kode' => $row->kd_penyakit,
                     'nama' => $row->nm_penyakit,
-                    'prioritas' => (string)$row->prioritas,
+                    'prioritas' => (string) $row->prioritas,
                     'type' => $type,
                 ];
             });
@@ -778,6 +783,7 @@ class RawatJalanController extends Controller
             return response()->json(['message' => 'Diagnosa tersimpan', 'data' => $data]);
         } catch (\Throwable $e) {
             DB::rollBack();
+
             return response()->json(['message' => 'Gagal menyimpan diagnosa', 'error' => $e->getMessage()], 500);
         }
     }
@@ -789,15 +795,15 @@ class RawatJalanController extends Controller
     {
         $q = trim((string) $request->query('q', ''));
         $rows = DB::table('pegawai')
-            ->when($q !== '', function($query) use ($q) {
-                $query->where(function($sub) use ($q) {
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($sub) use ($q) {
                     $sub->where('nama', 'like', "%{$q}%")
                         ->orWhere('nik', 'like', "%{$q}%");
                 });
             })
             ->orderBy('nama')
             ->limit(20)
-            ->get(['nik','nama']);
+            ->get(['nik', 'nama']);
 
         return response()->json(['data' => $rows]);
     }
@@ -820,7 +826,7 @@ class RawatJalanController extends Controller
             'stts_daftar' => 'required|in:-,Lama,Baru',
             'status_lanjut' => 'required|in:Ralan,Ranap',
             'kd_pj' => 'required|string|max:3',
-            'status_bayar' => 'required|in:Sudah Bayar,Belum Bayar'
+            'status_bayar' => 'required|in:Sudah Bayar,Belum Bayar',
         ]);
 
         // Generate no_reg dan no_rawat
@@ -830,14 +836,14 @@ class RawatJalanController extends Controller
         // Ambil data pasien untuk menghitung umur
         $patient = Patient::find($request->no_rkm_medis);
         $umur = $patient->calculateAge();
-        
+
         // Tentukan status_poli otomatis berdasarkan riwayat kunjungan
         $status_poli = RawatJalan::checkPatientStatus($request->no_rkm_medis);
-        
+
         // Ambil biaya_reg dari tabel poliklinik
         $poliklinik = Poliklinik::find($request->kd_poli);
         $biaya_reg = $status_poli === 'Baru' ? $poliklinik->registrasi : $poliklinik->registrasilama;
-        
+
         // Parse umur untuk mendapatkan nilai dan satuan
         $umurdaftar = null;
         $sttsumur = null;
@@ -867,7 +873,7 @@ class RawatJalanController extends Controller
         RawatJalan::create($data);
 
         return redirect()->route('rawat-jalan.index')
-                        ->with('success', 'Data rawat jalan berhasil ditambahkan.');
+            ->with('success', 'Data rawat jalan berhasil ditambahkan.');
     }
 
     /**
@@ -876,8 +882,9 @@ class RawatJalanController extends Controller
     public function show(RawatJalan $rawatJalan)
     {
         $rawatJalan->load('patient');
+
         return Inertia::render('RawatJalan/Show', [
-            'rawatJalan' => $rawatJalan
+            'rawatJalan' => $rawatJalan,
         ]);
     }
 
@@ -890,7 +897,7 @@ class RawatJalanController extends Controller
         $polikliniks = Poliklinik::aktif()->orderBy('nm_poli')->get();
         $dokters = Dokter::aktif()->orderBy('nm_dokter')->get();
         $penjaabs = Penjab::aktif()->orderBy('png_jawab')->get();
-        
+
         $statusOptions = [
             'Belum' => 'Belum',
             'Sudah' => 'Sudah',
@@ -899,34 +906,34 @@ class RawatJalanController extends Controller
             'Dirujuk' => 'Dirujuk',
             'Meninggal' => 'Meninggal',
             'Dirawat' => 'Dirawat',
-            'Pulang Paksa' => 'Pulang Paksa'
+            'Pulang Paksa' => 'Pulang Paksa',
         ];
 
         $statusDaftarOptions = [
             '-' => '-',
             'Lama' => 'Lama',
-            'Baru' => 'Baru'
+            'Baru' => 'Baru',
         ];
 
         $statusLanjutOptions = [
             'Ralan' => 'Ralan',
-            'Ranap' => 'Ranap'
+            'Ranap' => 'Ranap',
         ];
 
         $statusBayarOptions = [
             'Sudah Bayar' => 'Sudah Bayar',
-            'Belum Bayar' => 'Belum Bayar'
+            'Belum Bayar' => 'Belum Bayar',
         ];
 
         $statusPoliOptions = [
             'Lama' => 'Lama',
-            'Baru' => 'Baru'
+            'Baru' => 'Baru',
         ];
 
         $sttsumurOptions = [
             'Th' => 'Tahun',
             'Bl' => 'Bulan',
-            'Hr' => 'Hari'
+            'Hr' => 'Hari',
         ];
 
         $keputusanOptions = [
@@ -938,7 +945,7 @@ class RawatJalanController extends Controller
             'MERAH' => 'MERAH',
             'HITAM' => 'HITAM',
             'MJKN' => 'MJKN',
-            'CHECK-IN' => 'CHECK-IN'
+            'CHECK-IN' => 'CHECK-IN',
         ];
 
         return Inertia::render('RawatJalan/Edit', [
@@ -953,7 +960,7 @@ class RawatJalanController extends Controller
             'statusBayarOptions' => $statusBayarOptions,
             'statusPoliOptions' => $statusPoliOptions,
             'sttsumurOptions' => $sttsumurOptions,
-            'keputusanOptions' => $keputusanOptions
+            'keputusanOptions' => $keputusanOptions,
         ]);
     }
 
@@ -979,7 +986,7 @@ class RawatJalanController extends Controller
             'umurdaftar' => 'nullable|integer|min:0',
             'sttsumur' => 'nullable|in:Th,Bl,Hr',
             'status_bayar' => 'required|in:Sudah Bayar,Belum Bayar',
-            'status_poli' => 'required|in:Lama,Baru'
+            'status_poli' => 'required|in:Lama,Baru',
         ]);
 
         $data = $request->all();
@@ -989,7 +996,7 @@ class RawatJalanController extends Controller
         $rawatJalan->update($data);
 
         return redirect()->route('rawat-jalan.index')
-                        ->with('success', 'Data rawat jalan berhasil diperbarui.');
+            ->with('success', 'Data rawat jalan berhasil diperbarui.');
     }
 
     /**
@@ -1000,7 +1007,7 @@ class RawatJalanController extends Controller
         $rawatJalan->delete();
 
         return redirect()->route('rawat-jalan.index')
-                        ->with('success', 'Data rawat jalan berhasil dihapus.');
+            ->with('success', 'Data rawat jalan berhasil dihapus.');
     }
 
     /**
@@ -1016,8 +1023,8 @@ class RawatJalanController extends Controller
         $dokter = $rawatJalan->dokter;
 
         // Jika dokter tidak ditemukan, buat objek dokter kosong
-        if (!$dokter) {
-            $dokter = new \App\Models\Dokter();
+        if (! $dokter) {
+            $dokter = new \App\Models\Dokter;
             $dokter->kd_dokter = '';
             $dokter->nm_dokter = '';
         }
@@ -1025,7 +1032,7 @@ class RawatJalanController extends Controller
         return Inertia::render('RawatJalan/components/SuratSehat', [
             'rawatJalan' => $rawatJalan,
             'patient' => $patient,
-            'dokter' => $dokter
+            'dokter' => $dokter,
         ]);
     }
 
@@ -1049,9 +1056,9 @@ class RawatJalanController extends Controller
 
         // TODO: Insert data ke tabel surat_keterangan_sehat
         // DB::table('surat_keterangan_sehat')->insert($request->all());
-        
+
         return redirect()->route('rawat-jalan.index')
-                        ->with('success', 'Surat sehat berhasil dibuat dan disimpan.');
+            ->with('success', 'Surat sehat berhasil dibuat dan disimpan.');
     }
 
     /**
@@ -1067,8 +1074,8 @@ class RawatJalanController extends Controller
         $dokter = $rawatJalan->dokter;
 
         // Jika dokter tidak ditemukan, buat objek dokter kosong
-        if (!$dokter) {
-            $dokter = new \App\Models\Dokter();
+        if (! $dokter) {
+            $dokter = new \App\Models\Dokter;
             $dokter->kd_dokter = '';
             $dokter->nm_dokter = '';
         }
@@ -1076,7 +1083,7 @@ class RawatJalanController extends Controller
         return Inertia::render('RawatJalan/components/SuratSakit', [
             'rawatJalan' => $rawatJalan,
             'patient' => $patient,
-            'dokter' => $dokter
+            'dokter' => $dokter,
         ]);
     }
 
@@ -1103,8 +1110,8 @@ class RawatJalanController extends Controller
 
         // TODO: Insert data ke tabel suratsakitpihak2
         // DB::table('suratsakitpihak2')->insert($request->all());
-        
+
         return redirect()->route('rawat-jalan.index')
-                        ->with('success', 'Surat sakit berhasil dibuat dan disimpan.');
+            ->with('success', 'Surat sakit berhasil dibuat dan disimpan.');
     }
 }

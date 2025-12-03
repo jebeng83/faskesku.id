@@ -4,8 +4,8 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Wilayah;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class WilayahController extends Controller
 {
@@ -26,13 +26,13 @@ class WilayahController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $data
+                'data' => $data,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch provinces',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -44,10 +44,10 @@ class WilayahController extends Controller
     {
         $provinceCode = $request->route('provinceCode');
 
-        if (!$provinceCode) {
+        if (! $provinceCode) {
             return response()->json([
                 'success' => false,
-                'message' => 'Province code is required'
+                'message' => 'Province code is required',
             ], 400);
         }
 
@@ -63,13 +63,13 @@ class WilayahController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $data
+                'data' => $data,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch regencies',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -81,10 +81,10 @@ class WilayahController extends Controller
     {
         $regencyCode = $request->route('regencyCode');
 
-        if (!$regencyCode) {
+        if (! $regencyCode) {
             return response()->json([
                 'success' => false,
-                'message' => 'Regency code is required'
+                'message' => 'Regency code is required',
             ], 400);
         }
 
@@ -100,13 +100,13 @@ class WilayahController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $data
+                'data' => $data,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch districts',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -118,10 +118,10 @@ class WilayahController extends Controller
     {
         $districtCode = $request->route('districtCode');
 
-        if (!$districtCode) {
+        if (! $districtCode) {
             return response()->json([
                 'success' => false,
-                'message' => 'District code is required'
+                'message' => 'District code is required',
             ], 400);
         }
 
@@ -137,13 +137,13 @@ class WilayahController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $data
+                'data' => $data,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch villages',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -169,13 +169,13 @@ class WilayahController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $data
+                'data' => $data,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch villages',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -189,10 +189,10 @@ class WilayahController extends Controller
         $level = $request->get('level'); // province, regency, district, village
 
         // Allow empty query for village level to get all villages
-        if (!$query && $level !== 'village') {
+        if (! $query && $level !== 'village') {
             return response()->json([
                 'success' => false,
-                'message' => 'Search query is required'
+                'message' => 'Search query is required',
             ], 400);
         }
 
@@ -210,13 +210,13 @@ class WilayahController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $data
+                'data' => $data,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to search wilayah',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -228,20 +228,20 @@ class WilayahController extends Controller
     {
         $code = $request->route('code');
 
-        if (!$code) {
+        if (! $code) {
             return response()->json([
                 'success' => false,
-                'message' => 'Wilayah code is required'
+                'message' => 'Wilayah code is required',
             ], 400);
         }
 
         try {
             $wilayah = Wilayah::getByCode($code);
 
-            if (!$wilayah) {
+            if (! $wilayah) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Wilayah not found'
+                    'message' => 'Wilayah not found',
                 ], 404);
             }
 
@@ -266,13 +266,13 @@ class WilayahController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $data
+                'data' => $data,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch wilayah',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

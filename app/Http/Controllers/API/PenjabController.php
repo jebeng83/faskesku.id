@@ -4,8 +4,8 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Penjab;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class PenjabController extends Controller
@@ -32,12 +32,12 @@ class PenjabController extends Controller
         // Ambil semua kd_pj yang dimulai dengan prefix
         $codes = Penjab::query()
             ->select('kd_pj')
-            ->where('kd_pj', 'like', $prefix . '%')
+            ->where('kd_pj', 'like', $prefix.'%')
             ->pluck('kd_pj');
 
         $lastNumber = 0;
         foreach ($codes as $code) {
-            if (preg_match('/^' . preg_quote($prefix, '/') . '(\d{2})$/', $code, $m)) {
+            if (preg_match('/^'.preg_quote($prefix, '/').'(\d{2})$/', $code, $m)) {
                 $num = (int) $m[1];
                 if ($num > $lastNumber) {
                     $lastNumber = $num;
@@ -47,9 +47,9 @@ class PenjabController extends Controller
 
         $nextNumber = $lastNumber + 1;
         $lastCode = $lastNumber > 0
-            ? $prefix . str_pad((string) $lastNumber, 2, '0', STR_PAD_LEFT)
+            ? $prefix.str_pad((string) $lastNumber, 2, '0', STR_PAD_LEFT)
             : null;
-        $nextCode = $prefix . str_pad((string) $nextNumber, 2, '0', STR_PAD_LEFT);
+        $nextCode = $prefix.str_pad((string) $nextNumber, 2, '0', STR_PAD_LEFT);
 
         return response()->json([
             'prefix' => $prefix,

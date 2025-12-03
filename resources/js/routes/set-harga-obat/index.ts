@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::update
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:108
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:107
 * @route '/farmasi/set-harga-obat'
 */
 export const update = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::update
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:108
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:107
 * @route '/farmasi/set-harga-obat'
 */
 update.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ update.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::update
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:108
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:107
 * @route '/farmasi/set-harga-obat'
 */
 update.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

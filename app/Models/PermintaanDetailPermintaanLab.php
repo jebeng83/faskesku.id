@@ -10,22 +10,25 @@ class PermintaanDetailPermintaanLab extends Model
     use HasFactory;
 
     protected $table = 'permintaan_detail_permintaan_lab';
-    
+
     // Composite primary key
     protected $primaryKey = ['noorder', 'kd_jenis_prw', 'id_template'];
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [
         'noorder',
         'kd_jenis_prw',
         'id_template',
-        'stts_bayar'
+        'stts_bayar',
     ];
 
     protected $casts = [
-        'stts_bayar' => 'string'
+        'stts_bayar' => 'string',
     ];
 
     /**
@@ -49,6 +52,7 @@ class PermintaanDetailPermintaanLab extends Model
         } else {
             $key = $this->getAttribute($this->primaryKey);
         }
+
         return $key;
     }
 
@@ -64,6 +68,7 @@ class PermintaanDetailPermintaanLab extends Model
         } else {
             $query->where($this->primaryKey, $this->getAttribute($this->primaryKey));
         }
+
         return $query;
     }
 
@@ -131,11 +136,11 @@ class PermintaanDetailPermintaanLab extends Model
         if ($this->templateLaboratorium) {
             return $this->templateLaboratorium->biaya_item;
         }
-        
+
         if ($this->jnsPerawatanLab) {
             return $this->jnsPerawatanLab->total_byr;
         }
-        
+
         return 0;
     }
 
@@ -147,11 +152,11 @@ class PermintaanDetailPermintaanLab extends Model
         if ($this->templateLaboratorium) {
             return $this->templateLaboratorium->Pemeriksaan;
         }
-        
+
         if ($this->jnsPerawatanLab) {
             return $this->jnsPerawatanLab->nm_perawatan;
         }
-        
+
         return 'N/A';
     }
 

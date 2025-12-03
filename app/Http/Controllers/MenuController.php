@@ -65,7 +65,7 @@ class MenuController extends Controller
             'menus' => $menus,
             'parentOptions' => $parentOptions,
             'permissions' => $permissions,
-            'filters' => $request->only(['search', 'parent_id', 'status'])
+            'filters' => $request->only(['search', 'parent_id', 'status']),
         ]);
     }
 
@@ -83,7 +83,7 @@ class MenuController extends Controller
 
         return inertia('Menus/Create', [
             'parentMenus' => $parentMenus,
-            'permissions' => $permissions
+            'permissions' => $permissions,
         ]);
     }
 
@@ -102,24 +102,24 @@ class MenuController extends Controller
             'sort_order' => 'nullable|integer|min:0',
             'is_active' => 'boolean',
             'permission_name' => 'nullable|string|exists:permissions,name',
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
         ]);
 
         // Auto-generate slug if not provided
-        if (!$validated['slug']) {
+        if (! $validated['slug']) {
             $validated['slug'] = Str::slug($validated['name']);
 
             // Ensure unique slug
             $originalSlug = $validated['slug'];
             $counter = 1;
             while (Menu::where('slug', $validated['slug'])->exists()) {
-                $validated['slug'] = $originalSlug . '-' . $counter;
+                $validated['slug'] = $originalSlug.'-'.$counter;
                 $counter++;
             }
         }
 
         // Set default sort order if not provided
-        if (!isset($validated['sort_order'])) {
+        if (! isset($validated['sort_order'])) {
             $maxOrder = Menu::where('parent_id', $validated['parent_id'] ?? null)
                 ->max('sort_order');
             $validated['sort_order'] = ($maxOrder ?? 0) + 1;
@@ -141,7 +141,7 @@ class MenuController extends Controller
         }]);
 
         return inertia('Menus/Show', [
-            'menu' => $menu
+            'menu' => $menu,
         ]);
     }
 
@@ -161,7 +161,7 @@ class MenuController extends Controller
         return inertia('Menus/Edit', [
             'menu' => $menu,
             'parentMenus' => $parentMenus,
-            'permissions' => $permissions
+            'permissions' => $permissions,
         ]);
     }
 
@@ -176,7 +176,7 @@ class MenuController extends Controller
                 'nullable',
                 'string',
                 'max:255',
-                Rule::unique('menus', 'slug')->ignore($menu->id)
+                Rule::unique('menus', 'slug')->ignore($menu->id),
             ],
             'icon' => 'nullable|string|max:255',
             'route' => 'nullable|string|max:255',
@@ -193,23 +193,23 @@ class MenuController extends Controller
                     if ($value && $this->wouldCreateCircularReference($menu, $value)) {
                         $fail('Pengaturan parent ini akan membuat referensi circular.');
                     }
-                }
+                },
             ],
             'sort_order' => 'nullable|integer|min:0',
             'is_active' => 'boolean',
             'permission_name' => 'nullable|string|exists:permissions,name',
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
         ]);
 
         // Auto-generate slug if not provided
-        if (!$validated['slug']) {
+        if (! $validated['slug']) {
             $validated['slug'] = Str::slug($validated['name']);
 
             // Ensure unique slug
             $originalSlug = $validated['slug'];
             $counter = 1;
             while (Menu::where('slug', $validated['slug'])->where('id', '!=', $menu->id)->exists()) {
-                $validated['slug'] = $originalSlug . '-' . $counter;
+                $validated['slug'] = $originalSlug.'-'.$counter;
                 $counter++;
             }
         }
@@ -247,7 +247,7 @@ class MenuController extends Controller
         $menus = Menu::getMenuHierarchy($userId);
 
         return response()->json([
-            'menus' => $menus
+            'menus' => $menus,
         ]);
     }
 
@@ -260,13 +260,13 @@ class MenuController extends Controller
             'items' => 'required|array',
             'items.*.id' => 'required|exists:menus,id',
             'items.*.sort_order' => 'required|integer|min:0',
-            'items.*.parent_id' => 'nullable|exists:menus,id'
+            'items.*.parent_id' => 'nullable|exists:menus,id',
         ]);
 
         foreach ($validated['items'] as $item) {
             Menu::where('id', $item['id'])->update([
                 'sort_order' => $item['sort_order'],
-                'parent_id' => $item['parent_id']
+                'parent_id' => $item['parent_id'],
             ]);
         }
 
@@ -279,7 +279,7 @@ class MenuController extends Controller
      */
     public function toggleStatus(Menu $menu)
     {
-        $menu->update(['is_active' => !$menu->is_active]);
+        $menu->update(['is_active' => ! $menu->is_active]);
 
         $status = $menu->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
@@ -337,7 +337,7 @@ class MenuController extends Controller
             'stethoscope' => 'fas fa-stethoscope',
             'user-md' => 'fas fa-user-md',
             'pills' => 'fas fa-pills',
-            'heartbeat' => 'fas fa-heartbeat'
+            'heartbeat' => 'fas fa-heartbeat',
         ];
 
         return response()->json(['icons' => $icons]);

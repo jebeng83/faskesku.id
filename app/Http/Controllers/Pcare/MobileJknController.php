@@ -53,6 +53,7 @@ class MobileJknController extends Controller
             if (is_array($parsed)) {
                 return response()->json($parsed, $response->status());
             }
+
             // Fallback: return raw body
             return response($body, $response->status())->header('Content-Type', 'application/json');
         } catch (\InvalidArgumentException $e) {
@@ -60,16 +61,18 @@ class MobileJknController extends Controller
             Log::warning('MobileJKN configuration error', [
                 'message' => $e->getMessage(),
             ]);
+
             return response()->json([
                 'metadata' => [
                     'code' => 400,
-                    'message' => 'Konfigurasi Mobile JKN belum lengkap: ' . $e->getMessage(),
+                    'message' => 'Konfigurasi Mobile JKN belum lengkap: '.$e->getMessage(),
                 ],
             ], 400);
         } catch (\Throwable $e) {
             Log::error('MobileJKN getReferensiPoli error', [
                 'message' => $e->getMessage(),
             ]);
+
             return response()->json([
                 'metadata' => [
                     'code' => 500,
@@ -109,7 +112,7 @@ class MobileJknController extends Controller
                 ->where('no_rkm_medis', $noRkmMedis)
                 ->first();
 
-            if (!$pasien) {
+            if (! $pasien) {
                 return response()->json([
                     'metadata' => [
                         'code' => 404,
@@ -124,7 +127,7 @@ class MobileJknController extends Controller
                 ->where('kd_poli_rs', $kdPoli)
                 ->first();
 
-            if (!$mapPoli) {
+            if (! $mapPoli) {
                 return response()->json([
                     'metadata' => [
                         'code' => 400,
@@ -139,7 +142,7 @@ class MobileJknController extends Controller
                 ->where('kd_dokter', $kdDokter)
                 ->first();
 
-            if (!$mapDokter) {
+            if (! $mapDokter) {
                 return response()->json([
                     'metadata' => [
                         'code' => 400,
@@ -162,7 +165,7 @@ class MobileJknController extends Controller
             $rawJamSelesai = $jadwal?->jam_selesai ?: '16:00';
             $formatJam = function ($time) {
                 // Terima input seperti '07:30', '07:30:00', bahkan '7:30'
-                if (!is_string($time)) {
+                if (! is_string($time)) {
                     return '08:00';
                 }
                 // Ambil hanya HH:mm di depan
@@ -170,18 +173,19 @@ class MobileJknController extends Controller
                 $time = substr($time, 0, 5);
                 // 2) Pastikan ada leading zero untuk jam satu digit (7:30 => 07:30)
                 if (preg_match('/^\d:\d{2}$/', $time)) {
-                    $time = '0' . $time;
+                    $time = '0'.$time;
                 }
                 // Validasi sederhana HH:mm
-                if (!preg_match('/^\d{2}:\d{2}$/', $time)) {
+                if (! preg_match('/^\d{2}:\d{2}$/', $time)) {
                     return '08:00';
                 }
+
                 return $time;
             };
 
             $jamMulai = $formatJam($rawJamMulai);
             $jamSelesai = $formatJam($rawJamSelesai);
-            $jamPraktek = $jamMulai . '-' . $jamSelesai;
+            $jamPraktek = $jamMulai.'-'.$jamSelesai;
 
             // Nomor antrean dan angka antrean: gunakan no_reg bila tersedia; jika tidak, coba ambil dari reg_periksa hari ini
             $nomorAntrean = $noReg;
@@ -193,7 +197,7 @@ class MobileJknController extends Controller
                     ->where('kd_poli', $kdPoli)
                     ->max('no_reg') ?: '');
             }
-            if (!empty($nomorAntrean)) {
+            if (! empty($nomorAntrean)) {
                 // Ekstrak angka dari no_reg (contoh: "005" => 5)
                 $angkaAntrean = (int) preg_replace('/\D+/', '', $nomorAntrean);
             }
@@ -206,6 +210,7 @@ class MobileJknController extends Controller
                 $name = trim($name);
                 // Hilangkan spasi di sekitar koma: " ," atau ", " -> ","
                 $name = preg_replace('/\s*,\s*/', ',', $name);
+
                 return $name;
             };
             $namaDokterPcare = $sanitizeName($mapDokter->nm_dokter_pcare ?? '');
@@ -260,23 +265,27 @@ class MobileJknController extends Controller
                         'metadata' => $meta,
                         'http_status' => $httpStatus,
                     ]);
+
                     return response()->json($parsed, $httpStatus);
                 }
                 // Jika tidak ada metadata, gunakan status asli
                 Log::info('MobileJKN addAntrean response (no metadata)', [
                     'status' => $response->status(),
                 ]);
+
                 return response()->json($parsed, $response->status());
             }
+
             return response($body, $response->status())->header('Content-Type', 'application/json');
         } catch (\InvalidArgumentException $e) {
             Log::warning('MobileJKN configuration error (addAntrean)', [
                 'message' => $e->getMessage(),
             ]);
+
             return response()->json([
                 'metadata' => [
                     'code' => 400,
-                    'message' => 'Konfigurasi Mobile JKN belum lengkap: ' . $e->getMessage(),
+                    'message' => 'Konfigurasi Mobile JKN belum lengkap: '.$e->getMessage(),
                 ],
             ], 400);
         } catch (\Throwable $e) {
@@ -288,6 +297,7 @@ class MobileJknController extends Controller
                 'tanggalperiksa' => $request->input('tanggalperiksa') ?: date('Y-m-d'),
                 'no_reg' => $request->input('no_reg') ?: null,
             ]);
+
             return response()->json([
                 'metadata' => [
                     'code' => 500,
@@ -337,6 +347,7 @@ class MobileJknController extends Controller
             if (is_array($parsed)) {
                 return response()->json($parsed, $response->status());
             }
+
             // Fallback: return raw body
             return response($body, $response->status())->header('Content-Type', 'application/json');
         } catch (\InvalidArgumentException $e) {
@@ -344,16 +355,18 @@ class MobileJknController extends Controller
             Log::warning('MobileJKN configuration error', [
                 'message' => $e->getMessage(),
             ]);
+
             return response()->json([
                 'metadata' => [
                     'code' => 400,
-                    'message' => 'Konfigurasi Mobile JKN belum lengkap: ' . $e->getMessage(),
+                    'message' => 'Konfigurasi Mobile JKN belum lengkap: '.$e->getMessage(),
                 ],
             ], 400);
         } catch (\Throwable $e) {
             Log::error('MobileJKN getReferensiDokter error', [
                 'message' => $e->getMessage(),
             ]);
+
             return response()->json([
                 'metadata' => [
                     'code' => 500,
@@ -407,10 +420,11 @@ class MobileJknController extends Controller
                 ->where('no_rkm_medis', $noRkmMedis)
                 ->first();
 
-            if (!$pasien) {
+            if (! $pasien) {
                 \Illuminate\Support\Facades\Log::channel('bpjs')->warning('MobileJKN panggilAntrean early exit: pasien tidak ditemukan', [
                     'no_rkm_medis' => $noRkmMedis,
                 ]);
+
                 return response()->json([
                     'metadata' => [
                         'code' => 404,
@@ -423,6 +437,7 @@ class MobileJknController extends Controller
                 \Illuminate\Support\Facades\Log::channel('bpjs')->warning('MobileJKN panggilAntrean early exit: no_peserta kosong', [
                     'no_rkm_medis' => $noRkmMedis,
                 ]);
+
                 return response()->json([
                     'metadata' => [
                         'code' => 400,
@@ -437,10 +452,11 @@ class MobileJknController extends Controller
                 ->where('kd_poli_rs', $kdPoli)
                 ->first();
 
-            if (!$mapPoli) {
+            if (! $mapPoli) {
                 \Illuminate\Support\Facades\Log::channel('bpjs')->warning('MobileJKN panggilAntrean early exit: mapping poli tidak ditemukan', [
                     'kd_poli_rs' => $kdPoli,
                 ]);
+
                 return response()->json([
                     'metadata' => [
                         'code' => 400,
@@ -495,19 +511,23 @@ class MobileJknController extends Controller
                         'metadata' => $meta,
                         'http_status' => $httpStatus,
                     ]);
+
                     return response()->json($parsed, $httpStatus);
                 }
+
                 return response()->json($parsed, $response->status());
             }
+
             return response($body, $response->status())->header('Content-Type', 'application/json');
         } catch (\InvalidArgumentException $e) {
             \Illuminate\Support\Facades\Log::channel('bpjs')->warning('MobileJKN configuration error (panggilAntrean)', [
                 'message' => $e->getMessage(),
             ]);
+
             return response()->json([
                 'metadata' => [
                     'code' => 400,
-                    'message' => 'Konfigurasi Mobile JKN belum lengkap: ' . $e->getMessage(),
+                    'message' => 'Konfigurasi Mobile JKN belum lengkap: '.$e->getMessage(),
                 ],
             ], 400);
         } catch (\Throwable $e) {
@@ -518,6 +538,7 @@ class MobileJknController extends Controller
                 'status' => $request->input('status'),
                 'tanggalperiksa' => $request->input('tanggalperiksa') ?: date('Y-m-d'),
             ]);
+
             return response()->json([
                 'metadata' => [
                     'code' => 500,
@@ -570,10 +591,11 @@ class MobileJknController extends Controller
                 ->where('no_rkm_medis', $noRkmMedis)
                 ->first();
 
-            if (!$pasien) {
+            if (! $pasien) {
                 \Illuminate\Support\Facades\Log::channel('bpjs')->warning('MobileJKN batalAntrean early exit: pasien tidak ditemukan', [
                     'no_rkm_medis' => $noRkmMedis,
                 ]);
+
                 return response()->json([
                     'metadata' => [
                         'code' => 404,
@@ -586,6 +608,7 @@ class MobileJknController extends Controller
                 \Illuminate\Support\Facades\Log::channel('bpjs')->warning('MobileJKN batalAntrean early exit: no_peserta kosong', [
                     'no_rkm_medis' => $noRkmMedis,
                 ]);
+
                 return response()->json([
                     'metadata' => [
                         'code' => 400,
@@ -600,10 +623,11 @@ class MobileJknController extends Controller
                 ->where('kd_poli_rs', $kdPoli)
                 ->first();
 
-            if (!$mapPoli) {
+            if (! $mapPoli) {
                 \Illuminate\Support\Facades\Log::channel('bpjs')->warning('MobileJKN batalAntrean early exit: mapping poli tidak ditemukan', [
                     'kd_poli_rs' => $kdPoli,
                 ]);
+
                 return response()->json([
                     'metadata' => [
                         'code' => 400,
@@ -642,19 +666,23 @@ class MobileJknController extends Controller
                         'metadata' => $meta,
                         'http_status' => $httpStatus,
                     ]);
+
                     return response()->json($parsed, $httpStatus);
                 }
+
                 return response()->json($parsed, $response->status());
             }
+
             return response($body, $response->status())->header('Content-Type', 'application/json');
         } catch (\InvalidArgumentException $e) {
             \Illuminate\Support\Facades\Log::channel('bpjs')->warning('MobileJKN configuration error (batalAntrean)', [
                 'message' => $e->getMessage(),
             ]);
+
             return response()->json([
                 'metadata' => [
                     'code' => 400,
-                    'message' => 'Konfigurasi Mobile JKN belum lengkap: ' . $e->getMessage(),
+                    'message' => 'Konfigurasi Mobile JKN belum lengkap: '.$e->getMessage(),
                 ],
             ], 400);
         } catch (\Throwable $e) {
@@ -665,6 +693,7 @@ class MobileJknController extends Controller
                 'tanggalperiksa' => $request->input('tanggalperiksa') ?: date('Y-m-d'),
                 'alasan' => $request->input('alasan') ?: null,
             ]);
+
             return response()->json([
                 'metadata' => [
                     'code' => 500,

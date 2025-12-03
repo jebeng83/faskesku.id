@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Penjab;
+use Illuminate\Database\Seeder;
 
 class PenjabSeeder extends Seeder
 {
@@ -17,7 +17,7 @@ class PenjabSeeder extends Seeder
                 'alamat_perusahaan' => 'Jl. Letjen MT Haryono Kav. 4-5, Jakarta Selatan',
                 'no_telp' => '1500400',
                 'attn' => 'BPJS Kesehatan',
-                'status' => '1'
+                'status' => '1',
             ],
             [
                 'kd_pj' => 'PJ2',
@@ -26,7 +26,7 @@ class PenjabSeeder extends Seeder
                 'alamat_perusahaan' => '-',
                 'no_telp' => '-',
                 'attn' => '-',
-                'status' => '1'
+                'status' => '1',
             ],
             [
                 'kd_pj' => 'PJ3',
@@ -35,7 +35,7 @@ class PenjabSeeder extends Seeder
                 'alamat_perusahaan' => 'Jl. HR Rasuna Said Kav. 1-2, Jakarta Selatan',
                 'no_telp' => '021-25555555',
                 'attn' => 'Asuransi Jiwa Sinarmas',
-                'status' => '1'
+                'status' => '1',
             ],
             [
                 'kd_pj' => 'PJ4',
@@ -44,7 +44,7 @@ class PenjabSeeder extends Seeder
                 'alamat_perusahaan' => 'Jl. HR Rasuna Said Kav. 13, Jakarta Selatan',
                 'no_telp' => '021-25555556',
                 'attn' => 'Allianz Life Indonesia',
-                'status' => '1'
+                'status' => '1',
             ],
             [
                 'kd_pj' => 'PJ5',
@@ -53,7 +53,7 @@ class PenjabSeeder extends Seeder
                 'alamat_perusahaan' => 'Jl. Sudirman Kav. 52-53, Jakarta Selatan',
                 'no_telp' => '021-25555557',
                 'attn' => 'Prudential Indonesia',
-                'status' => '1'
+                'status' => '1',
             ],
             [
                 'kd_pj' => 'PJ6',
@@ -62,7 +62,7 @@ class PenjabSeeder extends Seeder
                 'alamat_perusahaan' => 'Jl. Sudirman Kav. 54-55, Jakarta Selatan',
                 'no_telp' => '021-25555558',
                 'attn' => 'AIA Indonesia',
-                'status' => '1'
+                'status' => '1',
             ],
             [
                 'kd_pj' => 'PJ7',
@@ -71,7 +71,7 @@ class PenjabSeeder extends Seeder
                 'alamat_perusahaan' => 'Jl. Gatot Subroto Kav. 36-38, Jakarta Selatan',
                 'no_telp' => '021-25555559',
                 'attn' => 'Mandiri Inhealth',
-                'status' => '1'
+                'status' => '1',
             ],
             [
                 'kd_pj' => 'PJ8',
@@ -80,8 +80,8 @@ class PenjabSeeder extends Seeder
                 'alamat_perusahaan' => 'Jl. Sudirman Kav. 56-57, Jakarta Selatan',
                 'no_telp' => '021-25555560',
                 'attn' => 'Cigna Indonesia',
-                'status' => '1'
-            ]
+                'status' => '1',
+            ],
         ];
 
         foreach ($penjabs as $penjab) {

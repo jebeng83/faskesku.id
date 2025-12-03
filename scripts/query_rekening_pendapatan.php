@@ -1,11 +1,13 @@
 <?php
+
 // Quick diagnostic script to list revenue (pendapatan) accounts by prefix groups 41, 42, 43
 // Usage: php scripts/query_rekening_pendapatan.php
 
-function connect(): PDO {
+function connect(): PDO
+{
     // Read from environment if available, fallback to common defaults
     $host = getenv('DB_HOST') ?: '127.0.0.1';
-    $db   = getenv('DB_DATABASE') ?: 'fufufafa';
+    $db = getenv('DB_DATABASE') ?: 'fufufafa';
     $user = getenv('DB_USERNAME') ?: 'root';
     $pass = getenv('DB_PASSWORD') ?: '';
     $dsn = "mysql:host={$host};dbname={$db}";
@@ -14,29 +16,31 @@ function connect(): PDO {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4',
     ]);
+
     return $pdo;
 }
 
-function main() {
+function main()
+{
     try {
         $pdo = connect();
     } catch (Throwable $e) {
-        fwrite(STDERR, "Koneksi DB gagal: " . $e->getMessage() . "\n");
+        fwrite(STDERR, 'Koneksi DB gagal: '.$e->getMessage()."\n");
         exit(1);
     }
 
     $prefixes = ['41' => 'Pendapatan Rawat Inap', '42' => 'Pendapatan Rawat Jalan', '43' => 'Operasional Lain'];
-    $placeholders = implode(' OR ', array_map(fn($p) => "kd_rek LIKE '{$p}%'", array_keys($prefixes)));
+    $placeholders = implode(' OR ', array_map(fn ($p) => "kd_rek LIKE '{$p}%'", array_keys($prefixes)));
 
     $sql = "SELECT kd_rek, nm_rek, tipe, balance FROM rekening WHERE {$placeholders} ORDER BY kd_rek";
     try {
         $rows = $pdo->query($sql)->fetchAll();
     } catch (Throwable $e) {
-        fwrite(STDERR, "Query gagal: " . $e->getMessage() . "\n");
+        fwrite(STDERR, 'Query gagal: '.$e->getMessage()."\n");
         exit(1);
     }
 
-    if (!$rows) {
+    if (! $rows) {
         echo "Tidak ditemukan akun pendapatan dengan prefix 41/42/43 di tabel rekening.\n";
         exit(0);
     }
@@ -65,9 +69,9 @@ function main() {
     // Cek apakah default pendapatan di .env ada di master rekening
     // Load default pendapatan from environment or .env file
     $defaultPendapatan = getenv('AKUTANSI_REK_PENDAPATAN_DEFAULT');
-    if (!$defaultPendapatan) {
+    if (! $defaultPendapatan) {
         // Try to read from project .env if exists
-        $envPath = __DIR__ . '/../.env';
+        $envPath = __DIR__.'/../.env';
         if (is_file($envPath)) {
             $envLines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
             foreach ($envLines as $line) {

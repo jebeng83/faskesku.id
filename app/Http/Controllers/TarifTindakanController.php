@@ -2,19 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Dokter;
 use App\Models\JnsPerawatan;
 use App\Models\RawatJlDr;
 use App\Models\RawatJlDrpr;
 use App\Models\RawatJlPr;
-use App\Models\RegPeriksa;
-use App\Models\Dokter;
-use App\Models\Employee;
+use App\Services\Akutansi\TampJurnalComposerRalan;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Inertia\Inertia;
-use Carbon\Carbon;
-use App\Services\Akutansi\TampJurnalComposerRalan;
 
 class TarifTindakanController extends Controller
 {
@@ -38,7 +35,7 @@ class TarifTindakanController extends Controller
 
         // Filter berdasarkan pencarian nama perawatan
         if ($request->filled('search')) {
-            $query->where('nm_perawatan', 'like', '%' . $request->search . '%');
+            $query->where('nm_perawatan', 'like', '%'.$request->search.'%');
         }
 
         // Filter berdasarkan jenis tarif
@@ -59,13 +56,13 @@ class TarifTindakanController extends Controller
         // Jika request untuk input tindakan (ada parameter jenis_tarif), ambil semua data tanpa pagination
         if ($request->filled('jenis_tarif')) {
             $jenisPerawatan = $query->get();
-            
+
             return response()->json([
                 'data' => $jenisPerawatan,
-                'message' => 'Data jenis perawatan berhasil diambil'
+                'message' => 'Data jenis perawatan berhasil diambil',
             ]);
         }
-        
+
         // Untuk keperluan lain, tetap gunakan pagination
         $jenisPerawatan = $query->paginate(15);
 
@@ -75,9 +72,9 @@ class TarifTindakanController extends Controller
                 'current_page' => $jenisPerawatan->currentPage(),
                 'last_page' => $jenisPerawatan->lastPage(),
                 'per_page' => $jenisPerawatan->perPage(),
-                'total' => $jenisPerawatan->total()
+                'total' => $jenisPerawatan->total(),
             ],
-            'message' => 'Data jenis perawatan berhasil diambil'
+            'message' => 'Data jenis perawatan berhasil diambil',
         ]);
     }
 
@@ -105,7 +102,7 @@ class TarifTindakanController extends Controller
             $balanced = round($result['debet'], 2) === round($result['kredit'], 2);
 
             // Validasi tambahan: pastikan debet dan kredit seimbang
-            if (!$balanced) {
+            if (! $balanced) {
                 Log::warning('Staging jurnal tidak seimbang', [
                     'no_rawat' => $validated['no_rawat'],
                     'debet' => $result['debet'],
@@ -131,9 +128,10 @@ class TarifTindakanController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menyusun staging jurnal: ' . $e->getMessage(),
+                'message' => 'Gagal menyusun staging jurnal: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -149,7 +147,7 @@ class TarifTindakanController extends Controller
             'kd_dokter' => 'required|string',
             'tgl_perawatan' => 'required|date',
             'jam_rawat' => 'required',
-            'token' => 'nullable|string'
+            'token' => 'nullable|string',
         ]);
 
         try {
@@ -171,7 +169,7 @@ class TarifTindakanController extends Controller
                 'kso' => $jenisPerawatan->kso ?? 0,
                 'menejemen' => $jenisPerawatan->menejemen ?? 0,
                 'biaya_rawat' => $jenisPerawatan->total_byrdr ?? 0,
-                'stts_bayar' => 'Belum'
+                'stts_bayar' => 'Belum',
             ]);
 
             DB::commit();
@@ -179,13 +177,14 @@ class TarifTindakanController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $rawatJlDr,
-                'message' => 'Tindakan dokter berhasil disimpan'
+                'message' => 'Tindakan dokter berhasil disimpan',
             ], 201);
 
         } catch (\Exception $e) {
             DB::rollback();
+
             return response()->json([
-                'message' => 'Gagal menyimpan tindakan dokter: ' . $e->getMessage()
+                'message' => 'Gagal menyimpan tindakan dokter: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -201,7 +200,7 @@ class TarifTindakanController extends Controller
             'nip' => 'required|string',
             'tgl_perawatan' => 'required|date',
             'jam_rawat' => 'required',
-            'token' => 'nullable|string'
+            'token' => 'nullable|string',
         ]);
 
         try {
@@ -223,7 +222,7 @@ class TarifTindakanController extends Controller
                 'kso' => $jenisPerawatan->kso ?? 0,
                 'menejemen' => $jenisPerawatan->menejemen ?? 0,
                 'biaya_rawat' => $jenisPerawatan->total_byrpr ?? 0,
-                'stts_bayar' => 'Belum'
+                'stts_bayar' => 'Belum',
             ]);
 
             DB::commit();
@@ -231,13 +230,14 @@ class TarifTindakanController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $rawatJlPr,
-                'message' => 'Tindakan perawat berhasil disimpan'
+                'message' => 'Tindakan perawat berhasil disimpan',
             ], 201);
 
         } catch (\Exception $e) {
             DB::rollback();
+
             return response()->json([
-                'message' => 'Gagal menyimpan tindakan perawat: ' . $e->getMessage()
+                'message' => 'Gagal menyimpan tindakan perawat: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -254,7 +254,7 @@ class TarifTindakanController extends Controller
             'nip' => 'required|string',
             'tgl_perawatan' => 'required|date',
             'jam_rawat' => 'required',
-            'token' => 'nullable|string'
+            'token' => 'nullable|string',
         ]);
 
         try {
@@ -278,7 +278,7 @@ class TarifTindakanController extends Controller
                 'kso' => $jenisPerawatan->kso ?? 0,
                 'menejemen' => $jenisPerawatan->menejemen ?? 0,
                 'biaya_rawat' => $jenisPerawatan->total_byrdrpr ?? 0,
-                'stts_bayar' => 'Belum'
+                'stts_bayar' => 'Belum',
             ]);
 
             DB::commit();
@@ -286,13 +286,14 @@ class TarifTindakanController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $rawatJlDrpr,
-                'message' => 'Tindakan dokter dan perawat berhasil disimpan'
+                'message' => 'Tindakan dokter dan perawat berhasil disimpan',
             ], 201);
 
         } catch (\Exception $e) {
             DB::rollback();
+
             return response()->json([
-                'message' => 'Gagal menyimpan tindakan dokter dan perawat: ' . $e->getMessage()
+                'message' => 'Gagal menyimpan tindakan dokter dan perawat: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -305,7 +306,7 @@ class TarifTindakanController extends Controller
         try {
             // Decode noRawat untuk menangani encoding dari frontend
             $decodedNoRawat = urldecode($noRawat);
-            
+
             // Ambil tindakan dokter dengan ordering
             $tindakanDokter = RawatJlDr::with(['jenisPerawatan', 'dokter'])
                 ->where('no_rawat', $decodedNoRawat)
@@ -314,7 +315,7 @@ class TarifTindakanController extends Controller
                 ->get()
                 ->map(function ($item) {
                     return [
-                        'id' => $item->no_rawat . '_' . $item->kd_jenis_prw . '_' . $item->kd_dokter . '_' . $item->tgl_perawatan . '_' . $item->jam_rawat,
+                        'id' => $item->no_rawat.'_'.$item->kd_jenis_prw.'_'.$item->kd_dokter.'_'.$item->tgl_perawatan.'_'.$item->jam_rawat,
                         'no_rawat' => $item->no_rawat,
                         'kd_jenis_prw' => $item->kd_jenis_prw,
                         'nm_perawatan' => $item->jenisPerawatan->nm_perawatan ?? '',
@@ -323,9 +324,9 @@ class TarifTindakanController extends Controller
                         'biaya_rawat' => $item->biaya_rawat,
                         'dokter' => $item->dokter ? [
                             'kd_dokter' => $item->dokter->kd_dokter,
-                            'nm_dokter' => $item->dokter->nm_dokter
+                            'nm_dokter' => $item->dokter->nm_dokter,
                         ] : null,
-                        'jenis_tindakan' => 'dokter'
+                        'jenis_tindakan' => 'dokter',
                     ];
                 });
 
@@ -337,7 +338,7 @@ class TarifTindakanController extends Controller
                 ->get()
                 ->map(function ($item) {
                     return [
-                        'id' => $item->no_rawat . '_' . $item->kd_jenis_prw . '_' . $item->nip . '_' . $item->tgl_perawatan . '_' . $item->jam_rawat,
+                        'id' => $item->no_rawat.'_'.$item->kd_jenis_prw.'_'.$item->nip.'_'.$item->tgl_perawatan.'_'.$item->jam_rawat,
                         'no_rawat' => $item->no_rawat,
                         'kd_jenis_prw' => $item->kd_jenis_prw,
                         'nm_perawatan' => $item->jenisPerawatan->nm_perawatan ?? '',
@@ -346,9 +347,9 @@ class TarifTindakanController extends Controller
                         'biaya_rawat' => $item->biaya_rawat,
                         'perawat' => $item->perawat ? [
                             'nip' => $item->perawat->nip,
-                            'nama' => $item->perawat->nama
+                            'nama' => $item->perawat->nama,
                         ] : null,
-                        'jenis_tindakan' => 'perawat'
+                        'jenis_tindakan' => 'perawat',
                     ];
                 });
 
@@ -360,7 +361,7 @@ class TarifTindakanController extends Controller
                 ->get()
                 ->map(function ($item) {
                     return [
-                        'id' => $item->no_rawat . '_' . $item->kd_jenis_prw . '_' . $item->kd_dokter . '_' . $item->nip . '_' . $item->tgl_perawatan . '_' . $item->jam_rawat,
+                        'id' => $item->no_rawat.'_'.$item->kd_jenis_prw.'_'.$item->kd_dokter.'_'.$item->nip.'_'.$item->tgl_perawatan.'_'.$item->jam_rawat,
                         'no_rawat' => $item->no_rawat,
                         'kd_jenis_prw' => $item->kd_jenis_prw,
                         'nm_perawatan' => $item->jenisPerawatan->nm_perawatan ?? '',
@@ -369,13 +370,13 @@ class TarifTindakanController extends Controller
                         'biaya_rawat' => $item->biaya_rawat,
                         'dokter' => $item->dokter ? [
                             'kd_dokter' => $item->dokter->kd_dokter,
-                            'nm_dokter' => $item->dokter->nm_dokter
+                            'nm_dokter' => $item->dokter->nm_dokter,
                         ] : null,
                         'perawat' => $item->perawat ? [
                             'nip' => $item->perawat->nip,
-                            'nama' => $item->perawat->nama
+                            'nama' => $item->perawat->nama,
                         ] : null,
-                        'jenis_tindakan' => 'dokter_perawat'
+                        'jenis_tindakan' => 'dokter_perawat',
                     ];
                 });
 
@@ -384,15 +385,15 @@ class TarifTindakanController extends Controller
                 'data' => [
                     'tindakan_dokter' => $tindakanDokter,
                     'tindakan_perawat' => $tindakanPerawat,
-                    'tindakan_dokter_perawat' => $tindakanDokterPerawat
+                    'tindakan_dokter_perawat' => $tindakanDokterPerawat,
                 ],
-                'message' => 'Riwayat tindakan berhasil diambil'
+                'message' => 'Riwayat tindakan berhasil diambil',
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil riwayat tindakan: ' . $e->getMessage()
+                'message' => 'Gagal mengambil riwayat tindakan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -409,9 +410,9 @@ class TarifTindakanController extends Controller
             'tgl_perawatan' => 'required|date',
             'jam_rawat' => 'required|string',
             'kd_dokter' => 'nullable|string',
-            'nip' => 'nullable|string'
+            'nip' => 'nullable|string',
         ]);
-        
+
         // Normalisasi tgl_perawatan dan jam_rawat agar sesuai dengan format kolom di DB
         // Beberapa frontend/axios mengirimkan tgl_perawatan sebagai ISO 8601 (mis. "2025-11-21T17:00:00.000000Z")
         // dan jam_rawat sebagai "HH:MM" tanpa detik. Kita konversi keduanya ke timezone lokal dan format yang konsisten.
@@ -434,7 +435,7 @@ class TarifTindakanController extends Controller
         // Normalisasi jam_rawat ke format HH:MM:SS
         $jamRaw = trim((string) $request->jam_rawat);
         if (preg_match('/^\d{2}:\d{2}$/', $jamRaw)) {
-            $jamNormalized = $jamRaw . ':00';
+            $jamNormalized = $jamRaw.':00';
         } elseif (preg_match('/^\d{2}:\d{2}:\d{2}$/', $jamRaw)) {
             $jamNormalized = $jamRaw;
         } else {
@@ -465,13 +466,13 @@ class TarifTindakanController extends Controller
                         ->where('kd_jenis_prw', $request->kd_jenis_prw)
                         ->where('tgl_perawatan', $tglNormalized)
                         ->where('jam_rawat', $jamNormalized);
-                    
+
                     if ($request->kd_dokter) {
                         $query->where('kd_dokter', $request->kd_dokter);
                     }
-                    
+
                     $record = $query->first();
-                    
+
                     if ($record) {
                         $recordFound = true;
                         Log::info('Found record to delete (dokter):', $record->toArray());
@@ -484,13 +485,13 @@ class TarifTindakanController extends Controller
                         ->where('kd_jenis_prw', $request->kd_jenis_prw)
                         ->where('tgl_perawatan', $tglNormalized)
                         ->where('jam_rawat', $jamNormalized);
-                    
+
                     if ($request->nip) {
                         $query->where('nip', $request->nip);
                     }
-                    
+
                     $record = $query->first();
-                    
+
                     if ($record) {
                         $recordFound = true;
                         Log::info('Found record to delete (perawat):', $record->toArray());
@@ -503,17 +504,17 @@ class TarifTindakanController extends Controller
                         ->where('kd_jenis_prw', $request->kd_jenis_prw)
                         ->where('tgl_perawatan', $tglNormalized)
                         ->where('jam_rawat', $jamNormalized);
-                    
+
                     if ($request->kd_dokter) {
                         $query->where('kd_dokter', $request->kd_dokter);
                     }
-                    
+
                     if ($request->nip) {
                         $query->where('nip', $request->nip);
                     }
-                    
+
                     $record = $query->first();
-                    
+
                     if ($record) {
                         $recordFound = true;
                         Log::info('Found record to delete (dokter_perawat):', $record->toArray());
@@ -521,27 +522,30 @@ class TarifTindakanController extends Controller
                     }
                     break;
             }
-            
-            if (!$recordFound) {
+
+            if (! $recordFound) {
                 Log::warning('No record found for deletion with criteria:', $request->all());
             }
 
             if ($deleted) {
                 DB::commit();
+
                 return response()->json([
-                    'message' => 'Tindakan berhasil dihapus'
+                    'message' => 'Tindakan berhasil dihapus',
                 ]);
             } else {
                 DB::rollback();
+
                 return response()->json([
-                    'message' => 'Tindakan tidak ditemukan'
+                    'message' => 'Tindakan tidak ditemukan',
                 ], 404);
             }
 
         } catch (\Exception $e) {
             DB::rollback();
+
             return response()->json([
-                'message' => 'Gagal menghapus tindakan: ' . $e->getMessage()
+                'message' => 'Gagal menghapus tindakan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -560,12 +564,12 @@ class TarifTindakanController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $dokters,
-                'message' => 'Data dokter berhasil diambil'
+                'message' => 'Data dokter berhasil diambil',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil data dokter: ' . $e->getMessage()
+                'message' => 'Gagal mengambil data dokter: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -582,12 +586,12 @@ class TarifTindakanController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $petugas,
-                'message' => 'Data petugas berhasil diambil'
+                'message' => 'Data petugas berhasil diambil',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil data petugas: ' . $e->getMessage()
+                'message' => 'Gagal mengambil data petugas: '.$e->getMessage(),
             ], 500);
         }
     }

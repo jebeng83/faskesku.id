@@ -7,9 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class DetailJurnal extends Model
 {
     protected $table = 'detailjurnal';
+
     // Tabel detailjurnal tidak memiliki PK tunggal; set ke no_jurnal (read-only purpose)
     protected $primaryKey = 'no_jurnal';
+
     public $incrementing = false;
+
     public $timestamps = false;
 
     protected $fillable = [

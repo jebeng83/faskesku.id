@@ -19,7 +19,7 @@ class RoleSeeder extends Seeder
             Role::findOrCreate($roleName);
         }
 
-        if (!User::where('email', 'admin@example.com')->exists()) {
+        if (! User::where('email', 'admin@example.com')->exists()) {
             $admin = User::create([
                 'name' => 'Super Admin',
                 'username' => 'admin',

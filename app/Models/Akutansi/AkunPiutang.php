@@ -2,16 +2,19 @@
 
 namespace App\Models\Akutansi;
 
-use Illuminate\Database\Eloquent\Model;
-use App\Models\Akutansi\Rekening;
 use App\Models\Penjab;
+use Illuminate\Database\Eloquent\Model;
 
 class AkunPiutang extends Model
 {
     protected $table = 'akun_piutang';
+
     protected $primaryKey = 'nama_bayar';
+
     public $incrementing = false;
+
     public $timestamps = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [

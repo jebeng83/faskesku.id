@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Wilayah;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class WilayahSeeder extends Seeder
@@ -39,8 +38,9 @@ class WilayahSeeder extends Seeder
     private function seedFromSqlFile($sqlFile)
     {
         $handle = fopen($sqlFile, 'r');
-        if (!$handle) {
+        if (! $handle) {
             $this->seedSampleData();
+
             return;
         }
 
@@ -83,7 +83,7 @@ class WilayahSeeder extends Seeder
 
         fclose($handle);
 
-        if (!empty($batch)) {
+        if (! empty($batch)) {
             Wilayah::insert($batch);
         }
     }

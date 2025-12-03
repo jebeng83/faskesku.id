@@ -4,23 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\DataBarang;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
 
 class DataBarangController extends Controller
 {
-
-
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
         $query = DataBarang::query()
-            ->leftJoin('detailbeli as db', function($join) {
+            ->leftJoin('detailbeli as db', function ($join) {
                 $join->on('databarang.kode_brng', '=', 'db.kode_brng')
-                     ->whereRaw('db.created_at = (SELECT MAX(created_at) FROM detailbeli WHERE detailbeli.kode_brng = databarang.kode_brng)');
+                    ->whereRaw('db.created_at = (SELECT MAX(created_at) FROM detailbeli WHERE detailbeli.kode_brng = databarang.kode_brng)');
             })
             ->select('databarang.*', 'db.created_at');
 
@@ -31,8 +29,8 @@ class DataBarangController extends Controller
 
         // Pagination
         $dataBarang = $query->orderBy('databarang.kode_brng', 'desc')
-                           ->paginate(10)
-                           ->withQueryString();
+            ->paginate(10)
+            ->withQueryString();
 
         return Inertia::render('farmasi/dataobat', [
             'dataBarang' => $dataBarang,
@@ -77,12 +75,12 @@ class DataBarangController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
         $data = $validator->validated();
-        
+
         // Set default values
         $data['status'] = $data['status'] ?? '1';
         $data['stokminimal'] = $data['stokminimal'] ?? 0;
@@ -93,7 +91,7 @@ class DataBarangController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Data obat berhasil ditambahkan'
+            'message' => 'Data obat berhasil ditambahkan',
         ]);
     }
 
@@ -103,10 +101,10 @@ class DataBarangController extends Controller
     public function show($kode_brng)
     {
         $dataBarang = DataBarang::findOrFail($kode_brng);
-        
+
         return response()->json([
             'success' => true,
-            'data' => $dataBarang
+            'data' => $dataBarang,
         ]);
     }
 
@@ -148,12 +146,12 @@ class DataBarangController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
         $data = $validator->validated();
-        
+
         // Set default values
         $data['status'] = $data['status'] ?? '1';
         $data['stokminimal'] = $data['stokminimal'] ?? 0;
@@ -164,7 +162,7 @@ class DataBarangController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Data obat berhasil diperbarui'
+            'message' => 'Data obat berhasil diperbarui',
         ]);
     }
 
@@ -178,10 +176,10 @@ class DataBarangController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Data obat berhasil dihapus'
+            'message' => 'Data obat berhasil dihapus',
         ]);
     }
-    
+
     /**
      * Get dropdown data for form selects
      */
@@ -194,7 +192,7 @@ class DataBarangController extends Controller
                 ->select('kode_sat', 'satuan')
                 ->get()
                 ->toArray();
-            
+
             // Ambil data jenis langsung dari database tanpa join
             $jenis = DB::connection('fufufafa')
                 ->table('jenis')
@@ -202,42 +200,42 @@ class DataBarangController extends Controller
                 ->distinct()
                 ->get()
                 ->toArray();
-            
+
             // Ambil data industrifarmasi dari database
             $industrifarmasi = DB::connection('fufufafa')
                 ->table('industrifarmasi')
                 ->select('kode_industri', 'nama_industri')
                 ->get()
                 ->toArray();
-            
+
             // Ambil data kategori_barang dari database
             $kategori_barang = DB::connection('fufufafa')
                 ->table('kategori_barang')
                 ->select('kode', 'nama')
                 ->get()
                 ->toArray();
-            
+
             // Ambil data golongan_barang dari database
             $golongan_barang = DB::connection('fufufafa')
                 ->table('golongan_barang')
                 ->select('kode', 'nama')
                 ->get()
                 ->toArray();
-            
+
             return response()->json([
                 'kodesatuan' => $kodesatuan,
                 'jenis' => $jenis,
                 'industrifarmasi' => $industrifarmasi,
                 'kategori_barang' => $kategori_barang,
-                'golongan_barang' => $golongan_barang
+                'golongan_barang' => $golongan_barang,
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
-    
+
     /**
      * Update harga databarang dari pembelian
      * Update harga dasar dan harga beli terbaru
@@ -249,7 +247,7 @@ class DataBarangController extends Controller
             $validated = $request->validate([
                 'kode_brng' => 'required|string',
                 'dasar' => 'required|numeric|min:0',
-                'h_beli' => 'required|numeric|min:0'
+                'h_beli' => 'required|numeric|min:0',
             ]);
 
             // Cek apakah data barang ada
@@ -258,10 +256,10 @@ class DataBarangController extends Controller
                 ->where('kode_brng', $kode_brng)
                 ->first();
 
-            if (!$dataBarang) {
+            if (! $dataBarang) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Data barang tidak ditemukan'
+                    'message' => 'Data barang tidak ditemukan',
                 ], 404);
             }
 
@@ -271,7 +269,7 @@ class DataBarangController extends Controller
                 ->where('kode_brng', $kode_brng)
                 ->update([
                     'dasar' => $validated['dasar'],
-                    'h_beli' => $validated['h_beli']
+                    'h_beli' => $validated['h_beli'],
                 ]);
 
             // Update created_at di detailbeli untuk tracking perubahan h_beli terbaru
@@ -280,7 +278,7 @@ class DataBarangController extends Controller
                 ->where('kode_brng', $kode_brng)
                 ->where('h_beli', $validated['h_beli'])
                 ->update([
-                    'created_at' => now()
+                    'created_at' => now(),
                 ]);
 
             return response()->json([
@@ -289,13 +287,13 @@ class DataBarangController extends Controller
                 'data' => [
                     'kode_brng' => $kode_brng,
                     'dasar' => $validated['dasar'],
-                    'h_beli' => $validated['h_beli']
-                ]
+                    'h_beli' => $validated['h_beli'],
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengupdate harga: ' . $e->getMessage()
+                'message' => 'Gagal mengupdate harga: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -304,7 +302,7 @@ class DataBarangController extends Controller
     {
         try {
             // Cek apakah frontend mengirim harga jual lengkap (mode lama) atau hanya base harga (mode baru)
-            $sendManualPrices = $request->has(['ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan']);
+            $sendManualPrices = $request->has(['ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan']);
 
             // Ambil data barang terlebih dahulu (untuk kdjns dan fallback dasar/h_beli)
             $dataBarang = DB::connection('fufufafa')
@@ -312,10 +310,10 @@ class DataBarangController extends Controller
                 ->where('kode_brng', $kode_brng)
                 ->first();
 
-            if (!$dataBarang) {
+            if (! $dataBarang) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Data barang tidak ditemukan'
+                    'message' => 'Data barang tidak ditemukan',
                 ], 404);
             }
 
@@ -333,7 +331,7 @@ class DataBarangController extends Controller
                     'vvip' => 'required|numeric|min:0',
                     'beliluar' => 'required|numeric|min:0',
                     'jualbebas' => 'required|numeric|min:0',
-                    'karyawan' => 'required|numeric|min:0'
+                    'karyawan' => 'required|numeric|min:0',
                 ]);
 
                 DB::connection('fufufafa')
@@ -350,7 +348,7 @@ class DataBarangController extends Controller
                         'vvip' => $validated['vvip'],
                         'beliluar' => $validated['beliluar'],
                         'jualbebas' => $validated['jualbebas'],
-                        'karyawan' => $validated['karyawan']
+                        'karyawan' => $validated['karyawan'],
                     ]);
 
                 return response()->json([
@@ -369,9 +367,9 @@ class DataBarangController extends Controller
                             'vvip' => $validated['vvip'],
                             'beliluar' => $validated['beliluar'],
                             'jualbebas' => $validated['jualbebas'],
-                            'karyawan' => $validated['karyawan']
-                        ]
-                    ]
+                            'karyawan' => $validated['karyawan'],
+                        ],
+                    ],
                 ]);
             }
 
@@ -402,10 +400,10 @@ class DataBarangController extends Controller
             } else {
                 // Fallback ke konfigurasi hargadasar
                 if ($hargadasarCfg === 'Harga Beli') {
-                    $base = (float)($validated['h_beli'] ?? $dataBarang->h_beli ?? $dataBarang->dasar ?? 0);
+                    $base = (float) ($validated['h_beli'] ?? $dataBarang->h_beli ?? $dataBarang->dasar ?? 0);
                 } else {
                     // Harga Diskon: gunakan kolom dasar sebagai representasi harga setelah diskon
-                    $base = (float)($dataBarang->dasar ?? $validated['h_beli'] ?? 0);
+                    $base = (float) ($dataBarang->dasar ?? $validated['h_beli'] ?? 0);
                 }
             }
 
@@ -414,42 +412,45 @@ class DataBarangController extends Controller
             if ($setharga === 'Umum') {
                 $persen = DB::connection('fufufafa')
                     ->table('setpenjualanumum')
-                    ->select('ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan')
+                    ->select('ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan')
                     ->first();
             } elseif ($setharga === 'Per Jenis') {
-                if (!empty($dataBarang->kdjns)) {
+                if (! empty($dataBarang->kdjns)) {
                     $persen = DB::connection('fufufafa')
                         ->table('setpenjualan')
-                        ->select('ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan')
+                        ->select('ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan')
                         ->where('kdjns', $dataBarang->kdjns)
                         ->first();
                 }
             } elseif ($setharga === 'Per Barang') {
                 $persen = DB::connection('fufufafa')
                     ->table('setpenjualanperbarang')
-                    ->select('ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan')
+                    ->select('ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan')
                     ->where('kode_brng', $kode_brng)
                     ->first();
             }
 
             // Normalisasi persentase (fallback 0 jika tidak tersedia)
             $ps = [
-                'ralan' => (float)($persen->ralan ?? 0),
-                'kelas1' => (float)($persen->kelas1 ?? 0),
-                'kelas2' => (float)($persen->kelas2 ?? 0),
-                'kelas3' => (float)($persen->kelas3 ?? 0),
-                'utama' => (float)($persen->utama ?? 0),
-                'vip' => (float)($persen->vip ?? 0),
-                'vvip' => (float)($persen->vvip ?? 0),
-                'beliluar' => (float)($persen->beliluar ?? 0),
-                'jualbebas' => (float)($persen->jualbebas ?? 0),
-                'karyawan' => (float)($persen->karyawan ?? 0),
+                'ralan' => (float) ($persen->ralan ?? 0),
+                'kelas1' => (float) ($persen->kelas1 ?? 0),
+                'kelas2' => (float) ($persen->kelas2 ?? 0),
+                'kelas3' => (float) ($persen->kelas3 ?? 0),
+                'utama' => (float) ($persen->utama ?? 0),
+                'vip' => (float) ($persen->vip ?? 0),
+                'vvip' => (float) ($persen->vvip ?? 0),
+                'beliluar' => (float) ($persen->beliluar ?? 0),
+                'jualbebas' => (float) ($persen->jualbebas ?? 0),
+                'karyawan' => (float) ($persen->karyawan ?? 0),
             ];
 
             // Fungsi hitung harga jual dari base dan persen + PPN jika diaktifkan
             $apply = function (float $b, float $percent) use ($ppn): float {
                 $harga = $b * (1.0 + ($percent / 100.0));
-                if ($ppn === 'Yes') { $harga *= 1.11; }
+                if ($ppn === 'Yes') {
+                    $harga *= 1.11;
+                }
+
                 return round($harga, 2);
             };
 
@@ -478,7 +479,7 @@ class DataBarangController extends Controller
                 'data' => [
                     'kode_brng' => $kode_brng,
                     'base' => $base,
-                    'config' => [ 'setharga' => $setharga, 'hargadasar' => $hargadasarCfg, 'ppn' => $ppn ],
+                    'config' => ['setharga' => $setharga, 'hargadasar' => $hargadasarCfg, 'ppn' => $ppn],
                     'harga_jual' => [
                         'ralan' => $updates['ralan'],
                         'kelas1' => $updates['kelas1'],
@@ -489,14 +490,14 @@ class DataBarangController extends Controller
                         'vvip' => $updates['vvip'],
                         'beliluar' => $updates['beliluar'],
                         'jualbebas' => $updates['jualbebas'],
-                        'karyawan' => $updates['karyawan']
-                    ]
-                ]
+                        'karyawan' => $updates['karyawan'],
+                    ],
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengupdate harga jual: ' . $e->getMessage()
+                'message' => 'Gagal mengupdate harga jual: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -513,38 +514,38 @@ class DataBarangController extends Controller
             $items = DataBarang::where('kode_brng', 'LIKE', 'B%')
                 ->where('kode_brng', 'REGEXP', '^B[0-9]+$')
                 ->get();
-            
+
             $maxNumber = 0;
-            
+
             // Cari nomor terbesar dari semua kode yang ada
             foreach ($items as $item) {
                 if (preg_match('/^B(\d+)$/', $item->kode_brng, $matches)) {
-                    $number = (int)$matches[1];
+                    $number = (int) $matches[1];
                     if ($number > $maxNumber) {
                         $maxNumber = $number;
                     }
                 }
             }
-            
+
             // Generate kode baru dengan increment
             $newNumber = $maxNumber + 1;
-            $newCode = 'B' . str_pad($newNumber, 8, '0', STR_PAD_LEFT);
-            
+            $newCode = 'B'.str_pad($newNumber, 8, '0', STR_PAD_LEFT);
+
             // Pastikan kode baru belum ada di database
             while (DataBarang::where('kode_brng', $newCode)->exists()) {
                 $newNumber++;
-                $newCode = 'B' . str_pad($newNumber, 8, '0', STR_PAD_LEFT);
+                $newCode = 'B'.str_pad($newNumber, 8, '0', STR_PAD_LEFT);
             }
-            
+
             return response()->json([
                 'success' => true,
-                'last_code' => $maxNumber > 0 ? 'B' . str_pad($maxNumber, 8, '0', STR_PAD_LEFT) : null,
-                'new_code' => $newCode
+                'last_code' => $maxNumber > 0 ? 'B'.str_pad($maxNumber, 8, '0', STR_PAD_LEFT) : null,
+                'new_code' => $newCode,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

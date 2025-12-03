@@ -47,7 +47,7 @@ class SecurityLoggingMiddleware
         ];
 
         $currentRoute = $request->route()?->getName();
-        
+
         if ($currentRoute && $this->matchesPattern($currentRoute, $sensitiveRoutes)) {
             \Illuminate\Support\Facades\Log::info('Security Activity', [
                 'user_id' => auth()->id(),
@@ -75,8 +75,8 @@ class SecurityLoggingMiddleware
         ]);
 
         // Track failed attempts untuk rate limiting
-        if (!$success) {
-            $key = 'failed_logins_' . $request->ip();
+        if (! $success) {
+            $key = 'failed_logins_'.$request->ip();
             $attempts = \Illuminate\Support\Facades\Cache::get($key, 0);
             \Illuminate\Support\Facades\Cache::put($key, $attempts + 1, now()->addMinutes(15));
         }
@@ -89,7 +89,7 @@ class SecurityLoggingMiddleware
     {
         foreach ($patterns as $pattern) {
             if (str_contains($pattern, '*')) {
-                $regex = '/^' . str_replace(['*', '.'], ['.*', '\.'], $pattern) . '$/';
+                $regex = '/^'.str_replace(['*', '.'], ['.*', '\.'], $pattern).'$/';
                 if (preg_match($regex, $route)) {
                     return true;
                 }
@@ -97,6 +97,7 @@ class SecurityLoggingMiddleware
                 return true;
             }
         }
+
         return false;
     }
 }

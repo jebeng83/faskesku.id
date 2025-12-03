@@ -7,10 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 class Spesialis extends Model
 {
     protected $table = 'spesialis';
+
     protected $primaryKey = 'kd_sps';
+
     public $timestamps = false;
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     protected $fillable = ['kd_sps', 'nm_sps'];
 
     public function dokter()

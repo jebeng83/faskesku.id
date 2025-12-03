@@ -7,11 +7,11 @@ use App\Models\Akutansi\Billing;
 use App\Models\RawatJlDr;
 use App\Models\RawatJlDrpr;
 use App\Models\RawatJlPr;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class NotaJalanController extends Controller
 {
@@ -110,7 +110,7 @@ class NotaJalanController extends Controller
             // Cari nomor berikutnya yang belum digunakan
             // PASTIKAN: Ambil nomor terakhir + 1
             $newSuffix = 1;
-            if (!empty($existingSuffixes)) {
+            if (! empty($existingSuffixes)) {
                 $maxSuffix = max($existingSuffixes);
                 $newSuffix = $maxSuffix + 1;
                 \Log::info("NotaJalanController: Max suffix ditemukan: {$maxSuffix}, next suffix: {$newSuffix}");
@@ -123,10 +123,10 @@ class NotaJalanController extends Controller
             // Panjang: 4+1+2+1+2+1+2+4 = 17 karakter (sesuai varchar(17))
             $suffix = str_pad((string) $newSuffix, 4, '0', STR_PAD_LEFT);
             $noNota = $prefix.$suffix;
-            
+
             // Validasi panjang: pastikan tidak melebihi 17 karakter
             if (strlen($noNota) > 17) {
-                \Log::error("NotaJalanController: no_nota terlalu panjang: {$noNota} (length: ".strlen($noNota).")");
+                \Log::error("NotaJalanController: no_nota terlalu panjang: {$noNota} (length: ".strlen($noNota).')');
                 throw new \Exception("no_nota terlalu panjang: {$noNota}. Maksimal 17 karakter.");
             }
 
@@ -153,19 +153,19 @@ class NotaJalanController extends Controller
             $finalCheck = DB::table('nota_jalan')
                 ->where('no_nota', $noNota)
                 ->exists();
-            
+
             if ($finalCheck) {
                 \Log::warning("NotaJalanController: no_nota {$noNota} masih ada di database setelah generate, akan increment");
                 // Increment lagi jika masih ada
                 $newSuffix += 1;
                 $suffix = str_pad((string) $newSuffix, 4, '0', STR_PAD_LEFT);
                 $noNota = $prefix.$suffix;
-                
+
                 // Validasi panjang
                 if (strlen($noNota) > 17) {
                     throw new \Exception("no_nota terlalu panjang setelah final check increment: {$noNota}");
                 }
-                
+
                 // Cek lagi sampai benar-benar tidak ada
                 $attempt = 0;
                 while (DB::table('nota_jalan')->where('no_nota', $noNota)->exists() && $attempt < 100) {
@@ -178,7 +178,7 @@ class NotaJalanController extends Controller
                     }
                     $attempt++;
                 }
-                
+
                 if ($attempt >= 100) {
                     throw new \Exception('Gagal menemukan nomor nota yang belum digunakan setelah final check');
                 }
@@ -197,7 +197,7 @@ class NotaJalanController extends Controller
                 $existsCheck = DB::table('nota_jalan')
                     ->where('no_nota', $noNota)
                     ->exists();
-                
+
                 if ($existsCheck) {
                     \Log::warning("no_nota sudah ada sebelum insert: {$noNota}, akan generate nomor baru");
                     $retryCount++;
@@ -228,14 +228,14 @@ class NotaJalanController extends Controller
 
                         // PASTIKAN: Ambil nomor terakhir + 1
                         $currentSuffix = 1;
-                        if (!empty($existingSuffixesRetry)) {
+                        if (! empty($existingSuffixesRetry)) {
                             $maxSuffixRetry = max($existingSuffixesRetry);
                             $currentSuffix = $maxSuffixRetry + 1;
                         }
 
                         $suffix = str_pad((string) $currentSuffix, 4, '0', STR_PAD_LEFT);
                         $noNota = $prefix.$suffix;
-                        
+
                         // Validasi panjang
                         if (strlen($noNota) > 17) {
                             throw new \Exception("no_nota terlalu panjang di retry: {$noNota}");
@@ -253,11 +253,11 @@ class NotaJalanController extends Controller
                             }
                             $attempt++;
                         }
-                        
+
                         if ($attempt >= 100) {
                             throw new \Exception('Gagal menemukan nomor nota yang belum digunakan setelah 100 percobaan');
                         }
-                        
+
                         // Final check sebelum menggunakan nomor
                         if (DB::table('nota_jalan')->where('no_nota', $noNota)->exists()) {
                             $currentSuffix += 1;
@@ -268,8 +268,9 @@ class NotaJalanController extends Controller
                                 throw new \Exception("no_nota terlalu panjang di retry final check: {$noNota}");
                             }
                         }
-                        
+
                         \Log::info("Retry generate no_nota baru: {$noNota} (suffix: {$currentSuffix})");
+
                         continue; // Lanjut ke iterasi berikutnya
                     } else {
                         throw new \Exception('Gagal menemukan nomor nota yang belum digunakan setelah beberapa kali retry');
@@ -290,7 +291,7 @@ class NotaJalanController extends Controller
                     if ($e->getCode() == 23000 && strpos($e->getMessage(), 'Duplicate entry') !== false) {
                         $retryCount++;
                         \Log::warning("Duplicate entry untuk no_nota: {$noNota}, retry ke-{$retryCount}");
-                        
+
                         if ($retryCount < $maxRetries) {
                             // Ambil ulang semua no_nota yang ada dengan lock untuk mendapatkan nomor yang benar-benar belum digunakan
                             $existingNotasRetry = DB::table('nota_jalan')
@@ -318,14 +319,14 @@ class NotaJalanController extends Controller
 
                             // PASTIKAN: Ambil nomor terakhir + 1
                             $currentSuffix = 1;
-                            if (!empty($existingSuffixesRetry)) {
+                            if (! empty($existingSuffixesRetry)) {
                                 $maxSuffixRetry = max($existingSuffixesRetry);
                                 $currentSuffix = $maxSuffixRetry + 1;
                             }
 
                             $suffix = str_pad((string) $currentSuffix, 4, '0', STR_PAD_LEFT);
                             $noNota = $prefix.$suffix;
-                            
+
                             // Validasi panjang
                             if (strlen($noNota) > 17) {
                                 throw new \Exception("no_nota terlalu panjang di exception retry: {$noNota}");
@@ -343,11 +344,11 @@ class NotaJalanController extends Controller
                                 }
                                 $attempt++;
                             }
-                            
+
                             if ($attempt >= 100) {
                                 throw new \Exception('Gagal menemukan nomor nota yang belum digunakan setelah 100 percobaan');
                             }
-                            
+
                             // Final check sebelum menggunakan nomor
                             if (DB::table('nota_jalan')->where('no_nota', $noNota)->exists()) {
                                 $currentSuffix += 1;
@@ -358,7 +359,7 @@ class NotaJalanController extends Controller
                                     throw new \Exception("no_nota terlalu panjang di exception retry final check: {$noNota}");
                                 }
                             }
-                            
+
                             \Log::info("Exception retry generate no_nota: {$noNota} (suffix: {$currentSuffix})");
                         } else {
                             \Log::error("Gagal insert nota_jalan setelah {$maxRetries} kali retry", [
@@ -385,22 +386,22 @@ class NotaJalanController extends Controller
                 $regPeriksa = DB::table('reg_periksa')->where('no_rawat', $noRawat)->first();
                 if ($regPeriksa) {
                     $updateData = [];
-                    
+
                     // Update status_bayar menjadi 'Sudah Bayar'
                     if (($regPeriksa->status_bayar ?? 'Belum Bayar') !== 'Sudah Bayar') {
                         $updateData['status_bayar'] = 'Sudah Bayar';
                     }
-                    
+
                     // Update status (stts) menjadi 'Sudah' jika masih 'Belum'
                     if (($regPeriksa->stts ?? 'Belum') === 'Belum') {
                         $updateData['stts'] = 'Sudah';
                     }
-                    
-                    if (!empty($updateData)) {
+
+                    if (! empty($updateData)) {
                         DB::table('reg_periksa')
                             ->where('no_rawat', $noRawat)
                             ->update($updateData);
-                        
+
                         \Log::info("NotaJalanController: Updated reg_periksa untuk no_rawat {$noRawat}", [
                             'updates' => $updateData,
                             'no_nota' => $noNota,
@@ -591,19 +592,19 @@ class NotaJalanController extends Controller
 
         foreach ($items as $it) {
             $uniqueKey = implode('_', [
-                trim((string)($it['no'] ?? '')),
-                trim((string)($it['status'] ?? '-')),
-                trim((string)($it['tgl_byr'] ?? '')),
-                trim((string)($it['nm_perawatan'] ?? '')),
-                number_format((float)($it['biaya'] ?? 0), 2, '.', ''),
-                number_format((float)($it['jumlah'] ?? 1), 2, '.', ''),
-                number_format((float)($it['tambahan'] ?? 0), 2, '.', ''),
+                trim((string) ($it['no'] ?? '')),
+                trim((string) ($it['status'] ?? '-')),
+                trim((string) ($it['tgl_byr'] ?? '')),
+                trim((string) ($it['nm_perawatan'] ?? '')),
+                number_format((float) ($it['biaya'] ?? 0), 2, '.', ''),
+                number_format((float) ($it['jumlah'] ?? 1), 2, '.', ''),
+                number_format((float) ($it['tambahan'] ?? 0), 2, '.', ''),
             ]);
 
             // Skip jika sudah ada item dengan kombinasi no + status yang sama
             if (isset($seenKeys[$uniqueKey])) {
                 // Log lebih detail untuk debugging perbedaan total
-                \Log::warning("Item duplikat diabaikan di snapshot billing", [
+                \Log::warning('Item duplikat diabaikan di snapshot billing', [
                     'no' => $it['no'] ?? null,
                     'status' => $it['status'] ?? null,
                     'no_rawat' => $noRawat,
@@ -665,7 +666,7 @@ class NotaJalanController extends Controller
             ->where('no_rawat', $noRawat)
             ->first();
 
-        if (!$notaJalan) {
+        if (! $notaJalan) {
             return response()->json([
                 'message' => 'Nota jalan tidak ditemukan',
             ], 404);
@@ -676,7 +677,7 @@ class NotaJalanController extends Controller
             ->where('no_rawat', $noRawat)
             ->first();
 
-        if (!$regPeriksa) {
+        if (! $regPeriksa) {
             return response()->json([
                 'message' => 'Data registrasi tidak ditemukan',
             ], 404);
@@ -713,7 +714,7 @@ class NotaJalanController extends Controller
         $grandTotal = 0;
         foreach ($billingItems as $item) {
             $status = $item->status ?? '-';
-            if (!isset($summary[$status])) {
+            if (! isset($summary[$status])) {
                 $summary[$status] = ['count' => 0, 'total' => 0];
             }
             $summary[$status]['count']++;
@@ -744,27 +745,27 @@ class NotaJalanController extends Controller
             $setting = DB::table('setting')
                 ->where('aktifkan', 'Yes')
                 ->first();
-            
+
             // Jika tidak ada yang aktif, ambil yang pertama
-            if (!$setting) {
+            if (! $setting) {
                 $setting = DB::table('setting')->first();
             }
 
             // Konversi logo ke base64 jika ada
-            if ($setting && isset($setting->logo) && !empty($setting->logo)) {
+            if ($setting && isset($setting->logo) && ! empty($setting->logo)) {
                 $logoBlob = $setting->logo;
                 // Deteksi MIME type dari blob
                 $mimeType = 'image/png'; // default
-                
+
                 // Deteksi dari magic bytes
                 $firstBytes = substr($logoBlob, 0, 12);
                 if (substr($firstBytes, 0, 2) === "\xFF\xD8") {
                     $mimeType = 'image/jpeg';
                 } elseif (substr($firstBytes, 0, 4) === "\x89PNG") {
                     $mimeType = 'image/png';
-                } elseif (substr($firstBytes, 0, 6) === "GIF87a" || substr($firstBytes, 0, 6) === "GIF89a") {
+                } elseif (substr($firstBytes, 0, 6) === 'GIF87a' || substr($firstBytes, 0, 6) === 'GIF89a') {
                     $mimeType = 'image/gif';
-                } elseif (substr($firstBytes, 0, 4) === "RIFF" && substr($firstBytes, 8, 4) === "WEBP") {
+                } elseif (substr($firstBytes, 0, 4) === 'RIFF' && substr($firstBytes, 8, 4) === 'WEBP') {
                     $mimeType = 'image/webp';
                 } elseif (function_exists('finfo_open')) {
                     // Gunakan finfo jika tersedia
@@ -775,8 +776,8 @@ class NotaJalanController extends Controller
                         $mimeType = $detectedMime;
                     }
                 }
-                
-                $logoBase64 = 'data:' . $mimeType . ';base64,' . base64_encode($logoBlob);
+
+                $logoBase64 = 'data:'.$mimeType.';base64,'.base64_encode($logoBlob);
             }
         }
 
@@ -816,10 +817,10 @@ class NotaJalanController extends Controller
         \Log::info('NotaJalanController::pdf called', [
             'no_rawat_param' => $no_rawat,
         ]);
-        
+
         // Decode no_rawat jika ada encoding
         $noRawat = urldecode($no_rawat);
-        
+
         \Log::info('NotaJalanController::pdf decoded', [
             'no_rawat_decoded' => $noRawat,
         ]);
@@ -829,7 +830,7 @@ class NotaJalanController extends Controller
             ->where('no_rawat', $noRawat)
             ->first();
 
-        if (!$notaJalan) {
+        if (! $notaJalan) {
             abort(404, 'Nota jalan tidak ditemukan');
         }
 
@@ -838,7 +839,7 @@ class NotaJalanController extends Controller
             ->where('no_rawat', $noRawat)
             ->first();
 
-        if (!$regPeriksa) {
+        if (! $regPeriksa) {
             abort(404, 'Data registrasi tidak ditemukan');
         }
 
@@ -879,10 +880,10 @@ class NotaJalanController extends Controller
             $biaya = trim($item->biaya ?? '0');
             $jumlah = trim($item->jumlah ?? '1');
             $tambahan = trim($item->tambahan ?? '0');
-            
+
             $uniqueKey = "{$no}_{$status}_{$tglByr}_{$nmPerawatan}_{$biaya}_{$jumlah}_{$tambahan}";
-            
-            if (!isset($seenItems[$uniqueKey])) {
+
+            if (! isset($seenItems[$uniqueKey])) {
                 $seenItems[$uniqueKey] = true;
                 $billingItems[] = $item;
             }
@@ -893,7 +894,7 @@ class NotaJalanController extends Controller
         $grandTotal = 0;
         foreach ($billingItems as $item) {
             $status = $item->status ?? '-';
-            if (!isset($summary[$status])) {
+            if (! isset($summary[$status])) {
                 $summary[$status] = ['count' => 0, 'total' => 0];
             }
             $summary[$status]['count']++;
@@ -915,7 +916,7 @@ class NotaJalanController extends Controller
 
         $totalBayar = (float) $detailPembayaran->sum('besar_bayar');
         $totalPPN = (float) $detailPembayaran->sum('besarppn');
-        $totalTambahan = array_sum(array_map(function($item) {
+        $totalTambahan = array_sum(array_map(function ($item) {
             return (float) ($item->tambahan ?? 0);
         }, $billingItems));
 
@@ -926,23 +927,23 @@ class NotaJalanController extends Controller
             $setting = DB::table('setting')
                 ->where('aktifkan', 'Yes')
                 ->first();
-            
-            if (!$setting) {
+
+            if (! $setting) {
                 $setting = DB::table('setting')->first();
             }
 
-            if ($setting && isset($setting->logo) && !empty($setting->logo)) {
+            if ($setting && isset($setting->logo) && ! empty($setting->logo)) {
                 $logoBlob = $setting->logo;
                 $mimeType = 'image/png';
-                
+
                 $firstBytes = substr($logoBlob, 0, 12);
                 if (substr($firstBytes, 0, 2) === "\xFF\xD8") {
                     $mimeType = 'image/jpeg';
                 } elseif (substr($firstBytes, 0, 4) === "\x89PNG") {
                     $mimeType = 'image/png';
-                } elseif (substr($firstBytes, 0, 6) === "GIF87a" || substr($firstBytes, 0, 6) === "GIF89a") {
+                } elseif (substr($firstBytes, 0, 6) === 'GIF87a' || substr($firstBytes, 0, 6) === 'GIF89a') {
                     $mimeType = 'image/gif';
-                } elseif (substr($firstBytes, 0, 4) === "RIFF" && substr($firstBytes, 8, 4) === "WEBP") {
+                } elseif (substr($firstBytes, 0, 4) === 'RIFF' && substr($firstBytes, 8, 4) === 'WEBP') {
                     $mimeType = 'image/webp';
                 } elseif (function_exists('finfo_open')) {
                     $finfo = finfo_open(FILEINFO_MIME_TYPE);
@@ -952,29 +953,35 @@ class NotaJalanController extends Controller
                         $mimeType = $detectedMime;
                     }
                 }
-                
-                $logoBase64 = 'data:' . $mimeType . ';base64,' . base64_encode($logoBlob);
+
+                $logoBase64 = 'data:'.$mimeType.';base64,'.base64_encode($logoBlob);
             }
         }
 
         // Format tanggal dan waktu
-        $formatDate = function($dateString) {
-            if (!$dateString) return "-";
+        $formatDate = function ($dateString) {
+            if (! $dateString) {
+                return '-';
+            }
             try {
                 $date = \Carbon\Carbon::parse($dateString);
+
                 return $date->locale('id_ID')->isoFormat('D MMMM YYYY');
             } catch (\Exception $e) {
                 return $dateString;
             }
         };
 
-        $formatTime = function($timeString) {
-            if (!$timeString) return "-";
+        $formatTime = function ($timeString) {
+            if (! $timeString) {
+                return '-';
+            }
+
             return substr($timeString, 0, 5);
         };
 
-        $formatCurrency = function($amount) {
-            return 'Rp ' . number_format($amount, 0, ',', '.');
+        $formatCurrency = function ($amount) {
+            return 'Rp '.number_format($amount, 0, ',', '.');
         };
 
         // Kelompokkan billing items berdasarkan kategori
@@ -982,7 +989,7 @@ class NotaJalanController extends Controller
         $itemNumber = 1;
         foreach ($billingItems as $item) {
             $category = $item->status ?? '-';
-            if (!isset($groupedByCategory[$category])) {
+            if (! isset($groupedByCategory[$category])) {
                 $groupedByCategory[$category] = [];
             }
             $groupedByCategory[$category][] = [
@@ -1029,7 +1036,7 @@ class NotaJalanController extends Controller
         // Download PDF dengan nama file yang sesuai
         // Ganti karakter "/" dengan "-" untuk menghindari error filename
         $safeNoNota = str_replace('/', '-', $notaJalan->no_nota);
-        $filename = 'Nota_Jalan_' . $safeNoNota . '_' . date('YmdHis') . '.pdf';
+        $filename = 'Nota_Jalan_'.$safeNoNota.'_'.date('YmdHis').'.pdf';
 
         return $pdf->download($filename);
     }

@@ -45,7 +45,7 @@ search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\API\MenuSearchController::popular
-* @see app/Http/Controllers/API/MenuSearchController.php:50
+* @see app/Http/Controllers/API/MenuSearchController.php:51
 * @route '/api/menu/popular'
 */
 export const popular = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,7 +60,7 @@ popular.definition = {
 
 /**
 * @see \App\Http\Controllers\API\MenuSearchController::popular
-* @see app/Http/Controllers/API/MenuSearchController.php:50
+* @see app/Http/Controllers/API/MenuSearchController.php:51
 * @route '/api/menu/popular'
 */
 popular.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ popular.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\MenuSearchController::popular
-* @see app/Http/Controllers/API/MenuSearchController.php:50
+* @see app/Http/Controllers/API/MenuSearchController.php:51
 * @route '/api/menu/popular'
 */
 popular.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -79,7 +79,7 @@ popular.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\API\MenuSearchController::popular
-* @see app/Http/Controllers/API/MenuSearchController.php:50
+* @see app/Http/Controllers/API/MenuSearchController.php:51
 * @route '/api/menu/popular'
 */
 popular.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::store
-* @see app/Http/Controllers/PermintaanRadiologiController.php:68
+* @see app/Http/Controllers/PermintaanRadiologiController.php:65
 * @route '/api/permintaan-radiologi'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::store
-* @see app/Http/Controllers/PermintaanRadiologiController.php:68
+* @see app/Http/Controllers/PermintaanRadiologiController.php:65
 * @route '/api/permintaan-radiologi'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::store
-* @see app/Http/Controllers/PermintaanRadiologiController.php:68
+* @see app/Http/Controllers/PermintaanRadiologiController.php:65
 * @route '/api/permintaan-radiologi'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -97,7 +97,7 @@ byRawat.head = (args: { no_rawat: string | number } | [no_rawat: string | number
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::riwayat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:433
+* @see app/Http/Controllers/PermintaanRadiologiController.php:434
 * @route '/api/permintaan-radiologi/riwayat/{no_rawat}'
 */
 export const riwayat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -112,7 +112,7 @@ riwayat.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::riwayat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:433
+* @see app/Http/Controllers/PermintaanRadiologiController.php:434
 * @route '/api/permintaan-radiologi/riwayat/{no_rawat}'
 */
 riwayat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -139,7 +139,7 @@ riwayat.url = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::riwayat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:433
+* @see app/Http/Controllers/PermintaanRadiologiController.php:434
 * @route '/api/permintaan-radiologi/riwayat/{no_rawat}'
 */
 riwayat.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -149,7 +149,7 @@ riwayat.get = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::riwayat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:433
+* @see app/Http/Controllers/PermintaanRadiologiController.php:434
 * @route '/api/permintaan-radiologi/riwayat/{no_rawat}'
 */
 riwayat.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -159,7 +159,7 @@ riwayat.head = (args: { no_rawat: string | number } | [no_rawat: string | number
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::destroy
-* @see app/Http/Controllers/PermintaanRadiologiController.php:232
+* @see app/Http/Controllers/PermintaanRadiologiController.php:231
 * @route '/api/permintaan-radiologi/{noorder}'
 */
 export const destroy = (args: { noorder: string | number } | [noorder: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -174,7 +174,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::destroy
-* @see app/Http/Controllers/PermintaanRadiologiController.php:232
+* @see app/Http/Controllers/PermintaanRadiologiController.php:231
 * @route '/api/permintaan-radiologi/{noorder}'
 */
 destroy.url = (args: { noorder: string | number } | [noorder: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -201,7 +201,7 @@ destroy.url = (args: { noorder: string | number } | [noorder: string | number ] 
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::destroy
-* @see app/Http/Controllers/PermintaanRadiologiController.php:232
+* @see app/Http/Controllers/PermintaanRadiologiController.php:231
 * @route '/api/permintaan-radiologi/{noorder}'
 */
 destroy.delete = (args: { noorder: string | number } | [noorder: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

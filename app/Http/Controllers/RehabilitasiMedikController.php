@@ -13,7 +13,7 @@ class RehabilitasiMedikController extends Controller
     public function index(Request $request)
     {
         return Inertia::render('RehabilitasiMedik/Index', [
-            'title' => 'Data Rehabilitasi Medik'
+            'title' => 'Data Rehabilitasi Medik',
         ]);
     }
 
@@ -23,7 +23,7 @@ class RehabilitasiMedikController extends Controller
     public function create()
     {
         return Inertia::render('RehabilitasiMedik/Create', [
-            'title' => 'Tambah Data Rehabilitasi Medik'
+            'title' => 'Tambah Data Rehabilitasi Medik',
         ]);
     }
 
@@ -43,7 +43,7 @@ class RehabilitasiMedikController extends Controller
     public function show(string $id)
     {
         return Inertia::render('RehabilitasiMedik/Show', [
-            'title' => 'Detail Rehabilitasi Medik'
+            'title' => 'Detail Rehabilitasi Medik',
         ]);
     }
 
@@ -53,7 +53,7 @@ class RehabilitasiMedikController extends Controller
     public function edit(string $id)
     {
         return Inertia::render('RehabilitasiMedik/Edit', [
-            'title' => 'Edit Data Rehabilitasi Medik'
+            'title' => 'Edit Data Rehabilitasi Medik',
         ]);
     }
 

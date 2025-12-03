@@ -10,6 +10,7 @@ class DetailPeriksaLab extends Model
     use HasFactory;
 
     protected $table = 'detail_periksa_lab';
+
     // Tabel asli tidak memiliki kolom id auto-increment, menggunakan composite key.
     // Biarkan Eloquent menggunakan default primary key namun kita tidak akan mengandalkannya.
     public $timestamps = false;
@@ -25,8 +26,7 @@ class DetailPeriksaLab extends Model
         'nilai',
         'nilai_rujukan',
         'satuan', // tidak ada di tabel asli, hanya untuk compat bila ada
-        'keterangan'
-        ,
+        'keterangan',
         // biaya komponen (mengikuti schema dump)
         'bagian_rs',
         'bhp',
@@ -35,7 +35,7 @@ class DetailPeriksaLab extends Model
         'bagian_laborat',
         'kso',
         'menejemen',
-        'biaya_item'
+        'biaya_item',
     ];
 
     // Relasi dengan PeriksaLab
@@ -96,7 +96,7 @@ class DetailPeriksaLab extends Model
             'Normal' => 'success',
             'Tinggi' => 'danger',
             'Rendah' => 'warning',
-            'Abnormal' => 'danger'
+            'Abnormal' => 'danger',
         ];
 
         return $badges[$this->keterangan] ?? 'secondary';
@@ -121,6 +121,6 @@ class DetailPeriksaLab extends Model
             return '-';
         }
 
-        return $this->nilai . ($this->satuan ? ' ' . $this->satuan : '');
+        return $this->nilai.($this->satuan ? ' '.$this->satuan : '');
     }
 }

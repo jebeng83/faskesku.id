@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Employee;
+use Illuminate\Database\Seeder;
 
 class EmployeeDummySeeder extends Seeder
 {
@@ -138,7 +137,7 @@ class EmployeeDummySeeder extends Seeder
                 'tmp_lahir' => 'Tangerang',
                 'tgl_lahir' => '1977-03-11',
                 'alamat' => 'Jl. Bintaro No. 123, Jakarta Selatan',
-            ]
+            ],
         ];
 
         foreach ($employees as $employee) {

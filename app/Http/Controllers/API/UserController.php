@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\Employee;
+use App\Models\User;
 use App\Rules\StrongPassword;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -37,7 +37,7 @@ class UserController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $users
+            'data' => $users,
         ]);
     }
 
@@ -46,18 +46,18 @@ class UserController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users',
-            'password' => ['required', 'string', 'min:8', 'confirmed', new StrongPassword()],
+            'password' => ['required', 'string', 'min:8', 'confirmed', new StrongPassword],
             // Ensure nik refers to an existing pegawai, and remains unique per users
             'nik' => 'nullable|string|max:20|exists:pegawai,nik|unique:users,nik',
             'roles' => 'array',
-            'roles.*' => 'exists:roles,name'
+            'roles.*' => 'exists:roles,name',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -78,7 +78,7 @@ class UserController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'User berhasil dibuat',
-            'data' => $user
+            'data' => $user,
         ], 201);
     }
 
@@ -88,7 +88,7 @@ class UserController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $user
+            'data' => $user,
         ]);
     }
 
@@ -96,19 +96,19 @@ class UserController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users,username,' . $user->id,
-            'password' => ['nullable', 'string', 'min:12', 'confirmed', new StrongPassword()],
+            'username' => 'required|string|max:255|unique:users,username,'.$user->id,
+            'password' => ['nullable', 'string', 'min:12', 'confirmed', new StrongPassword],
             // Ensure nik refers to an existing pegawai, and remains unique per users
-            'nik' => 'nullable|string|max:20|exists:pegawai,nik|unique:users,nik,' . $user->id,
+            'nik' => 'nullable|string|max:20|exists:pegawai,nik|unique:users,nik,'.$user->id,
             'roles' => 'array',
-            'roles.*' => 'exists:roles,name'
+            'roles.*' => 'exists:roles,name',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -134,7 +134,7 @@ class UserController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'User berhasil diperbarui',
-            'data' => $user
+            'data' => $user,
         ]);
     }
 
@@ -144,7 +144,7 @@ class UserController extends Controller
         if ($user->hasRole('admin') && User::role('admin')->count() <= 1) {
             return response()->json([
                 'success' => false,
-                'message' => 'Tidak dapat menghapus admin terakhir'
+                'message' => 'Tidak dapat menghapus admin terakhir',
             ], 422);
         }
 
@@ -152,7 +152,7 @@ class UserController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'User berhasil dihapus'
+            'message' => 'User berhasil dihapus',
         ]);
     }
 
@@ -162,7 +162,7 @@ class UserController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $roles
+            'data' => $roles,
         ]);
     }
 
@@ -172,7 +172,7 @@ class UserController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $permissions
+            'data' => $permissions,
         ]);
     }
 
@@ -182,7 +182,7 @@ class UserController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $employees
+            'data' => $employees,
         ]);
     }
 
@@ -194,47 +194,47 @@ class UserController extends Controller
             return response()->json([
                 'success' => true,
                 'exists' => true,
-                'data' => $user
+                'data' => $user,
             ]);
         }
 
         return response()->json([
             'success' => true,
             'exists' => false,
-            'data' => null
+            'data' => null,
         ]);
     }
 
     public function updatePassword(Request $request, User $user)
     {
         $validator = Validator::make($request->all(), [
-            'password' => ['required', 'string', 'min:8', 'confirmed', new StrongPassword()],
-            'current_password' => 'required|string'
+            'password' => ['required', 'string', 'min:8', 'confirmed', new StrongPassword],
+            'current_password' => 'required|string',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
         // Verify current password
-        if (!Hash::check($request->current_password, $user->password)) {
+        if (! Hash::check($request->current_password, $user->password)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Password saat ini tidak sesuai'
+                'message' => 'Password saat ini tidak sesuai',
             ], 422);
         }
 
         $user->update([
-            'password' => Hash::make($request->password)
+            'password' => Hash::make($request->password),
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Password berhasil diperbarui'
+            'message' => 'Password berhasil diperbarui',
         ]);
     }
 }

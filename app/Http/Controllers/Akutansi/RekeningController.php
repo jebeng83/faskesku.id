@@ -1,15 +1,16 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Akutansi;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Akutansi\Rekening;
 use App\Models\Akutansi\SubRekening;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
-use Illuminate\Http\JsonResponse;
 
 class RekeningController extends Controller
 {
@@ -73,9 +74,9 @@ class RekeningController extends Controller
             'parent_kd_rek' => 'nullable|string|max:20',
         ]);
         $parent = null;
-        if (!empty($data['parent_kd_rek'])) {
+        if (! empty($data['parent_kd_rek'])) {
             $parent = Rekening::find($data['parent_kd_rek']);
-            if (!$parent) {
+            if (! $parent) {
                 return response()->json(['message' => 'Akun induk tidak ditemukan'], 422);
             }
         }
@@ -124,6 +125,7 @@ class RekeningController extends Controller
             $rek->level = (string) $data['level'];
         }
         $rek->save();
+
         return response()->json(['message' => 'Rekening updated', 'data' => $rek]);
     }
 
@@ -147,6 +149,7 @@ class RekeningController extends Controller
         // Jika akun adalah sub-akun, bersihkan mapping
         SubRekening::where('kd_rek2', $kd_rek)->delete();
         $rek->delete();
+
         return response()->json(['message' => 'Rekening deleted']);
     }
 
@@ -201,6 +204,7 @@ class RekeningController extends Controller
     {
         $induk = Rekening::findOrFail($induk_kd);
         $items = $induk->children()->orderBy('kd_rek')->get();
+
         return response()->json(['data' => $items]);
     }
 
@@ -210,21 +214,30 @@ class RekeningController extends Controller
      */
     private function wouldCreateCycle(string $parentKd, string $childKd): bool
     {
-        if ($parentKd === $childKd) { return true; }
+        if ($parentKd === $childKd) {
+            return true;
+        }
         // BFS melalui subrekening: mulai dari childKd, telusuri semua anaknya; jika menemukan parentKd → siklus
         $visited = [];
         $queue = [$childKd];
-        while (!empty($queue)) {
+        while (! empty($queue)) {
             $curr = array_shift($queue);
-            if (isset($visited[$curr])) { continue; }
+            if (isset($visited[$curr])) {
+                continue;
+            }
             $visited[$curr] = true;
-            if ($curr === $parentKd) { return true; }
+            if ($curr === $parentKd) {
+                return true;
+            }
             // Ambil anak dari curr
             $children = SubRekening::where('kd_rek', $curr)->pluck('kd_rek2');
             foreach ($children as $c) {
-                if (!isset($visited[$c])) { $queue[] = $c; }
+                if (! isset($visited[$c])) {
+                    $queue[] = $c;
+                }
             }
         }
+
         return false;
     }
 }

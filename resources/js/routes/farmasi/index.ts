@@ -459,7 +459,7 @@ dataObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::setHargaObat
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:18
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:17
 * @route '/farmasi/set-harga-obat'
 */
 export const setHargaObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -474,7 +474,7 @@ setHargaObat.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::setHargaObat
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:18
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:17
 * @route '/farmasi/set-harga-obat'
 */
 setHargaObat.url = (options?: RouteQueryOptions) => {
@@ -483,7 +483,7 @@ setHargaObat.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::setHargaObat
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:18
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:17
 * @route '/farmasi/set-harga-obat'
 */
 setHargaObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -493,7 +493,7 @@ setHargaObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::setHargaObat
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:18
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:17
 * @route '/farmasi/set-harga-obat'
 */
 setHargaObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
