@@ -37,7 +37,7 @@ class DoctorController extends Controller
         return Inertia::render('Doctor/Index', [
             'doctors' => $doctors,
             'availableEmployees' => $availableEmployees,
-            'spesialisList' => $spesialisList
+            'spesialisList' => $spesialisList,
         ]);
     }
 

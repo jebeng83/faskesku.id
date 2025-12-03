@@ -1,14 +1,15 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Akutansi;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 use App\Models\Akutansi\PiutangPasien;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PiutangPasienController extends Controller
 {
@@ -33,11 +34,11 @@ class PiutangPasienController extends Controller
             $like = "%$q%";
             $query->where(function ($w) use ($like) {
                 $w->where('piutang_pasien.no_rawat', 'like', $like)
-                  ->orWhere('piutang_pasien.no_rkm_medis', 'like', $like)
-                  ->orWhere('pasien.nm_pasien', 'like', $like);
+                    ->orWhere('piutang_pasien.no_rkm_medis', 'like', $like)
+                    ->orWhere('pasien.nm_pasien', 'like', $like);
             });
         }
-        if (!empty($status)) {
+        if (! empty($status)) {
             $query->where('piutang_pasien.status', $status);
         }
         if ($from && $to) {
@@ -161,6 +162,7 @@ class PiutangPasienController extends Controller
             DB::commit();
         } catch (\Throwable $e) {
             DB::rollBack();
+
             return response()->json([
                 'message' => 'Gagal menghapus piutang pasien',
                 'error' => $e->getMessage(),

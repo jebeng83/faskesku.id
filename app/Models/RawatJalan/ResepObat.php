@@ -2,17 +2,19 @@
 
 namespace App\Models\RawatJalan;
 
-use Illuminate\Database\Eloquent\Model;
-use App\Models\RawatJalan\ResepDokter;
-use App\Models\RawatJalan\RawatJalan;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 
 class ResepObat extends Model
 {
     protected $table = 'resep_obat';
+
     protected $primaryKey = 'no_resep';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -25,7 +27,7 @@ class ResepObat extends Model
         'jam_peresepan',
         'status',
         'tgl_penyerahan',
-        'jam_penyerahan'
+        'jam_penyerahan',
     ];
 
     protected $casts = [
@@ -58,17 +60,17 @@ class ResepObat extends Model
     // Method untuk generate nomor resep otomatis
     public static function generateNoResep($tanggal = null)
     {
-        if (!$tanggal) {
+        if (! $tanggal) {
             $tanggal = Carbon::now()->format('Y-m-d');
         }
-        
+
         $prefix = Carbon::parse($tanggal)->format('Ymd');
-        
+
         // Cari nomor resep terakhir untuk tanggal tersebut
-        $lastResep = static::where('no_resep', 'like', $prefix . '%')
+        $lastResep = static::where('no_resep', 'like', $prefix.'%')
             ->orderBy('no_resep', 'desc')
             ->first();
-        
+
         if ($lastResep) {
             // Ambil 4 digit terakhir dan tambah 1
             $lastNumber = (int) substr($lastResep->no_resep, -4);
@@ -76,18 +78,18 @@ class ResepObat extends Model
         } else {
             $newNumber = 1;
         }
-        
+
         // Format dengan 4 digit
-        return $prefix . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+        return $prefix.str_pad($newNumber, 4, '0', STR_PAD_LEFT);
     }
 
     // Method untuk membuat resep baru
     public static function createResep($data)
     {
         $noResep = static::generateNoResep($data['tgl_peresepan'] ?? null);
-        
+
         $resepData = array_merge($data, ['no_resep' => $noResep]);
-        
+
         return static::create($resepData);
     }
 }

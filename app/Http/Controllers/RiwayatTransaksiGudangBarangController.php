@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\RiwayatTransaksiGudangBarang;
-use App\Models\DataBarang;
 use App\Models\Bangsal;
-use Illuminate\Support\Facades\DB;
+use App\Models\RiwayatTransaksiGudangBarang;
+use Illuminate\Http\Request;
 
 class RiwayatTransaksiGudangBarangController extends Controller
 {
@@ -19,14 +17,14 @@ class RiwayatTransaksiGudangBarangController extends Controller
         if ($request->filled('tanggal_mulai')) {
             $query->whereDate('created_at', '>=', $request->tanggal_mulai);
         }
-        
+
         if ($request->filled('tanggal_selesai')) {
             $query->whereDate('created_at', '<=', $request->tanggal_selesai);
         }
 
         // Filter berdasarkan kode barang
         if ($request->filled('kode_brng')) {
-            $query->where('kode_brng', 'like', '%' . $request->kode_brng . '%');
+            $query->where('kode_brng', 'like', '%'.$request->kode_brng.'%');
         }
 
         // Filter berdasarkan bangsal
@@ -58,14 +56,14 @@ class RiwayatTransaksiGudangBarangController extends Controller
         if ($request->filled('tanggal_mulai')) {
             $query->whereDate('created_at', '>=', $request->tanggal_mulai);
         }
-        
+
         if ($request->filled('tanggal_selesai')) {
             $query->whereDate('created_at', '<=', $request->tanggal_selesai);
         }
 
         // Filter berdasarkan kode barang
         if ($request->filled('kode_brng')) {
-            $query->where('kode_brng', 'like', '%' . $request->kode_brng . '%');
+            $query->where('kode_brng', 'like', '%'.$request->kode_brng.'%');
         }
 
         // Filter berdasarkan bangsal
@@ -87,7 +85,7 @@ class RiwayatTransaksiGudangBarangController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $riwayat
+            'data' => $riwayat,
         ]);
     }
 
@@ -99,7 +97,7 @@ class RiwayatTransaksiGudangBarangController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $bangsal
+            'data' => $bangsal,
         ]);
     }
 
@@ -110,7 +108,7 @@ class RiwayatTransaksiGudangBarangController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $riwayat
+            'data' => $riwayat,
         ]);
     }
 
@@ -123,13 +121,13 @@ class RiwayatTransaksiGudangBarangController extends Controller
         if ($request->filled('tanggal_mulai')) {
             $query->whereDate('created_at', '>=', $request->tanggal_mulai);
         }
-        
+
         if ($request->filled('tanggal_selesai')) {
             $query->whereDate('created_at', '<=', $request->tanggal_selesai);
         }
 
         if ($request->filled('kode_brng')) {
-            $query->where('kode_brng', 'like', '%' . $request->kode_brng . '%');
+            $query->where('kode_brng', 'like', '%'.$request->kode_brng.'%');
         }
 
         if ($request->filled('kd_bangsal')) {
@@ -146,16 +144,16 @@ class RiwayatTransaksiGudangBarangController extends Controller
 
         $riwayat = $query->get();
 
-        $filename = 'riwayat_transaksi_gudang_' . date('Y-m-d_H-i-s') . '.csv';
-        
+        $filename = 'riwayat_transaksi_gudang_'.date('Y-m-d_H-i-s').'.csv';
+
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
-        $callback = function() use ($riwayat) {
+        $callback = function () use ($riwayat) {
             $file = fopen('php://output', 'w');
-            
+
             // Header CSV
             fputcsv($file, [
                 'Tanggal',
@@ -170,7 +168,7 @@ class RiwayatTransaksiGudangBarangController extends Controller
                 'Stok Sesudah',
                 'Selisih',
                 'Keterangan',
-                'User'
+                'User',
             ]);
 
             foreach ($riwayat as $item) {
@@ -187,7 +185,7 @@ class RiwayatTransaksiGudangBarangController extends Controller
                     $item->stok_sesudah,
                     $item->stok_sesudah - $item->stok_sebelum,
                     $item->keterangan,
-                    $item->user->name ?? ''
+                    $item->user->name ?? '',
                 ]);
             }
 

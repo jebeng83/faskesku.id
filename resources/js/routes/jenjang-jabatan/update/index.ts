@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::patch
-* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:141
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:142
 * @route '/jenjang-jabatan/{kode}'
 */
 export const patch = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -16,7 +16,7 @@ patch.definition = {
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::patch
-* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:141
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:142
 * @route '/jenjang-jabatan/{kode}'
 */
 patch.url = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ patch.url = (args: { kode: string | number } | [kode: string | number ] | string
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::patch
-* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:141
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:142
 * @route '/jenjang-jabatan/{kode}'
 */
 patch.patch = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({

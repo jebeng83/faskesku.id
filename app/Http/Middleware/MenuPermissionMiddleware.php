@@ -2,9 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Menu;
 use Closure;
 use Illuminate\Http\Request;
-use App\Models\Menu;
 use Illuminate\Support\Facades\Route;
 
 class MenuPermissionMiddleware
@@ -12,7 +12,6 @@ class MenuPermissionMiddleware
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
      * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
@@ -20,7 +19,7 @@ class MenuPermissionMiddleware
     {
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             return redirect()->route('login');
         }
 
@@ -34,7 +33,7 @@ class MenuPermissionMiddleware
             'profile.show',
             'profile.update',
             'api.menus.hierarchy',
-            'api.menus.icons'
+            'api.menus.icons',
         ];
 
         if (in_array($currentRouteName, $skipRoutes)) {
@@ -46,14 +45,14 @@ class MenuPermissionMiddleware
             ->where('is_active', true)
             ->first();
 
-        if (!$menu) {
+        if (! $menu) {
             // If no menu found, allow access (for routes not in menu system)
             return $next($request);
         }
 
         // Check if menu requires permission
         if ($menu->permission_name) {
-            if (!$user->can($menu->permission_name)) {
+            if (! $user->can($menu->permission_name)) {
                 abort(403, 'Anda tidak memiliki akses ke halaman ini.');
             }
         }

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::create
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:150
+* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:155
 * @route '/api/satusehat/rajal/condition'
 */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::create
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:150
+* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:155
 * @route '/api/satusehat/rajal/condition'
 */
 create.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ create.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::create
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:150
+* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:155
 * @route '/api/satusehat/rajal/condition'
 */
 create.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

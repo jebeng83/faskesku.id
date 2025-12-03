@@ -10,7 +10,9 @@ class DetailBeli extends Model
     use HasFactory;
 
     protected $connection = 'fufufafa';
+
     protected $table = 'detailbeli';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -25,7 +27,7 @@ class DetailBeli extends Model
         'no_batch',
         'jumlah2',
         'kadaluarsa',
-        'created_at'
+        'created_at',
     ];
 
     protected $casts = [
@@ -34,7 +36,7 @@ class DetailBeli extends Model
         'besardis' => 'decimal:2',
         'total' => 'decimal:2',
         'created_at' => 'datetime',
-        'kadaluarsa' => 'date'
+        'kadaluarsa' => 'date',
     ];
 
     // Relasi ke databarang

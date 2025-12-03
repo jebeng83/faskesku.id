@@ -71,11 +71,12 @@ class PcareController extends Controller
                 'query' => $query,
                 'error' => $e->getMessage(),
             ]);
+
             return response()->json([
                 'ok' => false,
                 'status' => 503,
                 'endpoint' => $endpoint,
-                'error' => 'PCare connection error: ' . $e->getMessage(),
+                'error' => 'PCare connection error: '.$e->getMessage(),
                 'hint' => 'Coba lagi beberapa saat. Jika tetap gagal, periksa konektivitas jaringan, env BPJS_PCARE_FORCE_RESOLVE_LIST, dan sertifikat CA.',
             ], 503);
         }
@@ -114,9 +115,10 @@ class PcareController extends Controller
                 'limit' => $limit,
                 'error' => $e->getMessage(),
             ]);
+
             return response()->json([
                 'metaData' => [
-                    'message' => 'Gagal terhubung ke BPJS PCare: ' . $e->getMessage(),
+                    'message' => 'Gagal terhubung ke BPJS PCare: '.$e->getMessage(),
                     'code' => 503,
                 ],
                 'response' => [
@@ -160,9 +162,10 @@ class PcareController extends Controller
                 'limit' => $limit,
                 'error' => $e->getMessage(),
             ]);
+
             return response()->json([
                 'metaData' => [
-                    'message' => 'Gagal terhubung ke BPJS PCare (faskes): ' . $e->getMessage(),
+                    'message' => 'Gagal terhubung ke BPJS PCare (faskes): '.$e->getMessage(),
                     'code' => 503,
                 ],
                 'response' => [
@@ -248,9 +251,10 @@ class PcareController extends Controller
             Log::channel('bpjs')->error('PCare getKesadaran connection error', [
                 'error' => $e->getMessage(),
             ]);
+
             return response()->json([
                 'metaData' => [
-                    'message' => 'Gagal terhubung ke BPJS PCare (kesadaran): ' . $e->getMessage(),
+                    'message' => 'Gagal terhubung ke BPJS PCare (kesadaran): '.$e->getMessage(),
                     'code' => 503,
                 ],
                 'response' => [
@@ -278,8 +282,10 @@ class PcareController extends Controller
                         'http_status' => $response->status(),
                         'processed' => is_array($processed) ? $processed : (string) $processed,
                     ]);
-                } catch (\Throwable $e) {}
+                } catch (\Throwable $e) {
+                }
             }
+
             return response()->json($processed, $response->status());
         } catch (\Throwable $e) {
             Log::channel('bpjs')->error('PCare pesertaByNoKartu connection error', [
@@ -287,9 +293,10 @@ class PcareController extends Controller
                 'tglPelayanan' => $tglPelayanan,
                 'error' => $e->getMessage(),
             ]);
+
             return response()->json([
                 'metaData' => [
-                    'message' => 'Gagal terhubung ke BPJS PCare (pesertaByNoKartu): ' . $e->getMessage(),
+                    'message' => 'Gagal terhubung ke BPJS PCare (pesertaByNoKartu): '.$e->getMessage(),
                     'code' => 503,
                 ],
                 'response' => null,
@@ -324,17 +331,20 @@ class PcareController extends Controller
                         'http_status' => $response->status(),
                         'processed' => is_array($processed) ? $processed : (string) $processed,
                     ]);
-                } catch (\Throwable $e) {}
+                } catch (\Throwable $e) {
+                }
             }
+
             return response()->json($processed, $response->status());
         } catch (\Throwable $e) {
             Log::channel('bpjs')->error('PCare getPeserta connection error', [
                 'noka' => $noka,
                 'error' => $e->getMessage(),
             ]);
+
             return response()->json([
                 'metaData' => [
-                    'message' => 'Gagal terhubung ke BPJS PCare (peserta): ' . $e->getMessage(),
+                    'message' => 'Gagal terhubung ke BPJS PCare (peserta): '.$e->getMessage(),
                     'code' => 503,
                 ],
                 'response' => null,
@@ -374,16 +384,18 @@ class PcareController extends Controller
                         'http_status' => $response->status(),
                         'processed' => is_array($processed) ? $processed : (string) $processed,
                     ]);
-                } catch (\Throwable $e) {}
+                } catch (\Throwable $e) {
+                }
             }
         } catch (\Throwable $e) {
             Log::channel('bpjs')->error('PCare daftarKunjungan connection error', [
                 'error' => $e->getMessage(),
-                'payload_preview' => array_intersect_key($payload, array_flip(['noKartu','kdPoli','kdDokter','kdDiag1'])),
+                'payload_preview' => array_intersect_key($payload, array_flip(['noKartu', 'kdPoli', 'kdDokter', 'kdDiag1'])),
             ]);
+
             return response()->json([
                 'metaData' => [
-                    'message' => 'Gagal terhubung ke BPJS PCare (daftarKunjungan): ' . $e->getMessage(),
+                    'message' => 'Gagal terhubung ke BPJS PCare (daftarKunjungan): '.$e->getMessage(),
                     'code' => 503,
                 ],
                 'response' => null,
@@ -498,7 +510,7 @@ class PcareController extends Controller
 
         // Logging diagnostik terperinci (tanpa bocorkan informasi sensitif)
         try {
-            $maskedNoKartu = substr($noKartu, 0, 6) . str_repeat('*', max(strlen($noKartu) - 10, 0)) . substr($noKartu, -4);
+            $maskedNoKartu = substr($noKartu, 0, 6).str_repeat('*', max(strlen($noKartu) - 10, 0)).substr($noKartu, -4);
             \Illuminate\Support\Facades\Log::channel('bpjs')->info('Kunjungan Sehat - Payload siap dikirim', [
                 'kd_poli_rs' => $kdPoliRs,
                 'kdPoli_final' => $kdPoliFromRequest,
@@ -523,17 +535,20 @@ class PcareController extends Controller
                         'http_status' => $response->status(),
                         'processed' => is_array($processed) ? $processed : (string) $processed,
                     ]);
-                } catch (\Throwable $e) {}
+                } catch (\Throwable $e) {
+                }
             }
+
             return response()->json($processed, $response->status());
         } catch (\Throwable $e) {
             Log::channel('bpjs')->error('PCare kirimKunjunganSehat connection error', [
                 'error' => $e->getMessage(),
-                'payload_preview' => array_intersect_key($payload, array_flip(['noKartu','kdPoli','kdProviderPeserta','tglDaftar'])),
+                'payload_preview' => array_intersect_key($payload, array_flip(['noKartu', 'kdPoli', 'kdProviderPeserta', 'tglDaftar'])),
             ]);
+
             return response()->json([
                 'metaData' => [
-                    'message' => 'Gagal terhubung ke BPJS PCare (pendaftaran kunjungan sehat): ' . $e->getMessage(),
+                    'message' => 'Gagal terhubung ke BPJS PCare (pendaftaran kunjungan sehat): '.$e->getMessage(),
                     'code' => 503,
                 ],
                 'response' => null,
@@ -956,7 +971,7 @@ class PcareController extends Controller
             // Nama SubSpesialis (dari response BPJS atau lookup)
             $kdSubSpesialis = $subSpesialis['kdSubSpesialis1'] ?? $subSpesialis['kdSubSpesialis'] ?? null;
             $nmSubSpesialis = null;
-            
+
             // Lookup nama subspesialis dari API PCare jika kode tersedia
             if ($kdSubSpesialis) {
                 try {
@@ -964,19 +979,19 @@ class PcareController extends Controller
                     // Kemudian cari subspesialis berdasarkan kdSpesialis
                     $spesialisRes = $this->pcareRequest('GET', 'spesialis', []);
                     $spesialisProcessed = $this->maybeDecryptAndDecompress($spesialisRes['response']->body(), $spesialisRes['timestamp_used']);
-                    $spesialisList = is_array($spesialisProcessed) && isset($spesialisProcessed['response']['list']) 
-                        ? $spesialisProcessed['response']['list'] 
+                    $spesialisList = is_array($spesialisProcessed) && isset($spesialisProcessed['response']['list'])
+                        ? $spesialisProcessed['response']['list']
                         : [];
-                    
+
                     // Cari kdSpesialis yang sesuai
                     foreach ($spesialisList as $sp) {
                         if (isset($sp['kdSpesialis'])) {
                             $subSpRes = $this->pcareRequest('GET', 'spesialis/subspesialis', ['kdSpesialis' => $sp['kdSpesialis']]);
                             $subSpProcessed = $this->maybeDecryptAndDecompress($subSpRes['response']->body(), $subSpRes['timestamp_used']);
-                            $subSpList = is_array($subSpProcessed) && isset($subSpProcessed['response']['list']) 
-                                ? $subSpProcessed['response']['list'] 
+                            $subSpList = is_array($subSpProcessed) && isset($subSpProcessed['response']['list'])
+                                ? $subSpProcessed['response']['list']
                                 : [];
-                            
+
                             foreach ($subSpList as $subSp) {
                                 if (isset($subSp['kdSubSpesialis']) && $subSp['kdSubSpesialis'] === $kdSubSpesialis) {
                                     $nmSubSpesialis = $subSp['nmSubSpesialis'] ?? null;
@@ -988,7 +1003,7 @@ class PcareController extends Controller
                 } catch (\Throwable $e) {
                     Log::warning('Gagal lookup nmSubSpesialis dari API PCare: '.$e->getMessage());
                 }
-                
+
                 // Fallback ke payload jika lookup gagal
                 if (! $nmSubSpesialis && isset($payload['nmSubSpesialis'])) {
                     $nmSubSpesialis = $payload['nmSubSpesialis'];
@@ -1016,10 +1031,10 @@ class PcareController extends Controller
                     try {
                         $providerRes = $this->pcareRequest('GET', 'provider', []);
                         $providerProcessed = $this->maybeDecryptAndDecompress($providerRes['response']->body(), $providerRes['timestamp_used']);
-                        $providerList = is_array($providerProcessed) && isset($providerProcessed['response']['list']) 
-                            ? $providerProcessed['response']['list'] 
+                        $providerList = is_array($providerProcessed) && isset($providerProcessed['response']['list'])
+                            ? $providerProcessed['response']['list']
                             : [];
-                        
+
                         foreach ($providerList as $provider) {
                             if (isset($provider['kdProvider']) && $provider['kdProvider'] === $rujuk['kdppk']) {
                                 $nmPPK = $provider['nmProvider'] ?? null;
@@ -1276,12 +1291,14 @@ class PcareController extends Controller
     {
         try {
             $kabupaten = config('bpjs.pcare.kabupaten', '');
+
             return response()->json([
                 'success' => true,
                 'kabupaten' => $kabupaten,
             ]);
         } catch (\Throwable $e) {
             Log::error('Error getting kabupaten config: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
                 'kabupaten' => '',
@@ -1367,6 +1384,7 @@ class PcareController extends Controller
                     'no_rawat' => $noRawat,
                     'kd_pj' => $kdPj,
                 ]);
+
                 return response()->json([
                     'metaData' => [
                         'message' => 'Lewati: pendaftaran PCare hanya untuk penjamin BPJ atau PBI',
@@ -1380,7 +1398,7 @@ class PcareController extends Controller
             // Jika terjadi error pada validasi, kembalikan sebagai 500 agar tidak mengirim ke PCare secara tidak sengaja
             return response()->json([
                 'metaData' => [
-                    'message' => 'Gagal memproses validasi kd_pj: ' . $e->getMessage(),
+                    'message' => 'Gagal memproses validasi kd_pj: '.$e->getMessage(),
                     'code' => 500,
                 ],
             ], 500);
@@ -1641,8 +1659,10 @@ class PcareController extends Controller
                         'http_status' => $response->status(),
                         'processed' => is_array($processed) ? $processed : (string) $processed,
                     ]);
-                } catch (\Throwable $e) {}
+                } catch (\Throwable $e) {
+                }
             }
+
             return response()->json($processed, $response->status());
         } catch (\Throwable $e) {
             Log::channel('bpjs')->error('PCare getDpho connection error', [
@@ -1651,9 +1671,10 @@ class PcareController extends Controller
                 'limit' => $limit,
                 'error' => $e->getMessage(),
             ]);
+
             return response()->json([
                 'metaData' => [
-                    'message' => 'Gagal terhubung ke BPJS PCare (dpho): ' . $e->getMessage(),
+                    'message' => 'Gagal terhubung ke BPJS PCare (dpho): '.$e->getMessage(),
                     'code' => 503,
                 ],
                 'response' => [
@@ -1709,8 +1730,10 @@ class PcareController extends Controller
                         'http_status' => $response->status(),
                         'processed' => is_array($processed) ? $processed : (string) $processed,
                     ]);
-                } catch (\Throwable $e) {}
+                } catch (\Throwable $e) {
+                }
             }
+
             return response()->json($processed, $response->status());
         } catch (\Throwable $e) {
             Log::channel('bpjs')->error('PCare getTindakan connection error', [
@@ -1719,9 +1742,10 @@ class PcareController extends Controller
                 'limit' => $limit,
                 'error' => $e->getMessage(),
             ]);
+
             return response()->json([
                 'metaData' => [
-                    'message' => 'Gagal terhubung ke BPJS PCare (tindakan): ' . $e->getMessage(),
+                    'message' => 'Gagal terhubung ke BPJS PCare (tindakan): '.$e->getMessage(),
                     'code' => 503,
                 ],
                 'response' => [
@@ -1817,6 +1841,7 @@ class PcareController extends Controller
             $sanitized = mb_convert_encoding($data, 'UTF-8', 'UTF-8');
             // Remove any remaining invalid characters using regex
             $sanitized = preg_replace('/[\x00-\x1F\x7F-\x9F]/u', '', $sanitized);
+
             // Ensure valid UTF-8
             return mb_check_encoding($sanitized, 'UTF-8') ? $sanitized : '';
         } elseif (is_array($data)) {
@@ -1826,6 +1851,7 @@ class PcareController extends Controller
             foreach ((array) $data as $key => $value) {
                 $sanitized[$this->sanitizeUtf8($key)] = $this->sanitizeUtf8($value);
             }
+
             return (object) $sanitized;
         }
 

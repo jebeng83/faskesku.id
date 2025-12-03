@@ -1,17 +1,20 @@
 <?php
+
 // Quick PHP cURL test to BPJS PCare poli endpoint using CURLOPT_RESOLVE
 // This helps diagnose whether PHP cURL on this machine can reach the host when forced to specific IPs.
 
-function buildHeaders(string $consId, string $secretKey, string $user, string $pass, string $appCode, int $timestamp): array {
-    $sigData = $consId . '&' . $timestamp;
+function buildHeaders(string $consId, string $secretKey, string $user, string $pass, string $appCode, int $timestamp): array
+{
+    $sigData = $consId.'&'.$timestamp;
     $raw = hash_hmac('sha256', $sigData, $secretKey, true);
     $signature = base64_encode($raw);
-    $authorization = base64_encode($user . ':' . $pass . ':' . $appCode);
+    $authorization = base64_encode($user.':'.$pass.':'.$appCode);
+
     return [
-        'X-cons-id: ' . $consId,
-        'X-timestamp: ' . $timestamp,
-        'X-signature: ' . $signature,
-        'X-authorization: Basic ' . $authorization,
+        'X-cons-id: '.$consId,
+        'X-timestamp: '.$timestamp,
+        'X-signature: '.$signature,
+        'X-authorization: Basic '.$authorization,
         'user_key: 403bf17ddf158790afcfe1e8dd682a67',
         'Accept: application/json',
         'Content-Type: application/json',
@@ -63,13 +66,11 @@ foreach ($ips as $ip) {
     $err = curl_error($ch);
     $info = curl_getinfo($ch);
     curl_close($ch);
-    echo "HTTP Code: " . ($info['http_code'] ?? 0) . "\n";
+    echo 'HTTP Code: '.($info['http_code'] ?? 0)."\n";
     if ($err) {
         echo "cURL error: {$err}\n";
     } else {
-        echo substr($body, 0, 200) . "\n";
+        echo substr($body, 0, 200)."\n";
     }
     echo "-----\n";
 }
-
-?>

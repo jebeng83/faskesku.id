@@ -13,8 +13,11 @@ use Illuminate\Database\Eloquent\Model;
 class SetAkun extends Model
 {
     protected $table = 'set_akun';
+
     public $timestamps = false;
+
     public $incrementing = false;
+
     protected $primaryKey = 'id'; // placeholder; TIDAK dipakai untuk operasi update
 
     protected $fillable = [

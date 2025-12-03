@@ -2,19 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PeriksaLab;
 use App\Models\DetailPeriksaLab;
-use App\Models\JnsPerawatanLab;
-use App\Models\TemplateLaboratorium;
-use App\Models\RiwayatLab;
-use App\Models\RegPeriksa;
-use App\Models\Patient;
 use App\Models\Employee;
+use App\Models\JnsPerawatanLab;
+use App\Models\PeriksaLab;
+use App\Models\RegPeriksa;
+use App\Models\RiwayatLab;
+use App\Models\TemplateLaboratorium;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
 use Inertia\Inertia;
 
 class LaboratoriumController extends Controller
@@ -47,13 +45,13 @@ class LaboratoriumController extends Controller
         $statusOptions = [
             'Menunggu' => 'Menunggu',
             'Proses' => 'Proses',
-            'Selesai' => 'Selesai'
+            'Selesai' => 'Selesai',
         ];
 
         return Inertia::render('Laboratorium/Index', [
             'periksaLab' => $periksaLab,
             'statusOptions' => $statusOptions,
-            'filters' => $request->only(['status', 'start_date', 'end_date', 'search'])
+            'filters' => $request->only(['status', 'start_date', 'end_date', 'search']),
         ]);
     }
 
@@ -73,7 +71,7 @@ class LaboratoriumController extends Controller
         return Inertia::render('Laboratorium/Create', [
             'regPeriksa' => $regPeriksa,
             'jenisPerawatan' => $jenisPerawatan,
-            'petugas' => $petugas
+            'petugas' => $petugas,
         ]);
     }
 
@@ -91,7 +89,7 @@ class LaboratoriumController extends Controller
             'dokter_perujuk' => 'nullable|string|max:255',
             'bagian_perujuk' => 'nullable|string|max:255',
             'kategori' => 'nullable|string|max:255',
-            'keterangan' => 'nullable|string'
+            'keterangan' => 'nullable|string',
         ]);
 
         try {
@@ -111,7 +109,7 @@ class LaboratoriumController extends Controller
                     'kd_jenis_prw' => $request->kd_jenis_prw,
                     'item_pemeriksaan' => $template->Pemeriksaan,
                     'nilai_rujukan' => $template->getNilaiRujukan(),
-                    'satuan' => $template->satuan
+                    'satuan' => $template->satuan,
                 ]);
             }
 
@@ -121,7 +119,8 @@ class LaboratoriumController extends Controller
                 ->with('success', 'Pemeriksaan laboratorium berhasil dibuat.');
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->withErrors(['error' => 'Gagal membuat pemeriksaan laboratorium: ' . $e->getMessage()]);
+
+            return back()->withErrors(['error' => 'Gagal membuat pemeriksaan laboratorium: '.$e->getMessage()]);
         }
     }
 
@@ -134,7 +133,7 @@ class LaboratoriumController extends Controller
             'regPeriksa.patient',
             'jenisPerawatan',
             'petugas',
-            'detailPemeriksaan'
+            'detailPemeriksaan',
         ])->findOrFail($noRawat);
 
         $riwayatLab = RiwayatLab::byPasien($periksaLab->regPeriksa->no_rkm_medis)
@@ -145,7 +144,7 @@ class LaboratoriumController extends Controller
 
         return Inertia::render('Laboratorium/Show', [
             'periksaLab' => $periksaLab,
-            'riwayatLab' => $riwayatLab
+            'riwayatLab' => $riwayatLab,
         ]);
     }
 
@@ -156,7 +155,7 @@ class LaboratoriumController extends Controller
     {
         try {
             $noRawatParam = $noRawat ?: $request->query('no_rawat');
-            if (!$noRawatParam) {
+            if (! $noRawatParam) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Parameter no_rawat wajib diisi.',
@@ -174,7 +173,7 @@ class LaboratoriumController extends Controller
             // Hitung usia jika tersedia (null-safe)
             $jk = $periksaLab->regPeriksa?->patient?->jk;
             $usiaTahun = null;
-            if (!empty($periksaLab->regPeriksa?->patient?->tgl_lahir)) {
+            if (! empty($periksaLab->regPeriksa?->patient?->tgl_lahir)) {
                 try {
                     $usiaTahun = \Carbon\Carbon::parse($periksaLab->regPeriksa->patient->tgl_lahir)
                         ->diffInYears(\Carbon\Carbon::parse($periksaLab->tgl_periksa ?? now()));
@@ -239,9 +238,10 @@ class LaboratoriumController extends Controller
                 'exception_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil detail pemeriksaan: ' . $e->getMessage(),
+                'message' => 'Gagal mengambil detail pemeriksaan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -254,7 +254,7 @@ class LaboratoriumController extends Controller
         $periksaLab = PeriksaLab::with([
             'regPeriksa.patient',
             'jenisPerawatan',
-            'detailPemeriksaan'
+            'detailPemeriksaan',
         ])->findOrFail($noRawat);
 
         $jenisPerawatan = JnsPerawatanLab::aktif()->get();
@@ -263,7 +263,7 @@ class LaboratoriumController extends Controller
         return Inertia::render('Laboratorium/Edit', [
             'periksaLab' => $periksaLab,
             'jenisPerawatan' => $jenisPerawatan,
-            'petugas' => $petugas
+            'petugas' => $petugas,
         ]);
     }
 
@@ -283,7 +283,7 @@ class LaboratoriumController extends Controller
             'bagian_perujuk' => 'nullable|string|max:255',
             'kategori' => 'nullable|string|max:255',
             'status' => 'required|in:Menunggu,Proses,Selesai',
-            'keterangan' => 'nullable|string'
+            'keterangan' => 'nullable|string',
         ]);
 
         try {
@@ -292,7 +292,7 @@ class LaboratoriumController extends Controller
             return redirect()->route('laboratorium.show', $noRawat)
                 ->with('success', 'Pemeriksaan laboratorium berhasil diperbarui.');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Gagal memperbarui pemeriksaan laboratorium: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Gagal memperbarui pemeriksaan laboratorium: '.$e->getMessage()]);
         }
     }
 
@@ -308,7 +308,7 @@ class LaboratoriumController extends Controller
             return redirect()->route('laboratorium.index')
                 ->with('success', 'Pemeriksaan laboratorium berhasil dihapus.');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Gagal menghapus pemeriksaan laboratorium: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Gagal menghapus pemeriksaan laboratorium: '.$e->getMessage()]);
         }
     }
 
@@ -325,7 +325,7 @@ class LaboratoriumController extends Controller
             // Bebaskan keterangan sesuai behavior Java form
             'detail_pemeriksaan.*.keterangan' => 'nullable|string',
             // Izinkan perubahan nilai rujukan bila diperlukan
-            'detail_pemeriksaan.*.nilai_rujukan' => 'nullable|string'
+            'detail_pemeriksaan.*.nilai_rujukan' => 'nullable|string',
         ]);
 
         try {
@@ -366,7 +366,8 @@ class LaboratoriumController extends Controller
             return back()->with('success', 'Hasil pemeriksaan berhasil disimpan.');
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->withErrors(['error' => 'Gagal menyimpan hasil pemeriksaan: ' . $e->getMessage()]);
+
+            return back()->withErrors(['error' => 'Gagal menyimpan hasil pemeriksaan: '.$e->getMessage()]);
         }
     }
 
@@ -381,7 +382,7 @@ class LaboratoriumController extends Controller
                 'nilai' => $detail->nilai,
                 'satuan' => $detail->satuan,
                 'rujukan' => $detail->nilai_rujukan,
-                'keterangan' => $detail->keterangan
+                'keterangan' => $detail->keterangan,
             ];
         })->toArray();
 
@@ -392,7 +393,7 @@ class LaboratoriumController extends Controller
             'tgl_periksa' => $periksaLab->tgl_periksa,
             'hasil_pemeriksaan' => json_encode($hasilPemeriksaan),
             'dokter_pj' => $periksaLab->dokter_perujuk,
-            'petugas_lab' => $periksaLab->petugas->nama ?? null
+            'petugas_lab' => $periksaLab->petugas->nama ?? null,
         ]);
     }
 
@@ -409,7 +410,7 @@ class LaboratoriumController extends Controller
             'menunggu' => PeriksaLab::byStatus('Menunggu')->count(),
             'proses' => PeriksaLab::byStatus('Proses')->count(),
             'selesai_hari_ini' => PeriksaLab::byStatus('Selesai')->whereDate('tgl_periksa', $today)->count(),
-            'total_bulan_ini' => PeriksaLab::where('tgl_periksa', '>=', $thisMonth)->count()
+            'total_bulan_ini' => PeriksaLab::where('tgl_periksa', '>=', $thisMonth)->count(),
         ];
 
         $recentExams = PeriksaLab::with(['regPeriksa.patient', 'jenisPerawatan'])
@@ -419,7 +420,7 @@ class LaboratoriumController extends Controller
 
         return Inertia::render('Laboratorium/Dashboard', [
             'stats' => $stats,
-            'recentExams' => $recentExams
+            'recentExams' => $recentExams,
         ]);
     }
 }

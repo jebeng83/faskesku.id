@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Penjab;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Inertia\Inertia;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 
 class PenjabController extends Controller
 {
@@ -64,6 +64,7 @@ class PenjabController extends Controller
             if ($request->expectsJson() || $request->wantsJson()) {
                 return response()->json(['errors' => $validator->errors()], 422);
             }
+
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
@@ -99,6 +100,7 @@ class PenjabController extends Controller
                     ->withErrors(['error' => 'Terjadi kesalahan saat menyimpan data.'])
                     ->withInput();
             }
+
             return redirect()->back()
                 ->withErrors(['error' => 'Terjadi kesalahan saat menyimpan data.'])
                 ->withInput();
@@ -149,8 +151,8 @@ class PenjabController extends Controller
                 ->whereRaw('LENGTH(kd_pj) = 3') // Pastikan panjangnya 3 karakter (AXX)
                 ->orderByRaw('CAST(SUBSTRING(kd_pj, 2) AS UNSIGNED) DESC')
                 ->first();
-            
-            if (!$lastPenjab) {
+
+            if (! $lastPenjab) {
                 $newCode = 'A01';
             } else {
                 // Extract number from last code (format: AXX)
@@ -160,20 +162,20 @@ class PenjabController extends Controller
                 if ($newNumber > 99) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Kode sudah mencapai batas maksimal (A99)'
+                        'message' => 'Kode sudah mencapai batas maksimal (A99)',
                     ], 400);
                 }
-                $newCode = 'A' . str_pad($newNumber, 2, '0', STR_PAD_LEFT);
+                $newCode = 'A'.str_pad($newNumber, 2, '0', STR_PAD_LEFT);
             }
 
             return response()->json([
                 'success' => true,
-                'kode' => $newCode
+                'kode' => $newCode,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal generate kode cara bayar'
+                'message' => 'Gagal generate kode cara bayar',
             ], 500);
         }
     }

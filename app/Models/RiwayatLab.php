@@ -2,15 +2,16 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
 
 class RiwayatLab extends Model
 {
     use HasFactory;
 
     protected $table = 'riwayat_lab';
+
     protected $primaryKey = 'id';
 
     protected $fillable = [
@@ -20,11 +21,11 @@ class RiwayatLab extends Model
         'tgl_periksa',
         'hasil_pemeriksaan',
         'dokter_pj',
-        'petugas_lab'
+        'petugas_lab',
     ];
 
     protected $casts = [
-        'tgl_periksa' => 'datetime'
+        'tgl_periksa' => 'datetime',
     ];
 
     // Relasi dengan RegPeriksa
@@ -102,11 +103,11 @@ class RiwayatLab extends Model
     public static function getRiwayatPasien($noRkmMedis, $kdJenisPrw = null, $limit = 10)
     {
         $query = self::byPasien($noRkmMedis)->latest();
-        
+
         if ($kdJenisPrw) {
             $query->byJenisPemeriksaan($kdJenisPrw);
         }
-        
+
         return $query->limit($limit)->get();
     }
 
@@ -121,7 +122,7 @@ class RiwayatLab extends Model
                 ->count(),
             'pemeriksaan_terakhir' => self::byPasien($noRkmMedis)
                 ->latest()
-                ->first()?->tgl_periksa_formatted
+                ->first()?->tgl_periksa_formatted,
         ];
     }
 }

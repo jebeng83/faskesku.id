@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Farmasi\KategoriBarangController::jPIycursk7je1b0S
-* @see app/Http/Controllers/Farmasi/KategoriBarangController.php:93
+* @see app/Http/Controllers/Farmasi/KategoriBarangController.php:95
 * @route '/farmasi/kategori-obat/{kode}'
 */
 export const jPIycursk7je1b0S = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -16,7 +16,7 @@ jPIycursk7je1b0S.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\KategoriBarangController::jPIycursk7je1b0S
-* @see app/Http/Controllers/Farmasi/KategoriBarangController.php:93
+* @see app/Http/Controllers/Farmasi/KategoriBarangController.php:95
 * @route '/farmasi/kategori-obat/{kode}'
 */
 jPIycursk7je1b0S.url = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ jPIycursk7je1b0S.url = (args: { kode: string | number } | [kode: string | number
 
 /**
 * @see \App\Http\Controllers\Farmasi\KategoriBarangController::jPIycursk7je1b0S
-* @see app/Http/Controllers/Farmasi/KategoriBarangController.php:93
+* @see app/Http/Controllers/Farmasi/KategoriBarangController.php:95
 * @route '/farmasi/kategori-obat/{kode}'
 */
 jPIycursk7je1b0S.patch = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -53,7 +53,7 @@ jPIycursk7je1b0S.patch = (args: { kode: string | number } | [kode: string | numb
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::aTCghYPU7z0W0DNf
-* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:93
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:95
 * @route '/farmasi/golongan-obat/{kode}'
 */
 export const aTCghYPU7z0W0DNf = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -68,7 +68,7 @@ aTCghYPU7z0W0DNf.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::aTCghYPU7z0W0DNf
-* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:93
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:95
 * @route '/farmasi/golongan-obat/{kode}'
 */
 aTCghYPU7z0W0DNf.url = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -95,7 +95,7 @@ aTCghYPU7z0W0DNf.url = (args: { kode: string | number } | [kode: string | number
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::aTCghYPU7z0W0DNf
-* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:93
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:95
 * @route '/farmasi/golongan-obat/{kode}'
 */
 aTCghYPU7z0W0DNf.patch = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -313,7 +313,7 @@ Xw9lUrxT1a7fX5sO.patch = (args: { kd_racik: string | number } | [kd_racik: strin
 
 /**
 * @see \App\Http\Controllers\Farmasi\KonversiSatuanController::FzISoUXhWsHtAbIX
-* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:86
+* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:85
 * @route '/farmasi/konversi-satuan/{kode_sat}/{sat_konversi}/{nilai}/{nilai_konversi}'
 */
 export const FzISoUXhWsHtAbIX = (args: { kode_sat: string | number, sat_konversi: string | number, nilai: string | number, nilai_konversi: string | number } | [kode_sat: string | number, sat_konversi: string | number, nilai: string | number, nilai_konversi: string | number ], options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -328,7 +328,7 @@ FzISoUXhWsHtAbIX.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\KonversiSatuanController::FzISoUXhWsHtAbIX
-* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:86
+* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:85
 * @route '/farmasi/konversi-satuan/{kode_sat}/{sat_konversi}/{nilai}/{nilai_konversi}'
 */
 FzISoUXhWsHtAbIX.url = (args: { kode_sat: string | number, sat_konversi: string | number, nilai: string | number, nilai_konversi: string | number } | [kode_sat: string | number, sat_konversi: string | number, nilai: string | number, nilai_konversi: string | number ], options?: RouteQueryOptions) => {
@@ -360,7 +360,7 @@ FzISoUXhWsHtAbIX.url = (args: { kode_sat: string | number, sat_konversi: string 
 
 /**
 * @see \App\Http\Controllers\Farmasi\KonversiSatuanController::FzISoUXhWsHtAbIX
-* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:86
+* @see app/Http/Controllers/Farmasi/KonversiSatuanController.php:85
 * @route '/farmasi/konversi-satuan/{kode_sat}/{sat_konversi}/{nilai}/{nilai_konversi}'
 */
 FzISoUXhWsHtAbIX.patch = (args: { kode_sat: string | number, sat_konversi: string | number, nilai: string | number, nilai_konversi: string | number } | [kode_sat: string | number, sat_konversi: string | number, nilai: string | number, nilai_konversi: string | number ], options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -370,7 +370,7 @@ FzISoUXhWsHtAbIX.patch = (args: { kode_sat: string | number, sat_konversi: strin
 
 /**
 * @see \App\Http\Controllers\Farmasi\JenisObatController::lQk8jngMR8kD8Aoc
-* @see app/Http/Controllers/Farmasi/JenisObatController.php:88
+* @see app/Http/Controllers/Farmasi/JenisObatController.php:90
 * @route '/farmasi/jenis-obat/{kdjns}'
 */
 export const lQk8jngMR8kD8Aoc = (args: { kdjns: string | number } | [kdjns: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -385,7 +385,7 @@ lQk8jngMR8kD8Aoc.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\JenisObatController::lQk8jngMR8kD8Aoc
-* @see app/Http/Controllers/Farmasi/JenisObatController.php:88
+* @see app/Http/Controllers/Farmasi/JenisObatController.php:90
 * @route '/farmasi/jenis-obat/{kdjns}'
 */
 lQk8jngMR8kD8Aoc.url = (args: { kdjns: string | number } | [kdjns: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -412,7 +412,7 @@ lQk8jngMR8kD8Aoc.url = (args: { kdjns: string | number } | [kdjns: string | numb
 
 /**
 * @see \App\Http\Controllers\Farmasi\JenisObatController::lQk8jngMR8kD8Aoc
-* @see app/Http/Controllers/Farmasi/JenisObatController.php:88
+* @see app/Http/Controllers/Farmasi/JenisObatController.php:90
 * @route '/farmasi/jenis-obat/{kdjns}'
 */
 lQk8jngMR8kD8Aoc.patch = (args: { kdjns: string | number } | [kdjns: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({

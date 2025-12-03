@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::add
-* @see app/Http/Controllers/Pcare/MobileJknController.php:90
+* @see app/Http/Controllers/Pcare/MobileJknController.php:93
 * @route '/api/mobilejkn/antrean/add'
 */
 export const add = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ add.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::add
-* @see app/Http/Controllers/Pcare/MobileJknController.php:90
+* @see app/Http/Controllers/Pcare/MobileJknController.php:93
 * @route '/api/mobilejkn/antrean/add'
 */
 add.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ add.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::add
-* @see app/Http/Controllers/Pcare/MobileJknController.php:90
+* @see app/Http/Controllers/Pcare/MobileJknController.php:93
 * @route '/api/mobilejkn/antrean/add'
 */
 add.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ add.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::panggil
-* @see app/Http/Controllers/Pcare/MobileJknController.php:380
+* @see app/Http/Controllers/Pcare/MobileJknController.php:393
 * @route '/api/mobilejkn/antrean/panggil'
 */
 export const panggil = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -50,7 +50,7 @@ panggil.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::panggil
-* @see app/Http/Controllers/Pcare/MobileJknController.php:380
+* @see app/Http/Controllers/Pcare/MobileJknController.php:393
 * @route '/api/mobilejkn/antrean/panggil'
 */
 panggil.url = (options?: RouteQueryOptions) => {
@@ -59,7 +59,7 @@ panggil.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::panggil
-* @see app/Http/Controllers/Pcare/MobileJknController.php:380
+* @see app/Http/Controllers/Pcare/MobileJknController.php:393
 * @route '/api/mobilejkn/antrean/panggil'
 */
 panggil.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -69,7 +69,7 @@ panggil.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::batal
-* @see app/Http/Controllers/Pcare/MobileJknController.php:543
+* @see app/Http/Controllers/Pcare/MobileJknController.php:564
 * @route '/api/mobilejkn/antrean/batal'
 */
 export const batal = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -84,7 +84,7 @@ batal.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::batal
-* @see app/Http/Controllers/Pcare/MobileJknController.php:543
+* @see app/Http/Controllers/Pcare/MobileJknController.php:564
 * @route '/api/mobilejkn/antrean/batal'
 */
 batal.url = (options?: RouteQueryOptions) => {
@@ -93,7 +93,7 @@ batal.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::batal
-* @see app/Http/Controllers/Pcare/MobileJknController.php:543
+* @see app/Http/Controllers/Pcare/MobileJknController.php:564
 * @route '/api/mobilejkn/antrean/batal'
 */
 batal.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

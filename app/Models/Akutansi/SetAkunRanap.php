@@ -11,8 +11,11 @@ use Illuminate\Database\Eloquent\Model;
 class SetAkunRanap extends Model
 {
     protected $table = 'set_akun_ranap';
+
     public $timestamps = false;
+
     public $incrementing = false;
+
     protected $primaryKey = 'id';
 
     protected $fillable = [

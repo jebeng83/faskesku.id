@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\SpesialisController::index
-* @see app/Http/Controllers/SpesialisController.php:23
+* @see app/Http/Controllers/SpesialisController.php:22
 * @route '/spesialis'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\SpesialisController::index
-* @see app/Http/Controllers/SpesialisController.php:23
+* @see app/Http/Controllers/SpesialisController.php:22
 * @route '/spesialis'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SpesialisController::index
-* @see app/Http/Controllers/SpesialisController.php:23
+* @see app/Http/Controllers/SpesialisController.php:22
 * @route '/spesialis'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SpesialisController::index
-* @see app/Http/Controllers/SpesialisController.php:23
+* @see app/Http/Controllers/SpesialisController.php:22
 * @route '/spesialis'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -89,7 +89,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\SpesialisController::store
-* @see app/Http/Controllers/SpesialisController.php:35
+* @see app/Http/Controllers/SpesialisController.php:34
 * @route '/spesialis'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -104,7 +104,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\SpesialisController::store
-* @see app/Http/Controllers/SpesialisController.php:35
+* @see app/Http/Controllers/SpesialisController.php:34
 * @route '/spesialis'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -113,7 +113,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SpesialisController::store
-* @see app/Http/Controllers/SpesialisController.php:35
+* @see app/Http/Controllers/SpesialisController.php:34
 * @route '/spesialis'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -123,7 +123,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\SpesialisController::show
-* @see app/Http/Controllers/SpesialisController.php:50
+* @see app/Http/Controllers/SpesialisController.php:49
 * @route '/spesialis/{spesiali}'
 */
 export const show = (args: { spesiali: string | number } | [spesiali: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -138,7 +138,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\SpesialisController::show
-* @see app/Http/Controllers/SpesialisController.php:50
+* @see app/Http/Controllers/SpesialisController.php:49
 * @route '/spesialis/{spesiali}'
 */
 show.url = (args: { spesiali: string | number } | [spesiali: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -165,7 +165,7 @@ show.url = (args: { spesiali: string | number } | [spesiali: string | number ] |
 
 /**
 * @see \App\Http\Controllers\SpesialisController::show
-* @see app/Http/Controllers/SpesialisController.php:50
+* @see app/Http/Controllers/SpesialisController.php:49
 * @route '/spesialis/{spesiali}'
 */
 show.get = (args: { spesiali: string | number } | [spesiali: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -175,7 +175,7 @@ show.get = (args: { spesiali: string | number } | [spesiali: string | number ] |
 
 /**
 * @see \App\Http\Controllers\SpesialisController::show
-* @see app/Http/Controllers/SpesialisController.php:50
+* @see app/Http/Controllers/SpesialisController.php:49
 * @route '/spesialis/{spesiali}'
 */
 show.head = (args: { spesiali: string | number } | [spesiali: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -247,7 +247,7 @@ edit.head = (args: { spesiali: string | number } | [spesiali: string | number ] 
 
 /**
 * @see \App\Http\Controllers\SpesialisController::update
-* @see app/Http/Controllers/SpesialisController.php:60
+* @see app/Http/Controllers/SpesialisController.php:59
 * @route '/spesialis/{spesiali}'
 */
 export const update = (args: { spesiali: string | number } | [spesiali: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -262,7 +262,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\SpesialisController::update
-* @see app/Http/Controllers/SpesialisController.php:60
+* @see app/Http/Controllers/SpesialisController.php:59
 * @route '/spesialis/{spesiali}'
 */
 update.url = (args: { spesiali: string | number } | [spesiali: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -289,7 +289,7 @@ update.url = (args: { spesiali: string | number } | [spesiali: string | number ]
 
 /**
 * @see \App\Http\Controllers\SpesialisController::update
-* @see app/Http/Controllers/SpesialisController.php:60
+* @see app/Http/Controllers/SpesialisController.php:59
 * @route '/spesialis/{spesiali}'
 */
 update.put = (args: { spesiali: string | number } | [spesiali: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -299,7 +299,7 @@ update.put = (args: { spesiali: string | number } | [spesiali: string | number ]
 
 /**
 * @see \App\Http\Controllers\SpesialisController::update
-* @see app/Http/Controllers/SpesialisController.php:60
+* @see app/Http/Controllers/SpesialisController.php:59
 * @route '/spesialis/{spesiali}'
 */
 update.patch = (args: { spesiali: string | number } | [spesiali: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -309,7 +309,7 @@ update.patch = (args: { spesiali: string | number } | [spesiali: string | number
 
 /**
 * @see \App\Http\Controllers\SpesialisController::destroy
-* @see app/Http/Controllers/SpesialisController.php:76
+* @see app/Http/Controllers/SpesialisController.php:75
 * @route '/spesialis/{spesiali}'
 */
 export const destroy = (args: { spesiali: string | number } | [spesiali: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -324,7 +324,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\SpesialisController::destroy
-* @see app/Http/Controllers/SpesialisController.php:76
+* @see app/Http/Controllers/SpesialisController.php:75
 * @route '/spesialis/{spesiali}'
 */
 destroy.url = (args: { spesiali: string | number } | [spesiali: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -351,7 +351,7 @@ destroy.url = (args: { spesiali: string | number } | [spesiali: string | number 
 
 /**
 * @see \App\Http\Controllers\SpesialisController::destroy
-* @see app/Http/Controllers/SpesialisController.php:76
+* @see app/Http/Controllers/SpesialisController.php:75
 * @route '/spesialis/{spesiali}'
 */
 destroy.delete = (args: { spesiali: string | number } | [spesiali: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

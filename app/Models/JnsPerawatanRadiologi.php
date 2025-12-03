@@ -10,9 +10,13 @@ class JnsPerawatanRadiologi extends Model
     use HasFactory;
 
     protected $table = 'jns_perawatan_radiologi';
+
     protected $primaryKey = 'kd_jenis_prw';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -27,7 +31,7 @@ class JnsPerawatanRadiologi extends Model
         'menejemen',
         'total_byr',
         'kd_pj',
-        'status'
+        'status',
     ];
 
     protected $casts = [
@@ -44,17 +48,17 @@ class JnsPerawatanRadiologi extends Model
     // Accessor untuk format mata uang
     public function getTotalByrFormattedAttribute()
     {
-        return 'Rp ' . number_format($this->total_byr, 0, ',', '.');
+        return 'Rp '.number_format($this->total_byr, 0, ',', '.');
     }
 
     public function getBagianRsFormattedAttribute()
     {
-        return 'Rp ' . number_format($this->bagian_rs, 0, ',', '.');
+        return 'Rp '.number_format($this->bagian_rs, 0, ',', '.');
     }
 
     public function getTarifPerujukFormattedAttribute()
     {
-        return 'Rp ' . number_format($this->tarif_perujuk, 0, ',', '.');
+        return 'Rp '.number_format($this->tarif_perujuk, 0, ',', '.');
     }
 
     // Scope untuk status aktif

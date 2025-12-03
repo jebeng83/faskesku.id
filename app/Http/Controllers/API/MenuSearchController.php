@@ -29,6 +29,7 @@ class MenuSearchController extends Controller
             'success' => true,
             'data' => $results->map(function ($result) {
                 $menu = $result['menu'];
+
                 return [
                     'id' => $menu->id,
                     'name' => $menu->name,
@@ -38,9 +39,9 @@ class MenuSearchController extends Controller
                     'url' => $menu->url,
                     'description' => $menu->description,
                     'breadcrumb' => $result['breadcrumb'],
-                    'score' => $result['score']
+                    'score' => $result['score'],
                 ];
-            })
+            }),
         ]);
     }
 
@@ -58,6 +59,7 @@ class MenuSearchController extends Controller
             'success' => true,
             'data' => $results->map(function ($result) {
                 $menu = $result['menu'];
+
                 return [
                     'id' => $menu->id,
                     'name' => $menu->name,
@@ -66,9 +68,9 @@ class MenuSearchController extends Controller
                     'route' => $menu->route,
                     'url' => $menu->url,
                     'description' => $menu->description,
-                    'breadcrumb' => $result['breadcrumb']
+                    'breadcrumb' => $result['breadcrumb'],
                 ];
-            })
+            }),
         ]);
     }
 }

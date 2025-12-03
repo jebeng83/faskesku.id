@@ -11,8 +11,11 @@ use Illuminate\Database\Eloquent\Model;
 class SetAkunRalan extends Model
 {
     protected $table = 'set_akun_ralan';
+
     public $timestamps = false;
+
     public $incrementing = false;
+
     protected $primaryKey = 'id';
 
     protected $fillable = [
@@ -70,7 +73,6 @@ class SetAkunRalan extends Model
         'HPP_Obat_Rawat_Jalan',
         'Persediaan_Obat_Rawat_Jalan',
         'Registrasi_Ralan',
-
 
         'Suspen_Piutang_Operasi_Ralan',
         'Operasi_Ralan',

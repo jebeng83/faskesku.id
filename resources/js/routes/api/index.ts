@@ -81,7 +81,7 @@ regPeriksa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:1170
+* @see app/Http/Controllers/PermintaanLabController.php:1172
 * @route '/api/lab-tests'
 */
 export const labTests = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -96,7 +96,7 @@ labTests.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:1170
+* @see app/Http/Controllers/PermintaanLabController.php:1172
 * @route '/api/lab-tests'
 */
 labTests.url = (options?: RouteQueryOptions) => {
@@ -105,7 +105,7 @@ labTests.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:1170
+* @see app/Http/Controllers/PermintaanLabController.php:1172
 * @route '/api/lab-tests'
 */
 labTests.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -115,7 +115,7 @@ labTests.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:1170
+* @see app/Http/Controllers/PermintaanLabController.php:1172
 * @route '/api/lab-tests'
 */
 labTests.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -125,7 +125,7 @@ labTests.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::setHargaObat
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
 * @route '/api/set-harga-obat'
 */
 export const setHargaObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -140,7 +140,7 @@ setHargaObat.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::setHargaObat
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
 * @route '/api/set-harga-obat'
 */
 setHargaObat.url = (options?: RouteQueryOptions) => {
@@ -149,7 +149,7 @@ setHargaObat.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::setHargaObat
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
 * @route '/api/set-harga-obat'
 */
 setHargaObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -159,7 +159,7 @@ setHargaObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::setHargaObat
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
 * @route '/api/set-harga-obat'
 */
 setHargaObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

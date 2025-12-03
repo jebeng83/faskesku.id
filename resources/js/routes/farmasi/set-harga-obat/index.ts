@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::json
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
 * @route '/farmasi/set-harga-obat/json'
 */
 export const json = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ json.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::json
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
 * @route '/farmasi/set-harga-obat/json'
 */
 json.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ json.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::json
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
 * @route '/farmasi/set-harga-obat/json'
 */
 json.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ json.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::json
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:499
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
 * @route '/farmasi/set-harga-obat/json'
 */
 json.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -32,11 +32,11 @@ use App\Http\Controllers\Kepegawaian\SttsKerjaController;
 use App\Http\Controllers\Kepegawaian\SttsWpController;
 use App\Http\Controllers\LaboratoriumController;
 use App\Http\Controllers\MenuController;
-use App\Http\Controllers\PatientController;
-use App\Http\Controllers\Pasien\PerusahaanPasienController;
 use App\Http\Controllers\Pasien\BahasaPasienController;
-use App\Http\Controllers\Pasien\SukuBangsaController;
 use App\Http\Controllers\Pasien\CacatFisikController;
+use App\Http\Controllers\Pasien\PerusahaanPasienController;
+use App\Http\Controllers\Pasien\SukuBangsaController;
+use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\PermintaanLabController;
 use App\Http\Controllers\ProfileController;
@@ -151,7 +151,7 @@ Route::middleware('auth')->group(function () {
     // Akutansi: Billing page (Inertia)
     Route::get('/akutansi/billing', [BillingController::class, 'page'])
         ->name('akutansi.billing.page');
-    
+
     // Akutansi: Nota Jalan page (Inertia)
     Route::get('/akutansi/nota-jalan', [\App\Http\Controllers\Akutansi\NotaJalanController::class, 'page'])
         ->name('akutansi.nota-jalan.page');

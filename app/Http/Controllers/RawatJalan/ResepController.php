@@ -3,18 +3,18 @@
 namespace App\Http\Controllers\RawatJalan;
 
 use App\Http\Controllers\Controller;
-use App\Models\RawatJalan\ResepObat;
-use App\Models\RawatJalan\ResepDokter;
-use App\Models\RawatJalan\Gudangbarang;
 use App\Models\RawatJalan\Databarang;
-use App\Models\SetDepoRalan;
+use App\Models\RawatJalan\Gudangbarang;
+use App\Models\RawatJalan\ResepDokter;
+use App\Models\RawatJalan\ResepObat;
 use App\Models\RiwayatTransaksiGudangBarang;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use App\Models\SetDepoRalan;
 use App\Services\Akutansi\JurnalPostingService;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class ResepController extends Controller
@@ -30,14 +30,14 @@ class ResepController extends Controller
             'items' => 'required|array|min:1',
             'items.*.kode_brng' => 'required|string',
             'items.*.jml' => 'required|numeric|min:0.1',
-            'items.*.aturan_pakai' => 'nullable|string|max:150'
+            'items.*.aturan_pakai' => 'nullable|string|max:150',
         ]);
 
         // Validasi kd_dokter
         if (empty($request->kd_dokter)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Dokter harus dipilih'
+                'message' => 'Dokter harus dipilih',
             ], 400);
         }
 
@@ -46,10 +46,10 @@ class ResepController extends Controller
             ->where('status', '1')
             ->first();
 
-        if (!$dokter) {
+        if (! $dokter) {
             return response()->json([
                 'success' => false,
-                'message' => 'Dokter tidak ditemukan atau tidak aktif'
+                'message' => 'Dokter tidak ditemukan atau tidak aktif',
             ], 400);
         }
 
@@ -58,60 +58,65 @@ class ResepController extends Controller
         try {
             // Dapatkan bangsal berdasarkan poli untuk validasi stok yang tepat
             $bangsalList = SetDepoRalan::getBangsalByPoli($request->kd_poli);
-            
+
             if (empty($bangsalList)) {
                 DB::rollBack();
+
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tidak ada depo yang terkait dengan poli ini'
+                    'message' => 'Tidak ada depo yang terkait dengan poli ini',
                 ], 400);
             }
 
             // Validasi stok obat berdasarkan bangsal yang terkait dengan poli
             foreach ($request->items as $obat) {
                 $databarang = Databarang::where('kode_brng', $obat['kode_brng'])->first();
-                
-                if (!$databarang) {
+
+                if (! $databarang) {
                     DB::rollBack();
+
                     return response()->json([
                         'success' => false,
-                        'message' => "Obat dengan kode {$obat['kode_brng']} tidak ditemukan"
+                        'message' => "Obat dengan kode {$obat['kode_brng']} tidak ditemukan",
                     ], 400);
                 }
-                
+
                 if ($databarang->status != '1') {
                     DB::rollBack();
+
                     return response()->json([
                         'success' => false,
-                        'message' => "Obat {$databarang->nama_brng} tidak aktif"
+                        'message' => "Obat {$databarang->nama_brng} tidak aktif",
                     ], 400);
                 }
-                
+
                 // Hitung total stok dari bangsal yang terkait dengan poli
                 $totalStokTersedia = 0;
                 $stokPerBangsal = [];
-                
+
                 foreach ($bangsalList as $kdBangsal) {
                     $stokBangsal = Gudangbarang::getTotalStokByBarangBangsal($obat['kode_brng'], $kdBangsal);
                     $totalStokTersedia += $stokBangsal;
                     $stokPerBangsal[$kdBangsal] = $stokBangsal;
                 }
-                
+
                 if ($totalStokTersedia < $obat['jml']) {
                     DB::rollBack();
+
                     return response()->json([
                         'success' => false,
                         'message' => "Stok obat {$databarang->nama_brng} tidak mencukupi. Tersedia: {$totalStokTersedia}, Diminta: {$obat['jml']}",
-                        'stok_detail' => $stokPerBangsal
+                        'stok_detail' => $stokPerBangsal,
                     ], 400);
                 }
-                
+
                 // Validasi jumlah minimum
                 if ($obat['jml'] <= 0) {
                     DB::rollBack();
+
                     return response()->json([
                         'success' => false,
-                        'message' => "Jumlah obat {$databarang->nama_brng} harus lebih dari 0"
+                        'message' => "Jumlah obat {$databarang->nama_brng} harus lebih dari 0",
                     ], 400);
                 }
             }
@@ -126,7 +131,7 @@ class ResepController extends Controller
                 'jam_peresepan' => $request->jam_peresepan ?? Carbon::now()->format('H:i:s'),
                 'status' => $request->status ?? 'ralan',
                 'tgl_penyerahan' => '0000-00-00',
-                'jam_penyerahan' => '00:00:00'
+                'jam_penyerahan' => '00:00:00',
             ]);
 
             // Simpan detail resep
@@ -139,11 +144,11 @@ class ResepController extends Controller
             try {
                 $composer = app()->make('App\\Services\\Akutansi\\TampJurnalComposerResepRalan');
                 $composer->composeForNoResep($resepObat->no_resep);
-                $postingService = new JurnalPostingService();
+                $postingService = new JurnalPostingService;
                 $postingService->post();
             } catch (\Throwable $e) {
                 // Jangan gagalkan penyimpanan resep jika posting jurnal gagal; log agar dapat ditindaklanjuti.
-                Log::error('Gagal posting jurnal resep ralan: ' . $e->getMessage(), [
+                Log::error('Gagal posting jurnal resep ralan: '.$e->getMessage(), [
                     'no_resep' => $resepObat->no_resep,
                     'no_rawat' => $request->no_rawat,
                 ]);
@@ -155,22 +160,24 @@ class ResepController extends Controller
                 'data' => [
                     'no_resep' => $resepObat->no_resep,
                     'resep_obat' => $resepObat,
-                    'resep_detail' => $resepDetails
-                ]
+                    'resep_detail' => $resepDetails,
+                ],
             ], 201);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
                 'message' => 'Validasi gagal',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -192,17 +199,17 @@ class ResepController extends Controller
 
             // Cari resep
             $resep = ResepObat::where('no_resep', $noResep)->first();
-            if (!$resep) {
+            if (! $resep) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Resep tidak ditemukan'
+                    'message' => 'Resep tidak ditemukan',
                 ], 404);
             }
 
             // Gunakan waktu saat ini jika tidak dikirimkan
             $nowDate = Carbon::now()->format('Y-m-d');
             $nowTime = Carbon::now()->format('H:i:s');
-            
+
             $tglValidasi = $request->input('tgl_validasi', $nowDate);
             $jamValidasi = $request->input('jam_validasi', $nowTime);
 
@@ -221,10 +228,11 @@ class ResepController extends Controller
                     'no_resep' => $resep->no_resep,
                     'tgl_validasi' => $resep->tgl_perawatan,
                     'jam_validasi' => $resep->jam,
-                ]
+                ],
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
                 'message' => 'Validasi payload gagal',
@@ -232,10 +240,11 @@ class ResepController extends Controller
             ], 422);
         } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error('Error validasi resep: ' . $e->getMessage(), [ 'no_resep' => $noResep ]);
+            Log::error('Error validasi resep: '.$e->getMessage(), ['no_resep' => $noResep]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat validasi resep: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan saat validasi resep: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -250,19 +259,19 @@ class ResepController extends Controller
             DB::beginTransaction();
 
             $resep = ResepObat::where('no_resep', $noResep)->first();
-            if (!$resep) {
+            if (! $resep) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Resep tidak ditemukan'
+                    'message' => 'Resep tidak ditemukan',
                 ], 404);
             }
 
             // Ambil kd_poli dari reg_periksa berdasarkan no_rawat resep
             $reg = DB::table('reg_periksa')->where('no_rawat', $resep->no_rawat)->select('kd_poli')->first();
-            if (!$reg || empty($reg->kd_poli)) {
+            if (! $reg || empty($reg->kd_poli)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Poli untuk no_rawat tidak ditemukan'
+                    'message' => 'Poli untuk no_rawat tidak ditemukan',
                 ], 400);
             }
 
@@ -271,7 +280,7 @@ class ResepController extends Controller
             if ($details->isEmpty()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Detail resep kosong'
+                    'message' => 'Detail resep kosong',
                 ], 400);
             }
 
@@ -297,7 +306,7 @@ class ResepController extends Controller
             // Map biaya tambahan dari payload: { embalase_tuslah: { non_racikan: [{kode_brng,embalase,tuslah}], racikan: [...] } }
             $payload = $request->input('embalase_tuslah', []);
             $nonRacikanCharges = [];
-            if (!empty($payload['non_racikan']) && is_array($payload['non_racikan'])) {
+            if (! empty($payload['non_racikan']) && is_array($payload['non_racikan'])) {
                 foreach ($payload['non_racikan'] as $r) {
                     $kode = $r['kode_brng'] ?? null;
                     if ($kode) {
@@ -325,9 +334,10 @@ class ResepController extends Controller
                     DB::rollBack();
                     $barang = Databarang::where('kode_brng', $det->kode_brng)->first();
                     $nama = $barang ? $barang->nama_brng : $det->kode_brng;
+
                     return response()->json([
                         'success' => false,
-                        'message' => "Stok obat $nama tidak mencukupi untuk penyerahan. Tersedia: $totalStok, Diminta: {$det->jml}"
+                        'message' => "Stok obat $nama tidak mencukupi untuk penyerahan. Tersedia: $totalStok, Diminta: {$det->jml}",
                     ], 400);
                 }
 
@@ -388,13 +398,13 @@ class ResepController extends Controller
                                 'no_resep' => $noResep,
                                 'no_rawat' => $resep->no_rawat,
                                 'stok_diambil' => $jmlKecil,
-                                'status' => $jenisStatus
+                                'status' => $jenisStatus,
                             ],
                             [
                                 'no_resep' => $noResep,
                                 'no_rawat' => $resep->no_rawat,
                                 'stok_diambil' => $jmlKecil,
-                                'status' => $jenisStatus
+                                'status' => $jenisStatus,
                             ]
                         );
                     } catch (\Throwable $th) {
@@ -438,7 +448,7 @@ class ResepController extends Controller
                     }
 
                     // Tandai charges sudah dibebankan agar batch berikutnya tidak mengulang
-                    if (!$chargesAssigned && ($embalase > 0 || $tuslah > 0)) {
+                    if (! $chargesAssigned && ($embalase > 0 || $tuslah > 0)) {
                         $chargesAssigned = true;
                     }
                 }
@@ -454,7 +464,7 @@ class ResepController extends Controller
                         'aturan' => $aturan,
                     ]);
                 }
-                }
+            }
 
             // Set tgl/jam penyerahan pada tabel resep_obat
             $resep->tgl_penyerahan = $nowDate;
@@ -470,10 +480,11 @@ class ResepController extends Controller
                     'no_resep' => $resep->no_resep,
                     'tgl_penyerahan' => $resep->tgl_penyerahan,
                     'jam_penyerahan' => $resep->jam_penyerahan,
-                ]
+                ],
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
                 'message' => 'Validasi payload gagal',
@@ -481,10 +492,11 @@ class ResepController extends Controller
             ], 422);
         } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error('Error penyerahan resep: ' . $e->getMessage(), [ 'no_resep' => $noResep ]);
+            Log::error('Error penyerahan resep: '.$e->getMessage(), ['no_resep' => $noResep]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat penyerahan obat: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan saat penyerahan obat: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -495,7 +507,7 @@ class ResepController extends Controller
      * Mengambil data resep lengkap beserta detail obat-obatan
      * yang terkait dengan nomor resep tertentu.
      *
-     * @param string $noResep Nomor resep yang akan dicari
+     * @param  string  $noResep  Nomor resep yang akan dicari
      * @return \Illuminate\Http\JsonResponse Response JSON dengan data resep atau error
      *
      * @throws \Exception Jika terjadi kesalahan dalam proses pengambilan data
@@ -509,24 +521,24 @@ class ResepController extends Controller
                 ->first();
 
             // Validasi apakah resep ditemukan
-            if (!$resepObat) {
+            if (! $resepObat) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Resep tidak ditemukan'
+                    'message' => 'Resep tidak ditemukan',
                 ], 404);
             }
 
             // Return data resep jika berhasil ditemukan
             return response()->json([
                 'success' => true,
-                'data' => $resepObat
+                'data' => $resepObat,
             ], 200);
-            
+
         } catch (\Exception $e) {
             // Handle error dan return response error
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -539,13 +551,13 @@ class ResepController extends Controller
         try {
             // Decode noRawat untuk menangani encoding dari frontend
             $decodedNoRawat = urldecode($noRawat);
-            
+
             $resepList = ResepObat::with(['resepDokter.databarang', 'dokter'])
                 ->where('no_rawat', $decodedNoRawat)
                 ->orderBy('tgl_peresepan', 'desc')
                 ->orderBy('jam_peresepan', 'desc')
                 ->get()
-                ->map(function($resep) {
+                ->map(function ($resep) {
                     return [
                         'no_resep' => $resep->no_resep,
                         'tgl_peresepan' => $resep->tgl_peresepan,
@@ -558,7 +570,7 @@ class ResepController extends Controller
                         'jam' => $resep->jam,
                         'tgl_penyerahan' => $resep->tgl_penyerahan,
                         'jam_penyerahan' => $resep->jam_penyerahan,
-                        'detail_obat' => $resep->resepDokter->map(function($detail) {
+                        'detail_obat' => $resep->resepDokter->map(function ($detail) {
                             return [
                                 'kode_brng' => $detail->kode_brng,
                                 'nama_brng' => $detail->databarang->nama_brng ?? 'Obat tidak ditemukan',
@@ -566,21 +578,21 @@ class ResepController extends Controller
                                 'aturan_pakai' => $detail->aturan_pakai,
                                 'satuan' => $detail->databarang->kode_satbesar ?? '',
                                 'harga' => $detail->databarang->h_beli ?? 0,
-                                'expire' => $detail->databarang->expire ?? null
+                                'expire' => $detail->databarang->expire ?? null,
                             ];
-                        })
+                        }),
                     ];
                 });
 
             return response()->json([
                 'success' => true,
-                'data' => $resepList
+                'data' => $resepList,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -592,12 +604,13 @@ class ResepController extends Controller
     public function getByNoRawatQuery(): JsonResponse
     {
         $noRawat = request()->query('no_rawat');
-        if (!$noRawat) {
+        if (! $noRawat) {
             return response()->json([
                 'success' => false,
-                'message' => 'Parameter no_rawat wajib diisi'
+                'message' => 'Parameter no_rawat wajib diisi',
             ], 422);
         }
+
         return $this->getByNoRawat($noRawat);
     }
 
@@ -609,17 +622,17 @@ class ResepController extends Controller
         try {
             // Decode noRkmMedis untuk menangani encoding dari frontend
             $decodedNoRkmMedis = urldecode($noRkmMedis);
-            
+
             // Ambil parameter pagination dari request
             $limit = request()->get('limit', 5); // Default 5 untuk loading awal
             $offset = request()->get('offset', 0);
-            
+
             // Pertama, ambil semua no_rawat berdasarkan no_rkm_medis dari reg_periksa
             $noRawatArray = DB::table('reg_periksa')
                 ->where('no_rkm_medis', $decodedNoRkmMedis)
                 ->pluck('no_rawat')
                 ->toArray();
-            
+
             // Jika tidak ada no_rawat ditemukan, return empty
             if (empty($noRawatArray)) {
                 return response()->json([
@@ -627,13 +640,13 @@ class ResepController extends Controller
                     'data' => [],
                     'total' => 0,
                     'has_more' => false,
-                    'no_rawat_list' => []
+                    'no_rawat_list' => [],
                 ]);
             }
-            
+
             // Hitung total resep untuk pagination
             $totalResep = ResepObat::whereIn('no_rawat', $noRawatArray)->count();
-            
+
             // Ambil resep berdasarkan array no_rawat dengan pagination
             $resepList = ResepObat::with(['resepDokter.databarang', 'dokter'])
                 ->whereIn('no_rawat', $noRawatArray)
@@ -642,7 +655,7 @@ class ResepController extends Controller
                 ->skip($offset)
                 ->take($limit)
                 ->get()
-                ->map(function($resep) {
+                ->map(function ($resep) {
                     return [
                         'no_resep' => $resep->no_resep,
                         'tgl_peresepan' => $resep->tgl_peresepan,
@@ -655,7 +668,7 @@ class ResepController extends Controller
                         'jam' => $resep->jam,
                         'tgl_penyerahan' => $resep->tgl_penyerahan,
                         'jam_penyerahan' => $resep->jam_penyerahan,
-                        'detail_obat' => $resep->resepDokter->map(function($detail) {
+                        'detail_obat' => $resep->resepDokter->map(function ($detail) {
                             return [
                                 'kode_brng' => $detail->kode_brng,
                                 'nama_brng' => $detail->databarang->nama_brng ?? 'Obat tidak ditemukan',
@@ -663,9 +676,9 @@ class ResepController extends Controller
                                 'aturan_pakai' => $detail->aturan_pakai,
                                 'satuan' => $detail->databarang->kode_satbesar ?? '',
                                 'harga' => $detail->databarang->h_beli ?? 0,
-                                'expire' => $detail->databarang->expire ?? null
+                                'expire' => $detail->databarang->expire ?? null,
                             ];
-                        })
+                        }),
                     ];
                 });
 
@@ -676,13 +689,13 @@ class ResepController extends Controller
                 'current_count' => $resepList->count(),
                 'has_more' => ($offset + $limit) < $totalResep,
                 'next_offset' => ($offset + $limit) < $totalResep ? $offset + $limit : null,
-                'no_rawat_list' => $noRawatArray
+                'no_rawat_list' => $noRawatArray,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -698,17 +711,17 @@ class ResepController extends Controller
                 ->where('no_resep', $noResep)
                 ->first();
 
-            if (!$resepObat) {
+            if (! $resepObat) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Resep tidak ditemukan'
+                    'message' => 'Resep tidak ditemukan',
                 ], 404);
             }
 
             // Tentukan informasi depo (bangsal) berdasarkan jenis perawatan
             $depo = [
                 'kd_bangsal' => '',
-                'nm_bangsal' => ''
+                'nm_bangsal' => '',
             ];
 
             try {
@@ -724,7 +737,7 @@ class ResepController extends Controller
                             $nmBangsal = \App\Models\Bangsal::where('kd_bangsal', $kdBangsal)->value('nm_bangsal');
                             $depo = [
                                 'kd_bangsal' => $kdBangsal,
-                                'nm_bangsal' => $nmBangsal ?? ''
+                                'nm_bangsal' => $nmBangsal ?? '',
                             ];
                         }
                     }
@@ -737,7 +750,7 @@ class ResepController extends Controller
                         ->where('kamar_inap.stts_pulang', '-')
                         ->value('kamar.kd_bangsal');
 
-                    if (!$kdBangsal) {
+                    if (! $kdBangsal) {
                         $kdBangsal = \App\Models\SetLokasi::getFirstBangsal();
                     }
 
@@ -745,7 +758,7 @@ class ResepController extends Controller
                         $nmBangsal = \App\Models\Bangsal::where('kd_bangsal', $kdBangsal)->value('nm_bangsal');
                         $depo = [
                             'kd_bangsal' => $kdBangsal,
-                            'nm_bangsal' => $nmBangsal ?? ''
+                            'nm_bangsal' => $nmBangsal ?? '',
                         ];
                     }
                 }
@@ -767,18 +780,18 @@ class ResepController extends Controller
             }
 
             // Non-racikan items
-            $detailItems = $resepObat->resepDokter->map(function($detail) use ($embalasePerObat, $tuslahPerObat) {
-                $tarif = (float)($detail->databarang->ralan ?? 0);
-                $jumlah = (float)($detail->jml ?? 0);
+            $detailItems = $resepObat->resepDokter->map(function ($detail) use ($embalasePerObat, $tuslahPerObat) {
+                $tarif = (float) ($detail->databarang->ralan ?? 0);
+                $jumlah = (float) ($detail->jml ?? 0);
                 $subtotal = round($tarif * $jumlah, 2);
-                
+
                 // Ambil expire date dari databarang
                 // Coba dari relasi terlebih dahulu, jika tidak ada ambil langsung dari database
                 $expireDate = null;
                 if ($detail->databarang && $detail->databarang->expire) {
                     // Jika expire adalah Carbon instance, format sebagai Y-m-d
-                    $expireDate = is_string($detail->databarang->expire) 
-                        ? $detail->databarang->expire 
+                    $expireDate = is_string($detail->databarang->expire)
+                        ? $detail->databarang->expire
                         : $detail->databarang->expire->format('Y-m-d');
                 } else {
                     // Fallback: ambil langsung dari database jika relasi tidak bekerja
@@ -787,27 +800,27 @@ class ResepController extends Controller
                             ->where('kode_brng', $detail->kode_brng)
                             ->value('expire');
                         if ($expireFromDb && $expireFromDb !== '0000-00-00') {
-                            $expireDate = is_string($expireFromDb) 
-                                ? $expireFromDb 
+                            $expireDate = is_string($expireFromDb)
+                                ? $expireFromDb
                                 : (is_object($expireFromDb) ? $expireFromDb->format('Y-m-d') : null);
                         }
                     } catch (\Throwable $th) {
                         // Abaikan error
                     }
                 }
-                
+
                 return [
                     'kode_brng' => $detail->kode_brng,
                     'nama_brng' => $detail->databarang->nama_brng ?? 'Obat tidak ditemukan',
                     'jml' => $jumlah,
                     'aturan_pakai' => $detail->aturan_pakai,
                     'satuan' => $detail->databarang->kode_satbesar ?? '',
-                    'harga' => (float)($detail->databarang->h_beli ?? 0),
+                    'harga' => (float) ($detail->databarang->h_beli ?? 0),
                     'tarif' => $tarif,
                     'subtotal' => $subtotal,
                     'embalase' => $embalasePerObat,
                     'tuslah' => $tuslahPerObat,
-                    'expire' => $expireDate
+                    'expire' => $expireDate,
                 ];
             });
 
@@ -846,20 +859,21 @@ class ResepController extends Controller
                             'databarang.kapasitas'
                         )
                         ->get()
-                        ->map(function($d) use ($embalasePerObat, $tuslahPerObat) {
-                            $jumlah = (float)($d->jml ?? 0);
-                            $tarif = (float)($d->tarif ?? 0);
+                        ->map(function ($d) use ($embalasePerObat, $tuslahPerObat) {
+                            $jumlah = (float) ($d->jml ?? 0);
+                            $tarif = (float) ($d->tarif ?? 0);
+
                             return [
                                 'kode_brng' => $d->kode_brng,
                                 'nama_brng' => $d->nama_brng ?? 'Obat tidak ditemukan',
                                 'jml' => $jumlah,
                                 'kandungan' => $d->kandungan,
                                 'satuan' => $d->satuan ?? '',
-                                'harga' => (float)($d->harga ?? 0),
+                                'harga' => (float) ($d->harga ?? 0),
                                 'tarif' => $tarif,
                                 'subtotal' => round($tarif * $jumlah, 2),
                                 'embalase' => $embalasePerObat,
-                                'tuslah' => $tuslahPerObat
+                                'tuslah' => $tuslahPerObat,
                             ];
                         });
 
@@ -871,7 +885,7 @@ class ResepController extends Controller
                         'jml_dr' => $grp->jml_dr,
                         'aturan_pakai' => $grp->aturan_pakai,
                         'keterangan' => $grp->keterangan,
-                        'details' => $details
+                        'details' => $details,
                     ];
                 }
             } catch (\Throwable $th) {
@@ -880,12 +894,16 @@ class ResepController extends Controller
 
             // Hitung total keseluruhan
             $subtotalNonRacikan = (float) $detailItems->sum('subtotal');
-            $tambahanNonRacikan = (float) $detailItems->sum(function($i) { return ($i['embalase'] ?? 0) + ($i['tuslah'] ?? 0); });
+            $tambahanNonRacikan = (float) $detailItems->sum(function ($i) {
+                return ($i['embalase'] ?? 0) + ($i['tuslah'] ?? 0);
+            });
             $subtotalRacikan = 0.0;
             $tambahanRacikan = 0.0;
             foreach ($racikanGroups as $g) {
                 $subtotalRacikan += (float) collect($g['details'])->sum('subtotal');
-                $tambahanRacikan += (float) collect($g['details'])->sum(function($i) { return ($i['embalase'] ?? 0) + ($i['tuslah'] ?? 0); });
+                $tambahanRacikan += (float) collect($g['details'])->sum(function ($i) {
+                    return ($i['embalase'] ?? 0) + ($i['tuslah'] ?? 0);
+                });
             }
 
             $subtotal = round($subtotalNonRacikan + $subtotalRacikan, 2);
@@ -917,12 +935,12 @@ class ResepController extends Controller
                     'total_plus_ppn' => $grandTotal,
                     'detail_obat' => $detailItems,
                     'racikan' => $racikanGroups,
-                ]
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -958,15 +976,15 @@ class ResepController extends Controller
             $jenis = $request->get('jenis', 'ralan');
             $startDate = $request->get('start_date');
             $endDate = $request->get('end_date');
-            $limit = (int)($request->get('limit', 20));
-            $page = (int)($request->get('page', 1));
+            $limit = (int) ($request->get('limit', 20));
+            $page = (int) ($request->get('page', 1));
             $offset = ($page - 1) * $limit;
-            $dokterName = trim((string)$request->get('dokter', ''));
-            $poliOrBangsalName = trim((string)$request->get('poli', ''));
-            $bangsalName = trim((string)$request->get('bangsal', ''));
-            $q = trim((string)$request->get('q', ''));
-            $kdBangsal = trim((string)$request->get('kd_bangsal', ''));
-            $kdDepo = trim((string)$request->get('kd_depo', ''));
+            $dokterName = trim((string) $request->get('dokter', ''));
+            $poliOrBangsalName = trim((string) $request->get('poli', ''));
+            $bangsalName = trim((string) $request->get('bangsal', ''));
+            $q = trim((string) $request->get('q', ''));
+            $kdBangsal = trim((string) $request->get('kd_bangsal', ''));
+            $kdDepo = trim((string) $request->get('kd_depo', ''));
             $statusPerawatanFilter = $request->get('status_perawatan'); // Belum / Sudah / (variasi label)
             if ($statusPerawatanFilter === 'Belum Terlayani') {
                 $statusPerawatanFilter = 'Belum';
@@ -988,10 +1006,10 @@ class ResepController extends Controller
 
             if ($jenis === 'ralan') {
                 $query->join('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli');
-                if (!empty($kdBangsal)) {
+                if (! empty($kdBangsal)) {
                     // Filter depo aktif untuk ralan
                     $query->join('set_depo_ralan', 'set_depo_ralan.kd_poli', '=', 'reg_periksa.kd_poli')
-                          ->where('set_depo_ralan.kd_bangsal', $kdBangsal);
+                        ->where('set_depo_ralan.kd_bangsal', $kdBangsal);
                 }
                 if ($dokterName !== '') {
                     $query->where('dokter.nm_dokter', 'like', "%$dokterName%");
@@ -1003,14 +1021,14 @@ class ResepController extends Controller
             } else { // ranap
                 // Mengacu pada DlgDaftarPermintaanResep.tampil() untuk ranap
                 $query->join('ranap_gabung', 'ranap_gabung.no_rawat2', '=', 'resep_obat.no_rawat')
-                      ->join('kamar_inap', 'ranap_gabung.no_rawat', '=', 'kamar_inap.no_rawat')
-                      ->join('kamar', 'kamar_inap.kd_kamar', '=', 'kamar.kd_kamar')
-                      ->join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')
-                      ->where('kamar_inap.stts_pulang', '-');
-                if (!empty($kdDepo)) {
+                    ->join('kamar_inap', 'ranap_gabung.no_rawat', '=', 'kamar_inap.no_rawat')
+                    ->join('kamar', 'kamar_inap.kd_kamar', '=', 'kamar.kd_kamar')
+                    ->join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')
+                    ->where('kamar_inap.stts_pulang', '-');
+                if (! empty($kdDepo)) {
                     // Filter DEPOAKTIFOBAT melalui set_depo_ranap
                     $query->join('set_depo_ranap', 'set_depo_ranap.kd_bangsal', '=', 'bangsal.kd_bangsal')
-                          ->where('set_depo_ranap.kd_depo', $kdDepo);
+                        ->where('set_depo_ranap.kd_depo', $kdDepo);
                 }
                 if ($dokterName !== '') {
                     $query->where('dokter.nm_dokter', 'like', "%$dokterName%");
@@ -1023,13 +1041,13 @@ class ResepController extends Controller
 
             // Free text search across multiple columns
             if ($q !== '') {
-                $query->where(function($w) use ($q) {
+                $query->where(function ($w) use ($q) {
                     $w->where('resep_obat.no_resep', 'like', "%$q%")
-                      ->orWhere('resep_obat.no_rawat', 'like', "%$q%")
-                      ->orWhere('pasien.no_rkm_medis', 'like', "%$q%")
-                      ->orWhere('pasien.nm_pasien', 'like', "%$q%")
-                      ->orWhere('dokter.nm_dokter', 'like', "%$q%")
-                      ->orWhere('penjab.png_jawab', 'like', "%$q%");
+                        ->orWhere('resep_obat.no_rawat', 'like', "%$q%")
+                        ->orWhere('pasien.no_rkm_medis', 'like', "%$q%")
+                        ->orWhere('pasien.nm_pasien', 'like', "%$q%")
+                        ->orWhere('dokter.nm_dokter', 'like', "%$q%")
+                        ->orWhere('penjab.png_jawab', 'like', "%$q%");
                 });
             }
 
@@ -1097,12 +1115,12 @@ class ResepController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Validasi gagal',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -1117,17 +1135,17 @@ class ResepController extends Controller
         if ($kdPoli) {
             $bangsalList = SetDepoRalan::getBangsalByPoli($kdPoli);
         }
-        
+
         // Ambil stok dari gudang dengan urutan FIFO (First In, First Out)
         // Urutkan berdasarkan tanggal expire dan no_batch
         $gudangQuery = Gudangbarang::where('kode_brng', $kodeBrng)
             ->where('stok', '>', 0);
-            
+
         // Filter berdasarkan bangsal jika ada
-        if ($bangsalList && !empty($bangsalList)) {
+        if ($bangsalList && ! empty($bangsalList)) {
             $gudangQuery->whereIn('kd_bangsal', $bangsalList);
         }
-        
+
         $gudangList = $gudangQuery->orderBy('no_batch')
             ->orderBy('no_faktur')
             ->get();
@@ -1140,24 +1158,26 @@ class ResepController extends Controller
         $updatedBatches = [];
 
         foreach ($gudangList as $gudang) {
-            if ($sisaJumlah <= 0) break;
+            if ($sisaJumlah <= 0) {
+                break;
+            }
 
             $stokSebelum = $gudang->stok;
-            
+
             if ($gudang->stok >= $sisaJumlah) {
                 // Stok di gudang ini cukup
                 $gudang->stok -= $sisaJumlah;
                 $gudang->save();
-                
+
                 $updatedBatches[] = [
                     'kd_bangsal' => $gudang->kd_bangsal,
                     'no_batch' => $gudang->no_batch,
                     'no_faktur' => $gudang->no_faktur,
                     'stok_sebelum' => $stokSebelum,
                     'stok_diambil' => $sisaJumlah,
-                    'stok_sesudah' => $gudang->stok
+                    'stok_sesudah' => $gudang->stok,
                 ];
-                
+
                 $sisaJumlah = 0;
             } else {
                 // Stok di gudang ini tidak cukup, ambil semua
@@ -1165,14 +1185,14 @@ class ResepController extends Controller
                 $sisaJumlah -= $gudang->stok;
                 $gudang->stok = 0;
                 $gudang->save();
-                
+
                 $updatedBatches[] = [
                     'kd_bangsal' => $gudang->kd_bangsal,
                     'no_batch' => $gudang->no_batch,
                     'no_faktur' => $gudang->no_faktur,
                     'stok_sebelum' => $stokSebelum,
                     'stok_diambil' => $stokDiambil,
-                    'stok_sesudah' => 0
+                    'stok_sesudah' => 0,
                 ];
             }
         }
@@ -1185,11 +1205,11 @@ class ResepController extends Controller
         }
 
         // Log perubahan stok untuk audit trail
-         Log::info('Stok obat diupdate', [
-             'kode_brng' => $kodeBrng,
-             'jumlah_diminta' => $jumlah,
-             'batches_updated' => $updatedBatches
-         ]);
+        Log::info('Stok obat diupdate', [
+            'kode_brng' => $kodeBrng,
+            'jumlah_diminta' => $jumlah,
+            'batches_updated' => $updatedBatches,
+        ]);
 
         return $updatedBatches;
     }
@@ -1202,31 +1222,31 @@ class ResepController extends Controller
         try {
             $request->validate([
                 'kode_brng' => 'required|string',
-                'kd_poli' => 'nullable|string'
+                'kd_poli' => 'nullable|string',
             ]);
 
             $databarang = Databarang::where('kode_brng', $request->kode_brng)->first();
-            
-            if (!$databarang) {
+
+            if (! $databarang) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Obat tidak ditemukan'
+                    'message' => 'Obat tidak ditemukan',
                 ], 404);
             }
 
             // Jika ada kd_poli, hitung stok berdasarkan bangsal yang terkait
             if ($request->kd_poli) {
                 $bangsalList = SetDepoRalan::getBangsalByPoli($request->kd_poli);
-                
+
                 $totalStok = 0;
                 $stokPerBangsal = [];
-                
+
                 foreach ($bangsalList as $kdBangsal) {
                     $stokBangsal = Gudangbarang::getTotalStokByBarangBangsal($request->kode_brng, $kdBangsal);
                     $totalStok += $stokBangsal;
                     $stokPerBangsal[$kdBangsal] = $stokBangsal;
                 }
-                
+
                 // Dapatkan detail batch untuk bangsal yang terkait
                 $batchDetail = Gudangbarang::where('kode_brng', $request->kode_brng)
                     ->whereIn('kd_bangsal', $bangsalList)
@@ -1238,7 +1258,7 @@ class ResepController extends Controller
                 // Jika tidak ada kd_poli, gunakan semua bangsal
                 $totalStok = $databarang->getTotalStok();
                 $stokPerBangsal = $databarang->getStokDetailPerBangsal();
-                
+
                 $batchDetail = Gudangbarang::where('kode_brng', $request->kode_brng)
                     ->where('stok', '>', 0)
                     ->select('kd_bangsal', 'stok', 'no_batch', 'no_faktur')
@@ -1256,14 +1276,14 @@ class ResepController extends Controller
                     'batch_detail' => $batchDetail,
                     'harga_ralan' => $databarang->ralan,
                     'satuan' => $databarang->kode_satbesar,
-                    'status' => $databarang->status
-                ]
+                    'status' => $databarang->status,
+                ],
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -1279,10 +1299,10 @@ class ResepController extends Controller
             // Cari resep yang akan dihapus
             $resep = ResepObat::where('no_resep', $noResep)->first();
 
-            if (!$resep) {
+            if (! $resep) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Resep tidak ditemukan'
+                    'message' => 'Resep tidak ditemukan',
                 ], 404);
             }
 
@@ -1296,16 +1316,16 @@ class ResepController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Resep berhasil dihapus'
+                'message' => 'Resep berhasil dihapus',
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error deleting resep: ' . $e->getMessage());
-            
+            Log::error('Error deleting resep: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat menghapus resep: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan saat menghapus resep: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -1337,13 +1357,13 @@ class ResepController extends Controller
 
             return response()->json([
                 'success' => true,
-                'svg' => $qrCodeSvg
+                'svg' => $qrCodeSvg,
             ], 200, [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }

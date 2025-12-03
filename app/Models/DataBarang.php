@@ -10,10 +10,15 @@ class DataBarang extends Model
     use HasFactory;
 
     protected $connection = 'fufufafa';
+
     protected $table = 'databarang';
+
     protected $primaryKey = 'kode_brng';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -68,21 +73,21 @@ class DataBarang extends Model
     {
         return $query->where(function ($q) use ($search) {
             $q->where('databarang.kode_brng', 'like', "%{$search}%")
-              ->orWhere('databarang.nama_brng', 'like', "%{$search}%")
-              ->orWhere('databarang.kode_sat', 'like', "%{$search}%")
-              ->orWhere('databarang.letak_barang', 'like', "%{$search}%");
+                ->orWhere('databarang.nama_brng', 'like', "%{$search}%")
+                ->orWhere('databarang.kode_sat', 'like', "%{$search}%")
+                ->orWhere('databarang.letak_barang', 'like', "%{$search}%");
         });
     }
 
     // Accessor untuk format harga
     public function getHargaBeliFormattedAttribute()
     {
-        return 'Rp ' . number_format($this->h_beli, 0, ',', '.');
+        return 'Rp '.number_format($this->h_beli, 0, ',', '.');
     }
 
     public function getHargaRalanFormattedAttribute()
     {
-        return 'Rp ' . number_format($this->ralan, 0, ',', '.');
+        return 'Rp '.number_format($this->ralan, 0, ',', '.');
     }
 
     public function getStatusFormattedAttribute()
@@ -104,6 +109,6 @@ class DataBarang extends Model
     public function latestDetailBeli()
     {
         return $this->hasOne(DetailBeli::class, 'kode_brng', 'kode_brng')
-                    ->latest('created_at');
+            ->latest('created_at');
     }
 }

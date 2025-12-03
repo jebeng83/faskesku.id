@@ -11,8 +11,13 @@ class Opname extends Model
     use HasFactory;
 
     protected $table = 'opname';
+
+    protected $connection = 'fufufafa';
+
     protected $primaryKey = null;
+
     public $incrementing = false;
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -28,7 +33,7 @@ class Opname extends Model
         'keterangan',
         'kd_bangsal',
         'no_batch',
-        'no_faktur'
+        'no_faktur',
     ];
 
     protected $casts = [
@@ -39,7 +44,7 @@ class Opname extends Model
         'selisih' => 'decimal:2',
         'lebih' => 'decimal:2',
         'nomihilang' => 'decimal:2',
-        'nomilebih' => 'decimal:2'
+        'nomilebih' => 'decimal:2',
     ];
 
     /**
@@ -99,8 +104,8 @@ class Opname extends Model
         }
 
         return $query->orderBy('opname.tanggal', 'desc')
-                    ->orderBy('databarang.nama_brng')
-                    ->get();
+            ->orderBy('databarang.nama_brng')
+            ->get();
     }
 
     /**
@@ -109,7 +114,7 @@ class Opname extends Model
     public function calculateDifference()
     {
         $this->selisih = $this->real - $this->stok;
-        
+
         if ($this->selisih > 0) {
             $this->lebih = $this->selisih;
             $this->nomilebih = $this->lebih * $this->h_beli;

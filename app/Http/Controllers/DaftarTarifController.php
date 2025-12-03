@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Inertia\Inertia;
+use App\Models\Bangsal;
 use App\Models\JnsPerawatan;
 use App\Models\JnsPerawatanInap;
 use App\Models\JnsPerawatanLab;
 use App\Models\JnsPerawatanRadiologi;
-use App\Models\Poliklinik;
-use App\Models\Bangsal;
-use App\Models\Penjab;
 use App\Models\KategoriPerawatan;
+use App\Models\Penjab;
+use App\Models\Poliklinik;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
 
 class DaftarTarifController extends Controller
 {
@@ -24,116 +24,116 @@ class DaftarTarifController extends Controller
         $poliklinikFilter = $request->get('poliklinik'); // Add poliklinik filter parameter
         $bangsalFilter = $request->get('bangsal'); // Add bangsal filter parameter
         $statusFilter = $request->get('status', '1'); // Add status filter parameter with default '1' (aktif)
-    
+
         $data = [];
-    
+
         switch ($category) {
             case 'rawat-jalan':
                 $query = JnsPerawatan::with(['poliklinik', 'penjab']);
-                
+
                 // Apply status filter
                 if ($statusFilter !== 'all') {
                     $query->where('status', $statusFilter);
                 }
-                
+
                 if ($search) {
                     $query->search($search);
                 }
-                
+
                 // Add poliklinik filter for rawat-jalan
                 if ($poliklinikFilter) {
                     $query->where('kd_poli', $poliklinikFilter);
                 }
-                
+
                 $data = $query->paginate($perPage);
                 break;
-    
+
             case 'rawat-inap':
                 $query = JnsPerawatanInap::with(['bangsal', 'penjab']);
-                
+
                 // Apply status filter
                 if ($statusFilter !== 'all') {
                     $query->where('status', $statusFilter);
                 }
-                
+
                 if ($search) {
                     $query->search($search);
                 }
-                
+
                 // Add bangsal filter for rawat-inap
                 if ($bangsalFilter) {
                     $query->where('kd_bangsal', $bangsalFilter);
                 }
-                
+
                 $data = $query->paginate($perPage);
                 break;
-    
+
             case 'laboratorium':
                 $query = JnsPerawatanLab::with([
                     'penjab',
                     'templateLaboratorium' => function ($q) {
                         $q->ordered();
-                    }
+                    },
                 ]);
-                
+
                 // Apply status filter
                 if ($statusFilter !== 'all') {
                     $query->where('status', $statusFilter);
                 }
-                
+
                 if ($search) {
                     $query->search($search);
                 }
-                
+
                 $data = $query->paginate($perPage);
                 break;
-    
+
             case 'radiologi':
                 $query = JnsPerawatanRadiologi::with('penjab');
-                
+
                 // Apply status filter
                 if ($statusFilter !== 'all') {
                     $query->where('status', $statusFilter);
                 }
-                
+
                 if ($search) {
                     $query->search($search);
                 }
-                
+
                 $data = $query->paginate($perPage);
                 break;
-    
+
             case 'kamar':
                 // Untuk kamar, kita bisa menggunakan data dari poliklinik atau bangsal
                 $query = Poliklinik::query();
-                
+
                 // Apply status filter
                 if ($statusFilter !== 'all') {
                     $query->where('status', $statusFilter);
                 }
-                
+
                 if ($search) {
                     $query->where(function ($q) use ($search) {
                         $q->where('kd_poli', 'like', "%{$search}%")
                             ->orWhere('nm_poli', 'like', "%{$search}%");
                     });
                 }
-                
+
                 // Add poliklinik filter for kamar
                 if ($poliklinikFilter) {
                     $query->where('kd_poli', $poliklinikFilter);
                 }
-                
+
                 $data = $query->paginate($perPage);
                 break;
         }
-    
+
         // Get data untuk modal form
         $polikliniks = Poliklinik::where('status', '1')->get();
         $bangsals = Bangsal::where('status', '1')->get();
         $penjaabs = Penjab::where('status', '1')->get();
         $kategoris = KategoriPerawatan::all();
-    
+
         return Inertia::render('DaftarTarif/Index', [
             'title' => 'Daftar Tarif',
             'data' => $data,
@@ -145,12 +145,12 @@ class DaftarTarifController extends Controller
                 'per_page' => $perPage,
                 'status' => $statusFilter, // Pass status filter back to frontend
                 'poliklinik' => $poliklinikFilter, // Pass poliklinik filter back to frontend
-                'bangsal' => $bangsalFilter // Pass bangsal filter back to frontend
+                'bangsal' => $bangsalFilter, // Pass bangsal filter back to frontend
             ],
             'polikliniks' => $polikliniks,
             'bangsals' => $bangsals,
             'penjaabs' => $penjaabs,
-            'kategoris' => $kategoris
+            'kategoris' => $kategoris,
         ]);
     }
 
@@ -160,20 +160,20 @@ class DaftarTarifController extends Controller
     public function create(Request $request)
     {
         $category = $request->get('category', 'rawat-jalan');
-        
+
         // Get data untuk dropdown
         $polikliniks = Poliklinik::where('status', '1')->get();
         $bangsals = Bangsal::where('status', '1')->get();
         $penjaabs = Penjab::where('status', '1')->get();
         $kategoris = KategoriPerawatan::orderBy('kd_kategori', 'asc')->get();
-        
+
         return Inertia::render('DaftarTarif/Create', [
             'title' => 'Tambah Tarif',
             'category' => $category,
             'polikliniks' => $polikliniks,
             'bangsals' => $bangsals,
             'penjaabs' => $penjaabs,
-            'kategoris' => $kategoris
+            'kategoris' => $kategoris,
         ]);
     }
 
@@ -183,7 +183,7 @@ class DaftarTarifController extends Controller
     public function store(Request $request)
     {
         $category = $request->get('category', 'rawat-jalan');
-        
+
         switch ($category) {
             case 'rawat-jalan':
                 return $this->storeRawatJalan($request);
@@ -215,17 +215,17 @@ class DaftarTarifController extends Controller
             'menejemen' => 'nullable|numeric|min:0',
             'kd_pj' => 'required|string|max:3',
             'kd_poli' => 'required|string|max:5',
-            'status' => 'required|in:0,1'
+            'status' => 'required|in:0,1',
         ]);
-    
+
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
         }
-    
+
         $data = $request->all();
-        
+
         // Calculate totals
         $material = $data['material'] ?? 0;
         $bhp = $data['bhp'] ?? 0;
@@ -233,22 +233,22 @@ class DaftarTarifController extends Controller
         $tarif_tindakanpr = $data['tarif_tindakanpr'] ?? 0;
         $kso = $data['kso'] ?? 0;
         $menejemen = $data['menejemen'] ?? 0;
-    
+
         // Calculate actual totals
         $calculatedTotalDr = $material + $bhp + $tarif_tindakandr + $kso + $menejemen;
         $calculatedTotalPr = $material + $bhp + $tarif_tindakanpr + $kso + $menejemen;
         $calculatedTotalDrPr = $material + $bhp + $tarif_tindakandr + $tarif_tindakanpr + $kso + $menejemen;
-    
+
         // Set totals based on checkbox status - hanya simpan jika checkbox tercentang (true)
         $data['total_byrdr'] = (($data['show_total_dokter'] ?? false) === true) ? $calculatedTotalDr : 0;
         $data['total_byrpr'] = (($data['show_total_perawat'] ?? false) === true) ? $calculatedTotalPr : 0;
         $data['total_byrdrpr'] = (($data['show_total_dokter_perawat'] ?? false) === true) ? $calculatedTotalDrPr : 0;
-    
+
         // Remove checkbox fields from data before saving
         unset($data['show_total_dokter'], $data['show_total_perawat'], $data['show_total_dokter_perawat']);
-    
+
         JnsPerawatan::create($data);
-    
+
         return redirect()->route('daftar-tarif.index', ['category' => 'rawat-jalan'])
             ->with('success', 'Tarif rawat jalan berhasil ditambahkan');
     }
@@ -259,9 +259,9 @@ class DaftarTarifController extends Controller
     private function updateRawatJalan(Request $request, $id)
     {
         $tarif = JnsPerawatan::findOrFail($id);
-        
+
         $validator = Validator::make($request->all(), [
-            'kd_jenis_prw' => 'required|string|max:15|unique:jns_perawatan,kd_jenis_prw,' . $id . ',kd_jenis_prw',
+            'kd_jenis_prw' => 'required|string|max:15|unique:jns_perawatan,kd_jenis_prw,'.$id.',kd_jenis_prw',
             'nm_perawatan' => 'required|string|max:80',
             'kd_kategori' => 'nullable|string|max:5',
             'material' => 'nullable|numeric|min:0',
@@ -272,17 +272,17 @@ class DaftarTarifController extends Controller
             'menejemen' => 'nullable|numeric|min:0',
             'kd_pj' => 'required|string|max:3',
             'kd_poli' => 'required|string|max:5',
-            'status' => 'required|in:0,1'
+            'status' => 'required|in:0,1',
         ]);
-    
+
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
         }
-    
+
         $data = $request->all();
-    
+
         // Calculate totals
         $material = $data['material'] ?? 0;
         $bhp = $data['bhp'] ?? 0;
@@ -290,22 +290,22 @@ class DaftarTarifController extends Controller
         $tarif_tindakanpr = $data['tarif_tindakanpr'] ?? 0;
         $kso = $data['kso'] ?? 0;
         $menejemen = $data['menejemen'] ?? 0;
-    
+
         // Calculate actual totals
         $calculatedTotalDr = $material + $bhp + $tarif_tindakandr + $kso + $menejemen;
         $calculatedTotalPr = $material + $bhp + $tarif_tindakanpr + $kso + $menejemen;
         $calculatedTotalDrPr = $material + $bhp + $tarif_tindakandr + $tarif_tindakanpr + $kso + $menejemen;
-    
+
         // Set totals based on checkbox status - hanya simpan jika checkbox tercentang (true)
         $data['total_byrdr'] = (($data['show_total_dokter'] ?? false) === true) ? $calculatedTotalDr : 0;
         $data['total_byrpr'] = (($data['show_total_perawat'] ?? false) === true) ? $calculatedTotalPr : 0;
         $data['total_byrdrpr'] = (($data['show_total_dokter_perawat'] ?? false) === true) ? $calculatedTotalDrPr : 0;
-    
+
         // Remove checkbox fields from data before saving
         unset($data['show_total_dokter'], $data['show_total_perawat'], $data['show_total_dokter_perawat']);
-    
+
         $tarif->update($data);
-    
+
         return redirect()->route('daftar-tarif.index', ['category' => 'rawat-jalan'])
             ->with('success', 'Tarif rawat jalan berhasil diperbarui');
     }
@@ -317,7 +317,7 @@ class DaftarTarifController extends Controller
     {
         $category = $request->get('category', 'rawat-jalan');
         $status = $request->get('status', '0'); // Default nonaktifkan
-        
+
         try {
             switch ($category) {
                 case 'rawat-jalan':
@@ -335,13 +335,14 @@ class DaftarTarifController extends Controller
                 default:
                     return redirect()->back()->with('error', 'Kategori tidak valid');
             }
-            
+
             // Update status
             $tarif->update(['status' => $status]);
-            
+
             $message = $status == '1' ? 'Tarif berhasil diaktifkan' : 'Tarif berhasil dinonaktifkan';
+
             return redirect()->back()->with('success', $message);
-            
+
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal mengubah status tarif');
         }
@@ -353,7 +354,7 @@ class DaftarTarifController extends Controller
     public function destroy(Request $request, $id)
     {
         $category = $request->get('category', 'rawat-jalan');
-        
+
         try {
             switch ($category) {
                 case 'rawat-jalan':
@@ -371,12 +372,12 @@ class DaftarTarifController extends Controller
                 default:
                     return redirect()->back()->with('error', 'Kategori tidak valid');
             }
-            
+
             // Soft delete: set status = 0
             $tarif->update(['status' => '0']);
-            
+
             return redirect()->back()->with('success', 'Tarif berhasil dinonaktifkan');
-            
+
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal menonaktifkan tarif');
         }
@@ -389,11 +390,11 @@ class DaftarTarifController extends Controller
     {
         $kdKategori = $request->get('kd_kategori');
         $category = $request->get('category', 'rawat-jalan');
-        
-        if (!$kdKategori && $category !== 'laboratorium') {
+
+        if (! $kdKategori && $category !== 'laboratorium') {
             return response()->json([
                 'success' => false,
-                'message' => 'Kategori harus dipilih'
+                'message' => 'Kategori harus dipilih',
             ]);
         }
 
@@ -416,12 +417,12 @@ class DaftarTarifController extends Controller
 
             return response()->json([
                 'success' => true,
-                'kode' => $kode
+                'kode' => $kode,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal generate kode: ' . $e->getMessage()
+                'message' => 'Gagal generate kode: '.$e->getMessage(),
             ]);
         }
     }
@@ -441,7 +442,7 @@ class DaftarTarifController extends Controller
             'menejemen' => 'nullable|numeric|min:0',
             'kd_pj' => 'required|string|max:3',
             'kd_bangsal' => 'required|string|max:5',
-            'kelas' => 'required|string|max:20'
+            'kelas' => 'required|string|max:20',
         ]);
 
         if ($validator->fails()) {
@@ -451,7 +452,7 @@ class DaftarTarifController extends Controller
         }
 
         $data = $request->all();
-        
+
         // Calculate totals
         $material = $data['material'] ?? 0;
         $bhp = $data['bhp'] ?? 0;
@@ -483,7 +484,9 @@ class DaftarTarifController extends Controller
         return redirect()->route('daftar-tarif.index', ['category' => 'rawat-inap'])
             ->with('success', 'Tarif rawat inap berhasil ditambahkan');
     }
-    private function storeLaboratorium(Request $request) {
+
+    private function storeLaboratorium(Request $request)
+    {
         // Validasi sesuai struktur tabel jns_perawatan_lab
         $validator = Validator::make($request->all(), [
             'kd_jenis_prw' => 'required|string|max:15|unique:jns_perawatan_lab,kd_jenis_prw',
@@ -501,7 +504,7 @@ class DaftarTarifController extends Controller
             // Status dan enum
             'status' => 'nullable|in:0,1',
             'kelas' => 'required|string|in:-,Rawat Jalan,Kelas 1,Kelas 2,Kelas 3,Kelas Utama,Kelas VIP,Kelas VVIP',
-            'kategori' => 'required|string|in:PK,PA,MB'
+            'kategori' => 'required|string|in:PK,PA,MB',
         ]);
 
         if ($validator->fails()) {
@@ -513,13 +516,13 @@ class DaftarTarifController extends Controller
         $data = $request->all();
 
         // Pemetaan field frontend -> kolom database
-        $bagian_rs = (float)($data['material'] ?? 0);
-        $bhp = (float)($data['bhp'] ?? 0);
-        $tarif_perujuk = (float)($data['bagian_perujuk'] ?? 0);
-        $tarif_tindakan_dokter = (float)($data['tarif_tindakandr'] ?? 0);
-        $tarif_tindakan_petugas = (float)($data['tarif_tindakanpr'] ?? 0);
-        $kso = (float)($data['kso'] ?? 0);
-        $menejemen = (float)($data['menejemen'] ?? 0);
+        $bagian_rs = (float) ($data['material'] ?? 0);
+        $bhp = (float) ($data['bhp'] ?? 0);
+        $tarif_perujuk = (float) ($data['bagian_perujuk'] ?? 0);
+        $tarif_tindakan_dokter = (float) ($data['tarif_tindakandr'] ?? 0);
+        $tarif_tindakan_petugas = (float) ($data['tarif_tindakanpr'] ?? 0);
+        $kso = (float) ($data['kso'] ?? 0);
+        $menejemen = (float) ($data['menejemen'] ?? 0);
 
         // Hitung total biaya laboratorium
         $total_byr = $bagian_rs + $bhp + $tarif_perujuk + $tarif_tindakan_dokter + $tarif_tindakan_petugas + $kso + $menejemen;
@@ -545,13 +548,17 @@ class DaftarTarifController extends Controller
         return redirect()->route('daftar-tarif.index', ['category' => 'laboratorium'])
             ->with('success', 'Tarif pemeriksaan laboratorium berhasil ditambahkan');
     }
-    private function storeRadiologi(Request $request) { /* Implementation for radiologi */ }
+
+    private function storeRadiologi(Request $request)
+    { /* Implementation for radiologi */
+    }
+
     private function updateRawatInap(Request $request, $id)
     {
         $jnsPerawatan = JnsPerawatanInap::findOrFail($id);
-        
+
         $validator = Validator::make($request->all(), [
-            'kd_jenis_prw' => 'required|string|max:15|unique:jns_perawatan_inap,kd_jenis_prw,' . $id . ',kd_jenis_prw',
+            'kd_jenis_prw' => 'required|string|max:15|unique:jns_perawatan_inap,kd_jenis_prw,'.$id.',kd_jenis_prw',
             'nm_perawatan' => 'required|string|max:80',
             'kd_kategori' => 'nullable|string|max:5',
             'material' => 'nullable|numeric|min:0',
@@ -562,17 +569,17 @@ class DaftarTarifController extends Controller
             'menejemen' => 'nullable|numeric|min:0',
             'kd_pj' => 'required|string|max:3',
             'kd_bangsal' => 'required|string|max:5',
-            'kelas' => 'required|string|max:20'
+            'kelas' => 'required|string|max:20',
         ]);
-    
+
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
         }
-    
+
         $data = $request->all();
-        
+
         // Calculate totals
         $material = $data['material'] ?? 0;
         $bhp = $data['bhp'] ?? 0;
@@ -580,44 +587,50 @@ class DaftarTarifController extends Controller
         $tarif_tindakanpr = $data['tarif_tindakanpr'] ?? 0;
         $kso = $data['kso'] ?? 0;
         $menejemen = $data['menejemen'] ?? 0;
-    
+
         // Calculate actual totals based on checkbox status - hanya jika checkbox benar-benar tercentang (true)
         $total_byrdr = 0;
         $total_byrpr = 0;
         $total_byrdrpr = 0;
-    
+
         if (($data['show_total_dokter'] ?? false) === true) {
             $total_byrdr = $material + $bhp + $tarif_tindakandr + $kso + $menejemen;
         }
-    
+
         if (($data['show_total_perawat'] ?? false) === true) {
             $total_byrpr = $material + $bhp + $tarif_tindakanpr + $kso + $menejemen;
         }
-    
+
         if (($data['show_total_dokter_perawat'] ?? false) === true) {
             $total_byrdrpr = $material + $bhp + $tarif_tindakandr + $tarif_tindakanpr + $kso + $menejemen;
         }
-    
+
         // Remove checkbox fields before saving
         unset($data['show_total_dokter'], $data['show_total_perawat'], $data['show_total_dokter_perawat']);
         unset($data['total_dr'], $data['total_pr'], $data['total_drpr']);
         unset($data['category']);
-    
+
         // Add calculated totals
         $data['total_byrdr'] = $total_byrdr;
         $data['total_byrpr'] = $total_byrpr;
         $data['total_byrdrpr'] = $total_byrdrpr;
-        
+
         // Set status to '1' for updates (active status)
         $data['status'] = '1';
-    
+
         $jnsPerawatan->update($data);
-    
+
         return redirect()->route('daftar-tarif.index', ['category' => 'rawat-inap'])
             ->with('success', 'Tarif rawat inap berhasil diperbarui');
     }
-    private function updateLaboratorium(Request $request, $id) { /* Implementation for laboratorium */ }
-    private function updateRadiologi(Request $request, $id) { /* Implementation for radiologi */ }
+
+    private function updateLaboratorium(Request $request, $id)
+    { /* Implementation for laboratorium */
+    }
+
+    private function updateRadiologi(Request $request, $id)
+    { /* Implementation for radiologi */
+    }
 
     /**
      * Update template laboratorium rows for a given jenis perawatan.
@@ -690,11 +703,11 @@ class DaftarTarifController extends Controller
         try {
             // Determine category from request parameter
             $category = request()->get('category', 'rawat-jalan');
-            
+
             if ($category === 'rawat-inap') {
                 // For rawat-inap, use JnsPerawatanInap model
                 $jnsPerawatan = JnsPerawatanInap::findOrFail($id);
-                
+
                 // Get data untuk form rawat-inap
                 $bangsals = Bangsal::where('status', '1')->get();
                 $penjaabs = Penjab::where('status', '1')->get();
@@ -705,12 +718,12 @@ class DaftarTarifController extends Controller
                     'bangsals' => $bangsals,
                     'penjaabs' => $penjaabs,
                     'kategoris' => $kategoris,
-                    'category' => $category
+                    'category' => $category,
                 ]);
             } else {
                 // For rawat-jalan, use JnsPerawatan model
                 $jnsPerawatan = JnsPerawatan::findOrFail($id);
-                
+
                 // Get data untuk form rawat-jalan
                 $polikliniks = Poliklinik::where('status', '1')->get();
                 $penjaabs = Penjab::where('status', '1')->get();
@@ -721,7 +734,7 @@ class DaftarTarifController extends Controller
                     'polikliniks' => $polikliniks,
                     'penjaabs' => $penjaabs,
                     'kategoris' => $kategoris,
-                    'category' => $category
+                    'category' => $category,
                 ]);
             }
         } catch (\Exception $e) {
@@ -738,12 +751,12 @@ class DaftarTarifController extends Controller
         try {
             // Determine category from request or detect from existing data
             $category = $request->input('category', 'rawat-jalan');
-            
+
             // If category is rawat-inap, use the specific update method
             if ($category === 'rawat-inap') {
                 return $this->updateRawatInap($request, $id);
             }
-            
+
             $jnsPerawatan = JnsPerawatan::findOrFail($id);
 
             // Validasi data
@@ -758,7 +771,7 @@ class DaftarTarifController extends Controller
                 'menejemen' => 'required|numeric|min:0',
                 'kd_pj' => 'required|string|max:3',
                 'kd_poli' => 'required|string|max:5',
-                'status' => 'required|in:0,1'
+                'status' => 'required|in:0,1',
             ]);
 
             if ($validator->fails()) {
@@ -816,7 +829,7 @@ class DaftarTarifController extends Controller
 
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('error', 'Gagal memperbarui data: ' . $e->getMessage())
+                ->with('error', 'Gagal memperbarui data: '.$e->getMessage())
                 ->withInput();
         }
     }

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Akutansi\DetailPiutangPasienController::index
-* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:16
+* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:17
 * @route '/api/akutansi/detail-piutang-pasien/{no_rawat}'
 */
 export const index = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\DetailPiutangPasienController::index
-* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:16
+* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:17
 * @route '/api/akutansi/detail-piutang-pasien/{no_rawat}'
 */
 index.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ index.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] 
 
 /**
 * @see \App\Http\Controllers\Akutansi\DetailPiutangPasienController::index
-* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:16
+* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:17
 * @route '/api/akutansi/detail-piutang-pasien/{no_rawat}'
 */
 index.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ index.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] 
 
 /**
 * @see \App\Http\Controllers\Akutansi\DetailPiutangPasienController::index
-* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:16
+* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:17
 * @route '/api/akutansi/detail-piutang-pasien/{no_rawat}'
 */
 index.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ index.head = (args: { no_rawat: string | number } | [no_rawat: string | number ]
 
 /**
 * @see \App\Http\Controllers\Akutansi\DetailPiutangPasienController::store
-* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:31
+* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:32
 * @route '/api/akutansi/detail-piutang-pasien'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -78,7 +78,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\DetailPiutangPasienController::store
-* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:31
+* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:32
 * @route '/api/akutansi/detail-piutang-pasien'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -87,7 +87,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Akutansi\DetailPiutangPasienController::store
-* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:31
+* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:32
 * @route '/api/akutansi/detail-piutang-pasien'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -97,7 +97,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\DetailPiutangPasienController::update
-* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:61
+* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:62
 * @route '/api/akutansi/detail-piutang-pasien/{no_rawat}/{nama_bayar}'
 */
 export const update = (args: { no_rawat: string | number, nama_bayar: string | number } | [no_rawat: string | number, nama_bayar: string | number ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -112,7 +112,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\DetailPiutangPasienController::update
-* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:61
+* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:62
 * @route '/api/akutansi/detail-piutang-pasien/{no_rawat}/{nama_bayar}'
 */
 update.url = (args: { no_rawat: string | number, nama_bayar: string | number } | [no_rawat: string | number, nama_bayar: string | number ], options?: RouteQueryOptions) => {
@@ -138,7 +138,7 @@ update.url = (args: { no_rawat: string | number, nama_bayar: string | number } |
 
 /**
 * @see \App\Http\Controllers\Akutansi\DetailPiutangPasienController::update
-* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:61
+* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:62
 * @route '/api/akutansi/detail-piutang-pasien/{no_rawat}/{nama_bayar}'
 */
 update.put = (args: { no_rawat: string | number, nama_bayar: string | number } | [no_rawat: string | number, nama_bayar: string | number ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -148,7 +148,7 @@ update.put = (args: { no_rawat: string | number, nama_bayar: string | number } |
 
 /**
 * @see \App\Http\Controllers\Akutansi\DetailPiutangPasienController::destroy
-* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:78
+* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:80
 * @route '/api/akutansi/detail-piutang-pasien/{no_rawat}/{nama_bayar}'
 */
 export const destroy = (args: { no_rawat: string | number, nama_bayar: string | number } | [no_rawat: string | number, nama_bayar: string | number ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -163,7 +163,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\DetailPiutangPasienController::destroy
-* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:78
+* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:80
 * @route '/api/akutansi/detail-piutang-pasien/{no_rawat}/{nama_bayar}'
 */
 destroy.url = (args: { no_rawat: string | number, nama_bayar: string | number } | [no_rawat: string | number, nama_bayar: string | number ], options?: RouteQueryOptions) => {
@@ -189,7 +189,7 @@ destroy.url = (args: { no_rawat: string | number, nama_bayar: string | number } 
 
 /**
 * @see \App\Http\Controllers\Akutansi\DetailPiutangPasienController::destroy
-* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:78
+* @see app/Http/Controllers/Akutansi/DetailPiutangPasienController.php:80
 * @route '/api/akutansi/detail-piutang-pasien/{no_rawat}/{nama_bayar}'
 */
 destroy.delete = (args: { no_rawat: string | number, nama_bayar: string | number } | [no_rawat: string | number, nama_bayar: string | number ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

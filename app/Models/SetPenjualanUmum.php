@@ -10,8 +10,11 @@ class SetPenjualanUmum extends Model
     use HasFactory;
 
     protected $table = 'setpenjualanumum';
+
     public $timestamps = false;
+
     public $incrementing = false;
+
     protected $primaryKey = null;
 
     protected $fillable = [
@@ -24,7 +27,7 @@ class SetPenjualanUmum extends Model
         'vvip',
         'beliluar',
         'jualbebas',
-        'karyawan'
+        'karyawan',
     ];
 
     protected $casts = [
@@ -37,6 +40,6 @@ class SetPenjualanUmum extends Model
         'vvip' => 'double',
         'beliluar' => 'double',
         'jualbebas' => 'double',
-        'karyawan' => 'double'
+        'karyawan' => 'double',
     ];
 }

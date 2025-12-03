@@ -39,12 +39,12 @@ class AkunPiutangController extends Controller
 
         if ($q !== '') {
             $query->where(function ($w) use ($q) {
-                $like = '%' . $q . '%';
+                $like = '%'.$q.'%';
                 $w->where('akun_piutang.nama_bayar', 'like', $like)
-                  ->orWhere('akun_piutang.kd_rek', 'like', $like)
-                  ->orWhere('rekening.nm_rek', 'like', $like)
-                  ->orWhere('akun_piutang.kd_pj', 'like', $like)
-                  ->orWhere('penjab.png_jawab', 'like', $like);
+                    ->orWhere('akun_piutang.kd_rek', 'like', $like)
+                    ->orWhere('rekening.nm_rek', 'like', $like)
+                    ->orWhere('akun_piutang.kd_pj', 'like', $like)
+                    ->orWhere('penjab.png_jawab', 'like', $like);
             });
         }
 

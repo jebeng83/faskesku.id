@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Akutansi\BukuBesarController::page
-* @see app/Http/Controllers/Akutansi/BukuBesarController.php:16
+* @see app/Http/Controllers/Akutansi/BukuBesarController.php:17
 * @route '/akutansi/buku-besar'
 */
 export const page = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ page.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\BukuBesarController::page
-* @see app/Http/Controllers/Akutansi/BukuBesarController.php:16
+* @see app/Http/Controllers/Akutansi/BukuBesarController.php:17
 * @route '/akutansi/buku-besar'
 */
 page.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ page.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Akutansi\BukuBesarController::page
-* @see app/Http/Controllers/Akutansi/BukuBesarController.php:16
+* @see app/Http/Controllers/Akutansi/BukuBesarController.php:17
 * @route '/akutansi/buku-besar'
 */
 page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\BukuBesarController::page
-* @see app/Http/Controllers/Akutansi/BukuBesarController.php:16
+* @see app/Http/Controllers/Akutansi/BukuBesarController.php:17
 * @route '/akutansi/buku-besar'
 */
 page.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

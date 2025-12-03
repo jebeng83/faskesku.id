@@ -74,6 +74,7 @@ class SettingBridgingMobileJknController extends Controller
     public function destroy()
     {
         DB::table('setting_briding_mobilejkn')->truncate();
+
         return redirect()->route('pcare.setting.mobilejkn.index')
             ->with('success', 'Pengaturan Mobile JKN berhasil direset');
     }

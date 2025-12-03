@@ -3,14 +3,17 @@
 namespace App\Models\RawatJalan;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\RawatJalan\Gudangbarang;
 
 class Databarang extends Model
 {
     protected $table = 'databarang';
+
     protected $primaryKey = 'kode_brng';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -39,7 +42,7 @@ class Databarang extends Model
         'status',
         'kode_industri',
         'kode_kategori',
-        'kode_golongan'
+        'kode_golongan',
     ];
 
     protected $casts = [
@@ -58,7 +61,7 @@ class Databarang extends Model
         'stokminimal' => 'float',
         'isi' => 'float',
         'kapasitas' => 'float',
-        'expire' => 'date'
+        'expire' => 'date',
     ];
 
     // Relasi ke gudang barang
@@ -76,16 +79,16 @@ class Databarang extends Model
     // Scope untuk pencarian nama barang
     public function scopeSearch($query, $search)
     {
-        return $query->where('nama_brng', 'like', '%' . $search . '%')
-                    ->orWhere('kode_brng', 'like', '%' . $search . '%');
+        return $query->where('nama_brng', 'like', '%'.$search.'%')
+            ->orWhere('kode_brng', 'like', '%'.$search.'%');
     }
 
     // Method untuk mendapatkan total stok berdasarkan bangsal
     public function getTotalStokByBangsal($kdBangsal)
     {
         return $this->gudangBarang()
-                   ->where('kd_bangsal', $kdBangsal)
-                   ->sum('stok');
+            ->where('kd_bangsal', $kdBangsal)
+            ->sum('stok');
     }
 
     // Method untuk mendapatkan total stok dari semua bangsal
@@ -98,16 +101,16 @@ class Databarang extends Model
     public static function getObatWithStok($search = null, $kdBangsal = null, $limit = 50)
     {
         $query = static::select([
-                'databarang.kode_brng',
-                'databarang.nama_brng',
-                'databarang.kode_satbesar',
-                'databarang.kode_sat',
-                'databarang.ralan',
-                'databarang.isi',
-                'databarang.kapasitas',
-                'databarang.expire',
-                'databarang.status'
-            ])
+            'databarang.kode_brng',
+            'databarang.nama_brng',
+            'databarang.kode_satbesar',
+            'databarang.kode_sat',
+            'databarang.ralan',
+            'databarang.isi',
+            'databarang.kapasitas',
+            'databarang.expire',
+            'databarang.status',
+        ])
             ->selectRaw('COALESCE(SUM(gudangbarang.stok), 0) as total_stok')
             ->leftJoin('gudangbarang', 'databarang.kode_brng', '=', 'gudangbarang.kode_brng')
             ->where('databarang.status', '1')
@@ -120,7 +123,7 @@ class Databarang extends Model
                 'databarang.isi',
                 'databarang.kapasitas',
                 'databarang.expire',
-                'databarang.status'
+                'databarang.status',
             ]);
 
         // Filter berdasarkan bangsal jika ada
@@ -130,9 +133,9 @@ class Databarang extends Model
 
         // Filter pencarian jika ada
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('databarang.nama_brng', 'like', '%' . $search . '%')
-                  ->orWhere('databarang.kode_brng', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('databarang.nama_brng', 'like', '%'.$search.'%')
+                    ->orWhere('databarang.kode_brng', 'like', '%'.$search.'%');
             });
         }
 
@@ -146,12 +149,12 @@ class Databarang extends Model
     public function getStokDetailPerBangsal()
     {
         return $this->gudangBarang()
-                   ->select('kd_bangsal', 'stok', 'no_batch', 'no_faktur')
-                   ->where('stok', '>', 0)
-                   ->get()
-                   ->groupBy('kd_bangsal')
-                   ->map(function($items) {
-                       return $items->sum('stok');
-                   });
+            ->select('kd_bangsal', 'stok', 'no_batch', 'no_faktur')
+            ->where('stok', '>', 0)
+            ->get()
+            ->groupBy('kd_bangsal')
+            ->map(function ($items) {
+                return $items->sum('stok');
+            });
     }
 }

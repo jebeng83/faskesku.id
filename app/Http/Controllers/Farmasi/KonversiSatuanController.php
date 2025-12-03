@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Farmasi;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 
 class KonversiSatuanController extends Controller
@@ -23,9 +22,9 @@ class KonversiSatuanController extends Controller
         if ($q !== '') {
             $query->where(function ($w) use ($q) {
                 $w->where('ks.kode_sat', 'like', "%{$q}%")
-                  ->orWhere('ks.sat_konversi', 'like', "%{$q}%")
-                  ->orWhere('s1.satuan', 'like', "%{$q}%")
-                  ->orWhere('s2.satuan', 'like', "%{$q}%");
+                    ->orWhere('ks.sat_konversi', 'like', "%{$q}%")
+                    ->orWhere('s1.satuan', 'like', "%{$q}%")
+                    ->orWhere('s2.satuan', 'like', "%{$q}%");
             });
         }
 
@@ -41,7 +40,7 @@ class KonversiSatuanController extends Controller
             ],
             'satuanOptions' => $satuanOptions,
             'flash' => [
-                'success' => session('success')
+                'success' => session('success'),
             ],
         ]);
     }
@@ -58,7 +57,7 @@ class KonversiSatuanController extends Controller
         // Pastikan kode satuan valid
         $existsSrc = DB::table('kodesatuan')->where('kode_sat', $validated['kode_sat'])->exists();
         $existsDst = DB::table('kodesatuan')->where('kode_sat', $validated['sat_konversi'])->exists();
-        if (!$existsSrc || !$existsDst) {
+        if (! $existsSrc || ! $existsDst) {
             return redirect()->back()->withErrors(['kode_sat' => 'Kode satuan tidak valid.', 'sat_konversi' => 'Satuan konversi tidak valid.'])->withInput();
         }
 
@@ -76,8 +75,8 @@ class KonversiSatuanController extends Controller
         DB::table('konver_sat')->insert([
             'kode_sat' => strtoupper($validated['kode_sat']),
             'sat_konversi' => strtoupper($validated['sat_konversi']),
-            'nilai' => (double) $validated['nilai'],
-            'nilai_konversi' => (double) $validated['nilai_konversi'],
+            'nilai' => (float) $validated['nilai'],
+            'nilai_konversi' => (float) $validated['nilai_konversi'],
         ]);
 
         return redirect()->route('farmasi.konversi-satuan.index')->with('success', 'Konversi satuan berhasil ditambahkan.');
@@ -99,15 +98,15 @@ class KonversiSatuanController extends Controller
             ->where('nilai', $nilai)
             ->where('nilai_konversi', $nilai_konversi)
             ->exists();
-        if (!$originalExists) {
+        if (! $originalExists) {
             return redirect()->back()->withErrors(['kode_sat' => 'Data asli tidak ditemukan.'])->withInput();
         }
 
         // Jika kombinasi baru sama dengan lama, cukup update nilai (meski pada banyak DB ini tetap dianggap sama)
         $newKode = strtoupper($validated['kode_sat']);
         $newSat = strtoupper($validated['sat_konversi']);
-        $newNilai = (double) $validated['nilai'];
-        $newNilaiKonv = (double) $validated['nilai_konversi'];
+        $newNilai = (float) $validated['nilai'];
+        $newNilaiKonv = (float) $validated['nilai_konversi'];
 
         DB::beginTransaction();
         try {
@@ -130,7 +129,8 @@ class KonversiSatuanController extends Controller
             DB::commit();
         } catch (\Throwable $e) {
             DB::rollBack();
-            return redirect()->back()->withErrors(['kode_sat' => 'Gagal memperbarui konversi: ' . $e->getMessage()])->withInput();
+
+            return redirect()->back()->withErrors(['kode_sat' => 'Gagal memperbarui konversi: '.$e->getMessage()])->withInput();
         }
 
         return redirect()->route('farmasi.konversi-satuan.index')->with('success', 'Konversi satuan berhasil diperbarui.');

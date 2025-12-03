@@ -2,14 +2,17 @@
 
 namespace App\Models\Akutansi;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Models\RegPeriksa;
+use Illuminate\Database\Eloquent\Model;
 
 class NotaJalan extends Model
 {
     protected $table = 'nota_jalan';
+
     protected $primaryKey = 'no_rawat';
+
     public $incrementing = false;
+
     public $timestamps = false;
 
     protected $fillable = [

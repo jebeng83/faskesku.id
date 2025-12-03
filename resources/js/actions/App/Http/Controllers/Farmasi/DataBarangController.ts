@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\DataBarangController::store
-* @see app/Http/Controllers/Farmasi/DataBarangController.php:99
+* @see app/Http/Controllers/Farmasi/DataBarangController.php:102
 * @route '/farmasi/data-obat'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +60,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\DataBarangController::store
-* @see app/Http/Controllers/Farmasi/DataBarangController.php:99
+* @see app/Http/Controllers/Farmasi/DataBarangController.php:102
 * @route '/farmasi/data-obat'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\DataBarangController::store
-* @see app/Http/Controllers/Farmasi/DataBarangController.php:99
+* @see app/Http/Controllers/Farmasi/DataBarangController.php:102
 * @route '/farmasi/data-obat'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -79,7 +79,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\DataBarangController::update
-* @see app/Http/Controllers/Farmasi/DataBarangController.php:150
+* @see app/Http/Controllers/Farmasi/DataBarangController.php:153
 * @route '/farmasi/data-obat/{kode_brng}'
 */
 const update1aa76071cf55fe28a96c9f50b67a1b30 = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -94,7 +94,7 @@ update1aa76071cf55fe28a96c9f50b67a1b30.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\DataBarangController::update
-* @see app/Http/Controllers/Farmasi/DataBarangController.php:150
+* @see app/Http/Controllers/Farmasi/DataBarangController.php:153
 * @route '/farmasi/data-obat/{kode_brng}'
 */
 update1aa76071cf55fe28a96c9f50b67a1b30.url = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -121,7 +121,7 @@ update1aa76071cf55fe28a96c9f50b67a1b30.url = (args: { kode_brng: string | number
 
 /**
 * @see \App\Http\Controllers\Farmasi\DataBarangController::update
-* @see app/Http/Controllers/Farmasi/DataBarangController.php:150
+* @see app/Http/Controllers/Farmasi/DataBarangController.php:153
 * @route '/farmasi/data-obat/{kode_brng}'
 */
 update1aa76071cf55fe28a96c9f50b67a1b30.put = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -131,7 +131,7 @@ update1aa76071cf55fe28a96c9f50b67a1b30.put = (args: { kode_brng: string | number
 
 /**
 * @see \App\Http\Controllers\Farmasi\DataBarangController::update
-* @see app/Http/Controllers/Farmasi/DataBarangController.php:150
+* @see app/Http/Controllers/Farmasi/DataBarangController.php:153
 * @route '/farmasi/data-obat/{kode_brng}'
 */
 const update1aa76071cf55fe28a96c9f50b67a1b30 = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -146,7 +146,7 @@ update1aa76071cf55fe28a96c9f50b67a1b30.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\DataBarangController::update
-* @see app/Http/Controllers/Farmasi/DataBarangController.php:150
+* @see app/Http/Controllers/Farmasi/DataBarangController.php:153
 * @route '/farmasi/data-obat/{kode_brng}'
 */
 update1aa76071cf55fe28a96c9f50b67a1b30.url = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -173,7 +173,7 @@ update1aa76071cf55fe28a96c9f50b67a1b30.url = (args: { kode_brng: string | number
 
 /**
 * @see \App\Http\Controllers\Farmasi\DataBarangController::update
-* @see app/Http/Controllers/Farmasi/DataBarangController.php:150
+* @see app/Http/Controllers/Farmasi/DataBarangController.php:153
 * @route '/farmasi/data-obat/{kode_brng}'
 */
 update1aa76071cf55fe28a96c9f50b67a1b30.patch = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -188,7 +188,7 @@ export const update = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\DataBarangController::destroy
-* @see app/Http/Controllers/Farmasi/DataBarangController.php:185
+* @see app/Http/Controllers/Farmasi/DataBarangController.php:188
 * @route '/farmasi/data-obat/{kode_brng}'
 */
 export const destroy = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -203,7 +203,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\DataBarangController::destroy
-* @see app/Http/Controllers/Farmasi/DataBarangController.php:185
+* @see app/Http/Controllers/Farmasi/DataBarangController.php:188
 * @route '/farmasi/data-obat/{kode_brng}'
 */
 destroy.url = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -230,7 +230,7 @@ destroy.url = (args: { kode_brng: string | number } | [kode_brng: string | numbe
 
 /**
 * @see \App\Http\Controllers\Farmasi\DataBarangController::destroy
-* @see app/Http/Controllers/Farmasi/DataBarangController.php:185
+* @see app/Http/Controllers/Farmasi/DataBarangController.php:188
 * @route '/farmasi/data-obat/{kode_brng}'
 */
 destroy.delete = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -240,7 +240,7 @@ destroy.delete = (args: { kode_brng: string | number } | [kode_brng: string | nu
 
 /**
 * @see \App\Http\Controllers\Farmasi\DataBarangController::updateHargaSemua
-* @see app/Http/Controllers/Farmasi/DataBarangController.php:197
+* @see app/Http/Controllers/Farmasi/DataBarangController.php:201
 * @route '/farmasi/data-obat/update-harga-semua'
 */
 export const updateHargaSemua = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -255,7 +255,7 @@ updateHargaSemua.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\DataBarangController::updateHargaSemua
-* @see app/Http/Controllers/Farmasi/DataBarangController.php:197
+* @see app/Http/Controllers/Farmasi/DataBarangController.php:201
 * @route '/farmasi/data-obat/update-harga-semua'
 */
 updateHargaSemua.url = (options?: RouteQueryOptions) => {
@@ -264,7 +264,7 @@ updateHargaSemua.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\DataBarangController::updateHargaSemua
-* @see app/Http/Controllers/Farmasi/DataBarangController.php:197
+* @see app/Http/Controllers/Farmasi/DataBarangController.php:201
 * @route '/farmasi/data-obat/update-harga-semua'
 */
 updateHargaSemua.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({

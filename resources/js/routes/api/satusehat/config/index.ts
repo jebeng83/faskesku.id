@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::coordinates
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:593
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:599
 * @route '/api/satusehat/config/coordinates'
 */
 export const coordinates = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ coordinates.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::coordinates
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:593
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:599
 * @route '/api/satusehat/config/coordinates'
 */
 coordinates.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ coordinates.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::coordinates
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:593
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:599
 * @route '/api/satusehat/config/coordinates'
 */
 coordinates.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ coordinates.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::coordinates
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:593
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:599
 * @route '/api/satusehat/config/coordinates'
 */
 coordinates.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

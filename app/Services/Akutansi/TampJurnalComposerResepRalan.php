@@ -17,7 +17,6 @@ class TampJurnalComposerResepRalan
     /**
      * Compose dan tulis ke tampjurnal2 untuk nomor resep tertentu.
      *
-     * @param string $noResep
      * @return array{debet:float,kredit:float,lines:array<int,array{kd_rek:string,debet:float,kredit:float}>}
      */
     public function composeForNoResep(string $noResep): array
@@ -34,7 +33,7 @@ class TampJurnalComposerResepRalan
 
         // Validasi pemetaan akun
         $akun = DB::table('set_akun_ralan')->first();
-        if (!$akun) {
+        if (! $akun) {
             throw new \RuntimeException('Pengaturan akun rawat jalan (set_akun_ralan) tidak ditemukan.');
         }
 
@@ -77,10 +76,13 @@ class TampJurnalComposerResepRalan
             ];
         }, $lines));
 
-        $totDeb = 0.0; $totKre = 0.0;
-        foreach ($lines as $l) { $totDeb += $l['debet']; $totKre += $l['kredit']; }
+        $totDeb = 0.0;
+        $totKre = 0.0;
+        foreach ($lines as $l) {
+            $totDeb += $l['debet'];
+            $totKre += $l['kredit'];
+        }
 
         return ['debet' => $totDeb, 'kredit' => $totKre, 'lines' => $lines];
     }
 }
-

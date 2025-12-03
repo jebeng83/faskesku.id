@@ -13,13 +13,13 @@ class SatuanBarangController extends Controller
     public function index(Request $request)
     {
         $q = $request->input('q');
-        $perPage = (int)($request->input('perPage') ?? 10);
+        $perPage = (int) ($request->input('perPage') ?? 10);
 
         $query = DB::table('kodesatuan');
         if ($q) {
             $query->where(function ($builder) use ($q) {
                 $builder->where('kode_sat', 'like', "%{$q}%")
-                        ->orWhere('satuan', 'like', "%{$q}%");
+                    ->orWhere('satuan', 'like', "%{$q}%");
             });
         }
 
@@ -61,7 +61,7 @@ class SatuanBarangController extends Controller
             ->where('kode_sat', $kode_sat)
             ->update($validated);
 
-        if (!$affected) {
+        if (! $affected) {
             return redirect()->route('farmasi.satuan-barang.index')
                 ->with('success', 'Tidak ada perubahan atau kode tidak ditemukan.');
         }
@@ -86,7 +86,8 @@ class SatuanBarangController extends Controller
             ->whereRaw("kode_sat REGEXP '^[A-Za-z][0-9]{3}$'")
             ->first();
 
-        $nextNumber = isset($max->max_num) ? ((int)$max->max_num + 1) : 1;
-        return 'S' . str_pad((string)$nextNumber, 3, '0', STR_PAD_LEFT);
+        $nextNumber = isset($max->max_num) ? ((int) $max->max_num + 1) : 1;
+
+        return 'S'.str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
     }
 }

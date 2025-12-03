@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Akutansi;
 
 use App\Http\Controllers\Controller;
+use App\Models\Akutansi\Rekening;
 use App\Models\Akutansi\SetAkun;
 use App\Models\Akutansi\SetAkun2;
 use App\Models\Akutansi\SetAkunRalan;
 use App\Models\Akutansi\SetAkunRanap;
 use App\Models\Akutansi\SetAkunRanap2;
-use App\Models\Akutansi\Rekening;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -71,7 +71,7 @@ class SetAkunController extends Controller
     public function show(Request $request, string $section)
     {
         $map = $this->sectionMap();
-        if (!isset($map[$section])) {
+        if (! isset($map[$section])) {
             return response()->json([
                 'message' => 'Section tidak dikenal',
                 'sections' => array_keys($map),
@@ -94,7 +94,7 @@ class SetAkunController extends Controller
     public function update(Request $request, string $section)
     {
         $map = $this->sectionMap();
-        if (!isset($map[$section])) {
+        if (! isset($map[$section])) {
             return response()->json([
                 'message' => 'Section tidak dikenal',
                 'sections' => array_keys($map),
@@ -103,7 +103,7 @@ class SetAkunController extends Controller
 
         /** @var Model $model */
         $modelClass = $map[$section]['model'];
-        $model = new $modelClass();
+        $model = new $modelClass;
         $fillable = $model->getFillable();
 
         // Bangun rules validasi: kd_rek boleh nullable, max 15, dan harus exists di rekening
@@ -138,6 +138,7 @@ class SetAkunController extends Controller
         DB::table($table)->update($payload);
 
         $fresh = DB::table($table)->first();
+
         return response()->json([
             'message' => 'Konfigurasi berhasil diperbarui',
             'section' => $section,
@@ -176,11 +177,11 @@ class SetAkunController extends Controller
     protected function sectionMap(): array
     {
         return [
-            'umum' => [ 'model' => SetAkun::class, 'table' => 'set_akun' ],
-            'umum2' => [ 'model' => SetAkun2::class, 'table' => 'set_akun2' ],
-            'ralan' => [ 'model' => SetAkunRalan::class, 'table' => 'set_akun_ralan' ],
-            'ranap' => [ 'model' => SetAkunRanap::class, 'table' => 'set_akun_ranap' ],
-            'ranap2' => [ 'model' => SetAkunRanap2::class, 'table' => 'set_akun_ranap2' ],
+            'umum' => ['model' => SetAkun::class, 'table' => 'set_akun'],
+            'umum2' => ['model' => SetAkun2::class, 'table' => 'set_akun2'],
+            'ralan' => ['model' => SetAkunRalan::class, 'table' => 'set_akun_ralan'],
+            'ranap' => ['model' => SetAkunRanap::class, 'table' => 'set_akun_ranap'],
+            'ranap2' => ['model' => SetAkunRanap2::class, 'table' => 'set_akun_ranap2'],
         ];
     }
 }

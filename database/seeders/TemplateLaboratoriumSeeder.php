@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\TemplateLaboratorium;
 use App\Models\JnsPerawatanLab;
+use App\Models\TemplateLaboratorium;
+use Illuminate\Database\Seeder;
 
 class TemplateLaboratoriumSeeder extends Seeder
 {
@@ -27,7 +27,7 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => '12.0-16.0 g/dL',
                     'satuan' => 'g/dL',
                     'urutan' => 1,
-                    'status' => 'Aktif'
+                    'status' => 'Aktif',
                 ],
                 [
                     'kd_jenis_prw' => $hematologi->kd_jenis_prw,
@@ -36,7 +36,7 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => '37-47%',
                     'satuan' => '%',
                     'urutan' => 2,
-                    'status' => 'Aktif'
+                    'status' => 'Aktif',
                 ],
                 [
                     'kd_jenis_prw' => $hematologi->kd_jenis_prw,
@@ -45,7 +45,7 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => '4.0-5.5 juta/μL',
                     'satuan' => 'juta/μL',
                     'urutan' => 3,
-                    'status' => 'Aktif'
+                    'status' => 'Aktif',
                 ],
                 [
                     'kd_jenis_prw' => $hematologi->kd_jenis_prw,
@@ -54,7 +54,7 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => '4.000-11.000/μL',
                     'satuan' => '/μL',
                     'urutan' => 4,
-                    'status' => 'Aktif'
+                    'status' => 'Aktif',
                 ],
                 [
                     'kd_jenis_prw' => $hematologi->kd_jenis_prw,
@@ -63,7 +63,7 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => '150.000-450.000/μL',
                     'satuan' => '/μL',
                     'urutan' => 5,
-                    'status' => 'Aktif'
+                    'status' => 'Aktif',
                 ],
                 [
                     'kd_jenis_prw' => $hematologi->kd_jenis_prw,
@@ -72,8 +72,8 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => '0-20 mm/jam',
                     'satuan' => 'mm/jam',
                     'urutan' => 6,
-                    'status' => 'Aktif'
-                ]
+                    'status' => 'Aktif',
+                ],
             ];
 
             foreach ($hematologiTemplates as $template) {
@@ -95,7 +95,7 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => '<200 mg/dL',
                     'satuan' => 'mg/dL',
                     'urutan' => 1,
-                    'status' => 'Aktif'
+                    'status' => 'Aktif',
                 ],
                 [
                     'kd_jenis_prw' => $kimia->kd_jenis_prw,
@@ -104,7 +104,7 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => '70-100 mg/dL',
                     'satuan' => 'mg/dL',
                     'urutan' => 2,
-                    'status' => 'Aktif'
+                    'status' => 'Aktif',
                 ],
                 [
                     'kd_jenis_prw' => $kimia->kd_jenis_prw,
@@ -113,7 +113,7 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => '<200 mg/dL',
                     'satuan' => 'mg/dL',
                     'urutan' => 3,
-                    'status' => 'Aktif'
+                    'status' => 'Aktif',
                 ],
                 [
                     'kd_jenis_prw' => $kimia->kd_jenis_prw,
@@ -122,7 +122,7 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => '<150 mg/dL',
                     'satuan' => 'mg/dL',
                     'urutan' => 4,
-                    'status' => 'Aktif'
+                    'status' => 'Aktif',
                 ],
                 [
                     'kd_jenis_prw' => $kimia->kd_jenis_prw,
@@ -131,7 +131,7 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => '>50 mg/dL',
                     'satuan' => 'mg/dL',
                     'urutan' => 5,
-                    'status' => 'Aktif'
+                    'status' => 'Aktif',
                 ],
                 [
                     'kd_jenis_prw' => $kimia->kd_jenis_prw,
@@ -140,8 +140,8 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => '<100 mg/dL',
                     'satuan' => 'mg/dL',
                     'urutan' => 6,
-                    'status' => 'Aktif'
-                ]
+                    'status' => 'Aktif',
+                ],
             ];
 
             foreach ($kimiaTemplates as $template) {
@@ -164,7 +164,7 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => '10-50 mg/dL',
                     'satuan' => 'mg/dL',
                     'urutan' => 1,
-                    'status' => 'Aktif'
+                    'status' => 'Aktif',
                 ],
                 [
                     'kd_jenis_prw' => $ginjal->kd_jenis_prw,
@@ -173,7 +173,7 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => '0.6-1.1 mg/dL',
                     'satuan' => 'mg/dL',
                     'urutan' => 2,
-                    'status' => 'Aktif'
+                    'status' => 'Aktif',
                 ],
                 [
                     'kd_jenis_prw' => $ginjal->kd_jenis_prw,
@@ -182,8 +182,8 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => '2.6-6.0 mg/dL',
                     'satuan' => 'mg/dL',
                     'urutan' => 3,
-                    'status' => 'Aktif'
-                ]
+                    'status' => 'Aktif',
+                ],
             ];
 
             foreach ($ginjalTemplates as $template) {
@@ -206,7 +206,7 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => '<31 U/L',
                     'satuan' => 'U/L',
                     'urutan' => 1,
-                    'status' => 'Aktif'
+                    'status' => 'Aktif',
                 ],
                 [
                     'kd_jenis_prw' => $hati->kd_jenis_prw,
@@ -215,7 +215,7 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => '<33 U/L',
                     'satuan' => 'U/L',
                     'urutan' => 2,
-                    'status' => 'Aktif'
+                    'status' => 'Aktif',
                 ],
                 [
                     'kd_jenis_prw' => $hati->kd_jenis_prw,
@@ -224,7 +224,7 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => '0.2-1.2 mg/dL',
                     'satuan' => 'mg/dL',
                     'urutan' => 3,
-                    'status' => 'Aktif'
+                    'status' => 'Aktif',
                 ],
                 [
                     'kd_jenis_prw' => $hati->kd_jenis_prw,
@@ -233,8 +233,8 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => '0.0-0.3 mg/dL',
                     'satuan' => 'mg/dL',
                     'urutan' => 4,
-                    'status' => 'Aktif'
-                ]
+                    'status' => 'Aktif',
+                ],
             ];
 
             foreach ($hatiTemplates as $template) {
@@ -256,7 +256,7 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => 'Kuning jernih',
                     'satuan' => '',
                     'urutan' => 1,
-                    'status' => 'Aktif'
+                    'status' => 'Aktif',
                 ],
                 [
                     'kd_jenis_prw' => $urin->kd_jenis_prw,
@@ -265,7 +265,7 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => 'Jernih',
                     'satuan' => '',
                     'urutan' => 2,
-                    'status' => 'Aktif'
+                    'status' => 'Aktif',
                 ],
                 [
                     'kd_jenis_prw' => $urin->kd_jenis_prw,
@@ -274,7 +274,7 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => 'Negatif',
                     'satuan' => '',
                     'urutan' => 3,
-                    'status' => 'Aktif'
+                    'status' => 'Aktif',
                 ],
                 [
                     'kd_jenis_prw' => $urin->kd_jenis_prw,
@@ -283,7 +283,7 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => 'Negatif',
                     'satuan' => '',
                     'urutan' => 4,
-                    'status' => 'Aktif'
+                    'status' => 'Aktif',
                 ],
                 [
                     'kd_jenis_prw' => $urin->kd_jenis_prw,
@@ -292,7 +292,7 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => '0-2/lpb',
                     'satuan' => '/lpb',
                     'urutan' => 5,
-                    'status' => 'Aktif'
+                    'status' => 'Aktif',
                 ],
                 [
                     'kd_jenis_prw' => $urin->kd_jenis_prw,
@@ -301,8 +301,8 @@ class TemplateLaboratoriumSeeder extends Seeder
                     'nilai_rujukan_wanita' => '0-5/lpb',
                     'satuan' => '/lpb',
                     'urutan' => 6,
-                    'status' => 'Aktif'
-                ]
+                    'status' => 'Aktif',
+                ],
             ];
 
             foreach ($urinTemplates as $template) {

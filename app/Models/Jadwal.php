@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Jadwal extends Model
 {
     protected $table = 'jadwal';
+
     public $timestamps = false;
 
     // Composite primary key tidak didukung langsung oleh Eloquent,

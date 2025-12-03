@@ -2,19 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PermintaanRadiologi;
-use App\Models\PermintaanPemeriksaanRadiologi;
-use App\Models\JnsPerawatanRadiologi;
-use App\Models\RegPeriksa;
 use App\Models\Dokter;
-use App\Models\Patient;
-use Illuminate\Http\Request;
+use App\Models\JnsPerawatanRadiologi;
+use App\Models\PermintaanPemeriksaanRadiologi;
+use App\Models\PermintaanRadiologi;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
-use Carbon\Carbon;
 
 class PermintaanRadiologiController extends Controller
 {
@@ -43,22 +40,22 @@ class PermintaanRadiologiController extends Controller
         // Search berdasarkan no_rawat atau nama pasien
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('no_rawat', 'like', "%{$search}%")
-                  ->orWhere('noorder', 'like', "%{$search}%")
-                  ->orWhereHas('regPeriksa.patient', function($q) use ($search) {
-                      $q->where('nm_pasien', 'like', "%{$search}%");
-                  });
+                    ->orWhere('noorder', 'like', "%{$search}%")
+                    ->orWhereHas('regPeriksa.patient', function ($q) use ($search) {
+                        $q->where('nm_pasien', 'like', "%{$search}%");
+                    });
             });
         }
 
         $permintaanRadiologi = $query->orderBy('tgl_permintaan', 'desc')
-                                    ->orderBy('jam_permintaan', 'desc')
-                                    ->paginate(15);
+            ->orderBy('jam_permintaan', 'desc')
+            ->paginate(15);
 
         return Inertia::render('PermintaanRadiologi/Index', [
             'permintaanRadiologi' => $permintaanRadiologi,
-            'filters' => $request->only(['tanggal', 'status', 'dokter', 'search'])
+            'filters' => $request->only(['tanggal', 'status', 'dokter', 'search']),
         ]);
     }
 
@@ -72,7 +69,7 @@ class PermintaanRadiologiController extends Controller
         if (isset($requestData['no_rawat'])) {
             $requestData['no_rawat'] = urldecode($requestData['no_rawat']);
         }
-        
+
         $validator = Validator::make($requestData, [
             'no_rawat' => 'required|string|max:17|exists:reg_periksa,no_rawat',
             'tgl_permintaan' => 'required|date',
@@ -94,14 +91,14 @@ class PermintaanRadiologiController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Validasi gagal',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
         DB::beginTransaction();
         try {
             $data = $validator->validated();
-            
+
             // Set default values untuk sampel dan hasil
             $data['tgl_sampel'] = $data['tgl_sampel'] ?? '0000-00-00';
             $data['jam_sampel'] = $data['jam_sampel'] ?? '00:00:00';
@@ -133,25 +130,26 @@ class PermintaanRadiologiController extends Controller
             }
 
             DB::commit();
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Permintaan radiologi berhasil dibuat',
                 'data' => [
                     'noorder' => $permintaanRadiologi->noorder,
-                    'no_rawat' => $permintaanRadiologi->no_rawat
-                ]
+                    'no_rawat' => $permintaanRadiologi->no_rawat,
+                ],
             ]);
         } catch (\Exception $e) {
             DB::rollback();
-            Log::error('PermintaanRadiologiController store error: ' . $e->getMessage(), [
+            Log::error('PermintaanRadiologiController store error: '.$e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menyimpan permintaan radiologi: ' . $e->getMessage()
+                'message' => 'Gagal menyimpan permintaan radiologi: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -162,11 +160,11 @@ class PermintaanRadiologiController extends Controller
     public function show(string $noorder)
     {
         $permintaanRadiologi = PermintaanRadiologi::with(['regPeriksa.patient', 'dokter', 'detailPermintaan.jenisPerawatan'])
-                                                 ->findOrFail($noorder);
+            ->findOrFail($noorder);
 
         return response()->json([
             'success' => true,
-            'data' => $permintaanRadiologi
+            'data' => $permintaanRadiologi,
         ]);
     }
 
@@ -193,14 +191,14 @@ class PermintaanRadiologiController extends Controller
             'jam_hasil' => 'nullable|date_format:H:i',
             'status' => 'required|in:ralan,ranap',
             'informasi_tambahan' => 'nullable|string|max:60',
-            'diagnosa_klinis' => 'required|string|max:80'
+            'diagnosa_klinis' => 'required|string|max:80',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validasi gagal',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -211,17 +209,18 @@ class PermintaanRadiologiController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Permintaan radiologi berhasil diperbarui',
-                'data' => $permintaanRadiologi
+                'data' => $permintaanRadiologi,
             ]);
         } catch (\Exception $e) {
-            Log::error('PermintaanRadiologiController update error: ' . $e->getMessage(), [
+            Log::error('PermintaanRadiologiController update error: '.$e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal memperbarui permintaan radiologi: ' . $e->getMessage()
+                'message' => 'Gagal memperbarui permintaan radiologi: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -239,28 +238,28 @@ class PermintaanRadiologiController extends Controller
             if (request()->ajax() || request()->wantsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Permintaan radiologi berhasil dihapus'
+                    'message' => 'Permintaan radiologi berhasil dihapus',
                 ]);
             }
 
             return redirect()->route('permintaan-radiologi.index')
-                           ->with('success', 'Permintaan radiologi berhasil dihapus');
+                ->with('success', 'Permintaan radiologi berhasil dihapus');
         } catch (\Exception $e) {
-            Log::error('PermintaanRadiologiController destroy error: ' . $e->getMessage(), [
+            Log::error('PermintaanRadiologiController destroy error: '.$e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             if (request()->ajax() || request()->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Gagal menghapus permintaan radiologi: ' . $e->getMessage()
+                    'message' => 'Gagal menghapus permintaan radiologi: '.$e->getMessage(),
                 ], 500);
             }
 
             return redirect()->back()
-                           ->withErrors(['error' => 'Gagal menghapus permintaan radiologi: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'Gagal menghapus permintaan radiologi: '.$e->getMessage()]);
         }
     }
 
@@ -294,18 +293,19 @@ class PermintaanRadiologiController extends Controller
                 'bagian_rs',
                 'tarif_perujuk',
                 'tarif_tindakan_dokter',
-                'tarif_tindakan_petugas'
+                'tarif_tindakan_petugas',
             ])->get();
 
             return response()->json([
                 'success' => true,
-                'data' => $jenisPerawatan
+                'data' => $jenisPerawatan,
             ]);
         } catch (\Exception $e) {
-            Log::error('PermintaanRadiologiController getJenisPerawatan error: ' . $e->getMessage());
+            Log::error('PermintaanRadiologiController getJenisPerawatan error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil data jenis perawatan radiologi'
+                'message' => 'Gagal mengambil data jenis perawatan radiologi',
             ], 500);
         }
     }
@@ -326,7 +326,7 @@ class PermintaanRadiologiController extends Controller
                 ->exists();
 
             $noorderDiBilling = [];
-            
+
             if ($hasSnapshotBilling) {
                 // Jika sudah ada snapshot billing, ambil hanya noorder yang ada di billing dengan status 'Radiologi'
                 $noorderDiBilling = DB::table('billing')
@@ -360,8 +360,8 @@ class PermintaanRadiologiController extends Controller
             // Filter permintaan radiologi berdasarkan noorder yang ada di billing/preview
             $query = PermintaanRadiologi::with(['regPeriksa.patient', 'dokter', 'detailPermintaan.jenisPerawatan'])
                 ->where('no_rawat', $decodedNoRawat);
-            
-            if (!empty($noorderDiBilling)) {
+
+            if (! empty($noorderDiBilling)) {
                 // Hanya tampilkan permintaan radiologi yang noorder-nya ada di billing/preview
                 $query->whereIn('noorder', $noorderDiBilling);
             } else {
@@ -373,12 +373,12 @@ class PermintaanRadiologiController extends Controller
                     'message' => 'Tidak ada permintaan radiologi yang sesuai dengan tagihan nota',
                 ]);
             }
-            
+
             $permintaanList = $query
                 ->orderBy('tgl_permintaan', 'desc')
                 ->orderBy('jam_permintaan', 'desc')
                 ->get()
-                ->map(function($permintaan) {
+                ->map(function ($permintaan) {
                     return [
                         'noorder' => $permintaan->noorder,
                         'no_rawat' => $permintaan->no_rawat,
@@ -400,29 +400,30 @@ class PermintaanRadiologiController extends Controller
                             'kd_dokter' => $permintaan->dokter->kd_dokter ?? '',
                             'nm_dokter' => $permintaan->dokter->nm_dokter ?? '',
                         ],
-                        'pemeriksaan' => $permintaan->detailPermintaan->map(function($detail) {
+                        'pemeriksaan' => $permintaan->detailPermintaan->map(function ($detail) {
                             return [
                                 'kd_jenis_prw' => $detail->kd_jenis_prw,
                                 'stts_bayar' => $detail->stts_bayar,
                                 'jns_perawatan_radiologi' => [
                                     'nm_perawatan' => $detail->jenisPerawatan->nm_perawatan ?? '',
                                     'total_byr' => $detail->jenisPerawatan->total_byr ?? 0,
-                                ]
+                                ],
                             ];
-                        })
+                        }),
                     ];
                 });
 
             return response()->json([
                 'success' => true,
-                'data' => $permintaanList
+                'data' => $permintaanList,
             ]);
 
         } catch (\Exception $e) {
-            Log::error('PermintaanRadiologiController getByNoRawat error: ' . $e->getMessage());
+            Log::error('PermintaanRadiologiController getByNoRawat error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil data permintaan radiologi'
+                'message' => 'Gagal mengambil data permintaan radiologi',
             ], 500);
         }
     }
@@ -434,22 +435,22 @@ class PermintaanRadiologiController extends Controller
     {
         try {
             $riwayatPermintaan = PermintaanRadiologi::with([
-                'detailPermintaan.jnsPerawatanRadiologi'
+                'detailPermintaan.jnsPerawatanRadiologi',
             ])
-            ->where('no_rawat', $noRawat)
-            ->orderBy('tgl_permintaan', 'desc')
-            ->orderBy('jam_permintaan', 'desc')
-            ->get();
+                ->where('no_rawat', $noRawat)
+                ->orderBy('tgl_permintaan', 'desc')
+                ->orderBy('jam_permintaan', 'desc')
+                ->get();
 
             return response()->json([
                 'success' => true,
-                'data' => $riwayatPermintaan
+                'data' => $riwayatPermintaan,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil riwayat permintaan: ' . $e->getMessage()
+                'message' => 'Gagal mengambil riwayat permintaan: '.$e->getMessage(),
             ], 500);
         }
     }

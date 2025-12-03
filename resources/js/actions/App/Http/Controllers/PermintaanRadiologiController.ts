@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::getJenisPerawatan
-* @see app/Http/Controllers/PermintaanRadiologiController.php:270
+* @see app/Http/Controllers/PermintaanRadiologiController.php:269
 * @route '/api/radiologi-tests'
 */
 export const getJenisPerawatan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ getJenisPerawatan.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::getJenisPerawatan
-* @see app/Http/Controllers/PermintaanRadiologiController.php:270
+* @see app/Http/Controllers/PermintaanRadiologiController.php:269
 * @route '/api/radiologi-tests'
 */
 getJenisPerawatan.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ getJenisPerawatan.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::getJenisPerawatan
-* @see app/Http/Controllers/PermintaanRadiologiController.php:270
+* @see app/Http/Controllers/PermintaanRadiologiController.php:269
 * @route '/api/radiologi-tests'
 */
 getJenisPerawatan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ getJenisPerawatan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> =>
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::getJenisPerawatan
-* @see app/Http/Controllers/PermintaanRadiologiController.php:270
+* @see app/Http/Controllers/PermintaanRadiologiController.php:269
 * @route '/api/radiologi-tests'
 */
 getJenisPerawatan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ getJenisPerawatan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> 
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::store
-* @see app/Http/Controllers/PermintaanRadiologiController.php:68
+* @see app/Http/Controllers/PermintaanRadiologiController.php:65
 * @route '/api/permintaan-radiologi'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +60,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::store
-* @see app/Http/Controllers/PermintaanRadiologiController.php:68
+* @see app/Http/Controllers/PermintaanRadiologiController.php:65
 * @route '/api/permintaan-radiologi'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::store
-* @see app/Http/Controllers/PermintaanRadiologiController.php:68
+* @see app/Http/Controllers/PermintaanRadiologiController.php:65
 * @route '/api/permintaan-radiologi'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -141,7 +141,7 @@ getByNoRawat.head = (args: { no_rawat: string | number } | [no_rawat: string | n
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::getRiwayat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:433
+* @see app/Http/Controllers/PermintaanRadiologiController.php:434
 * @route '/api/permintaan-radiologi/riwayat/{no_rawat}'
 */
 export const getRiwayat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -156,7 +156,7 @@ getRiwayat.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::getRiwayat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:433
+* @see app/Http/Controllers/PermintaanRadiologiController.php:434
 * @route '/api/permintaan-radiologi/riwayat/{no_rawat}'
 */
 getRiwayat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -183,7 +183,7 @@ getRiwayat.url = (args: { no_rawat: string | number } | [no_rawat: string | numb
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::getRiwayat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:433
+* @see app/Http/Controllers/PermintaanRadiologiController.php:434
 * @route '/api/permintaan-radiologi/riwayat/{no_rawat}'
 */
 getRiwayat.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -193,7 +193,7 @@ getRiwayat.get = (args: { no_rawat: string | number } | [no_rawat: string | numb
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::getRiwayat
-* @see app/Http/Controllers/PermintaanRadiologiController.php:433
+* @see app/Http/Controllers/PermintaanRadiologiController.php:434
 * @route '/api/permintaan-radiologi/riwayat/{no_rawat}'
 */
 getRiwayat.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -203,7 +203,7 @@ getRiwayat.head = (args: { no_rawat: string | number } | [no_rawat: string | num
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::destroy
-* @see app/Http/Controllers/PermintaanRadiologiController.php:232
+* @see app/Http/Controllers/PermintaanRadiologiController.php:231
 * @route '/api/permintaan-radiologi/{noorder}'
 */
 export const destroy = (args: { noorder: string | number } | [noorder: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -218,7 +218,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::destroy
-* @see app/Http/Controllers/PermintaanRadiologiController.php:232
+* @see app/Http/Controllers/PermintaanRadiologiController.php:231
 * @route '/api/permintaan-radiologi/{noorder}'
 */
 destroy.url = (args: { noorder: string | number } | [noorder: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -245,7 +245,7 @@ destroy.url = (args: { noorder: string | number } | [noorder: string | number ] 
 
 /**
 * @see \App\Http\Controllers\PermintaanRadiologiController::destroy
-* @see app/Http/Controllers/PermintaanRadiologiController.php:232
+* @see app/Http/Controllers/PermintaanRadiologiController.php:231
 * @route '/api/permintaan-radiologi/{noorder}'
 */
 destroy.delete = (args: { noorder: string | number } | [noorder: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

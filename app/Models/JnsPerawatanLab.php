@@ -10,9 +10,13 @@ class JnsPerawatanLab extends Model
     use HasFactory;
 
     protected $table = 'jns_perawatan_lab';
+
     protected $primaryKey = 'kd_jenis_prw';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -29,7 +33,7 @@ class JnsPerawatanLab extends Model
         'kd_pj',
         'status',
         'kelas',
-        'kategori'
+        'kategori',
     ];
 
     protected $casts = [
@@ -46,17 +50,17 @@ class JnsPerawatanLab extends Model
     // Accessor untuk format mata uang
     public function getTotalByrFormattedAttribute()
     {
-        return 'Rp ' . number_format($this->total_byr, 0, ',', '.');
+        return 'Rp '.number_format($this->total_byr, 0, ',', '.');
     }
 
     public function getBagianRsFormattedAttribute()
     {
-        return 'Rp ' . number_format($this->bagian_rs, 0, ',', '.');
+        return 'Rp '.number_format($this->bagian_rs, 0, ',', '.');
     }
 
     public function getTarifPerujukFormattedAttribute()
     {
-        return 'Rp ' . number_format($this->tarif_perujuk, 0, ',', '.');
+        return 'Rp '.number_format($this->tarif_perujuk, 0, ',', '.');
     }
 
     // Scope untuk status aktif
@@ -103,15 +107,15 @@ class JnsPerawatanLab extends Model
             ->orderBy('kd_jenis_prw', 'desc')
             ->first();
 
-        if (!$last) {
+        if (! $last) {
             return 'LA000001';
         }
 
         // Ekstrak angka dan increment
         $lastCode = $last->kd_jenis_prw;
-        $number = (int)substr($lastCode, 2);
+        $number = (int) substr($lastCode, 2);
         $next = $number + 1;
 
-        return 'LA' . str_pad((string)$next, 6, '0', STR_PAD_LEFT);
+        return 'LA'.str_pad((string) $next, 6, '0', STR_PAD_LEFT);
     }
 }

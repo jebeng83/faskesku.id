@@ -2,11 +2,11 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\PremiumModuleService;
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
-use App\Services\PremiumModuleService;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response;
 
 class PremiumModuleMiddleware
 {
@@ -25,7 +25,7 @@ class PremiumModuleMiddleware
     public function handle(Request $request, Closure $next, string $moduleKey): Response
     {
         // Check if module is active
-        if (!$this->premiumService->isModuleActive($moduleKey)) {
+        if (! $this->premiumService->isModuleActive($moduleKey)) {
             // Log unauthorized access attempt
             Log::warning("Unauthorized access to premium module: {$moduleKey}", [
                 'ip' => $request->ip(),
@@ -40,7 +40,7 @@ class PremiumModuleMiddleware
                     'success' => false,
                     'message' => 'Premium module required. Please purchase and activate the module to access this feature.',
                     'module_key' => $moduleKey,
-                    'error_code' => 'PREMIUM_MODULE_REQUIRED'
+                    'error_code' => 'PREMIUM_MODULE_REQUIRED',
                 ], 403);
             }
 

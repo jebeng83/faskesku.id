@@ -10,9 +10,13 @@ class Doctor extends Model
     use HasFactory;
 
     protected $table = 'dokter';
+
     protected $primaryKey = 'kd_dokter';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [

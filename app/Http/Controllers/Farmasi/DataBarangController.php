@@ -20,7 +20,7 @@ class DataBarangController extends Controller
                 'dasar', 'h_beli',
                 'ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan',
                 'stokminimal', 'status', 'letak_barang', 'isi', 'kapasitas', 'kdjns', 'expire',
-                'kode_industri', 'kode_kategori', 'kode_golongan'
+                'kode_industri', 'kode_kategori', 'kode_golongan',
             ])
             ->when($q, function ($query) use ($q) {
                 $query->where(function ($q2) use ($q) {
@@ -34,9 +34,10 @@ class DataBarangController extends Controller
         // If client expects JSON (selector/autocomplete), return lightweight list
         if ($request->wantsJson()) {
             $items = $itemsQuery->limit(50)->get();
+
             return response()->json([
                 'items' => $items,
-                'filters' => [ 'q' => $q, 'perPage' => $perPage ],
+                'filters' => ['q' => $q, 'perPage' => $perPage],
             ]);
         }
 
@@ -68,7 +69,7 @@ class DataBarangController extends Controller
         // Ambil kode terakhir secara descending; gunakan pola huruf + angka
         $latest = DB::table('databarang')->select('kode_brng')->orderBy('kode_brng', 'desc')->first();
         // Jika belum ada data, mulai dari A000000000
-        if (!$latest || empty($latest->kode_brng)) {
+        if (! $latest || empty($latest->kode_brng)) {
             return 'A000000000';
         }
 
@@ -80,8 +81,9 @@ class DataBarangController extends Controller
             $num = (int) $numStr;
             $width = strlen($numStr);
             $nextNum = (string) ($num + 1);
+
             // str_pad tidak akan memangkas jika nextNum lebih panjang dari width
-            return $prefix . str_pad($nextNum, $width, '0', STR_PAD_LEFT);
+            return $prefix.str_pad($nextNum, $width, '0', STR_PAD_LEFT);
         }
 
         // Jika hanya angka di akhir dengan prefix tidak jelas, gunakan prefix 'A'
@@ -89,7 +91,8 @@ class DataBarangController extends Controller
             $numStr = $m[1] ?? '0';
             $num = (int) $numStr;
             $width = strlen($numStr);
-            return 'A' . str_pad((string) ($num + 1), $width, '0', STR_PAD_LEFT);
+
+            return 'A'.str_pad((string) ($num + 1), $width, '0', STR_PAD_LEFT);
         }
 
         // Fallback default
@@ -185,8 +188,9 @@ class DataBarangController extends Controller
     public function destroy(string $kode_brng)
     {
         DB::table('databarang')->where('kode_brng', $kode_brng)->delete();
+
         return redirect()->route('farmasi.data-obat')->with('success', 'Data obat berhasil dihapus.');
-}
+    }
 
     /**
      * Bulk update seluruh harga jual pada tabel databarang sesuai konfigurasi set_harga_obat
@@ -206,14 +210,14 @@ class DataBarangController extends Controller
         $persenUmum = null;
         if ($setharga === 'Umum') {
             $persenUmum = DB::table('setpenjualanumum')->select(
-                'ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan'
+                'ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan'
             )->first();
         }
 
         // Ambil semua barang
         $items = DB::table('databarang')->select([
-            'kode_brng','dasar','h_beli','kdjns'
-        ])->orderBy('kode_brng','asc')->get();
+            'kode_brng', 'dasar', 'h_beli', 'kdjns',
+        ])->orderBy('kode_brng', 'asc')->get();
 
         $updated = 0;
         foreach ($items as $it) {
@@ -222,44 +226,47 @@ class DataBarangController extends Controller
             if ($setharga === 'Umum') {
                 $persen = $persenUmum;
             } elseif ($setharga === 'Per Jenis') {
-                if (!empty($it->kdjns)) {
+                if (! empty($it->kdjns)) {
                     $persen = DB::table('setpenjualan')->select(
-                        'ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan'
+                        'ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan'
                     )->where('kdjns', $it->kdjns)->first();
                 }
             } elseif ($setharga === 'Per Barang') {
                 $persen = DB::table('setpenjualanperbarang')->select(
-                    'ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan'
+                    'ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan'
                 )->where('kode_brng', $it->kode_brng)->first();
             }
 
             // Fallback jika tidak ada persentase: gunakan 0% agar tidak mengubah harga
             $ps = [
-                'ralan' => (float)($persen->ralan ?? 0),
-                'kelas1' => (float)($persen->kelas1 ?? 0),
-                'kelas2' => (float)($persen->kelas2 ?? 0),
-                'kelas3' => (float)($persen->kelas3 ?? 0),
-                'utama' => (float)($persen->utama ?? 0),
-                'vip' => (float)($persen->vip ?? 0),
-                'vvip' => (float)($persen->vvip ?? 0),
-                'beliluar' => (float)($persen->beliluar ?? 0),
-                'jualbebas' => (float)($persen->jualbebas ?? 0),
-                'karyawan' => (float)($persen->karyawan ?? 0),
+                'ralan' => (float) ($persen->ralan ?? 0),
+                'kelas1' => (float) ($persen->kelas1 ?? 0),
+                'kelas2' => (float) ($persen->kelas2 ?? 0),
+                'kelas3' => (float) ($persen->kelas3 ?? 0),
+                'utama' => (float) ($persen->utama ?? 0),
+                'vip' => (float) ($persen->vip ?? 0),
+                'vvip' => (float) ($persen->vvip ?? 0),
+                'beliluar' => (float) ($persen->beliluar ?? 0),
+                'jualbebas' => (float) ($persen->jualbebas ?? 0),
+                'karyawan' => (float) ($persen->karyawan ?? 0),
             ];
 
             // Pilih harga dasar
             $base = 0.0;
             if ($hargadasar === 'Harga Beli') {
-                $base = (float)($it->h_beli ?? $it->dasar ?? 0);
+                $base = (float) ($it->h_beli ?? $it->dasar ?? 0);
             } else {
                 // Harga Diskon: pakai kolom dasar sebagai fallback jika tidak ada kolom diskon terpisah
-                $base = (float)($it->dasar ?? $it->h_beli ?? 0);
+                $base = (float) ($it->dasar ?? $it->h_beli ?? 0);
             }
 
             // Hitung harga jual untuk setiap kunci
             $apply = function (float $b, float $percent) use ($ppn): float {
                 $harga = $b * (1.0 + ($percent / 100.0));
-                if ($ppn === 'Yes') { $harga *= 1.11; }
+                if ($ppn === 'Yes') {
+                    $harga *= 1.11;
+                }
+
                 // bulatkan 2 desimal
                 return round($harga, 2);
             };

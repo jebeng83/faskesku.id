@@ -124,7 +124,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::show
-* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:117
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:118
 * @route '/jenjang-jabatan/{kode}'
 */
 export const show = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -139,7 +139,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::show
-* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:117
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:118
 * @route '/jenjang-jabatan/{kode}'
 */
 show.url = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -166,7 +166,7 @@ show.url = (args: { kode: string | number } | [kode: string | number ] | string 
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::show
-* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:117
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:118
 * @route '/jenjang-jabatan/{kode}'
 */
 show.get = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -176,7 +176,7 @@ show.get = (args: { kode: string | number } | [kode: string | number ] | string 
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::show
-* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:117
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:118
 * @route '/jenjang-jabatan/{kode}'
 */
 show.head = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -186,7 +186,7 @@ show.head = (args: { kode: string | number } | [kode: string | number ] | string
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::edit
-* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:129
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:130
 * @route '/jenjang-jabatan/{kode}/edit'
 */
 export const edit = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -201,7 +201,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::edit
-* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:129
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:130
 * @route '/jenjang-jabatan/{kode}/edit'
 */
 edit.url = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -228,7 +228,7 @@ edit.url = (args: { kode: string | number } | [kode: string | number ] | string 
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::edit
-* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:129
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:130
 * @route '/jenjang-jabatan/{kode}/edit'
 */
 edit.get = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -238,7 +238,7 @@ edit.get = (args: { kode: string | number } | [kode: string | number ] | string 
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::edit
-* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:129
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:130
 * @route '/jenjang-jabatan/{kode}/edit'
 */
 edit.head = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -248,7 +248,7 @@ edit.head = (args: { kode: string | number } | [kode: string | number ] | string
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::update
-* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:141
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:142
 * @route '/jenjang-jabatan/{kode}'
 */
 export const update = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -263,7 +263,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::update
-* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:141
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:142
 * @route '/jenjang-jabatan/{kode}'
 */
 update.url = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -290,7 +290,7 @@ update.url = (args: { kode: string | number } | [kode: string | number ] | strin
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::update
-* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:141
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:142
 * @route '/jenjang-jabatan/{kode}'
 */
 update.put = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -300,7 +300,7 @@ update.put = (args: { kode: string | number } | [kode: string | number ] | strin
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::destroy
-* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:178
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:179
 * @route '/jenjang-jabatan/{kode}'
 */
 export const destroy = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -315,7 +315,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::destroy
-* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:178
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:179
 * @route '/jenjang-jabatan/{kode}'
 */
 destroy.url = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -342,7 +342,7 @@ destroy.url = (args: { kode: string | number } | [kode: string | number ] | stri
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::destroy
-* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:178
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:179
 * @route '/jenjang-jabatan/{kode}'
 */
 destroy.delete = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

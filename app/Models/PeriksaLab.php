@@ -2,18 +2,22 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
 
 class PeriksaLab extends Model
 {
     use HasFactory;
 
     protected $table = 'periksa_lab';
+
     protected $primaryKey = 'no_rawat';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false; // Tabel tidak memiliki created_at dan updated_at
 
     protected $fillable = [
@@ -33,12 +37,12 @@ class PeriksaLab extends Model
         'biaya',
         'kd_dokter',
         'status',
-        'kategori'
+        'kategori',
     ];
 
     protected $casts = [
         'tgl_periksa' => 'datetime',
-        'jam' => 'datetime:H:i:s'
+        'jam' => 'datetime:H:i:s',
     ];
 
     // Relasi dengan RegPeriksa
@@ -66,7 +70,7 @@ class PeriksaLab extends Model
         // dan longgarkan filter ke tanggal saja untuk menghindari mismatch jam.
         return $this->hasMany(DetailPeriksaLab::class, 'no_rawat', 'no_rawat')
             ->where('kd_jenis_prw', $this->kd_jenis_prw)
-            ->when(!is_null($this->tgl_periksa), function ($q) {
+            ->when(! is_null($this->tgl_periksa), function ($q) {
                 $q->whereDate('tgl_periksa', \Carbon\Carbon::parse($this->tgl_periksa)->toDateString());
             });
     }
@@ -105,7 +109,7 @@ class PeriksaLab extends Model
                 ->orWhere('bagian_perujuk', 'like', "%{$search}%")
                 ->orWhereHas('patient', function ($patientQuery) use ($search) {
                     $patientQuery->where('nm_pasien', 'like', "%{$search}%")
-                                ->orWhere('no_rkm_medis', 'like', "%{$search}%");
+                        ->orWhere('no_rkm_medis', 'like', "%{$search}%");
                 })
                 ->orWhereHas('jenisPerawatan', function ($jenisQuery) use ($search) {
                     $jenisQuery->where('nm_perawatan', 'like', "%{$search}%");
@@ -131,7 +135,7 @@ class PeriksaLab extends Model
         $badges = [
             'Menunggu' => 'warning',
             'Proses' => 'info',
-            'Selesai' => 'success'
+            'Selesai' => 'success',
         ];
 
         return $badges[$this->status] ?? 'secondary';

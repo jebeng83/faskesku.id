@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Akutansi\JurnalController;
+use App\Http\Controllers\Akutansi\NotaJalanController;
 use App\Http\Controllers\API\DokterController;
 use App\Http\Controllers\API\EmployeeController;
 use App\Http\Controllers\API\PatientController as ApiPatientController;
@@ -29,8 +31,6 @@ use App\Http\Controllers\RawatJalan\RawatJalanController;
 use App\Http\Controllers\RawatJalan\ResepController;
 use App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController;
 use App\Http\Controllers\SatuSehat\SatuSehatController;
-use App\Http\Controllers\Akutansi\JurnalController;
-use App\Http\Controllers\Akutansi\NotaJalanController;
 use Illuminate\Support\Facades\Route;
 
 // Public endpoints (tidak memerlukan authentication)
@@ -197,7 +197,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/lokasi', [PembelianController::class, 'getLokasi'])->name('api.pembelian.lokasi');
         Route::get('/akun-bayar', [PembelianController::class, 'getAkunBayar'])->name('api.pembelian.akun-bayar');
         Route::get('/generate-no-faktur', [PembelianController::class, 'generateNoFaktur'])->name('api.pembelian.generate-no-faktur');
-        Route::post('/store', [PembelianController::class, 'store'])->name('api.pembelian.store');
+        Route::post('/store', [\App\Http\Controllers\Farmasi\PembelianController::class, 'store'])->name('api.pembelian.store');
     });
 
     // Barang search endpoint (used by Pembelian Obat page)
@@ -226,22 +226,22 @@ Route::middleware('auth:sanctum')->group(function () {
             ->where('status', '1')
             ->with('employee')
             ->first();
-        
-        if (!$apoteker) {
+
+        if (! $apoteker) {
             return response()->json([
                 'success' => false,
                 'data' => null,
-                'message' => 'Data apoteker tidak ditemukan'
+                'message' => 'Data apoteker tidak ditemukan',
             ]);
         }
-        
+
         return response()->json([
             'success' => true,
             'data' => [
                 'nik' => $apoteker->nik,
                 'nama' => $apoteker->employee->nama ?? '',
                 'no_sip' => $apoteker->no_sip ?? '',
-            ]
+            ],
         ]);
     })->name('api.sip-pegawai.apoteker');
 
@@ -261,6 +261,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         $data = $rows->map(function ($r) use ($now) {
             $days = $r->masa_berlaku ? $now->diffInDays($r->masa_berlaku, false) : null;
+
             return [
                 'nik' => $r->nik,
                 'nama' => $r->employee->nama ?? '',

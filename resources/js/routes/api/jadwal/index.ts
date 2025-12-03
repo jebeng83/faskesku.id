@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\JadwalController::index
-* @see app/Http/Controllers/JadwalController.php:76
+* @see app/Http/Controllers/JadwalController.php:80
 * @route '/api/jadwal'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\JadwalController::index
-* @see app/Http/Controllers/JadwalController.php:76
+* @see app/Http/Controllers/JadwalController.php:80
 * @route '/api/jadwal'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\JadwalController::index
-* @see app/Http/Controllers/JadwalController.php:76
+* @see app/Http/Controllers/JadwalController.php:80
 * @route '/api/jadwal'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\JadwalController::index
-* @see app/Http/Controllers/JadwalController.php:76
+* @see app/Http/Controllers/JadwalController.php:80
 * @route '/api/jadwal'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\JadwalController::store
-* @see app/Http/Controllers/JadwalController.php:128
+* @see app/Http/Controllers/JadwalController.php:132
 * @route '/api/jadwal'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +60,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\JadwalController::store
-* @see app/Http/Controllers/JadwalController.php:128
+* @see app/Http/Controllers/JadwalController.php:132
 * @route '/api/jadwal'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\JadwalController::store
-* @see app/Http/Controllers/JadwalController.php:128
+* @see app/Http/Controllers/JadwalController.php:132
 * @route '/api/jadwal'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -79,7 +79,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\JadwalController::update
-* @see app/Http/Controllers/JadwalController.php:186
+* @see app/Http/Controllers/JadwalController.php:190
 * @route '/api/jadwal'
 */
 export const update = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -94,7 +94,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\JadwalController::update
-* @see app/Http/Controllers/JadwalController.php:186
+* @see app/Http/Controllers/JadwalController.php:190
 * @route '/api/jadwal'
 */
 update.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ update.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\JadwalController::update
-* @see app/Http/Controllers/JadwalController.php:186
+* @see app/Http/Controllers/JadwalController.php:190
 * @route '/api/jadwal'
 */
 update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -113,7 +113,7 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
 /**
 * @see \App\Http\Controllers\JadwalController::destroy
-* @see app/Http/Controllers/JadwalController.php:276
+* @see app/Http/Controllers/JadwalController.php:280
 * @route '/api/jadwal'
 */
 export const destroy = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -128,7 +128,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\JadwalController::destroy
-* @see app/Http/Controllers/JadwalController.php:276
+* @see app/Http/Controllers/JadwalController.php:280
 * @route '/api/jadwal'
 */
 destroy.url = (options?: RouteQueryOptions) => {
@@ -137,7 +137,7 @@ destroy.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\JadwalController::destroy
-* @see app/Http/Controllers/JadwalController.php:276
+* @see app/Http/Controllers/JadwalController.php:280
 * @route '/api/jadwal'
 */
 destroy.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -147,7 +147,7 @@ destroy.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
 
 /**
 * @see \App\Http\Controllers\JadwalController::hari
-* @see app/Http/Controllers/JadwalController.php:45
+* @see app/Http/Controllers/JadwalController.php:47
 * @route '/api/jadwal/hari'
 */
 export const hari = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -162,7 +162,7 @@ hari.definition = {
 
 /**
 * @see \App\Http\Controllers\JadwalController::hari
-* @see app/Http/Controllers/JadwalController.php:45
+* @see app/Http/Controllers/JadwalController.php:47
 * @route '/api/jadwal/hari'
 */
 hari.url = (options?: RouteQueryOptions) => {
@@ -171,7 +171,7 @@ hari.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\JadwalController::hari
-* @see app/Http/Controllers/JadwalController.php:45
+* @see app/Http/Controllers/JadwalController.php:47
 * @route '/api/jadwal/hari'
 */
 hari.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -181,7 +181,7 @@ hari.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\JadwalController::hari
-* @see app/Http/Controllers/JadwalController.php:45
+* @see app/Http/Controllers/JadwalController.php:47
 * @route '/api/jadwal/hari'
 */
 hari.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

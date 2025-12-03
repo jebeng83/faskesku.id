@@ -2,16 +2,19 @@
 
 namespace App\Models\Akutansi;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Models\RegPeriksa;
+use Illuminate\Database\Eloquent\Model;
 
 class Billing extends Model
 {
     protected $table = 'billing';
+
     // Catatan: tabel billing pada SIMRS Khanza umumnya tidak memiliki PK yang ketat.
     // Kita set ke noindex untuk keperluan baca saja (read-only). Hindari operasi update/delete by model.
     protected $primaryKey = 'noindex';
+
     public $incrementing = false;
+
     public $timestamps = false;
 
     protected $fillable = [

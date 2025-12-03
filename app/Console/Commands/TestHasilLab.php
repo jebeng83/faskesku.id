@@ -29,7 +29,7 @@ class TestHasilLab extends Command
         $noRawat = $this->argument('no_rawat');
         $kdJenisPrw = $this->argument('kd_jenis_prw');
 
-        $this->info("=== Test Hasil Laboratorium ===");
+        $this->info('=== Test Hasil Laboratorium ===');
         $this->info("No. Rawat: {$noRawat}");
         if ($kdJenisPrw) {
             $this->info("Kd. Jenis Prw: {$kdJenisPrw}");
@@ -37,7 +37,7 @@ class TestHasilLab extends Command
         $this->newLine();
 
         // Query 1: Cek semua data di detail_periksa_lab
-        $this->info("1. Semua data di detail_periksa_lab:");
+        $this->info('1. Semua data di detail_periksa_lab:');
         $allData = DB::table('detail_periksa_lab')
             ->where('no_rawat', $noRawat)
             ->when($kdJenisPrw, function ($query) use ($kdJenisPrw) {
@@ -63,11 +63,11 @@ class TestHasilLab extends Command
                 ];
             })
         );
-        $this->info("Total: " . $allData->count());
+        $this->info('Total: '.$allData->count());
         $this->newLine();
 
         // Query 2: Cek duplikasi berdasarkan id_template
-        $this->info("2. Cek duplikasi berdasarkan id_template:");
+        $this->info('2. Cek duplikasi berdasarkan id_template:');
         $duplikasi = DB::table('detail_periksa_lab')
             ->where('no_rawat', $noRawat)
             ->when($kdJenisPrw, function ($query) use ($kdJenisPrw) {
@@ -81,9 +81,9 @@ class TestHasilLab extends Command
             ->get();
 
         if ($duplikasi->isEmpty()) {
-            $this->info("✓ Tidak ada duplikasi berdasarkan id_template");
+            $this->info('✓ Tidak ada duplikasi berdasarkan id_template');
         } else {
-            $this->warn("⚠ Ditemukan duplikasi:");
+            $this->warn('⚠ Ditemukan duplikasi:');
             $this->table(
                 ['ID Template', 'Jumlah'],
                 $duplikasi->map(function ($item) {
@@ -94,7 +94,7 @@ class TestHasilLab extends Command
         $this->newLine();
 
         // Query 3: Query dengan join template (seperti di controller)
-        $this->info("3. Query dengan join template_laboratorium:");
+        $this->info('3. Query dengan join template_laboratorium:');
         $queryWithJoin = DB::table('detail_periksa_lab')
             ->join('template_laboratorium', 'detail_periksa_lab.id_template', '=', 'template_laboratorium.id_template')
             ->where('detail_periksa_lab.no_rawat', $noRawat)
@@ -128,11 +128,11 @@ class TestHasilLab extends Command
                 ];
             })
         );
-        $this->info("Total sebelum unique: " . $queryWithJoin->count());
+        $this->info('Total sebelum unique: '.$queryWithJoin->count());
         $this->newLine();
 
         // Query 4: Query dengan unique berdasarkan id_template
-        $this->info("4. Query setelah unique berdasarkan id_template:");
+        $this->info('4. Query setelah unique berdasarkan id_template:');
         $uniqueResults = $queryWithJoin->unique('id_template')->values();
         $this->table(
             ['ID', 'ID Template', 'Pemeriksaan', 'Tgl Periksa', 'Jam', 'Nilai'],
@@ -147,11 +147,11 @@ class TestHasilLab extends Command
                 ];
             })
         );
-        $this->info("Total setelah unique: " . $uniqueResults->count());
+        $this->info('Total setelah unique: '.$uniqueResults->count());
         $this->newLine();
 
         // Query 5: Query dengan subquery MAX(id) untuk setiap id_template
-        $this->info("5. Query dengan subquery MAX(id) untuk setiap id_template:");
+        $this->info('5. Query dengan subquery MAX(id) untuk setiap id_template:');
         $subqueryResults = DB::table('detail_periksa_lab')
             ->join('template_laboratorium', 'detail_periksa_lab.id_template', '=', 'template_laboratorium.id_template')
             ->where('detail_periksa_lab.no_rawat', $noRawat)
@@ -197,7 +197,7 @@ class TestHasilLab extends Command
                 ];
             })
         );
-        $this->info("Total dengan subquery: " . $subqueryResults->count());
+        $this->info('Total dengan subquery: '.$subqueryResults->count());
         $this->newLine();
 
         return Command::SUCCESS;

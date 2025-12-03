@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\PeriksaLab;
 use App\Models\TemplateLaboratorium;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
 
 class LabInspect extends Command
 {
@@ -31,21 +31,22 @@ class LabInspect extends Command
         $noRawat = $this->argument('no_rawat');
 
         $lab = PeriksaLab::with(['detailPemeriksaan', 'regPeriksa.patient'])->find($noRawat);
-        if (!$lab) {
-            $this->error('PeriksaLab tidak ditemukan untuk no_rawat: ' . $noRawat);
+        if (! $lab) {
+            $this->error('PeriksaLab tidak ditemukan untuk no_rawat: '.$noRawat);
+
             return self::FAILURE;
         }
 
-        $this->info('no_rawat           : ' . $noRawat);
-        $this->info('kd_jenis_prw       : ' . ($lab->kd_jenis_prw ?? '-'));
-        $this->info('jumlah detail      : ' . $lab->detailPemeriksaan->count());
+        $this->info('no_rawat           : '.$noRawat);
+        $this->info('kd_jenis_prw       : '.($lab->kd_jenis_prw ?? '-'));
+        $this->info('jumlah detail      : '.$lab->detailPemeriksaan->count());
 
         $jk = optional($lab->regPeriksa->patient)->jk;
         $umur = optional($lab->regPeriksa->patient)->tgl_lahir
             ? Carbon::parse($lab->regPeriksa->patient->tgl_lahir)->diffInYears(Carbon::parse($lab->tgl_periksa ?? now()))
             : null;
 
-        $this->info('pasien jk/umur     : ' . ($jk ?? '-') . ' / ' . ($umur ?? '-'));
+        $this->info('pasien jk/umur     : '.($jk ?? '-').' / '.($umur ?? '-'));
 
         $this->line('--- TemplateLaboratorium (contoh max 20) ---');
         $templates = TemplateLaboratorium::byJenisPemeriksaan($lab->kd_jenis_prw)
@@ -54,7 +55,7 @@ class LabInspect extends Command
             ->get();
 
         if ($templates->isEmpty()) {
-            $this->warn('Tidak ada template untuk kd_jenis_prw: ' . $lab->kd_jenis_prw);
+            $this->warn('Tidak ada template untuk kd_jenis_prw: '.$lab->kd_jenis_prw);
         } else {
             foreach ($templates as $t) {
                 $nr = $t->getNilaiRujukan($jk, $umur);
@@ -70,4 +71,3 @@ class LabInspect extends Command
         return self::SUCCESS;
     }
 }
-

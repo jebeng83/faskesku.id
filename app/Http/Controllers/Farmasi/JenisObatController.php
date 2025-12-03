@@ -16,7 +16,9 @@ class JenisObatController
     {
         $q = trim($request->input('q', ''));
         $perPage = (int) $request->input('perPage', 10);
-        if ($perPage <= 0) { $perPage = 10; }
+        if ($perPage <= 0) {
+            $perPage = 10;
+        }
 
         // If the client requests JSON (for dropdown/autocomplete), return plain data
         if ($request->wantsJson()) {
@@ -26,8 +28,8 @@ class JenisObatController
             if ($q !== '') {
                 $query->where(function ($w) use ($q) {
                     $w->where('kdjns', 'like', "%$q%")
-                      ->orWhere('nama', 'like', "%$q%")
-                      ->orWhere('keterangan', 'like', "%$q%");
+                        ->orWhere('nama', 'like', "%$q%")
+                        ->orWhere('keterangan', 'like', "%$q%");
                 });
             }
 
@@ -45,8 +47,8 @@ class JenisObatController
         if ($q !== '') {
             $query->where(function ($w) use ($q) {
                 $w->where('kdjns', 'like', "%$q%")
-                  ->orWhere('nama', 'like', "%$q%")
-                  ->orWhere('keterangan', 'like', "%$q%");
+                    ->orWhere('nama', 'like', "%$q%")
+                    ->orWhere('keterangan', 'like', "%$q%");
             });
         }
 
@@ -88,7 +90,7 @@ class JenisObatController
     public function update(Request $request, string $kdjns)
     {
         $exists = DB::table('jenis')->where('kdjns', $kdjns)->exists();
-        if (!$exists) {
+        if (! $exists) {
             return redirect()->route('farmasi.jenis-obat.index')
                 ->with('error', 'Data tidak ditemukan.');
         }
