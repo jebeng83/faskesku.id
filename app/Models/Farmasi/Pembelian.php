@@ -17,4 +17,9 @@ class Pembelian extends Model
     public $timestamps = false;
 
     protected $fillable = ['no_faktur', 'kode_suplier', 'nip', 'tgl_beli', 'total1', 'potongan', 'total2', 'ppn', 'tagihan', 'kd_bangsal', 'kd_rek'];
+
+    public function getConnectionName()
+    {
+        return config('database.default');
+    }
 }

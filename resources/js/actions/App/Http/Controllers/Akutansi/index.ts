@@ -10,6 +10,7 @@ import BukuBesarController from './BukuBesarController'
 import CashFlowController from './CashFlowController'
 import BillingController from './BillingController'
 import RekeningTahunController from './RekeningTahunController'
+import SetoranBankController from './SetoranBankController'
 import DetailNotaJalanController from './DetailNotaJalanController'
 import PiutangPasienController from './PiutangPasienController'
 import DetailPiutangPasienController from './DetailPiutangPasienController'
@@ -28,6 +29,7 @@ const Akutansi = {
     CashFlowController: Object.assign(CashFlowController, CashFlowController),
     BillingController: Object.assign(BillingController, BillingController),
     RekeningTahunController: Object.assign(RekeningTahunController, RekeningTahunController),
+    SetoranBankController: Object.assign(SetoranBankController, SetoranBankController),
     DetailNotaJalanController: Object.assign(DetailNotaJalanController, DetailNotaJalanController),
     PiutangPasienController: Object.assign(PiutangPasienController, PiutangPasienController),
     DetailPiutangPasienController: Object.assign(DetailPiutangPasienController, DetailPiutangPasienController),

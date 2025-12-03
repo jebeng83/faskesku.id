@@ -13,11 +13,11 @@ class BaseInventoryController extends BaseController
     {
         $noBatch = $noBatch ?? '';
         $noFaktur = $noFaktur ?? '';
-        $exists = DB::table('gudangbarang')->where(['kode_brng' => $kodeBrg, 'kd_bangsal' => $kdBangsal, 'no_batch' => $noBatch, 'no_faktur' => $noFaktur])->exists();
+        $exists = DB::connection('fufufafa')->table('gudangbarang')->where(['kode_brng' => $kodeBrg, 'kd_bangsal' => $kdBangsal, 'no_batch' => $noBatch, 'no_faktur' => $noFaktur])->exists();
         if ($exists) {
-            DB::table('gudangbarang')->where(['kode_brng' => $kodeBrg, 'kd_bangsal' => $kdBangsal, 'no_batch' => $noBatch, 'no_faktur' => $noFaktur])->update(['stok' => DB::raw('stok+'.$qty)]);
+            DB::connection('fufufafa')->table('gudangbarang')->where(['kode_brng' => $kodeBrg, 'kd_bangsal' => $kdBangsal, 'no_batch' => $noBatch, 'no_faktur' => $noFaktur])->update(['stok' => DB::raw('stok+'.$qty)]);
         } else {
-            DB::table('gudangbarang')->insert(['kode_brng' => $kodeBrg, 'kd_bangsal' => $kdBangsal, 'stok' => $qty, 'no_batch' => $noBatch, 'no_faktur' => $noFaktur]);
+            DB::connection('fufufafa')->table('gudangbarang')->insert(['kode_brng' => $kodeBrg, 'kd_bangsal' => $kdBangsal, 'stok' => $qty, 'no_batch' => $noBatch, 'no_faktur' => $noFaktur]);
         }
     }
 
@@ -25,12 +25,12 @@ class BaseInventoryController extends BaseController
     {
         $noBatch = $noBatch ?? '';
         $noFaktur = $noFaktur ?? '';
-        DB::table('gudangbarang')->where(['kode_brng' => $kodeBrg, 'kd_bangsal' => $kdBangsal, 'no_batch' => $noBatch, 'no_faktur' => $noFaktur])->update(['stok' => DB::raw('stok-'.$qty)]);
+        DB::connection('fufufafa')->table('gudangbarang')->where(['kode_brng' => $kodeBrg, 'kd_bangsal' => $kdBangsal, 'no_batch' => $noBatch, 'no_faktur' => $noFaktur])->update(['stok' => DB::raw('stok-'.$qty)]);
     }
 
     protected function adjustBatchSisaDelta(string $kodeBrg, string $noBatch, string $noFaktur, float $delta): void
     {
-        DB::table('data_batch')->where(['kode_brng' => $kodeBrg, 'no_batch' => $noBatch, 'no_faktur' => $noFaktur])->update(['sisa' => DB::raw('sisa+'.$delta)]);
+        DB::connection('fufufafa')->table('data_batch')->where(['kode_brng' => $kodeBrg, 'no_batch' => $noBatch, 'no_faktur' => $noFaktur])->update(['sisa' => DB::raw('sisa+'.$delta)]);
     }
 
     protected function recordRiwayat(string $kodeBrg, string $kdBangsal, float $masuk, float $keluar, string $status, ?string $noBatch, ?string $noFaktur, ?string $keterangan, ?string $petugas): void
@@ -62,7 +62,7 @@ class BaseInventoryController extends BaseController
 
     protected function stageJurnal(array $lines): void
     {
-        DB::table('tampjurnal')->delete();
+        DB::connection('fufufafa')->table('tampjurnal')->delete();
         $agg = [];
         foreach ($lines as $l) {
             $kd = $l[0];

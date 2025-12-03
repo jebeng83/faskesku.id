@@ -44,7 +44,7 @@ const quickLinks = [
     {
         title: "Pengaturan",
         description: "Kelola konfigurasi aplikasi & bridging",
-        href: "/setting",
+        href: route("profile.home"),
     },
     {
         title: "Pendaftaran Pasien",
@@ -79,8 +79,8 @@ const quickLinks = [
     {
         title: "Keuangan",
         description: "Kelola Rekening, Jurnal, dan Nota",
-        // Arahkan ke halaman Rekening yang sudah menggunakan SidebarKeuangan
-        href: "/akutansi/rekening",
+        // Arahkan ke halaman Home Akutansi
+        href: "/akutansi/home",
     },
 ];
 
@@ -769,14 +769,14 @@ export default function Dashboard() {
             {
                 key: "keuangan",
                 label: "Keuangan",
-                // Langsung arahkan ke halaman Rekening yang memakai SidebarKeuangan
-                href: "/akutansi/rekening",
+                // Arahkan ke halaman Home Akutansi
+                href: "/akutansi/home",
                 icon: <Wallet className="w-5 h-5" />,
             },
             {
                 key: "settings",
                 label: "Pengaturan",
-                href: safeRoute("setting.index"),
+                href: safeRoute("profile.home", "/profile/home"),
                 icon: <Settings className="w-5 h-5" />,
             },
         ],

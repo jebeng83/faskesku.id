@@ -98,6 +98,12 @@ class JurnalController extends Controller
         return \Inertia\Inertia::render('Akutansi/JurnalPenutup');
     }
 
+    /** Inertia page khusus untuk Setoran Bank */
+    public function setoranBankPage()
+    {
+        return \Inertia\Inertia::render('Akutansi/SetoranBank');
+    }
+
     /**
      * Bangun staging tampjurnal dari total billing per no_rawat dengan pemecahan debit (kas/bank vs piutang) dan opsi PPN.
      * Body contoh:
@@ -590,6 +596,86 @@ class JurnalController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal posting jurnal: '.$e->getMessage(),
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Stage jurnal Setoran Bank: Debet Bank, Kredit Kas ke tampjurnal.
+     * Body: { tanggal?: Y-m-d, no_bukti?: string, keterangan?: string, kd_rek_kas: string, kd_rek_bank: string, nominal: number, reset?: bool }
+     * Response: preview gabungan staging { meta, lines }
+     */
+    public function setoranBankStage(\Illuminate\Http\Request $request, JurnalPostingService $service)
+    {
+        $data = $request->validate([
+            'tanggal' => ['nullable', 'date'],
+            'no_bukti' => ['nullable', 'string', 'max:30'],
+            'keterangan' => ['nullable', 'string', 'max:350'],
+            'kd_rek_kas' => ['required', 'string', 'exists:rekening,kd_rek'],
+            'kd_rek_bank' => ['required', 'string', 'exists:rekening,kd_rek'],
+            'nominal' => ['required', 'numeric', 'min:0.01'],
+            'reset' => ['nullable', 'boolean'],
+        ]);
+
+        if ($data['kd_rek_kas'] === $data['kd_rek_bank']) {
+            return response()->json(['message' => 'Akun Kas dan Bank tidak boleh sama'], 422);
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($data) {
+            if (! empty($data['reset'])) {
+                \Illuminate\Support\Facades\DB::table('tampjurnal')->delete();
+                \Illuminate\Support\Facades\DB::table('tampjurnal2')->delete();
+            }
+            $nom = (float) $data['nominal'];
+            \Illuminate\Support\Facades\DB::table('tampjurnal')->insert([
+                ['kd_rek' => (string) $data['kd_rek_bank'], 'debet' => $nom, 'kredit' => 0],
+                ['kd_rek' => (string) $data['kd_rek_kas'], 'debet' => 0, 'kredit' => $nom],
+            ]);
+        });
+
+        try {
+            $preview = $service->preview();
+            return response()->json($preview);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Gagal membuat preview setoran bank: '.$e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Posting jurnal dari staging untuk Setoran Bank.
+     * Body: { no_bukti?: string, keterangan?: string, tgl_jurnal?: Y-m-d }
+     * Response (201): { no_jurnal }
+     */
+    public function setoranBankPost(\Illuminate\Http\Request $request, JurnalPostingService $service)
+    {
+        $noBukti = $request->input('no_bukti');
+        $keterangan = $request->input('keterangan');
+        $tgl = $request->input('tgl_jurnal');
+
+        try {
+            $result = $service->post($noBukti, $keterangan, $tgl);
+            return response()->json($result, 201);
+        } catch (\RuntimeException $e) {
+            \Illuminate\Support\Facades\Log::warning('Posting setoran bank gagal', [
+                'no_bukti' => $noBukti,
+                'keterangan' => $keterangan,
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal posting setoran bank: '.$e->getMessage(),
+                'error' => $e->getMessage(),
+            ], 400);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Posting setoran bank error', [
+                'no_bukti' => $noBukti,
+                'keterangan' => $keterangan,
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal posting setoran bank: '.$e->getMessage(),
                 'error' => $e->getMessage(),
             ], 500);
         }

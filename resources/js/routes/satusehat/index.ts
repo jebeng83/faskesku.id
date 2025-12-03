@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 import prerequisites from './prerequisites'
 import interoperabilitas from './interoperabilitas'
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:1074
 * @route '/satusehat'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:1074
 * @route '/satusehat'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -24,7 +24,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:1074
 * @route '/satusehat'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -33,7 +33,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:1074
 * @route '/satusehat'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

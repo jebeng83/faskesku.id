@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class DataBatch extends Model
 {
+    protected $connection = 'fufufafa';
     protected $table = 'data_batch';
 
     public $timestamps = false;

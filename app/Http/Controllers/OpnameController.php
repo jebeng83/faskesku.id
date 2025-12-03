@@ -62,7 +62,7 @@ class OpnameController extends Controller
             }
 
             // Query untuk mengambil data barang di lokasi tertentu
-            $query = DB::connection('fufufafa')
+            $query = DB::connection(config('database.default'))
                 ->table('gudangbarang')
                 ->join('databarang', 'gudangbarang.kode_brng', '=', 'databarang.kode_brng')
                 ->join('jenis', 'databarang.kdjns', '=', 'jenis.kdjns')
@@ -137,7 +137,7 @@ class OpnameController extends Controller
                 ], 422);
             }
 
-            DB::connection('fufufafa')->beginTransaction();
+            DB::connection(config('database.default'))->beginTransaction();
 
             foreach ($request->items as $item) {
                 // Debug: Log each item data
@@ -261,14 +261,14 @@ class OpnameController extends Controller
                 Log::info('Audit trail recorded for: '.$item['kode_brng']);
             }
 
-            DB::connection('fufufafa')->commit();
+            DB::connection(config('database.default'))->commit();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Data stok opname berhasil disimpan',
             ]);
         } catch (\Exception $e) {
-            DB::connection('fufufafa')->rollback();
+            DB::connection(config('database.default'))->rollback();
             Log::error('Error saving opname: '.$e->getMessage());
             Log::error('Stack trace: '.$e->getTraceAsString());
 
@@ -285,7 +285,7 @@ class OpnameController extends Controller
     public function getOpnameData(Request $request)
     {
         try {
-            $query = DB::connection('fufufafa')
+            $query = DB::connection(config('database.default'))
                 ->table('opname')
                 ->join('databarang', 'opname.kode_brng', '=', 'databarang.kode_brng')
                 ->join('bangsal', 'opname.kd_bangsal', '=', 'bangsal.kd_bangsal')
@@ -354,7 +354,7 @@ class OpnameController extends Controller
                 ], 400);
             }
 
-            $query = DB::connection('fufufafa')
+            $query = DB::connection(config('database.default'))
                 ->table('opname')
                 ->join('databarang', 'opname.kode_brng', '=', 'databarang.kode_brng')
                 ->join('bangsal', 'opname.kd_bangsal', '=', 'bangsal.kd_bangsal')
@@ -431,7 +431,7 @@ class OpnameController extends Controller
                 }
             }
 
-            DB::connection('fufufafa')->beginTransaction();
+            DB::connection(config('database.default'))->beginTransaction();
 
             $deleted = 0;
             foreach ($items as $item) {
@@ -441,7 +441,7 @@ class OpnameController extends Controller
                 $noBatch = $item['no_batch'] ?? '';
                 $noFaktur = $item['no_faktur'] ?? '';
 
-                $query = DB::connection('fufufafa')
+                $query = DB::connection(config('database.default'))
                     ->table('opname')
                     ->where('kd_bangsal', $kdBangsal)
                     ->whereDate('tanggal', $tanggal)
@@ -470,7 +470,7 @@ class OpnameController extends Controller
                 $deleted += $count;
             }
 
-            DB::connection('fufufafa')->commit();
+            DB::connection(config('database.default'))->commit();
 
             return response()->json([
                 'success' => true,
@@ -478,7 +478,7 @@ class OpnameController extends Controller
                 'deleted_count' => $deleted,
             ]);
         } catch (\Exception $e) {
-            DB::connection('fufufafa')->rollback();
+            DB::connection(config('database.default'))->rollback();
 
             return response()->json([
                 'success' => false,

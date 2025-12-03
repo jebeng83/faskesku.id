@@ -15,6 +15,7 @@ import {
     LogIn,
     Users,
     FileText,
+    Home,
 } from "lucide-react";
 
 // Theme toggle terkontrol, state diangkat ke parent agar sinkron di semua instance
@@ -78,7 +79,11 @@ function safeRoute(name, fallback) {
     }
 }
 
-export default function SidebarPengaturan({ title = "Pengaturan", children }) {
+export default function SidebarPengaturan({
+    title = "Pengaturan",
+    children,
+    wide = false,
+}) {
     const { url } = usePage();
 
     // State mirip LanjutanRalanLayout: open (mobile), collapsed (desktop), dan dark theme
@@ -131,6 +136,7 @@ export default function SidebarPengaturan({ title = "Pengaturan", children }) {
     const paths = useMemo(
         () => ({
             dashboard: safeRoute("dashboard", "/dashboard"),
+            profileHome: safeRoute("profile.home", "/profile/home"),
             settingIndex: safeRoute("setting.index", "/setting"),
             pcareSetting: safeRoute("pcare.setting.index", "/pcare/setting"),
             mobileJknSetting: safeRoute(
@@ -250,6 +256,13 @@ export default function SidebarPengaturan({ title = "Pengaturan", children }) {
                             label="Dashboard"
                             active={isActive(paths.dashboard)}
                         />
+                        <NavItem
+                            collapsed={isSidebarCollapsed}
+                            href={paths.profileHome}
+                            icon={Home}
+                            label="Home"
+                            active={isActive(paths.profileHome)}
+                        />
                     </Section>
 
                     <Section
@@ -294,10 +307,7 @@ export default function SidebarPengaturan({ title = "Pengaturan", children }) {
                     </Section>
 
                     {/* Kepegawaian */}
-                    <Section
-                        title="Kepegawaian"
-                        collapsed={isSidebarCollapsed}
-                    >
+                    <Section title="Kepegawaian" collapsed={isSidebarCollapsed}>
                         <NavItem
                             collapsed={isSidebarCollapsed}
                             href={paths.employeesIndex}
@@ -487,7 +497,13 @@ export default function SidebarPengaturan({ title = "Pengaturan", children }) {
                         : "lg:ml-64"
                 }`}
             >
-                <div className="max-w-7xl mx-auto px-4 py-6">{children}</div>
+                <div
+                    className={`${
+                        wide ? "max-w-[120rem]" : "max-w-7xl"
+                    } mx-auto px-2 sm:px-4 py-6`}
+                >
+                    {children}
+                </div>
             </main>
         </div>
     );

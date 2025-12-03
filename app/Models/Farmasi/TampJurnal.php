@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class TampJurnal extends Model
 {
+    protected $connection = 'fufufafa';
     protected $table = 'tampjurnal';
 
     public $timestamps = false;

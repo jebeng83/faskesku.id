@@ -13,6 +13,7 @@ import {
     ChevronRight,
     Calendar,
     Scale,
+    Home,
 } from "lucide-react";
 
 // Sidebar khusus modul Keuangan/Akutansi, serasi dengan LanjutanRalanLayout & SidebarFarmasi
@@ -92,6 +93,11 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
                 label: "Dashboard",
                 href: route("dashboard"),
                 icon: <Gauge className="w-4 h-4" />,
+            },
+            {
+                label: "Home",
+                href: "/akutansi/home",
+                icon: <Home className="w-4 h-4" />,
             },
             {
                 label: "Pengaturan Akun",
@@ -188,6 +194,21 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
                         label: "Neraca",
                         href: "/akutansi/neraca",
                         icon: <Scale className="w-4 h-4" />,
+                    },
+                    {
+                        label: "Mutasi Rekening",
+                        href: "/akutansi/mutasi-rekening",
+                        icon: <Banknote className="w-4 h-4" />,
+                    },
+                    {
+                        label: "Mutasi Kas",
+                        href: "/akutansi/mutasi-kas",
+                        icon: <Wallet className="w-4 h-4" />,
+                    },
+                    {
+                        label: "Setoran Bank",
+                        href: "/akutansi/setoran-bank",
+                        icon: <Banknote className="w-4 h-4" />,
                     },
                 ],
             },

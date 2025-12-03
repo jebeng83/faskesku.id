@@ -4,10 +4,9 @@ import MenuController from './MenuController'
 import RawatJalan from './RawatJalan'
 import PermintaanRadiologiController from './PermintaanRadiologiController'
 import OpnameController from './OpnameController'
-import PembelianController from './PembelianController'
+import Farmasi from './Farmasi'
 import BarangController from './BarangController'
 import DataBarangController from './DataBarangController'
-import Farmasi from './Farmasi'
 import GudangBarangController from './GudangBarangController'
 import Kepegawaian from './Kepegawaian'
 import Pcare from './Pcare'
@@ -44,10 +43,9 @@ const Controllers = {
     RawatJalan: Object.assign(RawatJalan, RawatJalan),
     PermintaanRadiologiController: Object.assign(PermintaanRadiologiController, PermintaanRadiologiController),
     OpnameController: Object.assign(OpnameController, OpnameController),
-    PembelianController: Object.assign(PembelianController, PembelianController),
+    Farmasi: Object.assign(Farmasi, Farmasi),
     BarangController: Object.assign(BarangController, BarangController),
     DataBarangController: Object.assign(DataBarangController, DataBarangController),
-    Farmasi: Object.assign(Farmasi, Farmasi),
     GudangBarangController: Object.assign(GudangBarangController, GudangBarangController),
     Kepegawaian: Object.assign(Kepegawaian, Kepegawaian),
     Pcare: Object.assign(Pcare, Pcare),

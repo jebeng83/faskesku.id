@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Farmasi;
 
 use App\Models\Farmasi\DataBatch;
-use App\Models\Farmasi\DetailBeli;
-use App\Models\Farmasi\Pembelian;
+use App\Models\Farmasi\Pembelian as HeaderPembelian;
+use App\Models\DetailBeli;
 use App\Models\Farmasi\SetAkun;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -28,8 +28,8 @@ class PembelianController extends BaseInventoryController
             'items' => 'required|array',
         ]);
 
-        return DB::transaction(function () use ($data) {
-            Pembelian::create([
+        return DB::connection('fufufafa')->transaction(function () use ($data) {
+            HeaderPembelian::create([
                 'no_faktur' => $data['no_faktur'],
                 'kode_suplier' => $data['kode_suplier'],
                 'nip' => $data['nip'],
@@ -85,43 +85,118 @@ class PembelianController extends BaseInventoryController
                 $this->recordRiwayat($row['kode_brng'], $data['kd_bangsal'], $qty, 0, 'Pengadaan', $nb, $nf, $data['no_faktur'], $data['nip']);
             }
 
-            $akun = SetAkun::query()->first();
-            if ($akun) {
-                $lines = [];
-                $lines[] = [$akun->Pengadaan_Obat, 'PEMBELIAN', $data['total2'], 0];
-                if ((float) $data['ppn'] > 0) {
-                    $lines[] = [$akun->PPN_Masukan, 'PPN Masukan Obat', $data['ppn'], 0];
+                $akun = SetAkun::query()->first();
+                if ($akun) {
+                    $lines = [];
+                    $lines[] = [$akun->Pengadaan_Obat, 'PEMBELIAN', $data['total2'], 0];
+                    if ((float) $data['ppn'] > 0) {
+                        $lines[] = [$akun->PPN_Masukan, 'PPN Masukan Obat', $data['ppn'], 0];
+                    }
+                    $lines[] = [$data['kd_rek'], 'AKUN BAYAR', 0, $data['total2'] + $data['ppn']];
+                    $this->stageJurnal($lines);
                 }
-                $lines[] = [$data['kd_rek'], 'AKUN BAYAR', 0, $data['total2'] + $data['ppn']];
-                $this->stageJurnal($lines);
-            }
 
             // Update harga beli dan harga jual di databarang berdasarkan pembelian
-            $persen = DB::table('set_harga_obat')->first();
-            foreach ($data['items'] as $it) {
-                $hargaBeliBaru = (float) $it['harga'];
-                $dasarMode = ($persen && isset($persen->hargadasar) && $persen->hargadasar === 'Harga Diskon') ? 'diskon' : 'beli';
-                $hargaDasar = $dasarMode === 'diskon'
-                    ? ($hargaBeliBaru - (float) ($it['besardis'] ?? 0))
-                    : $hargaBeliBaru;
+                $persen = DB::connection('fufufafa')->table('set_harga_obat')->first();
+                foreach ($data['items'] as $it) {
+                    $hargaBeliBaru = (float) $it['harga'];
+                    $dasarMode = ($persen && isset($persen->hargadasar) && $persen->hargadasar === 'Harga Diskon') ? 'diskon' : 'beli';
+                    $hargaDasar = $dasarMode === 'diskon'
+                        ? ($hargaBeliBaru - (float) ($it['besardis'] ?? 0))
+                        : $hargaBeliBaru;
 
-                DB::table('databarang')->where('kode_brng', $it['kode_brng'])->update([
-                    'h_beli' => $hargaBeliBaru,
-                    'dasar' => $hargaDasar,
-                    'ralan' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->ralan ?? 0)).' / 100)'),
-                    'kelas1' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->kelas1 ?? 0)).' / 100)'),
-                    'kelas2' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->kelas2 ?? 0)).' / 100)'),
-                    'kelas3' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->kelas3 ?? 0)).' / 100)'),
-                    'utama' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->utama ?? 0)).' / 100)'),
-                    'vip' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->vip ?? 0)).' / 100)'),
-                    'vvip' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->vvip ?? 0)).' / 100)'),
-                    'beliluar' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->beliluar ?? 0)).' / 100)'),
-                    'jualbebas' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->jualbebas ?? 0)).' / 100)'),
-                    'karyawan' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->karyawan ?? 0)).' / 100)'),
-                ]);
-            }
+                    DB::connection('fufufafa')->table('databarang')->where('kode_brng', $it['kode_brng'])->update([
+                        'h_beli' => $hargaBeliBaru,
+                        'dasar' => $hargaDasar,
+                        'ralan' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->ralan ?? 0)).' / 100)'),
+                        'kelas1' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->kelas1 ?? 0)).' / 100)'),
+                        'kelas2' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->kelas2 ?? 0)).' / 100)'),
+                        'kelas3' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->kelas3 ?? 0)).' / 100)'),
+                        'utama' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->utama ?? 0)).' / 100)'),
+                        'vip' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->vip ?? 0)).' / 100)'),
+                        'vvip' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->vvip ?? 0)).' / 100)'),
+                        'beliluar' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->beliluar ?? 0)).' / 100)'),
+                        'jualbebas' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->jualbebas ?? 0)).' / 100)'),
+                        'karyawan' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->karyawan ?? 0)).' / 100)'),
+                    ]);
+                }
 
             return response()->json(['status' => 'ok', 'no_faktur' => $data['no_faktur']]);
         });
+    }
+
+    public function getAkunBayar()
+    {
+        $rows = DB::connection('fufufafa')->table('akun_bayar')
+            ->leftJoin('rekening', 'akun_bayar.kd_rek', '=', 'rekening.kd_rek')
+            ->select('akun_bayar.kd_rek', 'akun_bayar.nama_bayar', 'rekening.nm_rek')
+            ->orderBy('akun_bayar.nama_bayar')
+            ->get();
+        return response()->json(['success' => true, 'data' => $rows]);
+    }
+
+    public function getSupplier()
+    {
+        $rows = DB::connection('fufufafa')->table('datasuplier')
+            ->select('kode_suplier', 'nama_suplier')
+            ->orderBy('nama_suplier')
+            ->get();
+        return response()->json(['success' => true, 'data' => $rows]);
+    }
+
+    public function getPetugas(Request $request)
+    {
+        $q = DB::connection('fufufafa')->table('petugas')
+            ->select('nip', 'nama')
+            ->orderBy('nama');
+        if ($request->has('q') && !empty($request->q)) {
+            $term = $request->q;
+            $q->where(function ($w) use ($term) {
+                $w->where('nip', 'like', "%{$term}%")
+                  ->orWhere('nama', 'like', "%{$term}%");
+            });
+        }
+        $rows = $q->get();
+        return response()->json(['success' => true, 'data' => $rows])
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
+    }
+
+    public function getLokasi()
+    {
+        $rows = DB::connection('fufufafa')->table('bangsal')
+            ->select('kd_bangsal', 'nm_bangsal')
+            ->orderBy('nm_bangsal')
+            ->get();
+        return response()->json(['success' => true, 'data' => $rows]);
+    }
+
+    public function generateNoFaktur()
+    {
+        try {
+            $today = now()->format('Ymd');
+            $prefix = 'PB-' . $today . '-';
+            return DB::connection('fufufafa')->transaction(function () use ($prefix) {
+                $last = DB::connection('fufufafa')->table('pembelian')
+                    ->where('no_faktur', 'LIKE', $prefix.'%')
+                    ->orderBy('no_faktur', 'desc')
+                    ->lockForUpdate()
+                    ->first();
+                $next = 1;
+                if ($last) {
+                    $lastNumber = (int) substr($last->no_faktur, -3);
+                    $next = $lastNumber + 1;
+                }
+                $no = $prefix.str_pad($next, 3, '0', STR_PAD_LEFT);
+                while (DB::connection('fufufafa')->table('pembelian')->where('no_faktur', $no)->exists()) {
+                    $next++;
+                    $no = $prefix.str_pad($next, 3, '0', STR_PAD_LEFT);
+                }
+                return response()->json(['success' => true, 'no_faktur' => $no]);
+            });
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error generating no faktur: '.$e->getMessage()], 500);
+        }
     }
 }

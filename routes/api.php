@@ -22,7 +22,7 @@ use App\Http\Controllers\OpnameController;
 use App\Http\Controllers\Pcare\MobileJknController;
 use App\Http\Controllers\Pcare\PcareController;
 use App\Http\Controllers\Pcare\PcareKunjunganController;
-use App\Http\Controllers\PembelianController;
+use App\Http\Controllers\Farmasi\PembelianController as FarmasiPembelianController;
 use App\Http\Controllers\PermintaanLabController;
 use App\Http\Controllers\PermintaanRadiologiController;
 use App\Http\Controllers\PoliklinikController;
@@ -192,12 +192,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Farmasi - Pembelian Obat API Routes
     Route::prefix('pembelian')->group(function () {
-        Route::get('/supplier', [PembelianController::class, 'getSupplier'])->name('api.pembelian.supplier');
-        Route::get('/petugas', [PembelianController::class, 'getPetugas'])->name('api.pembelian.petugas');
-        Route::get('/lokasi', [PembelianController::class, 'getLokasi'])->name('api.pembelian.lokasi');
-        Route::get('/akun-bayar', [PembelianController::class, 'getAkunBayar'])->name('api.pembelian.akun-bayar');
-        Route::get('/generate-no-faktur', [PembelianController::class, 'generateNoFaktur'])->name('api.pembelian.generate-no-faktur');
-        Route::post('/store', [\App\Http\Controllers\Farmasi\PembelianController::class, 'store'])->name('api.pembelian.store');
+        Route::get('/supplier', [FarmasiPembelianController::class, 'getSupplier'])->name('api.pembelian.supplier');
+        Route::get('/petugas', [FarmasiPembelianController::class, 'getPetugas'])->name('api.pembelian.petugas');
+        Route::get('/lokasi', [FarmasiPembelianController::class, 'getLokasi'])->name('api.pembelian.lokasi');
+        Route::get('/akun-bayar', [FarmasiPembelianController::class, 'getAkunBayar'])->name('api.pembelian.akun-bayar');
+        Route::get('/generate-no-faktur', [FarmasiPembelianController::class, 'generateNoFaktur'])->name('api.pembelian.generate-no-faktur');
+        Route::post('/store', [FarmasiPembelianController::class, 'store'])->name('api.pembelian.store');
     });
 
     // Barang search endpoint (used by Pembelian Obat page)

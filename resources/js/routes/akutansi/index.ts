@@ -1,5 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
 import rekening from './rekening'
+import home from './home'
 import rekeningTahun from './rekening-tahun'
 import akunBayar from './akun-bayar'
 import akunPiutang from './akun-piutang'
@@ -7,8 +8,12 @@ import pengaturanRekening from './pengaturan-rekening'
 import jurnal from './jurnal'
 import jurnalPenyesuaian from './jurnal-penyesuaian'
 import jurnalPenutup from './jurnal-penutup'
+import setoranBank from './setoran-bank'
 import bukuBesar from './buku-besar'
 import neraca from './neraca'
+import detailJurnal from './detail-jurnal'
+import mutasiRekening from './mutasi-rekening'
+import mutasiKas from './mutasi-kas'
 import cashflow from './cashflow'
 import billing from './billing'
 import notaJalan from './nota-jalan'
@@ -78,6 +83,7 @@ invoice.head = (args: { no_rawat: string | number } | [no_rawat: string | number
 const akutansi = {
     invoice: Object.assign(invoice, invoice),
     rekening: Object.assign(rekening, rekening),
+    home: Object.assign(home, home),
     rekeningTahun: Object.assign(rekeningTahun, rekeningTahun),
     akunBayar: Object.assign(akunBayar, akunBayar),
     akunPiutang: Object.assign(akunPiutang, akunPiutang),
@@ -85,8 +91,12 @@ const akutansi = {
     jurnal: Object.assign(jurnal, jurnal),
     jurnalPenyesuaian: Object.assign(jurnalPenyesuaian, jurnalPenyesuaian),
     jurnalPenutup: Object.assign(jurnalPenutup, jurnalPenutup),
+    setoranBank: Object.assign(setoranBank, setoranBank),
     bukuBesar: Object.assign(bukuBesar, bukuBesar),
     neraca: Object.assign(neraca, neraca),
+    detailJurnal: Object.assign(detailJurnal, detailJurnal),
+    mutasiRekening: Object.assign(mutasiRekening, mutasiRekening),
+    mutasiKas: Object.assign(mutasiKas, mutasiKas),
     cashflow: Object.assign(cashflow, cashflow),
     billing: Object.assign(billing, billing),
     notaJalan: Object.assign(notaJalan, notaJalan),

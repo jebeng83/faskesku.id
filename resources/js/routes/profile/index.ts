@@ -78,7 +78,7 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 })
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:546
 * @route '/profile/menu'
 */
 export const menu = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -92,7 +92,7 @@ menu.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:546
 * @route '/profile/menu'
 */
 menu.url = (options?: RouteQueryOptions) => {
@@ -100,7 +100,7 @@ menu.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:546
 * @route '/profile/menu'
 */
 menu.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -109,7 +109,7 @@ menu.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:546
 * @route '/profile/menu'
 */
 menu.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -117,10 +117,51 @@ menu.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+/**
+* @see routes/web.php:550
+* @route '/profile/home'
+*/
+export const home = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: home.url(options),
+    method: 'get',
+})
+
+home.definition = {
+    methods: ["get","head"],
+    url: '/profile/home',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:550
+* @route '/profile/home'
+*/
+home.url = (options?: RouteQueryOptions) => {
+    return home.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:550
+* @route '/profile/home'
+*/
+home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: home.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:550
+* @route '/profile/home'
+*/
+home.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: home.url(options),
+    method: 'head',
+})
+
 const profile = {
     show: Object.assign(show, show),
     update: Object.assign(update, update),
     menu: Object.assign(menu, menu),
+    home: Object.assign(home, home),
 }
 
 export default profile
