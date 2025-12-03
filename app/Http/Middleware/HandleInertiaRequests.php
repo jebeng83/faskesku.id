@@ -76,8 +76,8 @@ class HandleInertiaRequests
             'menu_hierarchy' => fn () => $this->sanitizeUtf8($request->user() ? Menu::getMenuHierarchy($request->user()->id)->toArray() : []),
             'current_menu' => fn () => $this->sanitizeUtf8(($cm = $request->attributes->get('current_menu')) ? (method_exists($cm, 'toArray') ? $cm->toArray() : $cm) : null),
             'map_coords' => fn () => [
-                'latitude' => ($lat = env('LATITUDE')) !== null && $lat !== '' && is_numeric($lat) ? (float) $lat : null,
-                'longitude' => ($lng = env('LONGITUDE')) !== null && $lng !== '' && is_numeric($lng) ? (float) $lng : null,
+                'latitude' => ($lat = config('app.map.latitude')) !== null && $lat !== '' && is_numeric($lat) ? (float) $lat : null,
+                'longitude' => ($lng = config('app.map.longitude')) !== null && $lng !== '' && is_numeric($lng) ? (float) $lng : null,
             ],
         ]);
 

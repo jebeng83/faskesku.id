@@ -63,9 +63,9 @@ trait BpjsTraits
             // Kredensial Antrol (opsional) dari DB
             'username_antrol' => $row?->username_antrol ?? '',
             'password_antrol' => $row?->password_antrol ?? '',
-            // Tetap gunakan env untuk konfigurasi PCare terkait (bila diperlukan)
-            'kode_ppk' => env('BPJS_PCARE_KODE_PPK'),
-            'app_code' => env('BPJS_PCARE_APP_CODE', '095'),
+            // Gunakan config yang dicache agar aman untuk Octane
+            'kode_ppk' => config('bpjs.pcare.kode_ppk'),
+            'app_code' => config('bpjs.pcare.app_code'),
         ];
     }
 
@@ -178,9 +178,9 @@ trait BpjsTraits
         if (! empty($query)) {
             $baseHttpOptions['query'] = $query;
         }
-        // Timeouts (konfigurable via env; gunakan default yang aman)
-        $connectTimeout = (int) env('BPJS_HTTP_CONNECT_TIMEOUT', 10);
-        $timeout = (int) env('BPJS_HTTP_TIMEOUT', 30);
+        // Timeouts (gunakan config agar aman saat config:cache)
+        $connectTimeout = (int) config('bpjs.http.connect_timeout', 10);
+        $timeout = (int) config('bpjs.http.timeout', 30);
         $baseHttpOptions['connect_timeout'] = $connectTimeout;
         $baseHttpOptions['timeout'] = $timeout;
         // Prefer IPv4 untuk menghindari masalah koneksi IPv6 di jaringan lokal
@@ -201,26 +201,26 @@ trait BpjsTraits
             $baseCurlOptions[CURLOPT_SSLVERSION] = CURL_SSLVERSION_TLSv1_2;
         }
         // Opsi untuk mematikan verifikasi SSL saat troubleshooting (JANGAN aktifkan di produksi)
-        $disableSslVerify = filter_var(env('BPJS_HTTP_DISABLE_SSL_VERIFY', false), FILTER_VALIDATE_BOOLEAN);
+        $disableSslVerify = filter_var(config('bpjs.http.disable_ssl_verify', false), FILTER_VALIDATE_BOOLEAN);
         if ($disableSslVerify) {
             $baseCurlOptions[CURLOPT_SSL_VERIFYPEER] = false;
             $baseCurlOptions[CURLOPT_SSL_VERIFYHOST] = 0;
             Log::channel('bpjs')->warning('PCare SSL verification DISABLED via env BPJS_HTTP_DISABLE_SSL_VERIFY');
         }
         // Fallback DNS: list multi-IP untuk auto-switch
-        $resolveListEnv = (string) env('BPJS_PCARE_FORCE_RESOLVE_LIST', '');
+        $resolveListEnv = (string) config('bpjs.http.force_resolve_list', '');
         $resolveList = array_values(array_filter(array_map('trim', explode(',', $resolveListEnv)), function ($v) {
             return $v !== '';
         }));
         // Fallback single resolve untuk kompatibilitas
-        $forceResolve = env('BPJS_PCARE_FORCE_RESOLVE');
+        $forceResolve = config('bpjs.http.force_resolve');
         if (empty($resolveList) && ! empty($forceResolve)) {
             $resolveList = [$forceResolve];
         }
 
         // Retry sederhana untuk mengatasi kegagalan koneksi sementara (per attempt)
-        $retryTimes = (int) env('BPJS_HTTP_RETRY_TIMES', 2);
-        $retrySleep = (int) env('BPJS_HTTP_RETRY_SLEEP', 500);
+        $retryTimes = (int) config('bpjs.http.retry_times', 2);
+        $retrySleep = (int) config('bpjs.http.retry_sleep', 500);
 
         $response = null;
         $attempt = 0;
@@ -409,13 +409,13 @@ trait BpjsTraits
         if (! empty($query)) {
             $httpOptions['query'] = $query;
         }
-        // Timeouts (optional, configurable via env)
-        $connectTimeout = (int) env('BPJS_HTTP_CONNECT_TIMEOUT', 10);
-        $timeout = (int) env('BPJS_HTTP_TIMEOUT', 30);
+        // Timeouts (gunakan config agar aman saat config:cache)
+        $connectTimeout = (int) config('bpjs.http.connect_timeout', 10);
+        $timeout = (int) config('bpjs.http.timeout', 30);
         $httpOptions['connect_timeout'] = $connectTimeout;
         $httpOptions['timeout'] = $timeout;
         // Optional forced DNS resolve to mitigate local DNS issues
-        $forceResolve = env('BPJS_MOBILEJKN_FORCE_RESOLVE');
+        $forceResolve = config('bpjs.mobilejkn.force_resolve');
         if (! empty($forceResolve)) {
             // Example value: apijkn.bpjs-kesehatan.go.id:443:118.97.79.198
             $httpOptions['curl'] = [CURLOPT_RESOLVE => [$forceResolve]];

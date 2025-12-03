@@ -242,13 +242,72 @@ public function __construct()
 3. ✅ Setup Nginx sebagai reverse proxy
 4. ✅ Monitoring dan observability
 5. ✅ Test dengan traffic real
-
+ 
 ### Tahap 4: Production (1 hari)
 1. ✅ Deploy ke production
 2. ✅ Monitor performa dan error
 3. ✅ Setup auto-reload setelah deployment
 
 ---
+
+## 🧭 Best Praktis — Development
+
+- Gunakan server Octane dengan FrankenPHP dan mode watch: 
+  ```bash
+  php artisan octane:frankenphp --watch --port=8080
+  ```
+- Jalankan HMR untuk frontend: 
+  ```bash
+  npm run dev
+  ```
+- Hindari membaca `env()` langsung pada runtime; gunakan `config()` dan jalankan: 
+  ```bash
+  php artisan config:clear
+  php artisan config:cache
+  ```
+- Pastikan listener Octane untuk pembersihan aktif (`DisconnectFromDatabases`, `CollectGarbage`) di `config/octane.php`.
+- Matikan singleton yang menahan state per-request; jangan menyimpan request/config di constructor service.
+- Gunakan `request()->server()` untuk data server per request, bukan `$_SERVER` di constructor.
+- Lakukan profiling ringan saat pengembangan: 
+  ```bash
+  php artisan octane:status
+  php artisan route:cache
+  php artisan optimize:clear
+  ```
+- Jika menggunakan Inertia SSR, pastikan status server SSR sehat: 
+  ```bash
+  php artisan inertia:check-ssr
+  php artisan inertia:start-ssr
+  ```
+
+## 🛡️ Best Praktis — Production
+
+- Bangun aset sekali, nonaktifkan HMR: 
+  ```bash
+  npm ci --include=dev
+  npm run build
+  ```
+- Aktifkan cache Laravel: 
+  ```bash
+  php artisan optimize:clear
+  php artisan config:cache
+  php artisan route:cache
+  php artisan view:cache
+  ```
+- Jalankan Octane FrankenPHP dengan jumlah worker sesuai CPU: 
+  ```bash
+  php artisan octane:start --server=frankenphp --workers=8 --max-requests=500 --port=8080
+  ```
+- Gunakan Supervisor/Systemd untuk menjaga proses tetap berjalan dan auto-restart.
+- Konfigurasikan reverse proxy (Nginx/Apache) untuk meneruskan trafik ke port FrankenPHP.
+- Setelah deploy, lakukan reload worker agar memuat kode terbaru: 
+  ```bash
+  php artisan octane:reload
+  ```
+- Pastikan `APP_DEBUG=false`, `LOG_LEVEL=info` atau sesuai kebutuhan observability.
+- Pantau memory dan throughput; sesuaikan `garbage` threshold dan `max_execution_time` di `config/octane.php`.
+- Untuk integrasi eksternal (BPJS/SATUSEHAT), gunakan nilai dari `config()` dan tabel konfigurasi, bukan `env()` langsung di runtime.
+- Hindari tugas lama sinkron; gunakan queue untuk pekerjaan berat dan jadwal berkala melalui scheduler.
 
 ## 🎯 Kesimpulan
 
@@ -292,3 +351,6 @@ public function __construct()
 **Dibuat**: {{ date('Y-m-d') }}
 **Versi**: 1.0
 **Status**: Draft untuk Review
+* untuk melihat worker
+- macOS: sysctl -n hw.ncpu
+- Linux: nproc --all
