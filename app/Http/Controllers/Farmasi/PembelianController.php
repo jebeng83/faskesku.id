@@ -100,25 +100,37 @@ class PembelianController extends BaseInventoryController
                 $persen = DB::connection('fufufafa')->table('set_harga_obat')->first();
                 foreach ($data['items'] as $it) {
                     $hargaBeliBaru = (float) $it['harga'];
-                    $dasarMode = ($persen && isset($persen->hargadasar) && $persen->hargadasar === 'Harga Diskon') ? 'diskon' : 'beli';
-                    $hargaDasar = $dasarMode === 'diskon'
-                        ? ($hargaBeliBaru - (float) ($it['besardis'] ?? 0))
-                        : $hargaBeliBaru;
+                    $besardis = (float) ($it['besardis'] ?? 0);
+                    $hasDiscount = ($besardis > 0) || ((float) ($it['dis'] ?? 0) > 0);
 
-                    DB::connection('fufufafa')->table('databarang')->where('kode_brng', $it['kode_brng'])->update([
+                    // Nilai untuk kolom 'dasar' selalu mencerminkan harga setelah diskon jika ada
+                    $hargaDasarField = $hasDiscount ? max($hargaBeliBaru - $besardis, 0) : $hargaBeliBaru;
+
+                    // Basis perhitungan harga jual mengikuti konfigurasi hargadasar
+                    $useHargaDiskon = ($persen && isset($persen->hargadasar) && $persen->hargadasar === 'Harga Diskon');
+                    $baseForSale = $useHargaDiskon ? $hargaDasarField : $hargaBeliBaru;
+
+                    // Siapkan field update: selalu set h_beli ke HNA pembelian saat ini,
+                    // dan dasar mencerminkan harga setelah diskon bila ada
+                    $updates = [
                         'h_beli' => $hargaBeliBaru,
-                        'dasar' => $hargaDasar,
-                        'ralan' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->ralan ?? 0)).' / 100)'),
-                        'kelas1' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->kelas1 ?? 0)).' / 100)'),
-                        'kelas2' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->kelas2 ?? 0)).' / 100)'),
-                        'kelas3' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->kelas3 ?? 0)).' / 100)'),
-                        'utama' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->utama ?? 0)).' / 100)'),
-                        'vip' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->vip ?? 0)).' / 100)'),
-                        'vvip' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->vvip ?? 0)).' / 100)'),
-                        'beliluar' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->beliluar ?? 0)).' / 100)'),
-                        'jualbebas' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->jualbebas ?? 0)).' / 100)'),
-                        'karyawan' => DB::raw('ROUND('.$hargaDasar.' + '.$hargaDasar.' * '.((float) ($persen->karyawan ?? 0)).' / 100)'),
-                    ]);
+                        'dasar' => $hargaDasarField,
+                        'ralan' => DB::raw('ROUND('.$baseForSale.' + '.$baseForSale.' * '.((float) ($persen->ralan ?? 0)).' / 100)'),
+                        'kelas1' => DB::raw('ROUND('.$baseForSale.' + '.$baseForSale.' * '.((float) ($persen->kelas1 ?? 0)).' / 100)'),
+                        'kelas2' => DB::raw('ROUND('.$baseForSale.' + '.$baseForSale.' * '.((float) ($persen->kelas2 ?? 0)).' / 100)'),
+                        'kelas3' => DB::raw('ROUND('.$baseForSale.' + '.$baseForSale.' * '.((float) ($persen->kelas3 ?? 0)).' / 100)'),
+                        'utama' => DB::raw('ROUND('.$baseForSale.' + '.$baseForSale.' * '.((float) ($persen->utama ?? 0)).' / 100)'),
+                        'vip' => DB::raw('ROUND('.$baseForSale.' + '.$baseForSale.' * '.((float) ($persen->vip ?? 0)).' / 100)'),
+                        'vvip' => DB::raw('ROUND('.$baseForSale.' + '.$baseForSale.' * '.((float) ($persen->vvip ?? 0)).' / 100)'),
+                        'beliluar' => DB::raw('ROUND('.$baseForSale.' + '.$baseForSale.' * '.((float) ($persen->beliluar ?? 0)).' / 100)'),
+                        'jualbebas' => DB::raw('ROUND('.$baseForSale.' + '.$baseForSale.' * '.((float) ($persen->jualbebas ?? 0)).' / 100)'),
+                        'karyawan' => DB::raw('ROUND('.$baseForSale.' + '.$baseForSale.' * '.((float) ($persen->karyawan ?? 0)).' / 100)'),
+                    ];
+
+                    DB::connection('fufufafa')
+                        ->table('databarang')
+                        ->where('kode_brng', $it['kode_brng'])
+                        ->update($updates);
                 }
 
             return response()->json(['status' => 'ok', 'no_faktur' => $data['no_faktur']]);

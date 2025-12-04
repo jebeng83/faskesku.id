@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pemesanan extends Model
 {
+    protected $connection = 'fufufafa';
+
     protected $table = 'pemesanan';
 
     protected $primaryKey = 'no_faktur';

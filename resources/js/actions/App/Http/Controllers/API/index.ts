@@ -3,6 +3,7 @@ import EmployeeController from './EmployeeController'
 import PenjabController from './PenjabController'
 import PatientController from './PatientController'
 import ReferenceController from './ReferenceController'
+import PerusahaanPasienController from './PerusahaanPasienController'
 import PermissionController from './PermissionController'
 import RegPeriksaController from './RegPeriksaController'
 import UserController from './UserController'
@@ -15,6 +16,7 @@ const API = {
     PenjabController: Object.assign(PenjabController, PenjabController),
     PatientController: Object.assign(PatientController, PatientController),
     ReferenceController: Object.assign(ReferenceController, ReferenceController),
+    PerusahaanPasienController: Object.assign(PerusahaanPasienController, PerusahaanPasienController),
     PermissionController: Object.assign(PermissionController, PermissionController),
     RegPeriksaController: Object.assign(RegPeriksaController, RegPeriksaController),
     UserController: Object.assign(UserController, UserController),

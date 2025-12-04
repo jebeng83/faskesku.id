@@ -263,31 +263,28 @@ class DataBarangController extends Controller
                 ], 404);
             }
 
-            // Update databarang
+            // Tentukan apakah ini kasus diskon (dasar < h_beli)
+            $hasDiscount = ((float) $validated['dasar']) < ((float) $validated['h_beli']);
+            $updateFields = [
+                'h_beli' => $validated['h_beli'],
+                'dasar' => $validated['dasar'],
+            ];
+
             DB::connection('fufufafa')
                 ->table('databarang')
                 ->where('kode_brng', $kode_brng)
-                ->update([
-                    'dasar' => $validated['dasar'],
-                    'h_beli' => $validated['h_beli'],
-                ]);
+                ->update($updateFields);
 
-            // Update created_at di detailbeli untuk tracking perubahan h_beli terbaru
-            DB::connection('fufufafa')
-                ->table('detailbeli')
-                ->where('kode_brng', $kode_brng)
-                ->where('h_beli', $validated['h_beli'])
-                ->update([
-                    'created_at' => now(),
-                ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Harga databarang berhasil diupdate',
+                'message' => $hasDiscount
+                    ? 'Harga dasar diperbarui dari pembelian dengan diskon (h_beli tetap)'
+                    : 'Harga dasar dan h_beli diperbarui dari pembelian',
                 'data' => [
                     'kode_brng' => $kode_brng,
                     'dasar' => $validated['dasar'],
-                    'h_beli' => $validated['h_beli'],
+                    'h_beli' => $hasDiscount ? ($dataBarang->h_beli ?? $validated['h_beli']) : $validated['h_beli'],
                 ],
             ]);
         } catch (\Exception $e) {

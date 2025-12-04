@@ -4,6 +4,8 @@ import { Head, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
 import { toast } from "@/tools/toast";
+import Button from "@/Components/ui/Button";
+import Input from "@/Components/ui/Input";
 import {
     Search,
     RefreshCcw,
@@ -45,26 +47,6 @@ function CardTitle({ children }) {
 }
 function CardContent({ children, className = "" }) {
     return <div className={`p-4 ${className}`}>{children}</div>;
-}
-function Button({ children, className = "", ...props }) {
-    return (
-        <motion.button
-            whileHover={{ y: -1 }}
-            whileTap={{ scale: 0.98 }}
-            {...props}
-            className={`inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors hover:bg-gray-50 ${className}`}
-        >
-            {children}
-        </motion.button>
-    );
-}
-function Input({ className = "", ...props }) {
-    return (
-        <input
-            {...props}
-            className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${className}`}
-        />
-    );
 }
 function Select({ className = "", ...props }) {
     return (
@@ -508,6 +490,7 @@ export default function DataOpname({ auth }) {
                                                     kdjns: e.target.value,
                                                 }))
                                             }
+                                            aria-label="Pilih Jenis Obat"
                                         >
                                             <option value="">
                                                 Semua Jenis
@@ -534,6 +517,7 @@ export default function DataOpname({ auth }) {
                                                     kategori: e.target.value,
                                                 }))
                                             }
+                                            aria-label="Pilih Kategori Obat"
                                         >
                                             <option value="">
                                                 Semua Kategori
@@ -560,6 +544,7 @@ export default function DataOpname({ auth }) {
                                                     golongan: e.target.value,
                                                 }))
                                             }
+                                            aria-label="Pilih Golongan Obat"
                                         >
                                             <option value="">
                                                 Semua Golongan
@@ -591,6 +576,7 @@ export default function DataOpname({ auth }) {
                                                         e.target.value,
                                                 }))
                                             }
+                                            aria-label="Tanggal dari"
                                         />
                                     </div>
                                     <div>
@@ -607,6 +593,7 @@ export default function DataOpname({ auth }) {
                                                         e.target.value,
                                                 }))
                                             }
+                                            aria-label="Tanggal sampai"
                                         />
                                     </div>
                                     <div>
@@ -621,6 +608,7 @@ export default function DataOpname({ auth }) {
                                                     kd_bangsal: e.target.value,
                                                 }))
                                             }
+                                            aria-label="Pilih Lokasi"
                                         >
                                             <option value="">
                                                 Semua Lokasi
@@ -649,12 +637,14 @@ export default function DataOpname({ auth }) {
                                                     }))
                                                 }
                                                 placeholder="Cari nama/kode barang"
+                                                aria-label="Kata kunci pencarian"
                                             />
                                             <Button
                                                 title="Cari berdasarkan kata kunci"
                                                 aria-label="Cari berdasarkan kata kunci"
                                                 onClick={doSearch}
-                                                className="bg-indigo-50 border-indigo-300 text-indigo-700"
+                                                variant="primary"
+                                                size="md"
                                             >
                                                 <Search className="w-4 h-4" />{" "}
                                                 Cari
@@ -668,7 +658,8 @@ export default function DataOpname({ auth }) {
                                                         keyword: "",
                                                     }))
                                                 }
-                                                className="border-gray-300 text-gray-700"
+                                                variant="secondary"
+                                                size="md"
                                             >
                                                 <XCircle className="w-4 h-4" />{" "}
                                                 Bersihkan
@@ -679,30 +670,37 @@ export default function DataOpname({ auth }) {
                                 <div className="mt-3 flex gap-2">
                                     <Button
                                         onClick={fetchList}
-                                        className="bg-blue-50 border-blue-300 text-blue-700"
+                                        variant="primary"
+                                        size="md"
                                     >
                                         Tampilkan
                                     </Button>
-                                    <Button onClick={resetFilters}>
+                                    <Button
+                                        onClick={resetFilters}
+                                        variant="secondary"
+                                        size="md"
+                                    >
                                         <RefreshCcw className="w-4 h-4" /> Reset
                                     </Button>
-                                    <Button onClick={handlePrint}>
+                                    <Button
+                                        onClick={handlePrint}
+                                        variant="outline"
+                                        size="md"
+                                    >
                                         <Printer className="w-4 h-4" /> Cetak
                                     </Button>
                                     <Button
                                         onClick={deleteSelected}
                                         disabled={selected.size === 0}
-                                        className={`border-red-300 ${
-                                            selected.size === 0
-                                                ? "text-red-300"
-                                                : "text-red-600"
-                                        }`}
+                                        variant="danger"
+                                        size="md"
                                     >
                                         <Trash2 className="w-4 h-4" /> Hapus
                                     </Button>
                                     <Button
                                         onClick={openAddObatModal}
-                                        className="bg-violet-50 border-violet-300 text-violet-700"
+                                        variant="success"
+                                        size="md"
                                     >
                                         <Plus className="w-4 h-4" /> + Obat
                                     </Button>

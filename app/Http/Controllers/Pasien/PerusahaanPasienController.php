@@ -12,6 +12,24 @@ class PerusahaanPasienController extends Controller
 {
     public function store(Request $request)
     {
+        $kode = $request->input('kode_perusahaan');
+        if (!$kode) {
+            $last = PerusahaanPasien::where('kode_perusahaan', 'like', 'I%')
+                ->orderBy('kode_perusahaan', 'desc')
+                ->first();
+            $lastNum = 0;
+            if ($last && preg_match('/^I(\d{4})$/', $last->kode_perusahaan, $m)) {
+                $lastNum = (int) $m[1];
+            }
+            $nextNum = $lastNum + 1;
+            $nextCode = 'I' . str_pad($nextNum, 4, '0', STR_PAD_LEFT);
+            while (PerusahaanPasien::where('kode_perusahaan', $nextCode)->exists()) {
+                $nextNum++;
+                $nextCode = 'I' . str_pad($nextNum, 4, '0', STR_PAD_LEFT);
+            }
+            $request->merge(['kode_perusahaan' => $nextCode]);
+        }
+
         // Validasi
         $validator = Validator::make($request->all(), [
             'kode_perusahaan' => 'required|string|max:8|unique:perusahaan_pasien,kode_perusahaan',

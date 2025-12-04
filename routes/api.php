@@ -23,6 +23,7 @@ use App\Http\Controllers\Pcare\MobileJknController;
 use App\Http\Controllers\Pcare\PcareController;
 use App\Http\Controllers\Pcare\PcareKunjunganController;
 use App\Http\Controllers\Farmasi\PembelianController as FarmasiPembelianController;
+use App\Http\Controllers\Farmasi\PemesananController as FarmasiPemesananController;
 use App\Http\Controllers\PermintaanLabController;
 use App\Http\Controllers\PermintaanRadiologiController;
 use App\Http\Controllers\PoliklinikController;
@@ -48,7 +49,7 @@ Route::prefix('public')->group(function () {
 // Menggunakan 'auth:sanctum' untuk Inertia.js SPA authentication
 // Sanctum akan otomatis menggunakan session-based auth untuk requests dari stateful domains
 // (localhost, 127.0.0.1:8000, dll) dan token-based auth untuk external API
-Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware('auth:sanctum')->group(function () {
     Route::post('/employees', [EmployeeController::class, 'store'])->name('api.employees.store');
     Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('api.employees.destroy');
 
@@ -61,6 +62,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Reference lookup endpoints
     Route::get('/perusahaan-pasien', [ReferenceController::class, 'perusahaanPasien'])->name('api.perusahaan-pasien.index');
+    Route::get('/perusahaan-pasien/next-code', [\App\Http\Controllers\API\PerusahaanPasienController::class, 'nextCode'])->name('api.perusahaan-pasien.next-code');
     Route::get('/suku-bangsa', [ReferenceController::class, 'sukuBangsa'])->name('api.suku-bangsa.index');
     Route::get('/bahasa-pasien', [ReferenceController::class, 'bahasaPasien'])->name('api.bahasa-pasien.index');
     Route::get('/cacat-fisik', [ReferenceController::class, 'cacatFisik'])->name('api.cacat-fisik.index');
@@ -198,6 +200,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/akun-bayar', [FarmasiPembelianController::class, 'getAkunBayar'])->name('api.pembelian.akun-bayar');
         Route::get('/generate-no-faktur', [FarmasiPembelianController::class, 'generateNoFaktur'])->name('api.pembelian.generate-no-faktur');
         Route::post('/store', [FarmasiPembelianController::class, 'store'])->name('api.pembelian.store');
+    });
+
+    // Farmasi - Pemesanan (PO) API Routes
+    Route::prefix('pemesanan')->group(function () {
+        Route::get('/generate-no-order', [FarmasiPemesananController::class, 'generateNoOrder'])->name('api.pemesanan.generate-no-order');
+        Route::post('/store', [FarmasiPemesananController::class, 'store'])->name('api.pemesanan.store');
     });
 
     // Barang search endpoint (used by Pembelian Obat page)
