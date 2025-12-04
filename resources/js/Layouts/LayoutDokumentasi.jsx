@@ -36,7 +36,7 @@ export default function LayoutDokumentasi({
             query: "?raw",
             import: "default",
         });
-        return Object.entries(modules).map(([path, content]) => {
+        const mapped = Object.entries(modules).map(([path, content]) => {
             const name = (path.split("/").pop() || "").replace(".md", "");
             const title = name
                 .replace(/([a-z])([A-Z])/g, "$1 $2")
@@ -48,6 +48,12 @@ export default function LayoutDokumentasi({
                 .toLowerCase();
             return { id, title, content };
         });
+        const exclude = new Set([
+            "dashboard",
+            "master-data",
+            "cara-membuat-dokumentasi-user",
+        ]);
+        return mapped.filter((i) => !exclude.has(i.id));
     }, []);
 
     const baseItems = useMemo(() => {
@@ -207,7 +213,7 @@ export default function LayoutDokumentasi({
             <TopNavbar />
             <div
                 id="doc-layout"
-                className="min-h-screen w-full bg-gradient-to-br from-blue-50 via-indigo-50 to-cyan-50 dark:from-[#0B1220] dark:via-[#0F172A] dark:to-[#111827] p-6 pt-24 sm:pt-28 relative z-0"
+                className="h-screen overflow-hidden w-full bg-gradient-to-br from-blue-50 via-indigo-50 to-cyan-50 dark:from-[#0B1220] dark:via-[#0F172A] dark:to-[#111827] p-6 pt-24 sm:pt-28 relative z-0"
             >
                 <div
                     aria-hidden
@@ -226,7 +232,7 @@ export default function LayoutDokumentasi({
                             </div>
                         </div>
                         <div className="col-span-12 md:col-span-3">
-                            <section className="relative overflow-hidden rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/85 backdrop-blur-xl p-4 shadow-xl shadow-blue-500/5">
+                            <section className="md:sticky md:top-24 relative h-[calc(100vh-8rem)] overflow-hidden rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/85 backdrop-blur-xl p-6 shadow-xl shadow-blue-500/5">
                                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-500" />
                                 <div className="flex items-center gap-2 mb-4">
                                     <BookOpen className="w-4 h-4 text-emerald-700" />
@@ -247,7 +253,7 @@ export default function LayoutDokumentasi({
                                         />
                                     </div>
                                 </div>
-                                <div className="max-h-[60vh] overflow-auto pr-1 space-y-1">
+                                <div className="pr-1 space-y-1">
                                     {filtered.length === 0 ? (
                                         <div className="text-xs text-gray-600 dark:text-gray-400">
                                             Tidak ada menu
@@ -285,7 +291,7 @@ export default function LayoutDokumentasi({
                             </section>
                         </div>
                         <div className="col-span-12 md:col-span-9">
-                            <section className="relative overflow-hidden rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/85 backdrop-blur-xl p-6 shadow-xl shadow-blue-500/5">
+                            <section className="relative h-[calc(100vh-8rem)] overflow-y-auto rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/85 backdrop-blur-xl p-6 shadow-xl shadow-blue-500/5">
                                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
                                 <div className="flex items-center gap-2 mb-4">
                                     <Sparkles className="w-4 h-4 text-indigo-700" />
