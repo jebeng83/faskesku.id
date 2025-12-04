@@ -1,4 +1,6 @@
 import React, { useMemo, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Head, Link, usePage } from "@inertiajs/react";
 import {
     Sparkles,
@@ -9,6 +11,7 @@ import {
     LogOut,
 } from "lucide-react";
 import { route } from "ziggy-js";
+import installDocRaw from "../../../docs/DokumentasiUser/InstallAplikasi.md?raw";
 
 export default function LayoutDokumentasi({
     title = "Dokumentasi",
@@ -25,33 +28,113 @@ export default function LayoutDokumentasi({
         "Faskesku.id";
     const [query, setQuery] = useState("");
     const [activeId, setActiveId] = useState(items?.[0]?.id ?? null);
+    const [showDetail, setShowDetail] = useState(false);
+
+    const autoItems = useMemo(() => {
+        const modules = import.meta.glob("../../../docs/DokumentasiUser/*.md", {
+            eager: true,
+            query: "?raw",
+            import: "default",
+        });
+        return Object.entries(modules).map(([path, content]) => {
+            const name = (path.split("/").pop() || "").replace(".md", "");
+            const title = name
+                .replace(/([a-z])([A-Z])/g, "$1 $2")
+                .replace(/[-_]+/g, " ")
+                .trim();
+            const id = name
+                .replace(/([a-z])([A-Z])/g, "$1-$2")
+                .replace(/[^a-z0-9]+/gi, "-")
+                .toLowerCase();
+            return { id, title, content };
+        });
+    }, []);
+
+    const baseItems = useMemo(() => {
+        const installQuickSteps = [
+            "Siapkan .env dan generate APP_KEY",
+            "Install dependency PHP dan jalankan storage:link",
+            "Migrasi database bila diperlukan (artisan migrate --force)",
+            "Install dependency Node termasuk devDependencies (npm ci --include=dev)",
+            "Build aset frontend (npm run build)",
+            "Optimisasi cache config/route/view",
+            "Atur permission storage dan bootstrap/cache",
+            "Konfigurasi web server mengarah ke public/",
+        ];
+        const installDoc = autoItems.find((i) => i.id === "install-aplikasi");
+        return [
+            {
+                id: "install-aplikasi",
+                title: "Install Aplikasi",
+                description: "Panduan instalasi & deploy",
+                steps: installQuickSteps,
+                content: installDoc?.content || installDocRaw,
+            },
+        ];
+    }, [autoItems]);
+
+    const allItems = useMemo(() => {
+        const incoming = Array.isArray(items) ? items : [];
+        const merged = [...baseItems, ...autoItems, ...incoming];
+        const unique = [];
+        const seen = new Set();
+        for (const i of merged) {
+            const key = (i?.id || String(i?.title || "")).toLowerCase();
+            if (seen.has(key)) continue;
+            seen.add(key);
+            unique.push(i);
+        }
+        const idx = unique.findIndex(
+            (i) =>
+                i?.id === "install-aplikasi" ||
+                String(i?.title || "")
+                    .toLowerCase()
+                    .includes("install aplikasi")
+        );
+        if (idx > 0) {
+            const item = unique[idx];
+            const rest = unique.filter((_, j) => j !== idx);
+            return [item, ...rest];
+        }
+        return unique;
+    }, [items, baseItems, autoItems]);
     const filtered = useMemo(() => {
         const q = String(query || "").toLowerCase();
-        return Array.isArray(items)
-            ? items.filter((i) =>
+        return Array.isArray(allItems)
+            ? allItems.filter((i) =>
                   String(i?.title || "")
                       .toLowerCase()
                       .includes(q)
               )
             : [];
-    }, [items, query]);
+    }, [allItems, query]);
     const active = useMemo(() => {
-        return Array.isArray(items)
-            ? items.find((i) => i?.id === activeId) ?? null
+        return Array.isArray(allItems)
+            ? allItems.find((i) => i?.id === activeId) ?? null
             : null;
-    }, [items, activeId]);
+    }, [allItems, activeId]);
 
     React.useEffect(() => {
-        if (!initialSelect || !Array.isArray(items) || items.length === 0)
+        if (active?.content) setShowDetail(true);
+    }, [active]);
+
+    React.useEffect(() => {
+        if (!initialSelect || !Array.isArray(allItems) || allItems.length === 0)
             return;
         const key = String(initialSelect || "").toLowerCase();
-        const found = items.find((i) =>
+        const found = allItems.find((i) =>
             String(i?.title || "")
                 .toLowerCase()
                 .includes(key)
         );
         if (found?.id) setActiveId(found.id);
-    }, [initialSelect, items]);
+    }, [initialSelect, allItems]);
+
+    React.useEffect(() => {
+        if (!activeId && Array.isArray(allItems) && allItems[0]?.id) {
+            setActiveId(allItems[0].id);
+        }
+    }, [allItems, activeId]);
 
     const TopNavbar = React.memo(function TopNavbar() {
         return (
@@ -173,9 +256,11 @@ export default function LayoutDokumentasi({
                                         filtered.map((i) => (
                                             <button
                                                 key={i.id ?? i.title}
-                                                onClick={() =>
-                                                    setActiveId(i.id)
-                                                }
+                                                onClick={() => {
+                                                    setActiveId(i.id);
+                                                    if (i.content)
+                                                        setShowDetail(true);
+                                                }}
                                                 className={`group w-full text-left px-3 py-2 rounded-lg border transition-all ${
                                                     activeId === i.id
                                                         ? "border-emerald-500/50 bg-emerald-50/60 dark:bg-emerald-900/30"
@@ -237,6 +322,31 @@ export default function LayoutDokumentasi({
                                                 melihat panduan.
                                             </div>
                                         )}
+                                        {active.content ? (
+                                            <div className="mt-3">
+                                                <button
+                                                    onClick={() =>
+                                                        setShowDetail((v) => !v)
+                                                    }
+                                                    className="inline-flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg border border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+                                                >
+                                                    {showDetail
+                                                        ? "Sembunyikan detail"
+                                                        : "Tampilkan detail lengkap"}
+                                                </button>
+                                                {showDetail && (
+                                                    <div className="mt-2 text-sm">
+                                                        <ReactMarkdown
+                                                            remarkPlugins={[
+                                                                remarkGfm,
+                                                            ]}
+                                                        >
+                                                            {active.content}
+                                                        </ReactMarkdown>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ) : null}
                                     </div>
                                 ) : (
                                     <div className="text-sm text-gray-600 dark:text-gray-400">

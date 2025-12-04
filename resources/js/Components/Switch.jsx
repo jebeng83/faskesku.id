@@ -11,23 +11,23 @@ export default function Switch({
 }) {
     const sizes = {
         sm: {
-            wrapper: "w-20 h-8",
+            wrapper: "w-24 h-8",
             knob: "w-7 h-7",
-            translateOn: "translate-x-12",
+            translateOn: "translate-x-16",
             translateOff: "translate-x-2",
             text: "text-xs",
         },
         md: {
-            wrapper: "w-28 h-10",
+            wrapper: "w-32 h-10",
             knob: "w-8 h-8",
-            translateOn: "translate-x-20",
+            translateOn: "translate-x-24",
             translateOff: "translate-x-2",
             text: "text-sm",
         },
         lg: {
-            wrapper: "w-32 h-10",
+            wrapper: "w-36 h-10",
             knob: "w-8 h-8",
-            translateOn: "translate-x-24",
+            translateOn: "translate-x-28",
             translateOff: "translate-x-2",
             text: "text-sm",
         },
@@ -36,9 +36,7 @@ export default function Switch({
     const sz = sizes[size] || sizes.md;
 
     const bgClass = checked ? "bg-teal-500" : "bg-gray-300";
-    const label = checked ? onLabel : offLabel;
     const labelColor = checked ? "text-white" : "text-gray-700";
-    const labelPos = checked ? "left-3" : "right-3";
 
     const handleClick = () => {
         if (disabled) return;
@@ -59,9 +57,22 @@ export default function Switch({
             } ${className}`}
         >
             <span
-                className={`absolute ${labelPos} ${labelColor} ${sz.text} font-semibold pointer-events-none select-none`}
+                className={`absolute left-3 ${labelColor} ${
+                    sz.text
+                } font-semibold pointer-events-none select-none ${
+                    checked ? "opacity-100" : "opacity-0"
+                }`}
             >
-                {label}
+                {onLabel}
+            </span>
+            <span
+                className={`absolute right-3 ${labelColor} ${
+                    sz.text
+                } font-semibold pointer-events-none select-none ${
+                    checked ? "opacity-0" : "opacity-100"
+                }`}
+            >
+                {offLabel}
             </span>
             <span
                 className={`absolute rounded-full bg-white shadow transition-transform duration-200 ${

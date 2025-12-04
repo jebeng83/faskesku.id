@@ -132,6 +132,10 @@ export default function Docs() {
 
     const section = String(props?.section || "");
     const render = ({ active }) => {
+        const src = active?.content;
+        if (src && String(src).trim().length > 0) {
+            return <SimpleMarkdown source={src} />;
+        }
         const title = String(active?.title || "").toLowerCase();
         const md = title.includes("master data") ? masterDataMd : dashboardMd;
         return <SimpleMarkdown source={md} />;
