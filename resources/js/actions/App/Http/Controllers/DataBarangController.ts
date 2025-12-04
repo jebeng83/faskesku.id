@@ -53,7 +53,7 @@ updateHarga.put = (args: { kode_brng: string | number } | [kode_brng: string | n
 
 /**
 * @see \App\Http\Controllers\DataBarangController::updateHargaJual
-* @see app/Http/Controllers/DataBarangController.php:301
+* @see app/Http/Controllers/DataBarangController.php:298
 * @route '/api/databarang/update-harga-jual/{kode_brng}'
 */
 export const updateHargaJual = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -68,7 +68,7 @@ updateHargaJual.definition = {
 
 /**
 * @see \App\Http\Controllers\DataBarangController::updateHargaJual
-* @see app/Http/Controllers/DataBarangController.php:301
+* @see app/Http/Controllers/DataBarangController.php:298
 * @route '/api/databarang/update-harga-jual/{kode_brng}'
 */
 updateHargaJual.url = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -95,7 +95,7 @@ updateHargaJual.url = (args: { kode_brng: string | number } | [kode_brng: string
 
 /**
 * @see \App\Http\Controllers\DataBarangController::updateHargaJual
-* @see app/Http/Controllers/DataBarangController.php:301
+* @see app/Http/Controllers/DataBarangController.php:298
 * @route '/api/databarang/update-harga-jual/{kode_brng}'
 */
 updateHargaJual.put = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({

@@ -254,7 +254,9 @@ UI StokOpname.jsx
 Dengan mengikuti pola di atas, implementasi inventori pada aplikasi ini akan selaras dengan modul Java yang ada: konsisten dalam pencatatan stok dan batch, akurat secara akuntansi, dan lengkap jejak auditnya.
 ## Urutan Pengembangan Lanjutan
 - Selaraskan payload UI ↔ backend Farmasi pada pembelian: gunakan `total1`, `potongan`, `total2`, `kd_rek` di `pembelian`/`detailbeli`.
-- Pusatkan pembaruan stok dan harga jual di backend; hilangkan duplikasi logika di `resources/js/Pages/farmasi/PembelianObat.jsx`.
+- Tetapkan satu sumber kebenaran (SSOT) harga di backend: `h_beli` disimpan sebagai HNA (harga vendor) dan `dasar = h_beli - besardis` bila ada diskon (non‑negatif). Harga jual per kelas dihitung dari `dasar` sesuai `set_harga_obat`.
+- Frontend tidak lagi mengirim update harga setelah pembelian; logika update harga dan perhitungan jual sepenuhnya terpusat di controller backend.
+- Standarisasi endpoint harga barang: `PUT /api/databarang/update-harga` untuk persist `h_beli` dan `dasar`, serta `PUT /api/databarang/update-harga-jual` untuk menghitung harga jual dari base sesuai konfigurasi (termasuk PPN bila diaktifkan).
 - Perbaiki staging jurnal Farmasi ke skema `kd_rek`/`nm_rek` dan pastikan Debet=Kredit memakai akun dari `set_akun`.
 - Pastikan rute API pembelian mengarah ke `App\Http\Controllers\Farmasi\PembelianController@store` untuk satu sumber kebenaran.
 - Tambahkan validasi serta transaksi database yang ketat saat menyimpan header, item, batch, dan stok gudang.

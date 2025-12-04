@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class DetailPesan extends Model
 {
+    protected $connection = 'fufufafa';
+
     protected $table = 'detailpesan';
 
     public $timestamps = false;
