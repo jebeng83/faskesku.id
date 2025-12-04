@@ -1,6 +1,6 @@
 # Install Aplikasi Faskesku.id (Octane + FrankenPHP)
 
-Panduan singkat untuk menyiapkan aplikasi di server produksi dengan Laravel Octane (driver FrankenPHP). Ikuti urutan langkah di bawah. Jika perlu detail tambahan, lihat tombol "Tampilkan detail lengkap" di halaman Dokumentasi.
+Panduan singkat untuk menyiapkan aplikasi di server produksi dengan Laravel Octane (driver FrankenPHP). Ikuti urutan langkah di bawah.
 
 ## Prasyarat
 - Node.js ≥ 18 dan npm ≥ 10
@@ -107,9 +107,7 @@ chmod -R 775 storage bootstrap/cache
   ```bash
   npm i baseline-browser-mapping@latest -D
   ```
-- Embed Google Maps tidak muncul di produksi:
-  - Tambahkan domain Google ke CSP `frame-src` (mis. `https://www.google.com`, `https://maps.google.com`), atau gunakan fallback statis (`VITE_GOOGLE_MAPS_STATIC_ONLY=true`).
-- Octane-friendly code: hindari state per-request di constructor dan static property; lihat `docs/ANALISIS_LARAVEL_OCTANE.md`.
+
 
 ## Alternatif (Build di Lokal)
 - Jalankan di komputer lokal:
