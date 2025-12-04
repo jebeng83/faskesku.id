@@ -257,7 +257,7 @@ export default function SetoranBankPage() {
     return (
         <SidebarKeuangan>
             <Head title="Keuangan - Setoran Bank" />
-            <div className="px-4 md:px-6 lg:px-8 py-4">
+            <div className="py-6">
                 <motion.div
                     variants={containerVariants}
                     initial="hidden"

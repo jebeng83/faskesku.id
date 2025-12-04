@@ -3,6 +3,7 @@ import { Head } from "@inertiajs/react";
 import axios from "axios";
 import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
 import { Info, ChevronDown, ChevronRight } from "lucide-react";
+import Switch from "@/Components/Switch";
 
 const Card = ({ title, children }) => (
     <div className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5">
@@ -417,58 +418,51 @@ export default function RekeningPage() {
                             </div>
                         )}
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Balance
-                            </label>
-                            <select
-                                value={form.balance}
-                                onChange={(e) =>
-                                    setForm({
-                                        ...form,
-                                        balance: e.target.value,
-                                    })
-                                }
-                                title="Saldo normal akun: Debet atau Kredit"
-                                className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 ${
-                                    errors.balance
-                                        ? "border-red-500 focus:ring-red-300"
-                                        : "border-gray-300 focus:ring-blue-300"
-                                }`}
-                            >
-                                <option value="Debet">Debet</option>
-                                <option value="Kredit">Kredit</option>
-                            </select>
+                        <div className="md:col-span-3">
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Balance
+                                    </span>
+                                    <Switch
+                                        checked={form.balance === "Kredit"}
+                                        onChange={(v) =>
+                                            setForm({
+                                                ...form,
+                                                balance: v ? "Kredit" : "Debet",
+                                            })
+                                        }
+                                        onLabel="Kredit"
+                                        offLabel="Debet"
+                                        size="md"
+                                    />
+                                </div>
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Nama Rekening
+                                </label>
+                                <input
+                                    type="text"
+                                    value={form.nm_rek}
+                                    onChange={(e) =>
+                                        setForm({
+                                            ...form,
+                                            nm_rek: e.target.value,
+                                        })
+                                    }
+                                    placeholder="Mis. Kas, Piutang Usaha"
+                                    maxLength={100}
+                                    className={`flex-1 rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 ${
+                                        errors.nm_rek
+                                            ? "border-red-500 focus:ring-red-300"
+                                            : "border-gray-300 focus:ring-blue-300"
+                                    }`}
+                                />
+                            </div>
                             {errors.balance && (
                                 <p className="mt-1 text-xs text-red-600">
                                     {errors.balance}
                                 </p>
                             )}
-                            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                <Info className="w-3 h-3" />
-                                Balance menunjukkan saldo normal akun. Contoh:
-                                Aset biasanya Debet, Pendapatan biasanya Kredit.
-                            </p>
-                        </div>
-
-                        <div className="md:col-span-3">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Nama Rekening
-                            </label>
-                            <input
-                                type="text"
-                                value={form.nm_rek}
-                                onChange={(e) =>
-                                    setForm({ ...form, nm_rek: e.target.value })
-                                }
-                                placeholder="Mis. Kas, Piutang Usaha"
-                                maxLength={100}
-                                className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 ${
-                                    errors.nm_rek
-                                        ? "border-red-500 focus:ring-red-300"
-                                        : "border-gray-300 focus:ring-blue-300"
-                                }`}
-                            />
                             {errors.nm_rek && (
                                 <p className="mt-1 text-xs text-red-600">
                                     {errors.nm_rek}

@@ -1,0 +1,220 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        if (!Schema::hasTable('penilaian_awal_keperawatan_ranap')) {
+            Schema::create('penilaian_awal_keperawatan_ranap', function (Blueprint $table) {
+                $table->string('no_rawat', 17)->primary();
+                $table->dateTime('tanggal');
+                $table->enum('informasi', ['Autoanamnesis', 'Alloanamnesis']);
+                $table->string('ket_informasi', 30);
+                $table->enum('tiba_diruang_rawat', ['Jalan Tanpa Bantuan', 'Kursi Roda', 'Brankar']);
+                $table->enum('kasus_trauma', ['Trauma', 'Non Trauma'])->nullable();
+                $table->enum('cara_masuk', ['Poli', 'IGD', 'Lain-lain']);
+                $table->string('rps', 300);
+                $table->string('rpd', 100);
+                $table->string('rpk', 100);
+                $table->string('rpo', 100);
+                $table->string('riwayat_pembedahan', 40);
+                $table->string('riwayat_dirawat_dirs', 40);
+                $table->enum('alat_bantu_dipakai', ['Kacamata', 'Prothesa', 'Alat Bantu Dengar', 'Lain-lain']);
+                $table->enum('riwayat_kehamilan', ['Tidak', 'Ya']);
+                $table->string('riwayat_kehamilan_perkiraan', 30);
+                $table->string('riwayat_tranfusi', 40);
+                $table->string('riwayat_alergi', 40);
+                $table->enum('riwayat_merokok', ['Tidak', 'Ya']);
+                $table->string('riwayat_merokok_jumlah', 5);
+                $table->enum('riwayat_alkohol', ['Tidak', 'Ya']);
+                $table->string('riwayat_alkohol_jumlah', 5);
+                $table->enum('riwayat_narkoba', ['Tidak', 'Ya']);
+                $table->enum('riwayat_olahraga', ['Tidak', 'Ya']);
+                $table->string('pemeriksaan_mental', 40);
+                $table->enum('pemeriksaan_keadaan_umum', ['Baik', 'Sedang', 'Buruk']);
+                $table->string('pemeriksaan_gcs', 10);
+                $table->string('pemeriksaan_td', 8);
+                $table->string('pemeriksaan_nadi', 5);
+                $table->string('pemeriksaan_rr', 5);
+                $table->string('pemeriksaan_suhu', 5);
+                $table->string('pemeriksaan_spo2', 5);
+                $table->string('pemeriksaan_bb', 5);
+                $table->string('pemeriksaan_tb', 5);
+                $table->enum('pemeriksaan_susunan_kepala', ['TAK', 'Hydrocephalus', 'Hematoma', 'Lain-lain']);
+                $table->string('pemeriksaan_susunan_kepala_keterangan', 50);
+                $table->enum('pemeriksaan_susunan_wajah', ['TAK', 'Asimetris', 'Kelainan Kongenital']);
+                $table->string('pemeriksaan_susunan_wajah_keterangan', 50);
+                $table->enum('pemeriksaan_susunan_leher', ['TAK', 'Kaku Kuduk', 'Pembesaran Thyroid', 'Pembesaran KGB']);
+                $table->enum('pemeriksaan_susunan_kejang', ['TAK', 'Kuat', 'Ada']);
+                $table->string('pemeriksaan_susunan_kejang_keterangan', 50);
+                $table->enum('pemeriksaan_susunan_sensorik', ['TAK', 'Sakit Nyeri', 'Rasa kebas']);
+                $table->enum('pemeriksaan_kardiovaskuler_denyut_nadi', ['Teratur', 'Tidak Teratur']);
+                $table->enum('pemeriksaan_kardiovaskuler_sirkulasi', ['Akral Hangat', 'Akral Dingin', 'Edema']);
+                $table->string('pemeriksaan_kardiovaskuler_sirkulasi_keterangan', 50);
+                $table->enum('pemeriksaan_kardiovaskuler_pulsasi', ['Kuat', 'Lemah', 'Lain-lain']);
+                $table->enum('pemeriksaan_respirasi_pola_nafas', ['Normal', 'Bradipnea', 'Tachipnea']);
+                $table->enum('pemeriksaan_respirasi_retraksi', ['Tidak Ada', 'Ringan', 'Berat']);
+                $table->enum('pemeriksaan_respirasi_suara_nafas', ['Vesikuler', 'Wheezing', 'Rhonki']);
+                $table->enum('pemeriksaan_respirasi_volume_pernafasan', ['Normal', 'Hiperventilasi', 'Hipoventilasi']);
+                $table->enum('pemeriksaan_respirasi_jenis_pernafasan', ['Pernafasan Dada', 'Alat Bantu Pernafasaan']);
+                $table->string('pemeriksaan_respirasi_jenis_pernafasan_keterangan', 50);
+                $table->enum('pemeriksaan_respirasi_irama_nafas', ['Teratur', 'Tidak Teratur']);
+                $table->enum('pemeriksaan_respirasi_batuk', ['Tidak', 'Ya : Produktif', 'Ya : Non Produktif']);
+                $table->enum('pemeriksaan_gastrointestinal_mulut', ['TAK', 'Stomatitis', 'Mukosa Kering', 'Bibir Pucat', 'Lain-lain']);
+                $table->string('pemeriksaan_gastrointestinal_mulut_keterangan', 50);
+                $table->enum('pemeriksaan_gastrointestinal_gigi', ['TAK', 'Karies', 'Goyang', 'Lain-lain']);
+                $table->string('pemeriksaan_gastrointestinal_gigi_keterangan', 50);
+                $table->enum('pemeriksaan_gastrointestinal_lidah', ['TAK', 'Kotor', 'Gerak Asimetris', 'Lain-lain']);
+                $table->string('pemeriksaan_gastrointestinal_lidah_keterangan', 50);
+                $table->enum('pemeriksaan_gastrointestinal_tenggorokan', ['TAK', 'Gangguan Menelan', 'Sakit Menelan', 'Lain-lain']);
+                $table->string('pemeriksaan_gastrointestinal_tenggorokan_keterangan', 50);
+                $table->enum('pemeriksaan_gastrointestinal_abdomen', ['Supel', 'Asictes', ' Tegang', 'Nyeri Tekan/Lepas', 'Lain-lain']);
+                $table->string('pemeriksaan_gastrointestinal_abdomen_keterangan', 50);
+                $table->enum('pemeriksaan_gastrointestinal_peistatik_usus', ['TAK', 'Tidak Ada Bising Usus', 'Hiperistaltik']);
+                $table->enum('pemeriksaan_gastrointestinal_anus', ['TAK', 'Atresia Ani']);
+                $table->enum('pemeriksaan_neurologi_pengelihatan', ['TAK', 'Ada Kelainan']);
+                $table->string('pemeriksaan_neurologi_pengelihatan_keterangan', 50);
+                $table->enum('pemeriksaan_neurologi_alat_bantu_penglihatan', ['Tidak', 'Kacamata', 'Lensa Kontak']);
+                $table->enum('pemeriksaan_neurologi_pendengaran', ['TAK', 'Berdengung', 'Nyeri', 'Tuli', 'Keluar Cairan', 'Lain-lain']);
+                $table->enum('pemeriksaan_neurologi_bicara', ['Jelas', 'Tidak Jelas']);
+                $table->string('pemeriksaan_neurologi_bicara_keterangan', 50);
+                $table->enum('pemeriksaan_neurologi_sensorik', ['TAK', 'Sakit Nyeri', 'Rasa Kebas', 'Lain-lain']);
+                $table->enum('pemeriksaan_neurologi_motorik', ['TAK', 'Hemiparese', 'Tetraparese', 'Tremor', 'Lain-lain']);
+                $table->enum('pemeriksaan_neurologi_kekuatan_otot', ['Kuat', 'Lemah']);
+                $table->enum('pemeriksaan_integument_warnakulit', ['Pucat', 'Sianosis', 'Normal', 'Lain-lain']);
+                $table->enum('pemeriksaan_integument_turgor', ['Baik', 'Sedang', 'Buruk']);
+                $table->enum('pemeriksaan_integument_kulit', ['Normal', 'Rash/Kemerahan', 'Luka', 'Memar', 'Ptekie', 'Bula']);
+                $table->enum('pemeriksaan_integument_dekubitas', ['Tidak Ada', 'Usia > 65 tahun', 'Obesitas', 'Imobilisasi', 'Paraplegi/Vegetative State', 'Dirawat Di HCU', 'Penyakit Kronis (DM, CHF, CKD)', 'Inkontinentia Uri/Alvi']);
+                $table->enum('pemeriksaan_muskuloskletal_pergerakan_sendi', ['Bebas', 'Terbatas']);
+                $table->enum('pemeriksaan_muskuloskletal_kekauatan_otot', ['Baik', 'Lemah', 'Tremor']);
+                $table->enum('pemeriksaan_muskuloskletal_nyeri_sendi', ['Tidak Ada', 'Ada']);
+                $table->string('pemeriksaan_muskuloskletal_nyeri_sendi_keterangan', 50);
+                $table->enum('pemeriksaan_muskuloskletal_oedema', ['Tidak Ada', 'Ada']);
+                $table->string('pemeriksaan_muskuloskletal_oedema_keterangan', 50);
+                $table->enum('pemeriksaan_muskuloskletal_fraktur', ['Tidak Ada', 'Ada']);
+                $table->string('pemeriksaan_muskuloskletal_fraktur_keterangan', 50);
+                $table->string('pemeriksaan_eliminasi_bab_frekuensi_jumlah', 5);
+                $table->string('pemeriksaan_eliminasi_bab_frekuensi_durasi', 10);
+                $table->string('pemeriksaan_eliminasi_bab_konsistensi', 30);
+                $table->string('pemeriksaan_eliminasi_bab_warna', 30);
+                $table->string('pemeriksaan_eliminasi_bak_frekuensi_jumlah', 5);
+                $table->string('pemeriksaan_eliminasi_bak_frekuensi_durasi', 10);
+                $table->string('pemeriksaan_eliminasi_bak_warna', 30);
+                $table->string('pemeriksaan_eliminasi_bak_lainlain', 30);
+                $table->enum('pola_aktifitas_makanminum', ['Mandiri', 'Bantuan Orang Lain']);
+                $table->enum('pola_aktifitas_mandi', ['Mandiri', 'Bantuan Orang Lain']);
+                $table->enum('pola_aktifitas_eliminasi', ['Mandiri', 'Bantuan Orang Lain']);
+                $table->enum('pola_aktifitas_berpakaian', ['Mandiri', 'Bantuan Orang Lain']);
+                $table->enum('pola_aktifitas_berpindah', ['Mandiri', 'Bantuan Orang Lain']);
+                $table->string('pola_nutrisi_frekuesi_makan', 3);
+                $table->string('pola_nutrisi_jenis_makanan', 20);
+                $table->string('pola_nutrisi_porsi_makan', 3);
+                $table->string('pola_tidur_lama_tidur', 3);
+                $table->enum('pola_tidur_gangguan', ['Tidak Ada Gangguan', 'Insomnia']);
+                $table->enum('pengkajian_fungsi_kemampuan_sehari', ['Mandiri', 'Bantuan Minimal', 'Bantuan Sebagian', 'Ketergantungan Total']);
+                $table->enum('pengkajian_fungsi_aktifitas', ['Tirah Baring', 'Duduk', 'Berjalan']);
+                $table->enum('pengkajian_fungsi_berjalan', ['TAK', 'Penurunan Kekuatan/ROM', 'Paralisis', 'Sering Jatuh', 'Deformitas', 'Hilang Keseimbangan', 'Riwayat Patah Tulang', 'Lain-lain']);
+                $table->string('pengkajian_fungsi_berjalan_keterangan', 40);
+                $table->enum('pengkajian_fungsi_ambulasi', ['Walker', 'Tongkat', 'Kursi Roda', 'Tidak Menggunakan']);
+                $table->enum('pengkajian_fungsi_ekstrimitas_atas', ['TAK', 'Lemah', 'Oedema', 'Tidak Simetris', 'Lain-lain']);
+                $table->string('pengkajian_fungsi_ekstrimitas_atas_keterangan', 40);
+                $table->enum('pengkajian_fungsi_ekstrimitas_bawah', ['TAK', 'Varises', 'Oedema', 'Tidak Simetris', 'Lain-lain']);
+                $table->string('pengkajian_fungsi_ekstrimitas_bawah_keterangan', 40);
+                $table->enum('pengkajian_fungsi_menggenggam', ['Tidak Ada Kesulitan', 'Terakhir', 'Lain-lain']);
+                $table->string('pengkajian_fungsi_menggenggam_keterangan', 40);
+                $table->enum('pengkajian_fungsi_koordinasi', ['Tidak Ada Kesulitan', 'Ada Masalah']);
+                $table->string('pengkajian_fungsi_koordinasi_keterangan', 40);
+                $table->enum('pengkajian_fungsi_kesimpulan', ['Ya (Co DPJP)', 'Tidak (Tidak Perlu Co DPJP)']);
+                $table->enum('riwayat_psiko_kondisi_psiko', ['Tidak Ada Masalah', 'Marah', 'Takut', 'Depresi', 'Cepat Lelah', 'Cemas', 'Gelisah', 'Sulit Tidur', 'Lain-lain']);
+                $table->enum('riwayat_psiko_gangguan_jiwa', ['Ya', 'Tidak']);
+                $table->enum('riwayat_psiko_perilaku', ['Tidak Ada Masalah', 'Perilaku Kekerasan', 'Gangguan Efek', 'Gangguan Memori', 'Halusinasi', 'Kecenderungan Percobaan Bunuh Diri', 'Lain-lain']);
+                $table->string('riwayat_psiko_perilaku_keterangan', 40);
+                $table->enum('riwayat_psiko_hubungan_keluarga', ['Harmonis', 'Kurang Harmonis', 'Tidak Harmonis', 'Konflik Besar']);
+                $table->enum('riwayat_psiko_tinggal', ['Sendiri', 'Orang Tua', 'Suami/Istri', 'Keluarga', 'Lain-lain']);
+                $table->string('riwayat_psiko_tinggal_keterangan', 40);
+                $table->enum('riwayat_psiko_nilai_kepercayaan', ['Tidak Ada', 'Ada']);
+                $table->string('riwayat_psiko_nilai_kepercayaan_keterangan', 40);
+                $table->enum('riwayat_psiko_pendidikan_pj', ['-', 'TS', 'TK', 'SD', 'SMP', 'SMA', 'SLTA/SEDERAJAT', 'D1', 'D2', 'D3', 'D4', 'S1', 'S2', 'S3']);
+                $table->enum('riwayat_psiko_edukasi_diberikan', ['Pasien', 'Keluarga']);
+                $table->string('riwayat_psiko_edukasi_diberikan_keterangan', 40);
+                $table->enum('penilaian_nyeri', ['Tidak Ada Nyeri', 'Nyeri Akut', 'Nyeri Kronis']);
+                $table->enum('penilaian_nyeri_penyebab', ['Proses Penyakit', 'Benturan', 'Lain-lain']);
+                $table->string('penilaian_nyeri_ket_penyebab', 50);
+                $table->enum('penilaian_nyeri_kualitas', ['Seperti Tertusuk', 'Berdenyut', 'Teriris', 'Tertindih', 'Tertiban', 'Lain-lain']);
+                $table->string('penilaian_nyeri_ket_kualitas', 50);
+                $table->string('penilaian_nyeri_lokasi', 50);
+                $table->enum('penilaian_nyeri_menyebar', ['Tidak', 'Ya']);
+                $table->enum('penilaian_nyeri_skala', ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']);
+                $table->string('penilaian_nyeri_waktu', 5);
+                $table->enum('penilaian_nyeri_hilang', ['Istirahat', 'Medengar Musik', 'Minum Obat']);
+                $table->string('penilaian_nyeri_ket_hilang', 50);
+                $table->enum('penilaian_nyeri_diberitahukan_dokter', ['Tidak', 'Ya']);
+                $table->string('penilaian_nyeri_jam_diberitahukan_dokter', 10);
+                $table->enum('penilaian_jatuhmorse_skala1', ['Tidak', 'Ya'])->nullable();
+                $table->tinyInteger('penilaian_jatuhmorse_nilai1')->nullable();
+                $table->enum('penilaian_jatuhmorse_skala2', ['Tidak', 'Ya'])->nullable();
+                $table->tinyInteger('penilaian_jatuhmorse_nilai2')->nullable();
+                $table->enum('penilaian_jatuhmorse_skala3', ['Tidak Ada/Kursi Roda/Perawat/Tirah Baring', 'Tongkat/Alat Penopang', 'Berpegangan Pada Perabot'])->nullable();
+                $table->tinyInteger('penilaian_jatuhmorse_nilai3')->nullable();
+                $table->enum('penilaian_jatuhmorse_skala4', ['Tidak', 'Ya'])->nullable();
+                $table->tinyInteger('penilaian_jatuhmorse_nilai4')->nullable();
+                $table->enum('penilaian_jatuhmorse_skala5', ['Normal/Tirah Baring/Imobilisasi', 'Lemah', 'Terganggu'])->nullable();
+                $table->tinyInteger('penilaian_jatuhmorse_nilai5')->nullable();
+                $table->enum('penilaian_jatuhmorse_skala6', ['Sadar Akan Kemampuan Diri Sendiri', 'Sering Lupa Akan Keterbatasan Yang Dimiliki'])->nullable();
+                $table->tinyInteger('penilaian_jatuhmorse_nilai6')->nullable();
+                $table->tinyInteger('penilaian_jatuhmorse_totalnilai')->nullable();
+                $table->enum('penilaian_jatuhsydney_skala1', ['Tidak', 'Ya'])->nullable();
+                $table->tinyInteger('penilaian_jatuhsydney_nilai1')->nullable();
+                $table->enum('penilaian_jatuhsydney_skala2', ['Tidak', 'Ya'])->nullable();
+                $table->tinyInteger('penilaian_jatuhsydney_nilai2')->nullable();
+                $table->enum('penilaian_jatuhsydney_skala3', ['Tidak', 'Ya'])->nullable();
+                $table->tinyInteger('penilaian_jatuhsydney_nilai3')->nullable();
+                $table->enum('penilaian_jatuhsydney_skala4', ['Tidak', 'Ya'])->nullable();
+                $table->tinyInteger('penilaian_jatuhsydney_nilai4')->nullable();
+                $table->enum('penilaian_jatuhsydney_skala5', ['Tidak', 'Ya'])->nullable();
+                $table->tinyInteger('penilaian_jatuhsydney_nilai5')->nullable();
+                $table->enum('penilaian_jatuhsydney_skala6', ['Tidak', 'Ya'])->nullable();
+                $table->tinyInteger('penilaian_jatuhsydney_nilai6')->nullable();
+                $table->enum('penilaian_jatuhsydney_skala7', ['Tidak', 'Ya'])->nullable();
+                $table->tinyInteger('penilaian_jatuhsydney_nilai7')->nullable();
+                $table->enum('penilaian_jatuhsydney_skala8', ['Tidak', 'Ya'])->nullable();
+                $table->tinyInteger('penilaian_jatuhsydney_nilai8')->nullable();
+                $table->enum('penilaian_jatuhsydney_skala9', ['Tidak', 'Ya'])->nullable();
+                $table->tinyInteger('penilaian_jatuhsydney_nilai9')->nullable();
+                $table->enum('penilaian_jatuhsydney_skala10', ['Tidak', 'Ya'])->nullable();
+                $table->tinyInteger('penilaian_jatuhsydney_nilai10')->nullable();
+                $table->enum('penilaian_jatuhsydney_skala11', ['Tidak', 'Ya'])->nullable();
+                $table->tinyInteger('penilaian_jatuhsydney_nilai11')->nullable();
+                $table->tinyInteger('penilaian_jatuhsydney_totalnilai')->nullable();
+                $table->enum('skrining_gizi1', ['Tidak ada penurunan berat badan', 'Tidak yakin/ tidak tahu/ terasa baju lebih longgar', 'Ya 1-5 kg', 'Ya 6-10 kg', 'Ya 11-15 kg', 'Ya > 15 kg'])->nullable();
+                $table->integer('nilai_gizi1')->nullable();
+                $table->enum('skrining_gizi2', ['Tidak', 'Ya'])->nullable();
+                $table->integer('nilai_gizi2')->nullable();
+                $table->double('nilai_total_gizi')->nullable();
+                $table->enum('skrining_gizi_diagnosa_khusus', ['Tidak', 'Ya'])->nullable();
+                $table->string('skrining_gizi_ket_diagnosa_khusus', 50)->nullable();
+                $table->enum('skrining_gizi_diketahui_dietisen', ['Tidak', 'Ya'])->nullable();
+                $table->string('skrining_gizi_jam_diketahui_dietisen', 10)->nullable();
+                $table->string('rencana', 200)->nullable();
+                $table->string('nip1', 20)->index('nip1');
+                $table->string('nip2', 20)->index('nip2');
+                $table->string('kd_dokter', 20)->index('kd_dokter');
+            });
+        }
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('penilaian_awal_keperawatan_ranap');
+    }
+};

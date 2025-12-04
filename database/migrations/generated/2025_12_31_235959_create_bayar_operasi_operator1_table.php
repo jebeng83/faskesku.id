@@ -1,0 +1,34 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        if (!Schema::hasTable('bayar_operasi_operator1')) {
+            Schema::create('bayar_operasi_operator1', function (Blueprint $table) {
+                $table->string('no_bayar', 30)->default('')->index('no_bayar');
+                $table->string('no_rawat', 17)->index('no_rawat');
+                $table->string('kode_paket', 15)->index('kode_paket');
+                $table->dateTime('tgl_operasi');
+                $table->double('biayaoperator1');
+
+                $table->primary(['no_rawat', 'tgl_operasi', 'kode_paket', 'no_bayar']);
+            });
+        }
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('bayar_operasi_operator1');
+    }
+};
