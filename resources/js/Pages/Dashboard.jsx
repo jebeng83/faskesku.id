@@ -117,6 +117,60 @@ const updates = [
     },
 ];
 
+function AutoScrollRow({ items, renderItem, speed = 40 }) {
+    const containerRef = useRef(null);
+    const trackRef = useRef(null);
+    const rafRef = useRef(0);
+    const xRef = useRef(0);
+    const pausedRef = useRef(false);
+    useEffect(() => {
+        const cw = containerRef.current ? containerRef.current.clientWidth : 0;
+        xRef.current = cw;
+        function loop() {
+            if (!pausedRef.current) {
+                xRef.current -= speed / 60;
+                const w = trackRef.current
+                    ? trackRef.current.scrollWidth / 2
+                    : 0;
+                if (xRef.current <= -w) xRef.current = cw;
+                if (trackRef.current)
+                    trackRef.current.style.transform = `translateX(${xRef.current}px)`;
+            }
+            rafRef.current = requestAnimationFrame(loop);
+        }
+        rafRef.current = requestAnimationFrame(loop);
+        return () => cancelAnimationFrame(rafRef.current);
+    }, [items, speed]);
+    return (
+        <div ref={containerRef} className="overflow-hidden">
+            <div
+                ref={trackRef}
+                className="flex whitespace-nowrap will-change-transform"
+                onMouseEnter={() => (pausedRef.current = true)}
+                onMouseLeave={() => (pausedRef.current = false)}
+            >
+                {items.map((item, idx) => (
+                    <span
+                        key={`a-${idx}`}
+                        className="inline-flex items-center text-sm text-gray-800 dark:text-gray-200 mr-8"
+                    >
+                        {renderItem(item, idx)}
+                    </span>
+                ))}
+                {items.length > 1 &&
+                    items.map((item, idx) => (
+                        <span
+                            key={`b-${idx}`}
+                            className="inline-flex items-center text-sm text-gray-800 dark:text-gray-200 mr-8"
+                        >
+                            {renderItem(item, idx)}
+                        </span>
+                    ))}
+            </div>
+        </div>
+    );
+}
+
 const heroVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: {
@@ -761,12 +815,6 @@ export default function Dashboard() {
                 icon: <Bed className="w-5 h-5" />,
             },
             {
-                key: "pay",
-                label: "Pembayaran",
-                href: safeRoute("pembayaran.index"),
-                icon: <CreditCard className="w-5 h-5" />,
-            },
-            {
                 key: "keuangan",
                 label: "Keuangan",
                 // Arahkan ke halaman Home Akutansi
@@ -862,7 +910,17 @@ export default function Dashboard() {
                 const json = await res.json();
                 if (!active) return;
                 const list = Array.isArray(json?.data) ? json.data : [];
-                setSipExpiring(list);
+                const seen = new Set();
+                const unique = [];
+                for (const it of list) {
+                    const key = String(
+                        it?.nik ?? `${it?.nama ?? ""}|${it?.masa_berlaku ?? ""}`
+                    );
+                    if (seen.has(key)) continue;
+                    seen.add(key);
+                    unique.push(it);
+                }
+                setSipExpiring(unique);
             } catch (_) {
                 if (active) setSipExpiring([]);
             }
@@ -993,16 +1051,10 @@ export default function Dashboard() {
                             </span>
                         </div>
                         {sipExpiring.length > 0 ? (
-                            <marquee
-                                behavior="scroll"
-                                direction="left"
-                                scrollamount="5"
-                            >
-                                {sipExpiring.map((item, idx) => (
-                                    <span
-                                        key={`${item.nik}-${idx}`}
-                                        className="inline-flex items-center text-sm text-gray-800 dark:text-gray-200 mr-8"
-                                    >
+                            <AutoScrollRow
+                                items={sipExpiring}
+                                renderItem={(item) => (
+                                    <>
                                         <span className="font-semibold">
                                             {item.nama || "-"}
                                         </span>
@@ -1021,9 +1073,9 @@ export default function Dashboard() {
                                                     lagi)
                                                 </span>
                                             )}
-                                    </span>
-                                ))}
-                            </marquee>
+                                    </>
+                                )}
+                            />
                         ) : (
                             <div className="text-sm text-gray-600 dark:text-gray-400">
                                 Tidak ada pegawai dengan masa berlaku SIP dalam

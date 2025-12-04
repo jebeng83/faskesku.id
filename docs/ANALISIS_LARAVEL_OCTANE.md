@@ -351,6 +351,7 @@ public function __construct()
 **Dibuat**: {{ date('Y-m-d') }}
 **Versi**: 1.0
 **Status**: Draft untuk Review
+
 * untuk melihat worker
 - macOS: sysctl -n hw.ncpu
 - Linux: nproc --all

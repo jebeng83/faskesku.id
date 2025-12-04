@@ -34,6 +34,9 @@ class DatabaseSeeder extends Seeder
             UserEmployeeSeeder::class,
             PatientSeeder::class,
             RawatJalanSeeder::class,
+            BankSeeder::class,
+            RekeningSeeder::class,
+            SetAkunSeeder::class,
         ]);
     }
 }
