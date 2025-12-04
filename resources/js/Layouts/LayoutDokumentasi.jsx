@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { route } from "ziggy-js";
 import installDocRaw from "../../../docs/DokumentasiUser/InstallAplikasi.md?raw";
+import migrateDocRaw from "../../../docs/DokumentasiUser/Alur_Migrate_Database.md?raw";
 
 export default function LayoutDokumentasi({
     title = "Dokumentasi",
@@ -52,6 +53,7 @@ export default function LayoutDokumentasi({
             "dashboard",
             "master-data",
             "cara-membuat-dokumentasi-user",
+            "alur-migrate-database",
         ]);
         return mapped.filter((i) => !exclude.has(i.id));
     }, []);
@@ -68,7 +70,24 @@ export default function LayoutDokumentasi({
             "Konfigurasi web server mengarah ke public/",
         ];
         const installDoc = autoItems.find((i) => i.id === "install-aplikasi");
+        const migrateDoc = autoItems.find(
+            (i) => i.id === "alur-migrate-database"
+        );
         return [
+            {
+                id: "persiapan-database",
+                title: "Persiapan Database",
+                description: "Panduan migrasi base & generated migrations",
+                steps: [
+                    "Install dependency PHP (composer install)",
+                    "Konfigurasi DB di .env (DB_HOST/DB_NAME/DB_USER/DB_PASS)",
+                    "Jalankan base migrations (artisan migrate)",
+                    "Dry-run generated migrations (artisan migrate --pretend --path=...)",
+                    "Eksekusi generated migrations (artisan migrate --path=...)",
+                    "Validasi migrate:status dan cek tabel",
+                ],
+                content: migrateDoc?.content || migrateDocRaw,
+            },
             {
                 id: "install-aplikasi",
                 title: "Install Aplikasi",
@@ -90,17 +109,28 @@ export default function LayoutDokumentasi({
             seen.add(key);
             unique.push(i);
         }
-        const idx = unique.findIndex(
+        const idxPrepare = unique.findIndex(
+            (i) =>
+                i?.id === "persiapan-database" ||
+                String(i?.title || "")
+                    .toLowerCase()
+                    .includes("persiapan database")
+        );
+        const idxInstall = unique.findIndex(
             (i) =>
                 i?.id === "install-aplikasi" ||
                 String(i?.title || "")
                     .toLowerCase()
                     .includes("install aplikasi")
         );
-        if (idx > 0) {
-            const item = unique[idx];
-            const rest = unique.filter((_, j) => j !== idx);
-            return [item, ...rest];
+        if (idxPrepare >= 0 || idxInstall >= 0) {
+            const ordered = [];
+            if (idxPrepare >= 0) ordered.push(unique[idxPrepare]);
+            if (idxInstall >= 0) ordered.push(unique[idxInstall]);
+            const rest = unique.filter(
+                (_, j) => j !== idxPrepare && j !== idxInstall
+            );
+            return [...ordered, ...rest];
         }
         return unique;
     }, [items, baseItems, autoItems]);
