@@ -137,7 +137,8 @@ class OpnameController extends Controller
                 ], 422);
             }
 
-            DB::connection(config('database.default'))->beginTransaction();
+            $conn = DB::connection(config('database.default'));
+            $conn->beginTransaction();
 
             foreach ($request->items as $item) {
                 // Debug: Log each item data
@@ -259,9 +260,36 @@ class OpnameController extends Controller
 
                 Log::info('Updated gudangbarang stok for: '.$item['kode_brng'].' to: '.$real);
                 Log::info('Audit trail recorded for: '.$item['kode_brng']);
+
+                try {
+                    $inserted = $conn->table('riwayat_barang_medis')->insert([
+                        'kode_brng' => $item['kode_brng'],
+                        'stok_awal' => (double) $stokSistem,
+                        'masuk' => (double) $real,
+                        'keluar' => 0,
+                        'stok_akhir' => (double) $real,
+                        'posisi' => 'Opname',
+                        'tanggal' => $request->tanggal,
+                        'jam' => now()->format('H:i:s'),
+                        'petugas' => auth()->user()->name ?? '',
+                        'kd_bangsal' => $request->kd_bangsal,
+                        'status' => 'Simpan',
+                        'no_batch' => $noBatch,
+                        'no_faktur' => $noFaktur,
+                        'keterangan' => $request->keterangan ?? '',
+                    ]);
+                    if ($inserted) {
+                        Log::info('Riwayat opname inserted for '.$item['kode_brng'].' on '.$request->tanggal.' kd_bangsal '.$request->kd_bangsal);
+                    } else {
+                        Log::warning('Riwayat opname insert returned false for '.$item['kode_brng'].' on '.$request->tanggal);
+                    }
+                } catch (\Throwable $t) {
+                    Log::error('Failed inserting riwayat opname: '.$t->getMessage());
+                    throw $t;
+                }
             }
 
-            DB::connection(config('database.default'))->commit();
+            $conn->commit();
 
             return response()->json([
                 'success' => true,
