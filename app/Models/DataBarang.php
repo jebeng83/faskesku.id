@@ -9,8 +9,6 @@ class DataBarang extends Model
 {
     use HasFactory;
 
-    protected $connection = 'fufufafa';
-
     protected $table = 'databarang';
 
     protected $primaryKey = 'kode_brng';
@@ -110,5 +108,10 @@ class DataBarang extends Model
     {
         return $this->hasOne(DetailBeli::class, 'kode_brng', 'kode_brng')
             ->latest('created_at');
+    }
+
+    public function getConnectionName()
+    {
+        return config('database.default');
     }
 }

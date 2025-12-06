@@ -9,8 +9,6 @@ class Gudangbarang extends Model
 {
     protected $table = 'gudangbarang';
 
-    protected $connection = 'fufufafa';
-
     protected $primaryKey = ['kode_brng', 'kd_bangsal', 'no_batch', 'no_faktur'];
 
     public $incrementing = false;
@@ -88,5 +86,10 @@ class Gudangbarang extends Model
         return static::where('kode_brng', $kodeBarang)
             ->where('kd_bangsal', $kdBangsal)
             ->sum('stok');
+    }
+
+    public function getConnectionName()
+    {
+        return config('database.default');
     }
 }

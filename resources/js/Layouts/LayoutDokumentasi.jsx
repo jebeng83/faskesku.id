@@ -14,6 +14,62 @@ import { route } from "ziggy-js";
 import installDocRaw from "../../../docs/DokumentasiUser/InstallAplikasi.md?raw";
 import migrateDocRaw from "../../../docs/DokumentasiUser/Alur_Migrate_Database.md?raw";
 
+function MermaidBlock({ chart }) {
+    const [svg, setSvg] = useState("");
+    const chartText = String(chart || "");
+    React.useEffect(() => {
+        let cancelled = false;
+        const ensureMermaid = () => {
+            if (window.mermaid) return Promise.resolve(window.mermaid);
+            return new Promise((resolve, reject) => {
+                const s = document.createElement("script");
+                s.src = "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js";
+                s.async = true;
+                s.crossOrigin = "anonymous";
+                s.onload = () => resolve(window.mermaid);
+                s.onerror = (e) => reject(e);
+                document.head.appendChild(s);
+            });
+        };
+        ensureMermaid()
+            .then((m) => {
+                if (cancelled || !m) return;
+                try {
+                    m.initialize({ startOnLoad: false, securityLevel: "strict" });
+                    const id = "mmd-" + Math.random().toString(36).slice(2);
+                    m.render(id, chartText).then((out) => {
+                        if (!cancelled) setSvg(out.svg || "");
+                    });
+                } catch (_) {
+                    if (!cancelled) setSvg("");
+                }
+            })
+            .catch(() => {
+                if (!cancelled) setSvg("");
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [chartText]);
+    if (!svg) return <pre className="mermaid">{chartText}</pre>;
+    return <div className="mermaid" dangerouslySetInnerHTML={{ __html: svg }} />;
+}
+
+function CodeRenderer({ inline, className, children }) {
+    const code = String(children || "");
+    const langMatch = /language-([a-z0-9_-]+)/i.exec(String(className || ""));
+    const language = (langMatch?.[1] || "").toLowerCase();
+    if (!inline && language === "mermaid") {
+        return <MermaidBlock chart={code} />;
+    }
+    if (inline) return <code className={className}>{code}</code>;
+    return (
+        <pre className={className}>
+            <code>{code}</code>
+        </pre>
+    );
+}
+
 export default function LayoutDokumentasi({
     title = "Dokumentasi",
     items = [],
@@ -376,6 +432,9 @@ export default function LayoutDokumentasi({
                                                             remarkPlugins={[
                                                                 remarkGfm,
                                                             ]}
+                                                            components={{
+                                                                code: CodeRenderer,
+                                                            }}
                                                         >
                                                             {active.content}
                                                         </ReactMarkdown>

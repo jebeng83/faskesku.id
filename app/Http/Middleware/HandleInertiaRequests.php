@@ -79,6 +79,9 @@ class HandleInertiaRequests
                 'latitude' => ($lat = config('app.map.latitude')) !== null && $lat !== '' && is_numeric($lat) ? (float) $lat : null,
                 'longitude' => ($lng = config('app.map.longitude')) !== null && $lng !== '' && is_numeric($lng) ? (float) $lng : null,
             ],
+            'settings' => fn () => $this->sanitizeUtf8([
+                'AKTIFKANBATCHOBAT' => env('AKTIFKANBATCHOBAT', 'Yes'),
+            ]),
         ]);
 
         return $next($request);

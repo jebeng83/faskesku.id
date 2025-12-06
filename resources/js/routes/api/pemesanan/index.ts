@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::generateNoOrder
-* @see app/Http/Controllers/Farmasi/PemesananController.php:72
+* @see app/Http/Controllers/Farmasi/PemesananController.php:236
 * @route '/api/pemesanan/generate-no-order'
 */
 export const generateNoOrder = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ generateNoOrder.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::generateNoOrder
-* @see app/Http/Controllers/Farmasi/PemesananController.php:72
+* @see app/Http/Controllers/Farmasi/PemesananController.php:236
 * @route '/api/pemesanan/generate-no-order'
 */
 generateNoOrder.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ generateNoOrder.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::generateNoOrder
-* @see app/Http/Controllers/Farmasi/PemesananController.php:72
+* @see app/Http/Controllers/Farmasi/PemesananController.php:236
 * @route '/api/pemesanan/generate-no-order'
 */
 generateNoOrder.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ generateNoOrder.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::generateNoOrder
-* @see app/Http/Controllers/Farmasi/PemesananController.php:72
+* @see app/Http/Controllers/Farmasi/PemesananController.php:236
 * @route '/api/pemesanan/generate-no-order'
 */
 generateNoOrder.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ generateNoOrder.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::store
-* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @see app/Http/Controllers/Farmasi/PemesananController.php:145
 * @route '/api/pemesanan/store'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +60,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::store
-* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @see app/Http/Controllers/Farmasi/PemesananController.php:145
 * @route '/api/pemesanan/store'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::store
-* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @see app/Http/Controllers/Farmasi/PemesananController.php:145
 * @route '/api/pemesanan/store'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

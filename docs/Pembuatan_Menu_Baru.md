@@ -764,3 +764,26 @@ Selesai. Dengan panduan ini, Anda bisa menambahkan menu baru secara konsisten da
 ```bash
 php artisan config:clear && php artisan route:clear && php artisan cache:clear
 ```
+
+---
+
+## Catatan untuk Laravel Octane + FrankenPHP
+
+- Server default menggunakan `frankenphp` sesuai `config/octane.php:41`.
+- Jalankan server Octane untuk pengembangan:
+  ```bash
+  php artisan octane:start --server=frankenphp --host=127.0.0.1 --port=8080 --watch
+  ```
+- Opsi `--watch` memantau perubahan file. Daftar direktori/file yang dipantau ada di `config/octane.php:186–196`.
+- Setelah menambah/ubah rute (`routes/web.php`) atau konfigurasi, lakukan reload pekerja jika tidak memakai `--watch`:
+  ```bash
+  php artisan octane:reload
+  ```
+- Untuk memastikan perubahan konfigurasi dan rute terbaca di proses panjang Octane, jalankan:
+  ```bash
+  php artisan config:clear && php artisan route:clear && php artisan cache:clear && php artisan octane:reload
+  ```
+- Kontrol akses menu tetap bekerja karena `permission_name` divalidasi di controller (`app/Http/Controllers/MenuController.php:173–201`) dan menu difilter per izin di model (`app/Models/Menu.php:111–161`).
+- Hindari menyimpan state per-request di properti statik/singleton. `MenuController` sudah stateless (per-request) sehingga aman untuk Octane.
+- Koneksi database akan diputus tiap operasi oleh listener Octane (`config/octane.php:105–110`), mencegah kebocoran koneksi pada proses panjang.
+- Jika menggunakan Vite saat pengembangan, CSP dev-friendly sudah diatur di `app/Http/Middleware/SecurityHeadersMiddleware.php:41–64` sehingga HMR bekerja bersama FrankenPHP.

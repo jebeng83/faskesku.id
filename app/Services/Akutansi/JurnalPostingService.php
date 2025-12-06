@@ -125,10 +125,14 @@ class JurnalPostingService
         return DB::transaction(function () use ($tgl, $jam, $jenis, $no_bukti, $keterangan) {
             // Generate nomor jurnal harian: JR + yyyymmdd + 6 digit urut
             $prefix = 'JR'.str_replace('-', '', $tgl);
+            $driver = DB::connection()->getDriverName();
+            $expr = $driver === 'sqlite'
+                ? 'IFNULL(MAX(CAST(SUBSTR(no_jurnal, -6) AS INTEGER)),0)'
+                : 'IFNULL(MAX(CONVERT(RIGHT(no_jurnal,6),SIGNED)),0)';
             $max = DB::table('jurnal')
                 ->lockForUpdate()
                 ->where('tgl_jurnal', $tgl)
-                ->select(DB::raw('IFNULL(MAX(CONVERT(RIGHT(no_jurnal,6),SIGNED)),0) AS max_no'))
+                ->select(DB::raw($expr.' AS max_no'))
                 ->value('max_no');
             $next = ((int) $max) + 1;
             $noSuffix = str_pad((string) $next, 6, '0', STR_PAD_LEFT);

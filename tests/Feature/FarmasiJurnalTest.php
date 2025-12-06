@@ -19,10 +19,13 @@ class FarmasiJurnalTest extends TestCase
         parent::setUp();
         DB::statement('CREATE TABLE IF NOT EXISTS set_akun (id INTEGER PRIMARY KEY AUTOINCREMENT, Pemesanan_Obat TEXT, PPN_Masukan TEXT, Kontra_Pemesanan_Obat TEXT, Pengadaan_Obat TEXT, PPN_Keluaran TEXT, Penjualan_Obat TEXT, HPP_Obat_Jual_Bebas TEXT, Persediaan_Obat_Jual_Bebas TEXT, Stok_Keluar_Medis TEXT, Kontra_Stok_Keluar_Medis TEXT, Retur_Ke_Suplayer TEXT, Kontra_Retur_Ke_Suplayer TEXT)');
         DB::statement('CREATE TABLE IF NOT EXISTS tampjurnal (kd_rek TEXT PRIMARY KEY, nm_rek TEXT, debet REAL, kredit REAL)');
+        DB::statement('CREATE TABLE IF NOT EXISTS tampjurnal2 (kd_rek TEXT PRIMARY KEY, nm_rek TEXT, debet REAL, kredit REAL)');
+        DB::statement('CREATE TABLE IF NOT EXISTS jurnal (no_jurnal TEXT PRIMARY KEY, no_bukti TEXT, tgl_jurnal TEXT, jam_jurnal TEXT, jenis TEXT, keterangan TEXT)');
+        DB::statement('CREATE TABLE IF NOT EXISTS detailjurnal (no_jurnal TEXT, kd_rek TEXT, debet REAL, kredit REAL)');
         DB::statement('CREATE TABLE IF NOT EXISTS gudangbarang (kode_brng TEXT, kd_bangsal TEXT, stok REAL, no_batch TEXT, no_faktur TEXT)');
         DB::statement('CREATE TABLE IF NOT EXISTS data_batch (kode_brng TEXT, no_batch TEXT, no_faktur TEXT, h_beli REAL, tgl_kadaluarsa TEXT, sisa REAL)');
         DB::statement('CREATE TABLE IF NOT EXISTS riwayat_barang_medis (kode_brng TEXT, stok_awal REAL, masuk REAL, keluar REAL, stok_akhir REAL, posisi TEXT, tanggal TEXT, jam TEXT, petugas TEXT, kd_bangsal TEXT, status TEXT, no_batch TEXT, no_faktur TEXT, keterangan TEXT)');
-        DB::statement('CREATE TABLE IF NOT EXISTS pemesanan (no_faktur TEXT PRIMARY KEY, no_order TEXT, kode_suplier TEXT, nip TEXT, tgl_pesan TEXT, tgl_faktur TEXT, tgl_tempo TEXT, subtotal REAL, dis REAL, total REAL, ppn REAL, meterai REAL, tagihan REAL, kd_bangsal TEXT, status TEXT)');
+        DB::statement('CREATE TABLE IF NOT EXISTS pemesanan (no_faktur TEXT PRIMARY KEY, no_order TEXT, kode_suplier TEXT, nip TEXT, tgl_pesan TEXT, tgl_faktur TEXT, tgl_tempo TEXT, total1 REAL, potongan REAL, total2 REAL, ppn REAL, meterai REAL, tagihan REAL, kd_bangsal TEXT, status TEXT)');
         DB::statement('CREATE TABLE IF NOT EXISTS detailpesan (no_faktur TEXT, kode_brng TEXT, kode_sat TEXT, jumlah REAL, h_pesan REAL, subtotal REAL, dis REAL, besardis REAL, total REAL, no_batch TEXT, jumlah2 REAL, kadaluarsa TEXT)');
         DB::statement('CREATE TABLE IF NOT EXISTS pengeluaran_obat_bhp (no_keluar TEXT PRIMARY KEY, tanggal TEXT, nip TEXT, keterangan TEXT, kd_bangsal TEXT)');
         DB::statement('CREATE TABLE IF NOT EXISTS detail_pengeluaran_obat_bhp (no_keluar TEXT, kode_brng TEXT, kode_sat TEXT, no_batch TEXT, jumlah REAL, h_beli REAL, subtotal REAL, no_faktur TEXT)');
@@ -102,5 +105,50 @@ class FarmasiJurnalTest extends TestCase
 
         $this->assertSame(175000.0, $sumDebet);
         $this->assertSame(175000.0, $sumKredit);
+    }
+
+    public function test_posting_staging_to_jurnal_works(): void
+    {
+        DB::table('tampjurnal')->delete();
+        DB::table('tampjurnal2')->delete();
+
+        DB::table('tampjurnal')->insert([
+            'kd_rek' => '115010',
+            'nm_rek' => 'PEMESANAN OBAT',
+            'debet' => 103000.0,
+            'kredit' => 0.0,
+        ]);
+        DB::table('tampjurnal')->insert([
+            'kd_rek' => '127-01',
+            'nm_rek' => 'PPN MASUKAN',
+            'debet' => 10000.0,
+            'kredit' => 0.0,
+        ]);
+        DB::table('tampjurnal')->insert([
+            'kd_rek' => '210-01',
+            'nm_rek' => 'HUTANG USAHA',
+            'debet' => 0.0,
+            'kredit' => 113000.0,
+        ]);
+
+        $svc = new \App\Services\Akutansi\JurnalPostingService();
+        $result = $svc->post('NO-001', 'Tes Jurnal', '2025-12-05');
+
+        $this->assertArrayHasKey('no_jurnal', $result);
+        $no = $result['no_jurnal'];
+
+        $exists = DB::table('jurnal')->where('no_jurnal', $no)->exists();
+        $this->assertTrue($exists);
+
+        $detail = DB::table('detailjurnal')->where('no_jurnal', $no)->get();
+        $this->assertCount(3, $detail);
+
+        $sumDebet = (float) DB::table('detailjurnal')->where('no_jurnal', $no)->sum('debet');
+        $sumKredit = (float) DB::table('detailjurnal')->where('no_jurnal', $no)->sum('kredit');
+        $this->assertSame(113000.0, $sumDebet);
+        $this->assertSame(113000.0, $sumKredit);
+
+        $this->assertSame(0, DB::table('tampjurnal')->count());
+        $this->assertSame(0, DB::table('tampjurnal2')->count());
     }
 }

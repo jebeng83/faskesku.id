@@ -1,6 +1,6 @@
 # Alur Migrasi Database (Migrate All)
 
-Panduan ini menjelaskan langkah detail untuk menjalankan migrasi seluruh database pada aplikasi Laravel ini, termasuk base migrations dan seluruh tabel hasil generate di `database/migrations/generated`.
+Panduan ini menjelaskan langkah detail untuk menjalankan migrasi seluruh database pada aplikasi Laravel ini, termasuk base migrations dan seluruh tabel hasil generate di `database/migrations/generated`. Disertakan juga cara paling mudah menjalankan migrasi dan seeder.
 
 ## Tujuan
 - Menyiapkan environment baru dengan database kosong agar struktur tabel sama persis dengan sumber.
@@ -35,6 +35,26 @@ DB_PASSWORD=secret
 php artisan migrate:status
 ```
 
+## Quick Start — Paling Mudah
+- Jalankan migrasi base + generated sekaligus, lalu seeder:
+
+```bash
+composer install
+php artisan migrate:all-tables
+php artisan db:seed
+```
+
+- Production:
+
+```bash
+php artisan migrate:all-tables --force
+php artisan db:seed --force
+```
+
+- Opsi umum: `--database=`, `--pretend`, `--step`. Gunakan `--pretend` untuk melihat SQL tanpa eksekusi.
+
+##  Bagi Developer
+
 ## Langkah 1 — Jalankan Base Migrations
 Base migrations adalah file standar di `database/migrations` (users, jobs, cache, sesi, permission, dll.). Jalankan:
 
@@ -47,6 +67,8 @@ Untuk production gunakan:
 ```bash
 php artisan migrate --force
 ```
+
+Alternatif langkah cepat: gunakan `php artisan migrate:all-tables` untuk menjalankan base + generated sekaligus.
 
 ## Langkah 2 — Dry‑run Generated Migrations
 Sebelum eksekusi, lakukan simulasi untuk melihat SQL yang akan dijalankan oleh hasil generate:
@@ -75,6 +97,29 @@ php artisan migrate --path=database/migrations/generated --force
 Catatan:
 - File hasil generate menggunakan `Schema::hasTable(...)` sehingga jika tabel sudah ada, langkah akan dilewati secara aman.
 - File pembuatan tabel diberi timestamp `2025_12_31_235959_create_*` dan file foreign key diberi timestamp `2026_01_01_000000_add_foreign_keys_to_*` agar urutan eksekusi konsisten.
+
+Alternatif langkah cepat: gunakan `php artisan migrate:all-tables` untuk base + generated dalam satu perintah.
+
+## Jalankan Seeder
+- Menjalankan seluruh seeder (termasuk auto‑seeders tabel):
+
+```bash
+php artisan db:seed
+```
+
+- Production:
+
+```bash
+php artisan db:seed --force
+```
+
+- Menjalankan hanya aggregator seeder (opsional):
+
+```bash
+php artisan db:seed --class="Database\\Seeders\\SeedAllTablesSeeder"
+```
+
+Catatan: sebagian auto‑seeders melakukan `truncate` tabel sebelum insert ulang. Jalankan di environment yang sesuai.
 
 ## Validasi Setelah Migrasi
 - Lihat daftar migrasi yang sudah dijalankan:
@@ -123,11 +168,14 @@ php artisan migrate:generate \
 
 Jangan jalankan generator di production; production cukup menjalankan migrasi yang sudah ada.
 
+## warning: Penting
+- **Jangan jalankan migrasi di environment production tanpa memeriksa ulang SQL.**
+- **Gunakan `--force` di production untuk mengabaikan peringatan.**
+
 ## Checklist Cepat
 - `composer install`
 - Set `.env` untuk koneksi DB
-- `php artisan migrate`
-- `php artisan migrate --pretend --path=database/migrations/generated`
-- `php artisan migrate --path=database/migrations/generated` (atau `--force` di production)
+- `php artisan migrate:all-tables` (atau gunakan langkah manual base+generated di atas)
+- `php artisan db:seed`
 - Verifikasi dengan `php artisan migrate:status`
 

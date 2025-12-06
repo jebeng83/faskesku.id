@@ -28,7 +28,7 @@ class PembelianController extends BaseInventoryController
             'items' => 'required|array',
         ]);
 
-        return DB::connection('fufufafa')->transaction(function () use ($data) {
+        return DB::transaction(function () use ($data) {
             HeaderPembelian::create([
                 'no_faktur' => $data['no_faktur'],
                 'kode_suplier' => $data['kode_suplier'],
@@ -96,42 +96,73 @@ class PembelianController extends BaseInventoryController
                     $this->stageJurnal($lines);
                 }
 
-            // Update harga beli dan harga jual di databarang berdasarkan pembelian
-                $persen = DB::connection('fufufafa')->table('set_harga_obat')->first();
-                foreach ($data['items'] as $it) {
-                    $hargaBeliBaru = (float) $it['harga'];
-                    $besardis = (float) ($it['besardis'] ?? 0);
-                    $hasDiscount = ($besardis > 0) || ((float) ($it['dis'] ?? 0) > 0);
+            $cfg = DB::table('set_harga_obat')->select('setharga', 'hargadasar', 'ppn')->first();
+            foreach ($data['items'] as $it) {
+                $hargaBeliBaru = (float) $it['harga'];
+                $besardis = (float) ($it['besardis'] ?? 0);
+                $disPercent = (float) ($it['dis'] ?? 0);
+                $hasDiscount = ($besardis > 0) || ($disPercent > 0);
+                $hargaDasarField = $hasDiscount ? max($hargaBeliBaru - $besardis, 0) : $hargaBeliBaru;
+                $useDiskon = ($cfg && isset($cfg->hargadasar) && $cfg->hargadasar === 'Harga Diskon');
+                $baseForSale = $useDiskon ? $hargaDasarField : $hargaBeliBaru;
+                $ppnMult = ($cfg && isset($cfg->ppn) && $cfg->ppn === 'Yes') ? 1.11 : 1.0;
 
-                    // Nilai untuk kolom 'dasar' selalu mencerminkan harga setelah diskon jika ada
-                    $hargaDasarField = $hasDiscount ? max($hargaBeliBaru - $besardis, 0) : $hargaBeliBaru;
-
-                    // Basis perhitungan harga jual mengikuti konfigurasi hargadasar
-                    $useHargaDiskon = ($persen && isset($persen->hargadasar) && $persen->hargadasar === 'Harga Diskon');
-                    $baseForSale = $useHargaDiskon ? $hargaDasarField : $hargaBeliBaru;
-
-                    // Siapkan field update: selalu set h_beli ke HNA pembelian saat ini,
-                    // dan dasar mencerminkan harga setelah diskon bila ada
-                    $updates = [
-                        'h_beli' => $hargaBeliBaru,
-                        'dasar' => $hargaDasarField,
-                        'ralan' => DB::raw('ROUND('.$baseForSale.' + '.$baseForSale.' * '.((float) ($persen->ralan ?? 0)).' / 100)'),
-                        'kelas1' => DB::raw('ROUND('.$baseForSale.' + '.$baseForSale.' * '.((float) ($persen->kelas1 ?? 0)).' / 100)'),
-                        'kelas2' => DB::raw('ROUND('.$baseForSale.' + '.$baseForSale.' * '.((float) ($persen->kelas2 ?? 0)).' / 100)'),
-                        'kelas3' => DB::raw('ROUND('.$baseForSale.' + '.$baseForSale.' * '.((float) ($persen->kelas3 ?? 0)).' / 100)'),
-                        'utama' => DB::raw('ROUND('.$baseForSale.' + '.$baseForSale.' * '.((float) ($persen->utama ?? 0)).' / 100)'),
-                        'vip' => DB::raw('ROUND('.$baseForSale.' + '.$baseForSale.' * '.((float) ($persen->vip ?? 0)).' / 100)'),
-                        'vvip' => DB::raw('ROUND('.$baseForSale.' + '.$baseForSale.' * '.((float) ($persen->vvip ?? 0)).' / 100)'),
-                        'beliluar' => DB::raw('ROUND('.$baseForSale.' + '.$baseForSale.' * '.((float) ($persen->beliluar ?? 0)).' / 100)'),
-                        'jualbebas' => DB::raw('ROUND('.$baseForSale.' + '.$baseForSale.' * '.((float) ($persen->jualbebas ?? 0)).' / 100)'),
-                        'karyawan' => DB::raw('ROUND('.$baseForSale.' + '.$baseForSale.' * '.((float) ($persen->karyawan ?? 0)).' / 100)'),
-                    ];
-
-                    DB::connection('fufufafa')
-                        ->table('databarang')
-                        ->where('kode_brng', $it['kode_brng'])
-                        ->update($updates);
+                $p = null;
+                if ($cfg && isset($cfg->setharga) && $cfg->setharga === 'Per Jenis') {
+                    $kdjns = DB::table('databarang')->where('kode_brng', $it['kode_brng'])->value('kdjns');
+                    if ($kdjns) {
+                        $p = DB::table('setpenjualan')->select('ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan')->where('kdjns', $kdjns)->first();
+                    }
+                } elseif ($cfg && isset($cfg->setharga) && $cfg->setharga === 'Per Barang') {
+                    $p = DB::table('setpenjualanperbarang')->select('ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan')->where('kode_brng', $it['kode_brng'])->first();
                 }
+                if (! $p) {
+                    try {
+                        $p = DB::table('setpenjualanumum')->select('ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan')->first();
+                    } catch (\Throwable $e) {
+                        $p = null;
+                    }
+                }
+                if (! $p) {
+                    $p = (object) [
+                        'ralan' => 20.0,
+                        'kelas1' => 20.0,
+                        'kelas2' => 20.0,
+                        'kelas3' => 20.0,
+                        'utama' => 20.0,
+                        'vip' => 20.0,
+                        'vvip' => 20.0,
+                        'beliluar' => 20.0,
+                        'jualbebas' => 20.0,
+                        'karyawan' => 20.0,
+                    ];
+                }
+
+                $apply = function (float $b, float $percent) use ($ppnMult): float {
+                    $harga = $b * (1.0 + ($percent / 100.0));
+                    $harga *= $ppnMult;
+                    return round($harga, 2);
+                };
+
+                $updates = [
+                    'h_beli' => $hargaBeliBaru,
+                    'dasar' => $hargaDasarField,
+                    'ralan' => $apply($baseForSale, (float) ($p->ralan ?? 0)),
+                    'kelas1' => $apply($baseForSale, (float) ($p->kelas1 ?? 0)),
+                    'kelas2' => $apply($baseForSale, (float) ($p->kelas2 ?? 0)),
+                    'kelas3' => $apply($baseForSale, (float) ($p->kelas3 ?? 0)),
+                    'utama' => $apply($baseForSale, (float) ($p->utama ?? 0)),
+                    'vip' => $apply($baseForSale, (float) ($p->vip ?? 0)),
+                    'vvip' => $apply($baseForSale, (float) ($p->vvip ?? 0)),
+                    'beliluar' => $apply($baseForSale, (float) ($p->beliluar ?? 0)),
+                    'jualbebas' => $apply($baseForSale, (float) ($p->jualbebas ?? 0)),
+                    'karyawan' => $apply($baseForSale, (float) ($p->karyawan ?? 0)),
+                ];
+
+                DB::table('databarang')
+                    ->where('kode_brng', $it['kode_brng'])
+                    ->update($updates);
+            }
 
             return response()->json(['status' => 'ok', 'no_faktur' => $data['no_faktur']]);
         });
@@ -139,7 +170,7 @@ class PembelianController extends BaseInventoryController
 
     public function getAkunBayar()
     {
-        $rows = DB::connection('fufufafa')->table('akun_bayar')
+        $rows = DB::table('akun_bayar')
             ->leftJoin('rekening', 'akun_bayar.kd_rek', '=', 'rekening.kd_rek')
             ->select('akun_bayar.kd_rek', 'akun_bayar.nama_bayar', 'rekening.nm_rek')
             ->orderBy('akun_bayar.nama_bayar')
@@ -149,7 +180,7 @@ class PembelianController extends BaseInventoryController
 
     public function getSupplier()
     {
-        $rows = DB::connection('fufufafa')->table('datasuplier')
+        $rows = DB::table('datasuplier')
             ->select('kode_suplier', 'nama_suplier')
             ->orderBy('nama_suplier')
             ->get();
@@ -158,7 +189,7 @@ class PembelianController extends BaseInventoryController
 
     public function getPetugas(Request $request)
     {
-        $q = DB::connection('fufufafa')->table('petugas')
+        $q = DB::table('petugas')
             ->select('nip', 'nama')
             ->orderBy('nama');
         if ($request->has('q') && !empty($request->q)) {
@@ -177,7 +208,7 @@ class PembelianController extends BaseInventoryController
 
     public function getLokasi()
     {
-        $rows = DB::connection('fufufafa')->table('bangsal')
+        $rows = DB::table('bangsal')
             ->select('kd_bangsal', 'nm_bangsal')
             ->orderBy('nm_bangsal')
             ->get();
@@ -189,8 +220,8 @@ class PembelianController extends BaseInventoryController
         try {
             $today = now()->format('Ymd');
             $prefix = 'PB-' . $today . '-';
-            return DB::connection('fufufafa')->transaction(function () use ($prefix) {
-                $last = DB::connection('fufufafa')->table('pembelian')
+            return DB::transaction(function () use ($prefix) {
+                $last = DB::table('pembelian')
                     ->where('no_faktur', 'LIKE', $prefix.'%')
                     ->orderBy('no_faktur', 'desc')
                     ->lockForUpdate()
@@ -201,7 +232,7 @@ class PembelianController extends BaseInventoryController
                     $next = $lastNumber + 1;
                 }
                 $no = $prefix.str_pad($next, 3, '0', STR_PAD_LEFT);
-                while (DB::connection('fufufafa')->table('pembelian')->where('no_faktur', $no)->exists()) {
+                while (DB::table('pembelian')->where('no_faktur', $no)->exists()) {
                     $next++;
                     $no = $prefix.str_pad($next, 3, '0', STR_PAD_LEFT);
                 }

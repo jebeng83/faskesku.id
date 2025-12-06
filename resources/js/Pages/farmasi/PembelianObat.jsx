@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Head } from "@inertiajs/react";
+import { Head, usePage } from "@inertiajs/react";
 import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
 import { router } from "@inertiajs/react";
 import { toast } from "@/tools/toast";
@@ -46,6 +46,31 @@ function CardContent({ children, className = "" }) {
 export default function PembelianObat() {
     // Mode transaksi
     const [mode, setMode] = useState("pembelian");
+
+    const { props } = usePage();
+    const batchEnabled = (() => {
+        const s = props?.settings ?? props?.setting ?? {};
+        const keys = [
+            "AKTIFKANBATCHOBAT",
+            "aktifkan_batch_obat",
+            "aktifkanBatchObat",
+            "BATCH_OBAT_ENABLED",
+            "batch_obat_enabled",
+        ];
+        for (let k of keys) {
+            const v = s?.[k];
+            if (typeof v === "string") {
+                const t = v.toLowerCase();
+                if (t === "yes" || t === "true" || t === "1") return true;
+                if (t === "no" || t === "false" || t === "0") return false;
+            } else if (typeof v === "number") {
+                return v !== 0;
+            } else if (typeof v === "boolean") {
+                return v;
+            }
+        }
+        return true;
+    })();
 
     // State untuk form pembelian/pemesanan
     const [formData, setFormData] = useState({
@@ -585,6 +610,12 @@ export default function PembelianObat() {
                     items: items.map((item) => ({
                         kode_brng: item.kode_brng,
                         kode_sat: resolveKodeSat(item),
+                        no_batch: batchEnabled ? item.no_batch || null : null,
+                        kadaluarsa:
+                            item.kadaluarsa ||
+                            new Date(Date.now() + 3 * 365 * 24 * 60 * 60 * 1000)
+                                .toISOString()
+                                .split("T")[0],
                         jumlah: Number(item.jumlah || 0),
                         harga: Number(item.h_beli || 0),
                         subtotal: Number(item.subtotal || 0),
@@ -647,7 +678,7 @@ export default function PembelianObat() {
                 items: items.map((item) => ({
                     kode_brng: item.kode_brng,
                     kode_sat: resolveKodeSat(item),
-                    no_batch: item.no_batch || "BATCH001",
+                    no_batch: batchEnabled ? item.no_batch || null : null,
                     kadaluarsa:
                         item.kadaluarsa ||
                         new Date(Date.now() + 3 * 365 * 24 * 60 * 60 * 1000)
@@ -672,6 +703,35 @@ export default function PembelianObat() {
 
             if (response.ok) {
                 toast(successToastFor("pembelian"), "success");
+                try {
+                    const postRes = await fetch(
+                        "/api/akutansi/jurnal/post-staging",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Accept: "application/json",
+                            },
+                            body: JSON.stringify({
+                                no_bukti: formData.no_faktur,
+                                jenis: "U",
+                                keterangan: `Posting otomatis Pembelian Obat no_faktur ${formData.no_faktur}`,
+                            }),
+                        }
+                    );
+                    if (postRes.ok) {
+                        toast(
+                            "Jurnal akutansi berhasil diposting dari tampjurnal",
+                            "success"
+                        );
+                    } else {
+                        const msg = await extractErrorMessage(postRes);
+                        toast("Gagal posting jurnal: " + msg, "error");
+                    }
+                } catch (err) {
+                    console.error("Error posting jurnal pembelian:", err);
+                    toast("Terjadi kesalahan saat posting jurnal", "error");
+                }
                 await resetAfterSuccess("pembelian");
             } else {
                 const errorMessage = await extractErrorMessage(response);
@@ -700,6 +760,9 @@ export default function PembelianObat() {
                             <div className="flex items-center justify-between gap-4">
                                 <CardTitle>Form Pembelian Obat</CardTitle>
                                 <div className="w-64">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Mode Transaksi
+                                    </label>
                                     <Select
                                         value={mode}
                                         onValueChange={setMode}
@@ -789,92 +852,80 @@ export default function PembelianObat() {
                                         </div>
                                     </>
                                 )}
+                                {mode === "pembelian" && (
+                                    <>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                No Faktur *
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={formData.no_faktur}
+                                                onChange={(e) =>
+                                                    handleFormChange(
+                                                        "no_faktur",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Tanggal Pembelian *
+                                            </label>
+                                            <input
+                                                type="date"
+                                                value={formData.tgl_beli}
+                                                onChange={(e) =>
+                                                    handleFormChange(
+                                                        "tgl_beli",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Akun Bayar *
+                                            </label>
+                                            <select
+                                                value={formData.kd_rek}
+                                                onChange={(e) =>
+                                                    handleFormChange(
+                                                        "kd_rek",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                required
+                                            >
+                                                <option value="">
+                                                    Pilih Akun Bayar
+                                                </option>
+                                                {akunBayar.map(
+                                                    (akun, index) => (
+                                                        <option
+                                                            key={`${akun.kd_rek}-${akun.nama_bayar}-${index}`}
+                                                            value={akun.kd_rek}
+                                                        >
+                                                            {akun.kd_rek} -{" "}
+                                                            {akun.nama_bayar}
+                                                        </option>
+                                                    )
+                                                )}
+                                            </select>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </CardHeader>
                         <CardContent>
                             {/* Form Header */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                                {/* No Faktur */}
-                                <div
-                                    className={`${
-                                        mode === "pemesanan" ? "hidden" : ""
-                                    }`}
-                                >
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        No Faktur *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.no_faktur}
-                                        onChange={(e) =>
-                                            handleFormChange(
-                                                "no_faktur",
-                                                e.target.value
-                                            )
-                                        }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        required
-                                    />
-                                </div>
-
-                                {/* Tanggal */}
-                                <div
-                                    className={`${
-                                        mode === "pemesanan" ? "hidden" : ""
-                                    }`}
-                                >
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Tanggal Pembelian *
-                                    </label>
-                                    <input
-                                        type="date"
-                                        value={formData.tgl_beli}
-                                        onChange={(e) =>
-                                            handleFormChange(
-                                                "tgl_beli",
-                                                e.target.value
-                                            )
-                                        }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        required
-                                    />
-                                </div>
-
-                                {/* Akun Bayar */}
-                                <div
-                                    className={`${
-                                        mode === "pemesanan" ? "hidden" : ""
-                                    }`}
-                                >
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Akun Bayar *
-                                    </label>
-                                    <select
-                                        value={formData.kd_rek}
-                                        onChange={(e) =>
-                                            handleFormChange(
-                                                "kd_rek",
-                                                e.target.value
-                                            )
-                                        }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        required
-                                    >
-                                        <option value="">
-                                            Pilih Akun Bayar
-                                        </option>
-                                        {akunBayar.map((akun, index) => (
-                                            <option
-                                                key={`${akun.kd_rek}-${akun.nama_bayar}-${index}`}
-                                                value={akun.kd_rek}
-                                            >
-                                                {akun.kd_rek} -{" "}
-                                                {akun.nama_bayar}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
                                 {/* Supplier */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">

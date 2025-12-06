@@ -508,26 +508,50 @@ class SetHargaObatController extends Controller
     public function getPercentageData()
     {
         try {
-            $hargaObat = DB::table('set_harga_obat')->first();
-            if (! $hargaObat) {
-                DB::table('set_harga_obat')->insert([
-                    'ralan' => 20,
-                    'kelas1' => 20,
-                    'kelas2' => 20,
-                    'kelas3' => 20,
-                    'utama' => 20,
-                    'vip' => 20,
-                    'vvip' => 20,
-                    'beliluar' => 20,
-                    'jualbebas' => 20,
-                    'karyawan' => 20,
-                ]);
-                $hargaObat = DB::table('set_harga_obat')->first();
+            $cfg = DB::table('set_harga_obat')->select('setharga', 'hargadasar', 'ppn')->first();
+            if (! $cfg) {
+                $cfg = (object) [
+                    'setharga' => 'Umum',
+                    'hargadasar' => 'Harga Beli',
+                    'ppn' => 'Yes',
+                ];
+            }
+
+            $umum = DB::table('setpenjualanumum')->select(
+                'ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan'
+            )->first();
+            if (! $umum) {
+                $umum = (object) [
+                    'ralan' => 20.0,
+                    'kelas1' => 20.0,
+                    'kelas2' => 20.0,
+                    'kelas3' => 20.0,
+                    'utama' => 20.0,
+                    'vip' => 20.0,
+                    'vvip' => 20.0,
+                    'beliluar' => 20.0,
+                    'jualbebas' => 20.0,
+                    'karyawan' => 20.0,
+                ];
             }
 
             return response()->json([
                 'success' => true,
-                'data' => $hargaObat,
+                'data' => [
+                    'setharga' => $cfg->setharga,
+                    'hargadasar' => $cfg->hargadasar,
+                    'ppn' => $cfg->ppn,
+                    'ralan' => (float) $umum->ralan,
+                    'kelas1' => (float) $umum->kelas1,
+                    'kelas2' => (float) $umum->kelas2,
+                    'kelas3' => (float) $umum->kelas3,
+                    'utama' => (float) $umum->utama,
+                    'vip' => (float) $umum->vip,
+                    'vvip' => (float) $umum->vvip,
+                    'beliluar' => (float) $umum->beliluar,
+                    'jualbebas' => (float) $umum->jualbebas,
+                    'karyawan' => (float) $umum->karyawan,
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([

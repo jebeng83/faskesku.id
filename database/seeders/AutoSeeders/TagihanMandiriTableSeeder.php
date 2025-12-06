@@ -1,0 +1,178 @@
+<?php
+
+namespace Database\Seeders\AutoSeeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
+class TagihanMandiriTableSeeder extends Seeder
+{
+    public function run(): void
+    {
+        Schema::disableForeignKeyConstraints();
+        DB::table('tagihan_mandiri')->truncate();
+        Schema::enableForeignKeyConstraints();
+
+        Schema::disableForeignKeyConstraints();
+        DB::table('tagihan_mandiri')->insert(array (
+          0 => 
+          array (
+            'no_rkm_medis' => '000013',
+            'nm_pasien' => 'PARAMITA RAMADANI',
+            'alamat' => 'BANTUL, BELOPA, BANDA SAKTI, BANTUL',
+            'jk' => 'L',
+            'tgl_lahir' => '1990-01-01',
+            'umurdaftar' => '33Th',
+            'tgl_registrasi' => '2023-09-18',
+            'no_nota' => '20230918010001',
+            'besar_bayar' => 667096.0,
+            'no_rawat' => '2023/09/18/000001',
+            'no_id' => '20230918000001',
+            'status_lanjut' => 'Ralan',
+            'tgl_closing' => '2023-09-18 09:02:48',
+            'status_bayar' => 'Pending',
+            'pembatalan' => 'Belum Dibatalkan',
+            'dibatalkan_oleh' => 'Faskes',
+            'besar_batal' => 0.0,
+            'kasir' => 'Admin Utama',
+            'tambahan1' => '',
+            'tambahan2' => '',
+            'tambahan3' => '',
+            'diupdatebank' => '0000-00-00 00:00:00',
+            'referensi' => '',
+          ),
+          1 => 
+          array (
+            'no_rkm_medis' => '000013',
+            'nm_pasien' => 'PARAMITA RAMADANI',
+            'alamat' => 'BANTUL, BELOPA, BANDA SAKTI, BANTUL',
+            'jk' => 'L',
+            'tgl_lahir' => '1990-01-01',
+            'umurdaftar' => '33Th',
+            'tgl_registrasi' => '2023-09-20',
+            'no_nota' => '20230920010001',
+            'besar_bayar' => 260000.0,
+            'no_rawat' => '2023/09/20/000001',
+            'no_id' => '20230920000001',
+            'status_lanjut' => 'Ralan',
+            'tgl_closing' => '2023-09-20 22:39:01',
+            'status_bayar' => 'Pending',
+            'pembatalan' => 'Belum Dibatalkan',
+            'dibatalkan_oleh' => 'Faskes',
+            'besar_batal' => 0.0,
+            'kasir' => 'Admin Utama',
+            'tambahan1' => '',
+            'tambahan2' => '',
+            'tambahan3' => '',
+            'diupdatebank' => '0000-00-00 00:00:00',
+            'referensi' => '',
+          ),
+          2 => 
+          array (
+            'no_rkm_medis' => '000005',
+            'nm_pasien' => 'ROBY ALAMSYAH',
+            'alamat' => 'ALAMAT, KROGOWANAN, SAWANGAN, KABUPATEN MAGELANG',
+            'jk' => 'L',
+            'tgl_lahir' => '1986-07-20',
+            'umurdaftar' => '36Th',
+            'tgl_registrasi' => '2023-06-10',
+            'no_nota' => '20230920020001',
+            'besar_bayar' => 8977000.0,
+            'no_rawat' => '2023/06/10/000002',
+            'no_id' => '20230610000002',
+            'status_lanjut' => 'Ranap',
+            'tgl_closing' => '2023-09-20 20:40:10',
+            'status_bayar' => 'Sudah',
+            'pembatalan' => 'Belum Dibatalkan',
+            'dibatalkan_oleh' => 'MHAS',
+            'besar_batal' => 8977000.0,
+            'kasir' => 'Admin Utama',
+            'tambahan1' => 'Kamar Kelas VIP',
+            'tambahan2' => 'Kelas VVIP',
+            'tambahan3' => '',
+            'diupdatebank' => '2023-09-20 20:40:10',
+            'referensi' => '1136030910200123',
+          ),
+          3 => 
+          array (
+            'no_rkm_medis' => '000009',
+            'nm_pasien' => 'WAHYUDI KURNIAWAN',
+            'alamat' => 'PEKALONGAN, -, -, -',
+            'jk' => 'L',
+            'tgl_lahir' => '1990-01-01',
+            'umurdaftar' => '33Th',
+            'tgl_registrasi' => '2023-09-25',
+            'no_nota' => '20230925010001',
+            'besar_bayar' => 382168.0,
+            'no_rawat' => '2023/09/25/000001',
+            'no_id' => '20230925000001',
+            'status_lanjut' => 'Ralan',
+            'tgl_closing' => '2023-09-25 09:17:30',
+            'status_bayar' => 'Sudah',
+            'pembatalan' => 'Belum Dibatalkan',
+            'dibatalkan_oleh' => 'Faskes',
+            'besar_batal' => 0.0,
+            'kasir' => 'Admin Utama',
+            'tambahan1' => 'Kamar Kelas VIP',
+            'tambahan2' => 'Kelas VVIP',
+            'tambahan3' => '',
+            'diupdatebank' => '2023-09-20 20:40:10',
+            'referensi' => '1136030910200000',
+          ),
+          4 => 
+          array (
+            'no_rkm_medis' => '000002',
+            'nm_pasien' => 'DEWI EKAWATI',
+            'alamat' => 'ALAMAT, TUNGGULREJO, GRABAG, KABUPATEN PURWOREJO',
+            'jk' => 'P',
+            'tgl_lahir' => '1988-02-22',
+            'umurdaftar' => '37Th',
+            'tgl_registrasi' => '2025-03-17',
+            'no_nota' => '20250317010001',
+            'besar_bayar' => 1127274.0,
+            'no_rawat' => '2025/03/17/000002',
+            'no_id' => '20250317000002',
+            'status_lanjut' => 'Ralan',
+            'tgl_closing' => '2025-03-17 09:51:58',
+            'status_bayar' => 'Pending',
+            'pembatalan' => '',
+            'dibatalkan_oleh' => '',
+            'besar_batal' => 0.0,
+            'kasir' => 'Admin Utama',
+            'tambahan1' => '',
+            'tambahan2' => '',
+            'tambahan3' => '',
+            'diupdatebank' => '0000-00-00 00:00:00',
+            'referensi' => '',
+          ),
+          5 => 
+          array (
+            'no_rkm_medis' => '000011',
+            'nm_pasien' => 'SETIYAWAN KRISTANTO',
+            'alamat' => 'JL. DOKTER CIPTI RT 01/RW01, BEDALI, LAWANG, KABUPATEN MALANG',
+            'jk' => 'L',
+            'tgl_lahir' => '1960-02-21',
+            'umurdaftar' => '65Th',
+            'tgl_registrasi' => '2025-07-23',
+            'no_nota' => '20250723010001',
+            'besar_bayar' => 647181.0,
+            'no_rawat' => '2025/07/23/000001',
+            'no_id' => '20250723000001',
+            'status_lanjut' => 'Ralan',
+            'tgl_closing' => '2025-07-23 14:44:30',
+            'status_bayar' => 'Pending',
+            'pembatalan' => '',
+            'dibatalkan_oleh' => '',
+            'besar_batal' => 0.0,
+            'kasir' => 'Admin Utama',
+            'tambahan1' => '',
+            'tambahan2' => '',
+            'tambahan3' => '',
+            'diupdatebank' => '0000-00-00 00:00:00',
+            'referensi' => '',
+          ),
+        ));
+        Schema::enableForeignKeyConstraints();
+    }
+}

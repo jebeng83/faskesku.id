@@ -9,8 +9,6 @@ class DetailBeli extends Model
 {
     use HasFactory;
 
-    protected $connection = 'fufufafa';
-
     protected $table = 'detailbeli';
 
     public $timestamps = false;
@@ -43,5 +41,10 @@ class DetailBeli extends Model
     public function dataBarang()
     {
         return $this->belongsTo(DataBarang::class, 'kode_brng', 'kode_brng');
+    }
+
+    public function getConnectionName()
+    {
+        return config('database.default');
     }
 }

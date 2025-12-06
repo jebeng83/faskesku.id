@@ -228,7 +228,7 @@ export default function SetHargaObat({ auth, hargaObat, schema, penjualanUmum, p
             jualbebas: toNumber(data.jualbebas),
             karyawan: toNumber(data.karyawan),
         };
-        router.post('/farmasi/set-penjualan-barang', payload, {
+        router.post(route('farmasi.set-penjualan-barang.store'), payload, {
             preserveScroll: true,
             onSuccess: () => {
                 import('@/tools/toast').then(({ toast }) => toast.success('Pengaturan per barang berhasil disimpan')).catch(() => {});

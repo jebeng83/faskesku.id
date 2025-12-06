@@ -87,17 +87,32 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
     };
 
     // Menu items
+    const hutangObatUrl = (() => {
+        try {
+            return route("farmasi.hutang-obat", {}, false);
+        } catch (_) {
+            return "/farmasi/hutang-obat";
+        }
+    })();
+
+    const riwayatBarangMedisUrl = (() => {
+        try {
+            return route("farmasi.riwayat-barang-medis", {}, false);
+        } catch (_) {
+            return "/farmasi/riwayat-barang-medis";
+        }
+    })();
+
     const items = useMemo(
         () => [
             {
                 label: "Dashboard",
-                // Mengarah ke Dashboard global sesuai permintaan
-                href: route("dashboard"),
+                href: route("dashboard", {}, false),
                 icon: <Gauge className="w-4 h-4" />,
             },
             {
                 label: "Home",
-                href: route("farmasi.index"),
+                href: route("farmasi.index", {}, false),
                 icon: <Home className="w-4 h-4" />,
             },
             {
@@ -106,29 +121,29 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                 children: [
                     {
                         label: "Stok Opname",
-                        href: route("farmasi.stok-opname"),
+                        href: route("farmasi.stok-opname", {}, false),
                         icon: <ClipboardList className="w-4 h-4" />,
                     },
                     {
                         label: "Pembelian Obat",
-                        href: route("farmasi.pembelian-obat"),
+                        href: route("farmasi.pembelian-obat", {}, false),
                         icon: <Truck className="w-4 h-4" />,
                     },
                     {
+                        label: "Hutang Obat",
+                        href: hutangObatUrl,
+                        icon: <ClipboardList className="w-4 h-4" />,
+                    },
+                    {
                         label: "Penjualan Obat",
-                        href: route("farmasi.penjualan-obat"),
+                        href: route("farmasi.penjualan-obat", {}, false),
                         icon: <ShoppingCart className="w-4 h-4" />,
                     },
                     {
                         label: "Permintaan Obat",
-                        href: route("farmasi.permintaan-resep"),
+                        href: route("farmasi.permintaan-resep", {}, false),
                         disabled: false,
                         icon: <Package className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Mutasi",
-                        href: route("farmasi.riwayat-transaksi-gudang"),
-                        icon: <Boxes className="w-4 h-4" />,
                     },
                 ],
             },
@@ -138,52 +153,56 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                 children: [
                     {
                         label: "Industri Farmasi",
-                        href: route("farmasi.industri-farmasi.index"),
+                        href: route(
+                            "farmasi.industri-farmasi.index",
+                            {},
+                            false
+                        ),
                         icon: <ClipboardList className="w-4 h-4" />,
                     },
                     {
                         label: "Data Suplier",
-                        href: route("farmasi.datasuplier.index"),
+                        href: route("farmasi.datasuplier.index", {}, false),
                         icon: <Truck className="w-4 h-4" />,
                     },
                     {
                         label: "Satuan Barang",
-                        href: route("farmasi.satuan-barang.index"),
+                        href: route("farmasi.satuan-barang.index", {}, false),
                         icon: <ClipboardList className="w-4 h-4" />,
                     },
                     {
                         label: "Metode Racik",
-                        href: route("farmasi.metode-racik.index"),
+                        href: route("farmasi.metode-racik.index", {}, false),
                         icon: <FlaskConical className="w-4 h-4" />,
                     },
                     {
                         label: "Konversi Satuan",
-                        href: route("farmasi.konversi-satuan.index"),
+                        href: route("farmasi.konversi-satuan.index", {}, false),
                         icon: <ClipboardList className="w-4 h-4" />,
                     },
                     {
                         label: "Jenis Obat, Alkes & BHP",
-                        href: route("farmasi.jenis-obat.index"),
+                        href: route("farmasi.jenis-obat.index", {}, false),
                         icon: <Pill className="w-4 h-4" />,
                     },
                     {
                         label: "Kategori Obat",
-                        href: route("farmasi.kategori-obat.index"),
+                        href: route("farmasi.kategori-obat.index", {}, false),
                         icon: <ClipboardList className="w-4 h-4" />,
                     },
                     {
                         label: "Golongan Obat",
-                        href: route("farmasi.golongan-obat.index"),
+                        href: route("farmasi.golongan-obat.index", {}, false),
                         icon: <ClipboardList className="w-4 h-4" />,
                     },
                     {
                         label: "Setting Harga Obat",
-                        href: route("farmasi.set-harga-obat"),
+                        href: route("farmasi.set-harga-obat", {}, false),
                         icon: <Settings className="w-4 h-4" />,
                     },
                     {
                         label: "Data Obat",
-                        href: route("farmasi.data-obat"),
+                        href: route("farmasi.data-obat", {}, false),
                         icon: <Pill className="w-4 h-4" />,
                     },
                 ],
@@ -196,6 +215,11 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                         label: "LPLPO",
                         href: "#",
                         disabled: true,
+                        icon: <ClipboardList className="w-4 h-4" />,
+                    },
+                    {
+                        label: "Riwayat Barang Medis",
+                        href: riwayatBarangMedisUrl,
                         icon: <ClipboardList className="w-4 h-4" />,
                     },
                 ],
