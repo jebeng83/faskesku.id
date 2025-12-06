@@ -10,8 +10,6 @@ class RiwayatTransaksiGudangBarang extends Model
 {
     use HasFactory;
 
-    protected $connection = 'fufufafa';
-
     protected $table = 'riwayat_transaksi_gudangbarang';
 
     protected $fillable = [
@@ -171,5 +169,10 @@ class RiwayatTransaksiGudangBarang extends Model
     public function scopeSumberTransaksi($query, $sumber)
     {
         return $query->where('sumber_transaksi', $sumber);
+    }
+
+    public function getConnectionName()
+    {
+        return config('database.default');
     }
 }

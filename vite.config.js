@@ -48,5 +48,32 @@ export default defineConfig(() => ({
             'Access-Control-Allow-Headers': '*',
         },
         // Do not hardcode HMR port; let Vite use the actual dev server port to avoid mismatches
+        proxy: {
+            '/farmasi': {
+                target: 'http://127.0.0.1:8000',
+                changeOrigin: true,
+                secure: false,
+            },
+            '/api': {
+                target: 'http://127.0.0.1:8000',
+                changeOrigin: true,
+                secure: false,
+            },
+            '/_boost': {
+                target: 'http://127.0.0.1:8000',
+                changeOrigin: true,
+                secure: false,
+            },
+            '/sanctum': {
+                target: 'http://127.0.0.1:8000',
+                changeOrigin: true,
+                secure: false,
+            },
+            '/favicon.ico': {
+                target: 'http://127.0.0.1:8000',
+                changeOrigin: true,
+                secure: false,
+            },
+        },
     },
 }));

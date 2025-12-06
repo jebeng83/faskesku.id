@@ -1,0 +1,166 @@
+<?php
+
+namespace Database\Seeders\AutoSeeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
+class PcarePendaftaranTableSeeder extends Seeder
+{
+    public function run(): void
+    {
+        Schema::disableForeignKeyConstraints();
+        DB::table('pcare_pendaftaran')->truncate();
+        Schema::enableForeignKeyConstraints();
+
+        Schema::disableForeignKeyConstraints();
+        DB::table('pcare_pendaftaran')->insert(array (
+          0 => 
+          array (
+            'no_rawat' => '2025/11/12/000001',
+            'tglDaftar' => '2025-11-12',
+            'no_rkm_medis' => '000057',
+            'nm_pasien' => 'AGUS BUDIYONO,A. Md.Kep',
+            'kdProviderPeserta' => '11251616',
+            'noKartu' => '0001441909697',
+            'kdPoli' => '001',
+            'nmPoli' => 'POLI UMUM',
+            'keluhan' => 'Pasien melakukan kontrol rutin.',
+            'kunjSakit' => 'Kunjungan Sakit',
+            'sistole' => '120',
+            'diastole' => '80',
+            'beratBadan' => '89',
+            'tinggiBadan' => '165',
+            'respRate' => '20',
+            'lingkar_perut' => '72',
+            'heartRate' => '80',
+            'rujukBalik' => '0',
+            'kdTkp' => '10 Rawat Jalan',
+            'noUrut' => 'A36',
+            'status' => 'Terkirim',
+          ),
+          1 => 
+          array (
+            'no_rawat' => '2025/11/12/000002',
+            'tglDaftar' => '2025-11-12',
+            'no_rkm_medis' => '000056',
+            'nm_pasien' => 'Naufal Abqory Budiyono',
+            'kdProviderPeserta' => '11251616',
+            'noKartu' => '0001441910575',
+            'kdPoli' => '001',
+            'nmPoli' => 'POLI UMUM',
+            'keluhan' => 'Pasien melakukan kontrol rutin.',
+            'kunjSakit' => 'Kunjungan Sakit',
+            'sistole' => '120',
+            'diastole' => '80',
+            'beratBadan' => '45',
+            'tinggiBadan' => '140',
+            'respRate' => '20',
+            'lingkar_perut' => '72',
+            'heartRate' => '80',
+            'rujukBalik' => '0',
+            'kdTkp' => '10 Rawat Jalan',
+            'noUrut' => 'A65',
+            'status' => 'Terkirim',
+          ),
+          2 => 
+          array (
+            'no_rawat' => '2025/11/13/000001',
+            'tglDaftar' => '2025-11-13',
+            'no_rkm_medis' => '000057',
+            'nm_pasien' => 'AGUS BUDIYONO,A. Md.Kep',
+            'kdProviderPeserta' => '11251616',
+            'noKartu' => '0001441909697',
+            'kdPoli' => '001',
+            'nmPoli' => 'POLI UMUM',
+            'keluhan' => 'Pasien datang dengan keluhan yang konsisten dengan Mata Kering. Keluhan dirasakan sejak ±3 hari terakhir, intensitas ringan–sedang, kadang mengganggu aktivitas harian. Pasien tidak melaporkan tanda bahaya (mis. demam tinggi menetap, perdarahan, nyeri hebat progresif, penurunan kesadaran).',
+            'kunjSakit' => 'Kunjungan Sakit',
+            'sistole' => '120',
+            'diastole' => '80',
+            'beratBadan' => '0',
+            'tinggiBadan' => '0',
+            'respRate' => '20',
+            'lingkar_perut' => '0',
+            'heartRate' => '80',
+            'rujukBalik' => '0',
+            'kdTkp' => '10 Rawat Jalan',
+            'noUrut' => 'A72',
+            'status' => 'Terkirim',
+          ),
+          3 => 
+          array (
+            'no_rawat' => '2025/11/15/000001',
+            'tglDaftar' => '2025-11-15',
+            'no_rkm_medis' => '000057',
+            'nm_pasien' => 'AGUS BUDIYONO,A. Md.Kep',
+            'kdProviderPeserta' => '11251616',
+            'noKartu' => '0001441909697',
+            'kdPoli' => '001',
+            'nmPoli' => 'POLI UMUM',
+            'keluhan' => 'Pasien melakukan kontrol rutin.',
+            'kunjSakit' => 'Kunjungan Sakit',
+            'sistole' => '120',
+            'diastole' => '80',
+            'beratBadan' => '80',
+            'tinggiBadan' => '165',
+            'respRate' => '20',
+            'lingkar_perut' => '72',
+            'heartRate' => '80',
+            'rujukBalik' => '0',
+            'kdTkp' => '10 Rawat Jalan',
+            'noUrut' => 'A59',
+            'status' => 'Terkirim',
+          ),
+          4 => 
+          array (
+            'no_rawat' => '2025/11/22/000001',
+            'tglDaftar' => '2025-11-22',
+            'no_rkm_medis' => '000047',
+            'nm_pasien' => 'RIDWAN HALIM',
+            'kdProviderPeserta' => '11251616',
+            'noKartu' => '-',
+            'kdPoli' => '001',
+            'nmPoli' => 'POLI UMUM',
+            'keluhan' => 'Pasien mengatakan sudah beberapa minggu mengeluh pusing/sakit kepala, kadang berdebar. Riwayat tekanan darah tinggi.',
+            'kunjSakit' => 'Kunjungan Sakit',
+            'sistole' => '150',
+            'diastole' => '95',
+            'beratBadan' => '90',
+            'tinggiBadan' => '165',
+            'respRate' => '18',
+            'lingkar_perut' => '80',
+            'heartRate' => '85',
+            'rujukBalik' => '0',
+            'kdTkp' => '10 Rawat Jalan',
+            'noUrut' => '',
+            'status' => 'Gagal',
+          ),
+          5 => 
+          array (
+            'no_rawat' => '2025/11/25/000001',
+            'tglDaftar' => '2025-11-25',
+            'no_rkm_medis' => '000019',
+            'nm_pasien' => 'RIZKI AMALIA',
+            'kdProviderPeserta' => '11251616',
+            'noKartu' => '-',
+            'kdPoli' => 'U0012',
+            'nmPoli' => 'Poliklinik Jantung',
+            'keluhan' => 'Pasien melakukan kontrol rutin.',
+            'kunjSakit' => 'Kunjungan Sakit',
+            'sistole' => '120',
+            'diastole' => '80',
+            'beratBadan' => '80',
+            'tinggiBadan' => '178',
+            'respRate' => '20',
+            'lingkar_perut' => '72',
+            'heartRate' => '80',
+            'rujukBalik' => '0',
+            'kdTkp' => '10 Rawat Jalan',
+            'noUrut' => '',
+            'status' => 'Gagal',
+          ),
+        ));
+        Schema::enableForeignKeyConstraints();
+    }
+}

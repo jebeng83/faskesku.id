@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pemesanan extends Model
 {
-    protected $connection = 'fufufafa';
-
     protected $table = 'pemesanan';
 
     protected $primaryKey = 'no_faktur';
@@ -19,4 +17,9 @@ class Pemesanan extends Model
     public $timestamps = false;
 
     protected $fillable = ['no_faktur', 'no_order', 'kode_suplier', 'nip', 'tgl_pesan', 'tgl_faktur', 'tgl_tempo', 'subtotal', 'dis', 'total', 'ppn', 'meterai', 'tagihan', 'kd_bangsal', 'status'];
+
+    public function getConnectionName()
+    {
+        return config('database.default');
+    }
 }

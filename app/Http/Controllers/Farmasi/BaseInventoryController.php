@@ -13,11 +13,11 @@ class BaseInventoryController extends BaseController
     {
         $noBatch = $noBatch ?? '';
         $noFaktur = $noFaktur ?? '';
-        $exists = DB::connection('fufufafa')->table('gudangbarang')->where(['kode_brng' => $kodeBrg, 'kd_bangsal' => $kdBangsal, 'no_batch' => $noBatch, 'no_faktur' => $noFaktur])->exists();
+        $exists = DB::table('gudangbarang')->where(['kode_brng' => $kodeBrg, 'kd_bangsal' => $kdBangsal, 'no_batch' => $noBatch, 'no_faktur' => $noFaktur])->exists();
         if ($exists) {
-            DB::connection('fufufafa')->table('gudangbarang')->where(['kode_brng' => $kodeBrg, 'kd_bangsal' => $kdBangsal, 'no_batch' => $noBatch, 'no_faktur' => $noFaktur])->update(['stok' => DB::raw('stok+'.$qty)]);
+            DB::table('gudangbarang')->where(['kode_brng' => $kodeBrg, 'kd_bangsal' => $kdBangsal, 'no_batch' => $noBatch, 'no_faktur' => $noFaktur])->update(['stok' => DB::raw('stok+'.$qty)]);
         } else {
-            DB::connection('fufufafa')->table('gudangbarang')->insert(['kode_brng' => $kodeBrg, 'kd_bangsal' => $kdBangsal, 'stok' => $qty, 'no_batch' => $noBatch, 'no_faktur' => $noFaktur]);
+            DB::table('gudangbarang')->insert(['kode_brng' => $kodeBrg, 'kd_bangsal' => $kdBangsal, 'stok' => $qty, 'no_batch' => $noBatch, 'no_faktur' => $noFaktur]);
         }
     }
 
@@ -25,12 +25,12 @@ class BaseInventoryController extends BaseController
     {
         $noBatch = $noBatch ?? '';
         $noFaktur = $noFaktur ?? '';
-        DB::connection('fufufafa')->table('gudangbarang')->where(['kode_brng' => $kodeBrg, 'kd_bangsal' => $kdBangsal, 'no_batch' => $noBatch, 'no_faktur' => $noFaktur])->update(['stok' => DB::raw('stok-'.$qty)]);
+        DB::table('gudangbarang')->where(['kode_brng' => $kodeBrg, 'kd_bangsal' => $kdBangsal, 'no_batch' => $noBatch, 'no_faktur' => $noFaktur])->update(['stok' => DB::raw('stok-'.$qty)]);
     }
 
     protected function adjustBatchSisaDelta(string $kodeBrg, string $noBatch, string $noFaktur, float $delta): void
     {
-        DB::connection('fufufafa')->table('data_batch')->where(['kode_brng' => $kodeBrg, 'no_batch' => $noBatch, 'no_faktur' => $noFaktur])->update(['sisa' => DB::raw('sisa+'.$delta)]);
+        DB::table('data_batch')->where(['kode_brng' => $kodeBrg, 'no_batch' => $noBatch, 'no_faktur' => $noFaktur])->update(['sisa' => DB::raw('sisa+'.$delta)]);
     }
 
     protected function recordRiwayat(string $kodeBrg, string $kdBangsal, float $masuk, float $keluar, string $status, ?string $noBatch, ?string $noFaktur, ?string $keterangan, ?string $petugas): void
@@ -56,13 +56,18 @@ class BaseInventoryController extends BaseController
     protected function addJournalLines(array $lines): void
     {
         foreach ($lines as $l) {
-            TampJurnal::create(['kd_rek' => $l[0], 'nm_rek' => ($l[1] ?? '-'), 'debet' => $l[2], 'kredit' => $l[3]]);
+            DB::table('tampjurnal')->insert([
+                'kd_rek' => (string) $l[0],
+                'nm_rek' => (string) ($l[1] ?? '-'),
+                'debet' => (float) ($l[2] ?? 0),
+                'kredit' => (float) ($l[3] ?? 0),
+            ]);
         }
     }
 
     protected function stageJurnal(array $lines): void
     {
-        DB::connection('fufufafa')->table('tampjurnal')->delete();
+        DB::table('tampjurnal')->delete();
         $agg = [];
         foreach ($lines as $l) {
             $kd = $l[0];
@@ -77,11 +82,11 @@ class BaseInventoryController extends BaseController
             $agg[$kd]['kredit'] += $kredit;
         }
         foreach ($agg as $row) {
-            TampJurnal::create([
-                'kd_rek' => $row['kd_rek'],
-                'nm_rek' => $row['nm_rek'] ?? '-',
-                'debet' => $row['debet'],
-                'kredit' => $row['kredit'],
+            DB::table('tampjurnal')->insert([
+                'kd_rek' => (string) $row['kd_rek'],
+                'nm_rek' => (string) ($row['nm_rek'] ?? '-'),
+                'debet' => (float) $row['debet'],
+                'kredit' => (float) $row['kredit'],
             ]);
         }
     }

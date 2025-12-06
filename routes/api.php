@@ -208,6 +208,13 @@ Route::prefix('public')->group(function () {
         Route::post('/store', [FarmasiPemesananController::class, 'store'])->name('api.pemesanan.store');
     });
 
+    // Farmasi - Hutang Obat (Payables) API Routes
+    Route::prefix('farmasi/hutang')->group(function () {
+        Route::get('/', [FarmasiPemesananController::class, 'listHutang'])->name('api.farmasi.hutang.index');
+        Route::post('/stage', [FarmasiPemesananController::class, 'stagePelunasan'])->name('api.farmasi.hutang.stage');
+        Route::patch('/{no_faktur}/mark-paid', [FarmasiPemesananController::class, 'markPaid'])->name('api.farmasi.hutang.mark-paid');
+    });
+
     // Barang search endpoint (used by Pembelian Obat page)
     Route::get('/barang/search', [BarangController::class, 'search'])->name('api.barang.search');
 

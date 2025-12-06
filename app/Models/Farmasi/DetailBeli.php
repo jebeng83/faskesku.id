@@ -11,4 +11,9 @@ class DetailBeli extends Model
     public $timestamps = false;
 
     protected $fillable = ['no_faktur', 'kode_brng', 'kode_sat', 'jumlah', 'h_beli', 'subtotal', 'dis', 'besardis', 'total', 'no_batch', 'jumlah2', 'kadaluarsa'];
+
+    public function getConnectionName()
+    {
+        return config('database.default');
+    }
 }

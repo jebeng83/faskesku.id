@@ -39,21 +39,29 @@ class SecurityHeadersMiddleware
         }
 
         if ($isDevelopment) {
-            // CSP untuk development - lebih fleksibel untuk Vite HMR dan CDN
+            $httpAllowed = array_unique(array_merge([
+                'http://127.0.0.1:5177',
+                'http://localhost:5177',
+                'http://127.0.0.1:5178',
+                'http://localhost:5178',
+                'http://127.0.0.1:8000',
+            ], $viteHttp));
+            $wsAllowed = array_unique(array_merge([
+                'ws://127.0.0.1:5177',
+                'ws://localhost:5177',
+                'ws://127.0.0.1:5178',
+                'ws://localhost:5178',
+                'ws://127.0.0.1:8000',
+            ], $viteWs));
+
             $csp = "default-src 'self'; ".
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://127.0.0.1:5177 http://localhost:5177 ws://127.0.0.1:5177 ws://localhost:5177; ".
-                "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com http://127.0.0.1:5177 http://localhost:5177; ".
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' ".implode(' ', $httpAllowed)."; ".
+                "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com ".implode(' ', $httpAllowed)."; ".
                 "img-src 'self' data: https: http:; ".
                 "font-src 'self' data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.gstatic.com https://fonts.googleapis.com; ".
-                "connect-src 'self' http://127.0.0.1:5177 http://localhost:5177 ws://127.0.0.1:5177 ws://localhost:5177 http://127.0.0.1:8000 ws://127.0.0.1:8000; ".
+                "connect-src 'self' ".implode(' ', array_merge($httpAllowed, $wsAllowed))."; ".
                 "worker-src 'self' blob:; ".
                 "frame-src 'self' https://www.google.com https://maps.google.com";
-            if (! empty($viteHttp) || ! empty($viteWs)) {
-                $csp = rtrim($csp, ';').'; '.
-                    (empty($viteHttp) ? '' : ("style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com http://127.0.0.1:5177 http://localhost:5177 ".implode(' ', $viteHttp).'; ')).
-                    ("script-src 'self' 'unsafe-inline' 'unsafe-eval' http://127.0.0.1:5177 http://localhost:5177 ".implode(' ', array_merge($viteHttp, $viteWs)).'; ').
-                    ("connect-src 'self' http://127.0.0.1:5177 http://localhost:5177 ws://127.0.0.1:5177 ws://localhost:5177 http://127.0.0.1:8000 ws://127.0.0.1:8000 ".implode(' ', array_merge($viteHttp, $viteWs)).';');
-            }
         } else {
             // CSP untuk production - lebih ketat
             $style = "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com";

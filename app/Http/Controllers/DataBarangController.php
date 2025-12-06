@@ -187,37 +187,32 @@ class DataBarangController extends Controller
     {
         try {
             // Ambil data kodesatuan dari database
-            $kodesatuan = DB::connection('fufufafa')
-                ->table('kodesatuan')
+            $kodesatuan = DB::table('kodesatuan')
                 ->select('kode_sat', 'satuan')
                 ->get()
                 ->toArray();
 
             // Ambil data jenis langsung dari database tanpa join
-            $jenis = DB::connection('fufufafa')
-                ->table('jenis')
+            $jenis = DB::table('jenis')
                 ->select('jenis.kdjns', 'jenis.nama')
                 ->distinct()
                 ->get()
                 ->toArray();
 
             // Ambil data industrifarmasi dari database
-            $industrifarmasi = DB::connection('fufufafa')
-                ->table('industrifarmasi')
+            $industrifarmasi = DB::table('industrifarmasi')
                 ->select('kode_industri', 'nama_industri')
                 ->get()
                 ->toArray();
 
             // Ambil data kategori_barang dari database
-            $kategori_barang = DB::connection('fufufafa')
-                ->table('kategori_barang')
+            $kategori_barang = DB::table('kategori_barang')
                 ->select('kode', 'nama')
                 ->get()
                 ->toArray();
 
             // Ambil data golongan_barang dari database
-            $golongan_barang = DB::connection('fufufafa')
-                ->table('golongan_barang')
+            $golongan_barang = DB::table('golongan_barang')
                 ->select('kode', 'nama')
                 ->get()
                 ->toArray();
@@ -251,8 +246,7 @@ class DataBarangController extends Controller
             ]);
 
             // Cek apakah data barang ada
-            $dataBarang = DB::connection('fufufafa')
-                ->table('databarang')
+            $dataBarang = DB::table('databarang')
                 ->where('kode_brng', $kode_brng)
                 ->first();
 
@@ -270,8 +264,7 @@ class DataBarangController extends Controller
                 'dasar' => $validated['dasar'],
             ];
 
-            DB::connection('fufufafa')
-                ->table('databarang')
+            DB::table('databarang')
                 ->where('kode_brng', $kode_brng)
                 ->update($updateFields);
 
@@ -302,8 +295,7 @@ class DataBarangController extends Controller
             $sendManualPrices = $request->has(['ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan']);
 
             // Ambil data barang terlebih dahulu (untuk kdjns dan fallback dasar/h_beli)
-            $dataBarang = DB::connection('fufufafa')
-                ->table('databarang')
+            $dataBarang = DB::table('databarang')
                 ->where('kode_brng', $kode_brng)
                 ->first();
 
@@ -331,8 +323,7 @@ class DataBarangController extends Controller
                     'karyawan' => 'required|numeric|min:0',
                 ]);
 
-                DB::connection('fufufafa')
-                    ->table('databarang')
+                DB::table('databarang')
                     ->where('kode_brng', $kode_brng)
                     ->update([
                         'h_beli' => $validated['h_beli'],
@@ -381,8 +372,7 @@ class DataBarangController extends Controller
             ]);
 
             // Ambil konfigurasi set_harga_obat
-            $cfg = DB::connection('fufufafa')
-                ->table('set_harga_obat')
+            $cfg = DB::table('set_harga_obat')
                 ->select('setharga', 'hargadasar', 'ppn')
                 ->first();
 
@@ -407,21 +397,18 @@ class DataBarangController extends Controller
             // Ambil persentase sesuai mode
             $persen = null;
             if ($setharga === 'Umum') {
-                $persen = DB::connection('fufufafa')
-                    ->table('setpenjualanumum')
+                $persen = DB::table('setpenjualanumum')
                     ->select('ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan')
                     ->first();
             } elseif ($setharga === 'Per Jenis') {
                 if (! empty($dataBarang->kdjns)) {
-                    $persen = DB::connection('fufufafa')
-                        ->table('setpenjualan')
+                    $persen = DB::table('setpenjualan')
                         ->select('ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan')
                         ->where('kdjns', $dataBarang->kdjns)
                         ->first();
                 }
             } elseif ($setharga === 'Per Barang') {
-                $persen = DB::connection('fufufafa')
-                    ->table('setpenjualanperbarang')
+                $persen = DB::table('setpenjualanperbarang')
                     ->select('ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan')
                     ->where('kode_brng', $kode_brng)
                     ->first();
@@ -465,8 +452,7 @@ class DataBarangController extends Controller
                 'karyawan' => $apply($base, $ps['karyawan']),
             ];
 
-            DB::connection('fufufafa')
-                ->table('databarang')
+            DB::table('databarang')
                 ->where('kode_brng', $kode_brng)
                 ->update($updates);
 
