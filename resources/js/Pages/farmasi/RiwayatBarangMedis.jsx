@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Head } from "@inertiajs/react";
 import axios from "axios";
+import SearchableSelect from "@/Components/SearchableSelect";
 import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -35,20 +36,32 @@ const PageHeader = ({ title, meta, right }) => (
 const nowDate = () => new Date().toISOString().slice(0, 10);
 
 export default function RiwayatBarangMedis() {
-    const [from, setFrom] = useState(nowDate());
-    const [to, setTo] = useState(nowDate());
-    const [q, setQ] = useState("");
+    const [from, setFrom] = useState("");
+    const [to, setTo] = useState("");
     const [kodeBrng, setKodeBrng] = useState("");
-    const [kdBangsal, setKdBangsal] = useState("");
+    const [posisi, setPosisi] = useState("");
+    const [statusRiwayat, setStatusRiwayat] = useState("");
     const [items, setItems] = useState([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(25);
     const [loading, setLoading] = useState(false);
 
+    const requestIdRef = useRef(0);
+    const controllerRef = useRef(null);
+
     const metaText = useMemo(() => `Total ${total} baris`, [total]);
 
     const fetchData = async (opts) => {
+        const id = requestIdRef.current + 1;
+        requestIdRef.current = id;
+        if (controllerRef.current) {
+            try {
+                controllerRef.current.abort();
+            } catch {}
+        }
+        const ac = new AbortController();
+        controllerRef.current = ac;
         setLoading(true);
         try {
             const { data } = await axios.get(
@@ -57,22 +70,27 @@ export default function RiwayatBarangMedis() {
                     params: {
                         from,
                         to,
-                        q,
-                        kode_brng: kodeBrng,
-                        kd_bangsal: kdBangsal,
+                        kode_brng: kodeBrng.trim(),
+                        posisi: posisi.trim(),
+                        status: statusRiwayat.trim(),
                         page,
                         perPage,
-                        ...opts,
+                        ...(opts || {}),
                     },
+                    headers: { Accept: "application/json" },
+                    withCredentials: true,
+                    signal: ac.signal,
                 }
             );
+            if (id !== requestIdRef.current) return;
             setItems(Array.isArray(data?.items) ? data.items : []);
             setTotal(Number(data?.total ?? 0));
         } catch (e) {
+            if (id !== requestIdRef.current) return;
             setItems([]);
             setTotal(0);
         } finally {
-            setLoading(false);
+            if (id === requestIdRef.current) setLoading(false);
         }
     };
 
@@ -80,17 +98,33 @@ export default function RiwayatBarangMedis() {
         fetchData();
     }, []);
 
+    useEffect(() => {
+        setPage(1);
+        fetchData({ page: 1 });
+    }, [posisi]);
+
+    useEffect(() => {
+        setPage(1);
+        fetchData({ page: 1 });
+    }, [statusRiwayat]);
+
+    // Refetch saat Kode Barang berubah untuk memastikan filter langsung terapkan
+    useEffect(() => {
+        setPage(1);
+        fetchData({ page: 1 });
+    }, [kodeBrng]);
+
     const triggerSearch = () => {
         setPage(1);
         fetchData({ page: 1 });
     };
 
     const resetFilters = () => {
-        setFrom(nowDate());
-        setTo(nowDate());
-        setQ("");
+        setFrom("");
+        setTo("");
         setKodeBrng("");
-        setKdBangsal("");
+        setPosisi("");
+        setStatusRiwayat("");
         setPage(1);
         setPerPage(25);
         fetchData({ page: 1, perPage: 25 });
@@ -122,26 +156,7 @@ export default function RiwayatBarangMedis() {
         <SidebarFarmasi title="Farmasi">
             <Head title="Riwayat Barang Medis" />
             <div className="space-y-6">
-                <PageHeader
-                    title="Riwayat Barang Medis"
-                    meta={metaText}
-                    right={
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={triggerSearch}
-                                className="rounded-lg px-4 py-2.5 text-sm font-semibold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/25 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 hover:shadow-xl hover:shadow-blue-500/30 transition-all"
-                            >
-                                Cari
-                            </button>
-                            <button
-                                onClick={resetFilters}
-                                className="rounded-lg px-4 py-2.5 text-sm font-semibold bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                            >
-                                Reset
-                            </button>
-                        </div>
-                    }
-                />
+                <PageHeader title="Riwayat Barang Medis" meta={metaText} />
 
                 <motion.div className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5">
                     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
@@ -176,42 +191,88 @@ export default function RiwayatBarangMedis() {
                             </div>
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                                    Kata Kunci
+                                    Kode Barang
                                 </label>
-                                <input
-                                    value={q}
-                                    onChange={(e) => setQ(e.target.value)}
-                                    placeholder="Kode/Nama/Petugas/Lokasi..."
-                                    className="w-full rounded-lg border px-3 py-2 text-sm shadow-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/50"
+                                <SearchableSelect
+                                    source="databarang"
+                                    value={kodeBrng}
+                                    onChange={(val) => setKodeBrng(val)}
+                                    onSelect={(opt) => {
+                                        const selectedKode =
+                                            typeof opt === "string"
+                                                ? opt
+                                                : opt?.kode_brng ??
+                                                  opt?.value ??
+                                                  "";
+                                        setPage(1);
+                                        // Kirim nilai terpilih langsung sebagai override agar tidak terpengaruh delay setState
+                                        fetchData({
+                                            page: 1,
+                                            kode_brng: selectedKode,
+                                        });
+                                    }}
+                                    placeholder="Kode Barang"
+                                    searchPlaceholder="Cari nama/kode barang"
+                                    className="w-full"
+                                    defaultDisplay={kodeBrng || null}
                                 />
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                                        Kode Barang
-                                    </label>
-                                    <input
-                                        value={kodeBrng}
-                                        onChange={(e) =>
-                                            setKodeBrng(e.target.value)
-                                        }
-                                        placeholder="Mis. OB001"
-                                        className="w-full rounded-lg border px-3 py-2 text-sm shadow-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/50"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                                        Kode Lokasi
-                                    </label>
-                                    <input
-                                        value={kdBangsal}
-                                        onChange={(e) =>
-                                            setKdBangsal(e.target.value)
-                                        }
-                                        placeholder="Mis. GD01"
-                                        className="w-full rounded-lg border px-3 py-2 text-sm shadow-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/50"
-                                    />
-                                </div>
+                            <div className="flex items-end gap-2">
+                                <button
+                                    onClick={triggerSearch}
+                                    className="rounded-lg px-4 py-2.5 text-sm font-semibold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/25 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 hover:shadow-xl hover:shadow-blue-500/30 transition-all"
+                                >
+                                    Cari
+                                </button>
+                                <button
+                                    onClick={resetFilters}
+                                    className="rounded-lg px-4 py-2.5 text-sm font-semibold bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                >
+                                    Reset
+                                </button>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                                    Posisi Transaksi
+                                </label>
+                                <select
+                                    value={posisi}
+                                    onChange={(e) => setPosisi(e.target.value)}
+                                    className="w-full rounded-lg border px-3 py-2 text-sm shadow-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/50"
+                                >
+                                    <option value="">Semua</option>
+                                    <option>Pengadaan</option>
+                                    <option>Penerimaan</option>
+                                    <option>Penjualan</option>
+                                    <option>Pemberian Obat</option>
+                                    <option>Piutang</option>
+                                    <option>Retur Pasien</option>
+                                    <option>Retur Beli</option>
+                                    <option>Retur Jual</option>
+                                    <option>Retur Piutang</option>
+                                    <option>Mutasi</option>
+                                    <option>Opname</option>
+                                    <option>Pengambilan Medis</option>
+                                    <option>Resep Pulang</option>
+                                    <option>Hibah</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                                    Status
+                                </label>
+                                <select
+                                    value={statusRiwayat}
+                                    onChange={(e) =>
+                                        setStatusRiwayat(e.target.value)
+                                    }
+                                    className="w-full rounded-lg border px-3 py-2 text-sm shadow-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/50"
+                                >
+                                    <option value="">Semua</option>
+                                    <option>Simpan</option>
+                                    <option>Hapus</option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -346,16 +407,16 @@ export default function RiwayatBarangMedis() {
                                                 {row.kode_brng} {row.nama_brng}
                                             </td>
                                             <td className="px-3 py-2">
-                                                {row.stok_awal}
+                                                {row.stok_awal ?? 0}
                                             </td>
                                             <td className="px-3 py-2">
-                                                {row.masuk}
+                                                {row.masuk ?? 0}
                                             </td>
                                             <td className="px-3 py-2">
-                                                {row.keluar}
+                                                {row.keluar ?? 0}
                                             </td>
                                             <td className="px-3 py-2">
-                                                {row.stok_akhir}
+                                                {row.stok_akhir ?? 0}
                                             </td>
                                             <td className="px-3 py-2">
                                                 {row.posisi}

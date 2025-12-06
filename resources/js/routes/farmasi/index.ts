@@ -1,5 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 import riwayatBarangMedisC60c77 from './riwayat-barang-medis'
+import riwayatTransaksiGudang92a0ae from './riwayat-transaksi-gudang'
+import riwayatObat from './riwayat-obat'
 import farmasi from './farmasi'
 import cetak from './cetak'
 import dataObatF6becc from './data-obat'
@@ -460,6 +462,50 @@ riwayatBarangMedis.head = (options?: RouteQueryOptions): RouteDefinition<'head'>
 })
 
 /**
+* @see \App\Http\Controllers\Farmasi\RiwayatTransaksiGudangController::riwayatTransaksiGudang
+* @see app/Http/Controllers/Farmasi/RiwayatTransaksiGudangController.php:12
+* @route '/farmasi/riwayat-transaksi-gudang'
+*/
+export const riwayatTransaksiGudang = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: riwayatTransaksiGudang.url(options),
+    method: 'get',
+})
+
+riwayatTransaksiGudang.definition = {
+    methods: ["get","head"],
+    url: '/farmasi/riwayat-transaksi-gudang',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Farmasi\RiwayatTransaksiGudangController::riwayatTransaksiGudang
+* @see app/Http/Controllers/Farmasi/RiwayatTransaksiGudangController.php:12
+* @route '/farmasi/riwayat-transaksi-gudang'
+*/
+riwayatTransaksiGudang.url = (options?: RouteQueryOptions) => {
+    return riwayatTransaksiGudang.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Farmasi\RiwayatTransaksiGudangController::riwayatTransaksiGudang
+* @see app/Http/Controllers/Farmasi/RiwayatTransaksiGudangController.php:12
+* @route '/farmasi/riwayat-transaksi-gudang'
+*/
+riwayatTransaksiGudang.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: riwayatTransaksiGudang.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Farmasi\RiwayatTransaksiGudangController::riwayatTransaksiGudang
+* @see app/Http/Controllers/Farmasi/RiwayatTransaksiGudangController.php:12
+* @route '/farmasi/riwayat-transaksi-gudang'
+*/
+riwayatTransaksiGudang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: riwayatTransaksiGudang.url(options),
+    method: 'head',
+})
+
+/**
 * @see \App\Http\Controllers\Farmasi\DataBarangController::dataObat
 * @see app/Http/Controllers/Farmasi/DataBarangController.php:13
 * @route '/farmasi/data-obat'
@@ -559,6 +605,8 @@ const farmasi = {
     stokOpname: Object.assign(stokOpname, stokOpname),
     dataOpname: Object.assign(dataOpname, dataOpname),
     riwayatBarangMedis: Object.assign(riwayatBarangMedis, riwayatBarangMedisC60c77),
+    riwayatTransaksiGudang: Object.assign(riwayatTransaksiGudang, riwayatTransaksiGudang92a0ae),
+    riwayatObat: Object.assign(riwayatObat, riwayatObat),
     farmasi: Object.assign(farmasi, farmasi),
     cetak: Object.assign(cetak, cetak),
     dataObat: Object.assign(dataObat, dataObatF6becc),

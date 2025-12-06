@@ -103,6 +103,14 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
         }
     })();
 
+    const riwayatTransaksiGudangUrl = (() => {
+        try {
+            return route("farmasi.riwayat-transaksi-gudang", {}, false);
+        } catch (_) {
+            return "/farmasi/riwayat-transaksi-gudang";
+        }
+    })();
+
     const items = useMemo(
         () => [
             {
@@ -220,6 +228,11 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                     {
                         label: "Riwayat Barang Medis",
                         href: riwayatBarangMedisUrl,
+                        icon: <ClipboardList className="w-4 h-4" />,
+                    },
+                    {
+                        label: "Riwayat Transaksi Gudang",
+                        href: riwayatTransaksiGudangUrl,
                         icon: <ClipboardList className="w-4 h-4" />,
                     },
                 ],

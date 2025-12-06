@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import { route } from 'ziggy-js';
+import barangRoutes from '@/routes/api/barang';
 
 /**
  * Searchable dropdown to pick Data Barang (kode_brng) from `databarang` table.
@@ -34,17 +35,13 @@ export default function DataBarangSelector({ value, onChange, className = '' }) 
   useEffect(() => {
     let active = true;
     setLoading(true);
-    const url = route('farmasi.data-obat', { q: query || '', perPage: 10 });
-    fetch(url, { headers: { Accept: 'application/json' } })
+    const url = barangRoutes.search.url({ q: query || '' });
+    fetch(url, { headers: { Accept: 'application/json' }, credentials: 'include' })
       .then((r) => r.json())
       .then((json) => {
         if (!active) return;
-        const list = Array.isArray(json.items?.data) ? json.items.data : (Array.isArray(json.items) ? json.items : []);
-        // Normalize keys: expecting kode_brng & nama_brng
-        setItems(list.map((it) => ({
-          kode_brng: it.kode_brng,
-          nama_brng: it.nama_brng,
-        })));
+        const list = Array.isArray(json.data) ? json.data : [];
+        setItems(list.map((it) => ({ kode_brng: it.kode_brng, nama_brng: it.nama_brng })));
       })
       .catch(() => setItems([]))
       .finally(() => active && setLoading(false));

@@ -695,6 +695,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/riwayat-barang-medis', [\App\Http\Controllers\Farmasi\RiwayatBarangMedisController::class, 'index'])->name('riwayat-barang-medis');
         Route::get('/riwayat-barang-medis/data', [\App\Http\Controllers\Farmasi\RiwayatBarangMedisController::class, 'data'])->name('riwayat-barang-medis.data');
 
+        Route::get('/riwayat-transaksi-gudang', [\App\Http\Controllers\Farmasi\RiwayatTransaksiGudangController::class, 'index'])->name('riwayat-transaksi-gudang');
+        Route::get('/riwayat-transaksi-gudang/data', [\App\Http\Controllers\Farmasi\RiwayatTransaksiGudangController::class, 'data'])->name('riwayat-transaksi-gudang.data');
+
+        Route::post('/riwayat-obat', [\App\Http\Controllers\Farmasi\RiwayatObatController::class, 'store'])->name('riwayat-obat.store');
+
         // Alias route under farmasi namespace for consistency dengan frontend route helpers
         Route::get('/farmasi/data-opname', function () {
             return Inertia::render('farmasi/DataOpname');
