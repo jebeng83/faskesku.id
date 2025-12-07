@@ -261,11 +261,24 @@ class RawatJalanController extends Controller
 
         $riwayat = [];
         if ($noRkmMedis) {
-            $riwayat = RawatJalan::where('no_rkm_medis', $noRkmMedis)
-                ->orderByDesc('tgl_registrasi')
-                ->orderByDesc('jam_reg')
+            // Join dengan tabel poliklinik untuk mendapatkan nama poli (nm_poli)
+            $riwayat = DB::table('reg_periksa')
+                ->join('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli')
+                ->where('reg_periksa.no_rkm_medis', $noRkmMedis)
+                ->orderByDesc('reg_periksa.tgl_registrasi')
+                ->orderByDesc('reg_periksa.jam_reg')
                 ->limit(25)
-                ->get(['no_rawat', 'tgl_registrasi', 'jam_reg', 'kd_dokter', 'kd_poli', 'stts', 'status_bayar']);
+                ->select(
+                    'reg_periksa.no_rawat',
+                    'reg_periksa.tgl_registrasi',
+                    'reg_periksa.jam_reg',
+                    'reg_periksa.kd_dokter',
+                    'reg_periksa.kd_poli',
+                    'poliklinik.nm_poli',
+                    'reg_periksa.stts',
+                    'reg_periksa.status_bayar'
+                )
+                ->get();
         }
 
         return response()->json([
