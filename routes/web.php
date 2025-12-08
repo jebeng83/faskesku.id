@@ -687,6 +687,18 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('farmasi/StokOpname');
         })->name('stok-opname');
 
+        Route::get('/sisa-stok', function () {
+            return Inertia::render('farmasi/SisaStok');
+        })->name('sisa-stok');
+
+        Route::get('/sirkulasi-obat', function () {
+            return Inertia::render('farmasi/SirkulasiObat');
+        })->name('sirkulasi-obat');
+
+        Route::get('/cek-stok-obat', function () {
+            return Inertia::render('farmasi/CekStok');
+        })->name('cek-stok-obat');
+
         // Farmasi - Data Opname (laporan/daftar hasil opname)
         Route::get('/data-opname', function () {
             return Inertia::render('farmasi/DataOpname');

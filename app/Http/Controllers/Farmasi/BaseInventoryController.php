@@ -35,20 +35,31 @@ class BaseInventoryController extends BaseController
 
     protected function recordRiwayat(string $kodeBrg, string $kdBangsal, float $masuk, float $keluar, string $status, ?string $noBatch, ?string $noFaktur, ?string $keterangan, ?string $petugas): void
     {
+        $nb = $noBatch ?? '';
+        $nf = $noFaktur ?? '';
+        $prev = DB::table('riwayat_barang_medis')
+            ->where('kode_brng', $kodeBrg)
+            ->where('kd_bangsal', $kdBangsal)
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('jam', 'desc')
+            ->first();
+        $stokAwal = (double) ($prev->stok_akhir ?? 0);
+        $stokAkhir = $stokAwal + $masuk - $keluar;
+
         RiwayatBarangMedis::create([
             'kode_brng' => $kodeBrg,
-            'stok_awal' => 0,
+            'stok_awal' => $stokAwal,
             'masuk' => $masuk,
             'keluar' => $keluar,
-            'stok_akhir' => 0,
+            'stok_akhir' => $stokAkhir,
             'posisi' => $status,
             'tanggal' => now()->toDateString(),
             'jam' => now()->toTimeString(),
             'petugas' => $petugas ?? '-',
             'kd_bangsal' => $kdBangsal,
             'status' => 'Simpan',
-            'no_batch' => $noBatch ?? '',
-            'no_faktur' => $noFaktur ?? '',
+            'no_batch' => $nb,
+            'no_faktur' => $nf,
             'keterangan' => $keterangan ?? '',
         ]);
     }

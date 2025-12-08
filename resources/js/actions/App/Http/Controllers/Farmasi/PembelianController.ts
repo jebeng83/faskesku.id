@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Farmasi\PembelianController::getSupplier
-* @see app/Http/Controllers/Farmasi/PembelianController.php:181
+* @see app/Http/Controllers/Farmasi/PembelianController.php:227
 * @route '/api/pembelian/supplier'
 */
 export const getSupplier = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ getSupplier.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PembelianController::getSupplier
-* @see app/Http/Controllers/Farmasi/PembelianController.php:181
+* @see app/Http/Controllers/Farmasi/PembelianController.php:227
 * @route '/api/pembelian/supplier'
 */
 getSupplier.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ getSupplier.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PembelianController::getSupplier
-* @see app/Http/Controllers/Farmasi/PembelianController.php:181
+* @see app/Http/Controllers/Farmasi/PembelianController.php:227
 * @route '/api/pembelian/supplier'
 */
 getSupplier.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ getSupplier.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\PembelianController::getSupplier
-* @see app/Http/Controllers/Farmasi/PembelianController.php:181
+* @see app/Http/Controllers/Farmasi/PembelianController.php:227
 * @route '/api/pembelian/supplier'
 */
 getSupplier.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ getSupplier.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\PembelianController::getPetugas
-* @see app/Http/Controllers/Farmasi/PembelianController.php:190
+* @see app/Http/Controllers/Farmasi/PembelianController.php:236
 * @route '/api/pembelian/petugas'
 */
 export const getPetugas = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,7 +60,7 @@ getPetugas.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PembelianController::getPetugas
-* @see app/Http/Controllers/Farmasi/PembelianController.php:190
+* @see app/Http/Controllers/Farmasi/PembelianController.php:236
 * @route '/api/pembelian/petugas'
 */
 getPetugas.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ getPetugas.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PembelianController::getPetugas
-* @see app/Http/Controllers/Farmasi/PembelianController.php:190
+* @see app/Http/Controllers/Farmasi/PembelianController.php:236
 * @route '/api/pembelian/petugas'
 */
 getPetugas.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -79,7 +79,7 @@ getPetugas.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\PembelianController::getPetugas
-* @see app/Http/Controllers/Farmasi/PembelianController.php:190
+* @see app/Http/Controllers/Farmasi/PembelianController.php:236
 * @route '/api/pembelian/petugas'
 */
 getPetugas.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -89,7 +89,7 @@ getPetugas.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\PembelianController::getLokasi
-* @see app/Http/Controllers/Farmasi/PembelianController.php:209
+* @see app/Http/Controllers/Farmasi/PembelianController.php:255
 * @route '/api/pembelian/lokasi'
 */
 export const getLokasi = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -104,7 +104,7 @@ getLokasi.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PembelianController::getLokasi
-* @see app/Http/Controllers/Farmasi/PembelianController.php:209
+* @see app/Http/Controllers/Farmasi/PembelianController.php:255
 * @route '/api/pembelian/lokasi'
 */
 getLokasi.url = (options?: RouteQueryOptions) => {
@@ -113,7 +113,7 @@ getLokasi.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PembelianController::getLokasi
-* @see app/Http/Controllers/Farmasi/PembelianController.php:209
+* @see app/Http/Controllers/Farmasi/PembelianController.php:255
 * @route '/api/pembelian/lokasi'
 */
 getLokasi.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -123,7 +123,7 @@ getLokasi.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\PembelianController::getLokasi
-* @see app/Http/Controllers/Farmasi/PembelianController.php:209
+* @see app/Http/Controllers/Farmasi/PembelianController.php:255
 * @route '/api/pembelian/lokasi'
 */
 getLokasi.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -133,7 +133,7 @@ getLokasi.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\PembelianController::getAkunBayar
-* @see app/Http/Controllers/Farmasi/PembelianController.php:171
+* @see app/Http/Controllers/Farmasi/PembelianController.php:217
 * @route '/api/pembelian/akun-bayar'
 */
 export const getAkunBayar = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -148,7 +148,7 @@ getAkunBayar.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PembelianController::getAkunBayar
-* @see app/Http/Controllers/Farmasi/PembelianController.php:171
+* @see app/Http/Controllers/Farmasi/PembelianController.php:217
 * @route '/api/pembelian/akun-bayar'
 */
 getAkunBayar.url = (options?: RouteQueryOptions) => {
@@ -157,7 +157,7 @@ getAkunBayar.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PembelianController::getAkunBayar
-* @see app/Http/Controllers/Farmasi/PembelianController.php:171
+* @see app/Http/Controllers/Farmasi/PembelianController.php:217
 * @route '/api/pembelian/akun-bayar'
 */
 getAkunBayar.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -167,7 +167,7 @@ getAkunBayar.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\PembelianController::getAkunBayar
-* @see app/Http/Controllers/Farmasi/PembelianController.php:171
+* @see app/Http/Controllers/Farmasi/PembelianController.php:217
 * @route '/api/pembelian/akun-bayar'
 */
 getAkunBayar.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -177,7 +177,7 @@ getAkunBayar.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\PembelianController::generateNoFaktur
-* @see app/Http/Controllers/Farmasi/PembelianController.php:218
+* @see app/Http/Controllers/Farmasi/PembelianController.php:264
 * @route '/api/pembelian/generate-no-faktur'
 */
 export const generateNoFaktur = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -192,7 +192,7 @@ generateNoFaktur.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PembelianController::generateNoFaktur
-* @see app/Http/Controllers/Farmasi/PembelianController.php:218
+* @see app/Http/Controllers/Farmasi/PembelianController.php:264
 * @route '/api/pembelian/generate-no-faktur'
 */
 generateNoFaktur.url = (options?: RouteQueryOptions) => {
@@ -201,7 +201,7 @@ generateNoFaktur.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PembelianController::generateNoFaktur
-* @see app/Http/Controllers/Farmasi/PembelianController.php:218
+* @see app/Http/Controllers/Farmasi/PembelianController.php:264
 * @route '/api/pembelian/generate-no-faktur'
 */
 generateNoFaktur.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -211,7 +211,7 @@ generateNoFaktur.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => 
 
 /**
 * @see \App\Http\Controllers\Farmasi\PembelianController::generateNoFaktur
-* @see app/Http/Controllers/Farmasi/PembelianController.php:218
+* @see app/Http/Controllers/Farmasi/PembelianController.php:264
 * @route '/api/pembelian/generate-no-faktur'
 */
 generateNoFaktur.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

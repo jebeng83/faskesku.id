@@ -54,17 +54,37 @@ class PembelianController extends BaseInventoryController
                     'dis' => $it['dis'] ?? 0,
                     'besardis' => $it['besardis'] ?? 0,
                     'total' => $it['total'] ?? 0,
-                    'no_batch' => $it['no_batch'] ?? null,
+                    'no_batch' => isset($it['no_batch']) && $it['no_batch'] !== null ? trim((string) $it['no_batch']) : '',
                     'jumlah2' => $it['jumlah2'] ?? $it['jumlah'],
                     'kadaluarsa' => $it['kadaluarsa'] ?? null,
                 ];
                 DetailBeli::create($row);
 
                 $qty = (float) ($row['jumlah2']);
-                $nb = $row['no_batch'];
+                $nb = isset($row['no_batch']) && $row['no_batch'] !== null ? (string) $row['no_batch'] : '';
                 $nf = $data['no_faktur'];
 
+                $beforeRow = DB::table('gudangbarang')
+                    ->where([
+                        'kode_brng' => $row['kode_brng'],
+                        'kd_bangsal' => $data['kd_bangsal'],
+                        'no_batch' => $nb,
+                        'no_faktur' => $nf,
+                    ])
+                    ->first();
+                $stokSebelum = (double) ($beforeRow->stok ?? 0);
+
                 $this->adjustStockPlus($row['kode_brng'], $data['kd_bangsal'], $qty, $nb, $nf);
+
+                $afterRow = DB::table('gudangbarang')
+                    ->where([
+                        'kode_brng' => $row['kode_brng'],
+                        'kd_bangsal' => $data['kd_bangsal'],
+                        'no_batch' => $nb,
+                        'no_faktur' => $nf,
+                    ])
+                    ->first();
+                $stokSesudah = (double) ($afterRow->stok ?? 0);
 
                 if ($nb) {
                     $exists = DB::table('data_batch')->where(['kode_brng' => $row['kode_brng'], 'no_batch' => $nb, 'no_faktur' => $nf])->exists();
@@ -80,6 +100,32 @@ class PembelianController extends BaseInventoryController
                     } else {
                         $this->adjustBatchSisaDelta($row['kode_brng'], $nb, $nf, $qty);
                     }
+                }
+
+                if ($beforeRow) {
+                    \App\Models\RiwayatTransaksiGudangBarang::catatUpdate(
+                        $row['kode_brng'],
+                        $data['kd_bangsal'],
+                        $nb ?? '',
+                        $nf ?? '',
+                        $stokSebelum,
+                        $stokSesudah,
+                        'pembelian',
+                        'Pembelian '.($data['no_faktur'] ?? ''),
+                        (array) $beforeRow,
+                        (array) $afterRow,
+                    );
+                } else {
+                    \App\Models\RiwayatTransaksiGudangBarang::catatInsert(
+                        $row['kode_brng'],
+                        $data['kd_bangsal'],
+                        $nb ?? '',
+                        $nf ?? '',
+                        $stokSesudah,
+                        'pembelian',
+                        'Pembelian '.($data['no_faktur'] ?? ''),
+                        (array) $afterRow,
+                    );
                 }
 
                 $this->recordRiwayat($row['kode_brng'], $data['kd_bangsal'], $qty, 0, 'Pengadaan', $nb, $nf, $data['no_faktur'], $data['nip']);

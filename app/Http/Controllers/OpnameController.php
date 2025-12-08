@@ -53,6 +53,7 @@ class OpnameController extends Controller
         try {
             $kdBangsal = $request->input('kd_bangsal');
             $search = $request->input('search');
+            $aggregate = filter_var($request->input('aggregate', false), FILTER_VALIDATE_BOOLEAN);
 
             if (! $kdBangsal) {
                 return response()->json([
@@ -61,7 +62,6 @@ class OpnameController extends Controller
                 ], 400);
             }
 
-            // Query untuk mengambil data barang di lokasi tertentu
             $query = DB::connection(config('database.default'))
                 ->table('gudangbarang')
                 ->join('databarang', 'gudangbarang.kode_brng', '=', 'databarang.kode_brng')
@@ -69,7 +69,20 @@ class OpnameController extends Controller
                 ->join('kategori_barang', 'databarang.kode_kategori', '=', 'kategori_barang.kode')
                 ->join('golongan_barang', 'databarang.kode_golongan', '=', 'golongan_barang.kode')
                 ->leftJoin('kodesatuan', 'databarang.kode_sat', '=', 'kodesatuan.kode_sat')
-                ->select(
+                ->where('gudangbarang.kd_bangsal', $kdBangsal)
+                ->where('gudangbarang.stok', '>', 0);
+
+            if ($aggregate) {
+                $query->select(
+                    'gudangbarang.kode_brng',
+                    'databarang.nama_brng',
+                    'jenis.nama as jenis',
+                    'kodesatuan.satuan',
+                    DB::raw('SUM(gudangbarang.stok) as stok'),
+                    'databarang.h_beli as harga'
+                )->groupBy('gudangbarang.kode_brng', 'databarang.nama_brng', 'jenis.nama', 'kodesatuan.satuan', 'databarang.h_beli');
+            } else {
+                $query->select(
                     'gudangbarang.kode_brng',
                     'databarang.nama_brng',
                     'jenis.nama as jenis',
@@ -78,9 +91,8 @@ class OpnameController extends Controller
                     'databarang.h_beli as harga',
                     'gudangbarang.no_batch',
                     'gudangbarang.no_faktur'
-                )
-                ->where('gudangbarang.kd_bangsal', $kdBangsal)
-                ->where('gudangbarang.stok', '>', 0);
+                );
+            }
 
             // Tambahkan filter pencarian jika ada
             if ($search && strlen($search) >= 2) {
@@ -271,7 +283,7 @@ class OpnameController extends Controller
                         'posisi' => 'Opname',
                         'tanggal' => $request->tanggal,
                         'jam' => now()->format('H:i:s'),
-                        'petugas' => auth()->user()->name ?? '',
+                        'petugas' => $request->user()?->name ?? '',
                         'kd_bangsal' => $request->kd_bangsal,
                         'status' => 'Simpan',
                         'no_batch' => $noBatch,

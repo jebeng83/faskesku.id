@@ -14,12 +14,14 @@ import {
     ChevronDown,
     ChevronRight,
     Home,
+    BarChart2,
 } from "lucide-react";
 
 // Sidebar khusus modul Farmasi, konsisten dengan pola LanjutanRalanLayout/SidebarRalan
 export default function SidebarFarmasi({ title = "Farmasi", children }) {
     const { url, props } = usePage();
     const auth = props?.auth || {};
+    const menuHierarchy = props?.menu_hierarchy || [];
 
     // State untuk menu dan tampilan
     const [openPelayanan, setOpenPelayanan] = useState(true);
@@ -29,6 +31,7 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isDark, setIsDark] = useState(false);
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+    const [expandedGroupIds, setExpandedGroupIds] = useState(new Set());
 
     // Sinkronisasi tema ke root
     useEffect(() => {
@@ -86,7 +89,153 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
         if (window.innerWidth < 1024) setIsSidebarOpen(false);
     };
 
-    // Menu items
+    const resolveRouteUrl = (routeName, absolute = false) => {
+        const candidates = [];
+        if (typeof routeName === "string") {
+            const raw = routeName;
+            candidates.push(raw);
+            candidates.push(raw.toLowerCase());
+            candidates.push(raw.replace(/\s+/g, "-").toLowerCase());
+            candidates.push(raw.replace(/\s+/g, "_").toLowerCase());
+        } else if (routeName) {
+            candidates.push(routeName);
+        }
+        for (const name of candidates) {
+            try {
+                const u = route(name, {}, absolute);
+                if (u) return u;
+            } catch (_) {}
+        }
+        return null;
+    };
+
+    const isMenuEnabled = (menu) => {
+        if (!menu || typeof menu !== "object") return false;
+        const val = menu.is_active;
+        if (
+            val === false ||
+            val === 0 ||
+            val === "0" ||
+            val === "inactive" ||
+            val === "disabled"
+        ) {
+            return false;
+        }
+        return true;
+    };
+
+    const getMenuUrl = (menu) => {
+        if (!menu) return "#";
+        if (
+            menu.slug === "farmasi" ||
+            (menu.name && String(menu.name).toLowerCase() === "farmasi")
+        ) {
+            try {
+                return route("farmasi.index", {}, false);
+            } catch (_) {
+                return "/farmasi";
+            }
+        }
+        if (menu.url) {
+            try {
+                const currentOrigin = window.location.origin;
+                const u = new URL(menu.url, currentOrigin);
+                return u.pathname + u.search + u.hash;
+            } catch (_) {
+                if (String(menu.url).startsWith("/")) return menu.url;
+                return "/" + String(menu.url).replace(/^https?:\/\/[^/]+/, "");
+            }
+        }
+        if (menu.route) {
+            const u = resolveRouteUrl(menu.route, false);
+            if (u) return u;
+            return "#";
+        }
+        return "#";
+    };
+
+    const findFarmasiNode = useMemo(() => {
+        const source = Array.isArray(menuHierarchy)
+            ? menuHierarchy
+            : menuHierarchy && typeof menuHierarchy === "object"
+            ? Object.values(menuHierarchy)
+            : [];
+        const match = (m) => {
+            const slug = (m?.slug || "").toLowerCase();
+            const name = (m?.name || "").toLowerCase();
+            return slug === "farmasi" || name.includes("farmasi");
+        };
+        const dfs = (arr) => {
+            for (const m of arr) {
+                if (match(m)) return m;
+                const children =
+                    m?.active_children_recursive || m?.children || [];
+                const found = dfs(children);
+                if (found) return found;
+            }
+            return null;
+        };
+        return dfs(source);
+    }, [menuHierarchy]);
+
+    const dynamicItems = useMemo(() => {
+        if (!findFarmasiNode) return null;
+        const rawChildren =
+            findFarmasiNode.active_children_recursive ||
+            findFarmasiNode.children ||
+            [];
+        const children = (rawChildren || []).filter(isMenuEnabled);
+        if (!children.length) return null;
+        const built = [];
+        for (const child of children) {
+            const grand = (
+                child.active_children_recursive ||
+                child.children ||
+                []
+            ).filter(isMenuEnabled);
+            if (grand.length > 0) {
+                built.push({
+                    __dynamic: true,
+                    id: child.id,
+                    label: child.name || child.slug || "Menu",
+                    icon: <i className={`${child.icon || ""} w-4 h-4`}></i>,
+                    children: grand.map((g) => ({
+                        label: g.name || g.slug || "Menu",
+                        href: getMenuUrl(g),
+                        icon: <i className={`${g.icon || ""} w-4 h-4`}></i>,
+                    })),
+                });
+            } else {
+                built.push({
+                    __dynamic: true,
+                    id: child.id,
+                    label: child.name || child.slug || "Menu",
+                    href: getMenuUrl(child),
+                    icon: <i className={`${child.icon || ""} w-4 h-4`}></i>,
+                });
+            }
+        }
+        return [
+            {
+                label: "Dashboard",
+                href: route("dashboard", {}, false),
+                icon: <Gauge className="w-4 h-4" />,
+            },
+            {
+                label: "Home",
+                href: (() => {
+                    try {
+                        return route("farmasi.index", {}, false);
+                    } catch (_) {
+                        return "/farmasi";
+                    }
+                })(),
+                icon: <Home className="w-4 h-4" />,
+            },
+            ...built,
+        ];
+    }, [findFarmasiNode]);
+
     const hutangObatUrl = (() => {
         try {
             return route("farmasi.hutang-obat", {}, false);
@@ -111,8 +260,33 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
         }
     })();
 
-    const items = useMemo(
-        () => [
+    const sisaStokUrl = (() => {
+        try {
+            return route("farmasi.sisa-stok", {}, false);
+        } catch (_) {
+            return "/farmasi/sisa-stok";
+        }
+    })();
+
+    const sirkulasiObatUrl = (() => {
+        try {
+            return route("farmasi.sirkulasi-obat", {}, false);
+        } catch (_) {
+            return "/farmasi/sirkulasi-obat";
+        }
+    })();
+
+    const cekStokObatUrl = (() => {
+        try {
+            return route("farmasi.cek-stok-obat", {}, false);
+        } catch (_) {
+            return "/farmasi/cek-stok-obat";
+        }
+    })();
+
+    const items = useMemo(() => {
+        if (dynamicItems && Array.isArray(dynamicItems)) return dynamicItems;
+        return [
             {
                 label: "Dashboard",
                 href: route("dashboard", {}, false),
@@ -226,6 +400,16 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                         icon: <ClipboardList className="w-4 h-4" />,
                     },
                     {
+                        label: "Sirkulasi Obat",
+                        href: sirkulasiObatUrl,
+                        icon: <BarChart2 className="w-4 h-4" />,
+                    },
+                    {
+                        label: "Cek Stok Obat",
+                        href: cekStokObatUrl,
+                        icon: <Boxes className="w-4 h-4" />,
+                    },
+                    {
                         label: "Riwayat Barang Medis",
                         href: riwayatBarangMedisUrl,
                         icon: <ClipboardList className="w-4 h-4" />,
@@ -235,11 +419,15 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                         href: riwayatTransaksiGudangUrl,
                         icon: <ClipboardList className="w-4 h-4" />,
                     },
+                    {
+                        label: "Sisa Stok",
+                        href: sisaStokUrl,
+                        icon: <Boxes className="w-4 h-4" />,
+                    },
                 ],
             },
-        ],
-        []
-    );
+        ];
+    }, [dynamicItems]);
 
     const isActive = (href) => {
         try {
@@ -296,6 +484,16 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                                     <button
                                         type="button"
                                         onClick={() => {
+                                            if (item.__dynamic && item.id) {
+                                                setExpandedGroupIds((prev) => {
+                                                    const next = new Set(prev);
+                                                    if (next.has(item.id))
+                                                        next.delete(item.id);
+                                                    else next.add(item.id);
+                                                    return next;
+                                                });
+                                                return;
+                                            }
                                             if (
                                                 item.label ===
                                                 "Pelayanan Farmasi"
@@ -322,8 +520,12 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                                         )}
                                         {!isSidebarCollapsed &&
                                             ((
-                                                item.label ===
-                                                "Pelayanan Farmasi"
+                                                item.__dynamic && item.id
+                                                    ? expandedGroupIds.has(
+                                                          item.id
+                                                      )
+                                                    : item.label ===
+                                                      "Pelayanan Farmasi"
                                                     ? openPelayanan
                                                     : item.label ===
                                                       "Master Data"
@@ -335,7 +537,9 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                                                 <ChevronRight className="w-4 h-4 text-white/70" />
                                             ))}
                                     </button>
-                                    {(item.label === "Pelayanan Farmasi"
+                                    {(item.__dynamic && item.id
+                                        ? expandedGroupIds.has(item.id)
+                                        : item.label === "Pelayanan Farmasi"
                                         ? openPelayanan
                                         : item.label === "Master Data"
                                         ? openMaster

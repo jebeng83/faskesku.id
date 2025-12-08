@@ -33,11 +33,24 @@ const PageHeader = ({ title, meta, right }) => (
     </motion.div>
 );
 
-const nowDate = () => new Date().toISOString().slice(0, 10);
+const pad2 = (n) => String(n).padStart(2, "0");
+const getMonthStartString = () => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = d.getMonth() + 1;
+    return `${y}-${pad2(m)}-01`;
+};
+const getMonthEndString = () => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = d.getMonth() + 1;
+    const last = new Date(y, m, 0).getDate();
+    return `${y}-${pad2(m)}-${pad2(last)}`;
+};
 
 export default function RiwayatBarangMedis() {
-    const [from, setFrom] = useState("");
-    const [to, setTo] = useState("");
+    const [from, setFrom] = useState(getMonthStartString());
+    const [to, setTo] = useState(getMonthEndString());
     const [kodeBrng, setKodeBrng] = useState("");
     const [posisi, setPosisi] = useState("");
     const [statusRiwayat, setStatusRiwayat] = useState("");
@@ -120,8 +133,8 @@ export default function RiwayatBarangMedis() {
     };
 
     const resetFilters = () => {
-        setFrom("");
-        setTo("");
+        setFrom(getMonthStartString());
+        setTo(getMonthEndString());
         setKodeBrng("");
         setPosisi("");
         setStatusRiwayat("");

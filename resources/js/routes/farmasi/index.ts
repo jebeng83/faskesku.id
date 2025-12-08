@@ -378,7 +378,127 @@ stokOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:691
+* @see routes/web.php:690
+* @route '/farmasi/sisa-stok'
+*/
+export const sisaStok = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: sisaStok.url(options),
+    method: 'get',
+})
+
+sisaStok.definition = {
+    methods: ["get","head"],
+    url: '/farmasi/sisa-stok',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:690
+* @route '/farmasi/sisa-stok'
+*/
+sisaStok.url = (options?: RouteQueryOptions) => {
+    return sisaStok.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:690
+* @route '/farmasi/sisa-stok'
+*/
+sisaStok.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: sisaStok.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:690
+* @route '/farmasi/sisa-stok'
+*/
+sisaStok.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: sisaStok.url(options),
+    method: 'head',
+})
+
+/**
+* @see routes/web.php:694
+* @route '/farmasi/sirkulasi-obat'
+*/
+export const sirkulasiObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: sirkulasiObat.url(options),
+    method: 'get',
+})
+
+sirkulasiObat.definition = {
+    methods: ["get","head"],
+    url: '/farmasi/sirkulasi-obat',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:694
+* @route '/farmasi/sirkulasi-obat'
+*/
+sirkulasiObat.url = (options?: RouteQueryOptions) => {
+    return sirkulasiObat.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:694
+* @route '/farmasi/sirkulasi-obat'
+*/
+sirkulasiObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: sirkulasiObat.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:694
+* @route '/farmasi/sirkulasi-obat'
+*/
+sirkulasiObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: sirkulasiObat.url(options),
+    method: 'head',
+})
+
+/**
+* @see routes/web.php:698
+* @route '/farmasi/cek-stok-obat'
+*/
+export const cekStokObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: cekStokObat.url(options),
+    method: 'get',
+})
+
+cekStokObat.definition = {
+    methods: ["get","head"],
+    url: '/farmasi/cek-stok-obat',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:698
+* @route '/farmasi/cek-stok-obat'
+*/
+cekStokObat.url = (options?: RouteQueryOptions) => {
+    return cekStokObat.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:698
+* @route '/farmasi/cek-stok-obat'
+*/
+cekStokObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: cekStokObat.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:698
+* @route '/farmasi/cek-stok-obat'
+*/
+cekStokObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: cekStokObat.url(options),
+    method: 'head',
+})
+
+/**
+* @see routes/web.php:703
 * @route '/farmasi/data-opname'
 */
 export const dataOpname = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -392,7 +512,7 @@ dataOpname.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:691
+* @see routes/web.php:703
 * @route '/farmasi/data-opname'
 */
 dataOpname.url = (options?: RouteQueryOptions) => {
@@ -400,7 +520,7 @@ dataOpname.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:691
+* @see routes/web.php:703
 * @route '/farmasi/data-opname'
 */
 dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -409,7 +529,7 @@ dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:691
+* @see routes/web.php:703
 * @route '/farmasi/data-opname'
 */
 dataOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -603,6 +723,9 @@ const farmasi = {
     hutangObat: Object.assign(hutangObat, hutangObat),
     stokObat: Object.assign(stokObat, stokObat),
     stokOpname: Object.assign(stokOpname, stokOpname),
+    sisaStok: Object.assign(sisaStok, sisaStok),
+    sirkulasiObat: Object.assign(sirkulasiObat, sirkulasiObat),
+    cekStokObat: Object.assign(cekStokObat, cekStokObat),
     dataOpname: Object.assign(dataOpname, dataOpname),
     riwayatBarangMedis: Object.assign(riwayatBarangMedis, riwayatBarangMedisC60c77),
     riwayatTransaksiGudang: Object.assign(riwayatTransaksiGudang, riwayatTransaksiGudang92a0ae),

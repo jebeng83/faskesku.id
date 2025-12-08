@@ -1,511 +1,329 @@
-# Alur Inventori Farmasi – Ringkasan Teknis dan Implementasi
+# Inventori Farmasi — Sisa Stok
 
-Dokumen ini merangkum alur lengkap modul inventori (farmasi/medis) berdasarkan paket Java di `public/inventory`. Fokusnya pada penerapan di aplikasi ini: pembelian/pengadaan, transaksi (penjualan & distribusi), manajemen stok, pengeluaran, dan pencatatan (auditing & akuntansi).
+Dokumen ini merangkum fungsi "Sisa Stok Obat, Alkes & BHP Medis" yang ada pada aplikasi desktop Java (berkas `DlgSisaStok.java` dan `DlgSisaStok.form`) dan menerjemahkannya menjadi spesifikasi pengembangan di aplikasi web Laravel + React saat ini.
 
-## Ikhtisar Arsitektur
-- Tabel inti: `databarang` (master barang), `gudangbarang` (stok per gudang + batch/faktur), `data_batch` (informasi batch: harga pokok, sisa), `jenis`, `kategori_barang`, `golongan_barang`, `bangsal` (gudang/depots).
-- Modul utama GUI: dialog `Dlg*` dan `Inventory*` yang mengelola transaksi dan laporan.
-- Riwayat stok: penelusuran per peristiwa melalui `riwayat_barang_medis` yang diisi via `Trackobat.catatRiwayat(...)`.
-  - Contoh query riwayat: `public/inventory/DlgRiwayatBarangMedis.java:653`.
-- Konfigurasi penting diambil dari `koneksiDB` dan tabel pengaturan:
-- `AKTIFKANBATCHOBAT` menentukan apakah stok per-batch diaktifkan (stok disimpan per kombinasi `no_batch` + `no_faktur`).
-- `HPPFARMASI` menentukan kolom biaya yang dipakai (misal `dasar`, pilihan lain via `data_batch.<hppfarmasi>`). Contoh pemakaian: `public/inventory/DlgSirkulasiBarang6.java:1450`.
-- `set_harga_obat`, `set_nota`, `set_akun`, `akun_bayar` mempengaruhi penentuan harga jual, PPN, dan jurnal akuntansi.
+## Ringkasan Fungsional
+- Menampilkan sisa stok per gudang/bangsal untuk setiap barang (`databarang`).
+- Kolom dinamis untuk setiap gudang aktif, ditambah kolom `Total` dan `Nilai Aset`.
+- Mendukung filter berdasarkan `Jenis`, `Kategori`, `Golongan`, serta kata kunci pada `kode_brng` atau `nama_brng`.
+- Menghitung nilai aset dengan harga dasar yang dikendalikan konfigurasi (`hppfarmasi`).
+- Mode batch mempengaruhi cara agregasi stok dari tabel `gudangbarang`.
 
-### Catatan Perubahan (2025-12-05)
-- Staging jurnal Farmasi kini memakai skema yang kompatibel dengan layanan Akutansi (`kd_rek`, opsional `nm_rek`, `debet`, `kredit`) dan melakukan agregasi per akun sebelum staging.
-  - Penulisan: `app/Http/Controllers/Farmasi/BaseInventoryController.php:56–66`.
-  - Agregasi per `kd_rek`: `app/Http/Controllers/Farmasi/BaseInventoryController.php:68–92`.
-- Pemesanan/PO:
-  - Validasi input menerima field opsional (`subtotal`, `dis`, `total`, `ppn`, `meterai`, `tagihan`) dan menyusun nilai dasar dari payload atau dari item jika diperlukan: `app/Http/Controllers/Farmasi/PemesananController.php:14–29, 34–55`.
-  - Staging jurnal: Debet `Pemesanan_Obat = baseTotal + meterai`, Debet `PPN_Masukan = ppn` (jika > 0), Kredit `Kontra_Pemesanan_Obat = tagihan`: `app/Http/Controllers/Farmasi/PemesananController.php:79–88`.
-  - Generator nomor faktur memakai koneksi default: `app/Http/Controllers/Farmasi/PemesananController.php:122–147`.
-- Operasi stok gudang dan penyesuaian batch memakai koneksi default agar konsisten:
-  - `adjustStockPlus/Minus`: `app/Http/Controllers/Farmasi/BaseInventoryController.php:12–29`.
-  - `adjustBatchSisaDelta`: `app/Http/Controllers/Farmasi/BaseInventoryController.php:31–34`.
--
-Pengujian integrasi jurnal Farmasi memperlihatkan keseimbangan Debet=Kredit untuk kasus Pemesanan dan Pengeluaran.
+## Sumber Data & Kolom
+- Tabel: `databarang`, `jenis`, `golongan_barang`, `kategori_barang`, `gudangbarang`, `bangsal`.
+- Gudang aktif: `bangsal.status='1'` dan `bangsal.kd_bangsal<>'-'`.
+- Kolom pada output:
+  - Identitas barang: `kode_brng`, `nama_brng`, `kode_sat`.
+  - `Harga Satuan` = alias kolom harga dasar dari konfigurasi `hppfarmasi`.
+  - Sisa stok per gudang (satu kolom per `kd_bangsal`), `Total`, dan `Nilai Aset`.
 
-## Master Data
-- Entri master barang dikelola di `DlgBarang.java`, menampilkan atribut harga beli, dasar/HPP, persentase markup untuk berbagai kelas layanan, satuan besar/kecil, dan kategori/golongan.
-  - Contoh kolom yang diambil: `public/inventory/DlgBarang.java:2518` dan `public/inventory/DlgBarang.java:2907`.
-- Pencarian dan seleksi supplier tersedia di `InventoryCariSuplier.java` dan daftar supplier di `InventorySuplier.java`.
+Referensi kode:
+- Daftar gudang aktif: `public/Sementara/Farmasi/DlgSisaStok.java:612`–`619`.
+- Mode batch (memilih query stok): `public/Sementara/Farmasi/DlgSisaStok.java:639`–`643`.
+- Query daftar barang + filter: `public/Sementara/Farmasi/DlgSisaStok.java:645`–`651`.
+- Agregasi stok per gudang: `public/Sementara/Farmasi/DlgSisaStok.java:667`–`671`.
+- Perhitungan total & nilai aset: `public/Sementara/Farmasi/DlgSisaStok.java:672`–`676`, `681`–`686`.
+- Lebar tabel dinamis: `public/Sementara/Farmasi/DlgSisaStok.java:705`–`710`.
+- Judul dan kontrol UI (form): `public/Sementara/Farmasi/DlgSisaStok.java:239`–`242`, `351`–`398`.
 
-## Set Harga Obat → Data Obat
-- Konfigurasi harga jual disimpan ke tiga tabel:
-  - Umum: simpan ke `setpenjualanumum` saat klik Simpan di tab Umum `public/DlgSetHarga.java:1773-1776`.
-  - Per Jenis: simpan ke `setpenjualan` dengan kunci `kdjns` `public/DlgSetHarga.java:1805-1808`.
-  - Per Barang: simpan ke `setpenjualanperbarang` dengan kunci `kode_brng` `public/DlgSetHarga.java:1836-1839`.
-- Bulk update ke master `databarang` disediakan via menu popup:
-  - Update berdasarkan persentase per jenis (tab Admin): `ppUPdateActionPerformed` mengisi semua kolom harga (`ralan`, `kelas1`, `kelas2`, `kelas3`, `utama`, `vip`, `vvip`, `beliluar`, `jualbebas`, `karyawan`) dengan rumus `round(h_beli+(h_beli*(persen/100)))` `public/DlgSetHarga.java:2228-2244`.
-  - Update berdasarkan pengaturan harga umum: `ppUPdate1ActionPerformed` mengisi seluruh harga jual di `databarang` menggunakan matrix persentase tab Umum `public/DlgSetHarga.java:2757-2772`.
-  - Update per barang: `ppUPdate2ActionPerformed` mengisi harga jual untuk setiap `kode_brng` sesuai persentase barisnya `public/DlgSetHarga.java:2774-2790`.
-- Perhitungan dinamis di form master barang (`DlgBarang.java`) mengikuti pengaturan aktif:
-  - Per Jenis: ambil persentase dari `setpenjualan` lalu hitung `harga_jual = h_beli * (1 + persen/100)` untuk setiap kelas `public/inventory/DlgBarang.java:3281-3293`.
-  - Umum: ambil dari `setpenjualanumum` `public/inventory/DlgBarang.java:3308-3319`.
-  - Per Barang: ambil dari `setpenjualanperbarang` `public/inventory/DlgBarang.java:3335-3347`.
-- Catatan implementasi:
-  - Pembulatan memakai `Valid.roundUp(..., 100)` yang mengangkat ke kelipatan 100 untuk harga jual per kelas.
-- Field `dasar` di `databarang` dipakai sebagai HPP aktif sesuai konfigurasi `HPPFARMASI` pada banyak laporan; nilai `dasar` dapat diisi dari hasil pembelian (lihat bagian Pembelian → Data Obat).
+## Filter
+- `Jenis` berdasarkan `jenis.nama`.
+- `Kategori` berdasarkan `kategori_barang.nama`.
+- `Golongan` berdasarkan `golongan_barang.nama`.
+- Kata kunci: cocokkan ke `databarang.kode_brng` atau `databarang.nama_brng`.
 
-### Diagram Mini – SetHarga → BulkUpdate → databarang
+## Algoritma Perhitungan
+1. Ambil daftar gudang aktif (`kd_bangsal`, `nm_bangsal`).
+2. Ambil daftar barang sesuai filter dengan join ke `jenis`, `golongan_barang`, `kategori_barang`.
+3. Untuk setiap barang dan setiap gudang:
+   - Jika mode batch aktif: jumlahkan `stok` di `gudangbarang` dengan `no_batch<>''` dan `no_faktur<>''`.
+   - Jika mode batch nonaktif: jumlahkan `stok` dengan `no_batch=''` dan `no_faktur=''`.
+4. Hitung `Total` stok per barang (penjumlahan semua gudang).
+5. Hitung `Nilai Aset` per barang = `Harga Satuan` × `Total`.
+6. Tampilkan tabel HTML dengan kolom dinamis (lebih lebar jika gudang banyak).
 
-```mermaid
-flowchart LR
-  A[DlgSetHarga (UI)] --> B[Simpan pengaturan]
-  B --> C[Umum → setpenjualanumum (DlgSetHarga.java:1773-1776)]
-  B --> D[Per Jenis → setpenjualan (DlgSetHarga.java:1805-1808)]
-  B --> E[Per Barang → setpenjualanperbarang (DlgSetHarga.java:1836-1839)]
-  A --> F[Bulk Update (menu popup)]
-  F --> G[ppUPdate (Admin) → update databarang harga per kelas (DlgSetHarga.java:2228-2244)]
-  F --> H[ppUPdate1 (Umum) → update semua harga di databarang (DlgSetHarga.java:2757-2772)]
-  F --> I[ppUPdate2 (Per Barang) → update harga per kode_brng (DlgSetHarga.java:2774-2790)]
-  G --> J[databarang.(ralan, kelas1, kelas2, kelas3, utama, vip, vvip, beliluar, jualbebas, karyawan)]
-  H --> J
-  I --> J
+## Konfigurasi
+- `aktifkanbatch`: diambil dari konfigurasi database, menentukan mode agregasi stok batch/nonbatch (`public/Sementara/Farmasi/DlgSisaStok.java:45`–`50`, `639`–`643`).
+- `hppfarmasi`: nama kolom harga dasar yang digunakan untuk `Harga Satuan` (`public/Sementara/Farmasi/DlgSisaStok.java:193`–`198`, `645`–`651`).
+
+## Rencana Implementasi Web (Laravel + React)
+### Endpoint API
+- `GET /api/inventori/sisa-stok`
+- Query params:
+  - `jenis` (string, opsional)
+  - `kategori` (string, opsional)
+  - `golongan` (string, opsional)
+  - `q` (string, kata kunci untuk `kode_brng` atau `nama_brng`)
+  - `batch` (`on|off`, opsional; default mengikuti konfigurasi aplikasi)
+- Response (JSON):
+  - `gudangs`: array `{ kd_bangsal, nm_bangsal }`
+  - `items`: array per barang:
+    - `kode_brng`, `nama_brng`, `kode_sat`, `harga_satuan`
+    - `stok_per_gudang`: objek `{ [kd_bangsal]: number }`
+    - `total`: number
+    - `nilai_aset`: number
+
+### Query Referensi (SQL)
+- Gudang aktif:
+```sql
+SELECT kd_bangsal, nm_bangsal
+FROM bangsal
+WHERE status = '1' AND kd_bangsal <> '-';
+```
+- Daftar barang + filter:
+```sql
+SELECT db.kode_brng,
+       db.nama_brng,
+       db.kode_sat,
+       /* kolom harga ditentukan oleh konfigurasi hppfarmasi */ dasar AS harga_satuan
+FROM databarang db
+JOIN jenis j ON db.kdjns = j.kdjns
+JOIN golongan_barang g ON db.kode_golongan = g.kode
+JOIN kategori_barang k ON db.kode_kategori = k.kode
+WHERE j.nama LIKE :jenis
+  AND k.nama LIKE :kategori
+  AND g.nama LIKE :golongan
+  AND (db.kode_brng LIKE :q OR db.nama_brng LIKE :q)
+ORDER BY db.kode_brng;
+```
+- Agregasi stok per gudang (mode batch ON):
+```sql
+SELECT SUM(stok)
+FROM gudangbarang
+WHERE kode_brng = :kode_brng
+  AND kd_bangsal = :kd_bangsal
+  AND no_batch <> ''
+  AND no_faktur <> '';
+```
+- Agregasi stok per gudang (mode batch OFF):
+```sql
+SELECT SUM(stok)
+FROM gudangbarang
+WHERE kode_brng = :kode_brng
+  AND kd_bangsal = :kd_bangsal
+  AND no_batch = ''
+  AND no_faktur = '';
 ```
 
-## Pembelian → Data Obat
-- Simpan transaksi pembelian dan detail item:
-  - Header `pembelian` dan detail `detailbeli` disimpan saat `BtnSimpan` `public/inventory/DlgPembelian.java:975-997`.
-  - Stok gudang (`gudangbarang`) bertambah per gudang, menyertakan `no_batch` dan `no_faktur` bila batch diaktifkan `public/inventory/DlgPembelian.java:999-1006`.
-- Penulisan data batch dan harga jual per batch:
-  - `simpanbatch()` menulis baris `data_batch` berisi metadata batch, `h_beli`/`dasar`, dan semua kolom harga jual per kelas sesuai hasil perhitungan `public/inventory/DlgPembelian.java:1751-1764`.
-- Opsi pembaruan langsung ke master `databarang`:
-  - Jika pengguna memiliki akses obat dan checkbox baris aktif (`tbDokter.getValueAt(i,5) == true`), maka `databarang` diupdate: `expire`, `h_beli`, semua kolom harga jual per kelas, dan `dasar` diisi dari hasil perhitungan `public/inventory/DlgPembelian.java:1766-1772`.
-- Cara perhitungan harga saat pembelian (fungsi `setKonversi`):
-  - Basis perhitungan mengikuti `hargadasar`:
-    - `Harga Beli`: harga dasar berasal dari `h_beli` item; jika `pakaippn = Yes`, PPN ditambahkan pada `hargappn` `public/inventory/DlgPembelian.java:1799-1811, 1896-1901, 1993-1998`.
-    - `Harga Diskon`: harga dasar berasal dari total setelah diskon dibagi jumlah; jika `pakaippn = Yes`, PPN turut dihitung `public/inventory/DlgPembelian.java:2186-2191, 2272-2289, 2420-2424`.
-  - Pengaturan kenaikan (`pengaturanharga`) menentukan sumber persentase:
-    - Per Jenis: ambil dari `setpenjualan` berdasarkan `kdjns` barang `public/inventory/DlgPembelian.java:1784-1789, 2171-2176`.
-    - Umum: ambil dari `setpenjualanumum` `public/inventory/DlgPembelian.java:1884-1886, 2271-2273`.
-    - Per Barang: ambil dari `setpenjualanperbarang` `public/inventory/DlgPembelian.java:1982-1983, 2368-2370`.
-  - Hasil perhitungan diisikan ke kolom harga per kelas pada tabel dan ke `data_batch`/`databarang` saat simpan, dengan pembulatan `Valid.roundUp(..., 100)` `public/inventory/DlgPembelian.java:1860-1869, 1957-1966, 2054-2063, 2247-2256, 2344-2353, 2441-2450`.
-- Pembatalan/hapus pembelian akan membalik stok dan menghapus data batch:
-  - Pengurangan stok `gudangbarang` dan penghapusan baris terkait di `data_batch` saat hapus `public/inventory/DlgCariPembelian.java:996-1008, 1003-1007`.
-
-### Diagram Mini – Pembelian → gudangbarang/data_batch → (opsional) databarang
-
-```mermaid
-flowchart LR
-  A[DlgPembelian (UI)] --> B[Simpan header + detail]
-  B --> C[pembelian, detailbeli (DlgPembelian.java:975-997)]
-  A --> D[Tambah stok gudang]
-  D --> E[gudangbarang + batch/faktur (DlgPembelian.java:999-1006)]
-  A --> F[Tulis data batch]
-  F --> G[simpanbatch → data_batch (harga per kelas, sisa) (DlgPembelian.java:1751-1764)]
-  A --> H[Opsi update master (jika cek “update databarang” aktif)]
-  H --> I[update databarang (expire, h_beli, harga per kelas, dasar) (DlgPembelian.java:1766-1772)]
-  K[Hapus Pembelian] --> L[gudangbarang stok dikurangi + delete data_batch (DlgCariPembelian.java:996-1008, 1003-1007)]
-```
-
-### Implikasi Pengembangan
-- Pengaturan harga (Umum/Jenis/Barang) dan `PPN` mempengaruhi seluruh rantai harga jual; gunakan fitur bulk update untuk menyelaraskan `databarang` setelah perubahan kebijakan.
-- Frontend menyediakan aksi cepat “Update Harga Semua” pada halaman Data Obat untuk mengeksekusi bulk update via endpoint `PUT farmasi/data-obat/update-harga-semua` `resources/js/Pages/farmasi/dataobat.jsx:1196-1236`.
-- Saat implementasi modul baru yang bergantung pada HPP, perhatikan sumber nilai `dasar` yang bisa berasal dari hasil pembelian (Harga Diskon per unit) dan konfigurasi `HPPFARMASI` di laporan.
-
-## Pengadaan & Penerimaan
-Terdapat dua jalur umum: berdasarkan Surat Pemesanan (PO) atau pembelian langsung.
-
-1) Surat Pemesanan (PO)
-- Pembuatan dan pencetakan surat pemesanan: `InventorySuratPemesanan.java`.
-  - Penyusunan item dan subtotal untuk dokumen cetak: `public/inventory/InventorySuratPemesanan.java:1306-1325`.
-- Penerjemahan PO menjadi transaksi penerimaan dilakukan di `DlgPemesanan.java`.
-  - Simpan header `pemesanan` dan detail `detailpesan`: `public/inventory/DlgPemesanan.java:989-1011`.
-  - Update stok gudang (`gudangbarang`) bertambah; riwayat dicatat sebagai "Penerimaan": `public/inventory/DlgPemesanan.java:1014-1021`.
-  - Jurnal akuntansi (persediaan, PPN masukan, hutang usaha) dibentuk via `tampjurnal` dan `Jurnal.simpanJurnal(...)`: `public/inventory/DlgPemesanan.java:1034-1041`.
-
-2) Pembelian Langsung
-- Entri faktur pembelian dan item: `DlgPembelian.java`.
-  - Simpan header `pembelian` dan detail `detailbeli`: `public/inventory/DlgPembelian.java:975-997`.
-  - Stok gudang bertambah; riwayat dicatat sebagai "Pengadaan": `public/inventory/DlgPembelian.java:999-1006`.
-  - Jurnal akuntansi pembelian dan PPN masukan serta akun bayar: `public/inventory/DlgPembelian.java:1017-1025`.
-- Penetapan harga jual dan perhitungan PPN/diskon per item dilakukan saat input pembelian.
-  - Perhitungan markup per kelas layanan: `public/inventory/DlgPembelian.java:2010-2022`.
-  - Pengambilan kebijakan harga dari `setpenjualan` berdasarkan jenis barang: `public/inventory/DlgPembelian.java:2171-2189`.
-
-Catatan batch/HPP:
-- Jika `AKTIFKANBATCHOBAT=yes`, setiap transaksi menulis stok per kombinasi `no_batch` + `no_faktur` dengan penyesuaian `data_batch.sisa` saat keluar/terjual.
-- Banyak laporan memakai `data_batch.<hppfarmasi>` untuk menghitung nilai stok dan sirkulasi.
-
-## Transaksi Penjualan
-- Entri penjualan ke pasien/umum dilakukan di `DlgPenjualan.java`.
-  - Simpan header `penjualan` lalu panggil `simpan()` untuk menyimpan item `detailjual`: `public/inventory/DlgPenjualan.java:1574-1587` dan `public/inventory/DlgPenjualan.java:4129-4148`.
-  - Pengurangan stok gudang dan pencatatan riwayat "Penjualan" dilakukan per item; jika batch aktif, juga mengurangi `data_batch.sisa`: `public/inventory/DlgPenjualan.java:4151-4160`.
-  - Penjualan racikan didukung dengan tabel `obat_racikan_jual` dan `detail_obat_racikan_jual`: `public/inventory/DlgPenjualan.java:4171-4201`.
-- Verifikasi di kasir
-  - Jika `set_nota.verifikasi_penjualan_di_kasir=Yes`, maka pengurangan stok dan jurnal dapat ditunda sampai verifikasi; logika guard: `public/inventory/DlgPenjualan.java:4149` dan `public/inventory/DlgPenjualan.java:4206-4220`.
-- Akuntansi penjualan
-  - Pembentukan jurnal penjualan, PPN keluaran, HPP dan pengurangan persediaan: `public/inventory/DlgPenjualan.java:4230-4236`.
-  - Pencatatan tagihan/pelunasan di `tagihan_sadewa`: `public/inventory/DlgPenjualan.java:4238-4240`.
-
-## Pengeluaran Non‑Penjualan
-- Distribusi keluar non-penjualan dikelola di `DlgPengeluaranApotek.java`.
-  - Simpan header `pengeluaran_obat_bhp` dan detail `detail_pengeluaran_obat_bhp`: `public/inventory/DlgPengeluaranApotek.java:733-741`.
-  - Pengurangan stok gudang + penyesuaian batch (`data_batch.sisa`) serta riwayat "Stok Keluar": `public/inventory/DlgPengeluaranApotek.java:742-753`.
-  - Jurnal persediaan keluar (kontra persediaan) jika ada nilai: `public/inventory/DlgPengeluaranApotek.java:760-765`.
-- Alur permintaan
-  - Modul permintaan pasien/reses pulang (`DlgPermintaanStokPasien.java`, `DlgPermintaanResepPulang.java`) menyediakan daftar barang dan stok; status permintaan dapat diset "Disetujui" saat mutasi/pengeluaran: `public/inventory/DlgMutasiBarang.java:616-618` dan `public/inventory/DlgPengeluaranApotek.java:779-781`.
-
-## Manajemen Stok
-1) Mutasi/Pindah Gudang
-- Pemindahan stok antar gudang dilakukan di `DlgMutasiBarang.java`.
-  - Simpan `mutasibarang` lalu kurangi stok gudang asal, tambah stok gudang tujuan; riwayat dicatat dua arah sebagai "Mutasi": `public/inventory/DlgMutasiBarang.java:586-604`.
-- Laporan/monitor mutasi disediakan di `DlgPindahGudang.java`: contoh query pemanggilan data: `public/inventory/DlgPindahGudang.java:1268-1278`.
-
-2) Stok Opname
-- Input hasil opname dan penyesuaian stok fisik dilakukan di `DlgInputStok.java`.
-  - Simpan baris `opname` per barang, set stok `gudangbarang` sesuai real, riwayat "Opname": `public/inventory/DlgInputStok.java:983-995`.
-- Laporan stok opname ditampilkan di `DlgStokOpname.java`: contoh query tampilan: `public/inventory/DlgStokOpname.java:1198-1215`.
-
-### Stok Opname – Implementasi Aplikasi Ini
-- Endpoint API (rute):
-  - `GET /api/opname/lokasi` → daftar bangsal aktif (`routes/api.php:183`)
-  - `GET /api/opname/data-barang` → barang per bangsal, termasuk stok & batch/faktur (`routes/api.php:185`)
-  - `POST /api/opname/store` → simpan hasil opname per item (`routes/api.php:186`)
-  - `GET /api/opname/list` → daftar hasil opname dengan join master (`routes/api.php:188`)
-  - `GET /api/opname/search` → pencarian hasil opname (`routes/api.php:189`)
-  - `DELETE /api/opname/delete` → hapus batch data opname (`routes/api.php:190`)
-
-- Controller yang menangani:
-  - Lokasi: `app/Http/Controllers/OpnameController.php:28`
-  - Data barang: `app/Http/Controllers/OpnameController.php:51`
-  - Simpan opname: `app/Http/Controllers/OpnameController.php:112`
-  - Listing hasil: `app/Http/Controllers/OpnameController.php:285`
-  - Pencarian: `app/Http/Controllers/OpnameController.php:344`
-  - Hapus: `app/Http/Controllers/OpnameController.php:413`
-
-- Kontrak payload simpan (`POST /api/opname/store`):
-  - Body: `{ tanggal: date, kd_bangsal: string, keterangan?: string, items: Array<{ kode_brng: string, real: number, h_beli: number, no_batch?: string|null, no_faktur?: string|null }>} }
-  - Catatan: kirim `no_batch`/`no_faktur` sebagai `null` jika kosong (bukan string kosong) agar cocok dengan kolom yang `NULL` di DB (`app/Http/Controllers/OpnameController.php:146-149`).
-
-- Alur penyimpanan per item (server-side):
-  - Normalisasi `no_batch`/`no_faktur` ke `null` saat kosong dan ambil stok sistem pada `gudangbarang` dengan mempertimbangkan `NULL` vs `''` (`app/Http/Controllers/OpnameController.php:150-167`).
-  - Hitung `selisih`, `lebih`, `nomihilang`, `nomilebih` (`app/Http/Controllers/OpnameController.php:169-176`).
-  - Upsert baris `opname` berdasarkan kunci `{kode_brng, tanggal, kd_bangsal, no_batch, no_faktur}` (`app/Http/Controllers/OpnameController.php:198-216`).
-  - Set stok `gudangbarang.stok = real` via `updateOrCreate` dengan kunci komposit `{kode_brng, kd_bangsal, no_batch, no_faktur}` (`app/Http/Controllers/OpnameController.php:218-229`; model komposit: `app/Models/RawatJalan/Gudangbarang.php:12,45-52`).
-  - Catat audit: `RiwayatTransaksiGudangBarang::catatUpdate/Insert` dengan konteks transaksi "opname" (`app/Http/Controllers/OpnameController.php:231-258`; model: `app/Models/RiwayatTransaksiGudangBarang.php:69-110`).
-  - Transaksi DB dan koneksi: operasi berjalan pada koneksi `fufufafa` dan dibungkus `beginTransaction/commit/rollback` (`app/Http/Controllers/OpnameController.php:140,264,271`).
-
-- Penanganan batch/faktur:
-  - Kunci stok memakai kombinasi `{kode_brng, kd_bangsal, no_batch, no_faktur}`; pastikan aplikasi UI mengirim `null` untuk field batch/faktur yang kosong agar tidak membuat baris duplikat.
-  - Opname tidak mengubah `data_batch.sisa` (sesuai pola Java); hanya menyelaraskan stok fisik pada `gudangbarang` dan mencatat hasil di `opname`.
-
-- Integrasi UI (halaman Stok Opname):
-  - Komponen: `resources/js/Pages/farmasi/StokOpname.jsx`.
-  - Cek duplikasi item opname per kombinasi `{kode_brng, no_batch, no_faktur}` (`resources/js/Pages/farmasi/StokOpname.jsx:228-232`).
-  - Payload simpan mengirim `no_batch`/`no_faktur` sebagai `null` bila kosong (`resources/js/Pages/farmasi/StokOpname.jsx:330-336`).
-
-- Checklist Opname (implementasi):
-  - Pastikan `kd_bangsal` dipilih dan `keterangan` diisi sebelum simpan.
-  - Per-item: `real >= 0`; selaraskan nilai jual/harga beli untuk kalkulasi nominal.
-  - Gunakan `null` untuk batch/faktur kosong agar kunci komposit konsisten.
-  - Audit selalu tercatat saat stok berubah; verifikasi riwayat saat troubleshooting.
-
-### Contoh Payload Opname (API)
-
-```json
-{
-  "tanggal": "2025-12-03",
-  "kd_bangsal": "-",
-  "keterangan": "Opname akhir tahun",
-  "items": [
-    {
-      "kode_brng": "2018001",
-      "real": 2,
-      "h_beli": 20000,
-      "no_batch": "BATCH001",
-      "no_faktur": "PB-20251202-001"
-    },
-    {
-      "kode_brng": "2018002",
-      "real": 0,
-      "h_beli": 15000,
-      "no_batch": null,
-      "no_faktur": null
-    }
-  ]
-}
-```
-
-Respons sukses:
-
-```json
-{ "success": true, "message": "Data stok opname berhasil disimpan" }
-```
-
-Respons gagal (contoh validasi):
-
-```json
-{
-  "success": false,
-  "message": "Validasi gagal",
-  "errors": {
-    "kd_bangsal": ["The kd bangsal field is required."],
-    "items.0.real": ["The items.0.real must be at least 0."]
-  }
-}
-```
-
-### Diagram Alir Opname (Ringkas)
-
-```
-UI StokOpname.jsx
-  → Validasi form & item
-  → Normalisasi batch/faktur (null jika kosong)
-  → POST /api/opname/store (routes/api.php:186)
-      → OpnameController@store (app/Http/Controllers/OpnameController.php:112)
-          → Validasi request (120-130)
-          → beginTransaction('fufufafa') (140)
-          → loop items:
-              → Ambil stok gudang per kunci komposit (150-167)
-              → Hitung selisih/lebih/nominal (169-176)
-              → Upsert opname (198-216)
-              → Upsert gudangbarang.stok=real (218-229)
-              → Audit riwayat (231-258)
-          → commit (264)
-      ← JSON sukses/gagal
-```
-
-3) Konversi Satuan
-- Pengelolaan konversi satuan tersedia di `DlgKonversi.java` dan dipakai saat pengadaan/penjualan melalui pencarian data konversi (`DlgCariDataKonversi`).
-
-## Retur
-1) Retur Pembelian (ke Suplier)
-- Entri retur pembelian: `DlgReturBeli.java`.
-  - Simpan header `returbeli` dan detail `detreturbeli`, kurangi `data_batch.sisa` jika batch; stok gudang berkurang; riwayat "Retur Beli": `public/inventory/DlgReturBeli.java:1505-1524`.
-  - Jurnal retur (retur ke suplier dan kontra rekening kas): `public/inventory/DlgReturBeli.java:1044-1045`.
-
-2) Retur Penjualan / Piutang
-- Pola serupa: simpan detail retur, kembalikan stok ke gudang, dan susun jurnal terkait. Laporan ringkasan tersedia di `InventoryRingkasanReturJualBarangMedis.java` dan `InventoryRingkasanReturSuplierBarangMedis.java`.
-
-## Pencatatan & Akuntansi
-- Setiap transaksi menulis jurnal ke `tampjurnal` lalu disimpan oleh `keuangan.Jurnal.simpanJurnal(...)`. Integrasi jurnal muncul di banyak modul, misal pembelian (`public/inventory/DlgPembelian.java:1017-1025`), penjualan (`public/inventory/DlgPenjualan.java:4230-4236`), pengeluaran (`public/inventory/DlgPengeluaranApotek.java:760-765`).
-- Riwayat per barang per gudang direkam melalui `Trackobat.catatRiwayat(...)` pada tiap event: penerimaan, pengadaan, penjualan, mutasi, opname, stok keluar, retur.
-
-### Integrasi Akuntansi (Farmasi ↔ Akutansi)
-- Single Posting Point: staging jurnal dibaca dan diposting oleh layanan akuntansi terpusat.
-  - Preview dan komposisi gabungan `tampjurnal` + `tampjurnal2` memakai `kd_rek` (tanpa nominal nol) sebagaimana di `app/Services/Akutansi/JurnalPostingService.php:37-43` dan pelengkap `nm_rek` di `app/Services/Akutansi/JurnalPostingService.php:61-70`.
-  - Posting ke `jurnal`/`detailjurnal` sekaligus pengosongan staging dilakukan di `app/Services/Akutansi/JurnalPostingService.php:146-153` dan dilanjutkan hingga `app/Services/Akutansi/JurnalPostingService.php:170-185`.
-  - Endpoint publik untuk posting: `app/Http/Controllers/Akutansi/JurnalController.php:553-566`.
-- Kesesuaian skema `tampjurnal` yang diharapkan modul Akutansi:
-  - Kolom wajib: `kd_rek`, `debet`, `kredit`; opsional `nm_rek`.
-  - Composer paralel rawat jalan menulis ke `tampjurnal2` dengan skema yang sama (`kd_rek`, `nm_rek`, `debet`, `kredit`) di `app/Services/Akutansi/TampJurnalComposerRalan.php:124-135`.
-- Catatan penyesuaian implementasi Farmasi saat staging jurnal:
-  - Penulisan staging sudah menggunakan skema kompatibel (`kd_rek`, `nm_rek`, `debet`, `kredit`) dan dilakukan agregasi per akun untuk mencegah duplikasi baris sebelum posting.
-    - Lihat penulisan/agregasi: `app/Http/Controllers/Farmasi/BaseInventoryController.php:56–66, 68–92`.
-    - Model staging Farmasi: `app/Models/Farmasi/TampJurnal.php:7–15`.
-- Mapping akun bersumber dari `set_akun` (COA pusat) dan dipakai konsisten di seluruh transaksi Farmasi:
-  - Model `SetAkun`: `app/Models/Farmasi/SetAkun.php:1–14`.
-  - Contoh staging baris jurnal di transaksi Farmasi:
-    - Pemesanan/PO: `app/Http/Controllers/Farmasi/PemesananController.php:79-88`.
-    - Pembelian langsung: `app/Http/Controllers/Farmasi/PembelianController.php:88-96`.
-    - Penjualan obat bebas (penjualan, PPN keluaran, HPP/persediaan): `app/Http/Controllers/Farmasi/PenjualanController.php:87-95`.
-    - Stok keluar non-penjualan (kontra persediaan vs persediaan): `app/Http/Controllers/Farmasi/PengeluaranController.php:61-66`.
-
-### Checklist Integrasi
-- Pastikan staging Farmasi menulis `kd_rek`/`nm_rek` (bukan `rekening`/`keterangan`).
-- Gunakan akun dari `set_akun` untuk menyusun baris jurnal per transaksi dan jaga keseimbangan Debet=Kredit.
-- Setelah transaksi selesai, panggil posting via endpoint yang menggunakan layanan `JurnalPostingService` untuk memindahkan baris dari staging ke GL.
-
-## Agregasi & Pelaporan
-- Sirkulasi Barang: modul analitik yang menghimpun jumlah dan nilai per jenis transaksi (beli, pesan, jual, mutasi, hibah, retur, keluar, resep pulang). Contoh agregasi dan perhitungan stok awal/akhir: `public/inventory/DlgSirkulasiBarang.java:1834-1851` dan `public/inventory/DlgSirkulasiBarang4.java:1937-1949`.
-- Ringkasan penerimaan, pembelian, penjualan, hibah, dan vendor per bulan tersedia di `InventoryRingkasan*` dan `InventoryNilaiPenerimaanVendorFarmasiPerBulan.java`.
-
-## Prinsip Implementasi di Aplikasi Ini
-- Selalu gunakan `gudangbarang` sebagai sumber kebenaran stok; jika batch aktif, pastikan seluruh transaksi menulis `no_batch`+`no_faktur` serta menjaga `data_batch.sisa`.
-- Patuhi urutan transaksi: buat header (misal `pembelian`/`penjualan`), simpan detail item, kemudian:
-  - Update stok di `gudangbarang` (+/- sesuai tipe transaksi).
-  - Catat riwayat dengan konteks yang jelas (jenis event, gudang, batch/faktur, deskripsi).
-  - Susun dan simpan jurnal di `tampjurnal` → `Jurnal.simpanJurnal(...)` memakai akun dari `set_akun`/`akun_bayar`.
-- Terapkan konfigurasi harga dan PPN dari `set_harga_obat` dan `set_nota` agar penetapan harga jual konsisten di seluruh modul.
-- Untuk permintaan internal pasien/reses: set status permintaan saat stok dipenuhi melalui mutasi atau pengeluaran agar alur approval tercermin di data.
-
-## Tabel/Entitas yang Paling Sering Tersentuh
-- `pemesanan`, `detailpesan` – penerimaan berdasar PO.
-- `pembelian`, `detailbeli` – pengadaan langsung.
-- `penjualan`, `detailjual`, `obat_racikan_jual`, `detail_obat_racikan_jual` – transaksi penjualan.
-- `pengeluaran_obat_bhp`, `detail_pengeluaran_obat_bhp` – stok keluar non‑penjualan.
-- `mutasibarang` – perpindahan antar gudang.
-- `opname` – hasil stok opname.
-- `gudangbarang` – posisi stok per gudang (+opsional per batch/faktur).
-- `data_batch` – informasi batch (HPP, sisa, kadaluarsa).
-- `riwayat_barang_medis` – log audit per event barang.
-- `tampjurnal` (+ `keuangan.Jurnal`) – penyusunan dan penyimpanan jurnal GL.
-
-## Catatan Tambahan
-- Banyak modul laporan memakai agregasi SQL terhadap tabel detail transaksi untuk menghasilkan jumlah kuantitas dan total nilai, serta menggunakan `data_batch.<hppfarmasi>` sebagai dasar nilai stok jika batch aktif.
-- Pengaturan akses (`fungsi.akses`) mengendalikan visibilitas tombol/fitur per modul, contoh: `akses.getpenjualan_obat()` di `public/inventory/DlgPenjualan.java:3857`.
-
-Dengan mengikuti pola di atas, implementasi inventori pada aplikasi ini akan selaras dengan modul Java yang ada: konsisten dalam pencatatan stok dan batch, akurat secara akuntansi, dan lengkap jejak auditnya.
-## Urutan Pengembangan Lanjutan
-- Selaraskan payload UI ↔ backend Farmasi pada pembelian: gunakan `total1`, `potongan`, `total2`, `kd_rek` di `pembelian`/`detailbeli`.
-- Tetapkan satu sumber kebenaran (SSOT) harga di backend: `h_beli` disimpan sebagai HNA (harga vendor) dan `dasar = h_beli - besardis` bila ada diskon (non‑negatif). Harga jual per kelas dihitung dari `dasar` sesuai `set_harga_obat`.
-- Frontend tidak lagi mengirim update harga setelah pembelian; logika update harga dan perhitungan jual sepenuhnya terpusat di controller backend.
-- Standarisasi endpoint harga barang: `PUT /api/databarang/update-harga` untuk persist `h_beli` dan `dasar`, serta `PUT /api/databarang/update-harga-jual` untuk menghitung harga jual dari base sesuai konfigurasi (termasuk PPN bila diaktifkan).
-- Perbaiki staging jurnal Farmasi ke skema `kd_rek`/`nm_rek` dan pastikan Debet=Kredit memakai akun dari `set_akun`.
-- Pastikan rute API pembelian mengarah ke `App\Http\Controllers\Farmasi\PembelianController@store` untuk satu sumber kebenaran.
-- Tambahkan validasi serta transaksi database yang ketat saat menyimpan header, item, batch, dan stok gudang.
-- Uji integrasi akuntansi: posting jurnal dari staging via layanan `Akutansi\JurnalPostingService` dan verifikasi penutupan.
-- Terapkan kebijakan `set_harga_obat` dan `set_nota` secara konsisten pada penetapan harga di pembelian/penjualan.
-- Audit penggunaan `AKTIFKANBATCHOBAT`; sinkronkan pengurangan `data_batch.sisa` di seluruh alur keluar.
-- Lengkapi pencatatan `riwayat_barang_medis` untuk setiap event transaksi sebagai dasar audit.
-- Refaktor modul permintaan/reses pulang agar status approval tercermin saat mutasi/pengeluaran.
-# Rencana Integrasi Hutang Obat & Posting Pelunasan
-
-## Gambaran Umum
-- Tujuan: Menampilkan daftar hutang obat (berdasarkan `pemesanan`) dan melakukan posting pelunasan ke jurnal akuntansi.
-- Lingkup: Farmasi (PO/Pemesanan, Pembelian), Akuntansi (staging `tampjurnal` dan posting ke `jurnal`/`detailjurnal`).
-- Status sumber: `pemesanan.status` menggunakan nilai seperti `Belum Dibayar`, `Titip Faktur`, `Sudah Dibayar` (lihat seeder `database/seeders/AutoSeeders/PemesananTableSeeder.php:208`).
-
-## Sumber Data & Tabel
-- `pemesanan`: header PO/faktur supplier (status, total, ppn, meterai, tagihan).
-- `detailpesan`: detail item PO.
-- `akun_bayar`: daftar metode bayar beserta `kd_rek` untuk Kas/Bank (referensi backend yang sudah ada di `app/Http/Controllers/Farmasi/PembelianController.php:140`).
-- `rekening`: master COA untuk validasi dan pelabelan `nm_rek`.
-- `tampjurnal`/`tampjurnal2`: staging komposisi jurnal sebelum posting.
-- `jurnal`/`detailjurnal`: header/detail jurnal yang diposting (lihat generator nomor di `app/Services/Akutansi/JurnalPostingService.php:125`).
-
-## Komposisi Jurnal
-- Pemesanan (PO) saat input: debit pengadaan + meterai, debit PPN Masukan, kredit Hutang/Kontra Pemesanan.
-  - Implementasi existing: `app/Http/Controllers/Farmasi/PemesananController.php:84`.
-- Pelunasan Hutang: debit Hutang Usaha, kredit Kas/Bank (akun bayar). Tambahkan baris biaya transaksi bank jika ada.
-  - Template:
-    - Debet: `Hutang Usaha` (`210-01`) = nilai `tagihan`.
-    - Kredit: `Kas/Bank` (dari `akun_bayar.kd_rek`) = nilai `tagihan`.
-    - Opsional: `Biaya Admin/MDR` (debet) vs akun biaya terkait.
-- Posting dari staging menggunakan service terpadu: `JurnalPostingService::post` (`app/Services/Akutansi/JurnalPostingService.php:97`).
-
-## Endpoint Backend (Rencana)
-- `GET /api/farmasi/hutang` — daftar hutang berdasarkan `pemesanan` dengan filter: tanggal, supplier, status (`Belum Dibayar`, `Titip Faktur`).
-- `GET /api/farmasi/hutang/akun-bayar` — ambil daftar metode bayar dan `kd_rek` Kas/Bank (reuse `PembelianController::getAkunBayar` di `app/Http/Controllers/Farmasi/PembelianController.php:140`).
-- `POST /api/farmasi/hutang/stage` — body: `{ no_faktur, kd_rek_bayar, biaya_admin? }` → susun `tampjurnal`:
-  - Debet `Hutang Usaha` (`210-01`) sebesar `tagihan`.
-  - Kredit `Kas/Bank` (`kd_rek_bayar`).
-  - Opsional baris biaya admin.
-- `POST /api/farmasi/hutang/post` — gunakan `JurnalPostingService::post(no_bukti, keterangan, tgl_jurnal)` untuk posting gabungan `tampjurnal` + `tampjurnal2`.
-- `PATCH /api/farmasi/hutang/{no_faktur}/mark-paid` — update `pemesanan.status` menjadi `Sudah Dibayar` setelah posting sukses.
-
-## Alur UI (HutangObat.jsx)
-- Tabel daftar hutang: `no_faktur`, `tgl_pesan`, `supplier`, `tagihan`, `status`, centang pilih.
-- Panel pembayaran: pilih `Akun Bayar` (Kas/Bank), input `No Bukti`, `Keterangan`, tanggal posting, opsional biaya admin.
-- Tombol `Preview` → memanggil `JurnalPostingService::preview` via endpoint preview (`app/Http/Controllers/Akutansi/JurnalController.php:546`).
-- Tombol `Posting Pelunasan` → panggil `POST /api/farmasi/hutang/post`, tampilkan `no_jurnal`, dan tandai `pemesanan` sebagai `Sudah Dibayar`.
-- Audit: tampilkan ringkasan debet/kredit dan daftar baris COA sebelum konfirmasi.
-
-## Integrasi & Validasi
-- Validasi keseimbangan: pastikan total debet = total kredit sebelum posting (`JurnalPostingService::post` akan menolak jika tidak seimbang, `app/Services/Akutansi/JurnalPostingService.php:111`).
-- Penomoran jurnal: format `JRYYYYMMDDNNNNNN` aman lintas driver DB (lihat penyesuaian ekspresi suffix di `app/Services/Akutansi/JurnalPostingService.php:128`).
-- Status PO: setelah posting sukses, ubah `pemesanan.status` → `Sudah Dibayar` dan simpan `no_jurnal` sebagai referensi.
-- Idempotensi: hindari double posting — cek jika `pemesanan` sudah `Sudah Dibayar` maka blokir.
-- Otorisasi: batasi akses aksi posting ke role Keuangan/Farmasi.
-
-## Edge Case
-- Partial payment: jika diperlukan, dukung nominal bayar parsial → debit Hutang sesuai nilai bayar, dan catat sisa pada `pemesanan`.
-- Biaya bank/MDR: tambahkan baris debet ke akun biaya, dan kredit akun bank jika biaya dipotong.
-- Titip Faktur: jika ada `titip_faktur`, ikuti status transisi (`Titip Faktur` → `Dibayar`) sebagaimana pola di aplikasi lama (`public/KeuanganHutangObatBelumLunas.java:1489`).
-
-## Referensi Kode
-- Staging jurnal di Farmasi: `app/Http/Controllers/Farmasi/PemesananController.php:84`.
-- Helper staging/aggregate: `app/Http/Controllers/Farmasi/BaseInventoryController.php:68`.
-- Preview & posting: `app/Http/Controllers/Akutansi/JurnalController.php:546`, `app/Http/Controllers/Akutansi/JurnalController.php:564`.
-- Posting service: `app/Services/Akutansi/JurnalPostingService.php:97` dan generator nomor `app/Services/Akutansi/JurnalPostingService.php:128`.
-- Data akun bayar: `app/Http/Controllers/Farmasi/PembelianController.php:140`.
-
-## Rencana Implementasi Bertahap
-- Tahap 1: Endpoint `GET /api/farmasi/hutang`, `GET /api/farmasi/hutang/akun-bayar`.
-- Tahap 2: Endpoint `POST /api/farmasi/hutang/stage`, `POST /api/farmasi/hutang/post`, `PATCH mark-paid`.
-- Tahap 3: UI `resources/js/Pages/farmasi/HutangObat.jsx` (tabel + form + preview + posting).
-- Tahap 4: Logging & audit trail; penanganan partial payment & biaya bank (opsional).
-# Inventori — Catatan Pengembangan Lanjutan
-
-Dokumen ini merangkum pemahaman modul inventori berbasis file Java Swing lama dan mengusulkan rencana implementasi web modern (Laravel + Inertia React) untuk kebutuhan ke depan.
-
-## Ringkasan Fitur: Riwayat Barang Medis
-
-- Tujuan: Menampilkan riwayat pergerakan stok Obat/Alkes/BHP (awal, masuk, keluar, akhir) termasuk detail posisi, tanggal, jam, petugas, lokasi, status, batch, faktur, dan catatan.
-- Sumber referensi: `public/inventory/DlgRiwayatBarangMedis.java` dan `public/inventory/DlgRiwayatBarangMedis.form`.
-- Kolom tabel (sesuai dialog Java): Barang, Awal, Masuk, Keluar, Akhir, Posisi, Tanggal, Jam, Petugas, Lokasi, Status, No.Batch, No.Faktur, Keterangan (`public/inventory/DlgRiwayatBarangMedis.java:43-46`).
-- Filter utama: Rentang tanggal, kata kunci, pilih barang, pilih lokasi gudang (`public/inventory/DlgRiwayatBarangMedis.java:316-356`, `public/inventory/DlgRiwayatBarangMedis.java:248-310`).
-- Aksi: Cari, Reset, Cetak, Keluar (`public/inventory/DlgRiwayatBarangMedis.java:351-425`).
-- Query inti: Join `riwayat_barang_medis` ↔ `databarang` ↔ `bangsal` dengan rentang tanggal dan filter opsional (`public/inventory/DlgRiwayatBarangMedis.java:454-465`, `public/inventory/DlgRiwayatBarangMedis.java:468-483`, `public/inventory/DlgRiwayatBarangMedis.java:633-667`).
-
-## Desain Web yang Diusulkan
-
-- Rute backend: `GET /farmasi/riwayat-barang-medis` untuk halaman; `GET /farmasi/riwayat-barang-medis/data` untuk data JSON berpaginasi.
-- Lokasi frontend: `resources/js/Pages/farmasi/RiwayatBarangMedis.jsx` dengan Inertia.
-- Skema respons JSON (contoh):
-  - `items`: array berisi `{ kode_brng, nama_brng, stok_awal, masuk, keluar, stok_akhir, posisi, tanggal, jam, petugas, kd_bangsal, nm_bangsal, status, no_batch, no_faktur, keterangan }`
-  - `meta`: `{ total, page, perPage }`
-- Filter frontend:
-  - Rentang tanggal (datepicker), kata kunci, pilih barang (search field/autocomplete), pilih lokasi (`kd_bangsal`).
-  - Default: tanggal hari ini s.d. hari ini, `perPage=25`.
-- Tabel frontend:
-  - Kolom konsisten dengan dialog Java; tambahkan kolom ringkas “Barang” (`kode_brng nama_brng`) seperti Java (`public/inventory/DlgRiwayatBarangMedis.java:692-701`).
-  - Pagination dan jumlah total.
-- Cetak/Export:
-  - HTML print view di rute `GET /farmasi/riwayat-barang-medis/print?...` untuk cetak cepat browser.
-  - Export `CSV`/`Excel` dengan job server-side; integrasi PDF opsional via library dokumen (pilih sesuai dependensi proyek).
-
-## Implementasi Backend (Laravel)
-
-- Controller (contoh): `app/Http/Controllers/Farmasi/RiwayatBarangMedisController.php`
-  - `index()`: render halaman Inertia.
-  - `data(Request $req)`: validasi filter, bangun query join ke tabel `riwayat_barang_medis`, `databarang`, `bangsal`, paginasi.
-  - `print(Request $req)`: render HTML untuk cetak atau hasilkan file.
-- Query acuan dari Java:
-  - Tanpa filter barang/lokasi: rentang tanggal (`public/inventory/DlgRiwayatBarangMedis.java:638-649`).
-  - Dengan filter: nama barang, nama gudang, kata kunci multi-field (`public/inventory/DlgRiwayatBarangMedis.java:651-667`).
-- Keamanan & Akses:
-  - Gate/policy mis. `riwayat_obat_alkes_bhp` mengikuti semantik Java `isCek()` (`public/inventory/DlgRiwayatBarangMedis.java:719-721`).
-
-## Model Data & Indeks
-
-- Tabel utama: `riwayat_barang_medis`
-  - Bidang penting: `kode_brng`, `stok_awal`, `masuk`, `keluar`, `stok_akhir`, `posisi`, `tanggal`, `jam`, `petugas`, `kd_bangsal`, `status`, `no_batch`, `no_faktur`, `keterangan`.
-- Relasi:
-  - `riwayat_barang_medis.kode_brng` ↔ `databarang.kode_brng`
-  - `riwayat_barang_medis.kd_bangsal` ↔ `bangsal.kd_bangsal`
-- Indeks yang disarankan:
-  - Komposit `(tanggal, jam)` untuk sort.
-  - `(kode_brng)`, `(kd_bangsal)` untuk filter.
-  - Opsional `(status)`, `(no_batch)`, `(no_faktur)` untuk pencarian cepat.
-
-## Antarmuka Pengguna (React)
-
-- Header halaman mengikuti standar UI/UX: judul ringan dengan gradien dan meta total.
-- Panel filter: tanggal awal/akhir, input kata kunci, pilih barang, pilih lokasi (gunakan komponen yang sudah ada atau input sederhana dulu).
-- Tabel: scrollable, kolom tetap, baris hover, indikator loading.
-- Aksi kanan atas: Cetak, Export (opsional), Reset.
-
-## Kinerja & Skalabilitas
-
-- Batasi `perPage` default 25–50, gunakan paginasi server-side.
-- Debounce pencarian kata kunci 300–500 ms.
-- Hindari `SELECT *`; pilih kolom eksplisit sesuai kebutuhan UI.
-- Pertimbangkan materialized view/summary bila data sangat besar.
-
-## Uji & Observabilitas
-
-- Uji fungsional: filter tanggal, barang, lokasi, kata kunci, cetak/export.
-- Uji beban: query dengan 100k+ baris, paginasi responsif.
-- Logging audit: simpan parameter filter + pengguna untuk jejak akses (opsional).
-
-## Langkah Migrasi dari Java Swing
-
-- Tahap 1: Buat endpoint `data` dengan hasil identik pada kolom dan join referensi Java.
-- Tahap 2: Implement UI tabel dan filter dasar; validasi hasil dengan sampling manual terhadap dialog Java.
-- Tahap 3: Tambah cetak/export; pilih mekanisme sesuai dependensi proyek.
-- Tahap 4: Hardening keamanan, indeks DB, optimasi query.
-
-## Backlog Lanjutan
-
-- Autocomplete barang dari `databarang` dengan pencarian kode/nama.
-- Selector lokasi (`bangsal`) menyatu dengan modul Farmasi lain (re-use pola `kd_bangsal`).
-- Ringkas statistik (total masuk/keluar) pada header meta rentang tanggal.
-- Opsi ekspor Excel dengan template.
-- Otorisasi granular per lokasi gudang.
+Catatan: Untuk performa, pertimbangkan conditional aggregation atau materialized view jika jumlah gudang besar.
+
+### UI React
+- Halaman di `Farmasi > Laporan > Mutasi & Stok` atau halaman khusus "Sisa Stok".
+- Kontrol filter: `Jenis`, `Kategori`, `Golongan` (menggunakan komponen pencarian referensi), dan input kata kunci.
+- Tabel dengan kolom dinamis (sticky kolom identitas barang, scroll horizontal untuk gudang).
+- Aksi: ekspor CSV/HTML, cetak.
+
+### Pertimbangan Kinerja
+- Index yang disarankan:
+  - `gudangbarang(kode_brng, kd_bangsal, no_batch, no_faktur)`
+  - `bangsal(status, kd_bangsal)`
+  - `databarang(kdjns, kode_golongan, kode_kategori, kode_brng, nama_brng)`
+- Hindari N×M query: gunakan join + grup jika memungkinkan, atau batch queries per gudang.
+- Batasi hasil dengan pagination atau server-side chunking jika dataset besar.
+
+### Pengujian
+- Seed beberapa gudang (aktif/nonaktif) dan beberapa barang lintas jenis/kategori/golongan.
+- Uji kedua mode batch (`on`/`off`) pada agregasi stok.
+- Verifikasi konsistensi `Total` dan `Nilai Aset`.
+- Uji performa saat jumlah gudang tinggi.
+
+### Integrasi & Keamanan
+- `harga_satuan` hanya ditampilkan kepada role yang berhak; cek kebijakan akses sebelum menampilkan nilai aset.
+- Gunakan konfigurasi aplikasi untuk `hppfarmasi` dan `aktifkanbatch` agar konsisten lintas modul.
 
 ---
-Status saat ini: file Java Swing berfungsi sebagai referensi; halaman web belum tersedia. Dokumen ini menjadi panduan implementasi dan keputusan teknis untuk modul Riwayat Barang Medis.
+## Sirkulasi Barang
+- Menampilkan ringkasan per barang untuk periode tanggal: `Stok Terakhir`, `Pengadaan` (pembelian), `Penerimaan` (pemesanan), `Penjualan`, `Ke Pasien`, `Piutang Jual`, `Retur Beli`, `Retur Jual`, `Retur Piutang`, `Pengambilan UTD`, `Stok Keluar Medis`, `Resep Pulang`, `Mutasi Masuk`, `Mutasi Keluar`, `Hibah`.
+- Mendukung filter `Jenis`, `Kategori`, `Golongan`, serta kata kunci pada `kode_brng`/`nama_brng`.
+- Mendukung tampilan per lokasi gudang (bangsal) melalui aksi "Tampilkan Per Lokasi".
+- Nilai aset pada kolom `Stok Terakhir` dihitung dari `stok × hppfarmasi`.
+
+### Sumber Data & Kolom
+- Tabel sumber utama per kolom:
+  - `Stok Terakhir`: `gudangbarang` × `databarang` (nilai aset via `hppfarmasi`).
+  - `Pengadaan`: `pembelian` × `detailbeli`.
+  - `Penerimaan`: `pemesanan` × `detailpesan`.
+  - `Penjualan`: `penjualan` × `detailjual` (status `Sudah Dibayar`).
+  - `Ke Pasien`: `detail_pemberian_obat` (total dikurangi `embalase`+`tuslah`).
+  - `Piutang Jual`: `piutang` × `detailpiutang`.
+  - `Retur Beli`: `returbeli` × `detreturbeli`.
+  - `Retur Jual`: `returjual` × `detreturjual`.
+  - `Retur Piutang`: `returpiutang` × `detreturpiutang`.
+  - `Pengambilan UTD`: `utd_pengambilan_medis`.
+  - `Stok Keluar Medis`: `pengeluaran_obat_bhp` × `detail_pengeluaran_obat_bhp`.
+  - `Resep Pulang`: `resep_pulang`.
+  - `Mutasi Masuk/Keluar`: `mutasibarang` (`kd_bangsalke` / `kd_bangsaldari`).
+  - `Hibah`: `hibah_obat_bhp` × `detailhibah_obat_bhp`.
+
+### Filter & Per Lokasi
+- Filter barang: join `databarang` ↔ `jenis` ↔ `golongan_barang` ↔ `kategori_barang`, dengan kata kunci untuk `kode_brng`/`nama_brng`.
+- Per lokasi: semua agregasi di atas memiliki varian query dengan tambahan kondisi `kd_bangsal` sesuai lokasi terpilih.
+
+### Algoritma Perhitungan
+- Ambil daftar barang sesuai filter (`jenis`, `kategori`, `golongan`, kata kunci, urut `kode_brng`).
+- Tentukan query stok berdasarkan mode batch:
+  - Batch ON: `no_batch<>'' AND no_faktur<>''`.
+  - Batch OFF: `no_batch='' AND no_faktur=''`.
+- Untuk setiap barang, hitung agregasi jumlah dan total nilai per sumber data pada rentang tanggal yang dipilih.
+- Jika mode Per Lokasi aktif, tambahkan syarat `kd_bangsal`/`kd_bangsal_dr`/`kd_bangsal_ke` sesuai tabel.
+- Tampilkan satu baris per barang, dengan format `jumlah (total)` untuk tiap kolom; baris rekap total disisipkan di akhir.
+
+### Grafik (Desktop)
+- Menu grafik 10 besar/tersedikit untuk: Penjualan, Pembelian, Piutang, Resep ke Pasien.
+- Grafik menggunakan rentang tanggal yang sama dengan filter halaman.
+
+### Cetak (Desktop)
+- Tombol `Print` menulis data ke tabel `temporary` lalu menghasilkan laporan JasperReports:
+  - Umum: `rptSirkulasi.jasper`.
+  - Per lokasi: `rptSirkulasi3.jasper` dengan parameter `bangsal`.
+
+### Konfigurasi
+- `aktifkanbatch`: menentukan mode query stok batch/nonbatch.
+- `hppfarmasi`: nama kolom harga yang dipakai untuk menghitung nilai aset.
+
+### Referensi Kode (Desktop)
+- Header kolom tabel: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:61`–`63`.
+- Filter barang (join + kata kunci): `public/Sementara/Farmasi/DlgSirkulasiBarang.java:972`–`978`.
+- Inisialisasi konfigurasi: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:146`–`151`, `public/Sementara/Farmasi/DlgSirkulasiBarang.java:258`–`260`.
+- Query stok batch/nonbatch: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1001`–`1009`.
+- Agregasi per sumber (umum):
+  - Pembelian: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1031`–`1040`
+  - Pemesanan: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1057`–`1066`
+  - Penjualan: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1083`–`1092`
+  - Piutang: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1109`–`1118`
+  - Retur Beli: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1135`–`1144`
+  - Retur Jual: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1161`–`1170`
+  - Retur Piutang: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1186`–`1195`
+  - Ke Pasien: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1211`–`1219`
+  - Pengambilan UTD: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1235`–`1243`
+  - Stok Keluar Medis: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1259`–`1268`
+  - Resep Pulang: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1284`–`1291`
+  - Hibah: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1307`–`1316`
+- Agregasi per sumber (per lokasi):
+  - Stok: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1426`–`1433`
+  - Pembelian: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1464`–`1474`
+  - Pemesanan: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1492`–`1502`
+  - Penjualan: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1519`–`1529`
+  - Piutang: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1546`–`1556`
+  - Retur Beli: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1573`–`1583`
+  - Retur Jual: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1600`–`1610`
+  - Retur Piutang: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1626`–`1636`
+  - Ke Pasien: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1652`–`1661`
+  - Pengambilan UTD: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1677`–`1686`
+  - Stok Keluar Medis: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1702`–`1712`
+  - Resep Pulang: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1728`–`1736`
+  - Mutasi Masuk: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1754`–`1762`
+  - Mutasi Keluar: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1778`–`1786`
+  - Hibah: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1803`–`1813`
+- Penambahan baris data & rekap: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1336`–`1352`, `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1372`–`1381`; varian per lokasi `public/Sementara/Farmasi/DlgSirkulasiBarang.java:1832`–`1877`.
+- Cetak: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:707`–`742`.
+- Menu grafik & event: `public/Sementara/Farmasi/DlgSirkulasiBarang.java:806`–`880`, form: `public/Sementara/Farmasi/DlgSirkulasiBarang.form:25`–`258`.
+
+#### Varian Desktop: DlgSirkulasiBarang2
+- Header kolom tabel: `public/Sementara/Farmasi/DlgSirkulasiBarang2.java:58`–`62`.
+- Pengaturan lebar kolom: `public/Sementara/Farmasi/DlgSirkulasiBarang2.java:70`–`81`.
+- Pencarian cepat (auto cari saat panjang kata kunci > 2 dan `CARICEPAT=aktif`): `public/Sementara/Farmasi/DlgSirkulasiBarang2.java:85`–`106`.
+- Pemilihan bangsal (lokasi) dan pemanggilan proses per lokasi: window listener men-set `lokasi` dan memanggil `prosesCari2(kd_bangsal)` ketika dialog ditutup: `public/Sementara/Farmasi/DlgSirkulasiBarang2.java:108`–`136`, detail set nilai: `public/Sementara/Farmasi/DlgSirkulasiBarang2.java:117`–`121`.
+- Pemilihan filter referensi: jenis/kategori/golongan melalui dialog pencarian masing-masing: `public/Sementara/Farmasi/DlgSirkulasiBarang2.java:138`–`200`.
+
+Catatan: Berkas `.form` terkait dialog ini saat ini kosong atau tidak memuat isi terstruktur di repositori (`public/Sementara/Farmasi/DlgSirkulasiBarang2.form`). Implementasi UI web mengikuti pola React yang sudah ada.
+
+---
+### Perluasan API Sirkulasi Barang (Backend)
+- Controller web saat ini: `app/Http/Controllers/Farmasi/SirkulasiObatController.php`.
+  - Ekstraksi parameter: `app/Http/Controllers/Farmasi/SirkulasiObatController.php:12`–`22`.
+  - Paginasi dan daftar barang: `app/Http/Controllers/Farmasi/SirkulasiObatController.php:33`–`54`.
+  - Agregasi stok terakhir dan nilai aset: `app/Http/Controllers/Farmasi/SirkulasiObatController.php:57`–`75`.
+  - Placeholder kolom lain (nilai saat ini 0): `app/Http/Controllers/Farmasi/SirkulasiObatController.php:82`–`96`.
+
+Rencana pengayaan kolom berbasis rentang tanggal (`tgl_awal`–`tgl_akhir`) dan lokasi (`kd_bangsal`):
+- `Pengadaan` (pembelian): join `pembelian` × `detailbeli`, filter tanggal, opsi lokasi via `kd_bangsal` pada penerimaan ke gudang.
+- `Penerimaan` (pemesanan): `pemesanan` × `detailpesan`, tanggal realisasi dan lokasi.
+- `Penjualan`: `penjualan` × `detailjual`, status lunas dan lokasi keluaran.
+- `Ke Pasien`: `detail_pemberian_obat` (kurangi `embalase`+`tuslah` untuk total bersih jika diperlukan kebijakan).
+- `Piutang Jual`: `piutang` × `detailpiutang` dalam periode.
+- `Retur Beli/Jual/Piutang`: tabel retur masing-masing.
+- `Pengambilan UTD`, `Stok Keluar Medis`, `Resep Pulang`, `Mutasi Masuk/Keluar`, `Hibah`: gunakan tabel modul terkait, semuanya difilter tanggal dan lokasi.
+
+Perhitungan stok periode:
+- `stok_terakhir` (per lokasi opsional) sudah tersedia dari `gudangbarang`.
+- `stok_awal` dan `stok_akhir` periode dapat dihitung dari log riwayat:
+  - Jika tersedia `riwayat_barang`/`toko_riwayat_barang`: gunakan agregasi `stok_awal/masuk/keluar/stok_akhir` per `kode_brng` pada rentang tanggal.
+  - Alternatif: gunakan data `opname` sebagai anchor stok pada tanggal tertentu lalu akumulasikan mutasi sebelum/sesudah periode (lihat seeders `database/seeders/AutoSeeders/OpnameTableSeeder.php`).
+
+Konfigurasi terkait:
+- `AKTIFKANBATCHOBAT` menentukan mode batch/nonbatch saat mengambil stok dari `gudangbarang`.
+- `HPPFARMASI` menentukan kolom harga satuan yang dipakai untuk menghitung `aset_stok`.
+
+---
+### Keputusan UI Web (Diselaraskan dengan Desktop)
+- Default rentang tanggal: bulan berjalan (awal bulan → hari ini).
+- Default lokasi: `AP — Apotek`.
+- Tanpa pagination pada halaman Sirkulasi Obat; semua hasil terfilter ditampilkan.
+
+---
+### Langkah Lanjut
+- Implementasi agregasi semua kolom sirkulasi di controller berdasarkan `tgl_awal/tgl_akhir` dan `lokasi`.
+- Tambahkan opsi grafik 10 besar (Penjualan/Pembelian/Piutang/Resep ke Pasien) pada web berdasarkan hasil agregasi.
+- Tambahkan ekspor CSV/Excel untuk laporan sirkulasi.
+- Tinjau indeks database untuk tabel transaksi terkait agar agregasi performa baik.
+
+### Rencana Implementasi Web
+- Endpoint API: `GET /api/inventori/sirkulasi-barang`
+- Query params:
+  - `jenis`, `kategori`, `golongan`, `q`
+  - `batch` (`on|off`), default dari konfigurasi aplikasi
+  - `lokasi` (`kd_bangsal`, opsional) untuk mode per lokasi
+  - `tgl_awal`, `tgl_akhir` (rentang tanggal; default bulan berjalan)
+- Response (JSON) per barang:
+  - `kode_brng`, `nama_brng`, `kode_sat`, `stok_terakhir`, `aset_stok`
+  - `pengadaan`, `penerimaan`, `penjualan`, `ke_pasien`, `piutang`, `retur_beli`, `retur_jual`, `retur_piutang`, `pengambilan_utd`, `stok_keluar_medis`, `resep_pulang`, `mutasi_masuk`, `mutasi_keluar`, `hibah`
+- UI React:
+  - Tabel ringkasan per barang dengan filter dan opsi per lokasi.
+  - Default filter UI: `tgl_awal/tgl_akhir` mengisi bulan berjalan; lokasi default `AP — Apotek`; tanpa pagination (menampilkan seluruh hasil terfilter).
+  - Aksi grafik dapat diadopsi sebagai fitur lanjutan menggunakan library chart di web.
+
+Catatan akses: fitur cetak di desktop dikendalikan oleh `akses.getsirkulasi_obat()`; pastikan kebijakan role/permission setara tersedia di aplikasi web.
+Dokumen ini menjadi acuan implementasi halaman Sisa Stok di aplikasi web, dengan logika yang konsisten terhadap referensi desktop:
+- Proses inti: `public/Sementara/Farmasi/DlgSisaStok.java:592`–`717`.
+- Layout dan kontrol: `public/Sementara/Farmasi/DlgSisaStok.form` dan `public/Sementara/Farmasi/DlgSisaStok.java:205`–`347`.
+
+---
+### Riwayat Transaksi Gudang & Riwayat Barang Medis
+- Sumber audit stok gudang: `riwayat_transaksi_gudangbarang` (INSERT/UPDATE/DELETE) ditampilkan oleh halaman `RiwayatTransaksiGudang.jsx` via `GET /farmasi/riwayat-transaksi-gudang/data`.
+- Sumber ringkasan mutasi per kejadian: `riwayat_barang_medis` (kolom `stok_awal/masuk/keluar/stok_akhir/posisi`) ditampilkan oleh `RiwayatBarangMedis.jsx` via `GET /farmasi/riwayat-barang-medis/data`.
+- Alur pembelian (`POST /api/pembelian/store`) kini melakukan:
+  - Insert `detailbeli`, update/insert stok `gudangbarang` per `no_batch/no_faktur`.
+  - Catat audit ke `riwayat_transaksi_gudangbarang` dengan `sumber_transaksi='pembelian'` dan selisih sesuai perubahan stok.
+  - Catat ringkasan ke `riwayat_barang_medis` dengan `posisi='Pengadaan'` dan perhitungan `stok_awal/akhir` berdasarkan stok terkini di `gudangbarang`.
+- Alur opname (`POST /api/opname/store`) mencatat keduanya dengan `sumber_transaksi='opname'` dan `posisi='Opname'`.
+
+Implikasi: data pembelian akan muncul di halaman Riwayat Transaksi Gudang dan Riwayat Barang Medis setelah penyimpanan pada gudang tujuan (`kd_bangsal`).
+
+---
+## Cek Stok Per Lokasi (Desktop)
+- Tujuan: menampilkan stok barang pada satu lokasi gudang/bangsal berdasarkan kata kunci.
+- Kolom: `Kode Barang`, `Nama Barang`, `Kategori`, `Satuan`, `Harga` (mengacu `HPPFARMASI`), `Stok` per lokasi.
+- Filter: `Lokasi` (kd/nama bangsal) dan `Key Word` untuk `kode_brng`/`nama_brng`/`kode_sat`/`jenis.nama`.
+
+### Layout & Kontrol
+- Judul dialog: `::[ Cek Stok Per Lokasi ]::` `public/Sementara/Farmasi/DlgCekStok.form:35`.
+- Input lokasi: `kdgudang` dan `nmgudang`, tombol pilih lokasi: `BtnGudang` `public/Sementara/Farmasi/DlgCekStok.form:103`–`147`.
+- Kata kunci: `TCari` dan tombol `Cari` `public/Sementara/Farmasi/DlgCekStok.form:148`–`183`.
+- Tabel hasil: `tbDokter` dalam `scrollPane1` `public/Sementara/Farmasi/DlgCekStok.form:72`–`83`.
+
+### Proses Inti
+- Inisialisasi kolom tabel dan lebar: `public/Sementara/Farmasi/DlgCekStok.java:53`–`91`.
+- Auto-cari saat `CARICEPAT=aktif` dan panjang kata kunci > 2: `public/Sementara/Farmasi/DlgCekStok.java:97`–`118`.
+- Pemilihan lokasi melalui dialog bangsal: `public/Sementara/Farmasi/DlgCekStok.java:122`–`144`.
+- Ambil `HPPFARMASI` untuk kolom harga: `public/Sementara/Farmasi/DlgCekStok.java:146`–`150`.
+
+### Query & Agregasi
+- Daftar barang sesuai kata kunci dengan join `jenis` dan kolom harga `HPPFARMASI`: `public/Sementara/Farmasi/DlgCekStok.java:408`–`418`.
+- Hitung stok per lokasi dari `gudangbarang` jika lokasi terisi: `public/Sementara/Farmasi/DlgCekStok.java:421`–`441`.
+- Tambah baris hasil ke tabel: `public/Sementara/Farmasi/DlgCekStok.java:443`–`447`.
+
+### Catatan Implementasi Web
+- UI web menyediakan pemilihan lokasi dan input kata kunci.
+- Endpoint referensi lokasi menggunakan `GET /api/pembelian/lokasi`.
+- Endpoint data cek stok menggunakan `GET /api/opname/data-barang` dengan respons JSON berisi `data` (array) yang memuat kolom di atas.

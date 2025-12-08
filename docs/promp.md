@@ -62,3 +62,16 @@ Copy dan paste bagian **Instruksi Utama** diikuti dengan salah satu **Opsi Tugas
 
 **Contoh Prompt:**
 > "Halo, tolong pelajari Instruksi Utama di atas. Saya ingin kita mulai mengerjakan **Opsi 1: Pengembangan Modul Keuangan**. Langkah pertama, tolong buatkan rancangan skema database (migration) untuk Chart of Accounts dan Jurnal."
+
+
+
+
+
+pahami 2 file java di atas dan buat resume hasil analisa di 
+
+jika sudah buatkan form  buat dengan UI_UX mengacu pada 
+
+update   buatkan menu baru dengan nama Cek Stok Obat dan buatkan card baru di 
+
+panduan pembuatan menu baru mengacu pada : 
+
