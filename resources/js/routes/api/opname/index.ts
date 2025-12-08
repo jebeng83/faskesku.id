@@ -89,7 +89,7 @@ dataBarang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\OpnameController::store
-* @see app/Http/Controllers/OpnameController.php:112
+* @see app/Http/Controllers/OpnameController.php:124
 * @route '/api/opname/store'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -104,7 +104,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\OpnameController::store
-* @see app/Http/Controllers/OpnameController.php:112
+* @see app/Http/Controllers/OpnameController.php:124
 * @route '/api/opname/store'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -113,7 +113,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\OpnameController::store
-* @see app/Http/Controllers/OpnameController.php:112
+* @see app/Http/Controllers/OpnameController.php:124
 * @route '/api/opname/store'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -123,7 +123,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\OpnameController::list
-* @see app/Http/Controllers/OpnameController.php:313
+* @see app/Http/Controllers/OpnameController.php:325
 * @route '/api/opname/list'
 */
 export const list = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -138,7 +138,7 @@ list.definition = {
 
 /**
 * @see \App\Http\Controllers\OpnameController::list
-* @see app/Http/Controllers/OpnameController.php:313
+* @see app/Http/Controllers/OpnameController.php:325
 * @route '/api/opname/list'
 */
 list.url = (options?: RouteQueryOptions) => {
@@ -147,7 +147,7 @@ list.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\OpnameController::list
-* @see app/Http/Controllers/OpnameController.php:313
+* @see app/Http/Controllers/OpnameController.php:325
 * @route '/api/opname/list'
 */
 list.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -157,7 +157,7 @@ list.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\OpnameController::list
-* @see app/Http/Controllers/OpnameController.php:313
+* @see app/Http/Controllers/OpnameController.php:325
 * @route '/api/opname/list'
 */
 list.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -167,7 +167,7 @@ list.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\OpnameController::search
-* @see app/Http/Controllers/OpnameController.php:372
+* @see app/Http/Controllers/OpnameController.php:384
 * @route '/api/opname/search'
 */
 export const search = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -182,7 +182,7 @@ search.definition = {
 
 /**
 * @see \App\Http\Controllers\OpnameController::search
-* @see app/Http/Controllers/OpnameController.php:372
+* @see app/Http/Controllers/OpnameController.php:384
 * @route '/api/opname/search'
 */
 search.url = (options?: RouteQueryOptions) => {
@@ -191,7 +191,7 @@ search.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\OpnameController::search
-* @see app/Http/Controllers/OpnameController.php:372
+* @see app/Http/Controllers/OpnameController.php:384
 * @route '/api/opname/search'
 */
 search.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -201,7 +201,7 @@ search.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\OpnameController::search
-* @see app/Http/Controllers/OpnameController.php:372
+* @see app/Http/Controllers/OpnameController.php:384
 * @route '/api/opname/search'
 */
 search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -211,7 +211,7 @@ search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\OpnameController::deleteMethod
-* @see app/Http/Controllers/OpnameController.php:441
+* @see app/Http/Controllers/OpnameController.php:453
 * @route '/api/opname/delete'
 */
 export const deleteMethod = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -226,7 +226,7 @@ deleteMethod.definition = {
 
 /**
 * @see \App\Http\Controllers\OpnameController::deleteMethod
-* @see app/Http/Controllers/OpnameController.php:441
+* @see app/Http/Controllers/OpnameController.php:453
 * @route '/api/opname/delete'
 */
 deleteMethod.url = (options?: RouteQueryOptions) => {
@@ -235,7 +235,7 @@ deleteMethod.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\OpnameController::deleteMethod
-* @see app/Http/Controllers/OpnameController.php:441
+* @see app/Http/Controllers/OpnameController.php:453
 * @route '/api/opname/delete'
 */
 deleteMethod.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

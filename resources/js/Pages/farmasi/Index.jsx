@@ -58,6 +58,30 @@ const hutangObatUrl = (() => {
     }
 })();
 
+const sisaStokUrl = (() => {
+    try {
+        return route("farmasi.sisa-stok", {}, false);
+    } catch (_) {
+        return "/farmasi/sisa-stok";
+    }
+})();
+
+const sirkulasiObatUrl = (() => {
+    try {
+        return route("farmasi.sirkulasi-obat", {}, false);
+    } catch (_) {
+        return "/farmasi/sirkulasi-obat";
+    }
+})();
+
+const cekStokObatUrl = (() => {
+    try {
+        return route("farmasi.cek-stok-obat", {}, false);
+    } catch (_) {
+        return "/farmasi/cek-stok-obat";
+    }
+})();
+
 const tabs = [
     {
         key: "master",
@@ -182,23 +206,37 @@ const tabs = [
             },
         ],
     },
-    {
-        key: "laporan",
-        label: "Laporan",
-        items: [
             {
-                title: "Dashboard & Analitik",
-                description: "Grafik penjualan, pembelian, dan utilisasi obat",
-                href: route("farmasi.dashboard", {}, false),
-                icon: ChartBarIcon,
-                accent: "from-indigo-500 to-blue-500",
-            },
-            {
-                title: "Laporan Penjualan",
-                description:
-                    "Ringkasan transaksi penjualan berdasarkan periode",
-                href: route("farmasi.penjualan-obat", {}, false),
-                icon: BanknotesIcon,
+                key: "laporan",
+                label: "Laporan",
+                items: [
+                    {
+                        title: "Dashboard & Analitik",
+                        description: "Grafik penjualan, pembelian, dan utilisasi obat",
+                        href: route("farmasi.dashboard", {}, false),
+                        icon: ChartBarIcon,
+                        accent: "from-indigo-500 to-blue-500",
+                    },
+                    {
+                        title: "Sirkulasi Obat",
+                        description: "Pergerakan stok per lokasi dan periode",
+                        href: sirkulasiObatUrl,
+                        icon: ChartBarIcon,
+                        accent: "from-blue-500 to-indigo-500",
+                    },
+                    {
+                        title: "Cek Stok Obat",
+                        description: "Cek stok per lokasi dengan kata kunci",
+                        href: cekStokObatUrl,
+                        icon: RectangleStackIcon,
+                        accent: "from-lime-500 to-green-500",
+                    },
+                    {
+                        title: "Laporan Penjualan",
+                        description:
+                            "Ringkasan transaksi penjualan berdasarkan periode",
+                        href: route("farmasi.penjualan-obat", {}, false),
+                        icon: BanknotesIcon,
                 accent: "from-fuchsia-500 to-pink-500",
             },
             {
@@ -221,6 +259,13 @@ const tabs = [
                 href: route("farmasi.riwayat-transaksi-gudang", {}, false),
                 icon: ClipboardDocumentListIcon,
                 accent: "from-amber-500 to-orange-500",
+            },
+            {
+                title: "Sisa Stok",
+                description: "Sisa stok per gudang dan nilai aset",
+                href: sisaStokUrl,
+                icon: RectangleStackIcon,
+                accent: "from-lime-500 to-green-500",
             },
         ],
     },

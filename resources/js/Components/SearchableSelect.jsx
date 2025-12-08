@@ -416,6 +416,69 @@ const REFERENSI_CONFIG = {
             }));
         },
     },
+    farmasi_jenis: {
+        supportsSearch: true,
+        defaultParams: { q: "" },
+        buildUrl: ({ q = "" } = {}) => {
+            const params = new URLSearchParams({ q });
+            return `/farmasi/jenis-obat?${params.toString()}`;
+        },
+        parse: (json) => {
+            const items = Array.isArray(json?.items) ? json.items : [];
+            return items.map((it) => {
+                const kode = it?.kdjns || "";
+                const nama = it?.nama || "";
+                return {
+                    value: nama,
+                    label: `${kode} — ${nama}`.trim(),
+                    kdjns: kode,
+                    nama,
+                };
+            });
+        },
+    },
+    farmasi_kategori: {
+        supportsSearch: true,
+        defaultParams: { q: "" },
+        buildUrl: ({ q = "" } = {}) => {
+            const params = new URLSearchParams({ q });
+            return `/farmasi/kategori-obat?${params.toString()}`;
+        },
+        parse: (json) => {
+            const items = Array.isArray(json?.items) ? json.items : [];
+            return items.map((it) => {
+                const kode = it?.kode || "";
+                const nama = it?.nama || "";
+                return {
+                    value: nama,
+                    label: `${kode} — ${nama}`.trim(),
+                    kode,
+                    nama,
+                };
+            });
+        },
+    },
+    farmasi_golongan: {
+        supportsSearch: true,
+        defaultParams: { q: "" },
+        buildUrl: ({ q = "" } = {}) => {
+            const params = new URLSearchParams({ q });
+            return `/farmasi/golongan-obat?${params.toString()}`;
+        },
+        parse: (json) => {
+            const items = Array.isArray(json?.items) ? json.items : [];
+            return items.map((it) => {
+                const kode = it?.kode || "";
+                const nama = it?.nama || "";
+                return {
+                    value: nama,
+                    label: `${kode} — ${nama}`.trim(),
+                    kode,
+                    nama,
+                };
+            });
+        },
+    },
 };
 
 const SearchableSelect = ({

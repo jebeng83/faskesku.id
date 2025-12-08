@@ -610,7 +610,7 @@ export default function PembelianObat() {
                     items: items.map((item) => ({
                         kode_brng: item.kode_brng,
                         kode_sat: resolveKodeSat(item),
-                        no_batch: batchEnabled ? item.no_batch || null : null,
+                        no_batch: batchEnabled ? (item.no_batch ?? '') : '',
                         kadaluarsa:
                             item.kadaluarsa ||
                             new Date(Date.now() + 3 * 365 * 24 * 60 * 60 * 1000)
@@ -678,7 +678,7 @@ export default function PembelianObat() {
                 items: items.map((item) => ({
                     kode_brng: item.kode_brng,
                     kode_sat: resolveKodeSat(item),
-                    no_batch: batchEnabled ? item.no_batch || null : null,
+                    no_batch: batchEnabled ? (item.no_batch ?? '') : '',
                     kadaluarsa:
                         item.kadaluarsa ||
                         new Date(Date.now() + 3 * 365 * 24 * 60 * 60 * 1000)

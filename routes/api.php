@@ -14,6 +14,8 @@ use App\Http\Controllers\API\WilayahController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\DataBarangController;
 use App\Http\Controllers\Farmasi\SetHargaObatController;
+use App\Http\Controllers\Farmasi\SisaStokController;
+use App\Http\Controllers\Farmasi\SirkulasiObatController;
 use App\Http\Controllers\GudangBarangController;
 use App\Http\Controllers\JadwalController;
 use App\Http\Controllers\Kepegawaian\DepartemenController;
@@ -217,6 +219,9 @@ Route::prefix('public')->group(function () {
 
     // Barang search endpoint (used by Pembelian Obat page)
     Route::get('/barang/search', [BarangController::class, 'search'])->name('api.barang.search');
+
+    Route::get('/inventori/sisa-stok', [SisaStokController::class, 'index'])->name('api.inventori.sisa-stok');
+    Route::get('/inventori/sirkulasi-barang', [SirkulasiObatController::class, 'index'])->name('api.inventori.sirkulasi-barang');
 
     // DataBarang price update endpoints (used by Pembelian Obat page)
     Route::put('/databarang/update-harga/{kode_brng}', [DataBarangController::class, 'updateHarga'])

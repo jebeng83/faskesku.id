@@ -906,8 +906,21 @@ export default function StokOpname({ auth }) {
                                             </TableHeader>
                                             <TableBody>
                                                 {searchResults.map(
-                                                    (item, index) => (
-                                                        <TableRow key={index}>
+                                                    (item, index) => {
+                                                        const isAlreadyAdded = opnameItems.some(
+                                                            (opnameItem) =>
+                                                                opnameItem.kode_brng === item.kode_brng &&
+                                                                (opnameItem.no_batch ?? null) === (item.no_batch ?? null) &&
+                                                                (opnameItem.no_faktur ?? null) === (item.no_faktur ?? null)
+                                                        );
+                                                        return (
+                                                        <TableRow
+                                                            key={index}
+                                                            className={`cursor-pointer hover:bg-blue-50/40 dark:hover:bg-blue-900/20`}
+                                                            onClick={() => {
+                                                                if (!isAlreadyAdded) addItemToOpname(item);
+                                                            }}
+                                                        >
                                                             <TableCell className="font-mono">
                                                                 {item.kode_brng}
                                                             </TableCell>
@@ -936,27 +949,16 @@ export default function StokOpname({ auth }) {
                                                                         )
                                                                     }
                                                                     size="sm"
-                                                                    disabled={opnameItems.some(
-                                                                        (
-                                                                            opnameItem
-                                                                        ) =>
-                                                                            opnameItem.kode_brng ===
-                                                                            item.kode_brng
-                                                                    )}
+                                                                    disabled={isAlreadyAdded}
                                                                 >
-                                                                    {opnameItems.some(
-                                                                        (
-                                                                            opnameItem
-                                                                        ) =>
-                                                                            opnameItem.kode_brng ===
-                                                                            item.kode_brng
-                                                                    )
+                                                                    {isAlreadyAdded
                                                                         ? "Sudah Ditambah"
                                                                         : "Tambah"}
                                                                 </Button>
                                                             </TableCell>
                                                         </TableRow>
-                                                    )
+                                                        );
+                                                    }
                                                 )}
                                                 {searchResults.length === 0 &&
                                                     searchTerm &&

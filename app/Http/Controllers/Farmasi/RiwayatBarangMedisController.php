@@ -118,12 +118,13 @@ class RiwayatBarangMedisController extends Controller
         $status = (string) $request->input('status', '');
         $keterangan = (string) $request->input('keterangan', '');
 
-        $stokAwal = (double) (DB::table('gudangbarang')
+        $prev = DB::table('riwayat_barang_medis')
             ->where('kode_brng', $kode)
             ->where('kd_bangsal', $kdBangsal)
-            ->where('no_batch', $noBatch)
-            ->where('no_faktur', $noFaktur)
-            ->value('stok') ?? 0);
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('jam', 'desc')
+            ->first();
+        $stokAwal = (double) ($prev->stok_akhir ?? 0);
 
         if ($posisi === 'Opname') {
             $keluar = 0;
