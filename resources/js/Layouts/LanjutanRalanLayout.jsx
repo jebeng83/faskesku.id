@@ -6,9 +6,10 @@ import LanjutanRalanSidebar from "@/Components/LanjutanRalanSidebar";
 import Breadcrumb from "@/Components/Breadcrumb";
 
 export default function LanjutanRalanLayout({
-	title = "Lanjutan Rawat Jalan",
-	children,
-	menuConfig = {},
+    title = "Lanjutan Rawat Jalan",
+    children,
+    menuConfig = {},
+    context = "ralan",
 }) {
 	const { auth, menu_hierarchy, current_menu } = usePage().props;
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -78,22 +79,23 @@ export default function LanjutanRalanLayout({
 	return (
 		<div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
 			{/* Sidebar */}
-			<aside
-				className={`fixed top-0 left-0 h-full bg-gradient-to-b from-blue-600 via-blue-700 to-blue-800 dark:from-blue-900 dark:via-blue-950 dark:to-black shadow-2xl border-r border-blue-500/20 dark:border-blue-800 z-40 transition-all duration-300 ${
-					isSidebarOpen
-						? "w-64 translate-x-0"
-						: isSidebarCollapsed
-						? "w-16 -translate-x-full lg:translate-x-0"
-						: "w-64 -translate-x-full lg:translate-x-0"
-				}`}
-			>
-				<LanjutanRalanSidebar
-					collapsed={isSidebarCollapsed}
-					title={title}
-					menuConfig={menuConfig}
-					onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-				/>
-			</aside>
+            <aside
+                className={`fixed top-0 left-0 h-full bg-gradient-to-b from-blue-600 via-blue-700 to-blue-800 dark:from-blue-900 dark:via-blue-950 dark:to-black shadow-2xl border-r border-blue-500/20 dark:border-blue-800 z-40 transition-all duration-300 ${
+                    isSidebarOpen
+                        ? "w-64 translate-x-0"
+                        : isSidebarCollapsed
+                        ? "w-16 -translate-x-full lg:translate-x-0"
+                        : "w-64 -translate-x-full lg:translate-x-0"
+                }`}
+            >
+                <LanjutanRalanSidebar
+                    context={context}
+                    collapsed={isSidebarCollapsed}
+                    title={title}
+                    menuConfig={menuConfig}
+                    onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                />
+            </aside>
 
 			{/* Mobile sidebar overlay */}
 			{isSidebarOpen && (
@@ -104,16 +106,16 @@ export default function LanjutanRalanLayout({
 			)}
 
 			{/* Top Navigation Bar - Fixed Header */}
-			<header
-				className={`fixed top-0 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50 flex-shrink-0 transition-all duration-300 ${
-					isSidebarOpen
-						? "left-64 right-0"
-						: isSidebarCollapsed
-						? "left-0 right-0 lg:left-16"
-						: "left-0 right-0 lg:left-64"
-				}`}
-			>
-				<div className="h-full flex items-center justify-between px-4">
+            <header
+                className={`fixed top-0 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50 flex-shrink-0 transition-all duration-300 ${
+                    isSidebarOpen
+                        ? "left-64 right-0"
+                        : isSidebarCollapsed
+                        ? "left-0 right-0 lg:left-16"
+                        : "left-0 right-0 lg:left-64"
+                }`}
+            >
+                <div className="h-full flex items-center justify-between px-4">
 					{/* Left side - Back button + Breadcrumb */}
 					<div className="flex items-center gap-3">
 						{/* Back Button */}
@@ -143,27 +145,27 @@ export default function LanjutanRalanLayout({
 						</button>
 
 						{/* Breadcrumb Navigation */}
-						<nav className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-							<a 
-								href={route('dashboard')} 
-								className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-							>
-								Dashboard
-							</a>
-							<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-							</svg>
-							<a 
-								href={route('rawat-jalan.index')} 
-								className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-							>
-								Rawat Jalan
-							</a>
-							<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-							</svg>
-							<span className="text-gray-900 dark:text-white font-medium">Lanjutan</span>
-						</nav>
+                        <nav className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+                            <a
+                                href={route('dashboard')}
+                                className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                            >
+                                Dashboard
+                            </a>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                            <a
+                                href={context === 'ranap' ? route('rawat-inap.index') : route('rawat-jalan.index')}
+                                className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                            >
+                                {context === 'ranap' ? 'Rawat Inap' : 'Rawat Jalan'}
+                            </a>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                            <span className="text-gray-900 dark:text-white font-medium">Lanjutan</span>
+                        </nav>
 					</div>
 
 					{/* Right side - User menu */}
