@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import AppLayout from '@/Layouts/AppLayout';
+import LanjutanRalanLayout from '@/Layouts/LanjutanRalanLayout';
 import RiwayatPemeriksaan from './components/RiwayatPemeriksaan';
 import CpptSoap from '../RawatJalan/components/CpptSoap';
 import Resep from './components/Resep';
@@ -71,7 +71,11 @@ export default function Lanjutan({ rawatInap, params }) {
     };
 
     return (
-        <AppLayout>
+        <LanjutanRalanLayout
+            title="Lanjutan Rawat Inap"
+            context="ranap"
+            menuConfig={{ activeTab, onTabChange: handleTabChange }}
+        >
             <Head title={`Lanjutan Rawat Inap${params?.no_rawat ? ' - ' + params.no_rawat : ''}`} />
             <div className="px-4 sm:px-6 lg:px-8 py-6">
                 {/* Header */}
@@ -206,6 +210,6 @@ export default function Lanjutan({ rawatInap, params }) {
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </LanjutanRalanLayout>
     );
 }

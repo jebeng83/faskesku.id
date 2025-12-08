@@ -575,6 +575,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/menus/reorder', [MenuController::class, 'reorder'])->name('menus.reorder');
 
     // Pelayanan Medis routes
+    Route::get('rawat-inap/lanjutan', [RawatInapController::class, 'lanjutan'])->name('rawat-inap.lanjutan');
     Route::resource('rawat-inap', RawatInapController::class);
     Route::resource('igd', IGDController::class);
     Route::resource('kamar-operasi', KamarOperasiController::class);
