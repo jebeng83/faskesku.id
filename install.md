@@ -4,7 +4,7 @@ Langkah praktis untuk menyiapkan dan build aplikasi ini di server produksi. Ikut
 
 ## Prasyarat
 - Node.js ≥ 18 dan npm ≥ 10
-- PHP ≥ 8.1 (disarankan 8.2) dan Composer ≥ 2
+- PHP 8.2.4 dan Composer ≥ 2
 - Web server mengarah ke direktori `public/`
 - Database (MySQL/MariaDB) sudah tersedia
 
