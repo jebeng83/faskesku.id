@@ -75,6 +75,16 @@ function round(value, decimals = 2) {
     );
 }
 
+function formatIDR(n) {
+    const v = Number(n) || 0;
+    return currency.format(v);
+}
+
+function parseIDRInput(s) {
+    const d = String(s || "").replace(/[^0-9]/g, "");
+    return Number(d || 0);
+}
+
 // Fungsi untuk normalisasi tanggal ke format yyyy-MM-dd untuk input type="date"
 // Menggunakan timezone aplikasi (Asia/Jakarta) untuk konsistensi
 function normalizeDateForInput(dateValue, useAppTimezone = true) {
@@ -826,28 +836,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             return false;
         }
 
-        // Validasi: uang kembali harus = 0 sebelum menyimpan (sesuai requirement)
-        if (uangKembaliHitung > 0) {
-            notifyWarning(
-                "Nominal bayar melebihi total tagihan + PPN. Atur kembali agar uang kembali = 0 sebelum menyimpan."
-            );
-            return false;
-        }
-
-        // Validasi: bayar + piutang harus sama dengan total tagihan
-        const totalPembayaran = nominalBayar + nominalPiutang;
-        if (Math.abs(totalPembayaran - totalTagihan) > 0.01) {
-            notifyWarning(
-                `Jumlah Bayar (${currency.format(
-                    nominalBayar
-                )}) + Piutang (${currency.format(
-                    nominalPiutang
-                )}) harus sama dengan Total Tagihan (${currency.format(
-                    totalTagihan
-                )}).`
-            );
-            return false;
-        }
+        // Izinkan uang kembali; nominal akan dinormalisasi saat snapshot
         if ((Number(bayar) || 0) > 0 && !akunBayar) {
             notifyWarning(
                 "Akun Bayar wajib dipilih ketika nominal bayar > 0 (Kas/Bank)."
@@ -1121,6 +1110,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         akunBayar,
         akunPiutang,
         setBayar, // Tambahkan setBayar untuk menyesuaikan nominal bayar setelah snapshot
+        setPiutang,
     }) => {
         const ok = await validateBeforeSnapshot({
             selectedCategories,
@@ -1132,23 +1122,11 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         });
         if (!ok) return;
 
-        // Konsistensi nominal: bayar + piutang harus sama dengan totalWithPpn
-        const sumPay = Math.round(
-            (Number(bayar) || 0) + (Number(piutang) || 0)
-        );
-        const twp = Math.round(Number(totalWithPpn) || 0);
-        if (sumPay !== twp) {
-            notifyWarning(
-                `Jumlah Bayar (${currency.format(
-                    Number(bayar) || 0
-                )}) + Piutang (${currency.format(
-                    Number(piutang) || 0
-                )}) tidak sama dengan Total (${currency.format(
-                    Number(totalWithPpn) || 0
-                )}). Periksa kembali sebelum menyimpan.`
-            );
-            return;
-        }
+        const totalNominal = Number(totalWithPpn) || 0;
+        const bayarRaw = Number(bayar) || 0;
+        const bayarNormalized = Math.min(bayarRaw, totalNominal);
+        const piutangNormalized = Math.max(totalNominal - bayarNormalized, 0);
+        const kembaliNormalized = Math.max(bayarRaw - totalNominal, 0);
 
         // Bangun objek toggles: label -> boolean
         const toggles = {};
@@ -1237,19 +1215,20 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
 
                 // Jika total snapshot lebih kecil dari UI, dan bayar sudah diisi sesuai UI total,
                 // sesuaikan bayar ke total snapshot untuk menghindari error validasi
-                if (difference < 0 && Number(bayar) > 0) {
+                if (difference < 0 && bayarNormalized > 0) {
                     const newTotalWithPpn = Math.round(
                         gt * (1 + (Number(ppnPercent) || 0) / 100)
                     );
                     if (
                         Math.abs(
-                            Number(bayar) -
+                            bayarNormalized -
                                 calculatedSubtotal *
                                     (1 + (Number(ppnPercent) || 0) / 100)
                         ) < 0.01
                     ) {
                         // User memasukkan bayar sesuai dengan total UI lama, sesuaikan ke total baru
-                        setBayar(newTotalWithPpn);
+                        if (typeof setBayar === "function") setBayar(newTotalWithPpn);
+                        if (typeof setPiutang === "function") setPiutang(0);
                         notifyInfo(
                             `Total tagihan berubah setelah snapshot (${currency.format(
                                 calculatedSubtotal
@@ -1306,8 +1285,8 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                     no_rawat: noRawat,
                     akun_bayar: akunBayar || null,
                     akun_piutang: akunPiutang || null,
-                    bayar: Number(bayar) || 0,
-                    piutang: Number(piutang) || 0,
+                    bayar: bayarNormalized,
+                    piutang: piutangNormalized,
                     ppn_percent: Number(ppnPercent) || 0,
                     // Akun Pendapatan (kredit) tidak dikirim dari UI; backend akan memilih otomatis dari master rekening
                 }
@@ -1377,20 +1356,23 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         }
 
         // 5) Pesan tambahan sesuai kondisi pembayaran (placeholder untuk aturan Java)
-        if (piutang > 0) {
+        if (piutangNormalized > 0) {
             notifyInfo(
                 `Terdapat piutang sebesar ${currency.format(
-                    piutang
+                    piutangNormalized
                 )}. Pastikan penagihan/rekonsiliasi dilakukan.`
             );
         }
-        if (kembali > 0) {
+        if (kembaliNormalized > 0) {
             notifyWarning(
                 `Uang kembali sebesar ${currency.format(
-                    kembali
+                    kembaliNormalized
                 )}. Catatan: fitur multi-cara bayar belum didukung di UI ini, dan pada Java jika cara bayar > 1 maka kembali wajib 0.`
             );
         }
+
+        if (typeof setBayar === "function") setBayar(bayarNormalized);
+        if (typeof setPiutang === "function") setPiutang(piutangNormalized);
 
         // Refresh UI
         await loadData();
@@ -1836,6 +1818,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                             akunBayar,
                             akunPiutang,
                             setBayar, // Tambahkan setBayar dari PembayaranTab
+                            setPiutang,
                         }) =>
                             handleSnapshot({
                                 selectedCategories,
@@ -1848,6 +1831,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                 akunBayar,
                                 akunPiutang,
                                 setBayar, // Tambahkan setBayar untuk menyesuaikan nominal bayar setelah snapshot
+                                setPiutang,
                             })
                         }
                     />
@@ -2220,6 +2204,9 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice }) {
 
     const [ppnPercent, setPpnPercent] = React.useState(0);
     const [bayar, setBayar] = React.useState(0);
+    const [piutang, setPiutang] = React.useState(0);
+    const [bayarText, setBayarText] = React.useState("");
+    const [piutangText, setPiutangText] = React.useState("");
     // Akun bayar (Kas/Bank) dan akun piutang yang dipilih melalui SearchableSelect
     const [akunBayar, setAkunBayar] = React.useState("");
     const [akunBayarData, setAkunBayarData] = React.useState(null);
@@ -2235,17 +2222,59 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice }) {
     }, [subtotal, ppnPercent]);
 
     React.useEffect(() => {
-        setBayar(totalWithPpn || 0);
+        const b = totalWithPpn || 0;
+        setBayar(b);
+        setPiutang(0);
+        setBayarText(formatIDR(b));
+        setPiutangText(formatIDR(0));
     }, [totalWithPpn]);
+
+    React.useEffect(() => {
+        (async () => {
+            try {
+                if (akunBayar) return;
+                const res = await axios.get(
+                    "/api/akutansi/akun-bayar",
+                    { params: { per_page: 50, q: "Kas Kasir" } }
+                );
+                const items = Array.isArray(res?.data?.data)
+                    ? res.data.data
+                    : [];
+                const found = items.find(
+                    (it) =>
+                        (it?.nama_bayar || "")
+                            .toLowerCase()
+                            .includes("kas kasir")
+                );
+                if (found && found.kd_rek) {
+                    const opt = {
+                        value: found.kd_rek,
+                        kd_rek: found.kd_rek,
+                        nm_rek: found.nm_rek || "",
+                        nama_bayar: found.nama_bayar || "",
+                        ppn:
+                            typeof found.ppn === "number"
+                                ? found.ppn
+                                : Number(found.ppn) || 0,
+                        label: `${found.nama_bayar || ""} — ${found.kd_rek}$${
+                            found.nm_rek ? " — " + found.nm_rek : ""
+                        }`.replace("$$", ""),
+                    };
+                    setAkunBayar(found.kd_rek);
+                    setAkunBayarData(opt);
+                    if (typeof opt.ppn === "number") {
+                        setPpnPercent(opt.ppn);
+                    }
+                }
+            } catch (e) {
+                // ignore default failure
+            }
+        })();
+    }, [akunBayar]);
 
     const kembali = React.useMemo(() => {
         const k = Number(bayar) - (totalWithPpn || 0);
         return k > 0 ? k : 0;
-    }, [bayar, totalWithPpn]);
-
-    const piutang = React.useMemo(() => {
-        const sisa = (totalWithPpn || 0) - Number(bayar);
-        return sisa > 0 ? sisa : 0;
     }, [bayar, totalWithPpn]);
 
     return (
@@ -2311,8 +2340,19 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice }) {
                 <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto] gap-2">
                     <Field label="Bayar : Rp">
                         <input
-                            readOnly
-                            value={currency.format(bayar || 0)}
+                            type="text"
+                            inputMode="numeric"
+                            value={bayarText}
+                            onChange={(e) => {
+                                const raw = e.target.value;
+                                const val = parseIDRInput(raw);
+                                setBayar(val);
+                                setBayarText(formatIDR(val));
+                                const sisa = (totalWithPpn || 0) - val;
+                                const p = sisa > 0 ? sisa : 0;
+                                setPiutang(p);
+                                setPiutangText(formatIDR(p));
+                            }}
                             className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
                         />
                     </Field>
@@ -2334,7 +2374,13 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice }) {
                         />
                     </Field>
                     <button
-                        onClick={() => setBayar(totalWithPpn || 0)}
+                        onClick={() => {
+                            const b = totalWithPpn || 0;
+                            setBayar(b);
+                            setPiutang(0);
+                            setBayarText(formatIDR(b));
+                            setPiutangText(formatIDR(0));
+                        }}
                         className="self-end px-3 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800"
                         title="Bayar penuh"
                     >
@@ -2345,8 +2391,19 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice }) {
                 <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto] gap-2">
                     <Field label="Piutang : Rp">
                         <input
-                            readOnly
-                            value={currency.format(piutang || 0)}
+                            type="text"
+                            inputMode="numeric"
+                            value={piutangText}
+                            onChange={(e) => {
+                                const raw = e.target.value;
+                                const val = parseIDRInput(raw);
+                                setPiutang(val);
+                                setPiutangText(formatIDR(val));
+                                const bayarBaru = (totalWithPpn || 0) - val;
+                                const b = bayarBaru > 0 ? bayarBaru : 0;
+                                setBayar(b);
+                                setBayarText(formatIDR(b));
+                            }}
                             className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
                         />
                     </Field>
@@ -2362,7 +2419,13 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice }) {
                         />
                     </Field>
                     <button
-                        onClick={() => setBayar(0)}
+                        onClick={() => {
+                            const p = totalWithPpn || 0;
+                            setBayar(0);
+                            setPiutang(p);
+                            setBayarText(formatIDR(0));
+                            setPiutangText(formatIDR(p));
+                        }}
                         className="self-end px-3 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800"
                         title="Jadikan semua piutang"
                     >
@@ -2395,6 +2458,7 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice }) {
                             kembali,
                             piutang,
                             setBayar, // Tambahkan setBayar untuk menyesuaikan nominal bayar setelah snapshot
+                            setPiutang,
                             // Kirim detail akun sesuai sumber Akun Bayar/Akun Piutang
                             akunBayar: akunBayar
                                 ? {

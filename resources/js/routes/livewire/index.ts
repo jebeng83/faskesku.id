@@ -35,7 +35,7 @@ update.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \Livewire\Features\SupportFileUploads\FileUploadController::uploadFile
-* @see vendor/livewire/livewire/src/Features/SupportFileUploads/FileUploadController.php:22
+* @see vendor/livewire/livewire/src/Features/SupportFileUploads/FileUploadController.php:27
 * @route '/livewire/upload-file'
 */
 export const uploadFile = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -50,7 +50,7 @@ uploadFile.definition = {
 
 /**
 * @see \Livewire\Features\SupportFileUploads\FileUploadController::uploadFile
-* @see vendor/livewire/livewire/src/Features/SupportFileUploads/FileUploadController.php:22
+* @see vendor/livewire/livewire/src/Features/SupportFileUploads/FileUploadController.php:27
 * @route '/livewire/upload-file'
 */
 uploadFile.url = (options?: RouteQueryOptions) => {
@@ -59,7 +59,7 @@ uploadFile.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \Livewire\Features\SupportFileUploads\FileUploadController::uploadFile
-* @see vendor/livewire/livewire/src/Features/SupportFileUploads/FileUploadController.php:22
+* @see vendor/livewire/livewire/src/Features/SupportFileUploads/FileUploadController.php:27
 * @route '/livewire/upload-file'
 */
 uploadFile.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

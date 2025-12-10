@@ -4,7 +4,7 @@ Panduan singkat untuk menyiapkan aplikasi di server produksi dengan Laravel Octa
 
 ## Prasyarat
 - Node.js ≥ 18 dan npm ≥ 10
-- PHP ≥ 8.2, Composer ≥ 2
+- PHP 8.2.4, Composer ≥ 2
 - MySQL/MariaDB tersedia dan kredensial valid
 - Laravel Octane terpasang, server FrankenPHP tersedia
 
