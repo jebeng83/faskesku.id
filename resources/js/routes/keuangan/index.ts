@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
-* @see routes/web.php:1099
+* @see routes/web.php:1069
 * @route '/keuangan'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1099
+* @see routes/web.php:1069
 * @route '/keuangan'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1099
+* @see routes/web.php:1069
 * @route '/keuangan'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1099
+* @see routes/web.php:1069
 * @route '/keuangan'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -40,7 +40,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1104
+* @see routes/web.php:1074
 * @route '/keuangan/dashboard'
 */
 export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -54,7 +54,7 @@ dashboard.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1104
+* @see routes/web.php:1074
 * @route '/keuangan/dashboard'
 */
 dashboard.url = (options?: RouteQueryOptions) => {
@@ -62,7 +62,7 @@ dashboard.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1104
+* @see routes/web.php:1074
 * @route '/keuangan/dashboard'
 */
 dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -71,7 +71,7 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1104
+* @see routes/web.php:1074
 * @route '/keuangan/dashboard'
 */
 dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -80,7 +80,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1109
+* @see routes/web.php:1079
 * @route '/keuangan/laporan-keuangan'
 */
 export const laporanKeuangan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ laporanKeuangan.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1109
+* @see routes/web.php:1079
 * @route '/keuangan/laporan-keuangan'
 */
 laporanKeuangan.url = (options?: RouteQueryOptions) => {
@@ -102,7 +102,7 @@ laporanKeuangan.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1109
+* @see routes/web.php:1079
 * @route '/keuangan/laporan-keuangan'
 */
 laporanKeuangan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -111,7 +111,7 @@ laporanKeuangan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 })
 
 /**
-* @see routes/web.php:1109
+* @see routes/web.php:1079
 * @route '/keuangan/laporan-keuangan'
 */
 laporanKeuangan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -120,7 +120,7 @@ laporanKeuangan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
 })
 
 /**
-* @see routes/web.php:1114
+* @see routes/web.php:1084
 * @route '/keuangan/kas-bank'
 */
 export const kasBank = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -134,7 +134,7 @@ kasBank.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1114
+* @see routes/web.php:1084
 * @route '/keuangan/kas-bank'
 */
 kasBank.url = (options?: RouteQueryOptions) => {
@@ -142,7 +142,7 @@ kasBank.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1114
+* @see routes/web.php:1084
 * @route '/keuangan/kas-bank'
 */
 kasBank.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -151,7 +151,7 @@ kasBank.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1114
+* @see routes/web.php:1084
 * @route '/keuangan/kas-bank'
 */
 kasBank.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -160,7 +160,7 @@ kasBank.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1119
+* @see routes/web.php:1089
 * @route '/keuangan/piutang'
 */
 export const piutang = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -174,7 +174,7 @@ piutang.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1119
+* @see routes/web.php:1089
 * @route '/keuangan/piutang'
 */
 piutang.url = (options?: RouteQueryOptions) => {
@@ -182,7 +182,7 @@ piutang.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1119
+* @see routes/web.php:1089
 * @route '/keuangan/piutang'
 */
 piutang.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -191,7 +191,7 @@ piutang.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1119
+* @see routes/web.php:1089
 * @route '/keuangan/piutang'
 */
 piutang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -200,7 +200,7 @@ piutang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1124
+* @see routes/web.php:1094
 * @route '/keuangan/hutang'
 */
 export const hutang = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -214,7 +214,7 @@ hutang.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1124
+* @see routes/web.php:1094
 * @route '/keuangan/hutang'
 */
 hutang.url = (options?: RouteQueryOptions) => {
@@ -222,7 +222,7 @@ hutang.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1124
+* @see routes/web.php:1094
 * @route '/keuangan/hutang'
 */
 hutang.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -231,7 +231,7 @@ hutang.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1124
+* @see routes/web.php:1094
 * @route '/keuangan/hutang'
 */
 hutang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -240,7 +240,7 @@ hutang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1129
+* @see routes/web.php:1099
 * @route '/keuangan/jurnal-umum'
 */
 export const jurnalUmum = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -254,7 +254,7 @@ jurnalUmum.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1129
+* @see routes/web.php:1099
 * @route '/keuangan/jurnal-umum'
 */
 jurnalUmum.url = (options?: RouteQueryOptions) => {
@@ -262,7 +262,7 @@ jurnalUmum.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1129
+* @see routes/web.php:1099
 * @route '/keuangan/jurnal-umum'
 */
 jurnalUmum.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -271,7 +271,7 @@ jurnalUmum.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1129
+* @see routes/web.php:1099
 * @route '/keuangan/jurnal-umum'
 */
 jurnalUmum.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -280,7 +280,7 @@ jurnalUmum.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1134
+* @see routes/web.php:1104
 * @route '/keuangan/buku-besar'
 */
 export const bukuBesar = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -294,7 +294,7 @@ bukuBesar.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1134
+* @see routes/web.php:1104
 * @route '/keuangan/buku-besar'
 */
 bukuBesar.url = (options?: RouteQueryOptions) => {
@@ -302,7 +302,7 @@ bukuBesar.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1134
+* @see routes/web.php:1104
 * @route '/keuangan/buku-besar'
 */
 bukuBesar.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -311,7 +311,7 @@ bukuBesar.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1134
+* @see routes/web.php:1104
 * @route '/keuangan/buku-besar'
 */
 bukuBesar.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -320,7 +320,7 @@ bukuBesar.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1139
+* @see routes/web.php:1109
 * @route '/keuangan/neraca'
 */
 export const neraca = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -334,7 +334,7 @@ neraca.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1139
+* @see routes/web.php:1109
 * @route '/keuangan/neraca'
 */
 neraca.url = (options?: RouteQueryOptions) => {
@@ -342,7 +342,7 @@ neraca.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1139
+* @see routes/web.php:1109
 * @route '/keuangan/neraca'
 */
 neraca.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -351,7 +351,7 @@ neraca.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1139
+* @see routes/web.php:1109
 * @route '/keuangan/neraca'
 */
 neraca.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -360,7 +360,7 @@ neraca.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1144
+* @see routes/web.php:1114
 * @route '/keuangan/laba-rugi'
 */
 export const labaRugi = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -374,7 +374,7 @@ labaRugi.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1144
+* @see routes/web.php:1114
 * @route '/keuangan/laba-rugi'
 */
 labaRugi.url = (options?: RouteQueryOptions) => {
@@ -382,7 +382,7 @@ labaRugi.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1144
+* @see routes/web.php:1114
 * @route '/keuangan/laba-rugi'
 */
 labaRugi.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -391,7 +391,7 @@ labaRugi.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1144
+* @see routes/web.php:1114
 * @route '/keuangan/laba-rugi'
 */
 labaRugi.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -400,7 +400,7 @@ labaRugi.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1149
+* @see routes/web.php:1119
 * @route '/keuangan/chart-accounts'
 */
 export const chartAccounts = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -414,7 +414,7 @@ chartAccounts.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1149
+* @see routes/web.php:1119
 * @route '/keuangan/chart-accounts'
 */
 chartAccounts.url = (options?: RouteQueryOptions) => {
@@ -422,7 +422,7 @@ chartAccounts.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1149
+* @see routes/web.php:1119
 * @route '/keuangan/chart-accounts'
 */
 chartAccounts.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -431,7 +431,7 @@ chartAccounts.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1149
+* @see routes/web.php:1119
 * @route '/keuangan/chart-accounts'
 */
 chartAccounts.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -440,7 +440,7 @@ chartAccounts.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 })
 
 /**
-* @see routes/web.php:1153
+* @see routes/web.php:1123
 * @route '/keuangan/mata-uang'
 */
 export const mataUang = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -454,7 +454,7 @@ mataUang.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1153
+* @see routes/web.php:1123
 * @route '/keuangan/mata-uang'
 */
 mataUang.url = (options?: RouteQueryOptions) => {
@@ -462,7 +462,7 @@ mataUang.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1153
+* @see routes/web.php:1123
 * @route '/keuangan/mata-uang'
 */
 mataUang.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -471,7 +471,7 @@ mataUang.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1153
+* @see routes/web.php:1123
 * @route '/keuangan/mata-uang'
 */
 mataUang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -480,7 +480,7 @@ mataUang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1157
+* @see routes/web.php:1127
 * @route '/keuangan/pajak'
 */
 export const pajak = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -494,7 +494,7 @@ pajak.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1157
+* @see routes/web.php:1127
 * @route '/keuangan/pajak'
 */
 pajak.url = (options?: RouteQueryOptions) => {
@@ -502,7 +502,7 @@ pajak.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1157
+* @see routes/web.php:1127
 * @route '/keuangan/pajak'
 */
 pajak.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -511,7 +511,7 @@ pajak.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1157
+* @see routes/web.php:1127
 * @route '/keuangan/pajak'
 */
 pajak.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -520,7 +520,7 @@ pajak.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1161
+* @see routes/web.php:1131
 * @route '/keuangan/kas-masuk'
 */
 export const kasMasuk = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -534,7 +534,7 @@ kasMasuk.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1161
+* @see routes/web.php:1131
 * @route '/keuangan/kas-masuk'
 */
 kasMasuk.url = (options?: RouteQueryOptions) => {
@@ -542,7 +542,7 @@ kasMasuk.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1161
+* @see routes/web.php:1131
 * @route '/keuangan/kas-masuk'
 */
 kasMasuk.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -551,7 +551,7 @@ kasMasuk.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1161
+* @see routes/web.php:1131
 * @route '/keuangan/kas-masuk'
 */
 kasMasuk.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -560,7 +560,7 @@ kasMasuk.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1165
+* @see routes/web.php:1135
 * @route '/keuangan/kas-keluar'
 */
 export const kasKeluar = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -574,7 +574,7 @@ kasKeluar.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1165
+* @see routes/web.php:1135
 * @route '/keuangan/kas-keluar'
 */
 kasKeluar.url = (options?: RouteQueryOptions) => {
@@ -582,7 +582,7 @@ kasKeluar.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1165
+* @see routes/web.php:1135
 * @route '/keuangan/kas-keluar'
 */
 kasKeluar.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -591,7 +591,7 @@ kasKeluar.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1165
+* @see routes/web.php:1135
 * @route '/keuangan/kas-keluar'
 */
 kasKeluar.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -600,7 +600,7 @@ kasKeluar.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1169
+* @see routes/web.php:1139
 * @route '/keuangan/arus-kas'
 */
 export const arusKas = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -614,7 +614,7 @@ arusKas.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1169
+* @see routes/web.php:1139
 * @route '/keuangan/arus-kas'
 */
 arusKas.url = (options?: RouteQueryOptions) => {
@@ -622,7 +622,7 @@ arusKas.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1169
+* @see routes/web.php:1139
 * @route '/keuangan/arus-kas'
 */
 arusKas.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -631,7 +631,7 @@ arusKas.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1169
+* @see routes/web.php:1139
 * @route '/keuangan/arus-kas'
 */
 arusKas.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -640,7 +640,7 @@ arusKas.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1173
+* @see routes/web.php:1143
 * @route '/keuangan/laporan-piutang'
 */
 export const laporanPiutang = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -654,7 +654,7 @@ laporanPiutang.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1173
+* @see routes/web.php:1143
 * @route '/keuangan/laporan-piutang'
 */
 laporanPiutang.url = (options?: RouteQueryOptions) => {
@@ -662,7 +662,7 @@ laporanPiutang.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1173
+* @see routes/web.php:1143
 * @route '/keuangan/laporan-piutang'
 */
 laporanPiutang.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -671,7 +671,7 @@ laporanPiutang.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1173
+* @see routes/web.php:1143
 * @route '/keuangan/laporan-piutang'
 */
 laporanPiutang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
