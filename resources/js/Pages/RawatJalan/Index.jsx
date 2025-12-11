@@ -111,7 +111,8 @@ function DropdownItem({ children, onClick, icon, variant = "default" }) {
 
 export default function Index({ rawatJalan, statusOptions, statusBayarOptions, filters, dokterOptions = [], poliOptions = [] }) {
     const [searchParams, setSearchParams] = useState({
-        tanggal: filters.tanggal || todayDateString(),
+        start_date: filters.start_date || todayDateString(),
+        end_date: filters.end_date || todayDateString(),
         status: filters.status || '',
         status_bayar: filters.status_bayar || '',
         nama_pasien: filters.nama_pasien || '',
@@ -123,9 +124,8 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
     // (misal: klik menu Rawat Jalan di sidebar) agar pilihan Dokter/Poli tidak "terkunci".
     useEffect(() => {
         setSearchParams((prev) => ({
-            // Untuk sinkronisasi, tanggal tidak dipaksa ke default hari ini.
-            // Jika filters.tanggal kosong, biarkan kosong agar reset bekerja sesuai harapan.
-            tanggal: filters.tanggal || '',
+            start_date: filters.start_date || todayDateString(),
+            end_date: filters.end_date || todayDateString(),
             status: filters.status || '',
             status_bayar: filters.status_bayar || '',
             nama_pasien: filters.nama_pasien || '',
@@ -134,7 +134,8 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         }));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
-        filters?.tanggal,
+        filters?.start_date,
+        filters?.end_date,
         filters?.status,
         filters?.status_bayar,
         filters?.nama_pasien,
@@ -161,8 +162,10 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
     };
 
     const resetFilters = () => {
+        const today = todayDateString();
         setSearchParams({
-            tanggal: '',
+            start_date: today,
+            end_date: today,
             status: '',
             status_bayar: '',
             nama_pasien: '',
@@ -170,7 +173,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
             kd_poli: ''
         });
         clearRawatJalanFilters();
-        router.get(route('rawat-jalan.index'));
+        router.get(route('rawat-jalan.index'), { start_date: today, end_date: today });
     };
 
     // Simpan ke localStorage ketika halaman dimuat dengan filters dari server (mis. dari URL)
@@ -235,12 +238,21 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                             <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Filter:</span>
                         </div>
                         
-                        <input
-                            type="date"
-                            value={searchParams.tanggal}
-                            onChange={(e) => handleFilterChange('tanggal', e.target.value)}
-                            className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
-                        />
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="date"
+                                value={searchParams.start_date}
+                                onChange={(e) => handleFilterChange('start_date', e.target.value)}
+                                className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
+                            />
+                            <span className="text-xs text-gray-500">s/d</span>
+                            <input
+                                type="date"
+                                value={searchParams.end_date}
+                                onChange={(e) => handleFilterChange('end_date', e.target.value)}
+                                className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
+                            />
+                        </div>
                         
                         <select
                             value={searchParams.status}
@@ -299,7 +311,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                             />
                         </div>
                         
-                        {(searchParams.tanggal || searchParams.status || searchParams.status_bayar || searchParams.nama_pasien || searchParams.kd_dokter || searchParams.kd_poli) && (
+                        {(searchParams.start_date || searchParams.end_date || searchParams.status || searchParams.status_bayar || searchParams.nama_pasien || searchParams.kd_dokter || searchParams.kd_poli) && (
                             <button
                                 onClick={resetFilters}
                                 className="ml-2 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
@@ -347,6 +359,8 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                             Nama Pasien
                                         </div>
                                     </th>
+
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Alamat</th>
                                     
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Poliklinik</th>
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Nama Dokter</th>
@@ -448,6 +462,12 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                             ) : (
                                                 <span className="text-gray-500 dark:text-gray-400 italic">Nama tidak tersedia</span>
                                             )}
+                                        </td>
+
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                                            <span className="block max-w-[24rem] truncate">
+                                                {item.patient?.alamat || item.alamat || '-'}
+                                            </span>
                                         </td>
                                         
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">

@@ -18,12 +18,35 @@ return new class extends Migration
             return;
         }
         Schema::table('users', function (Blueprint $table) {
-            $table->foreign('nik')
-                ->references('nik')
-                ->on('pegawai')
-                ->onUpdate('cascade')
-                ->onDelete('restrict');
+            if (! Schema::hasColumn('users', 'nik')) {
+                $table->string('nik', 20)->nullable()->after('email');
+            }
         });
+
+        try {
+            \Illuminate\Support\Facades\DB::statement('ALTER TABLE `users` DROP INDEX `users_nik_foreign`');
+        } catch (\Throwable $e) {
+            // ignore if index does not exist
+        }
+
+        try {
+            Schema::table('users', function (Blueprint $table) {
+                $table->foreign('nik', 'fk_users_pegawai_nik')
+                    ->references('nik')
+                    ->on('pegawai')
+                    ->onUpdate('cascade')
+                    ->onDelete('restrict');
+            });
+        } catch (\Throwable $e) {
+            // fallback: ensure index exists to aid lookups, skip FK if incompatible
+            try {
+                Schema::table('users', function (Blueprint $table) {
+                    $table->index('nik', 'users_nik_idx');
+                });
+            } catch (\Throwable $e2) {
+                // ignore
+            }
+        }
     }
 
     /**
@@ -32,8 +55,15 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // Drop FK on users.nik
-            $table->dropForeign(['nik']);
+            try {
+                $table->dropForeign('fk_users_pegawai_nik');
+            } catch (\Throwable $e) {
+                try {
+                    $table->dropForeign(['nik']);
+                } catch (\Throwable $e2) {
+                    // ignore
+                }
+            }
         });
     }
 };

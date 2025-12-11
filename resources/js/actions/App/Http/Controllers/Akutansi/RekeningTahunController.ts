@@ -1,9 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Akutansi\RekeningTahunController::index
- * @see app/Http/Controllers/Akutansi/RekeningTahunController.php:18
- * @route '/api/akutansi/rekeningtahun'
- */
+* @see app/Http/Controllers/Akutansi/RekeningTahunController.php:18
+* @route '/api/akutansi/rekeningtahun'
+*/
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
@@ -16,27 +16,28 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\RekeningTahunController::index
- * @see app/Http/Controllers/Akutansi/RekeningTahunController.php:18
- * @route '/api/akutansi/rekeningtahun'
- */
+* @see app/Http/Controllers/Akutansi/RekeningTahunController.php:18
+* @route '/api/akutansi/rekeningtahun'
+*/
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\Akutansi\RekeningTahunController::index
- * @see app/Http/Controllers/Akutansi/RekeningTahunController.php:18
- * @route '/api/akutansi/rekeningtahun'
- */
+* @see app/Http/Controllers/Akutansi/RekeningTahunController.php:18
+* @route '/api/akutansi/rekeningtahun'
+*/
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\Akutansi\RekeningTahunController::index
- * @see app/Http/Controllers/Akutansi/RekeningTahunController.php:18
- * @route '/api/akutansi/rekeningtahun'
- */
+* @see app/Http/Controllers/Akutansi/RekeningTahunController.php:18
+* @route '/api/akutansi/rekeningtahun'
+*/
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
@@ -44,9 +45,9 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\RekeningTahunController::store
- * @see app/Http/Controllers/Akutansi/RekeningTahunController.php:122
- * @route '/api/akutansi/rekeningtahun'
- */
+* @see app/Http/Controllers/Akutansi/RekeningTahunController.php:122
+* @route '/api/akutansi/rekeningtahun'
+*/
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -59,18 +60,18 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\RekeningTahunController::store
- * @see app/Http/Controllers/Akutansi/RekeningTahunController.php:122
- * @route '/api/akutansi/rekeningtahun'
- */
+* @see app/Http/Controllers/Akutansi/RekeningTahunController.php:122
+* @route '/api/akutansi/rekeningtahun'
+*/
 store.url = (options?: RouteQueryOptions) => {
     return store.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\Akutansi\RekeningTahunController::store
- * @see app/Http/Controllers/Akutansi/RekeningTahunController.php:122
- * @route '/api/akutansi/rekeningtahun'
- */
+* @see app/Http/Controllers/Akutansi/RekeningTahunController.php:122
+* @route '/api/akutansi/rekeningtahun'
+*/
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -78,9 +79,9 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\RekeningTahunController::update
- * @see app/Http/Controllers/Akutansi/RekeningTahunController.php:141
- * @route '/api/akutansi/rekeningtahun/{thn}/{kd_rek}'
- */
+* @see app/Http/Controllers/Akutansi/RekeningTahunController.php:141
+* @route '/api/akutansi/rekeningtahun/{thn}/{kd_rek}'
+*/
 export const update = (args: { thn: string | number, kd_rek: string | number } | [thn: string | number, kd_rek: string | number ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
@@ -93,23 +94,23 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\RekeningTahunController::update
- * @see app/Http/Controllers/Akutansi/RekeningTahunController.php:141
- * @route '/api/akutansi/rekeningtahun/{thn}/{kd_rek}'
- */
+* @see app/Http/Controllers/Akutansi/RekeningTahunController.php:141
+* @route '/api/akutansi/rekeningtahun/{thn}/{kd_rek}'
+*/
 update.url = (args: { thn: string | number, kd_rek: string | number } | [thn: string | number, kd_rek: string | number ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
-                    thn: args[0],
-                    kd_rek: args[1],
-                }
+            thn: args[0],
+            kd_rek: args[1],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        thn: args.thn,
-                                kd_rek: args.kd_rek,
-                }
+        thn: args.thn,
+        kd_rek: args.kd_rek,
+    }
 
     return update.definition.url
             .replace('{thn}', parsedArgs.thn.toString())
@@ -119,9 +120,9 @@ update.url = (args: { thn: string | number, kd_rek: string | number } | [thn: st
 
 /**
 * @see \App\Http\Controllers\Akutansi\RekeningTahunController::update
- * @see app/Http/Controllers/Akutansi/RekeningTahunController.php:141
- * @route '/api/akutansi/rekeningtahun/{thn}/{kd_rek}'
- */
+* @see app/Http/Controllers/Akutansi/RekeningTahunController.php:141
+* @route '/api/akutansi/rekeningtahun/{thn}/{kd_rek}'
+*/
 update.put = (args: { thn: string | number, kd_rek: string | number } | [thn: string | number, kd_rek: string | number ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
@@ -129,9 +130,9 @@ update.put = (args: { thn: string | number, kd_rek: string | number } | [thn: st
 
 /**
 * @see \App\Http\Controllers\Akutansi\RekeningTahunController::destroy
- * @see app/Http/Controllers/Akutansi/RekeningTahunController.php:158
- * @route '/api/akutansi/rekeningtahun/{thn}/{kd_rek}'
- */
+* @see app/Http/Controllers/Akutansi/RekeningTahunController.php:158
+* @route '/api/akutansi/rekeningtahun/{thn}/{kd_rek}'
+*/
 export const destroy = (args: { thn: string | number, kd_rek: string | number } | [thn: string | number, kd_rek: string | number ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
@@ -144,23 +145,23 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\RekeningTahunController::destroy
- * @see app/Http/Controllers/Akutansi/RekeningTahunController.php:158
- * @route '/api/akutansi/rekeningtahun/{thn}/{kd_rek}'
- */
+* @see app/Http/Controllers/Akutansi/RekeningTahunController.php:158
+* @route '/api/akutansi/rekeningtahun/{thn}/{kd_rek}'
+*/
 destroy.url = (args: { thn: string | number, kd_rek: string | number } | [thn: string | number, kd_rek: string | number ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
-                    thn: args[0],
-                    kd_rek: args[1],
-                }
+            thn: args[0],
+            kd_rek: args[1],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        thn: args.thn,
-                                kd_rek: args.kd_rek,
-                }
+        thn: args.thn,
+        kd_rek: args.kd_rek,
+    }
 
     return destroy.definition.url
             .replace('{thn}', parsedArgs.thn.toString())
@@ -170,13 +171,14 @@ destroy.url = (args: { thn: string | number, kd_rek: string | number } | [thn: s
 
 /**
 * @see \App\Http\Controllers\Akutansi\RekeningTahunController::destroy
- * @see app/Http/Controllers/Akutansi/RekeningTahunController.php:158
- * @route '/api/akutansi/rekeningtahun/{thn}/{kd_rek}'
- */
+* @see app/Http/Controllers/Akutansi/RekeningTahunController.php:158
+* @route '/api/akutansi/rekeningtahun/{thn}/{kd_rek}'
+*/
 destroy.delete = (args: { thn: string | number, kd_rek: string | number } | [thn: string | number, kd_rek: string | number ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
+
 const RekeningTahunController = { index, store, update, destroy }
 
 export default RekeningTahunController
