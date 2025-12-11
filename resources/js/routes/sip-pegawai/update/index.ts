@@ -1,9 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::patch
- * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:148
- * @route '/sip-pegawai/{nik}'
- */
+* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:148
+* @route '/sip-pegawai/{nik}'
+*/
 export const patch = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: patch.url(args, options),
     method: 'patch',
@@ -16,26 +16,25 @@ patch.definition = {
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::patch
- * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:148
- * @route '/sip-pegawai/{nik}'
- */
+* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:148
+* @route '/sip-pegawai/{nik}'
+*/
 patch.url = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { nik: args }
     }
 
-    
     if (Array.isArray(args)) {
         args = {
-                    nik: args[0],
-                }
+            nik: args[0],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        nik: args.nik,
-                }
+        nik: args.nik,
+    }
 
     return patch.definition.url
             .replace('{nik}', parsedArgs.nik.toString())
@@ -44,13 +43,14 @@ patch.url = (args: { nik: string | number } | [nik: string | number ] | string |
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::patch
- * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:148
- * @route '/sip-pegawai/{nik}'
- */
+* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:148
+* @route '/sip-pegawai/{nik}'
+*/
 patch.patch = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: patch.url(args, options),
     method: 'patch',
 })
+
 const update = {
     patch: Object.assign(patch, patch),
 }

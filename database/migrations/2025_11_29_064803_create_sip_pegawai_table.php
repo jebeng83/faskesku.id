@@ -40,10 +40,24 @@ return new class extends Migration
 
             if ($driver !== 'sqlite') {
                 DB::statement('ALTER TABLE sip_pegawai ENGINE = InnoDB');
-                DB::statement('ALTER TABLE sip_pegawai DEFAULT CHARSET = latin1 COLLATE = latin1_swedish_ci');
+                try {
+                    $charset = DB::connection()->getConfig('charset') ?: 'utf8mb4';
+                    $collation = DB::connection()->getConfig('collation') ?: 'utf8mb4_unicode_ci';
+                    DB::statement("ALTER TABLE sip_pegawai DEFAULT CHARSET = {$charset} COLLATE = {$collation}");
+                } catch (\Throwable $e) {
+                    // ignore
+                }
             }
         } else {
             if ($driver !== 'sqlite') {
+                try {
+                    $charset = DB::connection()->getConfig('charset') ?: 'utf8mb4';
+                    $collation = DB::connection()->getConfig('collation') ?: 'utf8mb4_unicode_ci';
+                    DB::statement("ALTER TABLE sip_pegawai CONVERT TO CHARACTER SET {$charset} COLLATE {$collation}");
+                } catch (\Throwable $e) {
+                    // ignore conversion errors
+                }
+
                 $fkExists = collect(DB::select(
                     'SELECT CONSTRAINT_NAME FROM information_schema.KEY_COLUMN_USAGE '.
                     "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'sip_pegawai' AND COLUMN_NAME = 'nik' ".
@@ -51,10 +65,20 @@ return new class extends Migration
                 ))->isNotEmpty();
 
                 if (! $fkExists) {
-                    DB::statement(
-                        'ALTER TABLE sip_pegawai ADD CONSTRAINT sip_pegawai_ibfk_1 '.
-                        'FOREIGN KEY (nik) REFERENCES pegawai (nik) ON DELETE RESTRICT ON UPDATE CASCADE'
-                    );
+                    try {
+                        DB::statement(
+                            'ALTER TABLE sip_pegawai ADD CONSTRAINT fk_sip_pegawai_pegawai_nik '.
+                            'FOREIGN KEY (nik) REFERENCES pegawai (nik) ON DELETE RESTRICT ON UPDATE CASCADE'
+                        );
+                    } catch (\Throwable $e) {
+                        try {
+                            Schema::table('sip_pegawai', function (Blueprint $table) {
+                                $table->index('nik', 'sip_pegawai_nik_idx');
+                            });
+                        } catch (\Throwable $e2) {
+                            // ignore
+                        }
+                    }
                 }
             }
         }

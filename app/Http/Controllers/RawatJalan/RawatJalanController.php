@@ -37,9 +37,23 @@ class RawatJalanController extends Controller
             ? $request->input('tanggal')
             : Carbon::today()->toDateString();
 
-        // Filter berdasarkan tanggal (gunakan default jika tidak ada)
-        if (! empty($appliedDate)) {
-            $query->where('reg_periksa.tgl_registrasi', $appliedDate);
+        // Dukung filter rentang tanggal: start_date, end_date
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        if ($startDate || $endDate) {
+            if ($startDate && $endDate) {
+                $query->whereBetween('reg_periksa.tgl_registrasi', [$startDate, $endDate]);
+            } elseif ($startDate) {
+                $query->whereDate('reg_periksa.tgl_registrasi', '>=', $startDate);
+            } elseif ($endDate) {
+                $query->whereDate('reg_periksa.tgl_registrasi', '<=', $endDate);
+            }
+        } else {
+            // Filter berdasarkan tanggal (gunakan default jika tidak ada)
+            if (! empty($appliedDate)) {
+                $query->where('reg_periksa.tgl_registrasi', $appliedDate);
+            }
         }
 
         // Filter berdasarkan status
@@ -110,8 +124,12 @@ class RawatJalanController extends Controller
             'dokterOptions' => $dokterOptions,
             'poliOptions' => $poliOptions,
             'filters' => array_merge(
-                $request->only(['tanggal', 'status', 'status_bayar', 'nama_pasien', 'kd_dokter', 'kd_poli', 'nama_dokter', 'nama_poli']),
-                ['tanggal' => $appliedDate]
+                $request->only(['tanggal', 'start_date', 'end_date', 'status', 'status_bayar', 'nama_pasien', 'kd_dokter', 'kd_poli', 'nama_dokter', 'nama_poli']),
+                [
+                    'tanggal' => $appliedDate,
+                    'start_date' => $startDate ?: $appliedDate,
+                    'end_date' => $endDate ?: $appliedDate,
+                ]
             ),
         ]);
     }

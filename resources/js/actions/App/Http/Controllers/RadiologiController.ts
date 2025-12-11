@@ -1,9 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RadiologiController::index
- * @see app/Http/Controllers/RadiologiController.php:13
- * @route '/radiologi'
- */
+* @see app/Http/Controllers/RadiologiController.php:13
+* @route '/radiologi'
+*/
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
@@ -16,27 +16,28 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\RadiologiController::index
- * @see app/Http/Controllers/RadiologiController.php:13
- * @route '/radiologi'
- */
+* @see app/Http/Controllers/RadiologiController.php:13
+* @route '/radiologi'
+*/
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\RadiologiController::index
- * @see app/Http/Controllers/RadiologiController.php:13
- * @route '/radiologi'
- */
+* @see app/Http/Controllers/RadiologiController.php:13
+* @route '/radiologi'
+*/
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\RadiologiController::index
- * @see app/Http/Controllers/RadiologiController.php:13
- * @route '/radiologi'
- */
+* @see app/Http/Controllers/RadiologiController.php:13
+* @route '/radiologi'
+*/
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
@@ -44,9 +45,9 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RadiologiController::create
- * @see app/Http/Controllers/RadiologiController.php:23
- * @route '/radiologi/create'
- */
+* @see app/Http/Controllers/RadiologiController.php:23
+* @route '/radiologi/create'
+*/
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: create.url(options),
     method: 'get',
@@ -59,27 +60,28 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\RadiologiController::create
- * @see app/Http/Controllers/RadiologiController.php:23
- * @route '/radiologi/create'
- */
+* @see app/Http/Controllers/RadiologiController.php:23
+* @route '/radiologi/create'
+*/
 create.url = (options?: RouteQueryOptions) => {
     return create.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\RadiologiController::create
- * @see app/Http/Controllers/RadiologiController.php:23
- * @route '/radiologi/create'
- */
+* @see app/Http/Controllers/RadiologiController.php:23
+* @route '/radiologi/create'
+*/
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: create.url(options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\RadiologiController::create
- * @see app/Http/Controllers/RadiologiController.php:23
- * @route '/radiologi/create'
- */
+* @see app/Http/Controllers/RadiologiController.php:23
+* @route '/radiologi/create'
+*/
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: create.url(options),
     method: 'head',
@@ -87,9 +89,9 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RadiologiController::store
- * @see app/Http/Controllers/RadiologiController.php:33
- * @route '/radiologi'
- */
+* @see app/Http/Controllers/RadiologiController.php:33
+* @route '/radiologi'
+*/
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -102,18 +104,18 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\RadiologiController::store
- * @see app/Http/Controllers/RadiologiController.php:33
- * @route '/radiologi'
- */
+* @see app/Http/Controllers/RadiologiController.php:33
+* @route '/radiologi'
+*/
 store.url = (options?: RouteQueryOptions) => {
     return store.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\RadiologiController::store
- * @see app/Http/Controllers/RadiologiController.php:33
- * @route '/radiologi'
- */
+* @see app/Http/Controllers/RadiologiController.php:33
+* @route '/radiologi'
+*/
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -121,9 +123,9 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\RadiologiController::show
- * @see app/Http/Controllers/RadiologiController.php:43
- * @route '/radiologi/{radiologi}'
- */
+* @see app/Http/Controllers/RadiologiController.php:43
+* @route '/radiologi/{radiologi}'
+*/
 export const show = (args: { radiologi: string | number } | [radiologi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
@@ -136,26 +138,25 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\RadiologiController::show
- * @see app/Http/Controllers/RadiologiController.php:43
- * @route '/radiologi/{radiologi}'
- */
+* @see app/Http/Controllers/RadiologiController.php:43
+* @route '/radiologi/{radiologi}'
+*/
 show.url = (args: { radiologi: string | number } | [radiologi: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { radiologi: args }
     }
 
-    
     if (Array.isArray(args)) {
         args = {
-                    radiologi: args[0],
-                }
+            radiologi: args[0],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        radiologi: args.radiologi,
-                }
+        radiologi: args.radiologi,
+    }
 
     return show.definition.url
             .replace('{radiologi}', parsedArgs.radiologi.toString())
@@ -164,18 +165,19 @@ show.url = (args: { radiologi: string | number } | [radiologi: string | number ]
 
 /**
 * @see \App\Http\Controllers\RadiologiController::show
- * @see app/Http/Controllers/RadiologiController.php:43
- * @route '/radiologi/{radiologi}'
- */
+* @see app/Http/Controllers/RadiologiController.php:43
+* @route '/radiologi/{radiologi}'
+*/
 show.get = (args: { radiologi: string | number } | [radiologi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\RadiologiController::show
- * @see app/Http/Controllers/RadiologiController.php:43
- * @route '/radiologi/{radiologi}'
- */
+* @see app/Http/Controllers/RadiologiController.php:43
+* @route '/radiologi/{radiologi}'
+*/
 show.head = (args: { radiologi: string | number } | [radiologi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
@@ -183,9 +185,9 @@ show.head = (args: { radiologi: string | number } | [radiologi: string | number 
 
 /**
 * @see \App\Http\Controllers\RadiologiController::edit
- * @see app/Http/Controllers/RadiologiController.php:53
- * @route '/radiologi/{radiologi}/edit'
- */
+* @see app/Http/Controllers/RadiologiController.php:53
+* @route '/radiologi/{radiologi}/edit'
+*/
 export const edit = (args: { radiologi: string | number } | [radiologi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
@@ -198,26 +200,25 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\RadiologiController::edit
- * @see app/Http/Controllers/RadiologiController.php:53
- * @route '/radiologi/{radiologi}/edit'
- */
+* @see app/Http/Controllers/RadiologiController.php:53
+* @route '/radiologi/{radiologi}/edit'
+*/
 edit.url = (args: { radiologi: string | number } | [radiologi: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { radiologi: args }
     }
 
-    
     if (Array.isArray(args)) {
         args = {
-                    radiologi: args[0],
-                }
+            radiologi: args[0],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        radiologi: args.radiologi,
-                }
+        radiologi: args.radiologi,
+    }
 
     return edit.definition.url
             .replace('{radiologi}', parsedArgs.radiologi.toString())
@@ -226,18 +227,19 @@ edit.url = (args: { radiologi: string | number } | [radiologi: string | number ]
 
 /**
 * @see \App\Http\Controllers\RadiologiController::edit
- * @see app/Http/Controllers/RadiologiController.php:53
- * @route '/radiologi/{radiologi}/edit'
- */
+* @see app/Http/Controllers/RadiologiController.php:53
+* @route '/radiologi/{radiologi}/edit'
+*/
 edit.get = (args: { radiologi: string | number } | [radiologi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\RadiologiController::edit
- * @see app/Http/Controllers/RadiologiController.php:53
- * @route '/radiologi/{radiologi}/edit'
- */
+* @see app/Http/Controllers/RadiologiController.php:53
+* @route '/radiologi/{radiologi}/edit'
+*/
 edit.head = (args: { radiologi: string | number } | [radiologi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: edit.url(args, options),
     method: 'head',
@@ -245,9 +247,9 @@ edit.head = (args: { radiologi: string | number } | [radiologi: string | number 
 
 /**
 * @see \App\Http\Controllers\RadiologiController::update
- * @see app/Http/Controllers/RadiologiController.php:63
- * @route '/radiologi/{radiologi}'
- */
+* @see app/Http/Controllers/RadiologiController.php:63
+* @route '/radiologi/{radiologi}'
+*/
 export const update = (args: { radiologi: string | number } | [radiologi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
@@ -260,26 +262,25 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\RadiologiController::update
- * @see app/Http/Controllers/RadiologiController.php:63
- * @route '/radiologi/{radiologi}'
- */
+* @see app/Http/Controllers/RadiologiController.php:63
+* @route '/radiologi/{radiologi}'
+*/
 update.url = (args: { radiologi: string | number } | [radiologi: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { radiologi: args }
     }
 
-    
     if (Array.isArray(args)) {
         args = {
-                    radiologi: args[0],
-                }
+            radiologi: args[0],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        radiologi: args.radiologi,
-                }
+        radiologi: args.radiologi,
+    }
 
     return update.definition.url
             .replace('{radiologi}', parsedArgs.radiologi.toString())
@@ -288,18 +289,19 @@ update.url = (args: { radiologi: string | number } | [radiologi: string | number
 
 /**
 * @see \App\Http\Controllers\RadiologiController::update
- * @see app/Http/Controllers/RadiologiController.php:63
- * @route '/radiologi/{radiologi}'
- */
+* @see app/Http/Controllers/RadiologiController.php:63
+* @route '/radiologi/{radiologi}'
+*/
 update.put = (args: { radiologi: string | number } | [radiologi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
+
 /**
 * @see \App\Http\Controllers\RadiologiController::update
- * @see app/Http/Controllers/RadiologiController.php:63
- * @route '/radiologi/{radiologi}'
- */
+* @see app/Http/Controllers/RadiologiController.php:63
+* @route '/radiologi/{radiologi}'
+*/
 update.patch = (args: { radiologi: string | number } | [radiologi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
@@ -307,9 +309,9 @@ update.patch = (args: { radiologi: string | number } | [radiologi: string | numb
 
 /**
 * @see \App\Http\Controllers\RadiologiController::destroy
- * @see app/Http/Controllers/RadiologiController.php:73
- * @route '/radiologi/{radiologi}'
- */
+* @see app/Http/Controllers/RadiologiController.php:73
+* @route '/radiologi/{radiologi}'
+*/
 export const destroy = (args: { radiologi: string | number } | [radiologi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
@@ -322,26 +324,25 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\RadiologiController::destroy
- * @see app/Http/Controllers/RadiologiController.php:73
- * @route '/radiologi/{radiologi}'
- */
+* @see app/Http/Controllers/RadiologiController.php:73
+* @route '/radiologi/{radiologi}'
+*/
 destroy.url = (args: { radiologi: string | number } | [radiologi: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { radiologi: args }
     }
 
-    
     if (Array.isArray(args)) {
         args = {
-                    radiologi: args[0],
-                }
+            radiologi: args[0],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        radiologi: args.radiologi,
-                }
+        radiologi: args.radiologi,
+    }
 
     return destroy.definition.url
             .replace('{radiologi}', parsedArgs.radiologi.toString())
@@ -350,13 +351,14 @@ destroy.url = (args: { radiologi: string | number } | [radiologi: string | numbe
 
 /**
 * @see \App\Http\Controllers\RadiologiController::destroy
- * @see app/Http/Controllers/RadiologiController.php:73
- * @route '/radiologi/{radiologi}'
- */
+* @see app/Http/Controllers/RadiologiController.php:73
+* @route '/radiologi/{radiologi}'
+*/
 destroy.delete = (args: { radiologi: string | number } | [radiologi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
+
 const RadiologiController = { index, create, store, show, edit, update, destroy }
 
 export default RadiologiController
