@@ -390,13 +390,7 @@ class DaftarTarifController extends Controller
     {
         $kdKategori = $request->get('kd_kategori');
         $category = $request->get('category', 'rawat-jalan');
-<<<<<<< HEAD
-        
         if (!$kdKategori && !in_array($category, ['laboratorium', 'radiologi'])) {
-=======
-
-        if (! $kdKategori && $category !== 'laboratorium') {
->>>>>>> main
             return response()->json([
                 'success' => false,
                 'message' => 'Kategori harus dipilih',
@@ -557,7 +551,6 @@ class DaftarTarifController extends Controller
         return redirect()->route('daftar-tarif.index', ['category' => 'laboratorium'])
             ->with('success', 'Tarif pemeriksaan laboratorium berhasil ditambahkan');
     }
-<<<<<<< HEAD
     private function storeRadiologi(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -606,13 +599,6 @@ class DaftarTarifController extends Controller
         return redirect()->route('daftar-tarif.index', ['category' => 'radiologi'])
             ->with('success', 'Tarif pemeriksaan radiologi berhasil ditambahkan');
     }
-=======
-
-    private function storeRadiologi(Request $request)
-    { /* Implementation for radiologi */
-    }
-
->>>>>>> main
     private function updateRawatInap(Request $request, $id)
     {
         $jnsPerawatan = JnsPerawatanInap::findOrFail($id);

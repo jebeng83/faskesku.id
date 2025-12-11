@@ -18,13 +18,8 @@ use App\Http\Controllers\Farmasi\SisaStokController;
 use App\Http\Controllers\Farmasi\SirkulasiObatController;
 use App\Http\Controllers\GudangBarangController;
 use App\Http\Controllers\JadwalController;
-<<<<<<< HEAD
-<<<<<<< HEAD
 use App\Http\Controllers\SettingsController;
-=======
-=======
 use App\Http\Controllers\Kepegawaian\DepartemenController;
->>>>>>> main
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OpnameController;
 use App\Http\Controllers\Pcare\MobileJknController;
@@ -41,7 +36,6 @@ use App\Http\Controllers\RawatJalan\ResepController;
 use App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController;
 use App\Http\Controllers\SatuSehat\SatuSehatController;
 use Illuminate\Support\Facades\Route;
->>>>>>> main
 
 // Public endpoints (tidak memerlukan authentication)
 // Hanya endpoint referensi yang benar-benar tidak sensitif
@@ -94,7 +88,6 @@ Route::prefix('public')->group(function () {
         Route::put('/roles/{role}', [PermissionController::class, 'updateRole'])->name('api.permissions.roles.update');
         Route::delete('/roles/{role}', [PermissionController::class, 'deleteRole'])->name('api.permissions.roles.destroy');
 
-<<<<<<< HEAD
 // API routes untuk dokter
 Route::get('/dokter', [DokterController::class, 'index'])->name('api.dokter.index');
 Route::get('/dokter/{kd_dokter}', [DokterController::class, 'show'])->name('api.dokter.show');
@@ -128,12 +121,12 @@ Route::prefix('opname')->group(function () {
 
 // Farmasi - Pembelian Obat API Routes
 Route::prefix('pembelian')->group(function () {
-    Route::get('/supplier', [PembelianController::class, 'getSupplier'])->name('api.pembelian.supplier');
-    Route::get('/petugas', [PembelianController::class, 'getPetugas'])->name('api.pembelian.petugas');
-    Route::get('/lokasi', [PembelianController::class, 'getLokasi'])->name('api.pembelian.lokasi');
-    Route::get('/akun-bayar', [PembelianController::class, 'getAkunBayar'])->name('api.pembelian.akun-bayar');
-    Route::get('/generate-no-faktur', [PembelianController::class, 'generateNoFaktur'])->name('api.pembelian.generate-no-faktur');
-    Route::post('/store', [PembelianController::class, 'store'])->name('api.pembelian.store');
+    Route::get('/supplier', [FarmasiPembelianController::class, 'getSupplier'])->name('api.pembelian.supplier');
+    Route::get('/petugas', [FarmasiPembelianController::class, 'getPetugas'])->name('api.pembelian.petugas');
+    Route::get('/lokasi', [FarmasiPembelianController::class, 'getLokasi'])->name('api.pembelian.lokasi');
+    Route::get('/akun-bayar', [FarmasiPembelianController::class, 'getAkunBayar'])->name('api.pembelian.akun-bayar');
+    Route::get('/generate-no-faktur', [FarmasiPembelianController::class, 'generateNoFaktur'])->name('api.pembelian.generate-no-faktur');
+    Route::post('/store', [FarmasiPembelianController::class, 'store'])->name('api.pembelian.store');
 });
 
 // Barang search endpoint (used by Pembelian Obat page)
@@ -284,7 +277,6 @@ Route::prefix('mobilejkn')->group(function () {
     // Batal Antrean
     Route::post('/antrean/batal', [MobileJknController::class, 'batalAntrean'])->name('api.mobilejkn.antrean.batal');
 });
-=======
         // Permissions
         Route::get('/', [PermissionController::class, 'getPermissions'])->name('api.permissions.index');
         Route::post('/', [PermissionController::class, 'createPermission'])->name('api.permissions.store');
@@ -314,7 +306,6 @@ Route::prefix('mobilejkn')->group(function () {
         Route::get('/statistik', [RegPeriksaController::class, 'getStatistik'])->name('api.reg-periksa.statistik');
         Route::get('/filter-data', [RegPeriksaController::class, 'getFilterData'])->name('api.reg-periksa.filter-data');
     });
->>>>>>> main
 
     // User Management Routes
     Route::prefix('users')->group(function () {

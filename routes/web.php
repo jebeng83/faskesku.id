@@ -1238,7 +1238,6 @@ Route::post('/farmasi/set-penjualan-umum', [\App\Http\Controllers\Farmasi\SetHar
 Route::post('/farmasi/set-penjualan', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'storePenjualanPerJenis'])
     ->name('set-penjualan.store');
 // Hapus pengaturan harga per jenis
-<<<<<<< HEAD
 Route::delete('/farmasi/set-penjualan/{kdjns}', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'destroyPenjualanPerJenis'])
     ->name('set-penjualan.destroy');
 
@@ -1248,7 +1247,3 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/settings/active', [\App\Http\Controllers\SettingsController::class, 'active'])->name('settings.active');
     Route::put('/settings', [\App\Http\Controllers\SettingsController::class, 'update'])->name('settings.update');
 });
-=======
-Route::delete('/farmasi/set-penjualan/{kdjns}', [SetHargaObatController::class, 'destroyPenjualanPerJenis'])
-    ->name('set-penjualan.destroy');
->>>>>>> main
