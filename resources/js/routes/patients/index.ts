@@ -443,7 +443,7 @@ registerPeriksa.post = (args: { patient: string | { no_rkm_medis: string } } | [
 
 /**
 * @see \App\Http\Controllers\PatientController::checkPoliStatus
-* @see app/Http/Controllers/PatientController.php:404
+* @see app/Http/Controllers/PatientController.php:402
 * @route '/patients/{patient}/check-poli-status'
 */
 export const checkPoliStatus = (args: { patient: string | { no_rkm_medis: string } } | [patient: string | { no_rkm_medis: string } ] | string | { no_rkm_medis: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -458,7 +458,7 @@ checkPoliStatus.definition = {
 
 /**
 * @see \App\Http\Controllers\PatientController::checkPoliStatus
-* @see app/Http/Controllers/PatientController.php:404
+* @see app/Http/Controllers/PatientController.php:402
 * @route '/patients/{patient}/check-poli-status'
 */
 checkPoliStatus.url = (args: { patient: string | { no_rkm_medis: string } } | [patient: string | { no_rkm_medis: string } ] | string | { no_rkm_medis: string }, options?: RouteQueryOptions) => {
@@ -491,7 +491,7 @@ checkPoliStatus.url = (args: { patient: string | { no_rkm_medis: string } } | [p
 
 /**
 * @see \App\Http\Controllers\PatientController::checkPoliStatus
-* @see app/Http/Controllers/PatientController.php:404
+* @see app/Http/Controllers/PatientController.php:402
 * @route '/patients/{patient}/check-poli-status'
 */
 checkPoliStatus.get = (args: { patient: string | { no_rkm_medis: string } } | [patient: string | { no_rkm_medis: string } ] | string | { no_rkm_medis: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -501,7 +501,7 @@ checkPoliStatus.get = (args: { patient: string | { no_rkm_medis: string } } | [p
 
 /**
 * @see \App\Http\Controllers\PatientController::checkPoliStatus
-* @see app/Http/Controllers/PatientController.php:404
+* @see app/Http/Controllers/PatientController.php:402
 * @route '/patients/{patient}/check-poli-status'
 */
 checkPoliStatus.head = (args: { patient: string | { no_rkm_medis: string } } | [patient: string | { no_rkm_medis: string } ] | string | { no_rkm_medis: string }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

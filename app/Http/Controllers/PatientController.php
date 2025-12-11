@@ -343,7 +343,6 @@ class PatientController extends Controller
             'p_jawab' => 'required|string|max:100',
             'almt_pj' => 'required|string|max:200',
             'hubunganpj' => 'required|string|max:20',
-            'kode_wilayah' => 'required|string|max:13|exists:wilayah,kode',
         ]);
 
         // Check if patient has ever registered in this polyclinic
@@ -391,7 +390,6 @@ class PatientController extends Controller
             'sttsumur' => $sttsUmur,
             'status_bayar' => $status_bayar,
             'status_poli' => $status_poli,
-            'kode_wilayah' => $request->kode_wilayah,
         ]);
 
         return redirect()->route('patients.index')
