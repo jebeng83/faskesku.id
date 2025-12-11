@@ -1,5 +1,4 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
-import updateHargaSemuaFd349c from './update-harga-semua'
 /**
 * @see \App\Http\Controllers\Farmasi\DataBarangController::store
 * @see app/Http/Controllers/Farmasi/DataBarangController.php:103
@@ -32,40 +31,6 @@ store.url = (options?: RouteQueryOptions) => {
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\Farmasi\DataBarangController::updateHargaSemua
-* @see app/Http/Controllers/Farmasi/DataBarangController.php:202
-* @route '/farmasi/data-obat/update-harga-semua'
-*/
-export const updateHargaSemua = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
-    url: updateHargaSemua.url(options),
-    method: 'put',
-})
-
-updateHargaSemua.definition = {
-    methods: ["put"],
-    url: '/farmasi/data-obat/update-harga-semua',
-} satisfies RouteDefinition<["put"]>
-
-/**
-* @see \App\Http\Controllers\Farmasi\DataBarangController::updateHargaSemua
-* @see app/Http/Controllers/Farmasi/DataBarangController.php:202
-* @route '/farmasi/data-obat/update-harga-semua'
-*/
-updateHargaSemua.url = (options?: RouteQueryOptions) => {
-    return updateHargaSemua.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\Farmasi\DataBarangController::updateHargaSemua
-* @see app/Http/Controllers/Farmasi/DataBarangController.php:202
-* @route '/farmasi/data-obat/update-harga-semua'
-*/
-updateHargaSemua.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
-    url: updateHargaSemua.url(options),
-    method: 'put',
 })
 
 /**
@@ -172,11 +137,45 @@ destroy.delete = (args: { kode_brng: string | number } | [kode_brng: string | nu
     method: 'delete',
 })
 
+/**
+* @see \App\Http\Controllers\Farmasi\DataBarangController::updateHargaSemua
+* @see app/Http/Controllers/Farmasi/DataBarangController.php:202
+* @route '/farmasi/data-obat/update-harga-semua'
+*/
+export const updateHargaSemua = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+    url: updateHargaSemua.url(options),
+    method: 'put',
+})
+
+updateHargaSemua.definition = {
+    methods: ["put"],
+    url: '/farmasi/data-obat/update-harga-semua',
+} satisfies RouteDefinition<["put"]>
+
+/**
+* @see \App\Http\Controllers\Farmasi\DataBarangController::updateHargaSemua
+* @see app/Http/Controllers/Farmasi/DataBarangController.php:202
+* @route '/farmasi/data-obat/update-harga-semua'
+*/
+updateHargaSemua.url = (options?: RouteQueryOptions) => {
+    return updateHargaSemua.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Farmasi\DataBarangController::updateHargaSemua
+* @see app/Http/Controllers/Farmasi/DataBarangController.php:202
+* @route '/farmasi/data-obat/update-harga-semua'
+*/
+updateHargaSemua.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+    url: updateHargaSemua.url(options),
+    method: 'put',
+})
+
 const dataObat = {
     store: Object.assign(store, store),
-    updateHargaSemua: Object.assign(updateHargaSemua, updateHargaSemuaFd349c),
     update: Object.assign(update, update),
     destroy: Object.assign(destroy, destroy),
+    updateHargaSemua: Object.assign(updateHargaSemua, updateHargaSemua),
 }
 
 export default dataObat

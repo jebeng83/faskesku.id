@@ -111,7 +111,8 @@ function DropdownItem({ children, onClick, icon, variant = "default" }) {
 
 export default function Index({ rawatJalan, statusOptions, statusBayarOptions, filters, dokterOptions = [], poliOptions = [] }) {
     const [searchParams, setSearchParams] = useState({
-        tanggal: filters.tanggal || todayDateString(),
+        start_date: filters.start_date || todayDateString(),
+        end_date: filters.end_date || todayDateString(),
         status: filters.status || '',
         status_bayar: filters.status_bayar || '',
         nama_pasien: filters.nama_pasien || '',
@@ -123,9 +124,8 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
     // (misal: klik menu Rawat Jalan di sidebar) agar pilihan Dokter/Poli tidak "terkunci".
     useEffect(() => {
         setSearchParams((prev) => ({
-            // Untuk sinkronisasi, tanggal tidak dipaksa ke default hari ini.
-            // Jika filters.tanggal kosong, biarkan kosong agar reset bekerja sesuai harapan.
-            tanggal: filters.tanggal || '',
+            start_date: filters.start_date || todayDateString(),
+            end_date: filters.end_date || todayDateString(),
             status: filters.status || '',
             status_bayar: filters.status_bayar || '',
             nama_pasien: filters.nama_pasien || '',
@@ -134,7 +134,8 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         }));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
-        filters?.tanggal,
+        filters?.start_date,
+        filters?.end_date,
         filters?.status,
         filters?.status_bayar,
         filters?.nama_pasien,
@@ -161,8 +162,10 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
     };
 
     const resetFilters = () => {
+        const today = todayDateString();
         setSearchParams({
-            tanggal: '',
+            start_date: today,
+            end_date: today,
             status: '',
             status_bayar: '',
             nama_pasien: '',
@@ -170,7 +173,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
             kd_poli: ''
         });
         clearRawatJalanFilters();
-        router.get(route('rawat-jalan.index'));
+        router.get(route('rawat-jalan.index'), { start_date: today, end_date: today });
     };
 
     // Simpan ke localStorage ketika halaman dimuat dengan filters dari server (mis. dari URL)
@@ -235,12 +238,21 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                             <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Filter:</span>
                         </div>
                         
-                        <input
-                            type="date"
-                            value={searchParams.tanggal}
-                            onChange={(e) => handleFilterChange('tanggal', e.target.value)}
-                            className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
-                        />
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="date"
+                                value={searchParams.start_date}
+                                onChange={(e) => handleFilterChange('start_date', e.target.value)}
+                                className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
+                            />
+                            <span className="text-xs text-gray-500">s/d</span>
+                            <input
+                                type="date"
+                                value={searchParams.end_date}
+                                onChange={(e) => handleFilterChange('end_date', e.target.value)}
+                                className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
+                            />
+                        </div>
                         
                         <select
                             value={searchParams.status}
@@ -299,7 +311,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                             />
                         </div>
                         
-                        {(searchParams.tanggal || searchParams.status || searchParams.status_bayar || searchParams.nama_pasien || searchParams.kd_dokter || searchParams.kd_poli) && (
+                        {(searchParams.start_date || searchParams.end_date || searchParams.status || searchParams.status_bayar || searchParams.nama_pasien || searchParams.kd_dokter || searchParams.kd_poli) && (
                             <button
                                 onClick={resetFilters}
                                 className="ml-2 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
@@ -334,11 +346,28 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                             No. Rawat
                                         </div>
                                     </th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                        <div className="flex items-center gap-2">
+                                            <BanknotesIcon className="w-4 h-4" />
+                                            Penjamin
+                                        </div>
+                                    </th>
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">No. RM</th>
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                                         <div className="flex items-center gap-2">
                                             <UserIcon className="w-4 h-4" />
                                             Nama Pasien
+                                        </div>
+                                    </th>
+
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Alamat</th>
+                                    
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Poliklinik</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Nama Dokter</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                        <div className="flex items-center gap-2">
+                                            <DocumentCheckIcon className="w-4 h-4" />
+                                            Status Periksa
                                         </div>
                                     </th>
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
@@ -353,13 +382,6 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                             Jam
                                         </div>
                                     </th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Nama Dokter</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                        <div className="flex items-center gap-2">
-                                            <BanknotesIcon className="w-4 h-4" />
-                                            Penjamin
-                                        </div>
-                                    </th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
@@ -369,7 +391,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: index * 0.05 }}
-                                        className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-800 dark:hover:to-gray-700 transition-all duration-200 group"
+                                        className={`group transition-all duration-200 ${item.stts === 'Sudah' ? 'bg-green-100 dark:bg-green-900/20 hover:bg-green-200 dark:hover:bg-green-900/30' : 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-800 dark:hover:to-gray-700'}`}
                                     >
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center gap-3">
@@ -396,15 +418,24 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                                         Surat Sakit
                                                     </DropdownItem>
                                                 </SimpleDropdown>
-                                                <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 px-3 py-2 rounded-lg border border-blue-200 dark:border-blue-700">
-                                                    <span className="font-mono text-sm font-semibold text-blue-700 dark:text-blue-300">
+                                                <div className="bg-gray-50 dark:bg-gray-800/20 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
+                                                    <span className="font-mono text-sm font-semibold text-gray-800 dark:text-gray-200">
                                                         {item.no_rawat}
                                                     </span>
                                                 </div>
                                             </div>
                                         </td>
+                                        
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                            <div className="flex items-center gap-2">
+                                                <BanknotesIcon className="w-4 h-4 text-green-500" />
+                                                {item.nm_penjamin || item.penjab?.png_jawab || item.png_jawab || (
+                                                    <span className="text-gray-500 dark:text-gray-400 italic">Penjamin tidak tersedia</span>
+                                                )}
+                                            </div>
+                                        </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="font-mono text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2.5 py-1.5 rounded-lg border">
+                                            <span className="font-mono text-xs bg-gray-50 dark:bg-gray-800/20 text-gray-700 dark:text-gray-300 px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700">
                                                 {item.no_rkm_medis}
                                             </span>
                                         </td>
@@ -422,14 +453,37 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                                             .replace(/\+/g, '-')
                                                             .replace(/\//g, '_'),
                                                     })}
-                                                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium hover:underline transition-colors duration-200"
+                                                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold hover:underline transition-colors duration-200"
                                                     title="Lihat detail pasien"
                                                 >
                                                     {item.patient.nm_pasien}
+                                                    {item.umurdaftar ? ` (${item.umurdaftar} ${item.sttsumur || ''})` : ''}
                                                 </Link>
                                             ) : (
                                                 <span className="text-gray-500 dark:text-gray-400 italic">Nama tidak tersedia</span>
                                             )}
+                                        </td>
+
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                                            <span className="block max-w-[24rem] truncate">
+                                                {item.patient?.alamat || item.alamat || '-'}
+                                            </span>
+                                        </td>
+                                        
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                            {item.nm_poli || item.poliklinik?.nm_poli || (
+                                                <span className="text-gray-500 dark:text-gray-400 italic">Poli tidak tersedia</span>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                            {item.dokter?.nm_dokter || item.nm_dokter || (
+                                                <span className="text-gray-500 dark:text-gray-400 italic">Dokter tidak tersedia</span>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className={`px-2.5 py-1.5 rounded-lg border text-xs font-medium ${item.stts === 'Sudah' ? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700' : item.stts === 'Belum' ? 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-700' : item.stts === 'Batal' ? 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-700' : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700'}`}>
+                                                {item.stts || '-'}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
@@ -441,19 +495,6 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                                                 <ClockIcon className="w-4 h-4 text-green-500" />
                                                 {formatTime(item.jam_reg)}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white font-medium">
-                                            {item.dokter?.nm_dokter || item.nm_dokter || (
-                                                <span className="text-gray-500 dark:text-gray-400 italic">Dokter tidak tersedia</span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                            <div className="flex items-center gap-2">
-                                                <BanknotesIcon className="w-4 h-4 text-green-500" />
-                                                {item.nm_penjamin || item.penjab?.png_jawab || item.png_jawab || (
-                                                    <span className="text-gray-500 dark:text-gray-400 italic">Penjamin tidak tersedia</span>
-                                                )}
                                             </div>
                                         </td>
                                     </motion.tr>

@@ -676,10 +676,9 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('farmasi/DaftarPermintaanResep');
         })->name('permintaan-resep');
 
-
-        Route::get('/hutang-obat', function () {
-            return Inertia::render('farmasi/HutangObat');
-        })->name('hutang-obat');
+        Route::get('/riwayat-transaksi-gudang', function () {
+            return Inertia::render('farmasi/RiwayatTransaksiGudang');
+        })->name('riwayat-transaksi-gudang');
 
         Route::get('/stok-obat', function () {
             return Inertia::render('farmasi/StokObat');
@@ -688,30 +687,10 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('farmasi/StokOpname');
         })->name('stok-opname');
 
-        Route::get('/sisa-stok', function () {
-            return Inertia::render('farmasi/SisaStok');
-        })->name('sisa-stok');
-
-        Route::get('/sirkulasi-obat', function () {
-            return Inertia::render('farmasi/SirkulasiObat');
-        })->name('sirkulasi-obat');
-
-        Route::get('/cek-stok-obat', function () {
-            return Inertia::render('farmasi/CekStok');
-        })->name('cek-stok-obat');
-
         // Farmasi - Data Opname (laporan/daftar hasil opname)
         Route::get('/data-opname', function () {
             return Inertia::render('farmasi/DataOpname');
         })->name('data-opname');
-
-        Route::get('/riwayat-barang-medis', [\App\Http\Controllers\Farmasi\RiwayatBarangMedisController::class, 'index'])->name('riwayat-barang-medis');
-        Route::get('/riwayat-barang-medis/data', [\App\Http\Controllers\Farmasi\RiwayatBarangMedisController::class, 'data'])->name('riwayat-barang-medis.data');
-
-        Route::get('/riwayat-transaksi-gudang', [\App\Http\Controllers\Farmasi\RiwayatTransaksiGudangController::class, 'index'])->name('riwayat-transaksi-gudang');
-        Route::get('/riwayat-transaksi-gudang/data', [\App\Http\Controllers\Farmasi\RiwayatTransaksiGudangController::class, 'data'])->name('riwayat-transaksi-gudang.data');
-
-        Route::post('/riwayat-obat', [\App\Http\Controllers\Farmasi\RiwayatObatController::class, 'store'])->name('riwayat-obat.store');
 
         // Alias route under farmasi namespace for consistency dengan frontend route helpers
         Route::get('/farmasi/data-opname', function () {
@@ -726,21 +705,12 @@ Route::middleware('auth')->group(function () {
         // Data Obat (DataBarang) CRUD routes with auto-code via props.nextCode
         Route::get('/data-obat', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'index'])->name('data-obat');
         Route::post('/data-obat', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'store'])->name('data-obat.store');
+        Route::put('/data-obat/{kode_brng}', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'update'])->name('data-obat.update');
+        Route::patch('/data-obat/{kode_brng}', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'update']);
+        Route::delete('/data-obat/{kode_brng}', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'destroy'])->name('data-obat.destroy');
 
-        // Bulk update ditempatkan sebelum route generik {kode_brng} untuk mencegah konflik
+        // Bulk update semua harga jual databarang berdasarkan konfigurasi Set Harga Obat
         Route::put('/data-obat/update-harga-semua', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'updateHargaSemua'])->name('data-obat.update-harga-semua');
-        // Fallback POST untuk environment/proxy yang membatasi PUT
-        Route::post('/data-obat/update-harga-semua', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'updateHargaSemua'])->name('data-obat.update-harga-semua.post');
-
-        // Batasi {kode_brng} agar tidak menangkap path khusus seperti 'update-harga-semua'
-        Route::put('/data-obat/{kode_brng}', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'update'])
-            ->where('kode_brng', '[A-Za-z0-9]+')
-            ->name('data-obat.update');
-        Route::patch('/data-obat/{kode_brng}', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'update'])
-            ->where('kode_brng', '[A-Za-z0-9]+');
-        Route::delete('/data-obat/{kode_brng}', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'destroy'])
-            ->where('kode_brng', '[A-Za-z0-9]+')
-            ->name('data-obat.destroy');
 
         // Simpan pengaturan harga per barang
         Route::post('/set-penjualan-barang', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'storePenjualanPerBarang'])->name('set-penjualan-barang.store');

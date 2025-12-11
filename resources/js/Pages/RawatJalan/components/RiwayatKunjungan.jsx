@@ -477,6 +477,8 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
         );
     }
 
+    // Tampilan header mobile: netral (tanpa warna khusus)
+
     return (
         <div className="overflow-hidden">
             {/* Mobile: Card list */}
@@ -486,43 +488,40 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                     return (
                         <div
                             key={row.no_rawat}
-                            className={`rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-shadow ${isOpen ? 'shadow-md' : 'shadow-sm'}`}
+                            className={`rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden`}
                         >
                             <button
                                 onClick={() => toggleVisitDetails(row)}
-                                className="w-full text-left px-3 py-3 flex items-start justify-between gap-3"
+                                className={`w-full text-left px-3 py-3 flex items-start justify-between gap-3 bg-gray-50 dark:bg-gray-800/60 ${isOpen ? 'rounded-t-lg' : 'rounded-lg'}`}
                                 aria-expanded={isOpen}
                                 aria-controls={`visit-${index}`}
                             >
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between gap-2">
-                                        <div className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">{row.no_rawat}</div>
-                                        <div className="text-[11px] text-gray-500 dark:text-gray-400">#{index + 1}</div>
-                                    </div>
-                                    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
-                                        <div className="inline-flex items-center gap-1">
-                                            <svg className="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a4 4 0 118 0v4M12 11v6m0 0l-3-3m3 3l3-3" /></svg>
-                                            {row.tgl_registrasi ? new Date(row.tgl_registrasi).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                                <div className="flex-1 min-w-0 space-y-1">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a4 4 0 118 0v4M12 11v10m0 0l-3-3m3 3l3-3" />
+                                            </svg>
+                                            <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                                                {row.tgl_registrasi ? new Date(row.tgl_registrasi).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                                            </span>
                                         </div>
-                                        <div className="inline-flex items-center gap-1">
-                                            <svg className="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2" /></svg>
-                                            {row.kd_poli || '-'}
-                                        </div>
-                                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full ${
-                                            row.stts === 'Selesai' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
-                                            row.stts === 'Proses' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
-                                            'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                                        }`}>{row.stts || '-'}</span>
+                                        <span className="text-xs font-medium px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                                            {row.no_rawat}
+                                        </span>
                                     </div>
+                                    <div className="text-xs text-gray-700 dark:text-gray-300">{row.nm_poli || row.kd_poli || '-'}</div>
                                 </div>
                                 <svg className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
+                            {/* Garis aksen dihilangkan (tanpa warna khusus) */}
                             <div
                                 id={`visit-${index}`}
-                                className={`px-3 pb-3 transition-all duration-200 ease-out ${isOpen ? 'block' : 'hidden'}`}
+                                className={`px-3 pb-3 transition-all duration-200 ease-out ${isOpen ? 'block' : 'hidden'} bg-white dark:bg-gray-800`}
                             >
+                                {/* Info poli sudah tampil di header */}
                                 {renderMedicationTable(row.no_rawat)}
                                 {renderLab(row.no_rawat)}
                                 {renderRadiologi(row.no_rawat)}
@@ -532,159 +531,132 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                 })}
             </div>
 
-            {/* Desktop: Table with sticky header */}
-            <div className="hidden md:block overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-700/30 sticky top-0 z-10">
-                        <tr>
-                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider w-10">No</th>
-                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">No. Rawat</th>
-                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Tanggal</th>
-                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Poli</th>
-                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                        {items.map((row, index) => (
-                            <React.Fragment key={row.no_rawat}>
-                                <tr 
-                                    className={`hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors cursor-pointer ${
-                                        expandedVisit && expandedVisit.no_rawat === row.no_rawat 
-                                            ? 'bg-blue-50/30 dark:bg-blue-900/10' 
-                                            : ''
-                                    }`}
-                                    onClick={() => toggleVisitDetails(row)}
-                                >
-                                    <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700 dark:text-gray-300">
-                                        <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-medium text-[10px]">
-                                            {index + 1}
-                                        </span>
-                                    </td>
-                                    <td className="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900 dark:text-white">
+            {/* Desktop: List dengan header klik-untuk-expand (tanpa tabel) */}
+            <div className="hidden md:block">
+                <div className="space-y-3">
+                    {items.map((row) => (
+                        <div
+                            key={row.no_rawat}
+                            className={`rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden ${
+                                expandedVisit && expandedVisit.no_rawat === row.no_rawat ? 'ring-1 ring-blue-300 dark:ring-blue-700' : ''
+                            }`}
+                        >
+                            <button
+                                type="button"
+                                onClick={() => toggleVisitDetails(row)}
+                                aria-expanded={expandedVisit && expandedVisit.no_rawat === row.no_rawat ? 'true' : 'false'}
+                                className={`w-full flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-700/30 ${
+                                    expandedVisit && expandedVisit.no_rawat === row.no_rawat ? 'border-b border-gray-200 dark:border-gray-700' : ''
+                                }`}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <svg className="w-4 h-4 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a4 4 0 118 0v4M12 11v10m0 0l-3-3m3 3l3-3" />
+                                    </svg>
+                                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                                        {row.tgl_registrasi ? new Date(row.tgl_registrasi).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-[11px] px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
                                         {row.no_rawat}
-                                    </td>
-                                    <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700 dark:text-gray-300">
-                                        {row.tgl_registrasi ? new Date(row.tgl_registrasi).toLocaleDateString('id-ID', {
-                                            day: '2-digit',
-                                            month: 'short',
-                                            year: 'numeric'
-                                        }) : '-'}
-                                    </td>
-                                    <td className="px-2 py-2 whitespace-nowrap text-xs">
-                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300">
-                                            {row.kd_poli || '-'}
-                                        </span>
-                                    </td>
-                                    <td className="px-2 py-2 whitespace-nowrap text-xs">
-                                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full ${
-                                            row.stts === 'Selesai' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
-                                            row.stts === 'Proses' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
-                                            'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                                        }`}>
-                                            {row.stts || '-'}
-                                        </span>
-                                    </td>
-                                </tr>
-                                {expandedVisit && expandedVisit.no_rawat === row.no_rawat && (
-                                    <tr>
-                                        <td colSpan="5" className="px-2 py-2 bg-gray-50 dark:bg-gray-700/20 border-t border-b border-gray-200 dark:border-gray-700">
-                                            <div className="rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
-                                                <div className="px-2 py-2 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-green-50 to-green-50 dark:from-green-900/10 dark:to-green-900/10">
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="flex items-center gap-1.5">
-                                                            <svg className="w-3.5 h-3.5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                                                            </svg>
-                                                            <h4 className="text-xs font-semibold text-gray-900 dark:text-white">
-                                                                Detail: {row.no_rawat}
-                                                            </h4>
-                                                        </div>
-                                                        <button 
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setExpandedVisit(null);
-                                                            }}
-                                                            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                                                            aria-label="Tutup detail"
-                                                        >
-                                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                            </svg>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <div className="p-2 space-y-3">
-                                                    {/* Section Obat */}
-                                                    <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => toggleSection(row.no_rawat, 'obat')}
-                                                            className="w-full flex items-center justify-between px-3 py-2 bg-green-50 dark:bg-green-900/10"
-                                                        >
-                                                            <div className="flex items-center gap-2">
-                                                                <BeakerIcon className="w-4 h-4 text-green-600" />
-                                                                <span className="text-sm font-medium text-gray-800 dark:text-gray-100">Riwayat Obat</span>
-                                                                <span className="text-[11px] text-gray-500">{(medicationData[row.no_rawat] || []).length} item</span>
-                                                            </div>
-                                                            <svg className={`w-4 h-4 text-gray-500 transition-transform ${openSections[row.no_rawat]?.obat ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                                            </svg>
-                                                        </button>
-                                                        <div className={`${openSections[row.no_rawat]?.obat ? 'block' : 'hidden'} p-2`}> 
-                                                            {renderMedicationTable(row.no_rawat)}
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Section Lab */}
-                                                    <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => toggleSection(row.no_rawat, 'lab')}
-                                                            className="w-full flex items-center justify-between px-3 py-2 bg-purple-50 dark:bg-purple-900/10"
-                                                        >
-                                                            <div className="flex items-center gap-2">
-                                                                <BeakerIcon className="w-4 h-4 text-purple-600" />
-                                                                <span className="text-sm font-medium text-gray-800 dark:text-gray-100">Riwayat Lab</span>
-                                                                <span className="text-[11px] text-gray-500">{(labData[row.no_rawat] || []).length} item</span>
-                                                            </div>
-                                                            <svg className={`w-4 h-4 text-gray-500 transition-transform ${openSections[row.no_rawat]?.lab ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                                            </svg>
-                                                        </button>
-                                                        <div className={`${openSections[row.no_rawat]?.lab ? 'block' : 'hidden'} p-2`}> 
-                                                            {renderLab(row.no_rawat)}
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Section Radiologi */}
-                                                    <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => toggleSection(row.no_rawat, 'rad')}
-                                                            className="w-full flex items-center justify-between px-3 py-2 bg-orange-50 dark:bg-orange-900/10"
-                                                        >
-                                                            <div className="flex items-center gap-2">
-                                                                <DocumentTextIcon className="w-4 h-4 text-orange-600" />
-                                                                <span className="text-sm font-medium text-gray-800 dark:text-gray-100">Riwayat Radiologi</span>
-                                                                <span className="text-[11px] text-gray-500">{(radData[row.no_rawat] || []).length} item</span>
-                                                            </div>
-                                                            <svg className={`w-4 h-4 text-gray-500 transition-transform ${openSections[row.no_rawat]?.rad ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                                            </svg>
-                                                        </button>
-                                                        <div className={`${openSections[row.no_rawat]?.rad ? 'block' : 'hidden'} p-2`}> 
-                                                            {renderRadiologi(row.no_rawat)}
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                    </span>
+                                    {expandedVisit && expandedVisit.no_rawat === row.no_rawat ? (
+                                        <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 12H6" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12M6 12h12" />
+                                        </svg>
+                                    )}
+                                </div>
+                            </button>
+                            {/* Baris Poli dihilangkan sesuai permintaan */}
+                            {expandedVisit && expandedVisit.no_rawat === row.no_rawat && (
+                                <div className="p-2 space-y-3 border-t border-gray-200 dark:border-gray-700">
+                                    {/* Section Obat */}
+                                    <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleSection(row.no_rawat, 'obat')}
+                                            className="w-full flex items-center justify-between px-3 py-2 bg-white dark:bg-gray-800"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm font-medium text-gray-800 dark:text-gray-100">Riwayat Obat</span>
+                                                <span className="text-[11px] text-gray-500">{(medicationData[row.no_rawat] || []).length} item</span>
                                             </div>
-                                        </td>
-                                    </tr>
-                                )}
-                            </React.Fragment>
-                        ))}
-                    </tbody>
-                </table>
+                                            {openSections[row.no_rawat]?.obat ? (
+                                                <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 12H6" />
+                                                </svg>
+                                            ) : (
+                                                <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12M6 12h12" />
+                                                </svg>
+                                            )}
+                                        </button>
+                                        <div className={`${openSections[row.no_rawat]?.obat ? 'block' : 'hidden'} p-2`}>
+                                            {renderMedicationTable(row.no_rawat)}
+                                        </div>
+                                    </div>
+
+                                    {/* Section Lab */}
+                                    <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleSection(row.no_rawat, 'lab')}
+                                            className="w-full flex items-center justify-between px-3 py-2 bg-white dark:bg-gray-800"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm font-medium text-gray-800 dark:text-gray-100">Riwayat Lab</span>
+                                                <span className="text-[11px] text-gray-500">{(labData[row.no_rawat] || []).length} item</span>
+                                            </div>
+                                            {openSections[row.no_rawat]?.lab ? (
+                                                <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 12H6" />
+                                                </svg>
+                                            ) : (
+                                                <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12M6 12h12" />
+                                                </svg>
+                                            )}
+                                        </button>
+                                        <div className={`${openSections[row.no_rawat]?.lab ? 'block' : 'hidden'} p-2`}>
+                                            {renderLab(row.no_rawat)}
+                                        </div>
+                                    </div>
+
+                                    {/* Section Radiologi */}
+                                    <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleSection(row.no_rawat, 'rad')}
+                                            className="w-full flex items-center justify-between px-3 py-2 bg-white dark:bg-gray-800"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm font-medium text-gray-800 dark:text-gray-100">Riwayat Radiologi</span>
+                                                <span className="text-[11px] text-gray-500">{(radData[row.no_rawat] || []).length} item</span>
+                                            </div>
+                                            {openSections[row.no_rawat]?.rad ? (
+                                                <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 12H6" />
+                                                </svg>
+                                            ) : (
+                                                <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12M6 12h12" />
+                                                </svg>
+                                            )}
+                                        </button>
+                                        <div className={`${openSections[row.no_rawat]?.rad ? 'block' : 'hidden'} p-2`}>
+                                            {renderRadiologi(row.no_rawat)}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );
