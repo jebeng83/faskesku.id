@@ -1213,9 +1213,14 @@ export default function Registration({
                                                                               }
                                                                           </p>
                                                                           <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                                                                              {
-                                                                                  patient.alamat
-                                                                              }
+                                                                              {[
+                                                                                  patient.alamatpj,
+                                                                                  patient.kelurahanpj,
+                                                                                  patient.kecamatanpj,
+                                                                                  patient.kabupatenpj,
+                                                                              ]
+                                                                                  .filter(Boolean)
+                                                                                  .join(", ")}
                                                                           </p>
                                                                       </div>
                                                                       <div className="flex items-center gap-2 ml-2">
