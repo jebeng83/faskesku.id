@@ -258,7 +258,7 @@ permintaanResep.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
 })
 
 /**
-* @see routes/web.php:679
+* @see routes/web.php:680
 * @route '/farmasi/hutang-obat'
 */
 export const hutangObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -272,7 +272,7 @@ hutangObat.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:679
+* @see routes/web.php:680
 * @route '/farmasi/hutang-obat'
 */
 hutangObat.url = (options?: RouteQueryOptions) => {
@@ -280,7 +280,7 @@ hutangObat.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:679
+* @see routes/web.php:680
 * @route '/farmasi/hutang-obat'
 */
 hutangObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -289,7 +289,7 @@ hutangObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:679
+* @see routes/web.php:680
 * @route '/farmasi/hutang-obat'
 */
 hutangObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -298,7 +298,7 @@ hutangObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:683
+* @see routes/web.php:684
 * @route '/farmasi/stok-obat'
 */
 export const stokObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -312,7 +312,7 @@ stokObat.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:683
+* @see routes/web.php:684
 * @route '/farmasi/stok-obat'
 */
 stokObat.url = (options?: RouteQueryOptions) => {
@@ -320,7 +320,7 @@ stokObat.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:683
+* @see routes/web.php:684
 * @route '/farmasi/stok-obat'
 */
 stokObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -329,7 +329,7 @@ stokObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:683
+* @see routes/web.php:684
 * @route '/farmasi/stok-obat'
 */
 stokObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -338,7 +338,7 @@ stokObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:686
+* @see routes/web.php:687
 * @route '/farmasi/stok-opname'
 */
 export const stokOpname = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -352,7 +352,7 @@ stokOpname.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:686
+* @see routes/web.php:687
 * @route '/farmasi/stok-opname'
 */
 stokOpname.url = (options?: RouteQueryOptions) => {
@@ -360,7 +360,7 @@ stokOpname.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:686
+* @see routes/web.php:687
 * @route '/farmasi/stok-opname'
 */
 stokOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -369,7 +369,7 @@ stokOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:686
+* @see routes/web.php:687
 * @route '/farmasi/stok-opname'
 */
 stokOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -378,7 +378,7 @@ stokOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:690
+* @see routes/web.php:691
 * @route '/farmasi/sisa-stok'
 */
 export const sisaStok = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -392,7 +392,7 @@ sisaStok.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:690
+* @see routes/web.php:691
 * @route '/farmasi/sisa-stok'
 */
 sisaStok.url = (options?: RouteQueryOptions) => {
@@ -400,7 +400,7 @@ sisaStok.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:690
+* @see routes/web.php:691
 * @route '/farmasi/sisa-stok'
 */
 sisaStok.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -409,7 +409,7 @@ sisaStok.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:690
+* @see routes/web.php:691
 * @route '/farmasi/sisa-stok'
 */
 sisaStok.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -418,7 +418,7 @@ sisaStok.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:694
+* @see routes/web.php:695
 * @route '/farmasi/sirkulasi-obat'
 */
 export const sirkulasiObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -432,7 +432,7 @@ sirkulasiObat.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:694
+* @see routes/web.php:695
 * @route '/farmasi/sirkulasi-obat'
 */
 sirkulasiObat.url = (options?: RouteQueryOptions) => {
@@ -440,7 +440,7 @@ sirkulasiObat.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:694
+* @see routes/web.php:695
 * @route '/farmasi/sirkulasi-obat'
 */
 sirkulasiObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -449,7 +449,7 @@ sirkulasiObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:694
+* @see routes/web.php:695
 * @route '/farmasi/sirkulasi-obat'
 */
 sirkulasiObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -458,7 +458,7 @@ sirkulasiObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 })
 
 /**
-* @see routes/web.php:698
+* @see routes/web.php:699
 * @route '/farmasi/cek-stok-obat'
 */
 export const cekStokObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -472,7 +472,7 @@ cekStokObat.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:698
+* @see routes/web.php:699
 * @route '/farmasi/cek-stok-obat'
 */
 cekStokObat.url = (options?: RouteQueryOptions) => {
@@ -480,7 +480,7 @@ cekStokObat.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:698
+* @see routes/web.php:699
 * @route '/farmasi/cek-stok-obat'
 */
 cekStokObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -489,7 +489,7 @@ cekStokObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:698
+* @see routes/web.php:699
 * @route '/farmasi/cek-stok-obat'
 */
 cekStokObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -498,7 +498,7 @@ cekStokObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:703
+* @see routes/web.php:704
 * @route '/farmasi/data-opname'
 */
 export const dataOpname = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -512,7 +512,7 @@ dataOpname.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:703
+* @see routes/web.php:704
 * @route '/farmasi/data-opname'
 */
 dataOpname.url = (options?: RouteQueryOptions) => {
@@ -520,7 +520,7 @@ dataOpname.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:703
+* @see routes/web.php:704
 * @route '/farmasi/data-opname'
 */
 dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -529,7 +529,7 @@ dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:703
+* @see routes/web.php:704
 * @route '/farmasi/data-opname'
 */
 dataOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
