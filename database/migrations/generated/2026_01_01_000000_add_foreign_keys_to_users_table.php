@@ -13,7 +13,11 @@ return new class extends Migration
     {
         if (Schema::hasTable('users')) {
             Schema::table('users', function (Blueprint $table) {
-                $table->foreign(['nik'])->references(['nik'])->on('pegawai')->onUpdate('cascade')->onDelete('restrict');
+                try {
+                    $table->foreign('nik', 'fk_users_pegawai_nik')->references('nik')->on('pegawai')->onUpdate('cascade')->onDelete('restrict');
+                } catch (\Throwable $e) {
+                    // ignore if already exists
+                }
             });
         }
     }
@@ -25,7 +29,15 @@ return new class extends Migration
     {
         if (Schema::hasTable('users')) {
             Schema::table('users', function (Blueprint $table) {
-                $table->dropForeign('users_nik_foreign');
+                try {
+                    $table->dropForeign('fk_users_pegawai_nik');
+                } catch (\Throwable $e) {
+                    try {
+                        $table->dropForeign('users_nik_foreign');
+                    } catch (\Throwable $e2) {
+                        // ignore
+                    }
+                }
             });
         }
     }

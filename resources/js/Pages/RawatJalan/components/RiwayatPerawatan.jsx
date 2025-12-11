@@ -3,9 +3,9 @@ import RiwayatKunjungan from './RiwayatKunjungan';
 
 export default function RiwayatPerawatan({ token, noRkmMedis }) {
     return (
-        <div className="space-y-6">
-            {/* Riwayat Kunjungan Section with collapsible details */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+        <div className="space-y-4">
+            {/* Riwayat Kunjungan */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 {/* <div className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-900/20 dark:to-blue-900/20 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-3">
                         <div className="w-3 h-3 rounded-full bg-blue-500 shadow-lg shadow-blue-500/30"></div>
@@ -18,7 +18,7 @@ export default function RiwayatPerawatan({ token, noRkmMedis }) {
                         </div>
                     </div>
                 </div> */}
-                <div className="p-4">
+                <div className="p-3">
                     <RiwayatKunjungan 
                         token={token} 
                         noRkmMedis={noRkmMedis} 

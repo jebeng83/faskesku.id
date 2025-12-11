@@ -17,7 +17,7 @@ return new class extends Migration
                 $table->string('name');
                 $table->string('username')->unique();
                 $table->string('email')->nullable()->unique();
-                $table->string('nik', 20)->nullable()->index('users_nik_foreign');
+                $table->string('nik', 20)->nullable()->index('users_nik_idx');
                 $table->timestamp('email_verified_at')->nullable();
                 $table->string('password');
                 $table->rememberToken();
