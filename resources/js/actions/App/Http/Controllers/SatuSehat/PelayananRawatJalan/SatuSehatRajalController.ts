@@ -1,9 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::createEncounter
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:21
-* @route '/api/satusehat/rajal/encounter'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:21
+ * @route '/api/satusehat/rajal/encounter'
+ */
 export const createEncounter = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: createEncounter.url(options),
     method: 'post',
@@ -16,18 +16,18 @@ createEncounter.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::createEncounter
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:21
-* @route '/api/satusehat/rajal/encounter'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:21
+ * @route '/api/satusehat/rajal/encounter'
+ */
 createEncounter.url = (options?: RouteQueryOptions) => {
     return createEncounter.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::createEncounter
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:21
-* @route '/api/satusehat/rajal/encounter'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:21
+ * @route '/api/satusehat/rajal/encounter'
+ */
 createEncounter.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: createEncounter.url(options),
     method: 'post',
@@ -35,9 +35,9 @@ createEncounter.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =>
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::updateEncounterByRawat
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:581
-* @route '/api/satusehat/rajal/encounter/by-rawat/{no_rawat}'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:581
+ * @route '/api/satusehat/rajal/encounter/by-rawat/{no_rawat}'
+ */
 export const updateEncounterByRawat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: updateEncounterByRawat.url(args, options),
     method: 'put',
@@ -50,25 +50,26 @@ updateEncounterByRawat.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::updateEncounterByRawat
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:581
-* @route '/api/satusehat/rajal/encounter/by-rawat/{no_rawat}'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:581
+ * @route '/api/satusehat/rajal/encounter/by-rawat/{no_rawat}'
+ */
 updateEncounterByRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { no_rawat: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            no_rawat: args[0],
-        }
+                    no_rawat: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        no_rawat: args.no_rawat,
-    }
+                        no_rawat: args.no_rawat,
+                }
 
     return updateEncounterByRawat.definition.url
             .replace('{no_rawat}', parsedArgs.no_rawat.toString())
@@ -77,9 +78,9 @@ updateEncounterByRawat.url = (args: { no_rawat: string | number } | [no_rawat: s
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::updateEncounterByRawat
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:581
-* @route '/api/satusehat/rajal/encounter/by-rawat/{no_rawat}'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:581
+ * @route '/api/satusehat/rajal/encounter/by-rawat/{no_rawat}'
+ */
 updateEncounterByRawat.put = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: updateEncounterByRawat.url(args, options),
     method: 'put',
@@ -87,9 +88,9 @@ updateEncounterByRawat.put = (args: { no_rawat: string | number } | [no_rawat: s
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::encounterIdByRawat
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:738
-* @route '/api/satusehat/rajal/encounter/id-by-rawat/{no_rawat}'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:738
+ * @route '/api/satusehat/rajal/encounter/id-by-rawat/{no_rawat}'
+ */
 export const encounterIdByRawat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: encounterIdByRawat.url(args, options),
     method: 'get',
@@ -102,25 +103,26 @@ encounterIdByRawat.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::encounterIdByRawat
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:738
-* @route '/api/satusehat/rajal/encounter/id-by-rawat/{no_rawat}'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:738
+ * @route '/api/satusehat/rajal/encounter/id-by-rawat/{no_rawat}'
+ */
 encounterIdByRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { no_rawat: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            no_rawat: args[0],
-        }
+                    no_rawat: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        no_rawat: args.no_rawat,
-    }
+                        no_rawat: args.no_rawat,
+                }
 
     return encounterIdByRawat.definition.url
             .replace('{no_rawat}', parsedArgs.no_rawat.toString())
@@ -129,19 +131,18 @@ encounterIdByRawat.url = (args: { no_rawat: string | number } | [no_rawat: strin
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::encounterIdByRawat
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:738
-* @route '/api/satusehat/rajal/encounter/id-by-rawat/{no_rawat}'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:738
+ * @route '/api/satusehat/rajal/encounter/id-by-rawat/{no_rawat}'
+ */
 encounterIdByRawat.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: encounterIdByRawat.url(args, options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::encounterIdByRawat
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:738
-* @route '/api/satusehat/rajal/encounter/id-by-rawat/{no_rawat}'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:738
+ * @route '/api/satusehat/rajal/encounter/id-by-rawat/{no_rawat}'
+ */
 encounterIdByRawat.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: encounterIdByRawat.url(args, options),
     method: 'head',
@@ -149,9 +150,9 @@ encounterIdByRawat.head = (args: { no_rawat: string | number } | [no_rawat: stri
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::encounterTableDescribe
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:772
-* @route '/api/satusehat/rajal/encounter/describe'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:772
+ * @route '/api/satusehat/rajal/encounter/describe'
+ */
 export const encounterTableDescribe = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: encounterTableDescribe.url(options),
     method: 'get',
@@ -164,28 +165,27 @@ encounterTableDescribe.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::encounterTableDescribe
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:772
-* @route '/api/satusehat/rajal/encounter/describe'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:772
+ * @route '/api/satusehat/rajal/encounter/describe'
+ */
 encounterTableDescribe.url = (options?: RouteQueryOptions) => {
     return encounterTableDescribe.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::encounterTableDescribe
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:772
-* @route '/api/satusehat/rajal/encounter/describe'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:772
+ * @route '/api/satusehat/rajal/encounter/describe'
+ */
 encounterTableDescribe.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: encounterTableDescribe.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::encounterTableDescribe
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:772
-* @route '/api/satusehat/rajal/encounter/describe'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:772
+ * @route '/api/satusehat/rajal/encounter/describe'
+ */
 encounterTableDescribe.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: encounterTableDescribe.url(options),
     method: 'head',
@@ -193,9 +193,9 @@ encounterTableDescribe.head = (options?: RouteQueryOptions): RouteDefinition<'he
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::diagnosaPasienDescribe
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:784
-* @route '/api/satusehat/rajal/diagnosa/describe'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:784
+ * @route '/api/satusehat/rajal/diagnosa/describe'
+ */
 export const diagnosaPasienDescribe = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: diagnosaPasienDescribe.url(options),
     method: 'get',
@@ -208,28 +208,27 @@ diagnosaPasienDescribe.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::diagnosaPasienDescribe
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:784
-* @route '/api/satusehat/rajal/diagnosa/describe'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:784
+ * @route '/api/satusehat/rajal/diagnosa/describe'
+ */
 diagnosaPasienDescribe.url = (options?: RouteQueryOptions) => {
     return diagnosaPasienDescribe.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::diagnosaPasienDescribe
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:784
-* @route '/api/satusehat/rajal/diagnosa/describe'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:784
+ * @route '/api/satusehat/rajal/diagnosa/describe'
+ */
 diagnosaPasienDescribe.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: diagnosaPasienDescribe.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::diagnosaPasienDescribe
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:784
-* @route '/api/satusehat/rajal/diagnosa/describe'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:784
+ * @route '/api/satusehat/rajal/diagnosa/describe'
+ */
 diagnosaPasienDescribe.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: diagnosaPasienDescribe.url(options),
     method: 'head',
@@ -237,9 +236,9 @@ diagnosaPasienDescribe.head = (options?: RouteQueryOptions): RouteDefinition<'he
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::createCondition
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:155
-* @route '/api/satusehat/rajal/condition'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:155
+ * @route '/api/satusehat/rajal/condition'
+ */
 export const createCondition = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: createCondition.url(options),
     method: 'post',
@@ -252,18 +251,18 @@ createCondition.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::createCondition
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:155
-* @route '/api/satusehat/rajal/condition'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:155
+ * @route '/api/satusehat/rajal/condition'
+ */
 createCondition.url = (options?: RouteQueryOptions) => {
     return createCondition.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::createCondition
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:155
-* @route '/api/satusehat/rajal/condition'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:155
+ * @route '/api/satusehat/rajal/condition'
+ */
 createCondition.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: createCondition.url(options),
     method: 'post',
@@ -271,9 +270,9 @@ createCondition.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =>
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::createObservation
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:231
-* @route '/api/satusehat/rajal/observation'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:231
+ * @route '/api/satusehat/rajal/observation'
+ */
 export const createObservation = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: createObservation.url(options),
     method: 'post',
@@ -286,18 +285,18 @@ createObservation.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::createObservation
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:231
-* @route '/api/satusehat/rajal/observation'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:231
+ * @route '/api/satusehat/rajal/observation'
+ */
 createObservation.url = (options?: RouteQueryOptions) => {
     return createObservation.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::createObservation
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:231
-* @route '/api/satusehat/rajal/observation'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:231
+ * @route '/api/satusehat/rajal/observation'
+ */
 createObservation.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: createObservation.url(options),
     method: 'post',
@@ -305,9 +304,9 @@ createObservation.post = (options?: RouteQueryOptions): RouteDefinition<'post'> 
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::createProcedure
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:373
-* @route '/api/satusehat/rajal/procedure'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:373
+ * @route '/api/satusehat/rajal/procedure'
+ */
 export const createProcedure = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: createProcedure.url(options),
     method: 'post',
@@ -320,18 +319,18 @@ createProcedure.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::createProcedure
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:373
-* @route '/api/satusehat/rajal/procedure'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:373
+ * @route '/api/satusehat/rajal/procedure'
+ */
 createProcedure.url = (options?: RouteQueryOptions) => {
     return createProcedure.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::createProcedure
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:373
-* @route '/api/satusehat/rajal/procedure'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:373
+ * @route '/api/satusehat/rajal/procedure'
+ */
 createProcedure.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: createProcedure.url(options),
     method: 'post',
@@ -339,9 +338,9 @@ createProcedure.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =>
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::createComposition
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:437
-* @route '/api/satusehat/rajal/composition'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:437
+ * @route '/api/satusehat/rajal/composition'
+ */
 export const createComposition = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: createComposition.url(options),
     method: 'post',
@@ -354,18 +353,18 @@ createComposition.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::createComposition
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:437
-* @route '/api/satusehat/rajal/composition'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:437
+ * @route '/api/satusehat/rajal/composition'
+ */
 createComposition.url = (options?: RouteQueryOptions) => {
     return createComposition.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::createComposition
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:437
-* @route '/api/satusehat/rajal/composition'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:437
+ * @route '/api/satusehat/rajal/composition'
+ */
 createComposition.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: createComposition.url(options),
     method: 'post',
@@ -373,9 +372,9 @@ createComposition.post = (options?: RouteQueryOptions): RouteDefinition<'post'> 
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::createBundle
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:546
-* @route '/api/satusehat/rajal/bundle'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:546
+ * @route '/api/satusehat/rajal/bundle'
+ */
 export const createBundle = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: createBundle.url(options),
     method: 'post',
@@ -388,18 +387,18 @@ createBundle.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::createBundle
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:546
-* @route '/api/satusehat/rajal/bundle'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:546
+ * @route '/api/satusehat/rajal/bundle'
+ */
 createBundle.url = (options?: RouteQueryOptions) => {
     return createBundle.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::createBundle
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:546
-* @route '/api/satusehat/rajal/bundle'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:546
+ * @route '/api/satusehat/rajal/bundle'
+ */
 createBundle.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: createBundle.url(options),
     method: 'post',
@@ -407,9 +406,9 @@ createBundle.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::pipelineByRawat
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:796
-* @route '/api/satusehat/rajal/pipeline/by-rawat/{no_rawat}'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:796
+ * @route '/api/satusehat/rajal/pipeline/by-rawat/{no_rawat}'
+ */
 export const pipelineByRawat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: pipelineByRawat.url(args, options),
     method: 'post',
@@ -422,25 +421,26 @@ pipelineByRawat.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::pipelineByRawat
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:796
-* @route '/api/satusehat/rajal/pipeline/by-rawat/{no_rawat}'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:796
+ * @route '/api/satusehat/rajal/pipeline/by-rawat/{no_rawat}'
+ */
 pipelineByRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { no_rawat: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            no_rawat: args[0],
-        }
+                    no_rawat: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        no_rawat: args.no_rawat,
-    }
+                        no_rawat: args.no_rawat,
+                }
 
     return pipelineByRawat.definition.url
             .replace('{no_rawat}', parsedArgs.no_rawat.toString())
@@ -449,14 +449,13 @@ pipelineByRawat.url = (args: { no_rawat: string | number } | [no_rawat: string |
 
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::pipelineByRawat
-* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:796
-* @route '/api/satusehat/rajal/pipeline/by-rawat/{no_rawat}'
-*/
+ * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:796
+ * @route '/api/satusehat/rajal/pipeline/by-rawat/{no_rawat}'
+ */
 pipelineByRawat.post = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: pipelineByRawat.url(args, options),
     method: 'post',
 })
-
 const SatuSehatRajalController = { createEncounter, updateEncounterByRawat, encounterIdByRawat, encounterTableDescribe, diagnosaPasienDescribe, createCondition, createObservation, createProcedure, createComposition, createBundle, pipelineByRawat }
 
 export default SatuSehatRajalController

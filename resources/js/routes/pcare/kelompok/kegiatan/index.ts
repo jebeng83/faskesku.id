@@ -4,9 +4,9 @@ import update from './update'
 import deleteMethod from './delete'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:2050
-* @route '/pcare/api/kelompok/kegiatan/{tanggal}'
-*/
+ * @see app/Http/Controllers/Pcare/PcareController.php:2050
+ * @route '/pcare/api/kelompok/kegiatan/{tanggal}'
+ */
 export const api = (args: { tanggal: string | number } | [tanggal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: api.url(args, options),
     method: 'get',
@@ -19,25 +19,26 @@ api.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:2050
-* @route '/pcare/api/kelompok/kegiatan/{tanggal}'
-*/
+ * @see app/Http/Controllers/Pcare/PcareController.php:2050
+ * @route '/pcare/api/kelompok/kegiatan/{tanggal}'
+ */
 api.url = (args: { tanggal: string | number } | [tanggal: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { tanggal: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            tanggal: args[0],
-        }
+                    tanggal: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        tanggal: args.tanggal,
-    }
+                        tanggal: args.tanggal,
+                }
 
     return api.definition.url
             .replace('{tanggal}', parsedArgs.tanggal.toString())
@@ -46,29 +47,27 @@ api.url = (args: { tanggal: string | number } | [tanggal: string | number ] | st
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:2050
-* @route '/pcare/api/kelompok/kegiatan/{tanggal}'
-*/
+ * @see app/Http/Controllers/Pcare/PcareController.php:2050
+ * @route '/pcare/api/kelompok/kegiatan/{tanggal}'
+ */
 api.get = (args: { tanggal: string | number } | [tanggal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: api.url(args, options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:2050
-* @route '/pcare/api/kelompok/kegiatan/{tanggal}'
-*/
+ * @see app/Http/Controllers/Pcare/PcareController.php:2050
+ * @route '/pcare/api/kelompok/kegiatan/{tanggal}'
+ */
 api.head = (args: { tanggal: string | number } | [tanggal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: api.url(args, options),
     method: 'head',
 })
-
 const kegiatan = {
     api: Object.assign(api, api),
-    add: Object.assign(add, add),
-    update: Object.assign(update, update),
-    delete: Object.assign(deleteMethod, deleteMethod),
+add: Object.assign(add, add),
+update: Object.assign(update, update),
+delete: Object.assign(deleteMethod, deleteMethod),
 }
 
 export default kegiatan

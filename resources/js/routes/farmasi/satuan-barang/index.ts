@@ -1,9 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Farmasi\SatuanBarangController::index
-* @see app/Http/Controllers/Farmasi/SatuanBarangController.php:13
-* @route '/farmasi/satuan-barang'
-*/
+ * @see app/Http/Controllers/Farmasi/SatuanBarangController.php:13
+ * @route '/farmasi/satuan-barang'
+ */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
@@ -16,28 +16,27 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SatuanBarangController::index
-* @see app/Http/Controllers/Farmasi/SatuanBarangController.php:13
-* @route '/farmasi/satuan-barang'
-*/
+ * @see app/Http/Controllers/Farmasi/SatuanBarangController.php:13
+ * @route '/farmasi/satuan-barang'
+ */
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\Farmasi\SatuanBarangController::index
-* @see app/Http/Controllers/Farmasi/SatuanBarangController.php:13
-* @route '/farmasi/satuan-barang'
-*/
+ * @see app/Http/Controllers/Farmasi/SatuanBarangController.php:13
+ * @route '/farmasi/satuan-barang'
+ */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\Farmasi\SatuanBarangController::index
-* @see app/Http/Controllers/Farmasi/SatuanBarangController.php:13
-* @route '/farmasi/satuan-barang'
-*/
+ * @see app/Http/Controllers/Farmasi/SatuanBarangController.php:13
+ * @route '/farmasi/satuan-barang'
+ */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
@@ -45,9 +44,9 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\SatuanBarangController::store
-* @see app/Http/Controllers/Farmasi/SatuanBarangController.php:41
-* @route '/farmasi/satuan-barang'
-*/
+ * @see app/Http/Controllers/Farmasi/SatuanBarangController.php:41
+ * @route '/farmasi/satuan-barang'
+ */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -60,18 +59,18 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SatuanBarangController::store
-* @see app/Http/Controllers/Farmasi/SatuanBarangController.php:41
-* @route '/farmasi/satuan-barang'
-*/
+ * @see app/Http/Controllers/Farmasi/SatuanBarangController.php:41
+ * @route '/farmasi/satuan-barang'
+ */
 store.url = (options?: RouteQueryOptions) => {
     return store.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\Farmasi\SatuanBarangController::store
-* @see app/Http/Controllers/Farmasi/SatuanBarangController.php:41
-* @route '/farmasi/satuan-barang'
-*/
+ * @see app/Http/Controllers/Farmasi/SatuanBarangController.php:41
+ * @route '/farmasi/satuan-barang'
+ */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -79,9 +78,9 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\SatuanBarangController::update
-* @see app/Http/Controllers/Farmasi/SatuanBarangController.php:54
-* @route '/farmasi/satuan-barang/{kode_sat}'
-*/
+ * @see app/Http/Controllers/Farmasi/SatuanBarangController.php:54
+ * @route '/farmasi/satuan-barang/{kode_sat}'
+ */
 export const update = (args: { kode_sat: string | number } | [kode_sat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
@@ -94,25 +93,26 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SatuanBarangController::update
-* @see app/Http/Controllers/Farmasi/SatuanBarangController.php:54
-* @route '/farmasi/satuan-barang/{kode_sat}'
-*/
+ * @see app/Http/Controllers/Farmasi/SatuanBarangController.php:54
+ * @route '/farmasi/satuan-barang/{kode_sat}'
+ */
 update.url = (args: { kode_sat: string | number } | [kode_sat: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { kode_sat: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            kode_sat: args[0],
-        }
+                    kode_sat: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        kode_sat: args.kode_sat,
-    }
+                        kode_sat: args.kode_sat,
+                }
 
     return update.definition.url
             .replace('{kode_sat}', parsedArgs.kode_sat.toString())
@@ -121,9 +121,9 @@ update.url = (args: { kode_sat: string | number } | [kode_sat: string | number ]
 
 /**
 * @see \App\Http\Controllers\Farmasi\SatuanBarangController::update
-* @see app/Http/Controllers/Farmasi/SatuanBarangController.php:54
-* @route '/farmasi/satuan-barang/{kode_sat}'
-*/
+ * @see app/Http/Controllers/Farmasi/SatuanBarangController.php:54
+ * @route '/farmasi/satuan-barang/{kode_sat}'
+ */
 update.put = (args: { kode_sat: string | number } | [kode_sat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
@@ -131,9 +131,9 @@ update.put = (args: { kode_sat: string | number } | [kode_sat: string | number ]
 
 /**
 * @see \App\Http\Controllers\Farmasi\SatuanBarangController::destroy
-* @see app/Http/Controllers/Farmasi/SatuanBarangController.php:73
-* @route '/farmasi/satuan-barang/{kode_sat}'
-*/
+ * @see app/Http/Controllers/Farmasi/SatuanBarangController.php:73
+ * @route '/farmasi/satuan-barang/{kode_sat}'
+ */
 export const destroy = (args: { kode_sat: string | number } | [kode_sat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
@@ -146,25 +146,26 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SatuanBarangController::destroy
-* @see app/Http/Controllers/Farmasi/SatuanBarangController.php:73
-* @route '/farmasi/satuan-barang/{kode_sat}'
-*/
+ * @see app/Http/Controllers/Farmasi/SatuanBarangController.php:73
+ * @route '/farmasi/satuan-barang/{kode_sat}'
+ */
 destroy.url = (args: { kode_sat: string | number } | [kode_sat: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { kode_sat: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            kode_sat: args[0],
-        }
+                    kode_sat: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        kode_sat: args.kode_sat,
-    }
+                        kode_sat: args.kode_sat,
+                }
 
     return destroy.definition.url
             .replace('{kode_sat}', parsedArgs.kode_sat.toString())
@@ -173,19 +174,18 @@ destroy.url = (args: { kode_sat: string | number } | [kode_sat: string | number 
 
 /**
 * @see \App\Http\Controllers\Farmasi\SatuanBarangController::destroy
-* @see app/Http/Controllers/Farmasi/SatuanBarangController.php:73
-* @route '/farmasi/satuan-barang/{kode_sat}'
-*/
+ * @see app/Http/Controllers/Farmasi/SatuanBarangController.php:73
+ * @route '/farmasi/satuan-barang/{kode_sat}'
+ */
 destroy.delete = (args: { kode_sat: string | number } | [kode_sat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
-
 const satuanBarang = {
     index: Object.assign(index, index),
-    store: Object.assign(store, store),
-    update: Object.assign(update, update),
-    destroy: Object.assign(destroy, destroy),
+store: Object.assign(store, store),
+update: Object.assign(update, update),
+destroy: Object.assign(destroy, destroy),
 }
 
 export default satuanBarang
