@@ -576,29 +576,21 @@ export default function Lanjutan({ rawatJalan, params }) {
 
                 {/* Tab Navigation for Menu Pemeriksaan dihilangkan sesuai permintaan */}
 
-                {/* Main Content Area - Dynamic layout based on collapsed state */}
+                {/* Main Content Area - two columns 50:50 (riwayat : input) */}
                 {/* Note: Sidebar (first column) is handled by LanjutanRalanLayout */}
-                <div className="flex flex-col lg:flex-row gap-6 w-full max-w-full overflow-x-hidden">
-                    {/* Middle Column - Medical History (collapsible sidebar) */}
-                    <div className={`transition-all duration-300 flex-shrink-0 ${
-                        openAcc.pemeriksaan ? "lg:w-[360px] xl:w-[420px]" : "lg:w-16"
-                    } lg:resize-x lg:overflow-auto`}>
+                <div className={`grid grid-cols-1 ${openAcc.pemeriksaan ? 'lg:grid-cols-2' : 'lg:grid-cols-1'} gap-6 w-full max-w-full overflow-x-hidden`}>
+                    {/* Left Column - Riwayat Perawatan (scrollable) */}
+                    <div className={`transition-all duration-300 w-full lg:overflow-auto ${openAcc.pemeriksaan ? '' : 'hidden lg:hidden'}`}>
                         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden sticky top-6 transition-all duration-300">
                             <div className={`bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-900/20 dark:to-blue-900/20 border-b border-gray-200 dark:border-gray-700 transition-all duration-300 ${
                                 openAcc.pemeriksaan ? "px-4 py-3" : "px-2 py-3"
                             }`}>
                                 <button
                                     onClick={() => toggle("pemeriksaan")}
-                                    className={`w-full group hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-lg transition-all duration-200 ${
-                                        openAcc.pemeriksaan 
-                                            ? "flex items-center justify-between text-left p-2" 
-                                            : "p-2 lg:flex lg:flex-col lg:items-center lg:justify-center lg:gap-2 flex items-center justify-between"
-                                    }`}
+                                    className={`w-full group hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-lg transition-all duration-200 flex items-center justify-between text-left p-2`}
                                     title={openAcc.pemeriksaan ? "Sembunyikan Riwayat" : "Tampilkan Riwayat"}
                                 >
-                                    <div className={`flex items-center gap-3 transition-all duration-300 ${
-                                        openAcc.pemeriksaan ? "" : "lg:flex-col lg:gap-2 lg:w-full"
-                                    }`}>
+                                    <div className={`flex items-center gap-3 transition-all duration-300`}>
                                         <div
                                             className={`w-3 h-3 rounded-full transition-colors flex-shrink-0 ${
                                                 openAcc.pemeriksaan
@@ -647,7 +639,7 @@ export default function Lanjutan({ rawatJalan, params }) {
                                     )}
                                     {!openAcc.pemeriksaan && (
                                         <svg
-                                            className="w-5 h-5 text-gray-500 transition-transform duration-200 flex-shrink-0 lg:hidden"
+                                            className="w-5 h-5 text-gray-500 transition-transform duration-200 flex-shrink-0"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -683,10 +675,27 @@ export default function Lanjutan({ rawatJalan, params }) {
                         </div>
                     </div>
 
-                    {/* Right Column - Active Tab Content (expands when collapsed) */}
-                    <div className={`transition-all duration-300 w-full max-w-full overflow-x-hidden ${
-                        openAcc.pemeriksaan ? "lg:flex-1" : "lg:flex-1"
-                    } min-w-0`}>
+                    {/* Right Column - Input Form Content (50%) */}
+                    <div className={`transition-all duration-300 w-full max-w-full overflow-x-hidden min-w-0`}>
+                        {!openAcc.pemeriksaan && (
+                            <div className="flex justify-end mb-2">
+                                <button
+                                    onClick={() => toggle('pemeriksaan')}
+                                    className="text-xs bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded border border-gray-200 dark:border-gray-700 flex items-center gap-2"
+                                    title="Tampilkan Riwayat Perawatan"
+                                >
+                                    <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                    Tampilkan Riwayat
+                                </button>
+                            </div>
+                        )}
                         <div className="space-y-4 w-full max-w-full overflow-x-hidden">
                             {/* Tab Content Header */}
                             <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
