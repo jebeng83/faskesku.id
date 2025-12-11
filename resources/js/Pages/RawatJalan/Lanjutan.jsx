@@ -36,6 +36,7 @@ export default function Lanjutan({ rawatJalan, params }) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [autoSaveStatus, setAutoSaveStatus] = useState("");
+    const [showPatientDetails, setShowPatientDetails] = useState(false);
 
     const toggle = (section) => {
         setOpenAcc((prev) => ({
@@ -331,7 +332,7 @@ export default function Lanjutan({ rawatJalan, params }) {
                 }`}
             />
 
-            <div className="px-4 sm:px-6 lg:px-8 py-6 w-full max-w-full overflow-x-hidden">
+            <div className="px-4 sm:px-6 lg:px-8 py-6 w-full max-w-full overflow-x-hidden mx-auto max-w-[1600px]">
                 {/* Header dengan Gradient */}
                 <div className="mb-8">
                     <div className="bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 rounded-2xl p-8 text-white">
@@ -383,10 +384,10 @@ export default function Lanjutan({ rawatJalan, params }) {
 
                 {/* Informasi Pasien */}
                 <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm mb-8 overflow-hidden">
-                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="bg-gray-50 dark:bg-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                             <svg
-                                className="w-5 h-5 text-blue-600 dark:text-blue-400"
+                                className="w-5 h-5 text-gray-500 dark:text-gray-300"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -412,262 +413,120 @@ export default function Lanjutan({ rawatJalan, params }) {
                                 }}
                             />
                         ) : rawatJalan?.patient ? (
-                            <div className="space-y-6">
-                                {/* Baris Pertama: Informasi Dasar */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-blue-100 dark:bg-blue-800/30 rounded-lg">
-                                                <svg
-                                                    className="w-5 h-5 text-blue-600 dark:text-blue-400"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                                    />
-                                                </svg>
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide">
-                                                    Nama Pasien
-                                                </p>
-                                                <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1 truncate">
-                                                    {rawatJalan.patient.nm_pasien ||
-                                                        "-"}
-                                                </p>
-                                            </div>
-                                        </div>
+                            <>
+                            {/* Ringkasan utama di atas card */}
+                            <button
+                                type="button"
+                                className="w-full text-left px-3 py-2 text-xs rounded-md border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors mb-3 flex items-center justify-between"
+                                onClick={() => setShowPatientDetails((v) => !v)}
+                                aria-expanded={showPatientDetails}
+                                aria-controls="patient-details-card"
+                                title="Klik untuk menampilkan/sembunyikan detail pasien"
+                            >
+                                <div className="flex-1 flex flex-wrap gap-x-6 gap-y-1 items-baseline">
+                                    <div className="flex items-baseline">
+                                        <span className="text-gray-900 dark:text-white font-semibold">{rawatJalan.patient?.nm_pasien || rawatJalan.nama_pasien || '-'}</span>
                                     </div>
-                                    <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 border border-green-200 dark:border-green-800">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-green-100 dark:bg-green-800/30 rounded-lg">
-                                                <svg
-                                                    className="w-5 h-5 text-green-600 dark:text-green-400"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                                    />
-                                                </svg>
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-xs font-medium text-green-600 dark:text-green-400 uppercase tracking-wide">
-                                                    No. Rekam Medis
-                                                </p>
-                                                <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1 truncate font-mono">
-                                                    {rawatJalan.patient
-                                                        .no_rkm_medis || "-"}
-                                                </p>
-                                            </div>
-                                        </div>
+                                    <div className="flex items-baseline">
+                                        <span className="text-gray-900 dark:text-white font-mono font-semibold">{rawatJalan.no_rawat || '-'}</span>
                                     </div>
-                                    <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-4 border border-purple-200 dark:border-purple-800">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-purple-100 dark:bg-purple-800/30 rounded-lg">
-                                                <svg
-                                                    className="w-5 h-5 text-purple-600 dark:text-purple-400"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2h4a1 1 0 011 1v2a1 1 0 01-1 1h-1v12a2 2 0 01-2 2H6a2 2 0 01-2-2V8H3a1 1 0 01-1-1V5a1 1 0 011-1h4z"
-                                                    />
-                                                </svg>
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-xs font-medium text-purple-600 dark:text-purple-400 uppercase tracking-wide">
-                                                    No. Rawat
-                                                </p>
-                                                <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1 truncate font-mono">
-                                                    {rawatJalan.no_rawat || "-"}
-                                                </p>
-                                            </div>
-                                        </div>
+                                    <div className="flex items-baseline">
+                                        <span className="text-gray-900 dark:text-white font-semibold">{(rawatJalan.patient?.umur || rawatJalan.umurdaftar) ? `${rawatJalan.patient?.umur || rawatJalan.umurdaftar} ${rawatJalan.sttsumur || 'Th'}` : '-'}</span>
                                     </div>
-                                    <div className="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-4 border border-orange-200 dark:border-orange-800">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-orange-100 dark:bg-orange-800/30 rounded-lg">
-                                                <svg
-                                                    className="w-5 h-5 text-orange-600 dark:text-orange-400"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M8 7V3a4 4 0 118 0v4m-4 4v6m0 0l-3-3m3 3l3-3"
-                                                    />
-                                                </svg>
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-xs font-medium text-orange-600 dark:text-orange-400 uppercase tracking-wide">
-                                                    Tanggal Registrasi
-                                                </p>
-                                                <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">
-                                                    {formatDate(
-                                                        rawatJalan.tgl_registrasi
-                                                    )}
-                                                </p>
-                                            </div>
+                                    <div className="flex items-baseline">
+                                        <span className="text-gray-900 dark:text-white font-semibold">{rawatJalan.penjab?.png_jawab || rawatJalan.cara_bayar || 'BPJS'}</span>
+                                    </div>
+                                </div>
+                                <div className="ml-3 shrink-0 flex items-center gap-1 text-gray-600 dark:text-gray-300">
+                                    <span className="hidden sm:inline text-[10px]">{showPatientDetails ? 'Sembunyikan' : 'Lihat'} detail</span>
+                                    <svg
+                                        className={`w-3.5 h-3.5 transition-transform ${showPatientDetails ? 'rotate-180' : 'rotate-0'}`}
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                            </button>
+                            {showPatientDetails && (
+                            <section id="patient-details-card" className="rounded-md border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+                                <div className="px-2 py-1 border-b border-gray-200 dark:border-gray-800 text-[11px] font-medium text-gray-800 dark:text-gray-200">
+                                    Informasi Pasien
+                                </div>
+                                <div className="px-2 py-1.5 text-[11px] leading-tight">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+                                        <div className="py-0.5 flex items-baseline gap-1">
+                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Alergi</span>
+                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.alergi || rawatJalan.patient?.alergi || "Tidak ada"}</span>
+                                        </div>
+                                        <div className="py-0.5 flex items-baseline gap-1">
+                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">No KTP</span>
+                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.patient?.no_ktp || "-"}</span>
+                                        </div>
+                                        <div className="py-0.5 flex items-baseline gap-1">
+                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Gender</span>
+                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.patient?.jk === 'L' ? 'Laki-laki' : rawatJalan.patient?.jk === 'P' ? 'Perempuan' : (rawatJalan.patient?.jk || '-')}</span>
+                                        </div>
+                                        <div className="py-0.5 flex items-baseline gap-1">
+                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Gol Darah</span>
+                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.patient?.gol_darah || '-'}</span>
+                                        </div>
+                                        <div className="py-0.5 flex items-baseline gap-1">
+                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">TTL</span>
+                                            <span className="text-gray-900 dark:text-white flex-1">{(rawatJalan.patient?.tmp_lahir || '-') + ', ' + (rawatJalan.patient?.tgl_lahir ? formatDate(rawatJalan.patient.tgl_lahir) : '-')}</span>
+                                        </div>
+                                        <div className="py-0.5 flex items-baseline gap-1">
+                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Telp</span>
+                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.patient?.no_tlp || '-'}</span>
+                                        </div>
+                                        <div className="py-0.5 flex items-baseline gap-1">
+                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Pekerjaan</span>
+                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.patient?.pekerjaan || '-'}</span>
+                                        </div>
+                                        <div className="py-0.5 flex items-baseline gap-1">
+                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Nama Ibu</span>
+                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.patient?.namakk || rawatJalan.patient?.nama_ibu || '-'}</span>
+                                        </div>
+                                        <div className="py-0.5 flex items-baseline gap-1">
+                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Alamat</span>
+                                            <span className="text-gray-900 dark:text-white flex-1 break-words">{rawatJalan.patient?.alamat || '-'}</span>
+                                        </div>
+                                        <div className="py-0.5 flex items-baseline gap-1">
+                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Keluarga</span>
+                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.patient?.keluarga || '-'}</span>
+                                        </div>
+                                        <div className="py-0.5 flex items-baseline gap-1">
+                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Status</span>
+                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.patient?.stts_nikah || '-'}</span>
+                                        </div>
+                                        <div className="py-0.5 flex items-baseline gap-1">
+                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Agama</span>
+                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.patient?.agama || '-'}</span>
+                                        </div>
+                                        <div className="py-0.5 flex items-baseline gap-1">
+                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Pekerjaan PJ</span>
+                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.pj?.pekerjaan || '-'}</span>
+                                        </div>
+                                        <div className="py-0.5 flex items-baseline gap-1">
+                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Alamat PJ</span>
+                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.pj?.alamat || '-'}</span>
+                                        </div>
+                                        <div className="py-0.5 flex items-baseline gap-1">
+                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">No Peserta</span>
+                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.patient?.no_peserta || '-'}</span>
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* Baris Kedua: Informasi Tambahan */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                                    {/* Umur */}
-                                    <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-4 border border-indigo-200 dark:border-indigo-800">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-indigo-100 dark:bg-indigo-800/30 rounded-lg">
-                                                <svg
-                                                    className="w-5 h-5 text-indigo-600 dark:text-indigo-400"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                    />
-                                                </svg>
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-xs font-medium text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">
-                                                    Umur
-                                                </p>
-                                                <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">
-                                                    {rawatJalan.patient.umur || rawatJalan.umurdaftar 
-                                                        ? `${rawatJalan.patient.umur || rawatJalan.umurdaftar} ${rawatJalan.sttsumur || 'Th'}`
-                                                        : "-"}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Jenis Kelamin */}
-                                    <div className="bg-pink-50 dark:bg-pink-900/20 rounded-xl p-4 border border-pink-200 dark:border-pink-800">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-pink-100 dark:bg-pink-800/30 rounded-lg">
-                                                <svg
-                                                    className="w-5 h-5 text-pink-600 dark:text-pink-400"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                                                    />
-                                                </svg>
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-xs font-medium text-pink-600 dark:text-pink-400 uppercase tracking-wide">
-                                                    Jenis Kelamin
-                                                </p>
-                                                <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">
-                                                    {rawatJalan.patient.jk === 'L' 
-                                                        ? 'Laki-laki' 
-                                                        : rawatJalan.patient.jk === 'P' 
-                                                        ? 'Perempuan' 
-                                                        : rawatJalan.patient.jk || "-"}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Alamat */}
-                                    <div className="bg-teal-50 dark:bg-teal-900/20 rounded-xl p-4 border border-teal-200 dark:border-teal-800 lg:col-span-2">
-                                        <div className="flex items-start gap-3">
-                                            <div className="p-2 bg-teal-100 dark:bg-teal-800/30 rounded-lg flex-shrink-0">
-                                                <svg
-                                                    className="w-5 h-5 text-teal-600 dark:text-teal-400"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                                                    />
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                                                    />
-                                                </svg>
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-xs font-medium text-teal-600 dark:text-teal-400 uppercase tracking-wide">
-                                                    Alamat
-                                                </p>
-                                                <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1 break-words">
-                                                    {rawatJalan.patient.alamat || "-"}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Baris Ketiga: Riwayat Alergi */}
-                                <div className="grid grid-cols-1 gap-6">
-                                    <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 border border-red-200 dark:border-red-800">
-                                        <div className="flex items-start gap-3">
-                                            <div className="p-2 bg-red-100 dark:bg-red-800/30 rounded-lg flex-shrink-0">
-                                                <svg
-                                                    className="w-5 h-5 text-red-600 dark:text-red-400"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                                                    />
-                                                </svg>
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-xs font-medium text-red-600 dark:text-red-400 uppercase tracking-wide mb-2">
-                                                    Riwayat Alergi
-                                                </p>
-                                                <p className="text-sm font-semibold text-gray-900 dark:text-white break-words">
-                                                    {rawatJalan.alergi || rawatJalan.patient?.alergi || "Tidak ada alergi"}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            </section>
+                            )}
+                            </>
                         ) : (
-                            <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-6 border border-yellow-200 dark:border-yellow-800">
+                            <div className="bg-gray-50 dark:bg-gray-800/60 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                                 <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-yellow-100 dark:bg-yellow-800/30 rounded-xl">
+                                    <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-xl">
                                         <svg
-                                            className="w-6 h-6 text-yellow-600 dark:text-yellow-400"
+                                            className="w-6 h-6 text-gray-500 dark:text-gray-300"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -681,18 +540,18 @@ export default function Lanjutan({ rawatJalan, params }) {
                                         </svg>
                                     </div>
                                     <div className="flex-1">
-                                        <h4 className="text-lg font-semibold text-yellow-800 dark:text-yellow-200">
+                                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
                                             Data Pasien Tidak Ditemukan
                                         </h4>
-                                        <p className="text-sm text-yellow-600 dark:text-yellow-400 mt-1">
+                                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                                             No. Rawat: {params?.no_rawat || "-"}{" "}
-                                            | No. RM:{" "}
+                                            | No. RM: {" "}
                                             {params?.no_rkm_medis || "-"}
                                         </p>
                                     </div>
                                     <button
                                         onClick={() => window.location.reload()}
-                                        className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                                        className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
                                     >
                                         <svg
                                             className="w-4 h-4"
@@ -715,72 +574,15 @@ export default function Lanjutan({ rawatJalan, params }) {
                     </div>
                 </div>
 
-                {/* Tab Navigation for Menu Pemeriksaan */}
-                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm mb-6 overflow-hidden">
-                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-3">
-                            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                                <svg
-                                    className="w-5 h-5 text-blue-600 dark:text-blue-400"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                                    />
-                                </svg>
-                            </div>
-                            <div>
-                                <span>Menu Pemeriksaan</span>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 font-normal mt-1">
-                                    Pilih menu untuk mengelola data pemeriksaan
-                                </p>
-                            </div>
-                        </h3>
-                    </div>
-
-                    {/* Tab Buttons */}
-                    <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
-                        <div className="flex flex-wrap gap-2">
-                            {menuTabs.map((tab) => {
-                                const isActive = activeTab === tab.key;
-                                return (
-                                    <button
-                                        key={tab.key}
-                                        onClick={() => handleTabChange(tab.key)}
-                                        className={`
-                                            flex items-center space-x-2 px-4 py-2 rounded-lg border-2 transition-all duration-200 font-medium text-sm
-                                            ${getTabColorClasses(
-                                                tab.color,
-                                                isActive
-                                            )}
-                                            ${
-                                                isActive
-                                                    ? "border-current shadow-sm"
-                                                    : "border-transparent"
-                                            }
-                                        `}
-                                    >
-                                        {tab.icon}
-                                        <span>{tab.title}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </div>
+                {/* Tab Navigation for Menu Pemeriksaan dihilangkan sesuai permintaan */}
 
                 {/* Main Content Area - Dynamic layout based on collapsed state */}
                 {/* Note: Sidebar (first column) is handled by LanjutanRalanLayout */}
                 <div className="flex flex-col lg:flex-row gap-6 w-full max-w-full overflow-x-hidden">
                     {/* Middle Column - Medical History (collapsible sidebar) */}
                     <div className={`transition-all duration-300 flex-shrink-0 ${
-                        openAcc.pemeriksaan ? "lg:w-[30%]" : "lg:w-16"
-                    }`}>
+                        openAcc.pemeriksaan ? "lg:w-[360px] xl:w-[420px]" : "lg:w-16"
+                    } lg:resize-x lg:overflow-auto`}>
                         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden sticky top-6 transition-all duration-300">
                             <div className={`bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-900/20 dark:to-blue-900/20 border-b border-gray-200 dark:border-gray-700 transition-all duration-300 ${
                                 openAcc.pemeriksaan ? "px-4 py-3" : "px-2 py-3"
@@ -861,7 +663,7 @@ export default function Lanjutan({ rawatJalan, params }) {
                                 </button>
                             </div>
                             {openAcc.pemeriksaan && (
-                                <div className="p-4 max-h-[calc(100vh-32rem)] min-h-[calc(100vh-28rem)] overflow-y-auto">
+                                <div className="p-4 max-h-[calc(100vh-12rem)] min-h-[calc(100vh-10rem)] overflow-y-auto">
                                     {/* Updated to use the new combined component */}
                                     <RiwayatPerawatan
                                         token={
@@ -884,7 +686,7 @@ export default function Lanjutan({ rawatJalan, params }) {
                     {/* Right Column - Active Tab Content (expands when collapsed) */}
                     <div className={`transition-all duration-300 w-full max-w-full overflow-x-hidden ${
                         openAcc.pemeriksaan ? "lg:flex-1" : "lg:flex-1"
-                    }`}>
+                    } min-w-0`}>
                         <div className="space-y-4 w-full max-w-full overflow-x-hidden">
                             {/* Tab Content Header */}
                             <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
