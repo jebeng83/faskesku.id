@@ -10,6 +10,7 @@ use App\Models\RegPeriksa;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 
@@ -204,7 +205,13 @@ class RegistrationController extends Controller
         ]);
 
         // Filter by date
-        if ($request->has('date') && $request->date) {
+        if ($request->has('start_date') && $request->start_date && $request->has('end_date') && $request->end_date) {
+            $query->whereBetween('tgl_registrasi', [$request->start_date, $request->end_date]);
+        } elseif ($request->has('start_date') && $request->start_date) {
+            $query->where('tgl_registrasi', $request->start_date);
+        } elseif ($request->has('end_date') && $request->end_date) {
+            $query->where('tgl_registrasi', $request->end_date);
+        } elseif ($request->has('date') && $request->date) {
             $query->where('tgl_registrasi', $request->date);
         } else {
             $query->where('tgl_registrasi', date('Y-m-d'));
