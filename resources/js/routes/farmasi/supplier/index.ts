@@ -43,11 +43,4 @@ const supplier = {
     index: Object.assign(index, index),
 }
 
-export default supplier'head',
-})
-
-const supplier = {
-    index: Object.assign(index, index),
-}
-
 export default supplier
