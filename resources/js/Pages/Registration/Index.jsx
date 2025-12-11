@@ -52,6 +52,8 @@ export default function Registration({
         // Biarkan kosong agar backend menentukan tanggal default (timezone server)
         // Menghindari mismatch timezone client vs server yang dapat membuat data terlihat hanya 1
         date: "",
+        start_date: "",
+        end_date: "",
         kd_poli: "",
         kd_dokter: "",
         search: "",
@@ -744,6 +746,8 @@ export default function Registration({
         return () => clearTimeout(timeoutId);
     }, [
         filters.date,
+        filters.start_date,
+        filters.end_date,
         filters.kd_poli,
         filters.kd_dokter,
         filters.search,
@@ -1869,13 +1873,22 @@ export default function Registration({
                                                 <label className="block text-xs lg:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                                     Tanggal
                                                 </label>
-                                                <input
-                                                    type="date"
-                                                    name="date"
-                                                    value={filters.date}
-                                                    onChange={handleFilterChange}
-                                                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
-                                                />
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="date"
+                                                        name="start_date"
+                                                        value={filters.start_date}
+                                                        onChange={handleFilterChange}
+                                                        className="w-full px-3 py-2 text-xs lg:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                                    />
+                                                    <input
+                                                        type="date"
+                                                        name="end_date"
+                                                        value={filters.end_date}
+                                                        onChange={handleFilterChange}
+                                                        className="w-full px-3 py-2 text-xs lg:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                                    />
+                                                </div>
                                             </motion.div>
                                             <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
                                                 <label className="block text-xs lg:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
