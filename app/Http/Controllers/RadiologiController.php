@@ -13,7 +13,7 @@ class RadiologiController extends Controller
     public function index(Request $request)
     {
         return Inertia::render('Radiologi/Index', [
-            'title' => 'Data Radiologi'
+            'title' => 'Data Radiologi',
         ]);
     }
 
@@ -23,7 +23,7 @@ class RadiologiController extends Controller
     public function create()
     {
         return Inertia::render('Radiologi/Create', [
-            'title' => 'Tambah Data Radiologi'
+            'title' => 'Tambah Data Radiologi',
         ]);
     }
 
@@ -43,7 +43,7 @@ class RadiologiController extends Controller
     public function show(string $id)
     {
         return Inertia::render('Radiologi/Show', [
-            'title' => 'Detail Radiologi'
+            'title' => 'Detail Radiologi',
         ]);
     }
 
@@ -53,7 +53,7 @@ class RadiologiController extends Controller
     public function edit(string $id)
     {
         return Inertia::render('Radiologi/Edit', [
-            'title' => 'Edit Data Radiologi'
+            'title' => 'Edit Data Radiologi',
         ]);
     }
 

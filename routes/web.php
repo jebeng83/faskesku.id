@@ -1,16 +1,42 @@
 <?php
 
+use App\Http\Controllers\Akutansi\AkunBayarController;
+use App\Http\Controllers\Akutansi\AkunPiutangController;
+use App\Http\Controllers\Akutansi\AkutansiController;
+use App\Http\Controllers\Akutansi\BillingController;
+use App\Http\Controllers\Akutansi\BukuBesarController;
+use App\Http\Controllers\Akutansi\CashFlowController;
+use App\Http\Controllers\Akutansi\JurnalController;
+use App\Http\Controllers\Akutansi\RekeningController;
+use App\Http\Controllers\Akutansi\SetAkunController;
+use App\Http\Controllers\Akutansi\SetoranBankController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DaftarTarifController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\Farmasi\DataSuplierController;
 use App\Http\Controllers\Farmasi\IndustriFarmasiController;
+use App\Http\Controllers\Farmasi\SetHargaObatController;
 use App\Http\Controllers\IGDController;
 use App\Http\Controllers\KamarOperasiController;
 use App\Http\Controllers\KategoriPerawatanController;
+use App\Http\Controllers\Kepegawaian\BankController;
+use App\Http\Controllers\Kepegawaian\BidangController;
+use App\Http\Controllers\Kepegawaian\DepartemenController;
+use App\Http\Controllers\Kepegawaian\EmergencyIndexController;
+use App\Http\Controllers\Kepegawaian\JenjangJabatanController;
+use App\Http\Controllers\Kepegawaian\KelompokJabatanController;
+use App\Http\Controllers\Kepegawaian\PendidikanController;
+use App\Http\Controllers\Kepegawaian\ResikoKerjaController;
+use App\Http\Controllers\Kepegawaian\SipPegawaiController;
+use App\Http\Controllers\Kepegawaian\SttsKerjaController;
+use App\Http\Controllers\Kepegawaian\SttsWpController;
 use App\Http\Controllers\LaboratoriumController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\Pasien\BahasaPasienController;
+use App\Http\Controllers\Pasien\CacatFisikController;
+use App\Http\Controllers\Pasien\PerusahaanPasienController;
+use App\Http\Controllers\Pasien\SukuBangsaController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\PermintaanLabController;
@@ -26,12 +52,11 @@ use App\Http\Controllers\RehabilitasiMedikController;
 use App\Http\Controllers\setting\SettingController;
 use App\Http\Controllers\SpesialisController;
 use App\Http\Controllers\TarifTindakanController;
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
-use App\Http\Controllers\Farmasi\SetHargaObatController;
+use Inertia\Inertia;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -68,6 +93,232 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
+    Route::get('/docs/{section?}', function ($section = null) {
+        return Inertia::render('Docs', ['section' => $section]);
+    })->name('docs');
+
+    // Akutansi: preview invoice berbasis billing/nota
+    Route::get('/akutansi/invoice/{no_rawat}', [AkutansiController::class, 'invoice'])
+        ->where('no_rawat', '.*')
+        ->name('akutansi.invoice');
+
+    // Akutansi: Rekening page (Inertia)
+    Route::get('/akutansi/rekening', [RekeningController::class, 'page'])
+        ->name('akutansi.rekening.page');
+
+    // Akutansi: Home page (Inertia)
+    Route::get('/akutansi/home', function () {
+        return Inertia::render('Akutansi/Home');
+    })->name('akutansi.home.page');
+
+    // Akutansi: Rekening Tahun (Saldo Awal per Tahun) page (Inertia)
+    Route::get('/akutansi/rekening-tahun', function () {
+        return Inertia::render('Akutansi/RekeningTahun');
+    })->name('akutansi.rekening-tahun.page');
+
+    // Akutansi: Akun Bayar page (Inertia)
+    Route::get('/akutansi/akun-bayar', [AkunBayarController::class, 'page'])
+        ->name('akutansi.akun-bayar.page');
+
+    // Akutansi: Akun Piutang page (Inertia)
+    Route::get('/akutansi/akun-piutang', [AkunPiutangController::class, 'page'])
+        ->name('akutansi.akun-piutang.page');
+
+    // Akutansi: Pengaturan Rekening/COA (Inertia)
+    Route::get('/akutansi/pengaturan-rekening', function () {
+        return Inertia::render('Akutansi/PengaturanRekening');
+    })->name('akutansi.pengaturan-rekening.page');
+
+    // Akutansi: Jurnal page (Inertia)
+    Route::get('/akutansi/jurnal', [JurnalController::class, 'page'])
+        ->name('akutansi.jurnal.page');
+
+    // Akutansi: Jurnal Penyesuaian (Adjusting Entries) page (Inertia)
+    Route::get('/akutansi/jurnal-penyesuaian', [JurnalController::class, 'penyesuaianPage'])
+        ->name('akutansi.jurnal-penyesuaian.page');
+
+    // Akutansi: Jurnal Penutup (Closing Entries) page (Inertia)
+    Route::get('/akutansi/jurnal-penutup', [JurnalController::class, 'penutupPage'])
+        ->name('akutansi.jurnal-penutup.page');
+
+    // Akutansi: Setoran Bank page (Inertia)
+    Route::get('/akutansi/setoran-bank', [JurnalController::class, 'setoranBankPage'])
+        ->name('akutansi.setoran-bank.page');
+
+    // Akutansi: Buku Besar (General Ledger) page (Inertia)
+    Route::get('/akutansi/buku-besar', [BukuBesarController::class, 'page'])
+        ->name('akutansi.buku-besar.page');
+
+    // Akutansi: Neraca (Balance Sheet) page (Inertia)
+    Route::get('/akutansi/neraca', function () {
+        return Inertia::render('Akutansi/Neraca');
+    })->name('akutansi.neraca.page');
+
+    // Akutansi: Detail Jurnal page (Inertia)
+    Route::get('/akutansi/detail-jurnal', function () {
+        return Inertia::render('Akutansi/DetailJurnal');
+    })->name('akutansi.detail-jurnal.page');
+
+    // Akutansi: Mutasi Rekening page (Inertia)
+    Route::get('/akutansi/mutasi-rekening', function () {
+        return Inertia::render('Akutansi/MutasiRekening');
+    })->name('akutansi.mutasi-rekening.page');
+
+    // Akutansi: Mutasi Kas page (Inertia)
+    Route::get('/akutansi/mutasi-kas', function () {
+        return Inertia::render('Akutansi/MutasiKas');
+    })->name('akutansi.mutasi-kas.page');
+
+    // Akutansi: Cash Flow page (Inertia)
+    Route::get('/akutansi/cashflow', [CashFlowController::class, 'page'])
+        ->name('akutansi.cashflow.page');
+
+    // Akutansi: Billing page (Inertia)
+    Route::get('/akutansi/billing', [BillingController::class, 'page'])
+        ->name('akutansi.billing.page');
+
+    // Akutansi: Nota Jalan page (Inertia)
+    Route::get('/akutansi/nota-jalan', [\App\Http\Controllers\Akutansi\NotaJalanController::class, 'page'])
+        ->name('akutansi.nota-jalan.page');
+
+    // Akutansi: Kasir Ralan page (Inertia)
+    Route::get('/akutansi/kasir-ralan', [BillingController::class, 'kasirRalanPage'])
+        ->name('akutansi.kasir-ralan.page');
+
+    // Akutansi API: Rekening CRUD
+    Route::prefix('api/akutansi')->group(function () {
+        Route::get('/rekening', [RekeningController::class, 'index'])->name('api.akutansi.rekening.index');
+        Route::post('/rekening', [RekeningController::class, 'store'])->name('api.akutansi.rekening.store');
+        Route::put('/rekening/{kd_rek}', [RekeningController::class, 'update'])->name('api.akutansi.rekening.update');
+        Route::delete('/rekening/{kd_rek}', [RekeningController::class, 'destroy'])->name('api.akutansi.rekening.destroy');
+        // Rekening hierarchical operations (subrekening)
+        Route::post('/rekening/{kd_rek}/make-sub', [RekeningController::class, 'makeSub'])->name('api.akutansi.rekening.make-sub');
+        Route::post('/rekening/{kd_rek}/make-induk', [RekeningController::class, 'makeInduk'])->name('api.akutansi.rekening.make-induk');
+        Route::get('/rekening/{kd_rek}/children', [RekeningController::class, 'children'])->name('api.akutansi.rekening.children');
+
+        // Akutansi API: Rekening Tahun (Saldo Awal per Tahun)
+        Route::get('/rekeningtahun', [\App\Http\Controllers\Akutansi\RekeningTahunController::class, 'index'])->name('api.akutansi.rekeningtahun.index');
+        Route::post('/rekeningtahun', [\App\Http\Controllers\Akutansi\RekeningTahunController::class, 'store'])->name('api.akutansi.rekeningtahun.store');
+        Route::put('/rekeningtahun/{thn}/{kd_rek}', [\App\Http\Controllers\Akutansi\RekeningTahunController::class, 'update'])->name('api.akutansi.rekeningtahun.update');
+        Route::delete('/rekeningtahun/{thn}/{kd_rek}', [\App\Http\Controllers\Akutansi\RekeningTahunController::class, 'destroy'])->name('api.akutansi.rekeningtahun.destroy');
+
+        // Akutansi API: Jurnal CRUD
+        Route::get('/jurnal', [JurnalController::class, 'index'])->name('api.akutansi.jurnal.index');
+        // IMPORTANT: Place static routes BEFORE dynamic catch-all to avoid shadowing
+        // Akutansi API: Preview Jurnal Penutup
+        Route::get('/jurnal/closing-preview', [JurnalController::class, 'closingPreview'])->name('api.akutansi.jurnal.closing-preview');
+        // Akutansi API: Kandidat akun untuk Ikhtisar & Modal
+        Route::get('/jurnal/closing-candidates', [JurnalController::class, 'closingCandidates'])->name('api.akutansi.jurnal.closing-candidates');
+        // Akutansi API: Single Posting Point dari tampjurnal
+        Route::post('/jurnal/preview', [JurnalController::class, 'previewFromTemp'])->name('api.akutansi.jurnal.preview');
+        Route::post('/jurnal/post', [JurnalController::class, 'postFromTemp'])->name('api.akutansi.jurnal.post');
+        // Dynamic show/update/destroy must come AFTER static routes
+        Route::get('/jurnal/{no_jurnal}', [JurnalController::class, 'show'])
+            ->where('no_jurnal', '^(?!closing-(?:preview|candidates)$).*$')
+            ->name('api.akutansi.jurnal.show');
+        Route::post('/jurnal', [JurnalController::class, 'store'])->name('api.akutansi.jurnal.store');
+        Route::put('/jurnal/{no_jurnal}', [JurnalController::class, 'update'])
+            ->where('no_jurnal', '^(?!closing-(?:preview|candidates)$).*$')
+            ->name('api.akutansi.jurnal.update');
+        Route::delete('/jurnal/{no_jurnal}', [JurnalController::class, 'destroy'])
+            ->where('no_jurnal', '^(?!closing-(?:preview|candidates)$).*$')
+            ->name('api.akutansi.jurnal.destroy');
+
+        // Akutansi API: Cash Flow aggregation
+        Route::get('/cashflow', [CashFlowController::class, 'index'])->name('api.akutansi.cashflow.index');
+
+        // Akutansi API: Buku Besar (General Ledger)
+        Route::get('/buku-besar', [BukuBesarController::class, 'index'])->name('api.akutansi.buku-besar.index');
+
+        // Billing CRUD
+        Route::get('/billing', [BillingController::class, 'index'])->name('api.akutansi.billing.index');
+        Route::post('/billing', [BillingController::class, 'store'])->name('api.akutansi.billing.store');
+        Route::put('/billing/{noindex}', [BillingController::class, 'update'])->name('api.akutansi.billing.update');
+        Route::delete('/billing/{noindex}', [BillingController::class, 'destroy'])->name('api.akutansi.billing.destroy');
+
+        // Akun Bayar CRUD
+        Route::get('/akun-bayar', [AkunBayarController::class, 'index'])->name('api.akutansi.akun-bayar.index');
+        Route::post('/akun-bayar', [AkunBayarController::class, 'store'])->name('api.akutansi.akun-bayar.store');
+        Route::put('/akun-bayar/{nama_bayar}', [AkunBayarController::class, 'update'])->name('api.akutansi.akun-bayar.update');
+        Route::delete('/akun-bayar/{nama_bayar}', [AkunBayarController::class, 'destroy'])->name('api.akutansi.akun-bayar.destroy');
+
+        // Akun Piutang CRUD
+        Route::get('/akun-piutang', [AkunPiutangController::class, 'index'])->name('api.akutansi.akun-piutang.index');
+        Route::post('/akun-piutang', [AkunPiutangController::class, 'store'])->name('api.akutansi.akun-piutang.store');
+        Route::put('/akun-piutang/{nama_bayar}', [AkunPiutangController::class, 'update'])->name('api.akutansi.akun-piutang.update');
+        Route::delete('/akun-piutang/{nama_bayar}', [AkunPiutangController::class, 'destroy'])->name('api.akutansi.akun-piutang.destroy');
+
+        // Setoran Bank: stage & post via single posting service
+        Route::post('/setoran-bank/stage', [JurnalController::class, 'setoranBankStage'])->name('api.akutansi.setoran-bank.stage');
+        Route::post('/setoran-bank/post', [JurnalController::class, 'setoranBankPost'])->name('api.akutansi.setoran-bank.post');
+        Route::get('/setoran-bank', [SetoranBankController::class, 'index'])->name('api.akutansi.setoran-bank.index');
+        Route::post('/setoran-bank', [SetoranBankController::class, 'store'])->name('api.akutansi.setoran-bank.store');
+        Route::get('/setoran-bank/{id}', [SetoranBankController::class, 'show'])->name('api.akutansi.setoran-bank.show');
+        Route::put('/setoran-bank/{id}', [SetoranBankController::class, 'update'])->name('api.akutansi.setoran-bank.update');
+        Route::delete('/setoran-bank/{id}', [SetoranBankController::class, 'destroy'])->name('api.akutansi.setoran-bank.destroy');
+        Route::post('/setoran-bank/{id}/stage', [SetoranBankController::class, 'stage'])->name('api.akutansi.setoran-bank.stage-by-id');
+        Route::post('/setoran-bank/{id}/post', [SetoranBankController::class, 'post'])->name('api.akutansi.setoran-bank.post-by-id');
+
+        // Nota Jalan & Detail Nota Jalan
+        Route::get('/nota-jalan/{no_rawat}', [\App\Http\Controllers\Akutansi\NotaJalanController::class, 'show'])
+            ->where('no_rawat', '.*')
+            ->name('api.akutansi.nota-jalan.show');
+        Route::post('/nota-jalan', [\App\Http\Controllers\Akutansi\NotaJalanController::class, 'store'])
+            ->name('api.akutansi.nota-jalan.store');
+        Route::delete('/nota-jalan/{no_rawat}', [\App\Http\Controllers\Akutansi\NotaJalanController::class, 'destroy'])
+            ->where('no_rawat', '.*')
+            ->name('api.akutansi.nota-jalan.destroy');
+
+        Route::get('/detail-nota-jalan/{no_rawat}', [\App\Http\Controllers\Akutansi\DetailNotaJalanController::class, 'index'])
+            ->where('no_rawat', '.*')
+            ->name('api.akutansi.detail-nota-jalan.index');
+        Route::post('/detail-nota-jalan', [\App\Http\Controllers\Akutansi\DetailNotaJalanController::class, 'store'])
+            ->name('api.akutansi.detail-nota-jalan.store');
+        Route::delete('/detail-nota-jalan/{no_rawat}/{nama_bayar}', [\App\Http\Controllers\Akutansi\DetailNotaJalanController::class, 'destroy'])
+            ->where(['no_rawat' => '.*', 'nama_bayar' => '.*'])
+            ->name('api.akutansi.detail-nota-jalan.destroy');
+
+        // Piutang Pasien & Detail Piutang Pasien
+        Route::get('/piutang-pasien', [\App\Http\Controllers\Akutansi\PiutangPasienController::class, 'index'])
+            ->name('api.akutansi.piutang-pasien.index');
+        Route::get('/piutang-pasien/{no_rawat}', [\App\Http\Controllers\Akutansi\PiutangPasienController::class, 'show'])
+            ->where('no_rawat', '.*')
+            ->name('api.akutansi.piutang-pasien.show');
+        Route::post('/piutang-pasien', [\App\Http\Controllers\Akutansi\PiutangPasienController::class, 'store'])
+            ->name('api.akutansi.piutang-pasien.store');
+        Route::put('/piutang-pasien/{no_rawat}', [\App\Http\Controllers\Akutansi\PiutangPasienController::class, 'update'])
+            ->where('no_rawat', '.*')
+            ->name('api.akutansi.piutang-pasien.update');
+        Route::delete('/piutang-pasien/{no_rawat}', [\App\Http\Controllers\Akutansi\PiutangPasienController::class, 'destroy'])
+            ->where('no_rawat', '.*')
+            ->name('api.akutansi.piutang-pasien.destroy');
+
+        Route::get('/detail-piutang-pasien/{no_rawat}', [\App\Http\Controllers\Akutansi\DetailPiutangPasienController::class, 'index'])
+            ->where('no_rawat', '.*')
+            ->name('api.akutansi.detail-piutang-pasien.index');
+        Route::post('/detail-piutang-pasien', [\App\Http\Controllers\Akutansi\DetailPiutangPasienController::class, 'store'])
+            ->name('api.akutansi.detail-piutang-pasien.store');
+        Route::put('/detail-piutang-pasien/{no_rawat}/{nama_bayar}', [\App\Http\Controllers\Akutansi\DetailPiutangPasienController::class, 'update'])
+            ->where(['no_rawat' => '.*', 'nama_bayar' => '.*'])
+            ->name('api.akutansi.detail-piutang-pasien.update');
+        Route::delete('/detail-piutang-pasien/{no_rawat}/{nama_bayar}', [\App\Http\Controllers\Akutansi\DetailPiutangPasienController::class, 'destroy'])
+            ->where(['no_rawat' => '.*', 'nama_bayar' => '.*'])
+            ->name('api.akutansi.detail-piutang-pasien.destroy');
+
+        // Pengaturan Rekening/COA (SetAkun)
+        Route::get('/pengaturan-rekening', [SetAkunController::class, 'index'])
+            ->name('api.akutansi.pengaturan-rekening.index');
+        // NOTE: Tempatkan route statis 'rekening' SEBELUM route dinamis '{section}' untuk mencegah konflik penangkapan
+        Route::get('/pengaturan-rekening/rekening', [SetAkunController::class, 'rekening'])
+            ->name('api.akutansi.pengaturan-rekening.rekening');
+        Route::get('/pengaturan-rekening/{section}', [SetAkunController::class, 'show'])
+            ->where('section', '^(umum|umum2|ralan|ranap|ranap2)$')
+            ->name('api.akutansi.pengaturan-rekening.show');
+        Route::put('/pengaturan-rekening/{section}', [SetAkunController::class, 'update'])
+            ->where('section', '^(umum|umum2|ralan|ranap|ranap2)$')
+            ->name('api.akutansi.pengaturan-rekening.update');
+    });
+
     // Master Data landing page
     Route::get('/master-data', function () {
         return Inertia::render('MasterData/MenuUtama');
@@ -92,6 +343,26 @@ Route::middleware('auth')->group(function () {
     Route::post('/patients/{patient}/register-periksa', [PatientController::class, 'registerPeriksa'])->name('patients.register-periksa');
     Route::get('/patients/{patient}/check-poli-status', [PatientController::class, 'checkPatientPoliStatus'])->name('patients.check-poli-status');
 
+    // Perusahaan Pasien routes (untuk popup)
+    Route::prefix('perusahaan-pasien')->name('perusahaan-pasien.')->group(function () {
+        Route::post('/', [PerusahaanPasienController::class, 'store'])->name('store');
+    });
+
+    // Bahasa Pasien routes (untuk popup)
+    Route::prefix('bahasa-pasien')->name('bahasa-pasien.')->group(function () {
+        Route::post('/', [BahasaPasienController::class, 'store'])->name('store');
+    });
+
+    // Suku Bangsa routes (untuk popup)
+    Route::prefix('suku-bangsa')->name('suku-bangsa.')->group(function () {
+        Route::post('/', [SukuBangsaController::class, 'store'])->name('store');
+    });
+
+    // Cacat Fisik routes (untuk popup)
+    Route::prefix('cacat-fisik')->name('cacat-fisik.')->group(function () {
+        Route::post('/', [CacatFisikController::class, 'store'])->name('store');
+    });
+
     // Registration routes
     Route::get('/registration', [RegistrationController::class, 'index'])->name('registration.index')->middleware('menu.permission');
     // Registration Lanjutan: arahkan ke halaman Index agar konsisten
@@ -105,9 +376,79 @@ Route::middleware('auth')->group(function () {
     // Statistik kunjungan poli per bulan (untuk Dashboard)
     Route::get('/registration/poli-monthly-stats', [RegistrationController::class, 'poliMonthlyStats'])->name('registration.poli-monthly-stats');
     Route::post('/registration/cancel', [RegistrationController::class, 'cancelRegistration'])->name('registration.cancel');
+    Route::get('/registration/{no_rawat}/print', [RegistrationController::class, 'print'])->name('registration.print')->where('no_rawat', '.*');
 
     // Employee routes
     Route::resource('employees', EmployeeController::class);
+
+    // Departemen routes (untuk popup)
+    Route::prefix('departemen')->name('departemen.')->group(function () {
+        Route::post('/', [DepartemenController::class, 'store'])->name('store');
+    });
+
+    // Bidang routes (untuk popup)
+    Route::prefix('bidang')->name('bidang.')->group(function () {
+        Route::post('/', [BidangController::class, 'store'])->name('store');
+    });
+
+    // Pendidikan routes (untuk popup)
+    Route::prefix('pendidikan')->name('pendidikan.')->group(function () {
+        Route::post('/', [PendidikanController::class, 'store'])->name('store');
+    });
+
+    // Resiko Kerja routes (untuk popup)
+    Route::prefix('resiko-kerja')->name('resiko-kerja.')->group(function () {
+        Route::post('/', [ResikoKerjaController::class, 'store'])->name('store');
+    });
+
+    // Kelompok Jabatan routes (untuk popup)
+    Route::prefix('kelompok-jabatan')->name('kelompok-jabatan.')->group(function () {
+        Route::post('/', [KelompokJabatanController::class, 'store'])->name('store');
+    });
+
+    // Emergency Index routes (untuk popup)
+    Route::prefix('emergency-index')->name('emergency-index.')->group(function () {
+        Route::post('/', [EmergencyIndexController::class, 'store'])->name('store');
+    });
+
+    // Bank routes (untuk popup)
+    Route::prefix('bank')->name('bank.')->group(function () {
+        Route::post('/', [BankController::class, 'store'])->name('store');
+    });
+
+    // Status WP routes (untuk popup)
+    Route::prefix('stts-wp')->name('stts-wp.')->group(function () {
+        Route::post('/', [SttsWpController::class, 'store'])->name('store');
+    });
+
+    // Status Kerja routes (untuk popup)
+    Route::prefix('stts-kerja')->name('stts-kerja.')->group(function () {
+        Route::post('/', [SttsKerjaController::class, 'store'])->name('store');
+    });
+
+    // Jenjang Jabatan routes
+    Route::prefix('jenjang-jabatan')->name('jenjang-jabatan.')->group(function () {
+        Route::get('/', [JenjangJabatanController::class, 'index'])->name('index');
+        Route::get('/create', [JenjangJabatanController::class, 'create'])->name('create');
+        Route::post('/', [JenjangJabatanController::class, 'store'])->name('store');
+        Route::get('/{kode}', [JenjangJabatanController::class, 'show'])->name('show');
+        Route::get('/{kode}/edit', [JenjangJabatanController::class, 'edit'])->name('edit');
+        Route::put('/{kode}', [JenjangJabatanController::class, 'update'])->name('update');
+        Route::patch('/{kode}', [JenjangJabatanController::class, 'update'])->name('update.patch');
+        Route::delete('/{kode}', [JenjangJabatanController::class, 'destroy'])->name('destroy');
+    });
+
+    // SIP Pegawai routes
+    Route::prefix('sip-pegawai')->name('sip-pegawai.')->group(function () {
+        Route::get('/', [SipPegawaiController::class, 'index'])->name('index');
+        Route::get('/create', [SipPegawaiController::class, 'create'])->name('create');
+        Route::post('/', [SipPegawaiController::class, 'store'])->name('store');
+        Route::get('/{nik}', [SipPegawaiController::class, 'show'])->name('show');
+        Route::get('/{nik}/edit', [SipPegawaiController::class, 'edit'])->name('edit');
+        Route::put('/{nik}', [SipPegawaiController::class, 'update'])->name('update');
+        Route::patch('/{nik}', [SipPegawaiController::class, 'update'])->name('update.patch');
+        Route::delete('/{nik}', [SipPegawaiController::class, 'destroy'])->name('destroy');
+    });
 
     // Doctor routes
     Route::resource('doctors', DoctorController::class);
@@ -193,6 +534,7 @@ Route::middleware('auth')->group(function () {
     Route::post('api/resep', [ResepController::class, 'store'])->name('api.resep.store');
     Route::get('api/resep/{no_resep}', [ResepController::class, 'getResep'])->name('api.resep.get');
     Route::get('api/resep/rawat/{no_rawat}', [ResepController::class, 'getByNoRawat'])->name('api.resep.by-rawat');
+    Route::post('api/resep/{no_resep}/penyerahan', [ResepController::class, 'penyerahan'])->name('api.resep.penyerahan');
 
     Route::resource('rawat-jalan', RawatJalanController::class);
 
@@ -204,6 +546,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/menu', function () {
         return Inertia::render('Profile/index');
     })->name('profile.menu');
+
+    Route::get('/profile/home', function () {
+        return Inertia::render('Profile/Home');
+    })->name('profile.home');
 
     // Application Settings (CRUD generic untuk tabel `setting`)
     Route::prefix('setting')->name('setting.')->group(function () {
@@ -229,6 +575,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/menus/reorder', [MenuController::class, 'reorder'])->name('menus.reorder');
 
     // Pelayanan Medis routes
+    Route::get('rawat-inap/lanjutan', [RawatInapController::class, 'lanjutan'])->name('rawat-inap.lanjutan');
     Route::resource('rawat-inap', RawatInapController::class);
     Route::resource('igd', IGDController::class);
     Route::resource('kamar-operasi', KamarOperasiController::class);
@@ -239,15 +586,35 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [LaboratoriumController::class, 'dashboard'])->name('dashboard');
         Route::get('/create', [LaboratoriumController::class, 'create'])->name('create');
         Route::post('/', [LaboratoriumController::class, 'store'])->name('store');
-        Route::get('/{noRawat}', [LaboratoriumController::class, 'show'])->name('show');
-        Route::get('/{noRawat}/edit', [LaboratoriumController::class, 'edit'])->name('edit');
-        Route::put('/{noRawat}', [LaboratoriumController::class, 'update'])->name('update');
-        Route::delete('/{noRawat}', [LaboratoriumController::class, 'destroy'])->name('destroy');
-        Route::put('/{noRawat}/hasil', [LaboratoriumController::class, 'updateHasil'])->name('update-hasil');
+        // JSON detail untuk popup input hasil — gunakan query string agar aman untuk no_rawat yang mengandung '/'
+        Route::get('/detail', [LaboratoriumController::class, 'detail'])->name('detail');
+
+        // Permintaan Laboratorium (resource) di bawah prefix laboratorium
+        // IMPORTANT: Route spesifik harus didefinisikan SEBELUM route wildcard
+        Route::resource('permintaan-lab', PermintaanLabController::class);
+        // Ambil sampel: update tanggal & jam sampel berdasarkan no_rawat (order terbaru)
+        Route::post('/permintaan-lab/ambil-sampel', [PermintaanLabController::class, 'ambilSampel'])->name('permintaan-lab.ambil-sampel');
+        // Update sampel: update tanggal & jam sampel berdasarkan noorder (sesuai dokumentasi)
+        // Route ini HARUS didefinisikan SEBELUM route wildcard /{noRawat} untuk menghindari konflik
+        Route::put('/permintaan-lab/{permintaan_lab}/sampel', [PermintaanLabController::class, 'updateSampel'])->name('permintaan-lab.update-sampel');
+        // Input hasil: tampilkan form input hasil berdasarkan permintaan lab
+        Route::get('/permintaan-lab/{permintaan_lab}/hasil', [PermintaanLabController::class, 'inputHasil'])->name('permintaan-lab.input-hasil');
+        Route::post('/permintaan-lab/{permintaan_lab}/hasil', [PermintaanLabController::class, 'storeHasil'])->name('permintaan-lab.store-hasil');
+        // Preview hasil pemeriksaan sebelum download PDF
+        Route::get('/permintaan-lab/{permintaan_lab}/preview', [PermintaanLabController::class, 'preview'])->name('permintaan-lab.preview');
+        // Cetak hasil pemeriksaan (download PDF)
+        Route::get('/permintaan-lab/{permintaan_lab}/cetak', [PermintaanLabController::class, 'cetak'])->name('permintaan-lab.cetak');
+
+        // Tampilkan pemeriksaan berdasarkan no_rawat (mengizinkan karakter '/')
+        // Route wildcard HARUS didefinisikan TERAKHIR untuk menghindari konflik dengan route spesifik
+        Route::get('/{noRawat}', [LaboratoriumController::class, 'show'])->name('show')->where('noRawat', '.*');
+        Route::get('/{noRawat}/edit', [LaboratoriumController::class, 'edit'])->name('edit')->where('noRawat', '.*');
+        Route::put('/{noRawat}', [LaboratoriumController::class, 'update'])->name('update')->where('noRawat', '.*');
+        Route::delete('/{noRawat}', [LaboratoriumController::class, 'destroy'])->name('destroy')->where('noRawat', '.*');
+        Route::put('/{noRawat}/hasil', [LaboratoriumController::class, 'updateHasil'])->name('update-hasil')->where('noRawat', '.*');
     });
 
-    // Permintaan Laboratorium routes
-    Route::resource('permintaan-lab', PermintaanLabController::class);
+    // Permintaan Laboratorium routes dipindahkan ke dalam prefix laboratorium (lihat di atas)
     Route::get('/api/reg-periksa', [PermintaanLabController::class, 'getRegPeriksa'])->name('api.reg-periksa');
     Route::resource('radiologi', RadiologiController::class);
     Route::resource('rehabilitasi-medik', RehabilitasiMedikController::class);
@@ -272,8 +639,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/dokter', [TarifTindakanController::class, 'storeTindakanDokter'])->name('store-dokter');
         Route::post('/perawat', [TarifTindakanController::class, 'storeTindakanPerawat'])->name('store-perawat');
         Route::post('/dokter-perawat', [TarifTindakanController::class, 'storeTindakanDokterPerawat'])->name('store-dokter-perawat');
+        // Compose staging jurnal untuk Rawat Jalan (umum) → tulis ke tampjurnal2
+        Route::post('/stage-ralan', [TarifTindakanController::class, 'stageJurnalRalan'])->name('stage-ralan');
         Route::get('/riwayat/{noRawat}', [TarifTindakanController::class, 'getRiwayatTindakan'])->name('riwayat')->where('noRawat', '.*');
-        Route::delete('/', [TarifTindakanController::class, 'deleteTindakan'])->name('delete');
+        // Fallback agar frontend lama yang masih mengirim POST + _method=DELETE tetap terlayani
+        // Terima DELETE dan POST pada endpoint yang sama
+        Route::match(['delete', 'post'], '/', [TarifTindakanController::class, 'deleteTindakan'])->name('delete');
     });
 
     // Farmasi routes
@@ -300,9 +671,15 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('farmasi/ResepObat');
         })->name('resep-obat');
 
-        Route::get('/riwayat-transaksi-gudang', function () {
-            return Inertia::render('farmasi/RiwayatTransaksiGudang');
-        })->name('riwayat-transaksi-gudang');
+        // Daftar Permintaan Resep (search by no_rawat / no_rkm_medis)
+        Route::get('/permintaan-resep', function () {
+            return Inertia::render('farmasi/DaftarPermintaanResep');
+        })->name('permintaan-resep');
+
+
+        Route::get('/hutang-obat', function () {
+            return Inertia::render('farmasi/HutangObat');
+        })->name('hutang-obat');
 
         Route::get('/stok-obat', function () {
             return Inertia::render('farmasi/StokObat');
@@ -311,24 +688,59 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('farmasi/StokOpname');
         })->name('stok-opname');
 
+        Route::get('/sisa-stok', function () {
+            return Inertia::render('farmasi/SisaStok');
+        })->name('sisa-stok');
+
+        Route::get('/sirkulasi-obat', function () {
+            return Inertia::render('farmasi/SirkulasiObat');
+        })->name('sirkulasi-obat');
+
+        Route::get('/cek-stok-obat', function () {
+            return Inertia::render('farmasi/CekStok');
+        })->name('cek-stok-obat');
+
         // Farmasi - Data Opname (laporan/daftar hasil opname)
         Route::get('/data-opname', function () {
             return Inertia::render('farmasi/DataOpname');
         })->name('data-opname');
 
+        Route::get('/riwayat-barang-medis', [\App\Http\Controllers\Farmasi\RiwayatBarangMedisController::class, 'index'])->name('riwayat-barang-medis');
+        Route::get('/riwayat-barang-medis/data', [\App\Http\Controllers\Farmasi\RiwayatBarangMedisController::class, 'data'])->name('riwayat-barang-medis.data');
+
+        Route::get('/riwayat-transaksi-gudang', [\App\Http\Controllers\Farmasi\RiwayatTransaksiGudangController::class, 'index'])->name('riwayat-transaksi-gudang');
+        Route::get('/riwayat-transaksi-gudang/data', [\App\Http\Controllers\Farmasi\RiwayatTransaksiGudangController::class, 'data'])->name('riwayat-transaksi-gudang.data');
+
+        Route::post('/riwayat-obat', [\App\Http\Controllers\Farmasi\RiwayatObatController::class, 'store'])->name('riwayat-obat.store');
+
         // Alias route under farmasi namespace for consistency dengan frontend route helpers
         Route::get('/farmasi/data-opname', function () {
             return Inertia::render('farmasi/DataOpname');
         })->name('farmasi.data-opname');
+        Route::get('/cetak/data-opname', function () {
+            return Inertia::render('farmasi/CetakFarmasi/DataOpname');
+        })->name('cetak.data-opname');
+        Route::get('/farmasi/cetak/data-opname', function () {
+            return Inertia::render('farmasi/CetakFarmasi/DataOpname');
+        })->name('farmasi.cetak.data-opname');
         // Data Obat (DataBarang) CRUD routes with auto-code via props.nextCode
         Route::get('/data-obat', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'index'])->name('data-obat');
         Route::post('/data-obat', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'store'])->name('data-obat.store');
-        Route::put('/data-obat/{kode_brng}', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'update'])->name('data-obat.update');
-        Route::patch('/data-obat/{kode_brng}', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'update']);
-        Route::delete('/data-obat/{kode_brng}', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'destroy'])->name('data-obat.destroy');
 
-        // Bulk update semua harga jual databarang berdasarkan konfigurasi Set Harga Obat
+        // Bulk update ditempatkan sebelum route generik {kode_brng} untuk mencegah konflik
         Route::put('/data-obat/update-harga-semua', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'updateHargaSemua'])->name('data-obat.update-harga-semua');
+        // Fallback POST untuk environment/proxy yang membatasi PUT
+        Route::post('/data-obat/update-harga-semua', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'updateHargaSemua'])->name('data-obat.update-harga-semua.post');
+
+        // Batasi {kode_brng} agar tidak menangkap path khusus seperti 'update-harga-semua'
+        Route::put('/data-obat/{kode_brng}', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'update'])
+            ->where('kode_brng', '[A-Za-z0-9]+')
+            ->name('data-obat.update');
+        Route::patch('/data-obat/{kode_brng}', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'update'])
+            ->where('kode_brng', '[A-Za-z0-9]+');
+        Route::delete('/data-obat/{kode_brng}', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'destroy'])
+            ->where('kode_brng', '[A-Za-z0-9]+')
+            ->name('data-obat.destroy');
 
         // Simpan pengaturan harga per barang
         Route::post('/set-penjualan-barang', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'storePenjualanPerBarang'])->name('set-penjualan-barang.store');
@@ -407,6 +819,11 @@ Route::middleware('auth')->group(function () {
         Route::delete('/jenis-obat/{kdjns}', [\App\Http\Controllers\Farmasi\JenisObatController::class, 'destroy'])->name('jenis-obat.destroy');
     });
     // Pcare routes
+    // Global alias: allow direct access to '/cetak/data-opname' and forward to Farmasi route
+    Route::get('/cetak/data-opname', function () {
+        return redirect()->to(route('farmasi.cetak.data-opname', request()->query()));
+    });
+
     Route::prefix('pcare')->name('pcare.')->group(function () {
         // Landing page
         Route::get('/', function () {
@@ -763,12 +1180,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/penjab', [\App\Http\Controllers\PenjabController::class, 'store'])->name('penjab.store');
     Route::put('/penjab/{kd_pj}', [\App\Http\Controllers\PenjabController::class, 'update'])->name('penjab.update');
     Route::patch('/penjab/{kd_pj}/toggle-status', [\App\Http\Controllers\PenjabController::class, 'toggleStatus'])->name('penjab.toggle-status');
+    Route::get('/penjab/generate-kode', [\App\Http\Controllers\PenjabController::class, 'generateKode'])->name('penjab.generate-kode');
 
     // Poliklinik routes
     Route::get('/poliklinik', [\App\Http\Controllers\PoliklinikController::class, 'index'])->name('poliklinik.index');
     Route::post('/poliklinik', [\App\Http\Controllers\PoliklinikController::class, 'store'])->name('poliklinik.store');
     Route::put('/poliklinik/{kd_poli}', [\App\Http\Controllers\PoliklinikController::class, 'update'])->name('poliklinik.update');
     Route::patch('/poliklinik/{kd_poli}/toggle-status', [\App\Http\Controllers\PoliklinikController::class, 'toggleStatus'])->name('poliklinik.toggle-status');
+    Route::get('/poliklinik/generate-kode', [\App\Http\Controllers\PoliklinikController::class, 'generateKode'])->name('poliklinik.generate-kode');
 
     // SATUSEHAT routes (Inertia pages)
     Route::prefix('satusehat')->name('satusehat.')->group(function () {
@@ -819,6 +1238,7 @@ Route::post('/farmasi/set-penjualan-umum', [\App\Http\Controllers\Farmasi\SetHar
 Route::post('/farmasi/set-penjualan', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'storePenjualanPerJenis'])
     ->name('set-penjualan.store');
 // Hapus pengaturan harga per jenis
+<<<<<<< HEAD
 Route::delete('/farmasi/set-penjualan/{kdjns}', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'destroyPenjualanPerJenis'])
     ->name('set-penjualan.destroy');
 
@@ -828,3 +1248,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/settings/active', [\App\Http\Controllers\SettingsController::class, 'active'])->name('settings.active');
     Route::put('/settings', [\App\Http\Controllers\SettingsController::class, 'update'])->name('settings.update');
 });
+=======
+Route::delete('/farmasi/set-penjualan/{kdjns}', [SetHargaObatController::class, 'destroyPenjualanPerJenis'])
+    ->name('set-penjualan.destroy');
+>>>>>>> main

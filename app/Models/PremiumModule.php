@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
-use Carbon\Carbon;
 
 class PremiumModule extends Model
 {
@@ -56,7 +55,7 @@ class PremiumModule extends Model
         $this->license_key = Crypt::encryptString($licenseData);
 
         // Generate activation hash
-        $this->activation_hash = Hash::make($this->module_key . $this->license_key . config('app.key'));
+        $this->activation_hash = Hash::make($this->module_key.$this->license_key.config('app.key'));
 
         return $this->license_key;
     }
@@ -71,7 +70,7 @@ class PremiumModule extends Model
             $data = json_decode($decrypted, true);
 
             // Validate data structure
-            if (!isset($data['module_key']) || !isset($data['timestamp']) || !isset($data['random'])) {
+            if (! isset($data['module_key']) || ! isset($data['timestamp']) || ! isset($data['random'])) {
                 return false;
             }
 
@@ -97,7 +96,7 @@ class PremiumModule extends Model
      */
     public function activate($licenseKey)
     {
-        if (!$this->validateLicenseKey($licenseKey)) {
+        if (! $this->validateLicenseKey($licenseKey)) {
             return false;
         }
 
@@ -114,7 +113,7 @@ class PremiumModule extends Model
      */
     public function isActive()
     {
-        if (!$this->is_active) {
+        if (! $this->is_active) {
             return false;
         }
 
@@ -122,6 +121,7 @@ class PremiumModule extends Model
         if ($this->expires_at && $this->expires_at->isPast()) {
             $this->is_active = false;
             $this->save();
+
             return false;
         }
 
@@ -149,7 +149,7 @@ class PremiumModule extends Model
      */
     public function generateChecksum()
     {
-        $data = $this->module_key . $this->version . config('app.key');
+        $data = $this->module_key.$this->version.config('app.key');
         $this->checksum = hash('sha256', $data);
         $this->save();
 
@@ -161,11 +161,11 @@ class PremiumModule extends Model
      */
     public function validateChecksum()
     {
-        if (!$this->checksum) {
+        if (! $this->checksum) {
             return false;
         }
 
-        $data = $this->module_key . $this->version . config('app.key');
+        $data = $this->module_key.$this->version.config('app.key');
         $expectedChecksum = hash('sha256', $data);
 
         return hash_equals($this->checksum, $expectedChecksum);
@@ -187,12 +187,13 @@ class PremiumModule extends Model
      */
     public function decryptData()
     {
-        if (!$this->encrypted_data) {
+        if (! $this->encrypted_data) {
             return null;
         }
 
         try {
             $decrypted = Crypt::decryptString($this->encrypted_data);
+
             return json_decode($decrypted, true);
         } catch (\Exception $e) {
             return null;

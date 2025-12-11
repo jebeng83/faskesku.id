@@ -11,7 +11,7 @@ class FixPembayaranMenuSeeder extends Seeder
 {
     public function run(): void
     {
-        if (!Schema::hasTable('menus')) {
+        if (! Schema::hasTable('menus')) {
             return;
         }
 
@@ -56,7 +56,7 @@ class FixPembayaranMenuSeeder extends Seeder
             if (Schema::hasColumn('menus', 'url')) {
                 $rootUpdate['url'] = '/pembayaran';
             }
-            if (!empty($rootUpdate)) {
+            if (! empty($rootUpdate)) {
                 DB::table($menusTable)->where('id', $rootId)->update($rootUpdate);
             }
 
@@ -66,7 +66,7 @@ class FixPembayaranMenuSeeder extends Seeder
                 ->values()
                 ->all();
 
-            if ($candidates->count() > 1 && !empty($statusColumns)) {
+            if ($candidates->count() > 1 && ! empty($statusColumns)) {
                 $dupIds = $candidates->pluck('id')->reject(fn ($id) => $id === $rootId)->values();
                 if ($dupIds->isNotEmpty()) {
                     $dupUpdate = [];
@@ -88,7 +88,7 @@ class FixPembayaranMenuSeeder extends Seeder
             }
 
             // Nonaktifkan semua anak jika ada kolom status/aktif
-            if (!empty($statusColumns)) {
+            if (! empty($statusColumns)) {
                 $childDisable = [];
                 foreach ($statusColumns as $col) {
                     $childDisable[$col] = 0;
@@ -105,5 +105,3 @@ class FixPembayaranMenuSeeder extends Seeder
         });
     }
 }
-
-

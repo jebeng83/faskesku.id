@@ -2,7 +2,7 @@
 
 /**
  * Test Script untuk Model RegPeriksa
- * 
+ *
  * Script ini menunjukkan cara menggunakan model RegPeriksa
  * dan fitur perhitungan umur otomatis
  */
@@ -10,10 +10,6 @@
 require_once 'vendor/autoload.php';
 
 use App\Models\RegPeriksa;
-use App\Models\Patient;
-use App\Models\Doctor;
-use App\Models\Poli;
-use Carbon\Carbon;
 
 // Simulasi data untuk testing
 echo "=== Test Model RegPeriksa ===\n\n";
@@ -22,7 +18,7 @@ echo "=== Test Model RegPeriksa ===\n\n";
 echo "1. Test Perhitungan Umur:\n";
 echo "----------------------------\n";
 
-$regPeriksa = new RegPeriksa();
+$regPeriksa = new RegPeriksa;
 
 // Test case 1: Umur dalam tahun
 $umur1 = $regPeriksa->hitungUmur('1990-01-15', '2024-01-15');
@@ -49,11 +45,11 @@ $statusOptions = [
     'status_lanjut' => ['Ralan', 'Ranap'],
     'sttsumur' => ['Th', 'Bl', 'Hr'],
     'status_bayar' => ['Sudah Bayar', 'Belum Bayar'],
-    'status_poli' => ['Lama', 'Baru']
+    'status_poli' => ['Lama', 'Baru'],
 ];
 
 foreach ($statusOptions as $field => $options) {
-    echo "{$field}: " . implode(', ', $options) . "\n";
+    echo "{$field}: ".implode(', ', $options)."\n";
 }
 
 echo "\n";
@@ -81,7 +77,7 @@ $sampleData = [
     'umurdaftar' => 34,
     'sttsumur' => 'Th',
     'status_bayar' => 'Belum Bayar',
-    'status_poli' => 'Baru'
+    'status_poli' => 'Baru',
 ];
 
 echo "Sample data structure:\n";
@@ -99,15 +95,15 @@ echo "--------------------------\n";
 $regPeriksa = new RegPeriksa($sampleData);
 
 // Test umur display
-echo "Umur display: " . $regPeriksa->umur_display . "\n";
-echo "Umur singkat: " . $regPeriksa->umur_singkat . "\n";
+echo 'Umur display: '.$regPeriksa->umur_display."\n";
+echo 'Umur singkat: '.$regPeriksa->umur_singkat."\n";
 
 // Test status display
-echo "Status display: " . $regPeriksa->status_display . "\n";
-echo "Status daftar display: " . $regPeriksa->status_daftar_display . "\n";
-echo "Status lanjut display: " . $regPeriksa->status_lanjut_display . "\n";
-echo "Status bayar display: " . $regPeriksa->status_bayar_display . "\n";
-echo "Status poli display: " . $regPeriksa->status_poli_display . "\n";
+echo 'Status display: '.$regPeriksa->status_display."\n";
+echo 'Status daftar display: '.$regPeriksa->status_daftar_display."\n";
+echo 'Status lanjut display: '.$regPeriksa->status_lanjut_display."\n";
+echo 'Status bayar display: '.$regPeriksa->status_bayar_display."\n";
+echo 'Status poli display: '.$regPeriksa->status_poli_display."\n";
 
 echo "\n";
 
@@ -175,7 +171,7 @@ $validationRules = [
     'status_lanjut' => 'required|in:Ralan,Ranap',
     'kd_pj' => 'required|string|max:3',
     'status_bayar' => 'required|in:Sudah Bayar,Belum Bayar',
-    'status_poli' => 'required|in:Lama,Baru'
+    'status_poli' => 'required|in:Lama,Baru',
 ];
 
 foreach ($validationRules as $field => $rules) {

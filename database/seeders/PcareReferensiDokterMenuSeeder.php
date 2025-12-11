@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Menu;
+use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 
 class PcareReferensiDokterMenuSeeder extends Seeder
@@ -21,7 +21,7 @@ class PcareReferensiDokterMenuSeeder extends Seeder
             ->orWhere('slug', 'pcare')
             ->first();
 
-        if (!$pcareRoot) {
+        if (! $pcareRoot) {
             // Jika belum ada, buat root menu PCare
             $pcareRoot = Menu::firstOrCreate(
                 ['route' => 'pcare.index'],

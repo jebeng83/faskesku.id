@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Models\RegPeriksa;
+use App\Models\Dokter;
 use App\Models\Patient;
-use App\Models\Doctor;
-use App\Models\Poli;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
+use App\Models\Poliklinik;
+use App\Models\RegPeriksa;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class RegPeriksaController extends Controller
 {
@@ -19,7 +19,7 @@ class RegPeriksaController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $query = RegPeriksa::with(['patient', 'doctor', 'poli']);
+            $query = RegPeriksa::with(['patient', 'dokter', 'poliklinik']);
 
             // Filter berdasarkan status
             if ($request->filled('status')) {
@@ -81,12 +81,52 @@ class RegPeriksaController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $regPeriksas,
-                'message' => 'Data registrasi periksa berhasil diambil'
+                'message' => 'Data registrasi periksa berhasil diambil',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil data registrasi periksa: ' . $e->getMessage()
+                'message' => 'Gagal mengambil data registrasi periksa: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get registrasi periksa by exact no_rawat (safe for values containing '/')
+     */
+    public function findByNoRawat(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'no_rawat' => 'required|string',
+            ]);
+
+            $regPeriksa = RegPeriksa::with(['patient', 'dokter', 'poliklinik'])
+                ->where('no_rawat', $request->no_rawat)
+                ->first();
+
+            if (! $regPeriksa) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data registrasi periksa tidak ditemukan untuk nomor rawat yang diberikan',
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $regPeriksa,
+                'message' => 'Data registrasi periksa berhasil diambil berdasarkan no_rawat',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data registrasi periksa: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -130,23 +170,23 @@ class RegPeriksaController extends Controller
             }
 
             $regPeriksa->save();
-            $regPeriksa->load(['patient', 'doctor', 'poli']);
+            $regPeriksa->load(['patient', 'dokter', 'poliklinik']);
 
             return response()->json([
                 'success' => true,
                 'data' => $regPeriksa,
-                'message' => 'Registrasi periksa berhasil dibuat'
+                'message' => 'Registrasi periksa berhasil dibuat',
             ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validasi gagal',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal membuat registrasi periksa: ' . $e->getMessage()
+                'message' => 'Gagal membuat registrasi periksa: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -157,17 +197,17 @@ class RegPeriksaController extends Controller
     public function show(RegPeriksa $regPeriksa): JsonResponse
     {
         try {
-            $regPeriksa->load(['patient', 'doctor', 'poli']);
+            $regPeriksa->load(['patient', 'dokter', 'poliklinik']);
 
             return response()->json([
                 'success' => true,
                 'data' => $regPeriksa,
-                'message' => 'Data registrasi periksa berhasil diambil'
+                'message' => 'Data registrasi periksa berhasil diambil',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil data registrasi periksa: ' . $e->getMessage()
+                'message' => 'Gagal mengambil data registrasi periksa: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -179,8 +219,8 @@ class RegPeriksaController extends Controller
     {
         try {
             $request->validate([
-                'no_reg' => 'required|string|max:8|unique:reg_periksa,no_reg,' . $regPeriksa->no_reg . ',no_reg',
-                'no_rawat' => 'required|string|max:17|unique:reg_periksa,no_rawat,' . $regPeriksa->no_rawat . ',no_rawat',
+                'no_reg' => 'required|string|max:8|unique:reg_periksa,no_reg,'.$regPeriksa->no_reg.',no_reg',
+                'no_rawat' => 'required|string|max:17|unique:reg_periksa,no_rawat,'.$regPeriksa->no_rawat.',no_rawat',
                 'tgl_registrasi' => 'required|date',
                 'jam_reg' => 'required|date_format:H:i',
                 'kd_dokter' => 'required|string|exists:dokter,kd_dokter',
@@ -210,7 +250,7 @@ class RegPeriksaController extends Controller
                     if ($umurData) {
                         $request->merge([
                             'umurdaftar' => $umurData['umur'],
-                            'sttsumur' => $umurData['satuan']
+                            'sttsumur' => $umurData['satuan'],
                         ]);
                     }
                 }
@@ -222,18 +262,63 @@ class RegPeriksaController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $regPeriksa,
-                'message' => 'Registrasi periksa berhasil diperbarui'
+                'message' => 'Registrasi periksa berhasil diperbarui',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validasi gagal',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal memperbarui registrasi periksa: ' . $e->getMessage()
+                'message' => 'Gagal memperbarui registrasi periksa: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Update status_bayar saja untuk registrasi periksa
+     */
+    public function updateStatusBayar(Request $request, string $regPeriksa): JsonResponse
+    {
+        try {
+            // Decode no_rawat untuk menangani encoding dari frontend
+            $noRawat = urldecode($regPeriksa);
+
+            $request->validate([
+                'status_bayar' => 'required|in:Sudah Bayar,Belum Bayar',
+            ]);
+
+            $regPeriksaModel = RegPeriksa::where('no_rawat', $noRawat)->first();
+
+            if (! $regPeriksaModel) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data registrasi periksa tidak ditemukan untuk nomor rawat yang diberikan',
+                ], 404);
+            }
+
+            $regPeriksaModel->update([
+                'status_bayar' => $request->status_bayar,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data' => $regPeriksaModel,
+                'message' => 'Status bayar berhasil diperbarui menjadi: '.$request->status_bayar,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui status bayar: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -248,12 +333,12 @@ class RegPeriksaController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Registrasi periksa berhasil dihapus'
+                'message' => 'Registrasi periksa berhasil dihapus',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menghapus registrasi periksa: ' . $e->getMessage()
+                'message' => 'Gagal menghapus registrasi periksa: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -270,25 +355,25 @@ class RegPeriksaController extends Controller
             ]);
 
             $patient = Patient::find($request->no_rkm_medis);
-            $regPeriksa = new RegPeriksa();
+            $regPeriksa = new RegPeriksa;
 
             $umurData = $regPeriksa->hitungUmur($patient->tanggal_lahir, $request->tanggal_registrasi);
 
             return response()->json([
                 'success' => true,
                 'data' => $umurData,
-                'message' => 'Umur berhasil dihitung'
+                'message' => 'Umur berhasil dihitung',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validasi gagal',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menghitung umur: ' . $e->getMessage()
+                'message' => 'Gagal menghitung umur: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -319,12 +404,12 @@ class RegPeriksaController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $statistik,
-                'message' => 'Statistik berhasil diambil'
+                'message' => 'Statistik berhasil diambil',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil statistik: ' . $e->getMessage()
+                'message' => 'Gagal mengambil statistik: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -335,8 +420,8 @@ class RegPeriksaController extends Controller
     public function getFilterData(): JsonResponse
     {
         try {
-            $doctors = Doctor::where('status', 'Aktif')->get(['kd_dokter', 'nm_dokter']);
-            $polis = Poli::where('status', 'Aktif')->get(['kd_poli', 'nm_poli']);
+            $doctors = Dokter::aktif()->get(['kd_dokter', 'nm_dokter']);
+            $polis = Poliklinik::aktif()->get(['kd_poli', 'nm_poli']);
             $patients = Patient::orderBy('nama')->get(['no_rkm_medis', 'nama']);
 
             return response()->json([
@@ -346,12 +431,12 @@ class RegPeriksaController extends Controller
                     'polis' => $polis,
                     'patients' => $patients,
                 ],
-                'message' => 'Data filter berhasil diambil'
+                'message' => 'Data filter berhasil diambil',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil data filter: ' . $e->getMessage()
+                'message' => 'Gagal mengambil data filter: '.$e->getMessage(),
             ], 500);
         }
     }

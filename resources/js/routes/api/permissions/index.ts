@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefa
 import roles from './roles'
 /**
 * @see \App\Http\Controllers\API\PermissionController::index
-* @see app/Http/Controllers/API/PermissionController.php:40
+* @see app/Http/Controllers/API/PermissionController.php:38
 * @route '/api/permissions'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,7 +17,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\API\PermissionController::index
-* @see app/Http/Controllers/API/PermissionController.php:40
+* @see app/Http/Controllers/API/PermissionController.php:38
 * @route '/api/permissions'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -26,7 +26,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\PermissionController::index
-* @see app/Http/Controllers/API/PermissionController.php:40
+* @see app/Http/Controllers/API/PermissionController.php:38
 * @route '/api/permissions'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -36,7 +36,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\API\PermissionController::index
-* @see app/Http/Controllers/API/PermissionController.php:40
+* @see app/Http/Controllers/API/PermissionController.php:38
 * @route '/api/permissions'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -46,7 +46,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\API\PermissionController::store
-* @see app/Http/Controllers/API/PermissionController.php:183
+* @see app/Http/Controllers/API/PermissionController.php:181
 * @route '/api/permissions'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -61,7 +61,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\API\PermissionController::store
-* @see app/Http/Controllers/API/PermissionController.php:183
+* @see app/Http/Controllers/API/PermissionController.php:181
 * @route '/api/permissions'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -70,7 +70,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\PermissionController::store
-* @see app/Http/Controllers/API/PermissionController.php:183
+* @see app/Http/Controllers/API/PermissionController.php:181
 * @route '/api/permissions'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -80,7 +80,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\API\PermissionController::show
-* @see app/Http/Controllers/API/PermissionController.php:308
+* @see app/Http/Controllers/API/PermissionController.php:306
 * @route '/api/permissions/{permission}'
 */
 export const show = (args: { permission: number | { id: number } } | [permission: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -95,7 +95,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\API\PermissionController::show
-* @see app/Http/Controllers/API/PermissionController.php:308
+* @see app/Http/Controllers/API/PermissionController.php:306
 * @route '/api/permissions/{permission}'
 */
 show.url = (args: { permission: number | { id: number } } | [permission: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -128,7 +128,7 @@ show.url = (args: { permission: number | { id: number } } | [permission: number 
 
 /**
 * @see \App\Http\Controllers\API\PermissionController::show
-* @see app/Http/Controllers/API/PermissionController.php:308
+* @see app/Http/Controllers/API/PermissionController.php:306
 * @route '/api/permissions/{permission}'
 */
 show.get = (args: { permission: number | { id: number } } | [permission: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -138,7 +138,7 @@ show.get = (args: { permission: number | { id: number } } | [permission: number 
 
 /**
 * @see \App\Http\Controllers\API\PermissionController::show
-* @see app/Http/Controllers/API/PermissionController.php:308
+* @see app/Http/Controllers/API/PermissionController.php:306
 * @route '/api/permissions/{permission}'
 */
 show.head = (args: { permission: number | { id: number } } | [permission: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -148,7 +148,7 @@ show.head = (args: { permission: number | { id: number } } | [permission: number
 
 /**
 * @see \App\Http\Controllers\API\PermissionController::update
-* @see app/Http/Controllers/API/PermissionController.php:218
+* @see app/Http/Controllers/API/PermissionController.php:216
 * @route '/api/permissions/{permission}'
 */
 export const update = (args: { permission: number | { id: number } } | [permission: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -163,7 +163,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\API\PermissionController::update
-* @see app/Http/Controllers/API/PermissionController.php:218
+* @see app/Http/Controllers/API/PermissionController.php:216
 * @route '/api/permissions/{permission}'
 */
 update.url = (args: { permission: number | { id: number } } | [permission: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -196,7 +196,7 @@ update.url = (args: { permission: number | { id: number } } | [permission: numbe
 
 /**
 * @see \App\Http\Controllers\API\PermissionController::update
-* @see app/Http/Controllers/API/PermissionController.php:218
+* @see app/Http/Controllers/API/PermissionController.php:216
 * @route '/api/permissions/{permission}'
 */
 update.put = (args: { permission: number | { id: number } } | [permission: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -206,7 +206,7 @@ update.put = (args: { permission: number | { id: number } } | [permission: numbe
 
 /**
 * @see \App\Http\Controllers\API\PermissionController::destroy
-* @see app/Http/Controllers/API/PermissionController.php:258
+* @see app/Http/Controllers/API/PermissionController.php:256
 * @route '/api/permissions/{permission}'
 */
 export const destroy = (args: { permission: number | { id: number } } | [permission: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -221,7 +221,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\API\PermissionController::destroy
-* @see app/Http/Controllers/API/PermissionController.php:258
+* @see app/Http/Controllers/API/PermissionController.php:256
 * @route '/api/permissions/{permission}'
 */
 destroy.url = (args: { permission: number | { id: number } } | [permission: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -254,7 +254,7 @@ destroy.url = (args: { permission: number | { id: number } } | [permission: numb
 
 /**
 * @see \App\Http\Controllers\API\PermissionController::destroy
-* @see app/Http/Controllers/API/PermissionController.php:258
+* @see app/Http/Controllers/API/PermissionController.php:256
 * @route '/api/permissions/{permission}'
 */
 destroy.delete = (args: { permission: number | { id: number } } | [permission: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

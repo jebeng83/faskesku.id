@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         // Cek apakah tabel sudah ada sebelum membuatnya
-        if (!Schema::hasTable('reg_periksa')) {
+        if (! Schema::hasTable('reg_periksa')) {
             Schema::create('reg_periksa', function (Blueprint $table) {
                 $table->string('no_reg', 8)->nullable();
                 $table->string('no_rawat', 17)->primary();
@@ -25,16 +25,16 @@ return new class extends Migration
                 $table->string('almt_pj', 200)->nullable();
                 $table->string('hubunganpj', 20)->nullable();
                 $table->double('biaya_reg')->nullable();
-                $table->enum('stts', ['Belum','Sudah','Batal','Berkas Diterima','Dirujuk','Meninggal','Dirawat','Pulang Paksa'])->nullable();
-                $table->enum('stts_daftar', ['-','Lama','Baru'])->default('-');
-                $table->enum('status_lanjut', ['Ralan','Ranap'])->default('Ralan');
+                $table->enum('stts', ['Belum', 'Sudah', 'Batal', 'Berkas Diterima', 'Dirujuk', 'Meninggal', 'Dirawat', 'Pulang Paksa'])->nullable();
+                $table->enum('stts_daftar', ['-', 'Lama', 'Baru'])->default('-');
+                $table->enum('status_lanjut', ['Ralan', 'Ranap'])->default('Ralan');
                 $table->char('kd_pj', 3);
                 $table->integer('umurdaftar')->nullable();
-                $table->enum('sttsumur', ['Th','Bl','Hr'])->nullable();
-                $table->enum('status_bayar', ['Sudah Bayar','Belum Bayar'])->default('Belum Bayar');
-                $table->enum('status_poli', ['Lama','Baru'])->default('Baru');
-                $table->enum('keputusan', ['-','RUJUKAN','PRIORITAS','HIJAU','KUNING','MERAH','HITAM','MJKN','CHECK-IN'])->default('-');
-                
+                $table->enum('sttsumur', ['Th', 'Bl', 'Hr'])->nullable();
+                $table->enum('status_bayar', ['Sudah Bayar', 'Belum Bayar'])->default('Belum Bayar');
+                $table->enum('status_poli', ['Lama', 'Baru'])->default('Baru');
+                $table->enum('keputusan', ['-', 'RUJUKAN', 'PRIORITAS', 'HIJAU', 'KUNING', 'MERAH', 'HITAM', 'MJKN', 'CHECK-IN'])->default('-');
+
                 // Indexes
                 $table->index('no_rkm_medis');
                 $table->index('kd_poli');

@@ -10,8 +10,11 @@ class RawatJlDrpr extends Model
     use HasFactory;
 
     protected $table = 'rawat_jl_drpr';
+
     protected $primaryKey = ['no_rawat', 'kd_jenis_prw', 'kd_dokter', 'nip', 'tgl_perawatan', 'jam_rawat'];
+
     public $incrementing = false;
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -28,7 +31,7 @@ class RawatJlDrpr extends Model
         'kso',
         'menejemen',
         'biaya_rawat',
-        'stts_bayar'
+        'stts_bayar',
     ];
 
     protected $casts = [
@@ -39,7 +42,7 @@ class RawatJlDrpr extends Model
         'tarif_tindakanpr' => 'decimal:2',
         'kso' => 'decimal:2',
         'menejemen' => 'decimal:2',
-        'biaya_rawat' => 'decimal:2'
+        'biaya_rawat' => 'decimal:2',
     ];
 
     /**
@@ -56,7 +59,7 @@ class RawatJlDrpr extends Model
     protected function setKeysForSaveQuery($query)
     {
         $keys = $this->getKeyName();
-        if (!is_array($keys)) {
+        if (! is_array($keys)) {
             return parent::setKeysForSaveQuery($query);
         }
 

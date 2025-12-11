@@ -1,9 +1,13 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:466
 =======
 * @see routes/web.php:507
+>>>>>>> main
+=======
+* @see routes/web.php:923
 >>>>>>> main
 * @route '/pcare/referensi-mobilejkn/poli'
 */
@@ -19,9 +23,13 @@ poli.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:466
 =======
 * @see routes/web.php:507
+>>>>>>> main
+=======
+* @see routes/web.php:923
 >>>>>>> main
 * @route '/pcare/referensi-mobilejkn/poli'
 */
@@ -31,9 +39,13 @@ poli.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:466
 =======
 * @see routes/web.php:507
+>>>>>>> main
+=======
+* @see routes/web.php:923
 >>>>>>> main
 * @route '/pcare/referensi-mobilejkn/poli'
 */
@@ -44,9 +56,13 @@ poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:466
 =======
 * @see routes/web.php:507
+>>>>>>> main
+=======
+* @see routes/web.php:923
 >>>>>>> main
 * @route '/pcare/referensi-mobilejkn/poli'
 */
@@ -57,9 +73,13 @@ poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:471
 =======
 * @see routes/web.php:512
+>>>>>>> main
+=======
+* @see routes/web.php:928
 >>>>>>> main
 * @route '/pcare/referensi-mobilejkn/dokter'
 */
@@ -75,9 +95,13 @@ dokter.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:471
 =======
 * @see routes/web.php:512
+>>>>>>> main
+=======
+* @see routes/web.php:928
 >>>>>>> main
 * @route '/pcare/referensi-mobilejkn/dokter'
 */
@@ -87,9 +111,13 @@ dokter.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:471
 =======
 * @see routes/web.php:512
+>>>>>>> main
+=======
+* @see routes/web.php:928
 >>>>>>> main
 * @route '/pcare/referensi-mobilejkn/dokter'
 */
@@ -100,9 +128,13 @@ dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:471
 =======
 * @see routes/web.php:512
+>>>>>>> main
+=======
+* @see routes/web.php:928
 >>>>>>> main
 * @route '/pcare/referensi-mobilejkn/dokter'
 */

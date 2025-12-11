@@ -141,7 +141,7 @@ metadata.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::organization
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:158
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:159
 * @route '/api/satusehat/organization'
 */
 export const organization = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -156,7 +156,7 @@ organization.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::organization
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:158
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:159
 * @route '/api/satusehat/organization'
 */
 organization.url = (options?: RouteQueryOptions) => {
@@ -165,7 +165,7 @@ organization.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::organization
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:158
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:159
 * @route '/api/satusehat/organization'
 */
 organization.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -175,7 +175,7 @@ organization.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::organization
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:158
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:159
 * @route '/api/satusehat/organization'
 */
 organization.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -185,7 +185,7 @@ organization.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::create
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:317
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:321
 * @route '/api/satusehat/{resource}'
 */
 export const create = (args: { resource: string | number } | [resource: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -200,7 +200,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::create
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:317
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:321
 * @route '/api/satusehat/{resource}'
 */
 create.url = (args: { resource: string | number } | [resource: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -227,7 +227,7 @@ create.url = (args: { resource: string | number } | [resource: string | number ]
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::create
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:317
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:321
 * @route '/api/satusehat/{resource}'
 */
 create.post = (args: { resource: string | number } | [resource: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -237,7 +237,7 @@ create.post = (args: { resource: string | number } | [resource: string | number 
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::get
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:346
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:350
 * @route '/api/satusehat/{resource}/{id}'
 */
 export const get = (args: { resource: string | number, id: string | number } | [resource: string | number, id: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -252,7 +252,7 @@ get.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::get
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:346
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:350
 * @route '/api/satusehat/{resource}/{id}'
 */
 get.url = (args: { resource: string | number, id: string | number } | [resource: string | number, id: string | number ], options?: RouteQueryOptions) => {
@@ -278,7 +278,7 @@ get.url = (args: { resource: string | number, id: string | number } | [resource:
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::get
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:346
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:350
 * @route '/api/satusehat/{resource}/{id}'
 */
 get.get = (args: { resource: string | number, id: string | number } | [resource: string | number, id: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -288,7 +288,7 @@ get.get = (args: { resource: string | number, id: string | number } | [resource:
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::get
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:346
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:350
 * @route '/api/satusehat/{resource}/{id}'
 */
 get.head = (args: { resource: string | number, id: string | number } | [resource: string | number, id: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({

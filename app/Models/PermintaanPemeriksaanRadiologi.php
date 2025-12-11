@@ -10,21 +10,24 @@ class PermintaanPemeriksaanRadiologi extends Model
     use HasFactory;
 
     protected $table = 'permintaan_pemeriksaan_radiologi';
-    
+
     // Composite primary key
     protected $primaryKey = ['noorder', 'kd_jenis_prw'];
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [
         'noorder',
         'kd_jenis_prw',
-        'stts_bayar'
+        'stts_bayar',
     ];
 
     protected $casts = [
-        'stts_bayar' => 'string'
+        'stts_bayar' => 'string',
     ];
 
     /**
@@ -48,6 +51,7 @@ class PermintaanPemeriksaanRadiologi extends Model
         } else {
             $key = $this->getAttribute($this->primaryKey);
         }
+
         return $key;
     }
 
@@ -63,6 +67,7 @@ class PermintaanPemeriksaanRadiologi extends Model
         } else {
             $query->where($this->primaryKey, $this->getAttribute($this->primaryKey));
         }
+
         return $query;
     }
 
@@ -114,7 +119,7 @@ class PermintaanPemeriksaanRadiologi extends Model
         if ($this->jnsPerawatanRadiologi) {
             return $this->jnsPerawatanRadiologi->nm_perawatan;
         }
-        
+
         return 'N/A';
     }
 
@@ -126,7 +131,7 @@ class PermintaanPemeriksaanRadiologi extends Model
         if ($this->jnsPerawatanRadiologi) {
             return $this->jnsPerawatanRadiologi->total_byr;
         }
-        
+
         return 0;
     }
 }

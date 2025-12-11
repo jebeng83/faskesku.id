@@ -1,9 +1,13 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:476
 =======
 * @see routes/web.php:517
+>>>>>>> main
+=======
+* @see routes/web.php:933
 >>>>>>> main
 * @route '/pcare/data-peserta-by-nik'
 */
@@ -19,9 +23,13 @@ cekPesertaNik.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:476
 =======
 * @see routes/web.php:517
+>>>>>>> main
+=======
+* @see routes/web.php:933
 >>>>>>> main
 * @route '/pcare/data-peserta-by-nik'
 */
@@ -31,9 +39,13 @@ cekPesertaNik.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:476
 =======
 * @see routes/web.php:517
+>>>>>>> main
+=======
+* @see routes/web.php:933
 >>>>>>> main
 * @route '/pcare/data-peserta-by-nik'
 */
@@ -44,9 +56,13 @@ cekPesertaNik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:476
 =======
 * @see routes/web.php:517
+>>>>>>> main
+=======
+* @see routes/web.php:933
 >>>>>>> main
 * @route '/pcare/data-peserta-by-nik'
 */
@@ -56,7 +72,7 @@ cekPesertaNik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 })
 
 /**
-* @see routes/web.php:522
+* @see routes/web.php:938
 * @route '/pcare/layanan'
 */
 export const pcare = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -70,7 +86,7 @@ pcare.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:522
+* @see routes/web.php:938
 * @route '/pcare/layanan'
 */
 pcare.url = (options?: RouteQueryOptions) => {
@@ -78,7 +94,7 @@ pcare.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:522
+* @see routes/web.php:938
 * @route '/pcare/layanan'
 */
 pcare.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -87,7 +103,7 @@ pcare.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:522
+* @see routes/web.php:938
 * @route '/pcare/layanan'
 */
 pcare.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

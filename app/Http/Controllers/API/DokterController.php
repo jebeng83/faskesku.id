@@ -15,13 +15,13 @@ class DokterController extends Controller
     {
         try {
             $query = Dokter::aktif();
-            
+
             // Filter berdasarkan pencarian nama dokter
-            if ($request->has('search') && !empty($request->search)) {
+            if ($request->has('search') && ! empty($request->search)) {
                 $search = $request->search;
                 $query->where('nm_dokter', 'LIKE', "%{$search}%");
             }
-            
+
             // Ambil data dengan pagination atau semua data
             if ($request->has('per_page')) {
                 $dokters = $query->select('kd_dokter', 'nm_dokter')
@@ -32,21 +32,21 @@ class DokterController extends Controller
                     ->orderBy('nm_dokter')
                     ->get();
             }
-            
+
             return response()->json([
                 'success' => true,
                 'data' => $dokters,
-                'message' => 'Data dokter berhasil diambil'
+                'message' => 'Data dokter berhasil diambil',
             ]);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }
-    
+
     /**
      * Mendapatkan detail dokter berdasarkan kode
      */
@@ -56,24 +56,24 @@ class DokterController extends Controller
             $dokter = Dokter::where('kd_dokter', $kd_dokter)
                 ->aktif()
                 ->first();
-                
-            if (!$dokter) {
+
+            if (! $dokter) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Dokter tidak ditemukan'
+                    'message' => 'Dokter tidak ditemukan',
                 ], 404);
             }
-            
+
             return response()->json([
                 'success' => true,
                 'data' => $dokter,
-                'message' => 'Detail dokter berhasil diambil'
+                'message' => 'Detail dokter berhasil diambil',
             ]);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }

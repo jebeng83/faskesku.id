@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::store
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:291
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:296
 * @route '/farmasi/set-penjualan-barang'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::store
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:291
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:296
 * @route '/farmasi/set-penjualan-barang'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::store
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:291
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:296
 * @route '/farmasi/set-penjualan-barang'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::show
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:361
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:369
 * @route '/farmasi/set-penjualan-barang/{kode_brng}'
 */
 export const show = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -50,7 +50,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::show
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:361
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:369
 * @route '/farmasi/set-penjualan-barang/{kode_brng}'
 */
 show.url = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -77,7 +77,7 @@ show.url = (args: { kode_brng: string | number } | [kode_brng: string | number ]
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::show
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:361
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:369
 * @route '/farmasi/set-penjualan-barang/{kode_brng}'
 */
 show.get = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -87,7 +87,7 @@ show.get = (args: { kode_brng: string | number } | [kode_brng: string | number ]
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::show
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:361
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:369
 * @route '/farmasi/set-penjualan-barang/{kode_brng}'
 */
 show.head = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -97,7 +97,7 @@ show.head = (args: { kode_brng: string | number } | [kode_brng: string | number 
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::destroy
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:347
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:354
 * @route '/farmasi/set-penjualan-barang/{kode_brng}'
 */
 export const destroy = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -112,7 +112,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::destroy
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:347
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:354
 * @route '/farmasi/set-penjualan-barang/{kode_brng}'
 */
 destroy.url = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -139,7 +139,7 @@ destroy.url = (args: { kode_brng: string | number } | [kode_brng: string | numbe
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::destroy
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:347
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:354
 * @route '/farmasi/set-penjualan-barang/{kode_brng}'
 */
 destroy.delete = (args: { kode_brng: string | number } | [kode_brng: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

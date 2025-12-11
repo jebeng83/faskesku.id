@@ -61,7 +61,7 @@ class DataSuplierController extends Controller
 
         if ($max && preg_match('/^S(\d{4})$/', $max->kode_suplier, $m)) {
             $num = (int) $m[1] + 1;
-            $next = 'S' . str_pad((string) $num, 4, '0', STR_PAD_LEFT);
+            $next = 'S'.str_pad((string) $num, 4, '0', STR_PAD_LEFT);
         }
 
         return $next;
@@ -99,7 +99,7 @@ class DataSuplierController extends Controller
             ->where('kode_suplier', $kode_suplier)
             ->update($validated);
 
-        if (!$affected) {
+        if (! $affected) {
             abort(404, 'Suplier tidak ditemukan');
         }
 

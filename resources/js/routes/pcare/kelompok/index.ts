@@ -4,9 +4,13 @@ import club from './club'
 import peserta from './peserta'
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:481
 =======
 * @see routes/web.php:527
+>>>>>>> main
+=======
+* @see routes/web.php:943
 >>>>>>> main
 * @route '/pcare/kelompok/club-prolanis'
 */
@@ -22,9 +26,13 @@ clubProlanis.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:481
 =======
 * @see routes/web.php:527
+>>>>>>> main
+=======
+* @see routes/web.php:943
 >>>>>>> main
 * @route '/pcare/kelompok/club-prolanis'
 */
@@ -34,9 +42,13 @@ clubProlanis.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:481
 =======
 * @see routes/web.php:527
+>>>>>>> main
+=======
+* @see routes/web.php:943
 >>>>>>> main
 * @route '/pcare/kelompok/club-prolanis'
 */
@@ -47,9 +59,13 @@ clubProlanis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:481
 =======
 * @see routes/web.php:527
+>>>>>>> main
+=======
+* @see routes/web.php:943
 >>>>>>> main
 * @route '/pcare/kelompok/club-prolanis'
 */
@@ -60,9 +76,13 @@ clubProlanis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:486
 =======
 * @see routes/web.php:532
+>>>>>>> main
+=======
+* @see routes/web.php:948
 >>>>>>> main
 * @route '/pcare/kelompok/kegiatan'
 */
@@ -78,9 +98,13 @@ kegiatan.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:486
 =======
 * @see routes/web.php:532
+>>>>>>> main
+=======
+* @see routes/web.php:948
 >>>>>>> main
 * @route '/pcare/kelompok/kegiatan'
 */
@@ -90,9 +114,13 @@ kegiatan.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:486
 =======
 * @see routes/web.php:532
+>>>>>>> main
+=======
+* @see routes/web.php:948
 >>>>>>> main
 * @route '/pcare/kelompok/kegiatan'
 */
@@ -103,9 +131,13 @@ kegiatan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:486
 =======
 * @see routes/web.php:532
+>>>>>>> main
+=======
+* @see routes/web.php:948
 >>>>>>> main
 * @route '/pcare/kelompok/kegiatan'
 */
@@ -116,9 +148,13 @@ kegiatan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:491
 =======
 * @see routes/web.php:537
+>>>>>>> main
+=======
+* @see routes/web.php:953
 >>>>>>> main
 * @route '/pcare/kelompok/entri'
 */
@@ -134,9 +170,13 @@ entri.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:491
 =======
 * @see routes/web.php:537
+>>>>>>> main
+=======
+* @see routes/web.php:953
 >>>>>>> main
 * @route '/pcare/kelompok/entri'
 */
@@ -146,9 +186,13 @@ entri.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:491
 =======
 * @see routes/web.php:537
+>>>>>>> main
+=======
+* @see routes/web.php:953
 >>>>>>> main
 * @route '/pcare/kelompok/entri'
 */
@@ -159,9 +203,13 @@ entri.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:491
 =======
 * @see routes/web.php:537
+>>>>>>> main
+=======
+* @see routes/web.php:953
 >>>>>>> main
 * @route '/pcare/kelompok/entri'
 */
@@ -172,9 +220,13 @@ entri.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:496
 =======
 * @see routes/web.php:542
+>>>>>>> main
+=======
+* @see routes/web.php:958
 >>>>>>> main
 * @route '/pcare/kelompok/peserta-kegiatan'
 */
@@ -190,9 +242,13 @@ pesertaKegiatan.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:496
 =======
 * @see routes/web.php:542
+>>>>>>> main
+=======
+* @see routes/web.php:958
 >>>>>>> main
 * @route '/pcare/kelompok/peserta-kegiatan'
 */
@@ -202,9 +258,13 @@ pesertaKegiatan.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:496
 =======
 * @see routes/web.php:542
+>>>>>>> main
+=======
+* @see routes/web.php:958
 >>>>>>> main
 * @route '/pcare/kelompok/peserta-kegiatan'
 */
@@ -215,9 +275,13 @@ pesertaKegiatan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:496
 =======
 * @see routes/web.php:542
+>>>>>>> main
+=======
+* @see routes/web.php:958
 >>>>>>> main
 * @route '/pcare/kelompok/peserta-kegiatan'
 */

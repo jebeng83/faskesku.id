@@ -22,12 +22,12 @@ class Menu extends Model
         'sort_order',
         'is_active',
         'permission_name',
-        'description'
+        'description',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
-        'sort_order' => 'integer'
+        'sort_order' => 'integer',
     ];
 
     /**
@@ -75,6 +75,7 @@ class Menu extends Model
         if ($this->permission_name) {
             return Permission::where('name', $this->permission_name)->first();
         }
+
         return null;
     }
 
@@ -152,7 +153,7 @@ class Menu extends Model
      */
     private static function userCanAccessMenu($menu, $user)
     {
-        if (!$menu->permission_name) {
+        if (! $menu->permission_name) {
             return true; // No permission required
         }
 
@@ -206,8 +207,8 @@ class Menu extends Model
         // Search and score results
         $results = $menus->map(function ($menu) use ($searchTerms) {
             $searchableText = strtolower(
-                $menu->name . ' ' .
-                    ($menu->description ?? '') . ' ' .
+                $menu->name.' '.
+                    ($menu->description ?? '').' '.
                     ($menu->slug ?? '')
             );
 
@@ -237,14 +238,14 @@ class Menu extends Model
             // Only include if all terms are matched
             if ($matchedTerms === $searchTerms->count()) {
                 // Boost score for root menus
-                if (!$menu->parent_id) {
+                if (! $menu->parent_id) {
                     $score += 2;
                 }
 
                 return [
                     'menu' => $menu,
                     'score' => $score,
-                    'breadcrumb' => $menu->getBreadcrumb()->pluck('name')->join(' › ')
+                    'breadcrumb' => $menu->getBreadcrumb()->pluck('name')->join(' › '),
                 ];
             }
 
@@ -280,7 +281,7 @@ class Menu extends Model
             return [
                 'menu' => $menu,
                 'score' => 1,
-                'breadcrumb' => $menu->getBreadcrumb()->pluck('name')->join(' › ')
+                'breadcrumb' => $menu->getBreadcrumb()->pluck('name')->join(' › '),
             ];
         });
     }

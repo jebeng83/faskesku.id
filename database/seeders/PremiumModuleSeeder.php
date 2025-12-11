@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\PremiumModule;
+use Illuminate\Database\Seeder;
 
 class PremiumModuleSeeder extends Seeder
 {
@@ -28,14 +27,14 @@ class PremiumModuleSeeder extends Seeder
                     'Scheduled Reports',
                     'Email Notifications',
                     'Data Visualization',
-                    'Custom Metrics'
+                    'Custom Metrics',
                 ],
                 'permissions' => [
                     'view_advanced_reports',
                     'create_custom_dashboards',
                     'export_data',
-                    'schedule_reports'
-                ]
+                    'schedule_reports',
+                ],
             ],
             [
                 'module_key' => 'MULTI_BRANCH_MANAGEMENT',
@@ -51,14 +50,14 @@ class PremiumModuleSeeder extends Seeder
                     'User Role Management',
                     'Data Synchronization',
                     'Branch Analytics',
-                    'Centralized Billing'
+                    'Centralized Billing',
                 ],
                 'permissions' => [
                     'manage_branches',
                     'view_cross_branch_data',
                     'configure_branch_settings',
-                    'sync_branch_data'
-                ]
+                    'sync_branch_data',
+                ],
             ],
             [
                 'module_key' => 'INVENTORY_MANAGEMENT_SYSTEM',
@@ -74,14 +73,14 @@ class PremiumModuleSeeder extends Seeder
                     'Barcode Scanning',
                     'Inventory Reports',
                     'Low Stock Alerts',
-                    'Purchase Orders'
+                    'Purchase Orders',
                 ],
                 'permissions' => [
                     'manage_inventory',
                     'view_stock_levels',
                     'create_purchase_orders',
-                    'manage_suppliers'
-                ]
+                    'manage_suppliers',
+                ],
             ],
             [
                 'module_key' => 'TELEMEDICINE_PLATFORM',
@@ -97,14 +96,14 @@ class PremiumModuleSeeder extends Seeder
                     'Payment Integration',
                     'Medical Records Sharing',
                     'Prescription Tracking',
-                    'Consultation Recording'
+                    'Consultation Recording',
                 ],
                 'permissions' => [
                     'conduct_video_consultations',
                     'manage_online_appointments',
                     'issue_digital_prescriptions',
-                    'access_patient_portal'
-                ]
+                    'access_patient_portal',
+                ],
             ],
             [
                 'module_key' => 'FINANCIAL_MANAGEMENT_SUITE',
@@ -120,14 +119,14 @@ class PremiumModuleSeeder extends Seeder
                     'Financial Reports',
                     'Tax Management',
                     'Revenue Analytics',
-                    'Payment Gateway Integration'
+                    'Payment Gateway Integration',
                 ],
                 'permissions' => [
                     'manage_billing',
                     'generate_invoices',
                     'track_payments',
-                    'view_financial_reports'
-                ]
+                    'view_financial_reports',
+                ],
             ],
             [
                 'module_key' => 'AI_DIAGNOSTIC_ASSISTANT',
@@ -143,15 +142,15 @@ class PremiumModuleSeeder extends Seeder
                     'Diagnostic Suggestions',
                     'Clinical Decision Support',
                     'Patient Risk Assessment',
-                    'Medical Literature Search'
+                    'Medical Literature Search',
                 ],
                 'permissions' => [
                     'use_ai_diagnostics',
                     'analyze_medical_images',
                     'access_clinical_support',
-                    'view_ai_recommendations'
-                ]
-            ]
+                    'view_ai_recommendations',
+                ],
+            ],
         ];
 
         foreach ($modules as $moduleData) {

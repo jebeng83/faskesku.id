@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Spesialis;
-use App\Models\Doctor;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -25,7 +24,7 @@ class SpesialisController extends Controller
         $spesialis = Spesialis::with(['dokter.pegawai'])->get();
 
         return Inertia::render('Spesialis/Index', [
-            'spesialis' => $spesialis
+            'spesialis' => $spesialis,
         ]);
     }
 

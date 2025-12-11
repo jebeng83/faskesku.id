@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 
 class SettingSeeder extends Seeder
 {
@@ -26,7 +26,7 @@ class SettingSeeder extends Seeder
         } else {
             // Jangan memodifikasi tabel `setting` yang strukturnya tidak diketahui.
             // Buat tabel `settings` dengan struktur yang kita butuhkan.
-            if (!Schema::hasTable('settings')) {
+            if (! Schema::hasTable('settings')) {
                 Schema::create('settings', function (Blueprint $table) {
                     $table->id();
                     $table->string('key')->unique();

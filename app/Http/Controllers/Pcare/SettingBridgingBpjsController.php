@@ -64,6 +64,7 @@ class SettingBridgingBpjsController extends Controller
     public function destroy()
     {
         DB::table('setting_bridging_bpjs')->truncate();
+
         return redirect()->route('pcare.setting.index')
             ->with('success', 'Pengaturan berhasil direset');
     }

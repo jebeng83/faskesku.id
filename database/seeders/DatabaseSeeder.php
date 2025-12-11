@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
 
         // Run seeders
         $this->call([
+            SeedAllTablesSeeder::class,
             RoleSeeder::class,
             PermissionSeeder::class,
             MenuSeeder::class,
@@ -34,6 +35,9 @@ class DatabaseSeeder extends Seeder
             UserEmployeeSeeder::class,
             PatientSeeder::class,
             RawatJalanSeeder::class,
+            BankSeeder::class,
+            RekeningSeeder::class,
+            SetAkunSeeder::class,
         ]);
     }
 }

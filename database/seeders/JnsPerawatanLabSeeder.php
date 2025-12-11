@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\JnsPerawatanLab;
+use Illuminate\Database\Seeder;
 
 class JnsPerawatanLabSeeder extends Seeder
 {
@@ -27,7 +27,7 @@ class JnsPerawatanLabSeeder extends Seeder
                 'total_byrdrpr' => 55000,
                 'kd_pj' => 'BPJ',
                 'kd_pcare' => 'LAB001',
-                'status' => 'Aktif'
+                'status' => 'Aktif',
             ],
             [
                 'kd_jenis_prw' => 'LAB002',
@@ -43,7 +43,7 @@ class JnsPerawatanLabSeeder extends Seeder
                 'total_byrdrpr' => 78000,
                 'kd_pj' => 'BPJ',
                 'kd_pcare' => 'LAB002',
-                'status' => 'Aktif'
+                'status' => 'Aktif',
             ],
             [
                 'kd_jenis_prw' => 'LAB003',
@@ -59,7 +59,7 @@ class JnsPerawatanLabSeeder extends Seeder
                 'total_byrdrpr' => 36000,
                 'kd_pj' => 'BPJ',
                 'kd_pcare' => 'LAB003',
-                'status' => 'Aktif'
+                'status' => 'Aktif',
             ],
             [
                 'kd_jenis_prw' => 'LAB004',
@@ -75,7 +75,7 @@ class JnsPerawatanLabSeeder extends Seeder
                 'total_byrdrpr' => 36000,
                 'kd_pj' => 'BPJ',
                 'kd_pcare' => 'LAB004',
-                'status' => 'Aktif'
+                'status' => 'Aktif',
             ],
             [
                 'kd_jenis_prw' => 'LAB005',
@@ -91,7 +91,7 @@ class JnsPerawatanLabSeeder extends Seeder
                 'total_byrdrpr' => 46000,
                 'kd_pj' => 'BPJ',
                 'kd_pcare' => 'LAB005',
-                'status' => 'Aktif'
+                'status' => 'Aktif',
             ],
             [
                 'kd_jenis_prw' => 'LAB006',
@@ -107,7 +107,7 @@ class JnsPerawatanLabSeeder extends Seeder
                 'total_byrdrpr' => 69000,
                 'kd_pj' => 'BPJ',
                 'kd_pcare' => 'LAB006',
-                'status' => 'Aktif'
+                'status' => 'Aktif',
             ],
             [
                 'kd_jenis_prw' => 'LAB007',
@@ -123,7 +123,7 @@ class JnsPerawatanLabSeeder extends Seeder
                 'total_byrdrpr' => 61000,
                 'kd_pj' => 'BPJ',
                 'kd_pcare' => 'LAB007',
-                'status' => 'Aktif'
+                'status' => 'Aktif',
             ],
             [
                 'kd_jenis_prw' => 'LAB008',
@@ -139,7 +139,7 @@ class JnsPerawatanLabSeeder extends Seeder
                 'total_byrdrpr' => 44000,
                 'kd_pj' => 'BPJ',
                 'kd_pcare' => 'LAB008',
-                'status' => 'Aktif'
+                'status' => 'Aktif',
             ],
             [
                 'kd_jenis_prw' => 'LAB009',
@@ -155,7 +155,7 @@ class JnsPerawatanLabSeeder extends Seeder
                 'total_byrdrpr' => 37000,
                 'kd_pj' => 'BPJ',
                 'kd_pcare' => 'LAB009',
-                'status' => 'Aktif'
+                'status' => 'Aktif',
             ],
             [
                 'kd_jenis_prw' => 'LAB010',
@@ -171,7 +171,7 @@ class JnsPerawatanLabSeeder extends Seeder
                 'total_byrdrpr' => 100000,
                 'kd_pj' => 'BPJ',
                 'kd_pcare' => 'LAB010',
-                'status' => 'Aktif'
+                'status' => 'Aktif',
             ],
             [
                 'kd_jenis_prw' => 'LAB011',
@@ -187,7 +187,7 @@ class JnsPerawatanLabSeeder extends Seeder
                 'total_byrdrpr' => 52000,
                 'kd_pj' => 'BPJ',
                 'kd_pcare' => 'LAB011',
-                'status' => 'Aktif'
+                'status' => 'Aktif',
             ],
             [
                 'kd_jenis_prw' => 'LAB012',
@@ -203,7 +203,7 @@ class JnsPerawatanLabSeeder extends Seeder
                 'total_byrdrpr' => 56000,
                 'kd_pj' => 'BPJ',
                 'kd_pcare' => 'LAB012',
-                'status' => 'Aktif'
+                'status' => 'Aktif',
             ],
             [
                 'kd_jenis_prw' => 'LAB013',
@@ -219,7 +219,7 @@ class JnsPerawatanLabSeeder extends Seeder
                 'total_byrdrpr' => 61000,
                 'kd_pj' => 'BPJ',
                 'kd_pcare' => 'LAB013',
-                'status' => 'Aktif'
+                'status' => 'Aktif',
             ],
             [
                 'kd_jenis_prw' => 'LAB014',
@@ -235,7 +235,7 @@ class JnsPerawatanLabSeeder extends Seeder
                 'total_byrdrpr' => 71000,
                 'kd_pj' => 'BPJ',
                 'kd_pcare' => 'LAB014',
-                'status' => 'Aktif'
+                'status' => 'Aktif',
             ],
             [
                 'kd_jenis_prw' => 'LAB015',
@@ -251,8 +251,8 @@ class JnsPerawatanLabSeeder extends Seeder
                 'total_byrdrpr' => 122000,
                 'kd_pj' => 'BPJ',
                 'kd_pcare' => 'LAB015',
-                'status' => 'Aktif'
-            ]
+                'status' => 'Aktif',
+            ],
         ];
 
         foreach ($jenisPerawatan as $jenis) {

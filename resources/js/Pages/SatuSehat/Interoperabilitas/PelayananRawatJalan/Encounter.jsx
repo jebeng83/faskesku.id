@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import AppLayout from "@/Layouts/AppLayout";
+import SidebarRalan from "@/Layouts/SidebarRalan";
 import ResponsiveTable from "@/Components/ResponsiveTable";
 import axios from "axios";
 import Toaster from "@/Components/ui/Toaster";
@@ -392,7 +392,7 @@ export default function Encounter() {
   ];
 
   return (
-    <AppLayout title="Encounter Rajal">
+    <SidebarRalan>
       <div className="space-y-6">
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -439,6 +439,6 @@ export default function Encounter() {
         </div>
       </div>
       <Toaster toasts={toasts} onRemove={removeToast} />
-    </AppLayout>
+    </SidebarRalan>
   );
 }

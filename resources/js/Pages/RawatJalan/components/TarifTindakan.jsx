@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Alert from '@/Components/Alert';
 import ConfirmationAlert from '@/Components/ConfirmationAlert';
+import { todayDateString, nowDateTimeString } from '@/tools/datetime';
 
 const TarifTindakan = ({ token, noRkmMedis, noRawat }) => {
     const [activeTab, setActiveTab] = useState('dokter');
@@ -15,6 +16,8 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat }) => {
     const [selectedPetugas, setSelectedPetugas] = useState('');
     const [riwayatTindakan, setRiwayatTindakan] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [stageLoading, setStageLoading] = useState(false);
+    const [postingLoading, setPostingLoading] = useState(false);
     const [showAlert, setShowAlert] = useState(false);
     const [alertConfig, setAlertConfig] = useState({
         type: 'success',
@@ -215,8 +218,8 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat }) => {
         try {
             setLoading(true);
             let endpoint = '';
-            const currentDate = new Date().toISOString().split('T')[0];
-            const currentTime = new Date().toTimeString().split(' ')[0];
+            const currentDate = todayDateString();
+            const currentTime = nowDateTimeString().split(' ')[1].substring(0, 8);
 
             switch (activeTab) {
                 case 'dokter':
@@ -259,13 +262,112 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat }) => {
             );
             
             if (allSuccess) {
-                setAlertConfig({
-                    type: 'success',
-                    title: 'Berhasil',
-                    message: `${selectedTindakan.length} tindakan berhasil disimpan`,
-                    autoClose: true
-                });
-                setShowAlert(true);
+                // Setelah simpan tindakan berhasil, otomatis susun staging dan posting jurnal
+                try {
+                    setPostingLoading(true);
+                    const stageRes = await axios.post('/api/tarif-tindakan/stage-ralan', {
+                        token,
+                        no_rawat: noRawat,
+                    });
+
+                    // Validasi staging: pastikan success, meta ada, dan balanced = true
+                    if (!stageRes.data || !stageRes.data.success) {
+                        const errMsg = stageRes.data?.message || 'Staging jurnal gagal. Posting dibatalkan.';
+                        setAlertConfig({
+                            type: 'error',
+                            title: 'Staging Gagal',
+                            message: errMsg,
+                            autoClose: true,
+                        });
+                        setShowAlert(true);
+                        setPostingLoading(false);
+                        return;
+                    }
+
+                    if (!stageRes.data.meta || !stageRes.data.meta.balanced) {
+                        const debet = stageRes.data.meta?.debet || 0;
+                        const kredit = stageRes.data.meta?.kredit || 0;
+                        const selisih = Math.abs(debet - kredit);
+                        const errMsg = stageRes.data?.message || 
+                            `Staging jurnal tidak seimbang. Debet: ${debet.toLocaleString('id-ID')}, Kredit: ${kredit.toLocaleString('id-ID')}, Selisih: ${selisih.toLocaleString('id-ID')}. Posting dibatalkan.`;
+                        console.error('Staging tidak seimbang:', {
+                            debet,
+                            kredit,
+                            selisih,
+                            meta: stageRes.data.meta,
+                        });
+                        setAlertConfig({
+                            type: 'error',
+                            title: 'Staging Tidak Seimbang',
+                            message: errMsg,
+                            autoClose: true,
+                        });
+                        setShowAlert(true);
+                        setPostingLoading(false);
+                        return;
+                    }
+
+                    // Staging berhasil dan seimbang, lanjutkan ke posting
+                    // Jalankan posting jurnal
+                    try {
+                        const postRes = await axios.post('/api/akutansi/jurnal/post', {
+                            no_bukti: noRawat,
+                            keterangan: `Posting otomatis tindakan Rawat Jalan no_rawat ${noRawat}${noRkmMedis ? ` (RM ${noRkmMedis})` : ''}`,
+                            // tgl_jurnal opsional: biarkan default di backend = hari ini
+                        });
+
+                        if (postRes.status === 201 && postRes.data && postRes.data.no_jurnal) {
+                            const noJurnal = postRes.data.no_jurnal;
+                            setAlertConfig({
+                                type: 'success',
+                                title: 'Berhasil',
+                                message: `${selectedTindakan.length} tindakan disimpan dan jurnal diposting (No: ${noJurnal}).`,
+                                autoClose: true,
+                            });
+                            setShowAlert(true);
+                        } else {
+                            // Error dari backend (400, 500, dll)
+                            const errMsg = postRes.data?.message || `Posting jurnal gagal (Status: ${postRes.status}).`;
+                            console.warn('Posting jurnal gagal:', {
+                                status: postRes.status,
+                                data: postRes.data,
+                                message: errMsg
+                            });
+                            setAlertConfig({
+                                type: 'error',
+                                title: 'Posting Gagal',
+                                message: errMsg,
+                                autoClose: true,
+                            });
+                            setShowAlert(true);
+                        }
+                    } catch (postError) {
+                        // Network error atau parsing error
+                        console.error('Auto Stage→Post error:', postError);
+                        const errMsg = postError?.response?.data?.message || postError?.message || 'Gagal melakukan posting jurnal otomatis.';
+                        setAlertConfig({
+                            type: 'error',
+                            title: 'Posting Error',
+                            message: errMsg,
+                            autoClose: true,
+                        });
+                        setShowAlert(true);
+                    }
+                } catch (e) {
+                    console.error('Auto Stage→Post error:', e);
+                    const errMsg = e?.response?.data?.message || e?.message || 'Gagal melakukan Staging/Posting jurnal otomatis.';
+                    setAlertConfig({
+                        type: 'error',
+                        title: 'Error',
+                        message: errMsg,
+                        autoClose: true,
+                    });
+                    setShowAlert(true);
+                } finally {
+                    setPostingLoading(false);
+                }
+
+                // Reset pilihan dan refresh riwayat
                 setSelectedTindakan([]);
                 setSelectedDokter('');
                 setSelectedPetugas('');
@@ -336,12 +438,11 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat }) => {
                         }
                     }
                     
-                    // Method spoofing: POST + _method=DELETE
-                    const fd = new FormData();
-                    Object.entries(deleteData).forEach(([k, v]) => fd.append(k, v));
-                    fd.append('_method', 'DELETE');
-                    const response = await axios.post(`/api/tarif-tindakan`, fd, {
-                        headers: { 'Content-Type': 'multipart/form-data' }
+                    // Gunakan metode HTTP DELETE langsung dengan payload di body
+                    // Laravel route: Route::delete('/api/tarif-tindakan', deleteTindakan)
+                    // axios mendukung body pada DELETE melalui opsi { data }
+                    const response = await axios.delete('/api/tarif-tindakan', {
+                        data: deleteData,
                     });
                     
                     setAlertConfig({
@@ -371,6 +472,50 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat }) => {
         setShowConfirmAlert(true);
     };
 
+    // Susun staging jurnal tindakan Rawat Jalan (Umum) ke tampjurnal2
+    const handleStageJurnalRalan = async () => {
+        try {
+            setStageLoading(true);
+            const response = await axios.post('/api/tarif-tindakan/stage-ralan', {
+                token,
+                no_rawat: noRawat,
+            });
+
+            if (response.data && response.data.success) {
+                const meta = response.data.meta || {};
+                const message = `Staging jurnal berhasil disusun. Debet: ${new Intl.NumberFormat('id-ID').format(meta.debet || 0)}, Kredit: ${new Intl.NumberFormat('id-ID').format(meta.kredit || 0)}, Baris: ${meta.lines || 0}. ${meta.balanced ? 'Seimbang.' : 'Tidak seimbang!'} `;
+                setAlertConfig({
+                    type: 'success',
+                    title: 'Staging Berhasil',
+                    message,
+                    autoClose: true,
+                });
+                setShowAlert(true);
+            } else {
+                const errMsg = response.data?.message || 'Gagal menyusun staging jurnal';
+                setAlertConfig({
+                    type: 'error',
+                    title: 'Error',
+                    message: errMsg,
+                    autoClose: true,
+                });
+                setShowAlert(true);
+            }
+        } catch (error) {
+            console.error('Error staging jurnal ralan:', error);
+            const errMsg = error.response?.data?.message || error.message || 'Gagal menyusun staging jurnal';
+            setAlertConfig({
+                type: 'error',
+                title: 'Error',
+                message: errMsg,
+                autoClose: true,
+            });
+            setShowAlert(true);
+        } finally {
+            setStageLoading(false);
+        }
+    };
+
     // Format currency
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('id-ID', {
@@ -383,6 +528,16 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat }) => {
     return (
         <>
         <div className="space-y-4">
+            {/* Staging Jurnal Rawat Jalan (Umum) */}
+            <div className="flex justify-end">
+                <button
+                    onClick={handleStageJurnalRalan}
+                    disabled={stageLoading}
+                    className="px-4 py-2 bg-indigo-600 text-white text-xs font-medium rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {stageLoading ? 'Menyusun...' : 'Susun Staging Jurnal (Ralan Umum)'}
+                </button>
+            </div>
             {/* Tab Navigation */}
             <div className="flex space-x-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
                 {[
@@ -563,10 +718,10 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat }) => {
                              </div>
                              <button
                                  onClick={handleSubmitTindakan}
-                                 disabled={loading}
+                                 disabled={loading || postingLoading}
                                  className="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
                              >
-                                 {loading ? 'Menyimpan...' : `Simpan ${selectedTindakan.length} Tindakan`}
+                                 {loading || postingLoading ? 'Menyimpan & Posting...' : `Simpan ${selectedTindakan.length} Tindakan`}
                              </button>
                          </div>
                      </div>

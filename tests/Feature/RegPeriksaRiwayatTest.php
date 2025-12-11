@@ -2,13 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Models\Dokter;
+use App\Models\Patient;
+use App\Models\Poliklinik;
+use App\Models\RegPeriksa;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use App\Models\RegPeriksa;
-use App\Models\Patient;
-use App\Models\Dokter;
-use App\Models\Poliklinik;
-use App\Models\User;
 
 class RegPeriksaRiwayatTest extends TestCase
 {
@@ -17,10 +17,7 @@ class RegPeriksaRiwayatTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
-        // Run migrations
-        $this->artisan('migrate:fresh');
-        
+
         // Create a user for authentication
         $user = User::factory()->create([
             'username' => 'testuser',
@@ -37,7 +34,7 @@ class RegPeriksaRiwayatTest extends TestCase
             'nm_pasien' => 'Test Patient',
             'jk' => 'L',
             'tgl_lahir' => '1990-01-01',
-            'alamat' => 'Test Address'
+            'alamat' => 'Test Address',
         ]);
 
         // Create a doctor
@@ -45,14 +42,24 @@ class RegPeriksaRiwayatTest extends TestCase
             'kd_dokter' => 'DR001',
             'nm_dokter' => 'Dr. Test',
             'jk' => 'L',
-            'status' => '1'
+            'tmp_lahir' => 'Kota',
+            'tgl_lahir' => '1980-01-01',
+            'gol_drh' => 'O',
+            'agama' => 'Islam',
+            'almt_tgl' => 'Alamat',
+            'no_telp' => '081234',
+            'stts_nikah' => 'MENIKAH',
+            'kd_sps' => 'SPS01',
+            'alumni' => 'Universitas',
+            'no_ijn_praktek' => 'IJN123',
+            'status' => '1',
         ]);
 
         // Create a poliklinik
         $poliklinik = Poliklinik::create([
             'kd_poli' => 'POL01',
             'nm_poli' => 'Poli Test',
-            'status' => '1'
+            'status' => '1',
         ]);
 
         // Create registration records
@@ -75,7 +82,7 @@ class RegPeriksaRiwayatTest extends TestCase
             'umurdaftar' => 30,
             'sttsumur' => 'Th',
             'status_bayar' => 'Sudah Bayar',
-            'status_poli' => 'Baru'
+            'status_poli' => 'Baru',
         ]);
 
         // Create a cancelled registration (should not appear in results)
@@ -98,7 +105,7 @@ class RegPeriksaRiwayatTest extends TestCase
             'umurdaftar' => 30,
             'sttsumur' => 'Th',
             'status_bayar' => 'Belum Bayar',
-            'status_poli' => 'Baru'
+            'status_poli' => 'Baru',
         ]);
 
         // Make request to the endpoint
@@ -114,9 +121,9 @@ class RegPeriksaRiwayatTest extends TestCase
                     'nm_dokter',
                     'status_lanjut',
                     'nm_poli',
-                    'no_reg'
-                ]
-            ]
+                    'no_reg',
+                ],
+            ],
         ]);
 
         // Should only return 1 record (not the cancelled one)
@@ -131,7 +138,7 @@ class RegPeriksaRiwayatTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJson([
-            'data' => []
+            'data' => [],
         ]);
     }
 }

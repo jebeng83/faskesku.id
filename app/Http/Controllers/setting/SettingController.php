@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\setting;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Inertia\Inertia;
-use Illuminate\Support\Carbon;
 
 class SettingController extends Controller
 {
@@ -36,7 +36,7 @@ class SettingController extends Controller
 
         // If `setting` exists but without required columns, avoid altering it and
         // create `settings` with the required structure to be safely used.
-        if (!$hasSettings) {
+        if (! $hasSettings) {
             Schema::create('settings', function (Blueprint $table) {
                 $table->id();
                 $table->string('key')->unique();
@@ -50,6 +50,7 @@ class SettingController extends Controller
 
         return 'settings';
     }
+
     /**
      * Display the settings page with current records.
      */
@@ -61,6 +62,33 @@ class SettingController extends Controller
             ->orderBy('group')
             ->orderBy('key')
             ->get();
+
+        // Sanitize records to valid UTF-8 to prevent JSON/render issues
+        $settings = collect($settings)->map(function ($row) {
+            $arr = (array) $row;
+            foreach ($arr as $k => $v) {
+                if (is_string($v)) {
+                    // Prefer detection & conversion from common legacy encodings
+                    if (function_exists('mb_check_encoding') && @mb_check_encoding($v, 'UTF-8')) {
+                        $sv = $v;
+                    } else {
+                        $enc = function_exists('mb_detect_encoding')
+                            ? @mb_detect_encoding($v, ['UTF-8', 'ISO-8859-1', 'Windows-1252', 'ASCII'], true)
+                            : null;
+                        if ($enc) {
+                            $sv = @mb_convert_encoding($v, 'UTF-8', $enc);
+                        } else {
+                            $sv = @iconv('UTF-8', 'UTF-8//IGNORE', $v);
+                        }
+                    }
+                    // Remove control characters
+                    $sv = preg_replace('/[\x00-\x1F\x7F]/u', '', $sv ?? $v);
+                    $arr[$k] = $sv ?? $v;
+                }
+            }
+
+            return (object) $arr;
+        });
 
         return Inertia::render('Setting/setting', [
             'settings' => $settings,
@@ -76,6 +104,7 @@ class SettingController extends Controller
         $table = $this->resolveTable();
 
         $columns = DB::select('SHOW COLUMNS FROM `'.$table.'`');
+
         return response()->json([
             'table' => $table,
             'columns' => $columns,
@@ -138,6 +167,7 @@ class SettingController extends Controller
     {
         $table = $this->resolveTable();
         DB::table($table)->where('id', $id)->delete();
+
         return back()->with('success', 'Setting berhasil dihapus');
     }
 
@@ -151,10 +181,9 @@ class SettingController extends Controller
      * dengan struktur di atas. Endpoints berikut mengembalikan JSON agar mudah
      * diintegrasikan pada card “Setting Aplikasi” di halaman React.
      */
-
     public function appIndex()
     {
-        if (!Schema::hasTable('setting')) {
+        if (! Schema::hasTable('setting')) {
             return response()->json(['message' => 'Tabel `setting` tidak ditemukan'], 404);
         }
 
@@ -186,12 +215,37 @@ class SettingController extends Controller
 
         $records = DB::table('setting')->select($selectable)->get();
 
+        // Sanitize string fields to valid UTF-8 to avoid JSON encode errors
+        $records = collect($records)->map(function ($row) {
+            $arr = (array) $row;
+            foreach ($arr as $k => $v) {
+                if (is_string($v)) {
+                    if (function_exists('mb_check_encoding') && @mb_check_encoding($v, 'UTF-8')) {
+                        $sv = $v;
+                    } else {
+                        $enc = function_exists('mb_detect_encoding')
+                            ? @mb_detect_encoding($v, ['UTF-8', 'ISO-8859-1', 'Windows-1252', 'ASCII'], true)
+                            : null;
+                        if ($enc) {
+                            $sv = @mb_convert_encoding($v, 'UTF-8', $enc);
+                        } else {
+                            $sv = @iconv('UTF-8', 'UTF-8//IGNORE', $v);
+                        }
+                    }
+                    $sv = preg_replace('/[\x00-\x1F\x7F]/u', '', $sv ?? $v);
+                    $arr[$k] = $sv ?? $v;
+                }
+            }
+
+            return $arr;
+        });
+
         return response()->json(['data' => $records]);
     }
 
     public function appStore(Request $request)
     {
-        if (!Schema::hasTable('setting')) {
+        if (! Schema::hasTable('setting')) {
             return back()->with('error', 'Tabel `setting` tidak ditemukan');
         }
 
@@ -220,12 +274,15 @@ class SettingController extends Controller
             $payload['logo'] = file_get_contents($request->file('logo')->getRealPath());
         }
         // Jika tidak ada file dikirim, pastikan tidak memasukkan kolom blob
-        if (!$request->file('wallpaper')) {
+        if (! $request->file('wallpaper')) {
             unset($payload['wallpaper']);
         }
-        if (!$request->file('logo')) {
+        if (! $request->file('logo')) {
             unset($payload['logo']);
         }
+
+        // Sanitize string fields to valid UTF-8 (avoid "Malformed UTF-8" errors)
+        $payload = $this->sanitizePayload($payload);
 
         // Map kolom opsional sesuai ketersediaan di DB
         $payload = $this->mapLegacyPayload($payload);
@@ -237,12 +294,15 @@ class SettingController extends Controller
         }
 
         DB::table('setting')->insert($payload);
+
         return back()->with('success', 'Setting aplikasi berhasil ditambahkan');
     }
 
     public function appUpdate($nama_instansi, Request $request)
     {
-        if (!Schema::hasTable('setting')) {
+        // Sanitize nama_instansi dari parameter route agar selalu UTF-8 valid
+        $nama_instansi = $this->sanitizeString($nama_instansi);
+        if (! Schema::hasTable('setting')) {
             return back()->with('error', 'Tabel `setting` tidak ditemukan');
         }
 
@@ -264,15 +324,35 @@ class SettingController extends Controller
 
         $payload = $data;
         if ($request->file('wallpaper')) {
-            $payload['wallpaper'] = file_get_contents($request->file('wallpaper')->getRealPath());
+            $wallpaperFile = $request->file('wallpaper');
+            $wallpaperContent = file_get_contents($wallpaperFile->getRealPath());
+            $payload['wallpaper'] = $wallpaperContent;
+            Log::info('SettingController@appUpdate: Wallpaper file received', [
+                'nama_instansi' => $nama_instansi,
+                'file_size' => strlen($wallpaperContent),
+                'mime_type' => $wallpaperFile->getMimeType(),
+            ]);
         } else {
             unset($payload['wallpaper']);
+            Log::info('SettingController@appUpdate: No wallpaper file in request', [
+                'nama_instansi' => $nama_instansi,
+            ]);
         }
         if ($request->file('logo')) {
-            $payload['logo'] = file_get_contents($request->file('logo')->getRealPath());
+            $logoFile = $request->file('logo');
+            $logoContent = file_get_contents($logoFile->getRealPath());
+            $payload['logo'] = $logoContent;
+            Log::info('SettingController@appUpdate: Logo file received', [
+                'nama_instansi' => $nama_instansi,
+                'file_size' => strlen($logoContent),
+                'mime_type' => $logoFile->getMimeType(),
+            ]);
         } else {
             unset($payload['logo']);
         }
+
+        // Sanitize string fields to valid UTF-8 (avoid "Malformed UTF-8" errors)
+        $payload = $this->sanitizePayload($payload);
 
         // Map kolom opsional sesuai ketersediaan di DB
         $payload = $this->mapLegacyPayload($payload);
@@ -285,16 +365,51 @@ class SettingController extends Controller
             }
         }
 
-        DB::table('setting')->where('nama_instansi', $nama_instansi)->update($payload);
+        // Lakukan update di dalam try-catch agar jika ada error, kita bisa
+        // mengembalikan respons yang aman (tanpa memicu error "Malformed UTF-8"
+        // pada exception renderer karena adanya data biner di konteks).
+        try {
+            $updated = DB::table('setting')->where('nama_instansi', $nama_instansi)->update($payload);
+
+            // Log success dengan info file yang di-update
+            $updatedFiles = [];
+            if (isset($payload['wallpaper'])) {
+                $updatedFiles[] = 'wallpaper';
+            }
+            if (isset($payload['logo'])) {
+                $updatedFiles[] = 'logo';
+            }
+
+            if (! empty($updatedFiles)) {
+                Log::info('SettingController@appUpdate: Files updated', [
+                    'nama_instansi' => $nama_instansi,
+                    'updated_files' => $updatedFiles,
+                    'rows_affected' => $updated,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            // Log error secara aman (jangan log data blob)
+            Log::error('SettingController@appUpdate failed', [
+                'nama_instansi' => $nama_instansi,
+                'message' => $e->getMessage(),
+                // batasi trace agar log tidak terlalu besar
+                'trace_excerpt' => substr($e->getTraceAsString(), 0, 2000),
+            ]);
+
+            return back()->with('error', 'Gagal memperbarui setting: '.$e->getMessage());
+        }
+
         return back()->with('success', 'Setting aplikasi berhasil diperbarui');
     }
 
     public function appDestroy($nama_instansi)
     {
-        if (!Schema::hasTable('setting')) {
+        $nama_instansi = $this->sanitizeString($nama_instansi);
+        if (! Schema::hasTable('setting')) {
             return back()->with('error', 'Tabel `setting` tidak ditemukan');
         }
         DB::table('setting')->where('nama_instansi', $nama_instansi)->delete();
+
         return back()->with('success', 'Setting aplikasi berhasil dihapus');
     }
 
@@ -303,21 +418,29 @@ class SettingController extends Controller
      */
     public function appWallpaper($nama_instansi)
     {
-        if (!Schema::hasTable('setting') || !Schema::hasColumn('setting', 'wallpaper')) {
+        $nama_instansi = $this->sanitizeString($nama_instansi);
+        if (! Schema::hasTable('setting') || ! Schema::hasColumn('setting', 'wallpaper')) {
             return response('Not Found', 404);
         }
 
         $row = DB::table('setting')->where('nama_instansi', $nama_instansi)->select('wallpaper')->first();
-        if (!$row || !$row->wallpaper) {
+        if (! $row || ! $row->wallpaper) {
             return response('Not Found', 404);
         }
 
         $blob = $row->wallpaper;
         $mime = $this->detectImageMime($blob) ?? 'application/octet-stream';
+        // Pastikan filename aman (ASCII saja) untuk header Content-Disposition
+        $safeName = 'wallpaper-'.preg_replace('/[^A-Za-z0-9._-]/', '-', $nama_instansi);
+        // Tambahkan cache busting dengan hash dari blob untuk memastikan browser reload gambar baru
+        $hash = md5($blob);
+
         return response($blob, 200)
             ->header('Content-Type', $mime)
-            ->header('Content-Disposition', 'inline; filename="wallpaper-'.$nama_instansi.'"')
-            ->header('Cache-Control', 'private, max-age=0, no-cache');
+            ->header('Content-Disposition', 'inline; filename="'.$safeName.'"')
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache')
+            ->header('ETag', '"'.$hash.'"');
     }
 
     /**
@@ -325,21 +448,29 @@ class SettingController extends Controller
      */
     public function appLogo($nama_instansi)
     {
-        if (!Schema::hasTable('setting') || !Schema::hasColumn('setting', 'logo')) {
+        $nama_instansi = $this->sanitizeString($nama_instansi);
+        if (! Schema::hasTable('setting') || ! Schema::hasColumn('setting', 'logo')) {
             return response('Not Found', 404);
         }
 
         $row = DB::table('setting')->where('nama_instansi', $nama_instansi)->select('logo')->first();
-        if (!$row || !$row->logo) {
+        if (! $row || ! $row->logo) {
             return response('Not Found', 404);
         }
 
         $blob = $row->logo;
         $mime = $this->detectImageMime($blob) ?? 'application/octet-stream';
+        // Pastikan filename aman (ASCII saja)
+        $safeName = 'logo-'.preg_replace('/[^A-Za-z0-9._-]/', '-', $nama_instansi);
+        // Tambahkan cache busting dengan hash dari blob untuk memastikan browser reload gambar baru
+        $hash = md5($blob);
+
         return response($blob, 200)
             ->header('Content-Type', $mime)
-            ->header('Content-Disposition', 'inline; filename="logo-'.$nama_instansi.'"')
-            ->header('Cache-Control', 'private, max-age=0, no-cache');
+            ->header('Content-Disposition', 'inline; filename="'.$safeName.'"')
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache')
+            ->header('ETag', '"'.$hash.'"');
     }
 
     /**
@@ -347,7 +478,7 @@ class SettingController extends Controller
      */
     protected function detectImageMime($blob): ?string
     {
-        if (!is_string($blob)) {
+        if (! is_string($blob)) {
             // In some DB drivers, blob may be resource; cast to string
             if (is_resource($blob)) {
                 $blob = stream_get_contents($blob);
@@ -358,15 +489,26 @@ class SettingController extends Controller
 
         $bytes = substr($blob, 0, 12);
         // PNG
-        if (strncmp($bytes, "\x89PNG\r\n\x1A\n", 8) === 0) return 'image/png';
+        if (strncmp($bytes, "\x89PNG\r\n\x1A\n", 8) === 0) {
+            return 'image/png';
+        }
         // JPEG (SOI 0xFFD8)
-        if (strlen($bytes) >= 2 && ord($bytes[0]) === 0xFF && ord($bytes[1]) === 0xD8) return 'image/jpeg';
+        if (strlen($bytes) >= 2 && ord($bytes[0]) === 0xFF && ord($bytes[1]) === 0xD8) {
+            return 'image/jpeg';
+        }
         // GIF
-        if (strncmp($bytes, 'GIF87a', 6) === 0 || strncmp($bytes, 'GIF89a', 6) === 0) return 'image/gif';
+        if (strncmp($bytes, 'GIF87a', 6) === 0 || strncmp($bytes, 'GIF89a', 6) === 0) {
+            return 'image/gif';
+        }
         // WebP (RIFF....WEBP)
-        if (strncmp($bytes, 'RIFF', 4) === 0 && strncmp(substr($bytes, 8, 4), 'WEBP', 4) === 0) return 'image/webp';
+        if (strncmp($bytes, 'RIFF', 4) === 0 && strncmp(substr($bytes, 8, 4), 'WEBP', 4) === 0) {
+            return 'image/webp';
+        }
         // BMP (BM)
-        if (strncmp($bytes, 'BM', 2) === 0) return 'image/bmp';
+        if (strncmp($bytes, 'BM', 2) === 0) {
+            return 'image/bmp';
+        }
+
         return null;
     }
 
@@ -390,18 +532,79 @@ class SettingController extends Controller
         }
 
         // Jika request membawa kode_ppkinhealth namun kolom yang ada kode_ppkinkhealth
-        if ($hasInK && isset($payload['kode_ppkinhealth']) && !Schema::hasColumn('setting', 'kode_ppkinhealth')) {
+        if ($hasInK && isset($payload['kode_ppkinhealth']) && ! Schema::hasColumn('setting', 'kode_ppkinhealth')) {
             $payload['kode_ppkinkhealth'] = $payload['kode_ppkinhealth'];
             unset($payload['kode_ppkinhealth']);
         }
 
         // Hapus semua kolom yang tidak tersedia di tabel
         foreach ($payload as $key => $val) {
-            if (!Schema::hasColumn('setting', $key)) {
+            if (! Schema::hasColumn('setting', $key)) {
                 unset($payload[$key]);
             }
         }
 
         return $payload;
+    }
+
+    /**
+     * Sanitize string values to valid UTF-8 to prevent "Malformed UTF-8" errors
+     * during exception rendering or JSON encoding. Skips binary blob fields.
+     */
+    protected function sanitizePayload(array $payload): array
+    {
+        foreach ($payload as $key => $value) {
+            if (in_array($key, ['logo', 'wallpaper'], true)) {
+                // skip blob
+                continue;
+            }
+            if (is_string($value)) {
+                // Prefer detection & conversion from common legacy encodings
+                if (function_exists('mb_check_encoding') && @mb_check_encoding($value, 'UTF-8')) {
+                    $sanitized = $value;
+                } else {
+                    $enc = function_exists('mb_detect_encoding')
+                        ? @mb_detect_encoding($value, ['UTF-8', 'ISO-8859-1', 'Windows-1252', 'ASCII'], true)
+                        : null;
+                    if ($enc) {
+                        $sanitized = @mb_convert_encoding($value, 'UTF-8', $enc);
+                    } else {
+                        $sanitized = @iconv('UTF-8', 'UTF-8//IGNORE', $value);
+                    }
+                }
+                // Strip control characters
+                $sanitized = preg_replace('/[\x00-\x1F\x7F]/u', '', $sanitized ?? $value);
+                $payload[$key] = $sanitized ?? $value;
+            }
+        }
+
+        return $payload;
+    }
+
+    /**
+     * Sanitize single string into valid UTF-8, used for route parameters
+     * like nama_instansi to avoid "Malformed UTF-8" during exception rendering
+     * or middleware ValidatePathEncoding.
+     */
+    protected function sanitizeString(string $value): string
+    {
+        // Decode any percent-encoding that may slip through
+        $decoded = urldecode($value);
+        if (function_exists('mb_check_encoding') && @mb_check_encoding($decoded, 'UTF-8')) {
+            $sanitized = $decoded;
+        } else {
+            $enc = function_exists('mb_detect_encoding')
+                ? @mb_detect_encoding($decoded, ['UTF-8', 'ISO-8859-1', 'Windows-1252', 'ASCII'], true)
+                : null;
+            if ($enc) {
+                $sanitized = @mb_convert_encoding($decoded, 'UTF-8', $enc);
+            } else {
+                $sanitized = @iconv('UTF-8', 'UTF-8//IGNORE', $decoded);
+            }
+        }
+        // Hapus karakter kontrol non-printable yang bisa memicu error UTF-8
+        $sanitized = preg_replace('/[\x00-\x1F\x7F]/u', '', $sanitized ?? $decoded);
+
+        return $sanitized ?? $decoded;
     }
 }

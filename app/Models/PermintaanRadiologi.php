@@ -4,16 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 
 class PermintaanRadiologi extends Model
 {
     use HasFactory;
 
     protected $table = 'permintaan_radiologi';
+
     protected $primaryKey = 'noorder';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -28,7 +31,7 @@ class PermintaanRadiologi extends Model
         'dokter_perujuk',
         'status',
         'informasi_tambahan',
-        'diagnosa_klinis'
+        'diagnosa_klinis',
     ];
 
     protected $casts = [
@@ -37,7 +40,7 @@ class PermintaanRadiologi extends Model
         'tgl_hasil' => 'date',
         'jam_permintaan' => 'datetime:H:i:s',
         'jam_sampel' => 'datetime:H:i:s',
-        'jam_hasil' => 'datetime:H:i:s'
+        'jam_hasil' => 'datetime:H:i:s',
     ];
 
     /**
@@ -46,18 +49,18 @@ class PermintaanRadiologi extends Model
     public static function generateNoOrder()
     {
         $date = now()->format('Ymd');
-        $lastOrder = self::where('noorder', 'like', 'PR' . $date . '%')
-                        ->orderBy('noorder', 'desc')
-                        ->first();
-        
+        $lastOrder = self::where('noorder', 'like', 'PR'.$date.'%')
+            ->orderBy('noorder', 'desc')
+            ->first();
+
         if ($lastOrder) {
             $lastNumber = (int) substr($lastOrder->noorder, -4);
             $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
         } else {
             $newNumber = '0001';
         }
-        
-        return 'PR' . $date . $newNumber;
+
+        return 'PR'.$date.$newNumber;
     }
 
     /**
@@ -66,7 +69,7 @@ class PermintaanRadiologi extends Model
     protected static function boot()
     {
         parent::boot();
-        
+
         static::creating(function ($model) {
             if (empty($model->noorder)) {
                 $model->noorder = self::generateNoOrder();

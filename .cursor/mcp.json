@@ -1,11 +1,13 @@
 {
     "mcpServers": {
         "laravel-boost": {
-            "command": "php",
+            "command": "/Applications/XAMPP/xamppfiles/bin/php",
             "args": [
-                "artisan",
-                "boost:mcp"
-            ]
+                "/Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/artisan",
+                "mcp:start",
+                "boost"
+            ],
+            "start_on_launch": true
         }
     }
 }

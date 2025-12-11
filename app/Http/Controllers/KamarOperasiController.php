@@ -13,7 +13,7 @@ class KamarOperasiController extends Controller
     public function index(Request $request)
     {
         return Inertia::render('KamarOperasi/Index', [
-            'title' => 'Data Kamar Operasi'
+            'title' => 'Data Kamar Operasi',
         ]);
     }
 
@@ -23,7 +23,7 @@ class KamarOperasiController extends Controller
     public function create()
     {
         return Inertia::render('KamarOperasi/Create', [
-            'title' => 'Tambah Data Kamar Operasi'
+            'title' => 'Tambah Data Kamar Operasi',
         ]);
     }
 
@@ -43,7 +43,7 @@ class KamarOperasiController extends Controller
     public function show(string $id)
     {
         return Inertia::render('KamarOperasi/Show', [
-            'title' => 'Detail Kamar Operasi'
+            'title' => 'Detail Kamar Operasi',
         ]);
     }
 
@@ -53,7 +53,7 @@ class KamarOperasiController extends Controller
     public function edit(string $id)
     {
         return Inertia::render('KamarOperasi/Edit', [
-            'title' => 'Edit Data Kamar Operasi'
+            'title' => 'Edit Data Kamar Operasi',
         ]);
     }
 

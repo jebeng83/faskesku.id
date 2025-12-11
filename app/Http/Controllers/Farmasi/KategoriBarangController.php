@@ -16,7 +16,9 @@ class KategoriBarangController
     {
         $q = trim($request->input('q', ''));
         $perPage = (int) $request->input('perPage', 10);
-        if ($perPage <= 0) { $perPage = 10; }
+        if ($perPage <= 0) {
+            $perPage = 10;
+        }
 
         // Jika klien meminta JSON (dropdown/selector), kembalikan data sederhana
         if ($request->wantsJson()) {
@@ -26,7 +28,7 @@ class KategoriBarangController
             if ($q !== '') {
                 $query->where(function ($w) use ($q) {
                     $w->where('kode', 'like', "%$q%")
-                      ->orWhere('nama', 'like', "%$q%");
+                        ->orWhere('nama', 'like', "%$q%");
                 });
             }
 
@@ -43,7 +45,7 @@ class KategoriBarangController
         if ($q !== '') {
             $query->where(function ($w) use ($q) {
                 $w->where('kode', 'like', "%$q%")
-                  ->orWhere('nama', 'like', "%$q%");
+                    ->orWhere('nama', 'like', "%$q%");
             });
         }
 
@@ -93,7 +95,7 @@ class KategoriBarangController
     public function update(Request $request, string $kode)
     {
         $exists = DB::table('kategori_barang')->where('kode', $kode)->exists();
-        if (!$exists) {
+        if (! $exists) {
             return redirect()->route('farmasi.kategori-obat.index')
                 ->with('error', 'Data tidak ditemukan.');
         }
@@ -136,6 +138,6 @@ class KategoriBarangController
         }
 
         // Gunakan padding 2 digit minimal agar format seperti K01, K02
-        return 'K' . str_pad((string) $nextNumber, 2, '0', STR_PAD_LEFT);
+        return 'K'.str_pad((string) $nextNumber, 2, '0', STR_PAD_LEFT);
     }
 }

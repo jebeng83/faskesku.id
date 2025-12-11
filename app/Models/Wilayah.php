@@ -7,9 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class Wilayah extends Model
 {
     protected $table = 'wilayah';
+
     protected $primaryKey = 'kode';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = true;
 
     protected $fillable = [
@@ -32,7 +36,7 @@ class Wilayah extends Model
      */
     public static function getRegencies($provinceCode)
     {
-        return self::where('kode', 'LIKE', $provinceCode . '.%')
+        return self::where('kode', 'LIKE', $provinceCode.'.%')
             ->whereRaw('LENGTH(kode) = 5')
             ->orderBy('nama')
             ->get();
@@ -43,7 +47,7 @@ class Wilayah extends Model
      */
     public static function getDistricts($regencyCode)
     {
-        return self::where('kode', 'LIKE', $regencyCode . '.%')
+        return self::where('kode', 'LIKE', $regencyCode.'.%')
             ->whereRaw('LENGTH(kode) = 8')
             ->orderBy('nama')
             ->get();
@@ -54,7 +58,7 @@ class Wilayah extends Model
      */
     public static function getVillages($districtCode)
     {
-        return self::where('kode', 'LIKE', $districtCode . '.%')
+        return self::where('kode', 'LIKE', $districtCode.'.%')
             ->whereRaw('LENGTH(kode) = 13')
             ->orderBy('nama')
             ->get();
@@ -69,7 +73,7 @@ class Wilayah extends Model
             ->orderBy('nama');
 
         if ($filter) {
-            $query->where('nama', 'LIKE', '%' . $filter . '%');
+            $query->where('nama', 'LIKE', '%'.$filter.'%');
         }
 
         return $query->limit($limit)->get();
@@ -84,7 +88,7 @@ class Wilayah extends Model
 
         // If name is provided, search by name
         if ($name) {
-            $query->where('nama', 'LIKE', '%' . $name . '%');
+            $query->where('nama', 'LIKE', '%'.$name.'%');
         }
 
         if ($level) {
@@ -127,14 +131,17 @@ class Wilayah extends Model
         } elseif ($codeLength == 5) {
             // Regency -> Province
             $provinceCode = substr($this->kode, 0, 2);
+
             return self::where('kode', $provinceCode)->first();
         } elseif ($codeLength == 8) {
             // District -> Regency
             $regencyCode = substr($this->kode, 0, 5);
+
             return self::where('kode', $regencyCode)->first();
         } elseif ($codeLength == 13) {
             // Village -> District
             $districtCode = substr($this->kode, 0, 8);
+
             return self::where('kode', $districtCode)->first();
         }
 
@@ -236,7 +243,7 @@ class Wilayah extends Model
      */
     public function getFullAddressDetails()
     {
-        if (!$this->isVillage()) {
+        if (! $this->isVillage()) {
             return null;
         }
 

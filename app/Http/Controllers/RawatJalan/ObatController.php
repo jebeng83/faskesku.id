@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\RawatJalan\Databarang;
 use App\Models\RawatJalan\Gudangbarang;
 use App\Models\SetDepoRalan;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ObatController extends Controller
 {
@@ -21,10 +21,10 @@ class ObatController extends Controller
             $search = $request->get('search', '');
             $limit = $request->get('limit', 50);
 
-            if (!$kdPoli) {
+            if (! $kdPoli) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Kode poli diperlukan'
+                    'message' => 'Kode poli diperlukan',
                 ], 400);
             }
 
@@ -35,13 +35,13 @@ class ObatController extends Controller
                 return response()->json([
                     'success' => true,
                     'data' => [],
-                    'message' => 'Tidak ada depo yang terkait dengan poli ini'
+                    'message' => 'Tidak ada depo yang terkait dengan poli ini',
                 ]);
             }
 
             // Gunakan method baru dari model Databarang untuk join dengan gudangbarang
             $obatList = collect();
-            
+
             foreach ($bangsalList as $bangsal) {
                 $obatBangsal = Databarang::getObatWithStok($search, $bangsal, $limit);
                 $obatList = $obatList->merge($obatBangsal);
@@ -51,11 +51,11 @@ class ObatController extends Controller
             $result = $obatList->groupBy('kode_brng')->map(function ($items) use ($bangsalList) {
                 $firstItem = $items->first();
                 $totalStok = $items->sum('total_stok');
-                
+
                 // Dapatkan detail stok per bangsal
                 $databarang = Databarang::where('kode_brng', $firstItem->kode_brng)->first();
                 $stokPerBangsal = [];
-                
+
                 if ($databarang) {
                     $stokDetail = $databarang->getStokDetailPerBangsal();
                     foreach ($bangsalList as $bangsal) {
@@ -73,20 +73,20 @@ class ObatController extends Controller
                     'stok_per_bangsal' => $stokPerBangsal,
                     'isi' => $firstItem->isi,
                     'kapasitas' => $firstItem->kapasitas,
-                    'expire' => $firstItem->expire
+                    'expire' => $firstItem->expire,
                 ];
             })->values()->take($limit);
 
             return response()->json([
                 'success' => true,
                 'data' => $result,
-                'total' => $result->count()
+                'total' => $result->count(),
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -99,21 +99,21 @@ class ObatController extends Controller
         try {
             $kdPoli = $request->get('kd_poli');
 
-            if (!$kdPoli) {
+            if (! $kdPoli) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Kode poli diperlukan'
+                    'message' => 'Kode poli diperlukan',
                 ], 400);
             }
 
             $obat = Databarang::where('kode_brng', $kodeBarang)
-                             ->active()
-                             ->first();
+                ->active()
+                ->first();
 
-            if (!$obat) {
+            if (! $obat) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Obat tidak ditemukan'
+                    'message' => 'Obat tidak ditemukan',
                 ], 404);
             }
 
@@ -140,14 +140,14 @@ class ObatController extends Controller
                     'stok_per_bangsal' => $stokPerBangsal,
                     'isi' => $obat->isi,
                     'kapasitas' => $obat->kapasitas,
-                    'expire' => $obat->expire
-                ]
+                    'expire' => $obat->expire,
+                ],
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -161,15 +161,15 @@ class ObatController extends Controller
             $request->validate([
                 'kode_brng' => 'required|string',
                 'kd_bangsal' => 'nullable|string',
-                'kd_poli' => 'nullable|string'
+                'kd_poli' => 'nullable|string',
             ]);
 
             $databarang = Databarang::where('kode_brng', $request->kode_brng)->first();
-            
-            if (!$databarang) {
+
+            if (! $databarang) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Obat tidak ditemukan'
+                    'message' => 'Obat tidak ditemukan',
                 ], 404);
             }
 
@@ -184,20 +184,20 @@ class ObatController extends Controller
             } elseif ($request->kd_poli) {
                 // Cek stok berdasarkan bangsal yang terkait dengan poli
                 $bangsalList = SetDepoRalan::getBangsalByPoli($request->kd_poli);
-                
+
                 $stok = 0;
                 $stokDetail = collect();
-                
+
                 foreach ($bangsalList as $kdBangsal) {
                     $stokBangsal = Gudangbarang::getTotalStokByBarangBangsal($request->kode_brng, $kdBangsal);
                     $stok += $stokBangsal;
-                    
+
                     $detailBangsal = Gudangbarang::where('kode_brng', $request->kode_brng)
                         ->where('kd_bangsal', $kdBangsal)
                         ->where('stok', '>', 0)
                         ->select('kd_bangsal', 'stok', 'no_batch', 'no_faktur')
                         ->get();
-                    
+
                     $stokDetail = $stokDetail->merge($detailBangsal);
                 }
             } else {
@@ -216,14 +216,14 @@ class ObatController extends Controller
                     'stok' => $stok,
                     'stok_detail' => $stokDetail,
                     'harga_ralan' => $databarang->ralan,
-                    'satuan' => $databarang->kode_satbesar
-                ]
+                    'satuan' => $databarang->kode_satbesar,
+                ],
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }

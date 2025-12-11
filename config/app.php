@@ -125,4 +125,10 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    // Koordinat peta default (untuk komponen UI). Dibaca dari .env dan dicache.
+    'map' => [
+        'latitude' => env('LATITUDE'),
+        'longitude' => env('LONGITUDE'),
+    ],
+
 ];

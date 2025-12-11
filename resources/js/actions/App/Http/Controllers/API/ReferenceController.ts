@@ -45,7 +45,7 @@ perusahaanPasien.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =
 
 /**
 * @see \App\Http\Controllers\API\ReferenceController::sukuBangsa
-* @see app/Http/Controllers/API/ReferenceController.php:25
+* @see app/Http/Controllers/API/ReferenceController.php:26
 * @route '/api/suku-bangsa'
 */
 export const sukuBangsa = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,7 +60,7 @@ sukuBangsa.definition = {
 
 /**
 * @see \App\Http\Controllers\API\ReferenceController::sukuBangsa
-* @see app/Http/Controllers/API/ReferenceController.php:25
+* @see app/Http/Controllers/API/ReferenceController.php:26
 * @route '/api/suku-bangsa'
 */
 sukuBangsa.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ sukuBangsa.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\ReferenceController::sukuBangsa
-* @see app/Http/Controllers/API/ReferenceController.php:25
+* @see app/Http/Controllers/API/ReferenceController.php:26
 * @route '/api/suku-bangsa'
 */
 sukuBangsa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -79,7 +79,7 @@ sukuBangsa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\API\ReferenceController::sukuBangsa
-* @see app/Http/Controllers/API/ReferenceController.php:25
+* @see app/Http/Controllers/API/ReferenceController.php:26
 * @route '/api/suku-bangsa'
 */
 sukuBangsa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -89,7 +89,7 @@ sukuBangsa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\API\ReferenceController::bahasaPasien
-* @see app/Http/Controllers/API/ReferenceController.php:38
+* @see app/Http/Controllers/API/ReferenceController.php:40
 * @route '/api/bahasa-pasien'
 */
 export const bahasaPasien = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -104,7 +104,7 @@ bahasaPasien.definition = {
 
 /**
 * @see \App\Http\Controllers\API\ReferenceController::bahasaPasien
-* @see app/Http/Controllers/API/ReferenceController.php:38
+* @see app/Http/Controllers/API/ReferenceController.php:40
 * @route '/api/bahasa-pasien'
 */
 bahasaPasien.url = (options?: RouteQueryOptions) => {
@@ -113,7 +113,7 @@ bahasaPasien.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\ReferenceController::bahasaPasien
-* @see app/Http/Controllers/API/ReferenceController.php:38
+* @see app/Http/Controllers/API/ReferenceController.php:40
 * @route '/api/bahasa-pasien'
 */
 bahasaPasien.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -123,7 +123,7 @@ bahasaPasien.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\API\ReferenceController::bahasaPasien
-* @see app/Http/Controllers/API/ReferenceController.php:38
+* @see app/Http/Controllers/API/ReferenceController.php:40
 * @route '/api/bahasa-pasien'
 */
 bahasaPasien.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -133,7 +133,7 @@ bahasaPasien.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\API\ReferenceController::cacatFisik
-* @see app/Http/Controllers/API/ReferenceController.php:51
+* @see app/Http/Controllers/API/ReferenceController.php:54
 * @route '/api/cacat-fisik'
 */
 export const cacatFisik = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -148,7 +148,7 @@ cacatFisik.definition = {
 
 /**
 * @see \App\Http\Controllers\API\ReferenceController::cacatFisik
-* @see app/Http/Controllers/API/ReferenceController.php:51
+* @see app/Http/Controllers/API/ReferenceController.php:54
 * @route '/api/cacat-fisik'
 */
 cacatFisik.url = (options?: RouteQueryOptions) => {
@@ -157,7 +157,7 @@ cacatFisik.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\ReferenceController::cacatFisik
-* @see app/Http/Controllers/API/ReferenceController.php:51
+* @see app/Http/Controllers/API/ReferenceController.php:54
 * @route '/api/cacat-fisik'
 */
 cacatFisik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -167,7 +167,7 @@ cacatFisik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\API\ReferenceController::cacatFisik
-* @see app/Http/Controllers/API/ReferenceController.php:51
+* @see app/Http/Controllers/API/ReferenceController.php:54
 * @route '/api/cacat-fisik'
 */
 cacatFisik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

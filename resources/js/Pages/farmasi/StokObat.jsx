@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
-import AppLayout from '@/Layouts/AppLayout';
+import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
 
 export default function StokObat() {
     const [search, setSearch] = useState('');
@@ -105,7 +105,7 @@ export default function StokObat() {
     };
 
     return (
-        <AppLayout>
+        <SidebarFarmasi title="Farmasi">
             <Head title="Stok Obat" />
 
             <div className="space-y-6 p-6">
@@ -317,6 +317,6 @@ export default function StokObat() {
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </SidebarFarmasi>
     );
 }

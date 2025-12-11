@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { router } from '@inertiajs/react';
 import { Head, Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
+import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
 
 export default function PermintaanLab({ token = '', noRkmMedis = '', noRawat = '' }) {
     const [selectedTests, setSelectedTests] = useState([]);
@@ -9,18 +10,50 @@ export default function PermintaanLab({ token = '', noRkmMedis = '', noRawat = '
     const [searchTerm, setSearchTerm] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [activeCategory, setActiveCategory] = useState('PK'); // PK, PA, MB
+    
+    // Dokter Perujuk State
+    const [dokterPerujuk, setDokterPerujuk] = useState({ kd_dokter: '', nm_dokter: '' });
+    const [dokterOptions, setDokterOptions] = useState([]);
+    const [loadingDokter, setLoadingDokter] = useState(false);
+    const [dokterSearch, setDokterSearch] = useState('');
+    const [isDokterDropdownOpen, setIsDokterDropdownOpen] = useState(false);
+    const dokterDropdownRef = useRef(null);
+    
+    // Template State - menyimpan template yang dipilih per jenis pemeriksaan
+    const [selectedTemplates, setSelectedTemplates] = useState({}); // { kd_jenis_prw: [id_template1, id_template2] }
+    const [templatesData, setTemplatesData] = useState({}); // { kd_jenis_prw: [template objects] }
+    const [loadingTemplates, setLoadingTemplates] = useState({}); // { kd_jenis_prw: true/false }
+    
     const [formData, setFormData] = useState({
-        tgl_permintaan: new Date().toISOString().split('T')[0],
-        jam_permintaan: new Date().toTimeString().split(' ')[0].substring(0, 5),
-        dokter_perujuk: '-',
+        tgl_permintaan: todayDateString(),
+        jam_permintaan: nowDateTimeString().split(' ')[1].substring(0, 5),
         status: 'ralan',
-        informasi_tambahan: '',
-        diagnosa_klinis: ''
+        informasi_tambahan: '-',
+        diagnosa_klinis: '-'
     });
 
     // Fetch available lab tests
     useEffect(() => {
         fetchAvailableTests();
+    }, []);
+
+    // Fetch dokter options
+    useEffect(() => {
+        fetchDokter();
+    }, []);
+
+    // Close dokter dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dokterDropdownRef.current && !dokterDropdownRef.current.contains(event.target)) {
+                setIsDokterDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
     }, []);
 
     const fetchAvailableTests = async () => {
@@ -45,17 +78,170 @@ export default function PermintaanLab({ token = '', noRkmMedis = '', noRawat = '
         }
     };
 
-    const addTest = (test) => {
+    // Fetch dokter dari API
+    const fetchDokter = async () => {
+        setLoadingDokter(true);
+        try {
+            const response = await fetch('/api/dokter', {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                // Filter dokter yang bukan "-" (placeholder)
+                const validDokters = (data.data || []).filter(
+                    (dokter) => dokter.kd_dokter !== "-"
+                );
+                setDokterOptions(validDokters);
+            } else {
+                setDokterOptions([]);
+            }
+        } catch (error) {
+            console.error('Error fetching dokter:', error);
+            setDokterOptions([]);
+        } finally {
+            setLoadingDokter(false);
+        }
+    };
+
+    // Filter dokter berdasarkan search
+    const filteredDokterOptions = dokterOptions.filter(dokter =>
+        dokter.nm_dokter?.toLowerCase().includes(dokterSearch.toLowerCase()) ||
+        dokter.kd_dokter?.toLowerCase().includes(dokterSearch.toLowerCase())
+    );
+
+    // Handle dokter selection
+    const handleDokterSelect = (dokter) => {
+        if (dokter) {
+            setDokterPerujuk({ kd_dokter: dokter.kd_dokter, nm_dokter: dokter.nm_dokter });
+            setDokterSearch(dokter.nm_dokter);
+        } else {
+            setDokterPerujuk({ kd_dokter: '', nm_dokter: '' });
+            setDokterSearch('');
+        }
+        setIsDokterDropdownOpen(false);
+    };
+
+    // Fetch templates untuk jenis pemeriksaan tertentu
+    const fetchTemplatesForTest = async (kdJenisPrw) => {
+        if (templatesData[kdJenisPrw]) {
+            // Template sudah di-fetch sebelumnya
+            return;
+        }
+
+        setLoadingTemplates(prev => ({ ...prev, [kdJenisPrw]: true }));
+        try {
+            const response = await fetch(`/api/permintaan-lab/templates/${kdJenisPrw}`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setTemplatesData(prev => ({
+                    ...prev,
+                    [kdJenisPrw]: data.data || []
+                }));
+                // Auto-select semua template saat pertama kali dipilih (default behavior)
+                if (data.data && data.data.length > 0) {
+                    const templateIds = data.data.map(t => t.id_template);
+                    setSelectedTemplates(prev => ({
+                        ...prev,
+                        [kdJenisPrw]: templateIds
+                    }));
+                }
+            } else {
+                console.error('Failed to fetch templates:', response.status);
+                setTemplatesData(prev => ({
+                    ...prev,
+                    [kdJenisPrw]: []
+                }));
+            }
+        } catch (error) {
+            console.error('Error fetching templates:', error);
+            setTemplatesData(prev => ({
+                ...prev,
+                [kdJenisPrw]: []
+            }));
+        } finally {
+            setLoadingTemplates(prev => ({ ...prev, [kdJenisPrw]: false }));
+        }
+    };
+
+    const addTest = async (test) => {
         if (!selectedTests.find(t => t.kd_jenis_prw === test.kd_jenis_prw)) {
+            // Pastikan total_byr adalah number, bukan string dengan leading zero
+            const biaya = typeof test.total_byr === 'string' 
+                ? parseFloat(test.total_byr.replace(/[^\d.-]/g, '')) || 0
+                : Number(test.total_byr) || 0;
+            
             setSelectedTests(prev => [...prev, {
                 ...test,
+                total_byr: biaya, // Pastikan menggunakan number
                 stts_bayar: 'Belum'
             }]);
+            // Fetch templates untuk jenis pemeriksaan yang baru dipilih
+            await fetchTemplatesForTest(test.kd_jenis_prw);
         }
     };
 
     const removeTest = (kd_jenis_prw) => {
         setSelectedTests(prev => prev.filter(t => t.kd_jenis_prw !== kd_jenis_prw));
+        // Hapus template yang dipilih untuk jenis pemeriksaan ini
+        setSelectedTemplates(prev => {
+            const newState = { ...prev };
+            delete newState[kd_jenis_prw];
+            return newState;
+        });
+        // Hapus templates data untuk jenis pemeriksaan ini
+        setTemplatesData(prev => {
+            const newState = { ...prev };
+            delete newState[kd_jenis_prw];
+            return newState;
+        });
+    };
+
+    // Toggle template selection
+    const toggleTemplate = (kdJenisPrw, idTemplate) => {
+        setSelectedTemplates(prev => {
+            const current = prev[kdJenisPrw] || [];
+            const isSelected = current.includes(idTemplate);
+            
+            if (isSelected) {
+                // Hapus template
+                return {
+                    ...prev,
+                    [kdJenisPrw]: current.filter(id => id !== idTemplate)
+                };
+            } else {
+                // Tambah template
+                return {
+                    ...prev,
+                    [kdJenisPrw]: [...current, idTemplate]
+                };
+            }
+        });
+    };
+
+    // Select all templates untuk jenis pemeriksaan tertentu
+    const selectAllTemplates = (kdJenisPrw) => {
+        const templates = templatesData[kdJenisPrw] || [];
+        const templateIds = templates.map(t => t.id_template);
+        setSelectedTemplates(prev => ({
+            ...prev,
+            [kdJenisPrw]: templateIds
+        }));
+    };
+
+    // Deselect all templates untuk jenis pemeriksaan tertentu
+    const deselectAllTemplates = (kdJenisPrw) => {
+        setSelectedTemplates(prev => ({
+            ...prev,
+            [kdJenisPrw]: []
+        }));
     };
 
     const updateFormData = (key, value) => {
@@ -64,40 +250,164 @@ export default function PermintaanLab({ token = '', noRkmMedis = '', noRawat = '
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // Validasi
         if (selectedTests.length === 0) {
             alert('Pilih minimal satu pemeriksaan laboratorium');
             return;
         }
 
+        if (!dokterPerujuk.kd_dokter || dokterPerujuk.kd_dokter === '-') {
+            alert('Pilih dokter perujuk');
+            return;
+        }
+
+        if (!formData.diagnosa_klinis || formData.diagnosa_klinis.trim() === '' || formData.diagnosa_klinis.trim() === '-') {
+            alert('Diagnosa klinis wajib diisi');
+            return;
+        }
+
+        // Validasi: setiap jenis pemeriksaan harus punya minimal 1 template yang dipilih
+        for (const test of selectedTests) {
+            const selectedTemplateIds = selectedTemplates[test.kd_jenis_prw] || [];
+            if (selectedTemplateIds.length === 0) {
+                alert(`Pilih minimal satu template untuk pemeriksaan: ${test.nm_perawatan}`);
+                return;
+            }
+        }
+
         setIsSubmitting(true);
         try {
+            // Pastikan setiap detail_tests memiliki templates array yang tidak kosong
+            const detailTests = selectedTests.map(test => {
+                const selectedTemplateIds = selectedTemplates[test.kd_jenis_prw] || [];
+                if (selectedTemplateIds.length === 0) {
+                    throw new Error(`Template harus dipilih untuk pemeriksaan: ${test.nm_perawatan}`);
+                }
+                return {
+                    kd_jenis_prw: test.kd_jenis_prw,
+                    stts_bayar: test.stts_bayar,
+                    templates: selectedTemplateIds // Array id_template yang dipilih (tidak boleh kosong)
+                };
+            });
+
             const submitData = {
                 no_rawat: noRawat,
                 ...formData,
-                detail_tests: selectedTests.map(test => ({
-                    kd_jenis_prw: test.kd_jenis_prw,
-                    stts_bayar: test.stts_bayar
-                }))
+                dokter_perujuk: dokterPerujuk.kd_dokter || '-',
+                detail_tests: detailTests
             };
 
-            router.post('/permintaan-lab', submitData, {
-                onSuccess: (page) => {
+            router.post(route('laboratorium.permintaan-lab.store'), submitData, {
+                onSuccess: async (page) => {
                     // Reset form after successful submission
                     setSelectedTests([]);
                     setFormData({
-                        tgl_permintaan: new Date().toISOString().split('T')[0],
-                        jam_permintaan: new Date().toTimeString().split(' ')[0].substring(0, 5),
-                        dokter_perujuk: '-',
+                        tgl_permintaan: todayDateString(),
+                        jam_permintaan: nowDateTimeString().split(' ')[1].substring(0, 5),
                         status: 'ralan',
-                        informasi_tambahan: '',
-                        diagnosa_klinis: ''
+                        informasi_tambahan: '-',
+                        diagnosa_klinis: '-'
                     });
+                    setDokterPerujuk({ kd_dokter: '', nm_dokter: '' });
+                    setDokterSearch('');
+                    setSelectedTemplates({});
+                    setTemplatesData({});
                     
-                    // Show success message from flash session
-                    if (page.props.flash && page.props.flash.success) {
-                        alert(page.props.flash.success);
+                    // Extract noorder from success message
+                    let noorder = null;
+                    const successMsg = page.props.flash?.success || '';
+                    const match = successMsg.match(/nomor order:\s*([A-Z0-9]+)/i);
+                    if (match) {
+                        noorder = match[1];
+                    }
+                    
+                    // Otomatis staging dan posting jurnal jika noorder ditemukan
+                    if (noorder) {
+                        try {
+                            setIsSubmitting(true);
+                            
+                            // 1. Stage jurnal dari permintaan lab
+                            const stageRes = await fetch('/api/permintaan-lab/stage-lab', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                                },
+                                body: JSON.stringify({ noorder })
+                            });
+                            
+                            const stageData = await stageRes.json();
+                            
+                            if (!stageRes.ok || !stageData.success || !stageData.meta?.balanced) {
+                                const errMsg = stageData?.message || 'Staging jurnal gagal atau tidak seimbang. Posting dibatalkan.';
+                                alert(`Permintaan laboratorium berhasil disimpan (No: ${noorder}), namun staging jurnal gagal: ${errMsg}`);
+                                setIsSubmitting(false);
+                                return;
+                            }
+                            
+                            // 2. Posting jurnal dari tampjurnal2 (menggunakan JurnalPostingService yang menggabungkan tampjurnal + tampjurnal2)
+                            try {
+                                const postRes = await fetch('/api/akutansi/jurnal/post', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Accept': 'application/json',
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                                    },
+                                    body: JSON.stringify({
+                                        no_bukti: noorder,
+                                        keterangan: `Posting otomatis permintaan Laboratorium noorder ${noorder}${noRawat ? ` (no_rawat ${noRawat})` : ''}`
+                                    })
+                                });
+                                
+                                let postData = {};
+                                try {
+                                    const text = await postRes.text();
+                                    postData = text ? JSON.parse(text) : {};
+                                } catch (parseError) {
+                                    console.error('Error parsing JSON response:', parseError);
+                                    postData = { message: `Gagal parsing response (Status: ${postRes.status})` };
+                                }
+                                
+                                if (postRes.status === 201 && postData.no_jurnal) {
+                                    const noJurnal = postData.no_jurnal;
+                                    alert(`Permintaan laboratorium berhasil disimpan (No: ${noorder}) dan jurnal diposting (No: ${noJurnal}).`);
+                                } else {
+                                    // Error dari backend (400, 500, dll)
+                                    const errMsg = postData?.message || `Posting jurnal gagal (Status: ${postRes.status}).`;
+                                    console.warn('Posting jurnal gagal:', {
+                                        status: postRes.status,
+                                        statusText: postRes.statusText,
+                                        data: postData,
+                                        message: errMsg
+                                    });
+                                    alert(`Permintaan laboratorium berhasil disimpan (No: ${noorder}), namun posting jurnal gagal: ${errMsg}`);
+                                }
+                            } catch (postError) {
+                                // Network error atau parsing error
+                                console.error('Auto Stage→Post error:', postError);
+                                const errMsg = postError?.response?.data?.message || postError?.message || 'Gagal melakukan posting jurnal otomatis.';
+                                alert(`Permintaan laboratorium berhasil disimpan (No: ${noorder}), namun terjadi kesalahan saat posting jurnal: ${errMsg}`);
+                            }
+                        } catch (e) {
+                            console.error('Auto Stage→Post error:', e);
+                            const errMsg = e?.response?.data?.message || e?.message || 'Gagal melakukan Staging/Posting jurnal otomatis.';
+                            alert(`Permintaan laboratorium berhasil disimpan (No: ${noorder}), namun terjadi kesalahan saat staging/posting jurnal: ${errMsg}`);
+                        } finally {
+                            setIsSubmitting(false);
+                        }
                     } else {
-                        alert('Permintaan laboratorium berhasil disimpan');
+                        // Show success message from flash session
+                        if (successMsg) {
+                            alert(successMsg);
+                        } else {
+                            alert('Permintaan laboratorium berhasil disimpan');
+                        }
+                        setIsSubmitting(false);
                     }
                 },
                 onError: (errors) => {
@@ -119,12 +429,30 @@ export default function PermintaanLab({ token = '', noRkmMedis = '', noRawat = '
         }
     };
 
-    const filteredTests = availableTests.filter(test => 
+    // Filter tests berdasarkan kategori
+    const filteredTestsByCategory = availableTests.filter(test => {
+        // Asumsikan ada field 'kategori' atau 'kd_kategori' di jns_perawatan_lab
+        // Jika tidak ada, default ke PK
+        const testCategory = test.kategori || test.kd_kategori || 'PK';
+        if (activeCategory === 'PK') return testCategory === 'PK' || !testCategory;
+        if (activeCategory === 'PA') return testCategory === 'PA';
+        if (activeCategory === 'MB') return testCategory === 'MB';
+        return true;
+    });
+
+    // Filter tests berdasarkan search term
+    const filteredTests = filteredTestsByCategory.filter(test => 
         test.nm_perawatan?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const getTotalBiaya = () => {
-        return selectedTests.reduce((total, test) => total + (test.total_byr || 0), 0);
+        return selectedTests.reduce((total, test) => {
+            // Pastikan total_byr adalah number, bukan string
+            const biaya = typeof test.total_byr === 'string' 
+                ? parseFloat(test.total_byr.replace(/[^\d.-]/g, '')) || 0
+                : Number(test.total_byr) || 0;
+            return total + biaya;
+        }, 0);
     };
 
     return (
@@ -144,47 +472,146 @@ export default function PermintaanLab({ token = '', noRkmMedis = '', noRawat = '
             </div>
             <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-6">
                 {/* Form Data Permintaan */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tanggal Permintaan</label>
-                        <input 
-                            type="date" 
-                            value={formData.tgl_permintaan}
-                            onChange={(e) => updateFormData('tgl_permintaan', e.target.value)}
-                            className="w-full py-2.5 px-3 rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500" 
-                            required
-                        />
+                <div className="space-y-4">
+                    {/* Baris 1: Tanggal Permintaan, Jam Permintaan, Dokter Perujuk */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tanggal Permintaan</label>
+                            <input 
+                                type="date" 
+                                value={formData.tgl_permintaan}
+                                onChange={(e) => updateFormData('tgl_permintaan', e.target.value)}
+                                className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all" 
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Jam Permintaan</label>
+                            <input 
+                                type="time" 
+                                value={formData.jam_permintaan}
+                                onChange={(e) => updateFormData('jam_permintaan', e.target.value)}
+                                className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all" 
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Dokter Perujuk <span className="text-red-500">*</span>
+                            </label>
+                            <div className="relative" ref={dokterDropdownRef}>
+                                <input
+                                    type="text"
+                                    value={dokterSearch}
+                                    onChange={(e) => {
+                                        setDokterSearch(e.target.value);
+                                        setIsDokterDropdownOpen(true);
+                                    }}
+                                    onFocus={() => setIsDokterDropdownOpen(true)}
+                                    className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
+                                    placeholder="Cari dokter perujuk..."
+                                    required
+                                />
+                                {isDokterDropdownOpen && (
+                                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                        {loadingDokter ? (
+                                            <div className="p-3 text-center text-gray-500 dark:text-gray-400">
+                                                Memuat...
+                                            </div>
+                                        ) : filteredDokterOptions.length > 0 ? (
+                                            filteredDokterOptions.map((dokter) => (
+                                                <div
+                                                    key={dokter.kd_dokter}
+                                                    onClick={() => handleDokterSelect(dokter)}
+                                                    className="p-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-200 dark:border-gray-700 last:border-b-0"
+                                                >
+                                                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                                        {dokter.nm_dokter}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                        {dokter.kd_dokter}
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="p-3 text-center text-gray-500 dark:text-gray-400">
+                                                Tidak ada dokter ditemukan
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                            {dokterPerujuk.kd_dokter && (
+                                <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                                    Dipilih: {dokterPerujuk.nm_dokter} ({dokterPerujuk.kd_dokter})
+                                </p>
+                            )}
+                        </div>
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Jam Permintaan</label>
-                        <input 
-                            type="time" 
-                            value={formData.jam_permintaan}
-                            onChange={(e) => updateFormData('jam_permintaan', e.target.value)}
-                            className="w-full py-2.5 px-3 rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500" 
-                            required
-                        />
+                    
+                    {/* Baris 2: Diagnosa Klinis dan Informasi Tambahan */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Diagnosa Klinis <span className="text-red-500">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                value={formData.diagnosa_klinis}
+                                onChange={(e) => updateFormData('diagnosa_klinis', e.target.value)}
+                                className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all" 
+                                placeholder="Masukkan diagnosa klinis"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Informasi Tambahan</label>
+                            <input 
+                                type="text" 
+                                value={formData.informasi_tambahan}
+                                onChange={(e) => updateFormData('informasi_tambahan', e.target.value)}
+                                className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all" 
+                                placeholder="Informasi tambahan (opsional)"
+                            />
+                        </div>
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Diagnosa Klinis</label>
-                        <input 
-                            type="text" 
-                            value={formData.diagnosa_klinis}
-                            onChange={(e) => updateFormData('diagnosa_klinis', e.target.value)}
-                            className="w-full py-2.5 px-3 rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500" 
-                            placeholder="Masukkan diagnosa klinis"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Informasi Tambahan</label>
-                        <input 
-                            type="text" 
-                            value={formData.informasi_tambahan}
-                            onChange={(e) => updateFormData('informasi_tambahan', e.target.value)}
-                            className="w-full py-2.5 px-3 rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500" 
-                            placeholder="Informasi tambahan (opsional)"
-                        />
-                    </div>
+                </div>
+
+                {/* Tab Kategori Pemeriksaan */}
+                <div className="flex space-x-2 border-b border-gray-200 dark:border-gray-600">
+                    <button
+                        type="button"
+                        onClick={() => setActiveCategory('PK')}
+                        className={`px-4 py-2 text-sm font-medium transition-colors ${
+                            activeCategory === 'PK'
+                                ? 'border-b-2 border-green-500 text-green-600 dark:text-green-400'
+                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                        }`}
+                    >
+                        Patologi Klinis (PK)
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setActiveCategory('PA')}
+                        className={`px-4 py-2 text-sm font-medium transition-colors ${
+                            activeCategory === 'PA'
+                                ? 'border-b-2 border-green-500 text-green-600 dark:text-green-400'
+                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                        }`}
+                    >
+                        Patologi Anatomi (PA)
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setActiveCategory('MB')}
+                        className={`px-4 py-2 text-sm font-medium transition-colors ${
+                            activeCategory === 'MB'
+                                ? 'border-b-2 border-green-500 text-green-600 dark:text-green-400'
+                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                        }`}
+                    >
+                        Mikrobiologi (MB)
+                    </button>
                 </div>
 
                 {/* Pencarian Pemeriksaan */}
@@ -194,14 +621,14 @@ export default function PermintaanLab({ token = '', noRkmMedis = '', noRawat = '
                             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
-                            Cari Pemeriksaan Laboratorium
+                            Cari Pemeriksaan Laboratorium ({activeCategory})
                         </h4>
                     </div>
                     <input 
                         type="text" 
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full py-2.5 px-3 rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500" 
+                        className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all" 
                         placeholder="Cari nama pemeriksaan..."
                     />
                     
@@ -256,33 +683,127 @@ export default function PermintaanLab({ token = '', noRkmMedis = '', noRawat = '
                         </span>
                     </div>
                     {selectedTests.length > 0 ? (
-                        selectedTests.map((test, index) => (
-                            <div key={test.kd_jenis_prw} className="bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex-1">
-                                        <div className="flex items-center space-x-2 mb-2">
-                                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 text-xs font-medium">
-                                                {index + 1}
-                                            </span>
-                                            <h5 className="text-sm font-medium text-gray-900 dark:text-white">{test.nm_perawatan}</h5>
+                        selectedTests.map((test, index) => {
+                            const templates = templatesData[test.kd_jenis_prw] || [];
+                            const selectedTemplateIds = selectedTemplates[test.kd_jenis_prw] || [];
+                            const isLoading = loadingTemplates[test.kd_jenis_prw] || false;
+                            const allSelected = templates.length > 0 && selectedTemplateIds.length === templates.length;
+                            
+                            return (
+                                <div key={test.kd_jenis_prw} className="bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600 rounded-lg p-4 space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex-1">
+                                            <div className="flex items-center space-x-2 mb-2">
+                                                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 text-xs font-medium">
+                                                    {index + 1}
+                                                </span>
+                                                <h5 className="text-sm font-medium text-gray-900 dark:text-white">{test.nm_perawatan}</h5>
+                                            </div>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Kode: {test.kd_jenis_prw}</p>
+                                            <p className="text-sm font-medium text-green-600 dark:text-green-400">Rp {(() => {
+                                                const biaya = typeof test.total_byr === 'string' 
+                                                    ? parseFloat(test.total_byr.replace(/[^\d.-]/g, '')) || 0
+                                                    : Number(test.total_byr) || 0;
+                                                return biaya.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                                            })()}</p>
                                         </div>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Kode: {test.kd_jenis_prw}</p>
-                                        <p className="text-sm font-medium text-green-600 dark:text-green-400">Rp {(test.total_byr || 0).toLocaleString('id-ID')}</p>
+                                        <button 
+                                            type="button" 
+                                            onClick={() => removeTest(test.kd_jenis_prw)} 
+                                            className="ml-3 inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50 transition-colors"
+                                            title="Hapus pemeriksaan"
+                                        >
+                                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                            Hapus
+                                        </button>
                                     </div>
-                                    <button 
-                                        type="button" 
-                                        onClick={() => removeTest(test.kd_jenis_prw)} 
-                                        className="ml-3 inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50 transition-colors"
-                                        title="Hapus pemeriksaan"
-                                    >
-                                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                        Hapus
-                                    </button>
+                                    
+                                    {/* Template Selector */}
+                                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <h6 className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">
+                                                Pilih Detail Template ({selectedTemplateIds.length} / {templates.length} dipilih)
+                                            </h6>
+                                            {templates.length > 0 && (
+                                                <div className="flex space-x-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => selectAllTemplates(test.kd_jenis_prw)}
+                                                        disabled={allSelected}
+                                                        className="text-xs px-2 py-1 text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:cursor-not-allowed dark:text-blue-400 dark:hover:text-blue-300"
+                                                    >
+                                                        Pilih Semua
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => deselectAllTemplates(test.kd_jenis_prw)}
+                                                        disabled={selectedTemplateIds.length === 0}
+                                                        className="text-xs px-2 py-1 text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-gray-300"
+                                                    >
+                                                        Hapus Semua
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                        
+                                        {isLoading ? (
+                                            <div className="text-center py-4">
+                                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto"></div>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Memuat template...</p>
+                                            </div>
+                                        ) : templates.length > 0 ? (
+                                            <div className="max-h-96 overflow-y-auto bg-white dark:bg-gray-800 rounded-md p-3 border border-gray-200 dark:border-gray-600">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                                                    {templates.map((template) => {
+                                                        const isSelected = selectedTemplateIds.includes(template.id_template);
+                                                        return (
+                                                            <label
+                                                                key={template.id_template}
+                                                                className="flex items-start space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-md cursor-pointer border border-gray-200 dark:border-gray-600"
+                                                            >
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={isSelected}
+                                                                    onChange={() => toggleTemplate(test.kd_jenis_prw, template.id_template)}
+                                                                    className="mt-0.5 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 flex-shrink-0"
+                                                                />
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="text-xs font-medium text-gray-900 dark:text-white break-words">
+                                                                        {template.Pemeriksaan || 'Nama tidak tersedia'}
+                                                                    </div>
+                                                                    {template.satuan && (
+                                                                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                                                            Satuan: {template.satuan}
+                                                                        </div>
+                                                                    )}
+                                                                    {(template.nilai_rujukan_ld || template.nilai_rujukan_la || template.nilai_rujukan_pd || template.nilai_rujukan_pa) && (
+                                                                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 break-words">
+                                                                            Nilai Rujukan: {template.nilai_rujukan_ld || template.nilai_rujukan_la || template.nilai_rujukan_pd || template.nilai_rujukan_pa || '-'}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
+                                                Tidak ada template tersedia untuk pemeriksaan ini
+                                            </div>
+                                        )}
+                                        
+                                        {selectedTemplateIds.length === 0 && templates.length > 0 && (
+                                            <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+                                                ⚠️ Pilih minimal satu template untuk pemeriksaan ini
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        ))
+                            );
+                        })
                     ) : (
                         <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                             <svg className="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -297,7 +818,7 @@ export default function PermintaanLab({ token = '', noRkmMedis = '', noRawat = '
                         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                             <div className="flex items-center justify-between">
                                 <span className="text-sm font-medium text-blue-900 dark:text-blue-300">Total Biaya Pemeriksaan:</span>
-                                <span className="text-lg font-bold text-blue-900 dark:text-blue-300">Rp {getTotalBiaya().toLocaleString('id-ID')}</span>
+                                <span className="text-lg font-bold text-blue-900 dark:text-blue-300">Rp {getTotalBiaya().toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
                             </div>
                         </div>
                     )}
@@ -310,7 +831,7 @@ export default function PermintaanLab({ token = '', noRkmMedis = '', noRawat = '
                         </span>
                         {selectedTests.length > 0 && (
                             <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                                Rp {getTotalBiaya().toLocaleString('id-ID')}
+                                Rp {getTotalBiaya().toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                             </span>
                         )}
                     </div>
@@ -525,11 +1046,22 @@ export function RiwayatPermintaanLab({ noRawat = '' }) {
 
     const formatDate = (date) => {
         if (!date) return '-';
-        return new Date(date).toLocaleDateString('id-ID', {
-            day: '2-digit',
-            month: '2-digit', 
-            year: 'numeric'
-        });
+        try {
+            const tz = getAppTimeZone();
+            const dateObj = new Date(date);
+            return dateObj.toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: '2-digit', 
+                year: 'numeric',
+                timeZone: tz
+            });
+        } catch (e) {
+            return new Date(date).toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: '2-digit', 
+                year: 'numeric'
+            });
+        }
     };
 
     const formatTime = (time) => {
@@ -687,5 +1219,4 @@ export function RiwayatPermintaanLab({ noRawat = '' }) {
         </div>
     );
 }
-
 

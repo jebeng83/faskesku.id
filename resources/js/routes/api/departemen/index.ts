@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
-* @see \App\Http\Controllers\DepartemenController::index
-* @see app/Http/Controllers/DepartemenController.php:17
+* @see \App\Http\Controllers\Kepegawaian\DepartemenController::index
+* @see app/Http/Controllers/Kepegawaian/DepartemenController.php:20
 * @route '/api/departemen'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,8 +15,8 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\DepartemenController::index
-* @see app/Http/Controllers/DepartemenController.php:17
+* @see \App\Http\Controllers\Kepegawaian\DepartemenController::index
+* @see app/Http/Controllers/Kepegawaian/DepartemenController.php:20
 * @route '/api/departemen'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -24,8 +24,8 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Http\Controllers\DepartemenController::index
-* @see app/Http/Controllers/DepartemenController.php:17
+* @see \App\Http\Controllers\Kepegawaian\DepartemenController::index
+* @see app/Http/Controllers/Kepegawaian/DepartemenController.php:20
 * @route '/api/departemen'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,8 +34,8 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\DepartemenController::index
-* @see app/Http/Controllers/DepartemenController.php:17
+* @see \App\Http\Controllers\Kepegawaian\DepartemenController::index
+* @see app/Http/Controllers/Kepegawaian/DepartemenController.php:20
 * @route '/api/departemen'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

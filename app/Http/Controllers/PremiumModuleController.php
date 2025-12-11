@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Services\PremiumModuleService;
 use App\Models\PremiumModule;
-use Inertia\Inertia;
-use Illuminate\Support\Facades\Validator;
+use App\Services\PremiumModuleService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
 
 class PremiumModuleController extends Controller
 {
@@ -64,7 +64,8 @@ class PremiumModuleController extends Controller
             return redirect()->route('premium-modules.index')
                 ->with('success', 'Premium module created successfully.');
         } catch (\Exception $e) {
-            Log::error('Error creating premium module: ' . $e->getMessage());
+            Log::error('Error creating premium module: '.$e->getMessage());
+
             return back()->with('error', 'Failed to create premium module. Please try again.');
         }
     }
@@ -117,7 +118,8 @@ class PremiumModuleController extends Controller
             return redirect()->route('premium-modules.index')
                 ->with('success', 'Premium module updated successfully.');
         } catch (\Exception $e) {
-            Log::error('Error updating premium module: ' . $e->getMessage());
+            Log::error('Error updating premium module: '.$e->getMessage());
+
             return back()->with('error', 'Failed to update premium module. Please try again.');
         }
     }
@@ -133,13 +135,14 @@ class PremiumModuleController extends Controller
             return response()->json([
                 'success' => true,
                 'license_key' => $licenseKey,
-                'message' => 'License key generated successfully.'
+                'message' => 'License key generated successfully.',
             ]);
         } catch (\Exception $e) {
-            Log::error('Error generating license key: ' . $e->getMessage());
+            Log::error('Error generating license key: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to generate license key.'
+                'message' => 'Failed to generate license key.',
             ], 500);
         }
     }
@@ -158,7 +161,7 @@ class PremiumModuleController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid input data.',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -170,10 +173,11 @@ class PremiumModuleController extends Controller
 
             return response()->json($result);
         } catch (\Exception $e) {
-            Log::error('Error activating module: ' . $e->getMessage());
+            Log::error('Error activating module: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to activate module. Please try again.'
+                'message' => 'Failed to activate module. Please try again.',
             ], 500);
         }
     }
@@ -188,13 +192,14 @@ class PremiumModuleController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Module deactivated successfully.'
+                'message' => 'Module deactivated successfully.',
             ]);
         } catch (\Exception $e) {
-            Log::error('Error deactivating module: ' . $e->getMessage());
+            Log::error('Error deactivating module: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to deactivate module.'
+                'message' => 'Failed to deactivate module.',
             ], 500);
         }
     }
@@ -229,7 +234,7 @@ class PremiumModuleController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid input data.',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -243,20 +248,21 @@ class PremiumModuleController extends Controller
                 return response()->json([
                     'success' => true,
                     'valid' => true,
-                    'license_data' => $licenseData
+                    'license_data' => $licenseData,
                 ]);
             } else {
                 return response()->json([
                     'success' => true,
                     'valid' => false,
-                    'message' => 'Invalid license key.'
+                    'message' => 'Invalid license key.',
                 ]);
             }
         } catch (\Exception $e) {
-            Log::error('Error validating license: ' . $e->getMessage());
+            Log::error('Error validating license: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to validate license key.'
+                'message' => 'Failed to validate license key.',
             ], 500);
         }
     }
@@ -276,7 +282,8 @@ class PremiumModuleController extends Controller
             return redirect()->route('premium-modules.index')
                 ->with('success', 'Premium module deleted successfully.');
         } catch (\Exception $e) {
-            Log::error('Error deleting premium module: ' . $e->getMessage());
+            Log::error('Error deleting premium module: '.$e->getMessage());
+
             return back()->with('error', 'Failed to delete premium module.');
         }
     }

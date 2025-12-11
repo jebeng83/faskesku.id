@@ -28,6 +28,52 @@ Catatan:
 - `BPJS_PCARE_CONS_PWD` berfungsi sebagai secret key untuk perhitungan signature (HMAC-SHA256).
 - `BPJS_PCARE_APP_CODE` default `095` bila tidak diisi.
 
+### Verifikasi SSL/TLS dan CA Bundle
+
+Agar koneksi ke host BPJS (apijkn.bpjs-kesehatan.go.id) aman dan stabil, pastikan verifikasi SSL aktif dan PHP mengetahui lokasi CA bundle yang valid.
+
+Langkah-langkah:
+
+1) Pastikan verifikasi SSL tidak dimatikan
+- Set `.env` berikut:
+```
+BPJS_HTTP_DISABLE_SSL_VERIFY=false
+```
+Ini memastikan request menggunakan verifikasi sertifikat TLS (default). Hanya gunakan `true` sementara saat troubleshooting di lingkungan non-produksi.
+
+2) Pastikan PHP cURL/OpenSSL tahu lokasi CA bundle
+- Cek nilai saat ini:
+  - Jalankan: `php -i | grep -i -E "(curl.cainfo|openssl.cafile)"`
+  - Atau jalankan: `php -r "var_dump(ini_get('curl.cainfo'), ini_get('openssl.cafile'));"`
+- Jika kosong, set di `php.ini` Anda:
+```
+curl.cainfo="/path/to/cacert.pem"
+openssl.cafile="/path/to/cacert.pem"
+```
+
+Referensi lokasi CA bundle umum:
+- Linux (Debian/Ubuntu): `/etc/ssl/certs/ca-certificates.crt`
+- Linux (CentOS/RHEL): `/etc/pki/tls/certs/ca-bundle.crt`
+- macOS (Homebrew, Apple Silicon): `/opt/homebrew/etc/openssl@3/cert.pem`
+- macOS (Homebrew, Intel): `/usr/local/etc/openssl@3/cert.pem`
+
+Jika belum tersedia, instal paket CA certificates:
+- Debian/Ubuntu: `sudo apt-get install ca-certificates`
+- CentOS/RHEL: `sudo yum install ca-certificates`
+- macOS (Homebrew): `brew install ca-certificates openssl@3`
+
+3) Restart layanan PHP setelah mengubah php.ini
+- PHP-FPM: `sudo brew services restart php` (macOS/Homebrew) atau `sudo systemctl restart php-fpm`
+- Built-in server/Artisan: hentikan lalu jalankan kembali `php artisan serve`
+- Docker/Sail: rebuild atau restart container
+
+4) Uji koneksi SSL ke BPJS
+- Skrip bantu tersedia: `scripts/test_pcare_curl.php`
+- Jalankan: `php scripts/test_pcare_curl.php`
+- Pastikan `CURLOPT_SSL_VERIFYPEER=true` dan `CURLOPT_SSL_VERIFYHOST=2` menghasilkan HTTP 200/JSON valid. Jika error terkait sertifikat, periksa kembali path CA bundle.
+
+Dengan verifikasi SSL aktif dan CA bundle benar, request PCare melalui `App\Traits\BpjsTraits::pcareRequest()` akan berjalan dengan aman (TLS v1.2 dipaksa, IPv4 preferen, dan retry ringan diaktifkan).
+
 ## Pembuatan Header
 Header dibuat di `App/Traits/BpjsTraits.php`:
 - `X-cons-id`: dari env `BPJS_PCARE_CONS_ID`.

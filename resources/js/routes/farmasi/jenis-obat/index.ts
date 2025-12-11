@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\JenisObatController::store
-* @see app/Http/Controllers/Farmasi/JenisObatController.php:71
+* @see app/Http/Controllers/Farmasi/JenisObatController.php:73
 * @route '/farmasi/jenis-obat'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +60,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\JenisObatController::store
-* @see app/Http/Controllers/Farmasi/JenisObatController.php:71
+* @see app/Http/Controllers/Farmasi/JenisObatController.php:73
 * @route '/farmasi/jenis-obat'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\JenisObatController::store
-* @see app/Http/Controllers/Farmasi/JenisObatController.php:71
+* @see app/Http/Controllers/Farmasi/JenisObatController.php:73
 * @route '/farmasi/jenis-obat'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -79,7 +79,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\JenisObatController::update
-* @see app/Http/Controllers/Farmasi/JenisObatController.php:88
+* @see app/Http/Controllers/Farmasi/JenisObatController.php:90
 * @route '/farmasi/jenis-obat/{kdjns}'
 */
 export const update = (args: { kdjns: string | number } | [kdjns: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -94,7 +94,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\JenisObatController::update
-* @see app/Http/Controllers/Farmasi/JenisObatController.php:88
+* @see app/Http/Controllers/Farmasi/JenisObatController.php:90
 * @route '/farmasi/jenis-obat/{kdjns}'
 */
 update.url = (args: { kdjns: string | number } | [kdjns: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -121,7 +121,7 @@ update.url = (args: { kdjns: string | number } | [kdjns: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\Farmasi\JenisObatController::update
-* @see app/Http/Controllers/Farmasi/JenisObatController.php:88
+* @see app/Http/Controllers/Farmasi/JenisObatController.php:90
 * @route '/farmasi/jenis-obat/{kdjns}'
 */
 update.put = (args: { kdjns: string | number } | [kdjns: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -131,7 +131,7 @@ update.put = (args: { kdjns: string | number } | [kdjns: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\Farmasi\JenisObatController::destroy
-* @see app/Http/Controllers/Farmasi/JenisObatController.php:110
+* @see app/Http/Controllers/Farmasi/JenisObatController.php:112
 * @route '/farmasi/jenis-obat/{kdjns}'
 */
 export const destroy = (args: { kdjns: string | number } | [kdjns: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -146,7 +146,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\JenisObatController::destroy
-* @see app/Http/Controllers/Farmasi/JenisObatController.php:110
+* @see app/Http/Controllers/Farmasi/JenisObatController.php:112
 * @route '/farmasi/jenis-obat/{kdjns}'
 */
 destroy.url = (args: { kdjns: string | number } | [kdjns: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -173,7 +173,7 @@ destroy.url = (args: { kdjns: string | number } | [kdjns: string | number ] | st
 
 /**
 * @see \App\Http\Controllers\Farmasi\JenisObatController::destroy
-* @see app/Http/Controllers/Farmasi/JenisObatController.php:110
+* @see app/Http/Controllers/Farmasi/JenisObatController.php:112
 * @route '/farmasi/jenis-obat/{kdjns}'
 */
 destroy.delete = (args: { kdjns: string | number } | [kdjns: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

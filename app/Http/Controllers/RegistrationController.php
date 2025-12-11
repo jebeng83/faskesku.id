@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Patient;
-use App\Models\RegPeriksa;
 use App\Models\Dokter;
-use App\Models\Poliklinik;
+use App\Models\Patient;
 use App\Models\Penjab;
-use App\Models\Wilayah;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
+use App\Models\Poliklinik;
+use App\Models\RegPeriksa;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Inertia\Inertia;
 
 class RegistrationController extends Controller
 {
@@ -56,7 +56,7 @@ class RegistrationController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $patients
+            'data' => $patients,
         ]);
     }
 
@@ -136,7 +136,7 @@ class RegistrationController extends Controller
                 'kd_dokter' => $registration->kd_dokter,
                 'kd_poli' => $registration->kd_poli,
                 'no_rkm_medis' => $registration->no_rkm_medis,
-            ]
+            ],
         ]);
     }
 
@@ -147,10 +147,10 @@ class RegistrationController extends Controller
     {
         $kd_poli = $request->get('kd_poli');
 
-        if (!$kd_poli) {
+        if (! $kd_poli) {
             return response()->json([
                 'success' => false,
-                'message' => 'Kode poliklinik diperlukan'
+                'message' => 'Kode poliklinik diperlukan',
             ], 400);
         }
 
@@ -162,10 +162,10 @@ class RegistrationController extends Controller
         // Get polyclinic data for biaya registrasi
         $poliklinik = Poliklinik::where('kd_poli', $kd_poli)->first();
 
-        if (!$poliklinik) {
+        if (! $poliklinik) {
             return response()->json([
                 'success' => false,
-                'message' => 'Poliklinik tidak ditemukan'
+                'message' => 'Poliklinik tidak ditemukan',
             ], 404);
         }
 
@@ -178,8 +178,8 @@ class RegistrationController extends Controller
             'data' => [
                 'status_poli' => $status_poli,
                 'biaya_reg' => $biaya_reg,
-                'has_registered' => $hasRegistered
-            ]
+                'has_registered' => $hasRegistered,
+            ],
         ]);
     }
 
@@ -189,18 +189,18 @@ class RegistrationController extends Controller
     public function getRegistrations(Request $request)
     {
         $query = RegPeriksa::with([
-            'pasien' => function($q) {
-                $q->select('no_rkm_medis','nm_pasien','jk','umur','alamat','no_ktp');
+            'pasien' => function ($q) {
+                $q->select('no_rkm_medis', 'nm_pasien', 'jk', 'umur', 'alamat', 'no_ktp');
             },
-            'dokter' => function($q) {
-                $q->select('kd_dokter','nm_dokter')->with([
-                    'pegawai' => function($p) {
-                        $p->select('nik','no_ktp','departemen');
-                    }
+            'dokter' => function ($q) {
+                $q->select('kd_dokter', 'nm_dokter')->with([
+                    'pegawai' => function ($p) {
+                        $p->select('nik', 'no_ktp', 'departemen');
+                    },
                 ]);
             },
             'poliklinik:kd_poli,nm_poli',
-            'penjab:kd_pj,png_jawab'
+            'penjab:kd_pj,png_jawab',
         ]);
 
         // Filter by date
@@ -248,12 +248,23 @@ class RegistrationController extends Controller
             $perPage = 100;
         }
 
+        // Pastikan data selalu fresh dari database (tidak menggunakan cache)
         $registrations = $query->orderBy('jam_reg', 'desc')
             ->paginate($perPage);
 
+        // Debug: Log sample data untuk memastikan field stts ada
+        if ($registrations->count() > 0) {
+            \Log::info('RegistrationController::getRegistrations - Sample data', [
+                'total' => $registrations->total(),
+                'sample_no_rawat' => $registrations->first()->no_rawat ?? null,
+                'sample_stts' => $registrations->first()->stts ?? null,
+                'sample_status_bayar' => $registrations->first()->status_bayar ?? null,
+            ]);
+        }
+
         return response()->json([
             'success' => true,
-            'data' => $registrations
+            'data' => $registrations,
         ]);
     }
 
@@ -263,16 +274,16 @@ class RegistrationController extends Controller
     public function cancelRegistration(Request $request)
     {
         $request->validate([
-            'no_rawat' => 'required|string'
+            'no_rawat' => 'required|string',
         ]);
 
         // Find registration by no_rawat
         $registration = RegPeriksa::where('no_rawat', $request->no_rawat)->first();
 
-        if (!$registration) {
+        if (! $registration) {
             return response()->json([
                 'success' => false,
-                'message' => 'Registrasi tidak ditemukan'
+                'message' => 'Registrasi tidak ditemukan',
             ], 404);
         }
 
@@ -280,7 +291,7 @@ class RegistrationController extends Controller
         if ($registration->stts !== 'Belum') {
             return response()->json([
                 'success' => false,
-                'message' => 'Registrasi tidak dapat dibatalkan karena sudah dalam proses atau selesai'
+                'message' => 'Registrasi tidak dapat dibatalkan karena sudah dalam proses atau selesai',
             ], 400);
         }
 
@@ -289,7 +300,7 @@ class RegistrationController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Registrasi berhasil dibatalkan'
+            'message' => 'Registrasi berhasil dibatalkan',
         ]);
     }
 
@@ -310,7 +321,9 @@ class RegistrationController extends Controller
     {
         $year = (int) ($request->get('year') ?? date('Y'));
         $limit = (int) ($request->get('limit') ?? 5);
-        if ($limit < 1) { $limit = 5; }
+        if ($limit < 1) {
+            $limit = 5;
+        }
 
         // Ambil agregasi jumlah per bulan per poli
         $rows = DB::table('reg_periksa')
@@ -320,13 +333,13 @@ class RegistrationController extends Controller
             ->groupBy('month', 'reg_periksa.kd_poli', 'poliklinik.nm_poli')
             ->get();
 
-        $months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+        $months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
         // Susun data per poli
         $seriesMap = [];
         foreach ($rows as $r) {
             $kp = $r->kd_poli;
-            if (!isset($seriesMap[$kp])) {
+            if (! isset($seriesMap[$kp])) {
                 $seriesMap[$kp] = [
                     'kd_poli' => $kp,
                     'nm_poli' => $r->nm_poli,
@@ -352,7 +365,9 @@ class RegistrationController extends Controller
         $max = 0;
         foreach ($series as $s) {
             foreach ($s['data'] as $val) {
-                if ($val > $max) { $max = $val; }
+                if ($val > $max) {
+                    $max = $val;
+                }
             }
         }
 
@@ -364,6 +379,103 @@ class RegistrationController extends Controller
                 'series' => $series,
                 'max' => $max,
             ],
+        ]);
+    }
+
+    /**
+     * Print registration card
+     */
+    public function print($no_rawat)
+    {
+        // Get registration with relations
+        $registration = RegPeriksa::with(['pasien', 'dokter', 'poliklinik', 'penjab'])
+            ->where('no_rawat', $no_rawat)
+            ->first();
+
+        if (! $registration) {
+            abort(404, 'Registrasi tidak ditemukan');
+        }
+
+        // Get setting data (logo and kop surat)
+        $setting = null;
+        $logoBase64 = null;
+
+        if (Schema::hasTable('setting')) {
+            // Ambil record aktif jika ada, jika tidak, ambil record pertama
+            $active = DB::table('setting')
+                ->select('nama_instansi', 'alamat_instansi', 'kabupaten', 'propinsi', 'kontak', 'email', 'logo', 'aktifkan')
+                ->whereRaw('LOWER(aktifkan) = ?', ['yes'])
+                ->first();
+
+            if (! $active) {
+                $active = DB::table('setting')
+                    ->select('nama_instansi', 'alamat_instansi', 'kabupaten', 'propinsi', 'kontak', 'email', 'logo', 'aktifkan')
+                    ->first();
+            }
+
+            if ($active) {
+                // Buat setting object tanpa logo (untuk menghindari binary data di JSON)
+                $setting = (object) [
+                    'nama_instansi' => $active->nama_instansi ?? null,
+                    'alamat_instansi' => $active->alamat_instansi ?? null,
+                    'kabupaten' => $active->kabupaten ?? null,
+                    'propinsi' => $active->propinsi ?? null,
+                    'kontak' => $active->kontak ?? null,
+                    'email' => $active->email ?? null,
+                ];
+
+                // Convert logo to base64 if exists
+                $logoBlob = $active->logo ?? null;
+                if ($logoBlob) {
+                    // Pastikan blob dalam bentuk string
+                    if (! is_string($logoBlob) && is_resource($logoBlob)) {
+                        $logoBlob = stream_get_contents($logoBlob);
+                    }
+
+                    if (is_string($logoBlob) && ! empty($logoBlob)) {
+                        // Detect MIME type
+                        $mime = 'image/png'; // default
+                        if (function_exists('finfo_open')) {
+                            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                            $mime = finfo_buffer($finfo, $logoBlob) ?: 'image/png';
+                            finfo_close($finfo);
+                        }
+
+                        $logoBase64 = 'data:'.$mime.';base64,'.base64_encode($logoBlob);
+                    }
+                }
+            }
+        }
+
+        // Convert registration to array untuk memastikan serialization yang benar
+        $registrationData = [
+            'no_reg' => $registration->no_reg,
+            'no_rawat' => $registration->no_rawat,
+            'tgl_registrasi' => $registration->tgl_registrasi,
+            'jam_reg' => $registration->jam_reg,
+            'no_rkm_medis' => $registration->no_rkm_medis,
+            'pasien' => $registration->pasien ? [
+                'no_rkm_medis' => $registration->pasien->no_rkm_medis,
+                'nm_pasien' => $registration->pasien->nm_pasien,
+            ] : null,
+            'dokter' => $registration->dokter ? [
+                'kd_dokter' => $registration->dokter->kd_dokter,
+                'nm_dokter' => $registration->dokter->nm_dokter,
+            ] : null,
+            'poliklinik' => $registration->poliklinik ? [
+                'kd_poli' => $registration->poliklinik->kd_poli,
+                'nm_poli' => $registration->poliklinik->nm_poli,
+            ] : null,
+            'penjab' => $registration->penjab ? [
+                'kd_pj' => $registration->penjab->kd_pj,
+                'png_jawab' => $registration->penjab->png_jawab,
+            ] : null,
+        ];
+
+        return Inertia::render('Registration/CetakRegistrasi', [
+            'registration' => $registrationData,
+            'setting' => $setting,
+            'logoBase64' => $logoBase64,
         ]);
     }
 }

@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Route;
-use App\Models\Menu;
 
 class RouteSeeder extends Seeder
 {
@@ -18,10 +17,10 @@ class RouteSeeder extends Seeder
         // Get all routes from web.php
         $routes = collect(Route::getRoutes())->filter(function ($route) {
             return $route->getName() &&
-                !str_starts_with($route->getName(), 'api.') &&
-                !str_starts_with($route->getName(), 'generated::') &&
-                !str_starts_with($route->getName(), 'sanctum.') &&
-                !str_starts_with($route->getName(), 'ignition.');
+                ! str_starts_with($route->getName(), 'api.') &&
+                ! str_starts_with($route->getName(), 'generated::') &&
+                ! str_starts_with($route->getName(), 'sanctum.') &&
+                ! str_starts_with($route->getName(), 'ignition.');
         });
 
         $this->command->info("Found {$routes->count()} routes to seed");
@@ -46,7 +45,7 @@ class RouteSeeder extends Seeder
                     $route->getName(),
                     $route->uri(),
                     implode(',', $route->methods()),
-                    implode(',', $route->gatherMiddleware())
+                    implode(',', $route->gatherMiddleware()),
                 ];
             })->toArray()
         );

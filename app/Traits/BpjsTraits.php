@@ -2,8 +2,8 @@
 
 namespace App\Traits;
 
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -21,7 +21,7 @@ trait BpjsTraits
         $row = DB::table('setting_bridging_bpjs')->first();
         // Fallback tambahan: beberapa instalasi menyimpan kode_ppk pada tabel 'setting'
         $setting = DB::table('setting')->first();
-    
+
         return [
             // Gunakan config() agar nilai dari .env tetap tersedia saat config di-cache
             'base_url' => config('bpjs.pcare.base_url'),
@@ -63,9 +63,9 @@ trait BpjsTraits
             // Kredensial Antrol (opsional) dari DB
             'username_antrol' => $row?->username_antrol ?? '',
             'password_antrol' => $row?->password_antrol ?? '',
-            // Tetap gunakan env untuk konfigurasi PCare terkait (bila diperlukan)
-            'kode_ppk' => env('BPJS_PCARE_KODE_PPK'),
-            'app_code' => env('BPJS_PCARE_APP_CODE', '095'),
+            // Gunakan config yang dicache agar aman untuk Octane
+            'kode_ppk' => config('bpjs.pcare.kode_ppk'),
+            'app_code' => config('bpjs.pcare.app_code'),
         ];
     }
 
@@ -82,8 +82,9 @@ trait BpjsTraits
      */
     protected function generateSignature(string $consId, string $secretKey, string $timestamp): string
     {
-        $data = $consId . '&' . $timestamp;
+        $data = $consId.'&'.$timestamp;
         $raw = hash_hmac('sha256', $data, $secretKey, true);
+
         return base64_encode($raw);
     }
 
@@ -92,7 +93,8 @@ trait BpjsTraits
      */
     protected function generateAuthorization(string $user, string $pass, string $appCode): string
     {
-        $plain = $user . ':' . $pass . ':' . $appCode;
+        $plain = $user.':'.$pass.':'.$appCode;
+
         return base64_encode($plain);
     }
 
@@ -110,8 +112,9 @@ trait BpjsTraits
             'X-cons-id' => $cfg['cons_id'],
             'X-timestamp' => $timestamp,
             'X-signature' => $signature,
-            // PCare expects "Basic <base64(username:password:kdAplikasi)>"
-            'X-authorization' => 'Basic ' . $authorization,
+            // PCare REST mensyaratkan header X-authorization dengan prefix "Basic "
+            // dan nilai Base64(username:password:kdAplikasi)
+            'X-authorization' => 'Basic '.$authorization,
             'user_key' => $cfg['user_key'],
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
@@ -138,7 +141,7 @@ trait BpjsTraits
         if ($baseUrl === '') {
             throw new \InvalidArgumentException('Base URL PCare belum dikonfigurasi. Set BPJS_PCARE_BASE_URL di .env untuk server ini.');
         }
-        $url = $baseUrl . '/' . ltrim($endpoint, '/');
+        $url = $baseUrl.'/'.ltrim($endpoint, '/');
 
         // Sanitasi header sebelum logging (hindari kredensial sensitif)
         $sanitizedHeaders = [
@@ -168,42 +171,143 @@ trait BpjsTraits
             'body_preview' => $bodyPreview,
         ]);
 
-        $request = Http::withHeaders($headers);
-
-        if (!empty($query)) {
-            $request = $request->withOptions(['query' => $query]);
+        // Build HTTP client dengan opsi koneksi yang lebih tahan gangguan
+        // Tambahkan timeout dan opsi DNS fallback via CURLOPT_RESOLVE (bila di-set di .env)
+        $baseHttpOptions = [];
+        // Query params
+        if (! empty($query)) {
+            $baseHttpOptions['query'] = $query;
+        }
+        // Timeouts (gunakan config agar aman saat config:cache)
+        $connectTimeout = (int) config('bpjs.http.connect_timeout', 10);
+        $timeout = (int) config('bpjs.http.timeout', 30);
+        $baseHttpOptions['connect_timeout'] = $connectTimeout;
+        $baseHttpOptions['timeout'] = $timeout;
+        // Prefer IPv4 untuk menghindari masalah koneksi IPv6 di jaringan lokal
+        $baseCurlOptions = [];
+        if (defined('CURL_IPRESOLVE_V4')) {
+            $baseCurlOptions[CURLOPT_IPRESOLVE] = CURL_IPRESOLVE_V4;
+        }
+        // Paksa HTTP/1.1 untuk kestabilan handshake di beberapa lingkungan
+        if (defined('CURL_HTTP_VERSION_1_1')) {
+            $baseCurlOptions[CURLOPT_HTTP_VERSION] = CURL_HTTP_VERSION_1_1;
+        }
+        // Hindari masalah sinyal pada timeout di lingkungan tertentu (macOS/Linux)
+        if (defined('CURLOPT_NOSIGNAL')) {
+            $baseCurlOptions[CURLOPT_NOSIGNAL] = true;
+        }
+        // Paksa TLS v1.2 sesuai rekomendasi BPJS
+        if (defined('CURL_SSLVERSION_TLSv1_2')) {
+            $baseCurlOptions[CURLOPT_SSLVERSION] = CURL_SSLVERSION_TLSv1_2;
+        }
+        // Opsi untuk mematikan verifikasi SSL saat troubleshooting (JANGAN aktifkan di produksi)
+        $disableSslVerify = filter_var(config('bpjs.http.disable_ssl_verify', false), FILTER_VALIDATE_BOOLEAN);
+        if ($disableSslVerify) {
+            $baseCurlOptions[CURLOPT_SSL_VERIFYPEER] = false;
+            $baseCurlOptions[CURLOPT_SSL_VERIFYHOST] = 0;
+            Log::channel('bpjs')->warning('PCare SSL verification DISABLED via env BPJS_HTTP_DISABLE_SSL_VERIFY');
+        }
+        // Fallback DNS: list multi-IP untuk auto-switch
+        $resolveListEnv = (string) config('bpjs.http.force_resolve_list', '');
+        $resolveList = array_values(array_filter(array_map('trim', explode(',', $resolveListEnv)), function ($v) {
+            return $v !== '';
+        }));
+        // Fallback single resolve untuk kompatibilitas
+        $forceResolve = config('bpjs.http.force_resolve');
+        if (empty($resolveList) && ! empty($forceResolve)) {
+            $resolveList = [$forceResolve];
         }
 
-        switch (strtoupper($method)) {
-            case 'GET':
-                $response = $request->get($url);
-                break;
-            case 'POST':
-                // Jika header meminta text/plain, kirimkan body sebagai JSON string plain text
-                if (isset($headers['Content-Type']) && strtolower($headers['Content-Type']) === 'text/plain') {
-                    $json = is_string($body) ? $body : json_encode(is_array($body) ? $body : []);
-                    $response = $request->withBody($json, 'text/plain')->post($url);
-                } else {
-                    $payload = is_array($body) ? $body : (is_string($body) ? json_decode($body, true) : []);
-                    $response = $request->post($url, $payload);
+        // Retry sederhana untuk mengatasi kegagalan koneksi sementara (per attempt)
+        $retryTimes = (int) config('bpjs.http.retry_times', 2);
+        $retrySleep = (int) config('bpjs.http.retry_sleep', 500);
+
+        $response = null;
+        $attempt = 0;
+        $lastException = null;
+        $attemptResolveUsed = null;
+
+        // Jika ada daftar IP fallback, coba satu per satu hingga sukses
+        $attemptsPool = ! empty($resolveList) ? $resolveList : [null];
+        foreach ($attemptsPool as $resolveEntry) {
+            $attempt++;
+            $httpOptions = $baseHttpOptions;
+            $curlOptions = $baseCurlOptions;
+            if (! empty($resolveEntry)) {
+                $curlOptions[CURLOPT_RESOLVE] = [$resolveEntry];
+                Log::channel('bpjs')->warning('PCare attempt using CURLOPT_RESOLVE', [
+                    'attempt' => $attempt,
+                    'resolve' => $resolveEntry,
+                ]);
+                $attemptResolveUsed = $resolveEntry;
+            } else {
+                $attemptResolveUsed = null;
+            }
+            if (! empty($curlOptions)) {
+                $httpOptions['curl'] = $curlOptions;
+            }
+
+            $request = Http::withHeaders($headers)->withOptions($httpOptions);
+            if ($retryTimes > 0) {
+                $request = $request->retry($retryTimes, $retrySleep);
+            }
+
+            try {
+                switch (strtoupper($method)) {
+                    case 'GET':
+                        $response = $request->get($url);
+                        break;
+                    case 'POST':
+                        if (isset($headers['Content-Type']) && strtolower($headers['Content-Type']) === 'text/plain') {
+                            $json = is_string($body) ? $body : json_encode(is_array($body) ? $body : []);
+                            $response = $request->withBody($json, 'text/plain')->post($url);
+                        } else {
+                            $payload = is_array($body) ? $body : (is_string($body) ? json_decode($body, true) : []);
+                            $response = $request->post($url, $payload);
+                        }
+                        break;
+                    case 'PUT':
+                        if (isset($headers['Content-Type']) && strtolower($headers['Content-Type']) === 'text/plain') {
+                            $json = is_string($body) ? $body : json_encode(is_array($body) ? $body : []);
+                            $response = $request->withBody($json, 'text/plain')->put($url);
+                        } else {
+                            $payload = is_array($body) ? $body : (is_string($body) ? json_decode($body, true) : []);
+                            $response = $request->put($url, $payload);
+                        }
+                        break;
+                    case 'DELETE':
+                        $payload = is_array($body) ? $body : (is_string($body) ? json_decode($body, true) : []);
+                        $response = $request->delete($url, $payload);
+                        break;
+                    default:
+                        throw new \InvalidArgumentException("Unsupported HTTP method: {$method}");
                 }
-                break;
-            case 'PUT':
-                if (isset($headers['Content-Type']) && strtolower($headers['Content-Type']) === 'text/plain') {
-                    $json = is_string($body) ? $body : json_encode(is_array($body) ? $body : []);
-                    $response = $request->withBody($json, 'text/plain')->put($url);
-                } else {
-                    $payload = is_array($body) ? $body : (is_string($body) ? json_decode($body, true) : []);
-                    $response = $request->put($url, $payload);
+
+                // Jika berhasil (tidak melempar ConnectionException), hentikan loop
+                if ($response) {
+                    break;
                 }
-                break;
-            case 'DELETE':
-                $payload = is_array($body) ? $body : (is_string($body) ? json_decode($body, true) : []);
-                $response = $request->delete($url, $payload);
-                break;
-            default:
-                throw new \InvalidArgumentException("Unsupported HTTP method: {$method}");
+            } catch (\Throwable $e) {
+                $lastException = $e;
+                Log::channel('bpjs')->error('PCare attempt failed', [
+                    'attempt' => $attempt,
+                    'resolve' => $attemptResolveUsed,
+                    'error' => $e->getMessage(),
+                ]);
+                // Lanjut ke IP berikutnya jika ada
+                $response = null;
+
+                continue;
+            }
         }
+
+        // Jika semua percobaan gagal, lempar exception terakhir
+        if (! $response && $lastException) {
+            throw $lastException;
+        }
+
+        // Pada titik ini, $response harus sudah di-set dari percobaan di atas.
+        // Jangan jalankan kembali request agar tidak mengulang error yang sama.
 
         $durationMs = (int) round((microtime(true) - $start) * 1000);
         $rawBody = $response->body();
@@ -233,13 +337,13 @@ trait BpjsTraits
     {
         $cfg = $this->mobilejknConfig();
         $missing = [];
-        foreach (['cons_id','cons_pwd','user_key'] as $key) {
+        foreach (['cons_id', 'cons_pwd', 'user_key'] as $key) {
             if (empty($cfg[$key])) {
                 $missing[] = $key;
             }
         }
-        if (!empty($missing)) {
-            throw new \InvalidArgumentException('Missing MobileJKN config: ' . implode(', ', $missing));
+        if (! empty($missing)) {
+            throw new \InvalidArgumentException('Missing MobileJKN config: '.implode(', ', $missing));
         }
         $timestamp = $overrideTimestamp ?: $this->generateTimestamp();
         $signature = $this->generateSignature($cfg['cons_id'], $cfg['cons_pwd'], $timestamp);
@@ -272,7 +376,7 @@ trait BpjsTraits
             throw new \InvalidArgumentException('Base URL Mobile JKN belum dikonfigurasi di database (kolom base_url_mobilejkn).');
         }
         $headers = array_merge($this->buildMobileJknHeaders($overrideTimestamp), $extraHeaders);
-        $url = rtrim($cfg['base_url'], '/') . '/' . ltrim($endpoint, '/');
+        $url = rtrim($cfg['base_url'], '/').'/'.ltrim($endpoint, '/');
 
         $sanitizedHeaders = [
             'X-cons-id' => (string) ($headers['X-cons-id'] ?? ''),
@@ -302,17 +406,17 @@ trait BpjsTraits
         // Build HTTP client with optional timeouts and DNS fallback
         $httpOptions = [];
         // Query params
-        if (!empty($query)) {
+        if (! empty($query)) {
             $httpOptions['query'] = $query;
         }
-        // Timeouts (optional, configurable via env)
-        $connectTimeout = (int) env('BPJS_HTTP_CONNECT_TIMEOUT', 10);
-        $timeout = (int) env('BPJS_HTTP_TIMEOUT', 30);
+        // Timeouts (gunakan config agar aman saat config:cache)
+        $connectTimeout = (int) config('bpjs.http.connect_timeout', 10);
+        $timeout = (int) config('bpjs.http.timeout', 30);
         $httpOptions['connect_timeout'] = $connectTimeout;
         $httpOptions['timeout'] = $timeout;
         // Optional forced DNS resolve to mitigate local DNS issues
-        $forceResolve = env('BPJS_MOBILEJKN_FORCE_RESOLVE');
-        if (!empty($forceResolve)) {
+        $forceResolve = config('bpjs.mobilejkn.force_resolve');
+        if (! empty($forceResolve)) {
             // Example value: apijkn.bpjs-kesehatan.go.id:443:118.97.79.198
             $httpOptions['curl'] = [CURLOPT_RESOLVE => [$forceResolve]];
             Log::channel('bpjs')->warning('MobileJKN using CURLOPT_RESOLVE fallback', [
@@ -369,6 +473,7 @@ trait BpjsTraits
         $encryptMethod = 'AES-256-CBC';
         $keyHash = hex2bin(hash('sha256', $key));
         $iv = substr(hex2bin(hash('sha256', $key)), 0, 16);
+
         return openssl_decrypt(base64_decode($encrypted), $encryptMethod, $keyHash, OPENSSL_RAW_DATA, $iv) ?: '';
     }
 
@@ -385,6 +490,7 @@ trait BpjsTraits
                 return $string;
             }
         }
+
         return $string; // fallback when library is not installed
     }
 
@@ -398,7 +504,7 @@ trait BpjsTraits
         $wrapper = json_decode($body, true);
         if (is_array($wrapper) && array_key_exists('response', $wrapper) && is_string($wrapper['response'])) {
             $cfg = $this->pcareConfig();
-            $key = $cfg['cons_id'] . $cfg['cons_pwd'] . $timestamp;
+            $key = $cfg['cons_id'].$cfg['cons_pwd'].$timestamp;
             $decrypted = $this->stringDecrypt($key, $wrapper['response']);
             // Try LZString decompress (some catalogs compress after decrypt)
             $decompressed = $this->decompressLzString($decrypted ?: $wrapper['response']);
@@ -406,15 +512,17 @@ trait BpjsTraits
 
             // Replace 'response' with decoded array/string for UI convenience
             $wrapper['response'] = $decodedResponse ?? $decompressed;
+
             return $wrapper;
         }
 
         // Fallback: try decrypting the whole body (legacy behavior)
         $cfg = $this->pcareConfig();
-        $key = $cfg['cons_id'] . $cfg['cons_pwd'] . $timestamp;
+        $key = $cfg['cons_id'].$cfg['cons_pwd'].$timestamp;
         $decrypted = $this->stringDecrypt($key, $body);
         $result = $this->decompressLzString($decrypted ?: $body);
         $decoded = json_decode($result, true);
+
         return $decoded ?? $result;
     }
 
@@ -426,19 +534,21 @@ trait BpjsTraits
         $wrapper = json_decode($body, true);
         if (is_array($wrapper) && array_key_exists('response', $wrapper) && is_string($wrapper['response'])) {
             $cfg = $this->mobilejknConfig();
-            $key = $cfg['cons_id'] . $cfg['cons_pwd'] . $timestamp;
+            $key = $cfg['cons_id'].$cfg['cons_pwd'].$timestamp;
             $decrypted = $this->stringDecrypt($key, $wrapper['response']);
             $decompressed = $this->decompressLzString($decrypted ?: $wrapper['response']);
             $decodedResponse = json_decode($decompressed, true);
             $wrapper['response'] = $decodedResponse ?? $decompressed;
+
             return $wrapper;
         }
 
         $cfg = $this->mobilejknConfig();
-        $key = $cfg['cons_id'] . $cfg['cons_pwd'] . $timestamp;
+        $key = $cfg['cons_id'].$cfg['cons_pwd'].$timestamp;
         $decrypted = $this->stringDecrypt($key, $body);
         $result = $this->decompressLzString($decrypted ?: $body);
         $decoded = json_decode($result, true);
+
         return $decoded ?? $result;
     }
 }

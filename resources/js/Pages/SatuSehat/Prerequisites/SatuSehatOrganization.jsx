@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import AppLayout from "@/Layouts/AppLayout";
+import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
 import SearchableSelect from "@/Components/SearchableSelect";
 import { Card, CardHeader, CardTitle, CardContent } from "@/Components/ui/Card";
 import Button from "@/Components/ui/Button";
@@ -269,7 +269,7 @@ export default function SatuSehatOrganization() {
   };
 
   return (
-    <AppLayout title="SATUSEHAT — Prerequisites · Organization Subunits">
+    <SidebarPengaturan title="Pengaturan">
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
         <motion.div
           className="px-4 sm:px-6 lg:px-8 py-8 space-y-8"
@@ -871,6 +871,6 @@ export default function SatuSehatOrganization() {
           <Toaster toasts={toasts} onRemove={removeToast} />
         </motion.div>
       </div>
-    </AppLayout>
+    </SidebarPengaturan>
   );
 }

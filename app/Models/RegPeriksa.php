@@ -10,8 +10,11 @@ class RegPeriksa extends Model
     use HasFactory;
 
     protected $table = 'reg_periksa';
+
     protected $primaryKey = 'no_rawat';
+
     public $incrementing = false;
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -34,18 +37,21 @@ class RegPeriksa extends Model
         'sttsumur',
         'status_bayar',
         'status_poli',
+        'keputusan',
     ];
 
     public static function generateNoReg($kd_dokter, $kd_poli)
     {
         $lastNoReg = self::where('tgl_registrasi', date('Y-m-d'))->where('kd_dokter', $kd_dokter)->where('kd_poli', $kd_poli)->max('no_reg');
+
         return str_pad($lastNoReg + 1, 3, '0', STR_PAD_LEFT);
     }
 
     public static function generateNoRawat()
     {
-        $lastNoRawat = self::where('tgl_registrasi', date('Y-m-d'))->selectRaw("ifnull(MAX(CONVERT(RIGHT(reg_periksa.no_rawat,6),signed)),0) as no")->first()->no;
-        return date('Y/m/d') . '/' . str_pad($lastNoRawat + 1, 6, '0', STR_PAD_LEFT);
+        $lastNoRawat = self::where('tgl_registrasi', date('Y-m-d'))->selectRaw('ifnull(MAX(CONVERT(RIGHT(reg_periksa.no_rawat,6),signed)),0) as no')->first()->no;
+
+        return date('Y/m/d').'/'.str_pad($lastNoRawat + 1, 6, '0', STR_PAD_LEFT);
     }
 
     public function pasien()
@@ -77,4 +83,20 @@ class RegPeriksa extends Model
     // {
     //     return $this->hasOne(KamarInap::class, 'no_rawat', 'no_rawat');
     // }
+
+    // Akutansi / Keuangan Relations
+    public function billing()
+    {
+        return $this->hasMany(\App\Models\Akutansi\Billing::class, 'no_rawat', 'no_rawat');
+    }
+
+    public function notaJalan()
+    {
+        return $this->hasOne(\App\Models\Akutansi\NotaJalan::class, 'no_rawat', 'no_rawat');
+    }
+
+    public function notaInap()
+    {
+        return $this->hasOne(\App\Models\Akutansi\NotaInap::class, 'no_rawat', 'no_rawat');
+    }
 }

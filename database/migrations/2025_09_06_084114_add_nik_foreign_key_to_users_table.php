@@ -14,7 +14,7 @@ return new class extends Migration
         if (Schema::hasTable('users')) {
             Schema::table('users', function (Blueprint $table) {
                 // Add nik column if it doesn't exist
-                if (!Schema::hasColumn('users', 'nik')) {
+                if (! Schema::hasColumn('users', 'nik')) {
                     $table->string('nik', 20)->nullable()->after('email');
                 }
 

@@ -10,9 +10,13 @@ class JnsPerawatanInap extends Model
     use HasFactory;
 
     protected $table = 'jns_perawatan_inap';
+
     protected $primaryKey = 'kd_jenis_prw';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -31,7 +35,7 @@ class JnsPerawatanInap extends Model
         'kd_pj',
         'kd_bangsal',
         'kelas',
-        'status'
+        'status',
     ];
 
     protected $casts = [
@@ -49,17 +53,17 @@ class JnsPerawatanInap extends Model
     // Accessor untuk format mata uang
     public function getTotalByrdrFormattedAttribute()
     {
-        return 'Rp ' . number_format($this->total_byrdr, 0, ',', '.');
+        return 'Rp '.number_format($this->total_byrdr, 0, ',', '.');
     }
 
     public function getTotalByrprFormattedAttribute()
     {
-        return 'Rp ' . number_format($this->total_byrpr, 0, ',', '.');
+        return 'Rp '.number_format($this->total_byrpr, 0, ',', '.');
     }
 
     public function getTotalByrdrprFormattedAttribute()
     {
-        return 'Rp ' . number_format($this->total_byrdrpr, 0, ',', '.');
+        return 'Rp '.number_format($this->total_byrdrpr, 0, ',', '.');
     }
 
     // Scope untuk status aktif
@@ -104,12 +108,12 @@ class JnsPerawatanInap extends Model
             ->toArray();
 
         $maxNumber = 0;
-        
+
         // Loop through all codes to find the highest numeric value
         foreach ($codes as $code) {
             // Extract numeric part after 'RI', remove any non-numeric characters
             $numericPart = preg_replace('/[^0-9]/', '', substr($code, 2));
-            if (!empty($numericPart)) {
+            if (! empty($numericPart)) {
                 $number = (int) $numericPart;
                 if ($number > $maxNumber) {
                     $maxNumber = $number;
@@ -121,6 +125,6 @@ class JnsPerawatanInap extends Model
         $newNumber = $maxNumber + 1;
 
         // Format: RI + nomor urut (6 digit)
-        return 'RI' . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
+        return 'RI'.str_pad($newNumber, 6, '0', STR_PAD_LEFT);
     }
 }

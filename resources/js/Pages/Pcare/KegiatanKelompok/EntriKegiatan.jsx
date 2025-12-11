@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import AppLayout from "@/Layouts/AppLayout";
+import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
 
 const containerVariants = {
     hidden: { opacity: 0, y: 10 },
@@ -2139,5 +2139,10 @@ export default function EntriKegiatan() {
 }
 
 EntriKegiatan.layout = (page) => (
-    <AppLayout title="Entri Kegiatan Kelompok" children={page} />
+    <LanjutanRegistrasiLayout
+        title="Kegiatan Kelompok PCare"
+        menuConfig={{ activeTab: "keg_kelompok_pcare" }}
+    >
+        {page}
+    </LanjutanRegistrasiLayout>
 );

@@ -69,6 +69,7 @@ trait PcareTrait
         // Dispatch via unified pcareRequest helper
         $result = $this->pcareRequest($method, $endpoint, [], $payload, $extraHeaders);
         $response = $result['response'];
+
         return $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
     }
 }

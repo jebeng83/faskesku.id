@@ -25,7 +25,7 @@ trait SatuSehatTraits
      */
     protected function satusehatAuthBase(): string
     {
-        return rtrim(config('services.satusehat.auth') ?? env('SATUSEHAT_AUTH', ''), '/');
+        return rtrim(config('services.satusehat.auth') ?? '', '/');
     }
 
     /**
@@ -33,22 +33,22 @@ trait SatuSehatTraits
      */
     protected function satusehatFhirBase(): string
     {
-        return rtrim(config('services.satusehat.fhir') ?? env('SATUSEHAT_FHIR', ''), '/');
+        return rtrim(config('services.satusehat.fhir') ?? '', '/');
     }
 
     protected function satusehatEnv(): string
     {
-        return strtoupper(env('SATUSEHAT_ENV', 'DEV'));
+        return strtoupper((string) (config('services.satusehat.env') ?? 'DEV'));
     }
 
     protected function satusehatClientId(): string
     {
-        return (string) env('SATUSEHAT_CLIENT_ID');
+        return (string) (config('services.satusehat.client_id') ?? '');
     }
 
     protected function satusehatClientSecret(): string
     {
-        return (string) env('SATUSEHAT_CLIENT_SECRET');
+        return (string) (config('services.satusehat.client_secret') ?? '');
     }
 
     /**
@@ -56,7 +56,7 @@ trait SatuSehatTraits
      */
     protected function satusehatOrganizationId(): string
     {
-        return (string) (config('services.satusehat.organization_id') ?? env('SATUSEHAT_ORG_ID', ''));
+        return (string) (config('services.satusehat.organization_id') ?? '');
     }
 
     /**

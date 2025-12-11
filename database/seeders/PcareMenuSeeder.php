@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Menu;
+use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 
 class PcareMenuSeeder extends Seeder
@@ -178,7 +178,7 @@ class PcareMenuSeeder extends Seeder
 
         // Child menu: Referensi Khusus PCare
         // Safe permission creation to avoid unique constraint if already exists
-        if (!Permission::where('name', 'pcare.referensi.khusus')->where('guard_name', 'web')->exists()) {
+        if (! Permission::where('name', 'pcare.referensi.khusus')->where('guard_name', 'web')->exists()) {
             Permission::create(['name' => 'pcare.referensi.khusus', 'guard_name' => 'web']);
         }
         Menu::firstOrCreate(

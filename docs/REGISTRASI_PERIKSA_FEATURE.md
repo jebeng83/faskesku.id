@@ -108,7 +108,8 @@ Route::post('/patients/{patient}/register-periksa', [PatientController::class, '
 
 - kd_poli (PK)
 - nm_poli
-- lantai
+- registrasi
+- registrasilama
 - status
 
 ### Tabel penjab

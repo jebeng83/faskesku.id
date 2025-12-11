@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::show
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:404
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:412
 * @route '/farmasi/set-penjualan-umum'
 */
 export const show = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::show
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:404
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:412
 * @route '/farmasi/set-penjualan-umum'
 */
 show.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ show.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::show
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:404
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:412
 * @route '/farmasi/set-penjualan-umum'
 */
 show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::show
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:404
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:412
 * @route '/farmasi/set-penjualan-umum'
 */
 show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

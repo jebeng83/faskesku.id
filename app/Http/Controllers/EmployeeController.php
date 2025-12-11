@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
 
 class EmployeeController extends Controller
 {
@@ -265,8 +265,8 @@ class EmployeeController extends Controller
     {
         $validator = Validator::make($request->all(), [
             // Data utama pegawai
-            'nik' => 'required|string|max:20|unique:pegawai,nik,' . $employee->id,
-            'no_ktp' => 'required|string|min:16|max:20|unique:pegawai,no_ktp,' . $employee->id,
+            'nik' => 'required|string|max:20|unique:pegawai,nik,'.$employee->id,
+            'no_ktp' => 'required|string|min:16|max:20|unique:pegawai,no_ktp,'.$employee->id,
             'nama' => 'required|string|max:50',
             'jk' => 'required|in:Pria,Wanita',
             'tmp_lahir' => 'required|string|max:20',

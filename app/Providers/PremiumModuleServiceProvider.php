@@ -2,9 +2,8 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Blade;
-use App\Helpers\PremiumModuleHelper;
+use Illuminate\Support\ServiceProvider;
 
 class PremiumModuleServiceProvider extends ServiceProvider
 {
@@ -37,7 +36,7 @@ class PremiumModuleServiceProvider extends ServiceProvider
 
         // @endpremium directive
         Blade::directive('endpremium', function () {
-            return "<?php endif; ?>";
+            return '<?php endif; ?>';
         });
 
         // @premiumfeature directive - check if module has specific feature
@@ -47,7 +46,7 @@ class PremiumModuleServiceProvider extends ServiceProvider
 
         // @endpremiumfeature directive
         Blade::directive('endpremiumfeature', function () {
-            return "<?php endif; ?>";
+            return '<?php endif; ?>';
         });
 
         // @premiumaccess directive - check if user has access to module
@@ -57,7 +56,7 @@ class PremiumModuleServiceProvider extends ServiceProvider
 
         // @endpremiumaccess directive
         Blade::directive('endpremiumaccess', function () {
-            return "<?php endif; ?>";
+            return '<?php endif; ?>';
         });
 
         // @premiumpermission directive - check if user has specific permission
@@ -67,12 +66,12 @@ class PremiumModuleServiceProvider extends ServiceProvider
 
         // @endpremiumpermission directive
         Blade::directive('endpremiumpermission', function () {
-            return "<?php endif; ?>";
+            return '<?php endif; ?>';
         });
 
         // @premiumelse directive - else clause for premium modules
         Blade::directive('premiumelse', function () {
-            return "<?php else: ?>";
+            return '<?php else: ?>';
         });
 
         // @premiumprice directive - format price for display

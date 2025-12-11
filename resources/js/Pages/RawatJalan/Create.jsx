@@ -3,6 +3,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
 import SearchableSelect from '@/Components/SearchableSelect';
+import { todayDateString, nowDateTimeString } from '@/tools/datetime';
 // Removed react-select import - using native HTML select instead
 
 export default function Create({ 
@@ -20,8 +21,8 @@ export default function Create({
 }) {
     const { data, setData, post, processing, errors } = useForm({
         no_rkm_medis: '',
-        tgl_registrasi: new Date().toISOString().split('T')[0],
-        jam_reg: new Date().toTimeString().slice(0, 5),
+        tgl_registrasi: todayDateString(),
+        jam_reg: nowDateTimeString().split(' ')[1].substring(0, 5),
         kd_dokter: '',
         kd_poli: '',
         p_jawab: '',

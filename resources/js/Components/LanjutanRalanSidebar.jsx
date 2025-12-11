@@ -7,10 +7,11 @@ import { route } from "ziggy-js";
 import { getRawatJalanFilters } from '@/tools/rawatJalanFilters';
 
 export default function LanjutanRalanSidebar({
-	collapsed = false,
-	title = "Lanjutan Rawat Jalan",
-	menuConfig = {},
-	onToggle,
+    collapsed = false,
+    title = "Lanjutan Rawat Jalan",
+    menuConfig = {},
+    onToggle,
+    context = "ralan",
 }) {
 	const { auth, menu_hierarchy, current_menu } = usePage().props;
 	const [expandedMenus, setExpandedMenus] = useState(new Set());
@@ -101,96 +102,98 @@ export default function LanjutanRalanSidebar({
 		return colorMap[colorScheme]?.[isActive ? 'active' : 'inactive'] || colorMap.slate[isActive ? 'active' : 'inactive'];
 	};
 
-	// Define specific menu items for Lanjutan Rawat Jalan
-	const lanjutanMenus = [
-		{
-			id: 'dashboard',
-			name: 'Dashboard',
-			icon: 'home',
-			url: (() => {
-				try {
-					return route('dashboard');
-				} catch (error) {
-					console.warn('Dashboard route not found');
-					return '/';
-				}
-			})(),
-			active: false,
-			colorScheme: 'slate'
-		},
-		{
-			id: 'rawat-jalan-list',
-			name: 'Data Rawat Jalan',
-			icon: 'user-group',
-			url: (() => {
-				try {
-					return route('rawat-jalan.index');
-				} catch (error) {
-					console.warn('Rawat Jalan route not found');
-					return '#';
-				}
-			})(),
-			active: false,
-			colorScheme: 'slate'
-		},
-		{
-			id: 'lanjutan-group',
-			name: 'Menu Pemeriksaan',
-			icon: 'clipboard-document-list',
-			active: false,
-			colorScheme: 'primary',
-			children: [
-				{
-					id: 'cppt',
-					name: 'CPPT / SOAP',
-					icon: 'document-text',
-					description: 'Catatan Perkembangan Pasien',
-					active: menuConfig.activeTab === 'cppt',
-					colorScheme: 'blue'
-				},
-				{
-					id: 'tarif-tindakan',
-					name: 'Tarif Tindakan',
-					icon: 'calculator',
-					description: 'Input Tarif Tindakan Medis',
-					active: menuConfig.activeTab === 'tarifTindakan',
-					colorScheme: 'orange'
-				},
-				{
-					id: 'resep',
-					name: 'Resep',
-					icon: 'beaker',
-					description: 'Resep Obat & Farmasi',
-					active: menuConfig.activeTab === 'resep',
-					colorScheme: 'green'
-				},
-				{
-					id: 'diagnosa',
-					name: 'Diagnosa',
-					icon: 'heart',
-					description: 'Diagnosis & Kode ICD',
-					active: menuConfig.activeTab === 'diagnosa',
-					colorScheme: 'red'
-				},
-				{
-					id: 'lab',
-					name: 'Permintaan Lab',
-					icon: 'beaker',
-					description: 'Laboratorium & Pemeriksaan',
-					active: menuConfig.activeTab === 'lab',
-					colorScheme: 'purple'
-				},
-				{
-					id: 'radiologi',
-					name: 'Permintaan Radiologi',
-					icon: 'camera',
-					description: 'Radiologi & Imaging',
-					active: menuConfig.activeTab === 'radiologi',
-					colorScheme: 'indigo'
-				}
-			]
-		}
-	];
+    const isRanap = context === 'ranap';
+    const dashboardMenu = {
+        id: 'dashboard',
+        name: 'Dashboard',
+        icon: 'home',
+        url: (() => {
+            try {
+                return route('dashboard');
+            } catch (error) {
+                return '/';
+            }
+        })(),
+        active: false,
+        colorScheme: 'slate'
+    };
+
+    const listMenu = {
+        id: isRanap ? 'rawat-inap-list' : 'rawat-jalan-list',
+        name: isRanap ? 'Data Rawat Inap' : 'Data Rawat Jalan',
+        icon: 'user-group',
+        url: (() => {
+            try {
+                return route(isRanap ? 'rawat-inap.index' : 'rawat-jalan.index');
+            } catch (error) {
+                return isRanap ? '/rawat-inap' : '/rawat-jalan';
+            }
+        })(),
+        active: false,
+        colorScheme: 'slate'
+    };
+
+    const lanjutanMenus = [
+        dashboardMenu,
+        listMenu,
+        {
+            id: 'lanjutan-group',
+            name: 'Menu Pemeriksaan',
+            icon: 'clipboard-document-list',
+            active: false,
+            colorScheme: 'primary',
+            children: [
+                {
+                    id: 'cppt',
+                    name: 'CPPT / SOAP',
+                    icon: 'document-text',
+                    description: 'Catatan Perkembangan Pasien',
+                    active: menuConfig.activeTab === 'cppt',
+                    colorScheme: 'blue'
+                },
+                {
+                    id: 'tarif-tindakan',
+                    name: 'Tarif Tindakan',
+                    icon: 'calculator',
+                    description: 'Input Tarif Tindakan Medis',
+                    active: menuConfig.activeTab === 'tarifTindakan',
+                    colorScheme: 'orange'
+                },
+                {
+                    id: 'resep',
+                    name: 'Resep',
+                    icon: 'beaker',
+                    description: 'Resep Obat & Farmasi',
+                    active: menuConfig.activeTab === 'resep',
+                    colorScheme: 'green'
+                },
+                {
+                    id: 'diagnosa',
+                    name: 'Diagnosa',
+                    icon: 'heart',
+                    description: 'Diagnosis & Kode ICD',
+                    active: menuConfig.activeTab === 'diagnosa',
+                    colorScheme: 'red'
+                },
+                {
+                    id: 'lab',
+                    name: 'Permintaan Lab',
+                    icon: 'beaker',
+                    description: 'Laboratorium & Pemeriksaan',
+                    active: menuConfig.activeTab === 'lab',
+                    colorScheme: 'purple'
+                },
+                {
+                    id: 'radiologi',
+                    name: 'Permintaan Radiologi',
+                    icon: 'camera',
+                    description: 'Radiologi & Imaging',
+                    active: menuConfig.activeTab === 'radiologi',
+                    colorScheme: 'indigo'
+                }
+            ]
+        }
+    ];
 
 	// Variants untuk animasi
 	const itemVariants = {
@@ -245,14 +248,12 @@ export default function LanjutanRalanSidebar({
 	};
 
 	const getMenuUrl = (menu) => {
-		// Khusus menu "Data Rawat Jalan": ambil kd_dokter/kd_poli terakhir dari localStorage
-		// agar saat klik menu, filter Dokter/Poli tetap dipertahankan.
-		if (menu.id === 'rawat-jalan-list' || (menu.name && menu.name.toLowerCase().includes('rawat jalan'))) {
-			let basePath = '/rawat-jalan';
-			try {
-				// Gunakan path relatif agar konsisten dengan origin aktif
-				basePath = route('rawat-jalan.index', {}, false);
-			} catch (_) {}
+        if (menu.id === 'rawat-jalan-list' || (menu.name && menu.name.toLowerCase().includes('rawat jalan'))) {
+            let basePath = '/rawat-jalan';
+            try {
+                // Gunakan path relatif agar konsisten dengan origin aktif
+                basePath = route('rawat-jalan.index', {}, false);
+            } catch (_) {}
 
             const { kd_dokter = '', kd_poli = '' } = getRawatJalanFilters();
 
@@ -266,7 +267,15 @@ export default function LanjutanRalanSidebar({
 				if (kd_dokter) qs.push(`kd_dokter=${encodeURIComponent(kd_dokter)}`);
 				if (kd_poli) qs.push(`kd_poli=${encodeURIComponent(kd_poli)}`);
 				return basePath + (qs.length ? `?${qs.join('&')}` : '');
-			}
+        }
+
+        if (menu.id === 'rawat-inap-list' || (menu.name && menu.name.toLowerCase().includes('rawat inap'))) {
+            let basePath = '/rawat-inap';
+            try {
+                basePath = route('rawat-inap.index', {}, false);
+            } catch (_) {}
+            return basePath;
+        }
 		}
 
 		if (menu.url) return menu.url;
@@ -503,9 +512,9 @@ export default function LanjutanRalanSidebar({
 					</div>
 					<div className="flex flex-col">
 						<span className="font-bold text-white text-base leading-tight">{title}</span>
-						<span className="text-xs text-blue-200 -mt-0.5 leading-tight">
-							Rawat Jalan
-						</span>
+                        <span className="text-xs text-blue-200 -mt-0.5 leading-tight">
+                            {context === 'ranap' ? 'Rawat Inap' : 'Rawat Jalan'}
+                        </span>
 					</div>
 				</motion.div>
 			</div>

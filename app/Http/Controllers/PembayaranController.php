@@ -7,9 +7,9 @@ use App\Models\RawatJlDr;
 use App\Models\RawatJlDrpr;
 use App\Models\RawatJlPr;
 use App\Models\RegPeriksa;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -45,7 +45,7 @@ class PembayaranController extends Controller
                 ->when($q !== '', function ($query) use ($q) {
                     $like = '%'.str_replace(' ', '%', $q).'%';
                     $query
-                        ->where(function ($inner) use ($like, $q) {
+                        ->where(function ($inner) use ($like) {
                             $inner->where('no_rawat', 'like', $like)
                                 ->orWhere('no_rkm_medis', 'like', $like)
                                 ->orWhereHas('patient', function ($p) use ($like) {

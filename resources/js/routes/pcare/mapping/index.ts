@@ -4,9 +4,13 @@ import dokter1a4744 from './dokter'
 import obatE6960e from './obat'
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:376
 =======
 * @see routes/web.php:417
+>>>>>>> main
+=======
+* @see routes/web.php:833
 >>>>>>> main
 * @route '/pcare/mapping/poli'
 */
@@ -22,9 +26,13 @@ poli.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:376
 =======
 * @see routes/web.php:417
+>>>>>>> main
+=======
+* @see routes/web.php:833
 >>>>>>> main
 * @route '/pcare/mapping/poli'
 */
@@ -34,9 +42,13 @@ poli.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:376
 =======
 * @see routes/web.php:417
+>>>>>>> main
+=======
+* @see routes/web.php:833
 >>>>>>> main
 * @route '/pcare/mapping/poli'
 */
@@ -47,9 +59,13 @@ poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:376
 =======
 * @see routes/web.php:417
+>>>>>>> main
+=======
+* @see routes/web.php:833
 >>>>>>> main
 * @route '/pcare/mapping/poli'
 */
@@ -60,9 +76,13 @@ poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:381
 =======
 * @see routes/web.php:422
+>>>>>>> main
+=======
+* @see routes/web.php:838
 >>>>>>> main
 * @route '/pcare/mapping/dokter'
 */
@@ -78,9 +98,13 @@ dokter.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:381
 =======
 * @see routes/web.php:422
+>>>>>>> main
+=======
+* @see routes/web.php:838
 >>>>>>> main
 * @route '/pcare/mapping/dokter'
 */
@@ -90,9 +114,13 @@ dokter.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:381
 =======
 * @see routes/web.php:422
+>>>>>>> main
+=======
+* @see routes/web.php:838
 >>>>>>> main
 * @route '/pcare/mapping/dokter'
 */
@@ -103,9 +131,13 @@ dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:381
 =======
 * @see routes/web.php:422
+>>>>>>> main
+=======
+* @see routes/web.php:838
 >>>>>>> main
 * @route '/pcare/mapping/dokter'
 */
@@ -116,9 +148,13 @@ dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:386
 =======
 * @see routes/web.php:427
+>>>>>>> main
+=======
+* @see routes/web.php:843
 >>>>>>> main
 * @route '/pcare/mapping/obat'
 */
@@ -134,9 +170,13 @@ obat.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:386
 =======
 * @see routes/web.php:427
+>>>>>>> main
+=======
+* @see routes/web.php:843
 >>>>>>> main
 * @route '/pcare/mapping/obat'
 */
@@ -146,9 +186,13 @@ obat.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:386
 =======
 * @see routes/web.php:427
+>>>>>>> main
+=======
+* @see routes/web.php:843
 >>>>>>> main
 * @route '/pcare/mapping/obat'
 */
@@ -159,9 +203,13 @@ obat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:386
 =======
 * @see routes/web.php:427
+>>>>>>> main
+=======
+* @see routes/web.php:843
 >>>>>>> main
 * @route '/pcare/mapping/obat'
 */

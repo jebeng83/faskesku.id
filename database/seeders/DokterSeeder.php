@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Dokter;
+use Illuminate\Database\Seeder;
 
 class DokterSeeder extends Seeder
 {
@@ -24,7 +24,7 @@ class DokterSeeder extends Seeder
                 'kd_sps' => 'SP001',
                 'alumni' => 'Universitas Indonesia',
                 'no_ijn_praktek' => 'IJN001',
-                'status' => '1'
+                'status' => '1',
             ],
             [
                 'kd_dokter' => 'D002',
@@ -40,7 +40,7 @@ class DokterSeeder extends Seeder
                 'kd_sps' => 'SP002',
                 'alumni' => 'Universitas Padjadjaran',
                 'no_ijn_praktek' => 'IJN002',
-                'status' => '1'
+                'status' => '1',
             ],
             [
                 'kd_dokter' => 'D003',
@@ -56,7 +56,7 @@ class DokterSeeder extends Seeder
                 'kd_sps' => 'SP003',
                 'alumni' => 'Universitas Airlangga',
                 'no_ijn_praktek' => 'IJN003',
-                'status' => '1'
+                'status' => '1',
             ],
             [
                 'kd_dokter' => 'D004',
@@ -72,7 +72,7 @@ class DokterSeeder extends Seeder
                 'kd_sps' => 'SP004',
                 'alumni' => 'Universitas Gadjah Mada',
                 'no_ijn_praktek' => 'IJN004',
-                'status' => '1'
+                'status' => '1',
             ],
             [
                 'kd_dokter' => 'D005',
@@ -88,8 +88,8 @@ class DokterSeeder extends Seeder
                 'kd_sps' => 'SP005',
                 'alumni' => 'Universitas Sumatera Utara',
                 'no_ijn_praktek' => 'IJN005',
-                'status' => '1'
-            ]
+                'status' => '1',
+            ],
         ];
 
         foreach ($dokters as $dokter) {

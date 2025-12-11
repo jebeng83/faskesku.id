@@ -24,6 +24,7 @@ export default function WilayahSearchableSelect({
 	const [loading, setLoading] = useState(false);
 	const [searchLoading, setSearchLoading] = useState(false);
 	const dropdownRef = useRef(null);
+	const buttonRef = useRef(null);
 	const inputRef = useRef(null);
 	const searchTimeoutRef = useRef(null);
 
@@ -56,20 +57,24 @@ export default function WilayahSearchableSelect({
 		setHighlightedIndex(-1);
 	}, [searchTerm, options]);
 
+
 	// Handle click outside to close dropdown
 	useEffect(() => {
 		const handleClickOutside = (event) => {
-			if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+			if (dropdownRef.current && !dropdownRef.current.contains(event.target) &&
+				buttonRef.current && !buttonRef.current.contains(event.target)) {
 				setIsOpen(false);
 				// Don't reset searchTerm here to preserve search results
 			}
 		};
 
-		document.addEventListener("mousedown", handleClickOutside);
+		if (isOpen) {
+			document.addEventListener("mousedown", handleClickOutside);
+		}
 		return () => {
 			document.removeEventListener("mousedown", handleClickOutside);
 		};
-	}, []);
+	}, [isOpen]);
 
 	const loadInitialData = async () => {
 		if (disabled) return;
@@ -165,12 +170,20 @@ export default function WilayahSearchableSelect({
 		}, 300); // 300ms delay
 	};
 
+
+
 	const handleToggle = () => {
 		if (disabled || loading) return;
 		setIsOpen(!isOpen);
+		
 		if (!isOpen) {
-			setTimeout(() => inputRef.current?.focus(), 100);
-		} else {
+			// Focus input after a short delay to ensure dropdown is rendered
+			setTimeout(() => {
+				if (inputRef.current) {
+					inputRef.current.focus();
+				}
+			}, 100);
+			
 			// When opening dropdown, ensure we have the selected option available
 			if (value && !options.find((opt) => opt.value === value)) {
 				// If we have a value but it's not in options, we need to load it
@@ -268,15 +281,15 @@ export default function WilayahSearchableSelect({
 	return (
 		<div
 			className={`relative ${className}`}
-			ref={dropdownRef}
-			style={{ zIndex: isOpen ? 9999 : "auto" }}
+			style={{ zIndex: isOpen ? 10000 : "auto", position: "relative" }}
 		>
 			<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
 				{label || getLevelLabel()}{" "}
 				{required && <span className="text-red-500">*</span>}
 			</label>
-			<div className="relative">
+			<div className="relative" style={{ zIndex: isOpen ? 10000 : "auto", position: "relative" }}>
 				<button
+					ref={buttonRef}
 					type="button"
 					onClick={handleToggle}
 					onKeyDown={handleKeyDown}
@@ -341,8 +354,15 @@ export default function WilayahSearchableSelect({
 
 				{isOpen && (
 					<div
-						className="absolute z-[9999] w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xl max-h-60 overflow-hidden"
-						style={{ position: "absolute", top: "100%", left: 0, right: 0 }}
+						ref={dropdownRef}
+						className="absolute z-[10000] w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xl max-h-60 overflow-hidden"
+						style={{
+							position: "absolute",
+							top: "100%",
+							left: 0,
+							right: 0,
+							zIndex: 10000,
+						}}
 					>
 						{/* Search Input */}
 						<div className="p-2 border-b border-gray-200 dark:border-gray-600">

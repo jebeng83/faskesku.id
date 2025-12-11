@@ -10,14 +10,18 @@ class KategoriPerawatan extends Model
     use HasFactory;
 
     protected $table = 'kategori_perawatan';
+
     protected $primaryKey = 'kd_kategori';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [
         'kd_kategori',
-        'nm_kategori'
+        'nm_kategori',
     ];
 
     // Relasi dengan jns_perawatan

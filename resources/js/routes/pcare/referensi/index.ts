@@ -2,9 +2,13 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 import mobilejkn from './mobilejkn'
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:391
 =======
 * @see routes/web.php:432
+>>>>>>> main
+=======
+* @see routes/web.php:848
 >>>>>>> main
 * @route '/pcare/referensi/diagnosa'
 */
@@ -20,9 +24,13 @@ diagnosa.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:391
 =======
 * @see routes/web.php:432
+>>>>>>> main
+=======
+* @see routes/web.php:848
 >>>>>>> main
 * @route '/pcare/referensi/diagnosa'
 */
@@ -32,9 +40,13 @@ diagnosa.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:391
 =======
 * @see routes/web.php:432
+>>>>>>> main
+=======
+* @see routes/web.php:848
 >>>>>>> main
 * @route '/pcare/referensi/diagnosa'
 */
@@ -45,9 +57,13 @@ diagnosa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:391
 =======
 * @see routes/web.php:432
+>>>>>>> main
+=======
+* @see routes/web.php:848
 >>>>>>> main
 * @route '/pcare/referensi/diagnosa'
 */
@@ -58,9 +74,13 @@ diagnosa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:396
 =======
 * @see routes/web.php:437
+>>>>>>> main
+=======
+* @see routes/web.php:853
 >>>>>>> main
 * @route '/pcare/referensi/dokter'
 */
@@ -76,9 +96,13 @@ dokter.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:396
 =======
 * @see routes/web.php:437
+>>>>>>> main
+=======
+* @see routes/web.php:853
 >>>>>>> main
 * @route '/pcare/referensi/dokter'
 */
@@ -88,9 +112,13 @@ dokter.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:396
 =======
 * @see routes/web.php:437
+>>>>>>> main
+=======
+* @see routes/web.php:853
 >>>>>>> main
 * @route '/pcare/referensi/dokter'
 */
@@ -101,9 +129,13 @@ dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:396
 =======
 * @see routes/web.php:437
+>>>>>>> main
+=======
+* @see routes/web.php:853
 >>>>>>> main
 * @route '/pcare/referensi/dokter'
 */
@@ -114,9 +146,13 @@ dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:401
 =======
 * @see routes/web.php:442
+>>>>>>> main
+=======
+* @see routes/web.php:858
 >>>>>>> main
 * @route '/pcare/referensi/poli'
 */
@@ -132,9 +168,13 @@ poli.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:401
 =======
 * @see routes/web.php:442
+>>>>>>> main
+=======
+* @see routes/web.php:858
 >>>>>>> main
 * @route '/pcare/referensi/poli'
 */
@@ -144,9 +184,13 @@ poli.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:401
 =======
 * @see routes/web.php:442
+>>>>>>> main
+=======
+* @see routes/web.php:858
 >>>>>>> main
 * @route '/pcare/referensi/poli'
 */
@@ -157,9 +201,13 @@ poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:401
 =======
 * @see routes/web.php:442
+>>>>>>> main
+=======
+* @see routes/web.php:858
 >>>>>>> main
 * @route '/pcare/referensi/poli'
 */
@@ -170,9 +218,13 @@ poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:406
 =======
 * @see routes/web.php:447
+>>>>>>> main
+=======
+* @see routes/web.php:863
 >>>>>>> main
 * @route '/pcare/referensi/kesadaran'
 */
@@ -188,9 +240,13 @@ kesadaran.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:406
 =======
 * @see routes/web.php:447
+>>>>>>> main
+=======
+* @see routes/web.php:863
 >>>>>>> main
 * @route '/pcare/referensi/kesadaran'
 */
@@ -200,9 +256,13 @@ kesadaran.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:406
 =======
 * @see routes/web.php:447
+>>>>>>> main
+=======
+* @see routes/web.php:863
 >>>>>>> main
 * @route '/pcare/referensi/kesadaran'
 */
@@ -213,9 +273,13 @@ kesadaran.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:406
 =======
 * @see routes/web.php:447
+>>>>>>> main
+=======
+* @see routes/web.php:863
 >>>>>>> main
 * @route '/pcare/referensi/kesadaran'
 */
@@ -226,9 +290,13 @@ kesadaran.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:411
 =======
 * @see routes/web.php:452
+>>>>>>> main
+=======
+* @see routes/web.php:868
 >>>>>>> main
 * @route '/pcare/referensi/prognosa'
 */
@@ -244,9 +312,13 @@ prognosa.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:411
 =======
 * @see routes/web.php:452
+>>>>>>> main
+=======
+* @see routes/web.php:868
 >>>>>>> main
 * @route '/pcare/referensi/prognosa'
 */
@@ -256,9 +328,13 @@ prognosa.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:411
 =======
 * @see routes/web.php:452
+>>>>>>> main
+=======
+* @see routes/web.php:868
 >>>>>>> main
 * @route '/pcare/referensi/prognosa'
 */
@@ -269,9 +345,13 @@ prognosa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:411
 =======
 * @see routes/web.php:452
+>>>>>>> main
+=======
+* @see routes/web.php:868
 >>>>>>> main
 * @route '/pcare/referensi/prognosa'
 */
@@ -282,9 +362,13 @@ prognosa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:416
 =======
 * @see routes/web.php:457
+>>>>>>> main
+=======
+* @see routes/web.php:873
 >>>>>>> main
 * @route '/pcare/referensi/tindakan'
 */
@@ -300,9 +384,13 @@ tindakan.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:416
 =======
 * @see routes/web.php:457
+>>>>>>> main
+=======
+* @see routes/web.php:873
 >>>>>>> main
 * @route '/pcare/referensi/tindakan'
 */
@@ -312,9 +400,13 @@ tindakan.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:416
 =======
 * @see routes/web.php:457
+>>>>>>> main
+=======
+* @see routes/web.php:873
 >>>>>>> main
 * @route '/pcare/referensi/tindakan'
 */
@@ -325,9 +417,13 @@ tindakan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:416
 =======
 * @see routes/web.php:457
+>>>>>>> main
+=======
+* @see routes/web.php:873
 >>>>>>> main
 * @route '/pcare/referensi/tindakan'
 */
@@ -338,9 +434,13 @@ tindakan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:421
 =======
 * @see routes/web.php:462
+>>>>>>> main
+=======
+* @see routes/web.php:878
 >>>>>>> main
 * @route '/pcare/referensi/dpho'
 */
@@ -356,9 +456,13 @@ dpho.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:421
 =======
 * @see routes/web.php:462
+>>>>>>> main
+=======
+* @see routes/web.php:878
 >>>>>>> main
 * @route '/pcare/referensi/dpho'
 */
@@ -368,9 +472,13 @@ dpho.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:421
 =======
 * @see routes/web.php:462
+>>>>>>> main
+=======
+* @see routes/web.php:878
 >>>>>>> main
 * @route '/pcare/referensi/dpho'
 */
@@ -381,9 +489,13 @@ dpho.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:421
 =======
 * @see routes/web.php:462
+>>>>>>> main
+=======
+* @see routes/web.php:878
 >>>>>>> main
 * @route '/pcare/referensi/dpho'
 */
@@ -394,9 +506,13 @@ dpho.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:426
 =======
 * @see routes/web.php:467
+>>>>>>> main
+=======
+* @see routes/web.php:883
 >>>>>>> main
 * @route '/pcare/referensi/provider'
 */
@@ -412,9 +528,13 @@ provider.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:426
 =======
 * @see routes/web.php:467
+>>>>>>> main
+=======
+* @see routes/web.php:883
 >>>>>>> main
 * @route '/pcare/referensi/provider'
 */
@@ -424,9 +544,13 @@ provider.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:426
 =======
 * @see routes/web.php:467
+>>>>>>> main
+=======
+* @see routes/web.php:883
 >>>>>>> main
 * @route '/pcare/referensi/provider'
 */
@@ -437,9 +561,13 @@ provider.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:426
 =======
 * @see routes/web.php:467
+>>>>>>> main
+=======
+* @see routes/web.php:883
 >>>>>>> main
 * @route '/pcare/referensi/provider'
 */
@@ -450,9 +578,13 @@ provider.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:431
 =======
 * @see routes/web.php:472
+>>>>>>> main
+=======
+* @see routes/web.php:888
 >>>>>>> main
 * @route '/pcare/referensi/spesialis'
 */
@@ -468,9 +600,13 @@ spesialis.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:431
 =======
 * @see routes/web.php:472
+>>>>>>> main
+=======
+* @see routes/web.php:888
 >>>>>>> main
 * @route '/pcare/referensi/spesialis'
 */
@@ -480,9 +616,13 @@ spesialis.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:431
 =======
 * @see routes/web.php:472
+>>>>>>> main
+=======
+* @see routes/web.php:888
 >>>>>>> main
 * @route '/pcare/referensi/spesialis'
 */
@@ -493,9 +633,13 @@ spesialis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:431
 =======
 * @see routes/web.php:472
+>>>>>>> main
+=======
+* @see routes/web.php:888
 >>>>>>> main
 * @route '/pcare/referensi/spesialis'
 */
@@ -506,9 +650,13 @@ spesialis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:436
 =======
 * @see routes/web.php:477
+>>>>>>> main
+=======
+* @see routes/web.php:893
 >>>>>>> main
 * @route '/pcare/referensi/subspesialis'
 */
@@ -524,9 +672,13 @@ subspesialis.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:436
 =======
 * @see routes/web.php:477
+>>>>>>> main
+=======
+* @see routes/web.php:893
 >>>>>>> main
 * @route '/pcare/referensi/subspesialis'
 */
@@ -536,9 +688,13 @@ subspesialis.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:436
 =======
 * @see routes/web.php:477
+>>>>>>> main
+=======
+* @see routes/web.php:893
 >>>>>>> main
 * @route '/pcare/referensi/subspesialis'
 */
@@ -549,9 +705,13 @@ subspesialis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:436
 =======
 * @see routes/web.php:477
+>>>>>>> main
+=======
+* @see routes/web.php:893
 >>>>>>> main
 * @route '/pcare/referensi/subspesialis'
 */
@@ -562,9 +722,13 @@ subspesialis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:441
 =======
 * @see routes/web.php:482
+>>>>>>> main
+=======
+* @see routes/web.php:898
 >>>>>>> main
 * @route '/pcare/referensi/sarana'
 */
@@ -580,9 +744,13 @@ sarana.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:441
 =======
 * @see routes/web.php:482
+>>>>>>> main
+=======
+* @see routes/web.php:898
 >>>>>>> main
 * @route '/pcare/referensi/sarana'
 */
@@ -592,9 +760,13 @@ sarana.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:441
 =======
 * @see routes/web.php:482
+>>>>>>> main
+=======
+* @see routes/web.php:898
 >>>>>>> main
 * @route '/pcare/referensi/sarana'
 */
@@ -605,9 +777,13 @@ sarana.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:441
 =======
 * @see routes/web.php:482
+>>>>>>> main
+=======
+* @see routes/web.php:898
 >>>>>>> main
 * @route '/pcare/referensi/sarana'
 */
@@ -618,9 +794,13 @@ sarana.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:446
 =======
 * @see routes/web.php:487
+>>>>>>> main
+=======
+* @see routes/web.php:903
 >>>>>>> main
 * @route '/pcare/referensi/khusus'
 */
@@ -636,9 +816,13 @@ khusus.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:446
 =======
 * @see routes/web.php:487
+>>>>>>> main
+=======
+* @see routes/web.php:903
 >>>>>>> main
 * @route '/pcare/referensi/khusus'
 */
@@ -648,9 +832,13 @@ khusus.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:446
 =======
 * @see routes/web.php:487
+>>>>>>> main
+=======
+* @see routes/web.php:903
 >>>>>>> main
 * @route '/pcare/referensi/khusus'
 */
@@ -661,9 +849,13 @@ khusus.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:446
 =======
 * @see routes/web.php:487
+>>>>>>> main
+=======
+* @see routes/web.php:903
 >>>>>>> main
 * @route '/pcare/referensi/khusus'
 */
@@ -674,9 +866,13 @@ khusus.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:451
 =======
 * @see routes/web.php:492
+>>>>>>> main
+=======
+* @see routes/web.php:908
 >>>>>>> main
 * @route '/pcare/referensi/alergi'
 */
@@ -692,9 +888,13 @@ alergi.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:451
 =======
 * @see routes/web.php:492
+>>>>>>> main
+=======
+* @see routes/web.php:908
 >>>>>>> main
 * @route '/pcare/referensi/alergi'
 */
@@ -704,9 +904,13 @@ alergi.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:451
 =======
 * @see routes/web.php:492
+>>>>>>> main
+=======
+* @see routes/web.php:908
 >>>>>>> main
 * @route '/pcare/referensi/alergi'
 */
@@ -717,9 +921,13 @@ alergi.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:451
 =======
 * @see routes/web.php:492
+>>>>>>> main
+=======
+* @see routes/web.php:908
 >>>>>>> main
 * @route '/pcare/referensi/alergi'
 */
@@ -730,9 +938,13 @@ alergi.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:456
 =======
 * @see routes/web.php:497
+>>>>>>> main
+=======
+* @see routes/web.php:913
 >>>>>>> main
 * @route '/pcare/referensi/statuspulang'
 */
@@ -748,9 +960,13 @@ statuspulang.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:456
 =======
 * @see routes/web.php:497
+>>>>>>> main
+=======
+* @see routes/web.php:913
 >>>>>>> main
 * @route '/pcare/referensi/statuspulang'
 */
@@ -760,9 +976,13 @@ statuspulang.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:456
 =======
 * @see routes/web.php:497
+>>>>>>> main
+=======
+* @see routes/web.php:913
 >>>>>>> main
 * @route '/pcare/referensi/statuspulang'
 */
@@ -773,9 +993,13 @@ statuspulang.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:456
 =======
 * @see routes/web.php:497
+>>>>>>> main
+=======
+* @see routes/web.php:913
 >>>>>>> main
 * @route '/pcare/referensi/statuspulang'
 */
@@ -786,9 +1010,13 @@ statuspulang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:461
 =======
 * @see routes/web.php:502
+>>>>>>> main
+=======
+* @see routes/web.php:918
 >>>>>>> main
 * @route '/pcare/referensi/faskes-rujukan'
 */
@@ -804,9 +1032,13 @@ faskesRujukan.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:461
 =======
 * @see routes/web.php:502
+>>>>>>> main
+=======
+* @see routes/web.php:918
 >>>>>>> main
 * @route '/pcare/referensi/faskes-rujukan'
 */
@@ -816,9 +1048,13 @@ faskesRujukan.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:461
 =======
 * @see routes/web.php:502
+>>>>>>> main
+=======
+* @see routes/web.php:918
 >>>>>>> main
 * @route '/pcare/referensi/faskes-rujukan'
 */
@@ -829,9 +1065,13 @@ faskesRujukan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:461
 =======
 * @see routes/web.php:502
+>>>>>>> main
+=======
+* @see routes/web.php:918
 >>>>>>> main
 * @route '/pcare/referensi/faskes-rujukan'
 */

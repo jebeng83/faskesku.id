@@ -10,7 +10,9 @@ class TemplateLaboratorium extends Model
     use HasFactory;
 
     protected $table = 'template_laboratorium';
+
     protected $primaryKey = 'id_template';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -29,7 +31,7 @@ class TemplateLaboratorium extends Model
         'kso',
         'menejemen',
         'biaya_item',
-        'urut'
+        'urut',
     ];
 
     protected $casts = [
@@ -41,7 +43,7 @@ class TemplateLaboratorium extends Model
         'kso' => 'decimal:2',
         'menejemen' => 'decimal:2',
         'biaya_item' => 'decimal:2',
-        'urut' => 'integer'
+        'urut' => 'integer',
     ];
 
     // Relasi dengan JnsPerawatanLab
@@ -84,15 +86,15 @@ class TemplateLaboratorium extends Model
     {
         // ld = laki dewasa, la = laki anak, pd = perempuan dewasa, pa = perempuan anak
         if ($jenisKelamin === 'L') {
-            if ($usia && $usia < 18 && !empty($this->nilai_rujukan_la)) {
+            if ($usia && $usia < 18 && ! empty($this->nilai_rujukan_la)) {
                 return $this->nilai_rujukan_la;
-            } elseif (!empty($this->nilai_rujukan_ld)) {
+            } elseif (! empty($this->nilai_rujukan_ld)) {
                 return $this->nilai_rujukan_ld;
             }
         } elseif ($jenisKelamin === 'P') {
-            if ($usia && $usia < 18 && !empty($this->nilai_rujukan_pa)) {
+            if ($usia && $usia < 18 && ! empty($this->nilai_rujukan_pa)) {
                 return $this->nilai_rujukan_pa;
-            } elseif (!empty($this->nilai_rujukan_pd)) {
+            } elseif (! empty($this->nilai_rujukan_pd)) {
                 return $this->nilai_rujukan_pd;
             }
         }
@@ -108,28 +110,36 @@ class TemplateLaboratorium extends Model
         $la = $this->nilai_rujukan_la;
         $pd = $this->nilai_rujukan_pd;
         $pa = $this->nilai_rujukan_pa;
-        $satuan = $this->satuan ? ' ' . $this->satuan : '';
+        $satuan = $this->satuan ? ' '.$this->satuan : '';
 
         $rujukan = [];
-        if ($ld) $rujukan[] = "Pria Dewasa: {$ld}{$satuan}";
-        if ($la) $rujukan[] = "Pria Anak: {$la}{$satuan}";
-        if ($pd) $rujukan[] = "Wanita Dewasa: {$pd}{$satuan}";
-        if ($pa) $rujukan[] = "Wanita Anak: {$pa}{$satuan}";
+        if ($ld) {
+            $rujukan[] = "Pria Dewasa: {$ld}{$satuan}";
+        }
+        if ($la) {
+            $rujukan[] = "Pria Anak: {$la}{$satuan}";
+        }
+        if ($pd) {
+            $rujukan[] = "Wanita Dewasa: {$pd}{$satuan}";
+        }
+        if ($pa) {
+            $rujukan[] = "Wanita Anak: {$pa}{$satuan}";
+        }
 
-        return !empty($rujukan) ? implode(', ', $rujukan) : '-';
+        return ! empty($rujukan) ? implode(', ', $rujukan) : '-';
     }
 
     // Accessor untuk format biaya
     public function getBiayaItemFormattedAttribute()
     {
-        return 'Rp ' . number_format($this->biaya_item, 0, ',', '.');
+        return 'Rp '.number_format($this->biaya_item, 0, ',', '.');
     }
 
     // Method untuk mendapatkan total biaya
     public function getTotalBiaya()
     {
-        return $this->bagian_rs + $this->bhp + $this->bagian_perujuk + 
-               $this->bagian_dokter + $this->bagian_laborat + 
+        return $this->bagian_rs + $this->bhp + $this->bagian_perujuk +
+               $this->bagian_dokter + $this->bagian_laborat +
                ($this->kso ?? 0) + ($this->menejemen ?? 0);
     }
 }

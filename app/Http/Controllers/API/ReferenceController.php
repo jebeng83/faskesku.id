@@ -16,9 +16,10 @@ class ReferenceController extends Controller
         if ($labelCol) {
             $query->select('kode_perusahaan as value', DB::raw("$labelCol as label"))->orderBy($labelCol);
         } else {
-            $query->select('kode_perusahaan as value', DB::raw("kode_perusahaan as label"))->orderBy('kode_perusahaan');
+            $query->select('kode_perusahaan as value', DB::raw('kode_perusahaan as label'))->orderBy('kode_perusahaan');
         }
         $data = $query->get();
+
         return response()->json(['success' => true, 'data' => $data]);
     }
 
@@ -29,9 +30,10 @@ class ReferenceController extends Controller
         if ($labelCol) {
             $query->select('id as value', DB::raw("$labelCol as label"))->orderBy($labelCol);
         } else {
-            $query->select('id as value', DB::raw("id as label"))->orderBy('id');
+            $query->select('id as value', DB::raw('id as label'))->orderBy('id');
         }
         $data = $query->get();
+
         return response()->json(['success' => true, 'data' => $data]);
     }
 
@@ -42,9 +44,10 @@ class ReferenceController extends Controller
         if ($labelCol) {
             $query->select('id as value', DB::raw("$labelCol as label"))->orderBy($labelCol);
         } else {
-            $query->select('id as value', DB::raw("id as label"))->orderBy('id');
+            $query->select('id as value', DB::raw('id as label'))->orderBy('id');
         }
         $data = $query->get();
+
         return response()->json(['success' => true, 'data' => $data]);
     }
 
@@ -60,9 +63,10 @@ class ReferenceController extends Controller
         if ($labelCol) {
             $query->select('id as value', DB::raw("$labelCol as label"))->orderBy($labelCol);
         } else {
-            $query->select('id as value', DB::raw("id as label"))->orderBy('id');
+            $query->select('id as value', DB::raw('id as label'))->orderBy('id');
         }
         $data = $query->get();
+
         return response()->json(['success' => true, 'data' => $data]);
     }
 }

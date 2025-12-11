@@ -10,9 +10,13 @@ class Penjab extends Model
     use HasFactory;
 
     protected $table = 'penjab';
+
     protected $primaryKey = 'kd_pj';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -22,11 +26,11 @@ class Penjab extends Model
         'alamat_asuransi',
         'no_telp',
         'attn',
-        'status'
+        'status',
     ];
 
     protected $casts = [
-        'status' => 'string'
+        'status' => 'string',
     ];
 
     /**
@@ -42,6 +46,6 @@ class Penjab extends Model
      */
     public function getNamaLengkapAttribute()
     {
-        return $this->kd_pj . ' - ' . $this->png_jawab;
+        return $this->kd_pj.' - '.$this->png_jawab;
     }
 }

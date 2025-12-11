@@ -9,7 +9,7 @@ return new class extends Migration
     public function up()
     {
         // Cek apakah tabel sudah ada sebelum membuatnya
-        if (!Schema::hasTable('dokter')) {
+        if (! Schema::hasTable('dokter')) {
             Schema::create('dokter', function (Blueprint $table) {
                 $table->string('kd_dokter', 20)->primary();
                 $table->string('nm_dokter', 50);

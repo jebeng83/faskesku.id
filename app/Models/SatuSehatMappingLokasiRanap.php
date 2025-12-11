@@ -7,8 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class SatuSehatMappingLokasiRanap extends Model
 {
     protected $table = 'satu_sehat_mapping_lokasi_ranap';
+
     protected $primaryKey = 'kd_kamar';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [

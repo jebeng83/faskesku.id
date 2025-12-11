@@ -10,9 +10,13 @@ class Dokter extends Model
     use HasFactory;
 
     protected $table = 'dokter';
+
     protected $primaryKey = 'kd_dokter';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -30,12 +34,12 @@ class Dokter extends Model
         'kd_sps',
         'alumni',
         'no_ijn_praktek',
-        'status'
+        'status',
     ];
 
     protected $casts = [
         'tgl_lahir' => 'date',
-        'status' => 'string'
+        'status' => 'string',
     ];
 
     /**
@@ -51,7 +55,7 @@ class Dokter extends Model
      */
     public function getNamaLengkapAttribute()
     {
-        return $this->kd_dokter . ' - ' . $this->nm_dokter;
+        return $this->kd_dokter.' - '.$this->nm_dokter;
     }
 
     public function pegawai()

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Helpers\PremiumModuleHelper;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class ExamplePremiumController extends Controller
@@ -98,27 +98,27 @@ class ExamplePremiumController extends Controller
     public function someFeature()
     {
         // Check if user has access to specific premium module
-        if (!PremiumModuleHelper::hasAccess('ADVANCED_REPORTING_MODULE')) {
+        if (! PremiumModuleHelper::hasAccess('ADVANCED_REPORTING_MODULE')) {
             return response()->json([
                 'success' => false,
                 'message' => PremiumModuleHelper::getErrorMessage('ADVANCED_REPORTING_MODULE'),
-                'error_code' => 'PREMIUM_MODULE_REQUIRED'
+                'error_code' => 'PREMIUM_MODULE_REQUIRED',
             ], 403);
         }
 
         // Check if user has access to specific feature
-        if (!PremiumModuleHelper::hasFeature('ADVANCED_REPORTING_MODULE', 'Custom Dashboard Builder')) {
+        if (! PremiumModuleHelper::hasFeature('ADVANCED_REPORTING_MODULE', 'Custom Dashboard Builder')) {
             return response()->json([
                 'success' => false,
                 'message' => 'This feature requires the Custom Dashboard Builder feature.',
-                'error_code' => 'PREMIUM_FEATURE_REQUIRED'
+                'error_code' => 'PREMIUM_FEATURE_REQUIRED',
             ], 403);
         }
 
         // Proceed with premium feature
         return response()->json([
             'success' => true,
-            'data' => 'Premium feature data here'
+            'data' => 'Premium feature data here',
         ]);
     }
 
@@ -145,7 +145,7 @@ class ExamplePremiumController extends Controller
         // Check if required premium module is active
         $requiredModule = 'ADVANCED_REPORTING_MODULE';
 
-        if (!PremiumModuleHelper::isModuleActive($requiredModule)) {
+        if (! PremiumModuleHelper::isModuleActive($requiredModule)) {
             PremiumModuleHelper::logAccessAttempt($requiredModule, false);
 
             return response()->json([
@@ -153,7 +153,7 @@ class ExamplePremiumController extends Controller
                 'message' => PremiumModuleHelper::getErrorMessage($requiredModule),
                 'error_code' => 'PREMIUM_MODULE_REQUIRED',
                 'module_key' => $requiredModule,
-                'purchase_url' => PremiumModuleHelper::getPurchaseUrl($requiredModule)
+                'purchase_url' => PremiumModuleHelper::getPurchaseUrl($requiredModule),
             ], 403);
         }
 
@@ -163,7 +163,7 @@ class ExamplePremiumController extends Controller
         // Proceed with API logic
         return response()->json([
             'success' => true,
-            'data' => 'Premium API data here'
+            'data' => 'Premium API data here',
         ]);
     }
 

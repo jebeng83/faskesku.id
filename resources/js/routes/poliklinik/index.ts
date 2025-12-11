@@ -181,11 +181,56 @@ toggleStatus.patch = (args: { kd_poli: string | number } | [kd_poli: string | nu
     method: 'patch',
 })
 
+/**
+* @see \App\Http\Controllers\PoliklinikController::generateKode
+* @see app/Http/Controllers/PoliklinikController.php:130
+* @route '/poliklinik/generate-kode'
+*/
+export const generateKode = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: generateKode.url(options),
+    method: 'get',
+})
+
+generateKode.definition = {
+    methods: ["get","head"],
+    url: '/poliklinik/generate-kode',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\PoliklinikController::generateKode
+* @see app/Http/Controllers/PoliklinikController.php:130
+* @route '/poliklinik/generate-kode'
+*/
+generateKode.url = (options?: RouteQueryOptions) => {
+    return generateKode.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PoliklinikController::generateKode
+* @see app/Http/Controllers/PoliklinikController.php:130
+* @route '/poliklinik/generate-kode'
+*/
+generateKode.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: generateKode.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\PoliklinikController::generateKode
+* @see app/Http/Controllers/PoliklinikController.php:130
+* @route '/poliklinik/generate-kode'
+*/
+generateKode.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: generateKode.url(options),
+    method: 'head',
+})
+
 const poliklinik = {
     index: Object.assign(index, index),
     store: Object.assign(store, store),
     update: Object.assign(update, update),
     toggleStatus: Object.assign(toggleStatus, toggleStatus),
+    generateKode: Object.assign(generateKode, generateKode),
 }
 
 export default poliklinik

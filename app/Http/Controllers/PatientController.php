@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Patient;
-use App\Models\RegPeriksa;
 use App\Models\Dokter;
-use App\Models\Poliklinik;
+use App\Models\Patient;
 use App\Models\Penjab;
+use App\Models\Poliklinik;
+use App\Models\RegPeriksa;
 use App\Models\Wilayah;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
 
 class PatientController extends Controller
 {
@@ -153,14 +152,22 @@ class PatientController extends Controller
 
                 // Guard: only set kd_* if corresponding legacy tables contain the reference
                 $hasProp = Schema::hasTable('propinsi') ? DB::table('propinsi')->where('kd_prop', $ppInt)->exists() : false;
-                $hasKab  = Schema::hasTable('kabupaten') ? DB::table('kabupaten')->where('kd_kab', $rrInt)->exists() : false;
-                $hasKec  = Schema::hasTable('kecamatan') ? DB::table('kecamatan')->where('kd_kec', $ddInt)->exists() : false;
-                $hasKel  = Schema::hasTable('kelurahan') ? DB::table('kelurahan')->where('kd_kel', $vvvvInt)->exists() : false;
+                $hasKab = Schema::hasTable('kabupaten') ? DB::table('kabupaten')->where('kd_kab', $rrInt)->exists() : false;
+                $hasKec = Schema::hasTable('kecamatan') ? DB::table('kecamatan')->where('kd_kec', $ddInt)->exists() : false;
+                $hasKel = Schema::hasTable('kelurahan') ? DB::table('kelurahan')->where('kd_kel', $vvvvInt)->exists() : false;
 
-                if ($hasProp) { $data['kd_prop'] = $ppInt; }
-                if ($hasKab)  { $data['kd_kab']  = $rrInt; }
-                if ($hasKec)  { $data['kd_kec']  = $ddInt; }
-                if ($hasKel)  { $data['kd_kel']  = $vvvvInt; }
+                if ($hasProp) {
+                    $data['kd_prop'] = $ppInt;
+                }
+                if ($hasKab) {
+                    $data['kd_kab'] = $rrInt;
+                }
+                if ($hasKec) {
+                    $data['kd_kec'] = $ddInt;
+                }
+                if ($hasKel) {
+                    $data['kd_kel'] = $vvvvInt;
+                }
             }
         }
 
@@ -171,9 +178,9 @@ class PatientController extends Controller
 
         // Set default values for required legacy region fields to avoid FK violation
         $data['kd_prop'] = $data['kd_prop'] ?? 1;
-        $data['kd_kab']  = $data['kd_kab']  ?? 1;
-        $data['kd_kec']  = $data['kd_kec']  ?? 1;
-        $data['kd_kel']  = $data['kd_kel']  ?? 1;
+        $data['kd_kab'] = $data['kd_kab'] ?? 1;
+        $data['kd_kec'] = $data['kd_kec'] ?? 1;
+        $data['kd_kel'] = $data['kd_kel'] ?? 1;
         // keep non-null defaults for optional string fields
         $data['nip'] = $data['nip'] ?? '';
         $data['email'] = $data['email'] ?? '';
@@ -231,7 +238,7 @@ class PatientController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'nm_pasien' => 'required|string|max:40',
-            'no_ktp' => 'nullable|string|max:20|unique:pasien,no_ktp,' . $patient->no_rkm_medis . ',no_rkm_medis',
+            'no_ktp' => 'nullable|string|max:20|unique:pasien,no_ktp,'.$patient->no_rkm_medis.',no_rkm_medis',
             'jk' => 'required|in:L,P',
             'tmp_lahir' => 'required|string|max:15',
             'tgl_lahir' => 'required|date',
@@ -284,20 +291,28 @@ class PatientController extends Controller
 
                 // Check existence of legacy region rows before setting kd_*
                 $hasProp = Schema::hasTable('propinsi') ? DB::table('propinsi')->where('kd_prop', $ppInt)->exists() : false;
-                $hasKab  = Schema::hasTable('kabupaten') ? DB::table('kabupaten')->where('kd_kab', $rrInt)->exists() : false;
-                $hasKec  = Schema::hasTable('kecamatan') ? DB::table('kecamatan')->where('kd_kec', $ddInt)->exists() : false;
-                $hasKel  = Schema::hasTable('kelurahan') ? DB::table('kelurahan')->where('kd_kel', $vvvvInt)->exists() : false;
+                $hasKab = Schema::hasTable('kabupaten') ? DB::table('kabupaten')->where('kd_kab', $rrInt)->exists() : false;
+                $hasKec = Schema::hasTable('kecamatan') ? DB::table('kecamatan')->where('kd_kec', $ddInt)->exists() : false;
+                $hasKel = Schema::hasTable('kelurahan') ? DB::table('kelurahan')->where('kd_kel', $vvvvInt)->exists() : false;
 
                 // Only set kd_* values if corresponding legacy table contains the reference
-                if ($hasProp) { $data['kd_prop'] = $ppInt; }
-                if ($hasKab)  { $data['kd_kab']  = $rrInt; }
-                if ($hasKec)  { $data['kd_kec']  = $ddInt; }
-                if ($hasKel)  { $data['kd_kel']  = $vvvvInt; }
+                if ($hasProp) {
+                    $data['kd_prop'] = $ppInt;
+                }
+                if ($hasKab) {
+                    $data['kd_kab'] = $rrInt;
+                }
+                if ($hasKec) {
+                    $data['kd_kec'] = $ddInt;
+                }
+                if ($hasKel) {
+                    $data['kd_kel'] = $vvvvInt;
+                }
             }
         }
 
         // Update umur
-        $data['umur'] = \Carbon\Carbon::parse($data['tgl_lahir'])->age . ' Th';
+        $data['umur'] = \Carbon\Carbon::parse($data['tgl_lahir'])->age.' Th';
 
         $patient->update($data);
 
@@ -328,7 +343,7 @@ class PatientController extends Controller
             'p_jawab' => 'required|string|max:100',
             'almt_pj' => 'required|string|max:200',
             'hubunganpj' => 'required|string|max:20',
-            'kode_wilayah' => 'required|string|max:13|exists:wilayah,kode'
+            'kode_wilayah' => 'required|string|max:13|exists:wilayah,kode',
         ]);
 
         // Check if patient has ever registered in this polyclinic
@@ -390,10 +405,10 @@ class PatientController extends Controller
     {
         $kd_poli = $request->get('kd_poli');
 
-        if (!$kd_poli) {
+        if (! $kd_poli) {
             return response()->json([
                 'success' => false,
-                'message' => 'Kode poliklinik diperlukan'
+                'message' => 'Kode poliklinik diperlukan',
             ], 400);
         }
 
@@ -405,10 +420,10 @@ class PatientController extends Controller
         // Get polyclinic data for biaya registrasi
         $poliklinik = Poliklinik::where('kd_poli', $kd_poli)->first();
 
-        if (!$poliklinik) {
+        if (! $poliklinik) {
             return response()->json([
                 'success' => false,
-                'message' => 'Poliklinik tidak ditemukan'
+                'message' => 'Poliklinik tidak ditemukan',
             ], 404);
         }
 
@@ -421,8 +436,8 @@ class PatientController extends Controller
             'data' => [
                 'status_poli' => $status_poli,
                 'biaya_reg' => $biaya_reg,
-                'has_registered' => $hasRegistered
-            ]
+                'has_registered' => $hasRegistered,
+            ],
         ]);
     }
 }

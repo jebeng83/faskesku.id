@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Employee;
 use Faker\Factory as Faker;
+use Illuminate\Database\Seeder;
 
 class EmployeeSeeder extends Seeder
 {
@@ -33,7 +32,7 @@ class EmployeeSeeder extends Seeder
             'Cleaning Service',
             'Security',
             'Driver',
-            'Maintenance'
+            'Maintenance',
         ];
 
         $departemen = [
@@ -52,7 +51,7 @@ class EmployeeSeeder extends Seeder
             'Administrasi',
             'Keuangan',
             'IT',
-            'Umum'
+            'Umum',
         ];
 
         $universitas = [
@@ -67,7 +66,7 @@ class EmployeeSeeder extends Seeder
             'Universitas Hasanuddin',
             'Universitas Andalas',
             'Universitas Sumatera Utara',
-            'Universitas Sriwijaya'
+            'Universitas Sriwijaya',
         ];
 
         $pendidikan = ['SMA', 'D3', 'D4', 'S1', 'S2', 'S3'];

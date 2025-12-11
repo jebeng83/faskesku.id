@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Farmasi;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class DataBarangController extends Controller
@@ -20,7 +21,7 @@ class DataBarangController extends Controller
                 'dasar', 'h_beli',
                 'ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan',
                 'stokminimal', 'status', 'letak_barang', 'isi', 'kapasitas', 'kdjns', 'expire',
-                'kode_industri', 'kode_kategori', 'kode_golongan'
+                'kode_industri', 'kode_kategori', 'kode_golongan',
             ])
             ->when($q, function ($query) use ($q) {
                 $query->where(function ($q2) use ($q) {
@@ -34,9 +35,10 @@ class DataBarangController extends Controller
         // If client expects JSON (selector/autocomplete), return lightweight list
         if ($request->wantsJson()) {
             $items = $itemsQuery->limit(50)->get();
+
             return response()->json([
                 'items' => $items,
-                'filters' => [ 'q' => $q, 'perPage' => $perPage ],
+                'filters' => ['q' => $q, 'perPage' => $perPage],
             ]);
         }
 
@@ -68,7 +70,7 @@ class DataBarangController extends Controller
         // Ambil kode terakhir secara descending; gunakan pola huruf + angka
         $latest = DB::table('databarang')->select('kode_brng')->orderBy('kode_brng', 'desc')->first();
         // Jika belum ada data, mulai dari A000000000
-        if (!$latest || empty($latest->kode_brng)) {
+        if (! $latest || empty($latest->kode_brng)) {
             return 'A000000000';
         }
 
@@ -80,8 +82,9 @@ class DataBarangController extends Controller
             $num = (int) $numStr;
             $width = strlen($numStr);
             $nextNum = (string) ($num + 1);
+
             // str_pad tidak akan memangkas jika nextNum lebih panjang dari width
-            return $prefix . str_pad($nextNum, $width, '0', STR_PAD_LEFT);
+            return $prefix.str_pad($nextNum, $width, '0', STR_PAD_LEFT);
         }
 
         // Jika hanya angka di akhir dengan prefix tidak jelas, gunakan prefix 'A'
@@ -89,7 +92,8 @@ class DataBarangController extends Controller
             $numStr = $m[1] ?? '0';
             $num = (int) $numStr;
             $width = strlen($numStr);
-            return 'A' . str_pad((string) ($num + 1), $width, '0', STR_PAD_LEFT);
+
+            return 'A'.str_pad((string) ($num + 1), $width, '0', STR_PAD_LEFT);
         }
 
         // Fallback default
@@ -185,8 +189,9 @@ class DataBarangController extends Controller
     public function destroy(string $kode_brng)
     {
         DB::table('databarang')->where('kode_brng', $kode_brng)->delete();
+
         return redirect()->route('farmasi.data-obat')->with('success', 'Data obat berhasil dihapus.');
-}
+    }
 
     /**
      * Bulk update seluruh harga jual pada tabel databarang sesuai konfigurasi set_harga_obat
@@ -196,91 +201,153 @@ class DataBarangController extends Controller
      */
     public function updateHargaSemua(Request $request)
     {
-        // Ambil konfigurasi set_harga_obat
-        $cfg = DB::table('set_harga_obat')->select('setharga', 'hargadasar', 'ppn')->first();
-        $setharga = $cfg->setharga ?? 'Umum';
-        $hargadasar = $cfg->hargadasar ?? 'Harga Beli';
-        $ppn = $cfg->ppn ?? 'Yes';
+        try {
+            Log::info('[DATAOBAT][BulkUpdate] start', [
+                'ip' => $request->ip(),
+                'user' => optional($request->user())->id,
+            ]);
+            Log::channel('daily')->info('[DATAOBAT][BulkUpdate] start', [
+                'ip' => $request->ip(),
+                'user' => optional($request->user())->id,
+            ]);
 
-        // Sumber persentase umum (jika mode umum)
-        $persenUmum = null;
-        if ($setharga === 'Umum') {
-            $persenUmum = DB::table('setpenjualanumum')->select(
-                'ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan'
+            $cfg = DB::table('set_harga_obat')->select('setharga', 'hargadasar', 'ppn')->first();
+            $setharga = $cfg->setharga ?? 'Umum';
+            $hargadasar = $cfg->hargadasar ?? 'Harga Beli';
+            $ppn = $cfg->ppn ?? 'Yes';
+
+            $fallbackUmum = DB::table('setpenjualanumum')->select(
+                'ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan'
             )->first();
-        }
+            if (! $fallbackUmum) {
+                $fallbackUmum = DB::table('set_harga_obat')->select(
+                    'ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan'
+                )->first();
+            }
+            if (! $fallbackUmum) {
+                $fallbackUmum = (object) [
+                    'ralan' => 20.0,
+                    'kelas1' => 20.0,
+                    'kelas2' => 20.0,
+                    'kelas3' => 20.0,
+                    'utama' => 20.0,
+                    'vip' => 20.0,
+                    'vvip' => 20.0,
+                    'beliluar' => 20.0,
+                    'jualbebas' => 20.0,
+                    'karyawan' => 20.0,
+                ];
+            }
 
-        // Ambil semua barang
-        $items = DB::table('databarang')->select([
-            'kode_brng','dasar','h_beli','kdjns'
-        ])->orderBy('kode_brng','asc')->get();
+            $persenUmum = $setharga === 'Umum' ? $fallbackUmum : null;
 
-        $updated = 0;
-        foreach ($items as $it) {
-            // Tentukan persentase per item sesuai mode
-            $persen = null;
-            if ($setharga === 'Umum') {
-                $persen = $persenUmum;
-            } elseif ($setharga === 'Per Jenis') {
-                if (!empty($it->kdjns)) {
-                    $persen = DB::table('setpenjualan')->select(
-                        'ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan'
-                    )->where('kdjns', $it->kdjns)->first();
+            $items = DB::table('databarang')->select([
+                'kode_brng', 'dasar', 'h_beli', 'kdjns',
+            ])->orderBy('kode_brng', 'asc')->get();
+
+            $updated = 0;
+            DB::transaction(function () use ($items, $setharga, $persenUmum, $fallbackUmum, $hargadasar, $ppn, &$updated) {
+                foreach ($items as $it) {
+                    $persen = null;
+                    if ($setharga === 'Umum') {
+                        $persen = $persenUmum;
+                    } elseif ($setharga === 'Per Jenis') {
+                        if (! empty($it->kdjns)) {
+                            $persen = DB::table('setpenjualan')->select(
+                                'ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan'
+                            )->where('kdjns', $it->kdjns)->first();
+                        }
+                        if (! $persen) {
+                            $persen = $fallbackUmum;
+                        }
+                    } elseif ($setharga === 'Per Barang') {
+                        $persen = DB::table('setpenjualanperbarang')->select(
+                            'ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan'
+                        )->where('kode_brng', $it->kode_brng)->first();
+                        if (! $persen) {
+                            $persen = $fallbackUmum;
+                        }
+                    }
+
+                    $ps = [
+                        'ralan' => (float) ($persen->ralan ?? 0),
+                        'kelas1' => (float) ($persen->kelas1 ?? 0),
+                        'kelas2' => (float) ($persen->kelas2 ?? 0),
+                        'kelas3' => (float) ($persen->kelas3 ?? 0),
+                        'utama' => (float) ($persen->utama ?? 0),
+                        'vip' => (float) ($persen->vip ?? 0),
+                        'vvip' => (float) ($persen->vvip ?? 0),
+                        'beliluar' => (float) ($persen->beliluar ?? 0),
+                        'jualbebas' => (float) ($persen->jualbebas ?? 0),
+                        'karyawan' => (float) ($persen->karyawan ?? 0),
+                    ];
+
+                    $base = 0.0;
+                    if ($hargadasar === 'Harga Beli') {
+                        $base = (float) ($it->h_beli ?? $it->dasar ?? 0);
+                    } else {
+                        $base = (float) ($it->dasar ?? $it->h_beli ?? 0);
+                    }
+
+                    $apply = function (float $b, float $percent) use ($ppn): float {
+                        $harga = $b * (1.0 + ($percent / 100.0));
+                        if ($ppn === 'Yes') {
+                            $harga *= 1.11;
+                        }
+                        return round($harga, 2);
+                    };
+
+                    $updates = [
+                        'ralan' => $apply($base, $ps['ralan']),
+                        'kelas1' => $apply($base, $ps['kelas1']),
+                        'kelas2' => $apply($base, $ps['kelas2']),
+                        'kelas3' => $apply($base, $ps['kelas3']),
+                        'utama' => $apply($base, $ps['utama']),
+                        'vip' => $apply($base, $ps['vip']),
+                        'vvip' => $apply($base, $ps['vvip']),
+                        'beliluar' => $apply($base, $ps['beliluar']),
+                        'jualbebas' => $apply($base, $ps['jualbebas']),
+                        'karyawan' => $apply($base, $ps['karyawan']),
+                    ];
+
+                    DB::table('databarang')->where('kode_brng', $it->kode_brng)->update($updates);
+                    $updated++;
                 }
-            } elseif ($setharga === 'Per Barang') {
-                $persen = DB::table('setpenjualanperbarang')->select(
-                    'ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan'
-                )->where('kode_brng', $it->kode_brng)->first();
+            });
+
+            Log::channel('daily')->info('[DATAOBAT][BulkUpdate] done', [
+                'updated' => $updated,
+            ]);
+            Log::info('[DATAOBAT][BulkUpdate] done', [
+                'updated' => $updated,
+            ]);
+
+            if ($request->headers->has('X-Inertia')) {
+                return redirect()->route('farmasi.data-obat')->with('success', "Harga jual berhasil diperbarui untuk {$updated} barang.")
+                    ->setStatusCode(303);
+            }
+            if ($request->wantsJson()) {
+                return response()->json(['success' => true, 'updated' => $updated]);
             }
 
-            // Fallback jika tidak ada persentase: gunakan 0% agar tidak mengubah harga
-            $ps = [
-                'ralan' => (float)($persen->ralan ?? 0),
-                'kelas1' => (float)($persen->kelas1 ?? 0),
-                'kelas2' => (float)($persen->kelas2 ?? 0),
-                'kelas3' => (float)($persen->kelas3 ?? 0),
-                'utama' => (float)($persen->utama ?? 0),
-                'vip' => (float)($persen->vip ?? 0),
-                'vvip' => (float)($persen->vvip ?? 0),
-                'beliluar' => (float)($persen->beliluar ?? 0),
-                'jualbebas' => (float)($persen->jualbebas ?? 0),
-                'karyawan' => (float)($persen->karyawan ?? 0),
-            ];
-
-            // Pilih harga dasar
-            $base = 0.0;
-            if ($hargadasar === 'Harga Beli') {
-                $base = (float)($it->h_beli ?? $it->dasar ?? 0);
-            } else {
-                // Harga Diskon: pakai kolom dasar sebagai fallback jika tidak ada kolom diskon terpisah
-                $base = (float)($it->dasar ?? $it->h_beli ?? 0);
+            return redirect()->route('farmasi.data-obat')->with('success', "Harga jual berhasil diperbarui untuk {$updated} barang.")
+                ->setStatusCode(303);
+        } catch (\Throwable $e) {
+            Log::error('[DATAOBAT][BulkUpdate] failed', [
+                'error' => $e->getMessage(),
+            ]);
+            Log::channel('daily')->error('[DATAOBAT][BulkUpdate] failed', [
+                'error' => $e->getMessage(),
+            ]);
+            if ($request->headers->has('X-Inertia')) {
+                return redirect()->route('farmasi.data-obat')->withErrors(['general' => 'Gagal memperbarui harga jual: '.$e->getMessage()])
+                    ->setStatusCode(303);
             }
-
-            // Hitung harga jual untuk setiap kunci
-            $apply = function (float $b, float $percent) use ($ppn): float {
-                $harga = $b * (1.0 + ($percent / 100.0));
-                if ($ppn === 'Yes') { $harga *= 1.11; }
-                // bulatkan 2 desimal
-                return round($harga, 2);
-            };
-
-            $updates = [
-                'ralan' => $apply($base, $ps['ralan']),
-                'kelas1' => $apply($base, $ps['kelas1']),
-                'kelas2' => $apply($base, $ps['kelas2']),
-                'kelas3' => $apply($base, $ps['kelas3']),
-                'utama' => $apply($base, $ps['utama']),
-                'vip' => $apply($base, $ps['vip']),
-                'vvip' => $apply($base, $ps['vvip']),
-                'beliluar' => $apply($base, $ps['beliluar']),
-                'jualbebas' => $apply($base, $ps['jualbebas']),
-                'karyawan' => $apply($base, $ps['karyawan']),
-            ];
-
-            DB::table('databarang')->where('kode_brng', $it->kode_brng)->update($updates);
-            $updated++;
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Bulk update gagal', 'error' => $e->getMessage()], 500);
+            }
+            return redirect()->route('farmasi.data-obat')->withErrors(['general' => 'Gagal memperbarui harga jual: '.$e->getMessage()])
+                ->setStatusCode(303);
         }
-
-        return back()->with('success', "Harga jual berhasil diperbarui untuk {$updated} barang.");
     }
 }

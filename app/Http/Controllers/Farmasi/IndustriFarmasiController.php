@@ -21,10 +21,10 @@ class IndustriFarmasiController extends Controller
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
                 $q->where('kode_industri', 'like', "%$search%")
-                  ->orWhere('nama_industri', 'like', "%$search%")
-                  ->orWhere('alamat', 'like', "%$search%")
-                  ->orWhere('kota', 'like', "%$search%")
-                  ->orWhere('no_telp', 'like', "%$search%");
+                    ->orWhere('nama_industri', 'like', "%$search%")
+                    ->orWhere('alamat', 'like', "%$search%")
+                    ->orWhere('kota', 'like', "%$search%")
+                    ->orWhere('no_telp', 'like', "%$search%");
             });
         }
 
@@ -116,6 +116,6 @@ class IndustriFarmasiController extends Controller
             $nextNumber = ((int) $m[1]) + 1;
         }
 
-        return 'I' . str_pad((string) $nextNumber, 4, '0', STR_PAD_LEFT);
+        return 'I'.str_pad((string) $nextNumber, 4, '0', STR_PAD_LEFT);
     }
 }

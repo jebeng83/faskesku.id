@@ -1,9 +1,73 @@
 import React, { useState, useEffect } from 'react';
-import { Head, Link, useForm, router } from '@inertiajs/react';
+import { Head, Link, useForm, router, usePage } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
+import SidebarRalan from '@/Layouts/SidebarRalan';
 
 export default function Create({ category = 'rawat-jalan', polikliniks, bangsals, penjaabs, kategoris }) {
+    const { url } = usePage();
+    
+    // Cek apakah category dari query parameter atau props
+    const urlParams = new URLSearchParams(url.split('?')[1] || '');
+    const categoryFromUrl = urlParams.get('category') || category;
+    
+    // Tentukan layout berdasarkan category
+    const useRalanLayout = categoryFromUrl === 'rawat-jalan';
+    
+    // State untuk modal kategori
+    const [showKategoriModal, setShowKategoriModal] = useState(false);
+    const [kategoriOptions, setKategoriOptions] = useState(
+        (kategoris || []).map((k) => ({
+            value: k.kd_kategori,
+            label: `${k.kd_kategori} - ${k.nm_kategori}`
+        }))
+    );
+
+    // Sinkronisasi kategoriOptions ketika kategoris berubah
+    useEffect(() => {
+        const newOptions = (kategoris || []).map((k) => ({
+            value: k.kd_kategori,
+            label: `${k.kd_kategori} - ${k.nm_kategori}`
+        }));
+        setKategoriOptions(newOptions);
+    }, [kategoris]);
+
+    // State untuk modal poliklinik
+    const [showPoliklinikModal, setShowPoliklinikModal] = useState(false);
+    const [poliklinikOptions, setPoliklinikOptions] = useState(
+        (polikliniks || []).map((p) => ({
+            value: p.kd_poli,
+            label: `${p.kd_poli} - ${p.nm_poli}`
+        }))
+    );
+
+    // Sinkronisasi poliklinikOptions ketika polikliniks berubah
+    useEffect(() => {
+        const newOptions = (polikliniks || []).map((p) => ({
+            value: p.kd_poli,
+            label: `${p.kd_poli} - ${p.nm_poli}`
+        }));
+        setPoliklinikOptions(newOptions);
+    }, [polikliniks]);
+
+    // State untuk modal penjab (Cara Bayar)
+    const [showPenjabModal, setShowPenjabModal] = useState(false);
+    const [penjabOptions, setPenjabOptions] = useState(
+        (penjaabs || []).map((p) => ({
+            value: p.kd_pj,
+            label: `${p.kd_pj} - ${p.png_jawab}`
+        }))
+    );
+
+    // Sinkronisasi penjabOptions ketika penjaabs berubah
+    useEffect(() => {
+        const newOptions = (penjaabs || []).map((p) => ({
+            value: p.kd_pj,
+            label: `${p.kd_pj} - ${p.png_jawab}`
+        }));
+        setPenjabOptions(newOptions);
+    }, [penjaabs]);
+    
     const { data, setData, post, processing, errors, reset } = useForm({
         kd_jenis_prw: '',
         nm_perawatan: '',
@@ -22,7 +86,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
         show_total_dokter: true,
         show_total_perawat: true,
         show_total_dokter_perawat: true,
-        category: category,
+        category: categoryFromUrl,
     });
 
     const [totals, setTotals] = useState({
@@ -33,12 +97,96 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
 
     const [focusedField, setFocusedField] = useState(null);
 
+    // Form untuk tambah Kategori Perawatan
+    const kategoriForm = useForm({
+        kd_kategori: '',
+        nm_kategori: '',
+    });
+
+    // Form untuk tambah Poliklinik
+    const poliklinikForm = useForm({
+        kd_poli: '',
+        nm_poli: '',
+        registrasi: '0',
+        registrasilama: '0',
+    });
+
+    // Form untuk tambah Penjab (Cara Bayar)
+    const penjabForm = useForm({
+        kd_pj: '',
+        png_jawab: '',
+        nama_perusahaan: '',
+        alamat_asuransi: '',
+        no_telp: '',
+        attn: '',
+    });
+
+    // Generate kode kategori otomatis saat modal dibuka
+    const generateKodeKategori = async () => {
+        try {
+            const response = await fetch(route('kategori-perawatan.generate-kode'));
+            const result = await response.json();
+            if (result.success && result.kode) {
+                kategoriForm.setData('kd_kategori', result.kode);
+            }
+        } catch (error) {
+            console.error('Error generating kategori code:', error);
+        }
+    };
+
+    // Generate kode otomatis saat modal dibuka
+    useEffect(() => {
+        if (showKategoriModal) {
+            generateKodeKategori();
+        }
+    }, [showKategoriModal]);
+
+    // Generate kode poliklinik otomatis saat modal dibuka
+    const generateKodePoliklinik = async () => {
+        try {
+            const response = await fetch(route('poliklinik.generate-kode'));
+            const result = await response.json();
+            if (result.success && result.kode) {
+                poliklinikForm.setData('kd_poli', result.kode);
+            }
+        } catch (error) {
+            console.error('Error generating poliklinik code:', error);
+        }
+    };
+
+    // Generate kode otomatis saat modal poliklinik dibuka
+    useEffect(() => {
+        if (showPoliklinikModal) {
+            generateKodePoliklinik();
+        }
+    }, [showPoliklinikModal]);
+
+    // Generate kode penjab otomatis saat modal dibuka
+    const generateKodePenjab = async () => {
+        try {
+            const response = await fetch(route('penjab.generate-kode'));
+            const result = await response.json();
+            if (result.success && result.kode) {
+                penjabForm.setData('kd_pj', result.kode);
+            }
+        } catch (error) {
+            console.error('Error generating penjab code:', error);
+        }
+    };
+
+    // Generate kode otomatis saat modal penjab dibuka
+    useEffect(() => {
+        if (showPenjabModal) {
+            generateKodePenjab();
+        }
+    }, [showPenjabModal]);
+
     // Auto-generate kode when kategori changes
     const generateAutoCode = async (kdKategori) => {
         if (!kdKategori) return;
         
         try {
-            const response = await fetch(route('daftar-tarif.generate-kode') + `?kd_kategori=${kdKategori}&category=${category}`);
+            const response = await fetch(route('daftar-tarif.generate-kode') + `?kd_kategori=${kdKategori}&category=${categoryFromUrl}`);
             const result = await response.json();
             if (result.success) {
                 setData('kd_jenis_prw', result.kode);
@@ -52,6 +200,168 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
     const handleKategoriChange = (value) => {
         setData('kd_kategori', value);
         generateAutoCode(value);
+    };
+
+    // Handler untuk submit popup Kategori Perawatan
+    const handleTambahKategori = (e) => {
+        e.preventDefault();
+        kategoriForm.post(route('kategori-perawatan.store'), {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: (page) => {
+                // Cek apakah ada data yang baru dibuat dari flash message
+                const createdData = page.props.flash?.kategoriPerawatanCreated;
+                if (createdData) {
+                    const newKode = createdData.kd_kategori;
+                    const newNama = createdData.nm_kategori;
+                    if (newKode) {
+                        // Set value ke form utama
+                        setData('kd_kategori', newKode);
+                        
+                        // Tambahkan ke options dropdown
+                        const newOption = {
+                            value: newKode,
+                            label: `${newKode} - ${newNama}`,
+                        };
+                        setKategoriOptions((prev) => {
+                            // Cek apakah sudah ada, jika belum tambahkan
+                            const exists = prev.find((opt) => opt.value === newKode);
+                            if (!exists) {
+                                return [...prev, newOption];
+                            }
+                            return prev;
+                        });
+                        
+                        // Generate kode otomatis setelah kategori dipilih
+                        generateAutoCode(newKode);
+                    }
+                }
+                
+                // Tutup modal dan reset form
+                setShowKategoriModal(false);
+                kategoriForm.reset();
+                kategoriForm.setData('kd_kategori', ''); // Reset kode setelah success (akan di-generate ulang saat modal dibuka)
+                
+                // Reload kategoris dari server untuk sinkronisasi
+                router.reload({
+                    only: ['kategoris'],
+                    preserveScroll: true,
+                    preserveState: true,
+                });
+            },
+            onError: () => {
+                // Tetap buka modal jika ada error agar user bisa melihat error
+                // Error akan otomatis ditampilkan oleh Inertia form
+            },
+        });
+    };
+
+    // Handler untuk submit popup Poliklinik
+    const handleTambahPoliklinik = (e) => {
+        e.preventDefault();
+        poliklinikForm.post(route('poliklinik.store'), {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: (page) => {
+                // Cek apakah ada data yang baru dibuat dari flash message
+                const createdData = page.props.flash?.poliklinikCreated;
+                if (createdData) {
+                    const newKode = createdData.kd_poli;
+                    const newNama = createdData.nm_poli;
+                    if (newKode) {
+                        // Set value ke form utama
+                        setData('kd_poli', newKode);
+                        
+                        // Tambahkan ke options dropdown
+                        const newOption = {
+                            value: newKode,
+                            label: `${newKode} - ${newNama}`,
+                        };
+                        setPoliklinikOptions((prev) => {
+                            // Cek apakah sudah ada, jika belum tambahkan
+                            const exists = prev.find((opt) => opt.value === newKode);
+                            if (!exists) {
+                                return [...prev, newOption];
+                            }
+                            return prev;
+                        });
+                    }
+                }
+                
+                // Tutup modal dan reset form
+                setShowPoliklinikModal(false);
+                poliklinikForm.reset();
+                poliklinikForm.setData('kd_poli', ''); // Reset kode setelah success (akan di-generate ulang saat modal dibuka)
+                poliklinikForm.setData('registrasi', '0');
+                poliklinikForm.setData('registrasilama', '0');
+                
+                // Reload polikliniks dari server untuk sinkronisasi
+                router.reload({
+                    only: ['polikliniks'],
+                    preserveScroll: true,
+                    preserveState: true,
+                });
+            },
+            onError: () => {
+                // Tetap buka modal jika ada error agar user bisa melihat error
+                // Error akan otomatis ditampilkan oleh Inertia form
+            },
+        });
+    };
+
+    // Handler untuk submit popup Penjab (Cara Bayar)
+    const handleTambahPenjab = (e) => {
+        e.preventDefault();
+        penjabForm.post(route('penjab.store'), {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: (page) => {
+                // Cek apakah ada data yang baru dibuat dari flash message
+                const createdData = page.props.flash?.penjabCreated;
+                if (createdData) {
+                    const newKode = createdData.kd_pj;
+                    const newNama = createdData.png_jawab;
+                    if (newKode) {
+                        // Set value ke form utama
+                        setData('kd_pj', newKode);
+                        
+                        // Tambahkan ke options dropdown
+                        const newOption = {
+                            value: newKode,
+                            label: `${newKode} - ${newNama}`,
+                        };
+                        setPenjabOptions((prev) => {
+                            // Cek apakah sudah ada, jika belum tambahkan
+                            const exists = prev.find((opt) => opt.value === newKode);
+                            if (!exists) {
+                                return [...prev, newOption];
+                            }
+                            return prev;
+                        });
+                    }
+                }
+                
+                // Tutup modal dan reset form
+                setShowPenjabModal(false);
+                penjabForm.reset();
+                penjabForm.setData('kd_pj', ''); // Reset kode setelah success (akan di-generate ulang saat modal dibuka)
+                penjabForm.setData('nama_perusahaan', '');
+                penjabForm.setData('alamat_asuransi', '');
+                penjabForm.setData('no_telp', '');
+                penjabForm.setData('attn', '');
+                
+                // Reload penjaabs dari server untuk sinkronisasi
+                router.reload({
+                    only: ['penjaabs'],
+                    preserveScroll: true,
+                    preserveState: true,
+                });
+            },
+            onError: () => {
+                // Tetap buka modal jika ada error agar user bisa melihat error
+                // Error akan otomatis ditampilkan oleh Inertia form
+            },
+        });
     };
 
     // Handle numeric input with proper zero handling
@@ -125,7 +435,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
         e.preventDefault();
         
         // Validasi form sebelum submit
-        if (category === 'rawat-inap') {
+        if (categoryFromUrl === 'rawat-inap') {
             if (!data.kd_jenis_prw || !data.nm_perawatan || !data.kd_bangsal || !data.kelas || !data.kd_pj) {
                 alert('Mohon lengkapi semua field yang wajib diisi (bertanda *)');
                 return;
@@ -138,7 +448,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
         }
         
         // Tentukan endpoint berdasarkan kategori
-        const endpoint = category === 'rawat-inap' 
+        const endpoint = categoryFromUrl === 'rawat-inap' 
             ? route('daftar-tarif.store-rawat-inap')
             : route('daftar-tarif.store');
         
@@ -206,7 +516,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
 
     // Dynamic title and description based on category
     const getCategoryTitle = () => {
-        switch(category) {
+        switch(categoryFromUrl) {
             case 'rawat-inap':
                 return 'Tambah Tarif Rawat Inap';
             case 'rawat-jalan':
@@ -223,7 +533,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
     };
 
     const getCategoryDescription = () => {
-        switch(category) {
+        switch(categoryFromUrl) {
             case 'rawat-inap':
                 return 'Isi form di bawah untuk menambahkan tarif rawat inap baru';
             case 'rawat-jalan':
@@ -239,19 +549,13 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
         }
     };
 
-    return (
-        <AppLayout
-            title={getCategoryTitle()}
-            renderHeader={() => (
-                <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                    {getCategoryTitle()}
-                </h2>
-            )}
-        >
+    // Content yang akan di-render
+    const content = (
+        <>
             <Head title={getCategoryTitle()} />
 
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            <div className={useRalanLayout ? "" : "py-12"}>
+                <div className={useRalanLayout ? "space-y-6" : "max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6"}>
                     {/* Header */}
                     <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
@@ -265,7 +569,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                     </p>
                                 </div>
                                 <Link
-                                    href={route('daftar-tarif.index', { category: category })}
+                                    href={route('daftar-tarif.index', { category: categoryFromUrl })}
                                     className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 shadow-lg"
                                 >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -289,28 +593,51 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     {/* Left Column */}
                                     <div className="space-y-4">
-                                        {/* Kategori */}
+                                        {/* Kategori: Dropdown dengan Popup */}
                                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
                                             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                                 Kategori <span className="text-red-500">*</span>
                                             </label>
                                             <div className="md:col-span-3">
-                                                <select
-                                                    value={data.kd_kategori}
-                                                    onChange={(e) => {
-                                                        setData('kd_kategori', e.target.value);
-                                                        generateAutoCode(e.target.value, category);
-                                                    }}
-                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
-                                                    required
-                                                >
-                                                    <option value="">Pilih Kategori</option>
-                                                    {kategoris.map((kategori) => (
-                                                        <option key={kategori.kd_kategori} value={kategori.kd_kategori}>
-                                                            {kategori.nm_kategori}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                <div className="flex gap-2">
+                                                    <div className="flex-1">
+                                                        <select
+                                                            value={data.kd_kategori}
+                                                            onChange={(e) => {
+                                                                setData('kd_kategori', e.target.value);
+                                                                generateAutoCode(e.target.value);
+                                                            }}
+                                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                                            required
+                                                        >
+                                                            <option value="">Pilih Kategori</option>
+                                                            {kategoriOptions.map((kategori) => (
+                                                                <option key={kategori.value} value={kategori.value}>
+                                                                    {kategori.label}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowKategoriModal(true)}
+                                                        className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                                                        title="Tambah Kategori Perawatan Baru"
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            viewBox="0 0 24 24"
+                                                            fill="currentColor"
+                                                            className="w-5 h-5"
+                                                        >
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+                                                                clipRule="evenodd"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                </div>
                                                 {errors.kd_kategori && (
                                                     <p className="mt-1 text-sm text-red-600">{errors.kd_kategori}</p>
                                                 )}
@@ -361,7 +688,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                     {/* Right Column */}
                                     <div className="space-y-4">
                                         {/* Bangsal (untuk rawat-inap) */}
-                                        {category === 'rawat-inap' && (
+                                        {categoryFromUrl === 'rawat-inap' && (
                                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
                                                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                                     Bangsal <span className="text-red-500">*</span>
@@ -387,26 +714,49 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                             </div>
                                         )}
 
-                                        {/* Poliklinik (untuk rawat-jalan) */}
-                                        {category === 'rawat-jalan' && (
+                                        {/* Poliklinik (untuk rawat-jalan): Dropdown dengan Popup */}
+                                        {categoryFromUrl === 'rawat-jalan' && (
                                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
                                                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                                     Poliklinik <span className="text-red-500">*</span>
                                                 </label>
                                                 <div className="md:col-span-3">
-                                                    <select
-                                                        value={data.kd_poli}
-                                                        onChange={(e) => setData('kd_poli', e.target.value)}
-                                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
-                                                        required
-                                                    >
-                                                        <option value="">Pilih Poliklinik</option>
-                                                        {polikliniks.map((poli) => (
-                                                            <option key={poli.kd_poli} value={poli.kd_poli}>
-                                                                {poli.kd_poli} - {poli.nm_poli}
-                                                            </option>
-                                                        ))}
-                                                    </select>
+                                                    <div className="flex gap-2">
+                                                        <div className="flex-1">
+                                                            <select
+                                                                value={data.kd_poli}
+                                                                onChange={(e) => setData('kd_poli', e.target.value)}
+                                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                                                required
+                                                            >
+                                                                <option value="">Pilih Poliklinik</option>
+                                                                {poliklinikOptions.map((poli) => (
+                                                                    <option key={poli.value} value={poli.value}>
+                                                                        {poli.label}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setShowPoliklinikModal(true)}
+                                                            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                                                            title="Tambah Poliklinik Baru"
+                                                        >
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 24 24"
+                                                                fill="currentColor"
+                                                                className="w-5 h-5"
+                                                            >
+                                                                <path
+                                                                    fillRule="evenodd"
+                                                                    d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+                                                                    clipRule="evenodd"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
                                                     {errors.kd_poli && (
                                                         <p className="mt-1 text-sm text-red-600">{errors.kd_poli}</p>
                                                     )}
@@ -414,25 +764,48 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                             </div>
                                         )}
 
-                                        {/* Cara Bayar */}
+                                        {/* Cara Bayar: Dropdown dengan Popup */}
                                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
                                             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                                 Cara Bayar <span className="text-red-500">*</span>
                                             </label>
                                             <div className="md:col-span-3">
-                                                <select
-                                                    value={data.kd_pj}
-                                                    onChange={(e) => setData('kd_pj', e.target.value)}
-                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
-                                                    required
-                                                >
-                                                    <option value="">Pilih Cara Bayar</option>
-                                                    {penjaabs.map((penjab) => (
-                                                        <option key={penjab.kd_pj} value={penjab.kd_pj}>
-                                                            {penjab.kd_pj} - {penjab.png_jawab}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                <div className="flex gap-2">
+                                                    <div className="flex-1">
+                                                        <select
+                                                            value={data.kd_pj}
+                                                            onChange={(e) => setData('kd_pj', e.target.value)}
+                                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                                            required
+                                                        >
+                                                            <option value="">Pilih Cara Bayar</option>
+                                                            {penjabOptions.map((penjab) => (
+                                                                <option key={penjab.value} value={penjab.value}>
+                                                                    {penjab.label}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowPenjabModal(true)}
+                                                        className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                                                        title="Tambah Cara Bayar Baru"
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            viewBox="0 0 24 24"
+                                                            fill="currentColor"
+                                                            className="w-5 h-5"
+                                                        >
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+                                                                clipRule="evenodd"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                </div>
                                                 {errors.kd_pj && (
                                                     <p className="mt-1 text-sm text-red-600">{errors.kd_pj}</p>
                                                 )}
@@ -440,7 +813,7 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                                         </div>
 
                                         {/* Kelas (khusus rawat-inap) */}
-                                        {category === 'rawat-inap' && (
+                                        {categoryFromUrl === 'rawat-inap' && (
                                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
                                                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                                     Kelas <span className="text-red-500">*</span>
@@ -736,6 +1109,557 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
                     </form>
                 </div>
             </div>
+
+            {/* Modal Tambah Kategori Perawatan */}
+            {showKategoriModal && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 border border-gray-200 dark:border-gray-700">
+                        <div className="p-6">
+                            {/* Header */}
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    Tambah Kategori Perawatan Baru
+                                </h3>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowKategoriModal(false);
+                                        kategoriForm.reset();
+                                        kategoriForm.setData('kd_kategori', ''); // Reset kode saat modal ditutup
+                                    }}
+                                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        className="w-6 h-6"
+                                    >
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            {/* Form */}
+                            <form onSubmit={handleTambahKategori} className="space-y-4">
+                                {/* Kode Kategori */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Kode Kategori *
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={kategoriForm.data.kd_kategori}
+                                            onChange={(e) => kategoriForm.setData("kd_kategori", e.target.value)}
+                                            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            placeholder="Kode akan dibuat otomatis"
+                                            maxLength="5"
+                                            required
+                                            readOnly
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={generateKodeKategori}
+                                            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                                            title="Generate Kode Baru"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                className="w-5 h-5"
+                                            >
+                                                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0118.8-4.3M22 12.5a10 10 0 01-18.8 4.2" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    {kategoriForm.errors.kd_kategori && (
+                                        <p className="mt-1 text-sm text-red-600">
+                                            {kategoriForm.errors.kd_kategori}
+                                        </p>
+                                    )}
+                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        Kode akan dibuat otomatis dengan format KPXXX (contoh: KP001, KP002)
+                                    </p>
+                                </div>
+
+                                {/* Nama Kategori */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Nama Kategori *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={kategoriForm.data.nm_kategori}
+                                        onChange={(e) => kategoriForm.setData("nm_kategori", e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                        placeholder="Masukkan nama kategori (max 30 karakter)"
+                                        maxLength="30"
+                                        required
+                                    />
+                                    {kategoriForm.errors.nm_kategori && (
+                                        <p className="mt-1 text-sm text-red-600">
+                                            {kategoriForm.errors.nm_kategori}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Actions */}
+                                <div className="flex justify-end gap-3 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowKategoriModal(false);
+                                            kategoriForm.reset();
+                                            kategoriForm.setData('kd_kategori', ''); // Reset kode saat modal ditutup
+                                        }}
+                                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                    >
+                                        Batal
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={kategoriForm.processing}
+                                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
+                                    >
+                                        {kategoriForm.processing ? "Menyimpan..." : "Simpan"}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Tambah Poliklinik */}
+            {showPoliklinikModal && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 border border-gray-200 dark:border-gray-700">
+                        <div className="p-6">
+                            {/* Header */}
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    Tambah Poliklinik Baru
+                                </h3>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowPoliklinikModal(false);
+                                        poliklinikForm.reset();
+                                        poliklinikForm.setData('kd_poli', ''); // Reset kode saat modal ditutup
+                                        poliklinikForm.setData('registrasi', '0');
+                                        poliklinikForm.setData('registrasilama', '0');
+                                    }}
+                                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        className="w-6 h-6"
+                                    >
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            {/* Form */}
+                            <form onSubmit={handleTambahPoliklinik} className="space-y-4">
+                                {/* Kode Poliklinik */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Kode Poliklinik *
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={poliklinikForm.data.kd_poli}
+                                            onChange={(e) => poliklinikForm.setData("kd_poli", e.target.value)}
+                                            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            placeholder="Kode akan dibuat otomatis"
+                                            maxLength="5"
+                                            required
+                                            readOnly
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={generateKodePoliklinik}
+                                            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                                            title="Generate Kode Baru"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                className="w-5 h-5"
+                                            >
+                                                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0118.8-4.3M22 12.5a10 10 0 01-18.8 4.2" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    {poliklinikForm.errors.kd_poli && (
+                                        <p className="mt-1 text-sm text-red-600">
+                                            {poliklinikForm.errors.kd_poli}
+                                        </p>
+                                    )}
+                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        Kode akan dibuat otomatis dengan format UXXXX (contoh: U0001, U0002)
+                                    </p>
+                                </div>
+
+                                {/* Nama Poliklinik */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Nama Poliklinik *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={poliklinikForm.data.nm_poli}
+                                        onChange={(e) => poliklinikForm.setData("nm_poli", e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                        placeholder="Masukkan nama poliklinik (max 50 karakter)"
+                                        maxLength="50"
+                                        required
+                                    />
+                                    {poliklinikForm.errors.nm_poli && (
+                                        <p className="mt-1 text-sm text-red-600">
+                                            {poliklinikForm.errors.nm_poli}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Tarif Registrasi */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Tarif Registrasi *
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={poliklinikForm.data.registrasi}
+                                        onChange={(e) => poliklinikForm.setData("registrasi", e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                        placeholder="Masukkan tarif registrasi"
+                                        min="0"
+                                        step="0.01"
+                                        required
+                                    />
+                                    {poliklinikForm.errors.registrasi && (
+                                        <p className="mt-1 text-sm text-red-600">
+                                            {poliklinikForm.errors.registrasi}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Tarif Registrasi Lama */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Tarif Registrasi Lama *
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={poliklinikForm.data.registrasilama}
+                                        onChange={(e) => poliklinikForm.setData("registrasilama", e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                        placeholder="Masukkan tarif registrasi lama"
+                                        min="0"
+                                        step="0.01"
+                                        required
+                                    />
+                                    {poliklinikForm.errors.registrasilama && (
+                                        <p className="mt-1 text-sm text-red-600">
+                                            {poliklinikForm.errors.registrasilama}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Actions */}
+                                <div className="flex justify-end gap-3 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowPoliklinikModal(false);
+                                            poliklinikForm.reset();
+                                            poliklinikForm.setData('kd_poli', ''); // Reset kode saat modal ditutup
+                                            poliklinikForm.setData('registrasi', '0');
+                                            poliklinikForm.setData('registrasilama', '0');
+                                        }}
+                                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                    >
+                                        Batal
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={poliklinikForm.processing}
+                                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
+                                    >
+                                        {poliklinikForm.processing ? "Menyimpan..." : "Simpan"}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Tambah Penjab (Cara Bayar) */}
+            {showPenjabModal && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 border border-gray-200 dark:border-gray-700 max-h-[90vh] overflow-y-auto">
+                        <div className="p-6">
+                            {/* Header */}
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    Tambah Cara Bayar Baru
+                                </h3>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowPenjabModal(false);
+                                        penjabForm.reset();
+                                        penjabForm.setData('kd_pj', ''); // Reset kode saat modal ditutup
+                                        penjabForm.setData('nama_perusahaan', '');
+                                        penjabForm.setData('alamat_asuransi', '');
+                                        penjabForm.setData('no_telp', '');
+                                        penjabForm.setData('attn', '');
+                                    }}
+                                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        className="w-6 h-6"
+                                    >
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            {/* Form */}
+                            <form onSubmit={handleTambahPenjab} className="space-y-4">
+                                {/* Kode Penjab */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Kode Cara Bayar *
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={penjabForm.data.kd_pj}
+                                            onChange={(e) => penjabForm.setData("kd_pj", e.target.value)}
+                                            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                            placeholder="Kode akan dibuat otomatis"
+                                            maxLength="3"
+                                            required
+                                            readOnly
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={generateKodePenjab}
+                                            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                                            title="Generate Kode Baru"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                className="w-5 h-5"
+                                            >
+                                                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0118.8-4.3M22 12.5a10 10 0 01-18.8 4.2" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    {penjabForm.errors.kd_pj && (
+                                        <p className="mt-1 text-sm text-red-600">
+                                            {penjabForm.errors.kd_pj}
+                                        </p>
+                                    )}
+                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        Kode akan dibuat otomatis dengan format AXX (contoh: A01, A02, A60)
+                                    </p>
+                                </div>
+
+                                {/* Nama Penjamin */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Nama Penjamin *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={penjabForm.data.png_jawab}
+                                        onChange={(e) => penjabForm.setData("png_jawab", e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                        placeholder="Masukkan nama penjamin (max 30 karakter)"
+                                        maxLength="30"
+                                        required
+                                    />
+                                    {penjabForm.errors.png_jawab && (
+                                        <p className="mt-1 text-sm text-red-600">
+                                            {penjabForm.errors.png_jawab}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Nama Perusahaan */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Nama Perusahaan
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={penjabForm.data.nama_perusahaan}
+                                        onChange={(e) => penjabForm.setData("nama_perusahaan", e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                        placeholder="Masukkan nama perusahaan (max 60 karakter)"
+                                        maxLength="60"
+                                    />
+                                    {penjabForm.errors.nama_perusahaan && (
+                                        <p className="mt-1 text-sm text-red-600">
+                                            {penjabForm.errors.nama_perusahaan}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Alamat Asuransi */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Alamat Asuransi
+                                    </label>
+                                    <textarea
+                                        value={penjabForm.data.alamat_asuransi}
+                                        onChange={(e) => penjabForm.setData("alamat_asuransi", e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white resize-none"
+                                        placeholder="Masukkan alamat asuransi (max 130 karakter)"
+                                        maxLength="130"
+                                        rows="3"
+                                    />
+                                    {penjabForm.errors.alamat_asuransi && (
+                                        <p className="mt-1 text-sm text-red-600">
+                                            {penjabForm.errors.alamat_asuransi}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* No Telp */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        No Telp
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={penjabForm.data.no_telp}
+                                        onChange={(e) => penjabForm.setData("no_telp", e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                        placeholder="Masukkan no telp (max 40 karakter)"
+                                        maxLength="40"
+                                    />
+                                    {penjabForm.errors.no_telp && (
+                                        <p className="mt-1 text-sm text-red-600">
+                                            {penjabForm.errors.no_telp}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Attn */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Attn
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={penjabForm.data.attn}
+                                        onChange={(e) => penjabForm.setData("attn", e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                        placeholder="Masukkan attn (max 60 karakter)"
+                                        maxLength="60"
+                                    />
+                                    {penjabForm.errors.attn && (
+                                        <p className="mt-1 text-sm text-red-600">
+                                            {penjabForm.errors.attn}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Actions */}
+                                <div className="flex justify-end gap-3 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowPenjabModal(false);
+                                            penjabForm.reset();
+                                            penjabForm.setData('kd_pj', ''); // Reset kode saat modal ditutup
+                                            penjabForm.setData('nama_perusahaan', '');
+                                            penjabForm.setData('alamat_asuransi', '');
+                                            penjabForm.setData('no_telp', '');
+                                            penjabForm.setData('attn', '');
+                                        }}
+                                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                    >
+                                        Batal
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={penjabForm.processing}
+                                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors"
+                                    >
+                                        {penjabForm.processing ? "Menyimpan..." : "Simpan"}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
+    );
+
+    // Return dengan layout yang sesuai
+    if (useRalanLayout) {
+        return (
+            <SidebarRalan title="Rawat Jalan">
+                {content}
+            </SidebarRalan>
+        );
+    }
+
+    return (
+        <AppLayout
+            title={getCategoryTitle()}
+            renderHeader={() => (
+                <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                    {getCategoryTitle()}
+                </h2>
+            )}
+        >
+            {content}
         </AppLayout>
     );
 }

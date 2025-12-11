@@ -1,6 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
+import cetak from './cetak'
 /**
-* @see routes/web.php:320
+* @see routes/web.php:716
 * @route '/farmasi/farmasi/data-opname'
 */
 export const dataOpname = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +15,7 @@ dataOpname.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:320
+* @see routes/web.php:716
 * @route '/farmasi/farmasi/data-opname'
 */
 dataOpname.url = (options?: RouteQueryOptions) => {
@@ -22,7 +23,7 @@ dataOpname.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:320
+* @see routes/web.php:716
 * @route '/farmasi/farmasi/data-opname'
 */
 dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +32,7 @@ dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:320
+* @see routes/web.php:716
 * @route '/farmasi/farmasi/data-opname'
 */
 dataOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -41,6 +42,7 @@ dataOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 const farmasi = {
     dataOpname: Object.assign(dataOpname, dataOpname),
+    cetak: Object.assign(cetak, cetak),
 }
 
 export default farmasi

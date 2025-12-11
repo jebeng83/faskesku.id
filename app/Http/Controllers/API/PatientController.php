@@ -32,7 +32,7 @@ class PatientController extends Controller
                 'data' => [
                     'columns' => $columns,
                     'foreign_keys' => $fks,
-                ]
+                ],
             ]);
         } catch (\Throwable $e) {
             return response()->json([

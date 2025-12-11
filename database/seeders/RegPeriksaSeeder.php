@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\RegPeriksa;
-use App\Models\Patient;
 use App\Models\Doctor;
-use App\Models\Poli;
+use App\Models\Patient;
+use App\Models\Poliklinik;
+use App\Models\RegPeriksa;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class RegPeriksaSeeder extends Seeder
 {
@@ -32,7 +32,7 @@ class RegPeriksaSeeder extends Seeder
                 'kd_sps' => 'SP001',
                 'alumni' => 'Universitas Indonesia',
                 'no_ijn_praktek' => 'IJN001',
-                'status' => 'Aktif',
+                'status' => '1',
             ]
         );
 
@@ -51,35 +51,32 @@ class RegPeriksaSeeder extends Seeder
                 'kd_sps' => 'SP002',
                 'alumni' => 'Universitas Padjadjaran',
                 'no_ijn_praktek' => 'IJN002',
-                'status' => 'Aktif',
+                'status' => '1',
             ]
         );
 
         // Buat data poli contoh
-        $poli1 = Poli::firstOrCreate(
+        $poli1 = Poliklinik::firstOrCreate(
             ['kd_poli' => 'P001'],
             [
                 'nm_poli' => 'Poli Umum',
-                'lantai' => '1',
-                'status' => 'Aktif',
+                'status' => '1',
             ]
         );
 
-        $poli2 = Poli::firstOrCreate(
+        $poli2 = Poliklinik::firstOrCreate(
             ['kd_poli' => 'P002'],
             [
                 'nm_poli' => 'Poli Anak',
-                'lantai' => '2',
-                'status' => 'Aktif',
+                'status' => '1',
             ]
         );
 
-        $poli3 = Poli::firstOrCreate(
+        $poli3 = Poliklinik::firstOrCreate(
             ['kd_poli' => 'P003'],
             [
                 'nm_poli' => 'Poli Kandungan',
-                'lantai' => '2',
-                'status' => 'Aktif',
+                'status' => '1',
             ]
         );
 
@@ -88,14 +85,14 @@ class RegPeriksaSeeder extends Seeder
             ['no_rkm_medis' => 'P001'],
             [
                 'no_ktp' => '1234567890123456',
-                'nama' => 'John Doe',
-                'jenis_kelamin' => 'L',
-                'tempat_lahir' => 'Jakarta',
-                'tanggal_lahir' => '1990-01-15',
+                'nm_pasien' => 'John Doe',
+                'jk' => 'L',
+                'tmp_lahir' => 'Jakarta',
+                'tgl_lahir' => '1990-01-15',
                 'alamat' => 'Jl. Merdeka No. 123',
-                'no_telepon' => '081234567890',
+                'no_tlp' => '081234567890',
                 'agama' => 'Islam',
-                'status_perkawinan' => 'Belum Menikah',
+                'stts_nikah' => 'BELUM MENIKAH',
                 'pekerjaan' => 'Karyawan',
             ]
         );
@@ -104,14 +101,14 @@ class RegPeriksaSeeder extends Seeder
             ['no_rkm_medis' => 'P002'],
             [
                 'no_ktp' => '1234567890123457',
-                'nama' => 'Jane Smith',
-                'jenis_kelamin' => 'P',
-                'tempat_lahir' => 'Bandung',
-                'tanggal_lahir' => '1985-03-20',
+                'nm_pasien' => 'Jane Smith',
+                'jk' => 'P',
+                'tmp_lahir' => 'Bandung',
+                'tgl_lahir' => '1985-03-20',
                 'alamat' => 'Jl. Asia Afrika No. 456',
-                'no_telepon' => '081234567891',
+                'no_tlp' => '081234567891',
                 'agama' => 'Kristen',
-                'status_perkawinan' => 'Menikah',
+                'stts_nikah' => 'MENIKAH',
                 'pekerjaan' => 'Ibu Rumah Tangga',
             ]
         );
@@ -120,14 +117,14 @@ class RegPeriksaSeeder extends Seeder
             ['no_rkm_medis' => 'P003'],
             [
                 'no_ktp' => '1234567890123458',
-                'nama' => 'Ahmad Rahman',
-                'jenis_kelamin' => 'L',
-                'tempat_lahir' => 'Surabaya',
-                'tanggal_lahir' => '2020-06-10',
+                'nm_pasien' => 'Ahmad Rahman',
+                'jk' => 'L',
+                'tmp_lahir' => 'Surabaya',
+                'tgl_lahir' => '2020-06-10',
                 'alamat' => 'Jl. Tunjungan No. 789',
-                'no_telepon' => '081234567892',
+                'no_tlp' => '081234567892',
                 'agama' => 'Islam',
-                'status_perkawinan' => 'Belum Menikah',
+                'stts_nikah' => 'BELUM MENIKAH',
                 'pekerjaan' => 'Pelajar',
             ]
         );

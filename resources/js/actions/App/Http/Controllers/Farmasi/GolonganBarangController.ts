@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::store
-* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:69
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:71
 * @route '/farmasi/golongan-obat'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +60,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::store
-* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:69
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:71
 * @route '/farmasi/golongan-obat'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::store
-* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:69
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:71
 * @route '/farmasi/golongan-obat'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -79,7 +79,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::update
-* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:93
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:95
 * @route '/farmasi/golongan-obat/{kode}'
 */
 const update5d5ddc07ce99cf488fa979e1b897548f = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -94,7 +94,7 @@ update5d5ddc07ce99cf488fa979e1b897548f.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::update
-* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:93
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:95
 * @route '/farmasi/golongan-obat/{kode}'
 */
 update5d5ddc07ce99cf488fa979e1b897548f.url = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -121,7 +121,7 @@ update5d5ddc07ce99cf488fa979e1b897548f.url = (args: { kode: string | number } | 
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::update
-* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:93
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:95
 * @route '/farmasi/golongan-obat/{kode}'
 */
 update5d5ddc07ce99cf488fa979e1b897548f.put = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -131,7 +131,7 @@ update5d5ddc07ce99cf488fa979e1b897548f.put = (args: { kode: string | number } | 
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::update
-* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:93
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:95
 * @route '/farmasi/golongan-obat/{kode}'
 */
 const update5d5ddc07ce99cf488fa979e1b897548f = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -146,7 +146,7 @@ update5d5ddc07ce99cf488fa979e1b897548f.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::update
-* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:93
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:95
 * @route '/farmasi/golongan-obat/{kode}'
 */
 update5d5ddc07ce99cf488fa979e1b897548f.url = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -173,7 +173,7 @@ update5d5ddc07ce99cf488fa979e1b897548f.url = (args: { kode: string | number } | 
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::update
-* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:93
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:95
 * @route '/farmasi/golongan-obat/{kode}'
 */
 update5d5ddc07ce99cf488fa979e1b897548f.patch = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -188,7 +188,7 @@ export const update = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::destroy
-* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:114
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:116
 * @route '/farmasi/golongan-obat/{kode}'
 */
 export const destroy = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -203,7 +203,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::destroy
-* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:114
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:116
 * @route '/farmasi/golongan-obat/{kode}'
 */
 destroy.url = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -230,7 +230,7 @@ destroy.url = (args: { kode: string | number } | [kode: string | number ] | stri
 
 /**
 * @see \App\Http\Controllers\Farmasi\GolonganBarangController::destroy
-* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:114
+* @see app/Http/Controllers/Farmasi/GolonganBarangController.php:116
 * @route '/farmasi/golongan-obat/{kode}'
 */
 destroy.delete = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

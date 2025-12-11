@@ -3,22 +3,22 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Collection;
-use App\Models\Poliklinik;
-use App\Models\Bangsal;
-use App\Models\SetLokasi;
 
 class SetDepoRalan extends Model
 {
     protected $table = 'set_depo_ralan';
+
     protected $primaryKey = ['kd_poli', 'kd_bangsal'];
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [
         'kd_poli',
-        'kd_bangsal'
+        'kd_bangsal',
     ];
 
     // Override getKeyName untuk composite key
@@ -35,6 +35,7 @@ class SetDepoRalan extends Model
         foreach ($keyNames as $keyName) {
             $key[$keyName] = $this->getAttribute($keyName);
         }
+
         return $key;
     }
 
@@ -45,6 +46,7 @@ class SetDepoRalan extends Model
         foreach ($keyNames as $keyName) {
             $query->where($keyName, '=', $this->getAttribute($keyName));
         }
+
         return $query;
     }
 
@@ -75,12 +77,12 @@ class SetDepoRalan extends Model
         $bangsalCodes = self::where('kd_poli', $kdPoli)
             ->pluck('kd_bangsal')
             ->toArray();
-        
+
         // If no bangsal found in set_depo_ralan, fallback to set_lokasi
         if (empty($bangsalCodes)) {
             $bangsalCodes = SetLokasi::getAllBangsal();
         }
-        
+
         return $bangsalCodes;
     }
 
@@ -92,12 +94,12 @@ class SetDepoRalan extends Model
     {
         $bangsalCode = self::where('kd_poli', $kdPoli)
             ->value('kd_bangsal');
-        
+
         // If no bangsal found in set_depo_ralan, fallback to set_lokasi
-        if (!$bangsalCode) {
+        if (! $bangsalCode) {
             $bangsalCode = SetLokasi::getFirstBangsal();
         }
-        
+
         return $bangsalCode;
     }
 }

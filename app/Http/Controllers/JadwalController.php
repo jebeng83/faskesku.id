@@ -25,12 +25,14 @@ class JadwalController extends Controller
     {
         try {
             // SHOW FULL COLUMNS memberikan kolom komentar juga bila ada
-            $columns = DB::select("SHOW FULL COLUMNS FROM jadwal");
+            $columns = DB::select('SHOW FULL COLUMNS FROM jadwal');
+
             return response()->json([
                 'columns' => $columns,
             ]);
         } catch (\Throwable $e) {
-            Log::error('Describe jadwal failed: ' . $e->getMessage());
+            Log::error('Describe jadwal failed: '.$e->getMessage());
+
             return response()->json([
                 'message' => 'Gagal mengambil struktur tabel jadwal',
                 'error' => $e->getMessage(),
@@ -55,17 +57,19 @@ class JadwalController extends Controller
             // COLUMN_TYPE bentuknya: enum('SENIN','SELASA','RABU','KAMIS','JUMAT','SABTU','AKHAD')
             $values = [];
             if (str_starts_with($enum, 'enum(')) {
-                $trimmed = trim($enum, "enum()");
+                $trimmed = trim($enum, 'enum()');
                 // Split by comma while stripping single quotes
                 $values = array_map(function ($v) {
                     return trim($v, "' ");
                 }, explode(',', $trimmed));
             }
+
             return response()->json(['data' => $values]);
         } catch (\Throwable $e) {
-            Log::error('Get hari_kerja enum failed: ' . $e->getMessage());
+            Log::error('Get hari_kerja enum failed: '.$e->getMessage());
+
             // Fallback static jika gagal, mengikuti struktur umum
-            return response()->json(['data' => ['SENIN','SELASA','RABU','KAMIS','JUMAT','SABTU','AKHAD']]);
+            return response()->json(['data' => ['SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU', 'AKHAD']]);
         }
     }
 
@@ -93,7 +97,7 @@ class JadwalController extends Controller
             ->orderBy('j.jam_mulai');
 
         if ($q !== '') {
-            $like = '%' . $q . '%';
+            $like = '%'.$q.'%';
             $query->where(function ($w) use ($like) {
                 $w->where('j.kd_dokter', 'like', $like)
                     ->orWhere('d.nm_dokter', 'like', $like)
@@ -139,15 +143,15 @@ class JadwalController extends Controller
         // Cek validitas dokter & poli
         $dokterExists = DB::table('dokter')->where('kd_dokter', $validated['kd_dokter'])->exists();
         $poliExists = DB::table('poliklinik')->where('kd_poli', $validated['kd_poli'])->exists();
-        if (!$dokterExists || !$poliExists) {
+        if (! $dokterExists || ! $poliExists) {
             return response()->json([
                 'message' => 'Kode dokter atau kode poliklinik tidak ditemukan',
             ], 422);
         }
 
         // Normalisasi waktu ke HH:MM:SS
-        $jm = $validated['jam_mulai'] . ':00';
-        $js = $validated['jam_selesai'] . ':00';
+        $jm = $validated['jam_mulai'].':00';
+        $js = $validated['jam_selesai'].':00';
 
         // Cegah duplikasi berdasarkan composite key (kd_dokter, hari_kerja, jam_mulai)
         $exists = DB::table('jadwal')
@@ -203,7 +207,7 @@ class JadwalController extends Controller
         // Cek validitas dokter & poli
         $dokterExists = DB::table('dokter')->where('kd_dokter', $validated['kd_dokter'])->exists();
         $poliExists = DB::table('poliklinik')->where('kd_poli', $validated['kd_poli'])->exists();
-        if (!$dokterExists || !$poliExists) {
+        if (! $dokterExists || ! $poliExists) {
             return response()->json([
                 'message' => 'Kode dokter atau kode poliklinik tidak ditemukan',
             ], 422);
@@ -214,8 +218,8 @@ class JadwalController extends Controller
         if (preg_match('/^\d{2}:\d{2}$/', $oldJamMulai)) {
             $oldJamMulai .= ':00';
         }
-        $newJamMulai = $validated['jam_mulai'] . ':00';
-        $newJamSelesai = $validated['jam_selesai'] . ':00';
+        $newJamMulai = $validated['jam_mulai'].':00';
+        $newJamSelesai = $validated['jam_selesai'].':00';
 
         // Pastikan data lama ada
         $existsOld = DB::table('jadwal')
@@ -224,7 +228,7 @@ class JadwalController extends Controller
             ->where('hari_kerja', $validated['old_hari_kerja'])
             ->where('jam_mulai', $oldJamMulai)
             ->exists();
-        if (!$existsOld) {
+        if (! $existsOld) {
             return response()->json([
                 'message' => 'Data jadwal lama tidak ditemukan',
             ], 404);

@@ -4,16 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 
 class PermintaanLab extends Model
 {
     use HasFactory;
 
     protected $table = 'permintaan_lab';
+
     protected $primaryKey = 'noorder';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -28,7 +31,7 @@ class PermintaanLab extends Model
         'dokter_perujuk',
         'status',
         'informasi_tambahan',
-        'diagnosa_klinis'
+        'diagnosa_klinis',
     ];
 
     protected $casts = [
@@ -37,7 +40,7 @@ class PermintaanLab extends Model
         'tgl_hasil' => 'date',
         'jam_permintaan' => 'datetime:H:i:s',
         'jam_sampel' => 'datetime:H:i:s',
-        'jam_hasil' => 'datetime:H:i:s'
+        'jam_hasil' => 'datetime:H:i:s',
     ];
 
     /**
@@ -46,18 +49,18 @@ class PermintaanLab extends Model
     public static function generateNoOrder()
     {
         $date = now()->format('Ymd');
-        $lastOrder = self::where('noorder', 'like', 'PL' . $date . '%')
-                        ->orderBy('noorder', 'desc')
-                        ->first();
-        
+        $lastOrder = self::where('noorder', 'like', 'PL'.$date.'%')
+            ->orderBy('noorder', 'desc')
+            ->first();
+
         if ($lastOrder) {
             $lastNumber = (int) substr($lastOrder->noorder, -4);
             $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
         } else {
             $newNumber = '0001';
         }
-        
-        return 'PL' . $date . $newNumber;
+
+        return 'PL'.$date.$newNumber;
     }
 
     /**
@@ -66,7 +69,7 @@ class PermintaanLab extends Model
     protected static function boot()
     {
         parent::boot();
-        
+
         static::creating(function ($model) {
             if (empty($model->noorder)) {
                 $model->noorder = self::generateNoOrder();
@@ -135,5 +138,66 @@ class PermintaanLab extends Model
     public function scopeByDokter($query, $kdDokter)
     {
         return $query->where('dokter_perujuk', $kdDokter);
+    }
+
+    /**
+     * Check apakah hasil benar-benar tersedia di detail_periksa_lab
+     * Memastikan bahwa ada data hasil yang tersimpan untuk semua template yang diminta
+     */
+    public function hasHasilTersedia(): bool
+    {
+        // Jika tgl_hasil tidak valid, pasti belum ada hasil
+        if (! $this->tgl_hasil || $this->tgl_hasil === '0000-00-00') {
+            return false;
+        }
+
+        // Validasi format tanggal invalid lainnya
+        $tglHasilStr = is_string($this->tgl_hasil) ? $this->tgl_hasil : (string) $this->tgl_hasil;
+        $invalidDates = ['0000-00-00', '-0001-11-30', '-0001-11-29', '1970-01-01'];
+        foreach ($invalidDates as $invalid) {
+            if (str_contains($tglHasilStr, $invalid)) {
+                return false;
+            }
+        }
+
+        if (str_starts_with(trim($tglHasilStr), '-')) {
+            return false;
+        }
+
+        // Ambil detail permintaan untuk mendapatkan semua template yang diminta
+        // Pastikan relasi sudah dimuat untuk menghindari N+1 query
+        if (! $this->relationLoaded('detailPermintaan')) {
+            $this->load('detailPermintaan');
+        }
+
+        $detailPermintaan = $this->detailPermintaan;
+
+        if ($detailPermintaan->isEmpty()) {
+            return false;
+        }
+
+        // Cek apakah semua template yang diminta sudah memiliki hasil di detail_periksa_lab
+        foreach ($detailPermintaan as $detail) {
+            $hasResult = \App\Models\DetailPeriksaLab::where('no_rawat', $this->no_rawat)
+                ->where('kd_jenis_prw', $detail->kd_jenis_prw)
+                ->where('id_template', $detail->id_template)
+                ->whereNotNull('nilai')
+                ->where('nilai', '!=', '')
+                ->exists();
+
+            if (! $hasResult) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Accessor untuk status hasil
+     */
+    public function getHasHasilTersediaAttribute(): bool
+    {
+        return $this->hasHasilTersedia();
     }
 }

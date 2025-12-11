@@ -2,9 +2,14 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +26,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Force HTTPS di production
+        if (config('app.env') === 'production') {
+            URL::forceScheme('https');
+        }
+
         // Ensure PHP uses the configured application timezone
         try {
             $tz = config('app.timezone');
@@ -50,5 +60,38 @@ class AppServiceProvider extends ServiceProvider
         } catch (\Throwable $e) {
             Log::warning('Failed to set MySQL session time_zone: '.$e->getMessage());
         }
+
+        // Ensure Wayfinder route directories exist before generation
+        // This prevents "No such file or directory" errors when Wayfinder tries to write route files
+        try {
+            $routesBasePath = resource_path('js/routes');
+
+            // Ensure base directories exist
+            if (! File::isDirectory($routesBasePath)) {
+                File::makeDirectory($routesBasePath, 0755, true);
+            }
+
+            // Common Wayfinder directories that might be needed
+            $commonDirs = [
+                'pcare/referensi',
+                'pcare/referensi/mobilejkn',
+                'api/pcare',
+            ];
+
+            foreach ($commonDirs as $dir) {
+                $fullPath = $routesBasePath.'/'.$dir;
+                if (! File::isDirectory($fullPath)) {
+                    File::makeDirectory($fullPath, 0755, true);
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Failed to ensure Wayfinder directories exist: '.$e->getMessage());
+        }
+
+        // Define API rate limiter
+        // Rate limiter untuk API endpoints: 60 requests per minute per user atau IP
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        });
     }
 }

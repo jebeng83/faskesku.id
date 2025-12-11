@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::search
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:610
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:616
 * @route '/api/satusehat/location'
 */
 export const search = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ search.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::search
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:610
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:616
 * @route '/api/satusehat/location'
 */
 search.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ search.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::search
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:610
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:616
 * @route '/api/satusehat/location'
 */
 search.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ search.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::search
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:610
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:616
 * @route '/api/satusehat/location'
 */
 search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::patch
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1595
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1660
 * @route '/api/satusehat/location/{id}'
 */
 export const patch = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -60,7 +60,7 @@ patch.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::patch
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1595
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1660
 * @route '/api/satusehat/location/{id}'
 */
 patch.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -87,7 +87,7 @@ patch.url = (args: { id: string | number } | [id: string | number ] | string | n
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::patch
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1595
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1660
 * @route '/api/satusehat/location/{id}'
 */
 patch.patch = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({

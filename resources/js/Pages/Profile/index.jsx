@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import AppLayout from '@/Layouts/AppLayout';
+import SidebarPengaturan from '@/Layouts/SidebarPengaturan';
 
 // Halaman Menu Utama Profil Aplikasi
 // Menyajikan 3 tab: Setting Aplikasi, Setting Hak Akses, Briding BPJS
@@ -109,5 +109,5 @@ export default function ProfileIndex() {
   );
 }
 
-// Layout: render di dalam AppLayout global
-ProfileIndex.layout = (page) => <AppLayout title="Profil Aplikasi" children={page} />;
+// Layout: render di dalam SidebarPengaturan
+ProfileIndex.layout = (page) => <SidebarPengaturan title="Pengaturan" children={page} />;

@@ -18,7 +18,7 @@ class MetodeRacikController extends Controller
         if ($q !== '') {
             $query->where(function ($w) use ($q) {
                 $w->where('kd_racik', 'like', "%{$q}%")
-                  ->orWhere('nm_racik', 'like', "%{$q}%");
+                    ->orWhere('nm_racik', 'like', "%{$q}%");
             });
         }
 
@@ -32,7 +32,7 @@ class MetodeRacikController extends Controller
             ],
             'nextCode' => $this->generateNextCode(),
             'flash' => [
-                'success' => session('success')
+                'success' => session('success'),
             ],
         ]);
     }
@@ -73,7 +73,7 @@ class MetodeRacikController extends Controller
                 'nm_racik' => $validated['nm_racik'],
             ]);
 
-        if (!$affected) {
+        if (! $affected) {
             return redirect()->back()->withErrors(['kd_racik' => 'Data tidak ditemukan atau tidak ada perubahan.']);
         }
 
@@ -83,6 +83,7 @@ class MetodeRacikController extends Controller
     public function destroy(string $kd_racik)
     {
         DB::table('metode_racik')->where('kd_racik', $kd_racik)->delete();
+
         return redirect()->route('farmasi.metode-racik.index')->with('success', 'Metode racik berhasil dihapus.');
     }
 
@@ -96,6 +97,7 @@ class MetodeRacikController extends Controller
             ->first();
 
         $nextNumber = $last ? ((int) $last->kd_racik + 1) : 1;
+
         return str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
     }
 }
