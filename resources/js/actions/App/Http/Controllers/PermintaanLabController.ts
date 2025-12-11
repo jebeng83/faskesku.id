@@ -1,5 +1,626 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
+* @see \App\Http\Controllers\PermintaanLabController::getLabTests
+* @see app/Http/Controllers/PermintaanLabController.php:1172
+* @route '/api/permissions/lab-tests'
+*/
+const getLabTestsbb1f0888385efb76e88432b2e6f00d86 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getLabTestsbb1f0888385efb76e88432b2e6f00d86.url(options),
+    method: 'get',
+})
+
+getLabTestsbb1f0888385efb76e88432b2e6f00d86.definition = {
+    methods: ["get","head"],
+    url: '/api/permissions/lab-tests',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::getLabTests
+* @see app/Http/Controllers/PermintaanLabController.php:1172
+* @route '/api/permissions/lab-tests'
+*/
+getLabTestsbb1f0888385efb76e88432b2e6f00d86.url = (options?: RouteQueryOptions) => {
+    return getLabTestsbb1f0888385efb76e88432b2e6f00d86.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::getLabTests
+* @see app/Http/Controllers/PermintaanLabController.php:1172
+* @route '/api/permissions/lab-tests'
+*/
+getLabTestsbb1f0888385efb76e88432b2e6f00d86.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getLabTestsbb1f0888385efb76e88432b2e6f00d86.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::getLabTests
+* @see app/Http/Controllers/PermintaanLabController.php:1172
+* @route '/api/permissions/lab-tests'
+*/
+getLabTestsbb1f0888385efb76e88432b2e6f00d86.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getLabTestsbb1f0888385efb76e88432b2e6f00d86.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::getLabTests
+* @see app/Http/Controllers/PermintaanLabController.php:1172
+* @route '/api/lab-tests'
+*/
+const getLabTestsc5caf764aa228cc04176382808a07182 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getLabTestsc5caf764aa228cc04176382808a07182.url(options),
+    method: 'get',
+})
+
+getLabTestsc5caf764aa228cc04176382808a07182.definition = {
+    methods: ["get","head"],
+    url: '/api/lab-tests',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::getLabTests
+* @see app/Http/Controllers/PermintaanLabController.php:1172
+* @route '/api/lab-tests'
+*/
+getLabTestsc5caf764aa228cc04176382808a07182.url = (options?: RouteQueryOptions) => {
+    return getLabTestsc5caf764aa228cc04176382808a07182.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::getLabTests
+* @see app/Http/Controllers/PermintaanLabController.php:1172
+* @route '/api/lab-tests'
+*/
+getLabTestsc5caf764aa228cc04176382808a07182.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getLabTestsc5caf764aa228cc04176382808a07182.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::getLabTests
+* @see app/Http/Controllers/PermintaanLabController.php:1172
+* @route '/api/lab-tests'
+*/
+getLabTestsc5caf764aa228cc04176382808a07182.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getLabTestsc5caf764aa228cc04176382808a07182.url(options),
+    method: 'head',
+})
+
+export const getLabTests = {
+    '/api/permissions/lab-tests': getLabTestsbb1f0888385efb76e88432b2e6f00d86,
+    '/api/lab-tests': getLabTestsc5caf764aa228cc04176382808a07182,
+}
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::store
+* @see app/Http/Controllers/PermintaanLabController.php:133
+* @route '/api/permissions/permintaan-lab'
+*/
+const store11c1a76cd19d53916c55810b3613caa9 = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: store11c1a76cd19d53916c55810b3613caa9.url(options),
+    method: 'post',
+})
+
+store11c1a76cd19d53916c55810b3613caa9.definition = {
+    methods: ["post"],
+    url: '/api/permissions/permintaan-lab',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::store
+* @see app/Http/Controllers/PermintaanLabController.php:133
+* @route '/api/permissions/permintaan-lab'
+*/
+store11c1a76cd19d53916c55810b3613caa9.url = (options?: RouteQueryOptions) => {
+    return store11c1a76cd19d53916c55810b3613caa9.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::store
+* @see app/Http/Controllers/PermintaanLabController.php:133
+* @route '/api/permissions/permintaan-lab'
+*/
+store11c1a76cd19d53916c55810b3613caa9.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: store11c1a76cd19d53916c55810b3613caa9.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::store
+* @see app/Http/Controllers/PermintaanLabController.php:133
+* @route '/api/permintaan-lab'
+*/
+const store9cab9cc9ce8e71e84002a8c1dffbaf04 = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: store9cab9cc9ce8e71e84002a8c1dffbaf04.url(options),
+    method: 'post',
+})
+
+store9cab9cc9ce8e71e84002a8c1dffbaf04.definition = {
+    methods: ["post"],
+    url: '/api/permintaan-lab',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::store
+* @see app/Http/Controllers/PermintaanLabController.php:133
+* @route '/api/permintaan-lab'
+*/
+store9cab9cc9ce8e71e84002a8c1dffbaf04.url = (options?: RouteQueryOptions) => {
+    return store9cab9cc9ce8e71e84002a8c1dffbaf04.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::store
+* @see app/Http/Controllers/PermintaanLabController.php:133
+* @route '/api/permintaan-lab'
+*/
+store9cab9cc9ce8e71e84002a8c1dffbaf04.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: store9cab9cc9ce8e71e84002a8c1dffbaf04.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::store
+* @see app/Http/Controllers/PermintaanLabController.php:133
+* @route '/laboratorium/permintaan-lab'
+*/
+const store38ad935317b4bfca976bd9395bbe0a7b = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: store38ad935317b4bfca976bd9395bbe0a7b.url(options),
+    method: 'post',
+})
+
+store38ad935317b4bfca976bd9395bbe0a7b.definition = {
+    methods: ["post"],
+    url: '/laboratorium/permintaan-lab',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::store
+* @see app/Http/Controllers/PermintaanLabController.php:133
+* @route '/laboratorium/permintaan-lab'
+*/
+store38ad935317b4bfca976bd9395bbe0a7b.url = (options?: RouteQueryOptions) => {
+    return store38ad935317b4bfca976bd9395bbe0a7b.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::store
+* @see app/Http/Controllers/PermintaanLabController.php:133
+* @route '/laboratorium/permintaan-lab'
+*/
+store38ad935317b4bfca976bd9395bbe0a7b.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: store38ad935317b4bfca976bd9395bbe0a7b.url(options),
+    method: 'post',
+})
+
+export const store = {
+    '/api/permissions/permintaan-lab': store11c1a76cd19d53916c55810b3613caa9,
+    '/api/permintaan-lab': store9cab9cc9ce8e71e84002a8c1dffbaf04,
+    '/laboratorium/permintaan-lab': store38ad935317b4bfca976bd9395bbe0a7b,
+}
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::getByNoRawat
+* @see app/Http/Controllers/PermintaanLabController.php:954
+* @route '/api/permissions/permintaan-lab/rawat/{no_rawat}'
+*/
+const getByNoRawat9d59b085fdcfd6d02f47aa8cb9a1feba = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getByNoRawat9d59b085fdcfd6d02f47aa8cb9a1feba.url(args, options),
+    method: 'get',
+})
+
+getByNoRawat9d59b085fdcfd6d02f47aa8cb9a1feba.definition = {
+    methods: ["get","head"],
+    url: '/api/permissions/permintaan-lab/rawat/{no_rawat}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::getByNoRawat
+* @see app/Http/Controllers/PermintaanLabController.php:954
+* @route '/api/permissions/permintaan-lab/rawat/{no_rawat}'
+*/
+getByNoRawat9d59b085fdcfd6d02f47aa8cb9a1feba.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { no_rawat: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            no_rawat: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        no_rawat: args.no_rawat,
+    }
+
+    return getByNoRawat9d59b085fdcfd6d02f47aa8cb9a1feba.definition.url
+            .replace('{no_rawat}', parsedArgs.no_rawat.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::getByNoRawat
+* @see app/Http/Controllers/PermintaanLabController.php:954
+* @route '/api/permissions/permintaan-lab/rawat/{no_rawat}'
+*/
+getByNoRawat9d59b085fdcfd6d02f47aa8cb9a1feba.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getByNoRawat9d59b085fdcfd6d02f47aa8cb9a1feba.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::getByNoRawat
+* @see app/Http/Controllers/PermintaanLabController.php:954
+* @route '/api/permissions/permintaan-lab/rawat/{no_rawat}'
+*/
+getByNoRawat9d59b085fdcfd6d02f47aa8cb9a1feba.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getByNoRawat9d59b085fdcfd6d02f47aa8cb9a1feba.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::getByNoRawat
+* @see app/Http/Controllers/PermintaanLabController.php:954
+* @route '/api/permintaan-lab/rawat/{no_rawat}'
+*/
+const getByNoRawat077061992ab61733cb24f19a9f5c0833 = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getByNoRawat077061992ab61733cb24f19a9f5c0833.url(args, options),
+    method: 'get',
+})
+
+getByNoRawat077061992ab61733cb24f19a9f5c0833.definition = {
+    methods: ["get","head"],
+    url: '/api/permintaan-lab/rawat/{no_rawat}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::getByNoRawat
+* @see app/Http/Controllers/PermintaanLabController.php:954
+* @route '/api/permintaan-lab/rawat/{no_rawat}'
+*/
+getByNoRawat077061992ab61733cb24f19a9f5c0833.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { no_rawat: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            no_rawat: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        no_rawat: args.no_rawat,
+    }
+
+    return getByNoRawat077061992ab61733cb24f19a9f5c0833.definition.url
+            .replace('{no_rawat}', parsedArgs.no_rawat.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::getByNoRawat
+* @see app/Http/Controllers/PermintaanLabController.php:954
+* @route '/api/permintaan-lab/rawat/{no_rawat}'
+*/
+getByNoRawat077061992ab61733cb24f19a9f5c0833.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getByNoRawat077061992ab61733cb24f19a9f5c0833.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::getByNoRawat
+* @see app/Http/Controllers/PermintaanLabController.php:954
+* @route '/api/permintaan-lab/rawat/{no_rawat}'
+*/
+getByNoRawat077061992ab61733cb24f19a9f5c0833.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getByNoRawat077061992ab61733cb24f19a9f5c0833.url(args, options),
+    method: 'head',
+})
+
+export const getByNoRawat = {
+    '/api/permissions/permintaan-lab/rawat/{no_rawat}': getByNoRawat9d59b085fdcfd6d02f47aa8cb9a1feba,
+    '/api/permintaan-lab/rawat/{no_rawat}': getByNoRawat077061992ab61733cb24f19a9f5c0833,
+}
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::getRiwayat
+* @see app/Http/Controllers/PermintaanLabController.php:1278
+* @route '/api/permissions/permintaan-lab/riwayat/{no_rawat}'
+*/
+const getRiwayat99dc992a8a27b165b16adc2bca20717e = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getRiwayat99dc992a8a27b165b16adc2bca20717e.url(args, options),
+    method: 'get',
+})
+
+getRiwayat99dc992a8a27b165b16adc2bca20717e.definition = {
+    methods: ["get","head"],
+    url: '/api/permissions/permintaan-lab/riwayat/{no_rawat}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::getRiwayat
+* @see app/Http/Controllers/PermintaanLabController.php:1278
+* @route '/api/permissions/permintaan-lab/riwayat/{no_rawat}'
+*/
+getRiwayat99dc992a8a27b165b16adc2bca20717e.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { no_rawat: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            no_rawat: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        no_rawat: args.no_rawat,
+    }
+
+    return getRiwayat99dc992a8a27b165b16adc2bca20717e.definition.url
+            .replace('{no_rawat}', parsedArgs.no_rawat.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::getRiwayat
+* @see app/Http/Controllers/PermintaanLabController.php:1278
+* @route '/api/permissions/permintaan-lab/riwayat/{no_rawat}'
+*/
+getRiwayat99dc992a8a27b165b16adc2bca20717e.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getRiwayat99dc992a8a27b165b16adc2bca20717e.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::getRiwayat
+* @see app/Http/Controllers/PermintaanLabController.php:1278
+* @route '/api/permissions/permintaan-lab/riwayat/{no_rawat}'
+*/
+getRiwayat99dc992a8a27b165b16adc2bca20717e.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getRiwayat99dc992a8a27b165b16adc2bca20717e.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::getRiwayat
+* @see app/Http/Controllers/PermintaanLabController.php:1278
+* @route '/api/permintaan-lab/riwayat/{no_rawat}'
+*/
+const getRiwayatb47109e791e6d2a8c0a6b71b70e2f25a = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getRiwayatb47109e791e6d2a8c0a6b71b70e2f25a.url(args, options),
+    method: 'get',
+})
+
+getRiwayatb47109e791e6d2a8c0a6b71b70e2f25a.definition = {
+    methods: ["get","head"],
+    url: '/api/permintaan-lab/riwayat/{no_rawat}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::getRiwayat
+* @see app/Http/Controllers/PermintaanLabController.php:1278
+* @route '/api/permintaan-lab/riwayat/{no_rawat}'
+*/
+getRiwayatb47109e791e6d2a8c0a6b71b70e2f25a.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { no_rawat: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            no_rawat: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        no_rawat: args.no_rawat,
+    }
+
+    return getRiwayatb47109e791e6d2a8c0a6b71b70e2f25a.definition.url
+            .replace('{no_rawat}', parsedArgs.no_rawat.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::getRiwayat
+* @see app/Http/Controllers/PermintaanLabController.php:1278
+* @route '/api/permintaan-lab/riwayat/{no_rawat}'
+*/
+getRiwayatb47109e791e6d2a8c0a6b71b70e2f25a.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getRiwayatb47109e791e6d2a8c0a6b71b70e2f25a.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::getRiwayat
+* @see app/Http/Controllers/PermintaanLabController.php:1278
+* @route '/api/permintaan-lab/riwayat/{no_rawat}'
+*/
+getRiwayatb47109e791e6d2a8c0a6b71b70e2f25a.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getRiwayatb47109e791e6d2a8c0a6b71b70e2f25a.url(args, options),
+    method: 'head',
+})
+
+export const getRiwayat = {
+    '/api/permissions/permintaan-lab/riwayat/{no_rawat}': getRiwayat99dc992a8a27b165b16adc2bca20717e,
+    '/api/permintaan-lab/riwayat/{no_rawat}': getRiwayatb47109e791e6d2a8c0a6b71b70e2f25a,
+}
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::destroy
+* @see app/Http/Controllers/PermintaanLabController.php:775
+* @route '/api/permissions/permintaan-lab/{noorder}'
+*/
+const destroy29beb07d850f010a2abfb4afbb28bae0 = (args: { noorder: string | number } | [noorder: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+    url: destroy29beb07d850f010a2abfb4afbb28bae0.url(args, options),
+    method: 'delete',
+})
+
+destroy29beb07d850f010a2abfb4afbb28bae0.definition = {
+    methods: ["delete"],
+    url: '/api/permissions/permintaan-lab/{noorder}',
+} satisfies RouteDefinition<["delete"]>
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::destroy
+* @see app/Http/Controllers/PermintaanLabController.php:775
+* @route '/api/permissions/permintaan-lab/{noorder}'
+*/
+destroy29beb07d850f010a2abfb4afbb28bae0.url = (args: { noorder: string | number } | [noorder: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { noorder: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            noorder: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        noorder: args.noorder,
+    }
+
+    return destroy29beb07d850f010a2abfb4afbb28bae0.definition.url
+            .replace('{noorder}', parsedArgs.noorder.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::destroy
+* @see app/Http/Controllers/PermintaanLabController.php:775
+* @route '/api/permissions/permintaan-lab/{noorder}'
+*/
+destroy29beb07d850f010a2abfb4afbb28bae0.delete = (args: { noorder: string | number } | [noorder: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+    url: destroy29beb07d850f010a2abfb4afbb28bae0.url(args, options),
+    method: 'delete',
+})
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::destroy
+* @see app/Http/Controllers/PermintaanLabController.php:775
+* @route '/api/permintaan-lab/{noorder}'
+*/
+const destroy9ae3c762fa6ebfe394bf40e8319c90c7 = (args: { noorder: string | number } | [noorder: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+    url: destroy9ae3c762fa6ebfe394bf40e8319c90c7.url(args, options),
+    method: 'delete',
+})
+
+destroy9ae3c762fa6ebfe394bf40e8319c90c7.definition = {
+    methods: ["delete"],
+    url: '/api/permintaan-lab/{noorder}',
+} satisfies RouteDefinition<["delete"]>
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::destroy
+* @see app/Http/Controllers/PermintaanLabController.php:775
+* @route '/api/permintaan-lab/{noorder}'
+*/
+destroy9ae3c762fa6ebfe394bf40e8319c90c7.url = (args: { noorder: string | number } | [noorder: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { noorder: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            noorder: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        noorder: args.noorder,
+    }
+
+    return destroy9ae3c762fa6ebfe394bf40e8319c90c7.definition.url
+            .replace('{noorder}', parsedArgs.noorder.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::destroy
+* @see app/Http/Controllers/PermintaanLabController.php:775
+* @route '/api/permintaan-lab/{noorder}'
+*/
+destroy9ae3c762fa6ebfe394bf40e8319c90c7.delete = (args: { noorder: string | number } | [noorder: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+    url: destroy9ae3c762fa6ebfe394bf40e8319c90c7.url(args, options),
+    method: 'delete',
+})
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::destroy
+* @see app/Http/Controllers/PermintaanLabController.php:775
+* @route '/laboratorium/permintaan-lab/{permintaan_lab}'
+*/
+const destroy035fe378d56a482c234f96ea103923b0 = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+    url: destroy035fe378d56a482c234f96ea103923b0.url(args, options),
+    method: 'delete',
+})
+
+destroy035fe378d56a482c234f96ea103923b0.definition = {
+    methods: ["delete"],
+    url: '/laboratorium/permintaan-lab/{permintaan_lab}',
+} satisfies RouteDefinition<["delete"]>
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::destroy
+* @see app/Http/Controllers/PermintaanLabController.php:775
+* @route '/laboratorium/permintaan-lab/{permintaan_lab}'
+*/
+destroy035fe378d56a482c234f96ea103923b0.url = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { permintaan_lab: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            permintaan_lab: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        permintaan_lab: args.permintaan_lab,
+    }
+
+    return destroy035fe378d56a482c234f96ea103923b0.definition.url
+            .replace('{permintaan_lab}', parsedArgs.permintaan_lab.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PermintaanLabController::destroy
+* @see app/Http/Controllers/PermintaanLabController.php:775
+* @route '/laboratorium/permintaan-lab/{permintaan_lab}'
+*/
+destroy035fe378d56a482c234f96ea103923b0.delete = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+    url: destroy035fe378d56a482c234f96ea103923b0.url(args, options),
+    method: 'delete',
+})
+
+export const destroy = {
+    '/api/permissions/permintaan-lab/{noorder}': destroy29beb07d850f010a2abfb4afbb28bae0,
+    '/api/permintaan-lab/{noorder}': destroy9ae3c762fa6ebfe394bf40e8319c90c7,
+    '/laboratorium/permintaan-lab/{permintaan_lab}': destroy035fe378d56a482c234f96ea103923b0,
+}
+
+/**
 * @see \App\Http\Controllers\PermintaanLabController::getRegPeriksa
 * @see app/Http/Controllers/PermintaanLabController.php:922
 * @route '/api/reg-periksa'
@@ -40,50 +661,6 @@ getRegPeriksa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 */
 getRegPeriksa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: getRegPeriksa.url(options),
-    method: 'head',
-})
-
-/**
-* @see \App\Http\Controllers\PermintaanLabController::getLabTests
-* @see app/Http/Controllers/PermintaanLabController.php:1172
-* @route '/api/lab-tests'
-*/
-export const getLabTests = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: getLabTests.url(options),
-    method: 'get',
-})
-
-getLabTests.definition = {
-    methods: ["get","head"],
-    url: '/api/lab-tests',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\PermintaanLabController::getLabTests
-* @see app/Http/Controllers/PermintaanLabController.php:1172
-* @route '/api/lab-tests'
-*/
-getLabTests.url = (options?: RouteQueryOptions) => {
-    return getLabTests.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\PermintaanLabController::getLabTests
-* @see app/Http/Controllers/PermintaanLabController.php:1172
-* @route '/api/lab-tests'
-*/
-getLabTests.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: getLabTests.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\PermintaanLabController::getLabTests
-* @see app/Http/Controllers/PermintaanLabController.php:1172
-* @route '/api/lab-tests'
-*/
-getLabTests.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: getLabTests.url(options),
     method: 'head',
 })
 
@@ -199,79 +776,6 @@ export const getTemplates = {
 }
 
 /**
-* @see \App\Http\Controllers\PermintaanLabController::store
-* @see app/Http/Controllers/PermintaanLabController.php:133
-* @route '/api/permintaan-lab'
-*/
-const store9cab9cc9ce8e71e84002a8c1dffbaf04 = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: store9cab9cc9ce8e71e84002a8c1dffbaf04.url(options),
-    method: 'post',
-})
-
-store9cab9cc9ce8e71e84002a8c1dffbaf04.definition = {
-    methods: ["post"],
-    url: '/api/permintaan-lab',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \App\Http\Controllers\PermintaanLabController::store
-* @see app/Http/Controllers/PermintaanLabController.php:133
-* @route '/api/permintaan-lab'
-*/
-store9cab9cc9ce8e71e84002a8c1dffbaf04.url = (options?: RouteQueryOptions) => {
-    return store9cab9cc9ce8e71e84002a8c1dffbaf04.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\PermintaanLabController::store
-* @see app/Http/Controllers/PermintaanLabController.php:133
-* @route '/api/permintaan-lab'
-*/
-store9cab9cc9ce8e71e84002a8c1dffbaf04.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: store9cab9cc9ce8e71e84002a8c1dffbaf04.url(options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\PermintaanLabController::store
-* @see app/Http/Controllers/PermintaanLabController.php:133
-* @route '/laboratorium/permintaan-lab'
-*/
-const store38ad935317b4bfca976bd9395bbe0a7b = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: store38ad935317b4bfca976bd9395bbe0a7b.url(options),
-    method: 'post',
-})
-
-store38ad935317b4bfca976bd9395bbe0a7b.definition = {
-    methods: ["post"],
-    url: '/laboratorium/permintaan-lab',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \App\Http\Controllers\PermintaanLabController::store
-* @see app/Http/Controllers/PermintaanLabController.php:133
-* @route '/laboratorium/permintaan-lab'
-*/
-store38ad935317b4bfca976bd9395bbe0a7b.url = (options?: RouteQueryOptions) => {
-    return store38ad935317b4bfca976bd9395bbe0a7b.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\PermintaanLabController::store
-* @see app/Http/Controllers/PermintaanLabController.php:133
-* @route '/laboratorium/permintaan-lab'
-*/
-store38ad935317b4bfca976bd9395bbe0a7b.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: store38ad935317b4bfca976bd9395bbe0a7b.url(options),
-    method: 'post',
-})
-
-export const store = {
-    '/api/permintaan-lab': store9cab9cc9ce8e71e84002a8c1dffbaf04,
-    '/laboratorium/permintaan-lab': store38ad935317b4bfca976bd9395bbe0a7b,
-}
-
-/**
 * @see \App\Http\Controllers\PermintaanLabController::stageJurnalLab
 * @see app/Http/Controllers/PermintaanLabController.php:1243
 * @route '/api/permintaan-lab/stage-lab'
@@ -304,239 +808,6 @@ stageJurnalLab.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => 
     url: stageJurnalLab.url(options),
     method: 'post',
 })
-
-/**
-* @see \App\Http\Controllers\PermintaanLabController::getByNoRawat
-* @see app/Http/Controllers/PermintaanLabController.php:954
-* @route '/api/permintaan-lab/rawat/{no_rawat}'
-*/
-export const getByNoRawat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: getByNoRawat.url(args, options),
-    method: 'get',
-})
-
-getByNoRawat.definition = {
-    methods: ["get","head"],
-    url: '/api/permintaan-lab/rawat/{no_rawat}',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\PermintaanLabController::getByNoRawat
-* @see app/Http/Controllers/PermintaanLabController.php:954
-* @route '/api/permintaan-lab/rawat/{no_rawat}'
-*/
-getByNoRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { no_rawat: args }
-    }
-
-    if (Array.isArray(args)) {
-        args = {
-            no_rawat: args[0],
-        }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-        no_rawat: args.no_rawat,
-    }
-
-    return getByNoRawat.definition.url
-            .replace('{no_rawat}', parsedArgs.no_rawat.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\PermintaanLabController::getByNoRawat
-* @see app/Http/Controllers/PermintaanLabController.php:954
-* @route '/api/permintaan-lab/rawat/{no_rawat}'
-*/
-getByNoRawat.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: getByNoRawat.url(args, options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\PermintaanLabController::getByNoRawat
-* @see app/Http/Controllers/PermintaanLabController.php:954
-* @route '/api/permintaan-lab/rawat/{no_rawat}'
-*/
-getByNoRawat.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: getByNoRawat.url(args, options),
-    method: 'head',
-})
-
-/**
-* @see \App\Http\Controllers\PermintaanLabController::getRiwayat
-* @see app/Http/Controllers/PermintaanLabController.php:1278
-* @route '/api/permintaan-lab/riwayat/{no_rawat}'
-*/
-export const getRiwayat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: getRiwayat.url(args, options),
-    method: 'get',
-})
-
-getRiwayat.definition = {
-    methods: ["get","head"],
-    url: '/api/permintaan-lab/riwayat/{no_rawat}',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\PermintaanLabController::getRiwayat
-* @see app/Http/Controllers/PermintaanLabController.php:1278
-* @route '/api/permintaan-lab/riwayat/{no_rawat}'
-*/
-getRiwayat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { no_rawat: args }
-    }
-
-    if (Array.isArray(args)) {
-        args = {
-            no_rawat: args[0],
-        }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-        no_rawat: args.no_rawat,
-    }
-
-    return getRiwayat.definition.url
-            .replace('{no_rawat}', parsedArgs.no_rawat.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\PermintaanLabController::getRiwayat
-* @see app/Http/Controllers/PermintaanLabController.php:1278
-* @route '/api/permintaan-lab/riwayat/{no_rawat}'
-*/
-getRiwayat.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: getRiwayat.url(args, options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\PermintaanLabController::getRiwayat
-* @see app/Http/Controllers/PermintaanLabController.php:1278
-* @route '/api/permintaan-lab/riwayat/{no_rawat}'
-*/
-getRiwayat.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: getRiwayat.url(args, options),
-    method: 'head',
-})
-
-/**
-* @see \App\Http\Controllers\PermintaanLabController::destroy
-* @see app/Http/Controllers/PermintaanLabController.php:775
-* @route '/api/permintaan-lab/{noorder}'
-*/
-const destroy9ae3c762fa6ebfe394bf40e8319c90c7 = (args: { noorder: string | number } | [noorder: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
-    url: destroy9ae3c762fa6ebfe394bf40e8319c90c7.url(args, options),
-    method: 'delete',
-})
-
-destroy9ae3c762fa6ebfe394bf40e8319c90c7.definition = {
-    methods: ["delete"],
-    url: '/api/permintaan-lab/{noorder}',
-} satisfies RouteDefinition<["delete"]>
-
-/**
-* @see \App\Http\Controllers\PermintaanLabController::destroy
-* @see app/Http/Controllers/PermintaanLabController.php:775
-* @route '/api/permintaan-lab/{noorder}'
-*/
-destroy9ae3c762fa6ebfe394bf40e8319c90c7.url = (args: { noorder: string | number } | [noorder: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { noorder: args }
-    }
-
-    if (Array.isArray(args)) {
-        args = {
-            noorder: args[0],
-        }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-        noorder: args.noorder,
-    }
-
-    return destroy9ae3c762fa6ebfe394bf40e8319c90c7.definition.url
-            .replace('{noorder}', parsedArgs.noorder.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\PermintaanLabController::destroy
-* @see app/Http/Controllers/PermintaanLabController.php:775
-* @route '/api/permintaan-lab/{noorder}'
-*/
-destroy9ae3c762fa6ebfe394bf40e8319c90c7.delete = (args: { noorder: string | number } | [noorder: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
-    url: destroy9ae3c762fa6ebfe394bf40e8319c90c7.url(args, options),
-    method: 'delete',
-})
-
-/**
-* @see \App\Http\Controllers\PermintaanLabController::destroy
-* @see app/Http/Controllers/PermintaanLabController.php:775
-* @route '/laboratorium/permintaan-lab/{permintaan_lab}'
-*/
-const destroy035fe378d56a482c234f96ea103923b0 = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
-    url: destroy035fe378d56a482c234f96ea103923b0.url(args, options),
-    method: 'delete',
-})
-
-destroy035fe378d56a482c234f96ea103923b0.definition = {
-    methods: ["delete"],
-    url: '/laboratorium/permintaan-lab/{permintaan_lab}',
-} satisfies RouteDefinition<["delete"]>
-
-/**
-* @see \App\Http\Controllers\PermintaanLabController::destroy
-* @see app/Http/Controllers/PermintaanLabController.php:775
-* @route '/laboratorium/permintaan-lab/{permintaan_lab}'
-*/
-destroy035fe378d56a482c234f96ea103923b0.url = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { permintaan_lab: args }
-    }
-
-    if (Array.isArray(args)) {
-        args = {
-            permintaan_lab: args[0],
-        }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-        permintaan_lab: args.permintaan_lab,
-    }
-
-    return destroy035fe378d56a482c234f96ea103923b0.definition.url
-            .replace('{permintaan_lab}', parsedArgs.permintaan_lab.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\PermintaanLabController::destroy
-* @see app/Http/Controllers/PermintaanLabController.php:775
-* @route '/laboratorium/permintaan-lab/{permintaan_lab}'
-*/
-destroy035fe378d56a482c234f96ea103923b0.delete = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
-    url: destroy035fe378d56a482c234f96ea103923b0.url(args, options),
-    method: 'delete',
-})
-
-export const destroy = {
-    '/api/permintaan-lab/{noorder}': destroy9ae3c762fa6ebfe394bf40e8319c90c7,
-    '/laboratorium/permintaan-lab/{permintaan_lab}': destroy035fe378d56a482c234f96ea103923b0,
-}
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::index
@@ -1136,6 +1407,6 @@ cetak.head = (args: { permintaan_lab: string | number } | [permintaan_lab: strin
     method: 'head',
 })
 
-const PermintaanLabController = { getRegPeriksa, getLabTests, getTemplates, store, stageJurnalLab, getByNoRawat, getRiwayat, destroy, index, create, show, edit, update, ambilSampel, updateSampel, inputHasil, storeHasil, preview, cetak }
+const PermintaanLabController = { getLabTests, store, getByNoRawat, getRiwayat, destroy, getRegPeriksa, getTemplates, stageJurnalLab, index, create, show, edit, update, ambilSampel, updateSampel, inputHasil, storeHasil, preview, cetak }
 
 export default PermintaanLabController

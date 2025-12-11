@@ -1,7 +1,8 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
-* @see routes/web.php:789
-* @route '/farmasi/supplier'
+* @see \App\Http\Controllers\PermintaanLabController::index
+* @see app/Http/Controllers/PermintaanLabController.php:1172
+* @route '/api/permissions/lab-tests'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
@@ -10,20 +11,22 @@ export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 index.definition = {
     methods: ["get","head"],
-    url: '/farmasi/supplier',
+    url: '/api/permissions/lab-tests',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:789
-* @route '/farmasi/supplier'
+* @see \App\Http\Controllers\PermintaanLabController::index
+* @see app/Http/Controllers/PermintaanLabController.php:1172
+* @route '/api/permissions/lab-tests'
 */
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
 }
 
 /**
-* @see routes/web.php:789
-* @route '/farmasi/supplier'
+* @see \App\Http\Controllers\PermintaanLabController::index
+* @see app/Http/Controllers/PermintaanLabController.php:1172
+* @route '/api/permissions/lab-tests'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
@@ -31,16 +34,12 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:789
-* @route '/farmasi/supplier'
+* @see \App\Http\Controllers\PermintaanLabController::index
+* @see app/Http/Controllers/PermintaanLabController.php:1172
+* @route '/api/permissions/lab-tests'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
 })
 
-const supplier = {
-    index: Object.assign(index, index),
-}
-
-export default supplier

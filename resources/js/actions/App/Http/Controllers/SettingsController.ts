@@ -2,44 +2,44 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 /**
 * @see \App\Http\Controllers\SettingsController::active
 * @see app/Http/Controllers/SettingsController.php:15
-* @route '/api/settings/active'
+* @route '/api/permissions/settings/active'
 */
-const active9b7c3136a4eeca153683b0bca155a632 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: active9b7c3136a4eeca153683b0bca155a632.url(options),
+const active04ffb0ebbb61e1cdf4bc04aac6d4435c = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: active04ffb0ebbb61e1cdf4bc04aac6d4435c.url(options),
     method: 'get',
 })
 
-active9b7c3136a4eeca153683b0bca155a632.definition = {
+active04ffb0ebbb61e1cdf4bc04aac6d4435c.definition = {
     methods: ["get","head"],
-    url: '/api/settings/active',
+    url: '/api/permissions/settings/active',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\SettingsController::active
 * @see app/Http/Controllers/SettingsController.php:15
-* @route '/api/settings/active'
+* @route '/api/permissions/settings/active'
 */
-active9b7c3136a4eeca153683b0bca155a632.url = (options?: RouteQueryOptions) => {
-    return active9b7c3136a4eeca153683b0bca155a632.definition.url + queryParams(options)
+active04ffb0ebbb61e1cdf4bc04aac6d4435c.url = (options?: RouteQueryOptions) => {
+    return active04ffb0ebbb61e1cdf4bc04aac6d4435c.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\SettingsController::active
 * @see app/Http/Controllers/SettingsController.php:15
-* @route '/api/settings/active'
+* @route '/api/permissions/settings/active'
 */
-active9b7c3136a4eeca153683b0bca155a632.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: active9b7c3136a4eeca153683b0bca155a632.url(options),
+active04ffb0ebbb61e1cdf4bc04aac6d4435c.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: active04ffb0ebbb61e1cdf4bc04aac6d4435c.url(options),
     method: 'get',
 })
 
 /**
 * @see \App\Http\Controllers\SettingsController::active
 * @see app/Http/Controllers/SettingsController.php:15
-* @route '/api/settings/active'
+* @route '/api/permissions/settings/active'
 */
-active9b7c3136a4eeca153683b0bca155a632.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: active9b7c3136a4eeca153683b0bca155a632.url(options),
+active04ffb0ebbb61e1cdf4bc04aac6d4435c.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: active04ffb0ebbb61e1cdf4bc04aac6d4435c.url(options),
     method: 'head',
 })
 
@@ -88,7 +88,7 @@ active1e19e8cb2c4f7065db00112c242baeb1.head = (options?: RouteQueryOptions): Rou
 })
 
 export const active = {
-    '/api/settings/active': active9b7c3136a4eeca153683b0bca155a632,
+    '/api/permissions/settings/active': active04ffb0ebbb61e1cdf4bc04aac6d4435c,
     '/settings/active': active1e19e8cb2c4f7065db00112c242baeb1,
 }
 

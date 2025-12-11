@@ -2,6 +2,40 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 /**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::create
 * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:155
+* @route '/api/permissions/satusehat/rajal/condition'
+*/
+export const create = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: create.url(options),
+    method: 'post',
+})
+
+create.definition = {
+    methods: ["post"],
+    url: '/api/permissions/satusehat/rajal/condition',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::create
+* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:155
+* @route '/api/permissions/satusehat/rajal/condition'
+*/
+create.url = (options?: RouteQueryOptions) => {
+    return create.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::create
+* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:155
+* @route '/api/permissions/satusehat/rajal/condition'
+*/
+create.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: create.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::create
+* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:155
 * @route '/api/satusehat/rajal/condition'
 */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

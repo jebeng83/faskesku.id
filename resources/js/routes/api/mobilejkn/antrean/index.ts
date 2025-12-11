@@ -2,6 +2,40 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::add
 * @see app/Http/Controllers/Pcare/MobileJknController.php:93
+* @route '/api/permissions/mobilejkn/antrean/add'
+*/
+export const add = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: add.url(options),
+    method: 'post',
+})
+
+add.definition = {
+    methods: ["post"],
+    url: '/api/permissions/mobilejkn/antrean/add',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\MobileJknController::add
+* @see app/Http/Controllers/Pcare/MobileJknController.php:93
+* @route '/api/permissions/mobilejkn/antrean/add'
+*/
+add.url = (options?: RouteQueryOptions) => {
+    return add.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\MobileJknController::add
+* @see app/Http/Controllers/Pcare/MobileJknController.php:93
+* @route '/api/permissions/mobilejkn/antrean/add'
+*/
+add.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: add.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\MobileJknController::add
+* @see app/Http/Controllers/Pcare/MobileJknController.php:93
 * @route '/api/mobilejkn/antrean/add'
 */
 export const add = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -36,6 +70,40 @@ add.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::panggil
 * @see app/Http/Controllers/Pcare/MobileJknController.php:393
+* @route '/api/permissions/mobilejkn/antrean/panggil'
+*/
+export const panggil = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: panggil.url(options),
+    method: 'post',
+})
+
+panggil.definition = {
+    methods: ["post"],
+    url: '/api/permissions/mobilejkn/antrean/panggil',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\MobileJknController::panggil
+* @see app/Http/Controllers/Pcare/MobileJknController.php:393
+* @route '/api/permissions/mobilejkn/antrean/panggil'
+*/
+panggil.url = (options?: RouteQueryOptions) => {
+    return panggil.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\MobileJknController::panggil
+* @see app/Http/Controllers/Pcare/MobileJknController.php:393
+* @route '/api/permissions/mobilejkn/antrean/panggil'
+*/
+panggil.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: panggil.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\MobileJknController::panggil
+* @see app/Http/Controllers/Pcare/MobileJknController.php:393
 * @route '/api/mobilejkn/antrean/panggil'
 */
 export const panggil = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -64,6 +132,40 @@ panggil.url = (options?: RouteQueryOptions) => {
 */
 panggil.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: panggil.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\MobileJknController::batal
+* @see app/Http/Controllers/Pcare/MobileJknController.php:564
+* @route '/api/permissions/mobilejkn/antrean/batal'
+*/
+export const batal = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: batal.url(options),
+    method: 'post',
+})
+
+batal.definition = {
+    methods: ["post"],
+    url: '/api/permissions/mobilejkn/antrean/batal',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\MobileJknController::batal
+* @see app/Http/Controllers/Pcare/MobileJknController.php:564
+* @route '/api/permissions/mobilejkn/antrean/batal'
+*/
+batal.url = (options?: RouteQueryOptions) => {
+    return batal.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\MobileJknController::batal
+* @see app/Http/Controllers/Pcare/MobileJknController.php:564
+* @route '/api/permissions/mobilejkn/antrean/batal'
+*/
+batal.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: batal.url(options),
     method: 'post',
 })
 

@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 /**
 * @see \App\Http\Controllers\SettingsController::active
 * @see app/Http/Controllers/SettingsController.php:15
-* @route '/api/settings/active'
+* @route '/api/permissions/settings/active'
 */
 export const active = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: active.url(options),
@@ -11,13 +11,13 @@ export const active = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 
 active.definition = {
     methods: ["get","head"],
-    url: '/api/settings/active',
+    url: '/api/permissions/settings/active',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\SettingsController::active
 * @see app/Http/Controllers/SettingsController.php:15
-* @route '/api/settings/active'
+* @route '/api/permissions/settings/active'
 */
 active.url = (options?: RouteQueryOptions) => {
     return active.definition.url + queryParams(options)
@@ -26,7 +26,7 @@ active.url = (options?: RouteQueryOptions) => {
 /**
 * @see \App\Http\Controllers\SettingsController::active
 * @see app/Http/Controllers/SettingsController.php:15
-* @route '/api/settings/active'
+* @route '/api/permissions/settings/active'
 */
 active.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: active.url(options),
@@ -36,7 +36,7 @@ active.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 * @see \App\Http\Controllers\SettingsController::active
 * @see app/Http/Controllers/SettingsController.php:15
-* @route '/api/settings/active'
+* @route '/api/permissions/settings/active'
 */
 active.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: active.url(options),

@@ -1,8 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\PenjabController::index
-<<<<<<< HEAD
-* @see app/Http/Controllers/PenjabController.php:12
+* @see app/Http/Controllers/PenjabController.php:13
 * @route '/pcare/penjab'
 */
 const indexfab484ba76b63dc606498c24161828b5 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,7 +16,7 @@ indexfab484ba76b63dc606498c24161828b5.definition = {
 
 /**
 * @see \App\Http\Controllers\PenjabController::index
-* @see app/Http/Controllers/PenjabController.php:12
+* @see app/Http/Controllers/PenjabController.php:13
 * @route '/pcare/penjab'
 */
 indexfab484ba76b63dc606498c24161828b5.url = (options?: RouteQueryOptions) => {
@@ -26,7 +25,7 @@ indexfab484ba76b63dc606498c24161828b5.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PenjabController::index
-* @see app/Http/Controllers/PenjabController.php:12
+* @see app/Http/Controllers/PenjabController.php:13
 * @route '/pcare/penjab'
 */
 indexfab484ba76b63dc606498c24161828b5.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -36,7 +35,7 @@ indexfab484ba76b63dc606498c24161828b5.get = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\PenjabController::index
-* @see app/Http/Controllers/PenjabController.php:12
+* @see app/Http/Controllers/PenjabController.php:13
 * @route '/pcare/penjab'
 */
 indexfab484ba76b63dc606498c24161828b5.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -46,10 +45,7 @@ indexfab484ba76b63dc606498c24161828b5.head = (options?: RouteQueryOptions): Rout
 
 /**
 * @see \App\Http\Controllers\PenjabController::index
-* @see app/Http/Controllers/PenjabController.php:12
-=======
 * @see app/Http/Controllers/PenjabController.php:13
->>>>>>> main
 * @route '/penjab'
 */
 const indexd0466d43e06e20c2b45f954575158c36 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -98,7 +94,7 @@ export const index = {
 
 /**
 * @see \App\Http\Controllers\PenjabController::store
-* @see app/Http/Controllers/PenjabController.php:33
+* @see app/Http/Controllers/PenjabController.php:34
 * @route '/pcare/penjab'
 */
 const storefab484ba76b63dc606498c24161828b5 = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -113,7 +109,7 @@ storefab484ba76b63dc606498c24161828b5.definition = {
 
 /**
 * @see \App\Http\Controllers\PenjabController::store
-* @see app/Http/Controllers/PenjabController.php:33
+* @see app/Http/Controllers/PenjabController.php:34
 * @route '/pcare/penjab'
 */
 storefab484ba76b63dc606498c24161828b5.url = (options?: RouteQueryOptions) => {
@@ -122,7 +118,7 @@ storefab484ba76b63dc606498c24161828b5.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PenjabController::store
-* @see app/Http/Controllers/PenjabController.php:33
+* @see app/Http/Controllers/PenjabController.php:34
 * @route '/pcare/penjab'
 */
 storefab484ba76b63dc606498c24161828b5.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -171,7 +167,7 @@ export const store = {
 
 /**
 * @see \App\Http\Controllers\PenjabController::update
-* @see app/Http/Controllers/PenjabController.php:61
+* @see app/Http/Controllers/PenjabController.php:110
 * @route '/pcare/penjab/{kd_pj}'
 */
 const update56036f1604813ae00186b557b2e6e101 = (args: { kd_pj: string | number } | [kd_pj: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -186,7 +182,7 @@ update56036f1604813ae00186b557b2e6e101.definition = {
 
 /**
 * @see \App\Http\Controllers\PenjabController::update
-* @see app/Http/Controllers/PenjabController.php:61
+* @see app/Http/Controllers/PenjabController.php:110
 * @route '/pcare/penjab/{kd_pj}'
 */
 update56036f1604813ae00186b557b2e6e101.url = (args: { kd_pj: string | number } | [kd_pj: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -213,7 +209,7 @@ update56036f1604813ae00186b557b2e6e101.url = (args: { kd_pj: string | number } |
 
 /**
 * @see \App\Http\Controllers\PenjabController::update
-* @see app/Http/Controllers/PenjabController.php:61
+* @see app/Http/Controllers/PenjabController.php:110
 * @route '/pcare/penjab/{kd_pj}'
 */
 update56036f1604813ae00186b557b2e6e101.put = (args: { kd_pj: string | number } | [kd_pj: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -280,13 +276,8 @@ export const update = {
 
 /**
 * @see \App\Http\Controllers\PenjabController::toggleStatus
-<<<<<<< HEAD
-* @see app/Http/Controllers/PenjabController.php:78
-* @route '/pcare/penjab/{kd_pj}/toggle-status'
-=======
 * @see app/Http/Controllers/PenjabController.php:127
-* @route '/penjab/{kd_pj}/toggle-status'
->>>>>>> main
+* @route '/pcare/penjab/{kd_pj}/toggle-status'
 */
 const toggleStatusdf3eced42e0108ac516047d61e284e07 = (args: { kd_pj: string | number } | [kd_pj: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: toggleStatusdf3eced42e0108ac516047d61e284e07.url(args, options),
@@ -300,13 +291,8 @@ toggleStatusdf3eced42e0108ac516047d61e284e07.definition = {
 
 /**
 * @see \App\Http\Controllers\PenjabController::toggleStatus
-<<<<<<< HEAD
-* @see app/Http/Controllers/PenjabController.php:78
-* @route '/pcare/penjab/{kd_pj}/toggle-status'
-=======
 * @see app/Http/Controllers/PenjabController.php:127
-* @route '/penjab/{kd_pj}/toggle-status'
->>>>>>> main
+* @route '/pcare/penjab/{kd_pj}/toggle-status'
 */
 toggleStatusdf3eced42e0108ac516047d61e284e07.url = (args: { kd_pj: string | number } | [kd_pj: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
@@ -332,7 +318,7 @@ toggleStatusdf3eced42e0108ac516047d61e284e07.url = (args: { kd_pj: string | numb
 
 /**
 * @see \App\Http\Controllers\PenjabController::toggleStatus
-* @see app/Http/Controllers/PenjabController.php:78
+* @see app/Http/Controllers/PenjabController.php:127
 * @route '/pcare/penjab/{kd_pj}/toggle-status'
 */
 toggleStatusdf3eced42e0108ac516047d61e284e07.patch = (args: { kd_pj: string | number } | [kd_pj: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -342,7 +328,7 @@ toggleStatusdf3eced42e0108ac516047d61e284e07.patch = (args: { kd_pj: string | nu
 
 /**
 * @see \App\Http\Controllers\PenjabController::toggleStatus
-* @see app/Http/Controllers/PenjabController.php:78
+* @see app/Http/Controllers/PenjabController.php:127
 * @route '/penjab/{kd_pj}/toggle-status'
 */
 const toggleStatuscd58cc4237ede117787bb11b624cb72b = (args: { kd_pj: string | number } | [kd_pj: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -357,7 +343,7 @@ toggleStatuscd58cc4237ede117787bb11b624cb72b.definition = {
 
 /**
 * @see \App\Http\Controllers\PenjabController::toggleStatus
-* @see app/Http/Controllers/PenjabController.php:78
+* @see app/Http/Controllers/PenjabController.php:127
 * @route '/penjab/{kd_pj}/toggle-status'
 */
 toggleStatuscd58cc4237ede117787bb11b624cb72b.url = (args: { kd_pj: string | number } | [kd_pj: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -392,14 +378,11 @@ toggleStatuscd58cc4237ede117787bb11b624cb72b.patch = (args: { kd_pj: string | nu
     method: 'patch',
 })
 
-<<<<<<< HEAD
 export const toggleStatus = {
     '/pcare/penjab/{kd_pj}/toggle-status': toggleStatusdf3eced42e0108ac516047d61e284e07,
     '/penjab/{kd_pj}/toggle-status': toggleStatuscd58cc4237ede117787bb11b624cb72b,
 }
 
-const PenjabController = { index, store, update, toggleStatus }
-=======
 /**
 * @see \App\Http\Controllers\PenjabController::generateKode
 * @see app/Http/Controllers/PenjabController.php:145
@@ -445,6 +428,5 @@ generateKode.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 const PenjabController = { index, store, update, toggleStatus, generateKode }
->>>>>>> main
 
 export default PenjabController

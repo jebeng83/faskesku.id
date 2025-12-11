@@ -5,9 +5,9 @@ import PatientController from './PatientController'
 import ReferenceController from './ReferenceController'
 import PerusahaanPasienController from './PerusahaanPasienController'
 import PermissionController from './PermissionController'
+import DokterController from './DokterController'
 import RegPeriksaController from './RegPeriksaController'
 import UserController from './UserController'
-import DokterController from './DokterController'
 import MenuSearchController from './MenuSearchController'
 
 const API = {
@@ -18,9 +18,9 @@ const API = {
     ReferenceController: Object.assign(ReferenceController, ReferenceController),
     PerusahaanPasienController: Object.assign(PerusahaanPasienController, PerusahaanPasienController),
     PermissionController: Object.assign(PermissionController, PermissionController),
+    DokterController: Object.assign(DokterController, DokterController),
     RegPeriksaController: Object.assign(RegPeriksaController, RegPeriksaController),
     UserController: Object.assign(UserController, UserController),
-    DokterController: Object.assign(DokterController, DokterController),
     MenuSearchController: Object.assign(MenuSearchController, MenuSearchController),
 }
 

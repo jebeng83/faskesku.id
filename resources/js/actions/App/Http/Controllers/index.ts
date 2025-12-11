@@ -1,7 +1,5 @@
 import API from './API'
 import PermintaanLabController from './PermintaanLabController'
-import MenuController from './MenuController'
-import RawatJalan from './RawatJalan'
 import PermintaanRadiologiController from './PermintaanRadiologiController'
 import SettingsController from './SettingsController'
 import OpnameController from './OpnameController'
@@ -12,6 +10,8 @@ import GudangBarangController from './GudangBarangController'
 import Kepegawaian from './Kepegawaian'
 import Pcare from './Pcare'
 import SatuSehat from './SatuSehat'
+import MenuController from './MenuController'
+import RawatJalan from './RawatJalan'
 import JadwalController from './JadwalController'
 import PoliklinikController from './PoliklinikController'
 import Akutansi from './Akutansi'
@@ -40,8 +40,6 @@ import PenjabController from './PenjabController'
 const Controllers = {
     API: Object.assign(API, API),
     PermintaanLabController: Object.assign(PermintaanLabController, PermintaanLabController),
-    MenuController: Object.assign(MenuController, MenuController),
-    RawatJalan: Object.assign(RawatJalan, RawatJalan),
     PermintaanRadiologiController: Object.assign(PermintaanRadiologiController, PermintaanRadiologiController),
     SettingsController: Object.assign(SettingsController, SettingsController),
     OpnameController: Object.assign(OpnameController, OpnameController),
@@ -52,6 +50,8 @@ const Controllers = {
     Kepegawaian: Object.assign(Kepegawaian, Kepegawaian),
     Pcare: Object.assign(Pcare, Pcare),
     SatuSehat: Object.assign(SatuSehat, SatuSehat),
+    MenuController: Object.assign(MenuController, MenuController),
+    RawatJalan: Object.assign(RawatJalan, RawatJalan),
     JadwalController: Object.assign(JadwalController, JadwalController),
     PoliklinikController: Object.assign(PoliklinikController, PoliklinikController),
     Akutansi: Object.assign(Akutansi, Akutansi),

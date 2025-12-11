@@ -7,6 +7,50 @@ import config from './config'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::ping
 * @see app/Http/Controllers/Pcare/PcareController.php:25
+* @route '/api/permissions/pcare/ping'
+*/
+export const ping = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: ping.url(options),
+    method: 'get',
+})
+
+ping.definition = {
+    methods: ["get","head"],
+    url: '/api/permissions/pcare/ping',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::ping
+* @see app/Http/Controllers/Pcare/PcareController.php:25
+* @route '/api/permissions/pcare/ping'
+*/
+ping.url = (options?: RouteQueryOptions) => {
+    return ping.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::ping
+* @see app/Http/Controllers/Pcare/PcareController.php:25
+* @route '/api/permissions/pcare/ping'
+*/
+ping.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: ping.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::ping
+* @see app/Http/Controllers/Pcare/PcareController.php:25
+* @route '/api/permissions/pcare/ping'
+*/
+ping.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: ping.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::ping
+* @see app/Http/Controllers/Pcare/PcareController.php:25
 * @route '/api/pcare/ping'
 */
 export const ping = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -45,6 +89,98 @@ ping.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 */
 ping.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: ping.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::proxy
+* @see app/Http/Controllers/Pcare/PcareController.php:46
+* @route '/api/permissions/pcare/proxy/{endpoint}'
+*/
+export const proxy = (args: { endpoint: string | number } | [endpoint: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: proxy.url(args, options),
+    method: 'get',
+})
+
+proxy.definition = {
+    methods: ["get","post","put","delete","head"],
+    url: '/api/permissions/pcare/proxy/{endpoint}',
+} satisfies RouteDefinition<["get","post","put","delete","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::proxy
+* @see app/Http/Controllers/Pcare/PcareController.php:46
+* @route '/api/permissions/pcare/proxy/{endpoint}'
+*/
+proxy.url = (args: { endpoint: string | number } | [endpoint: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { endpoint: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            endpoint: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        endpoint: args.endpoint,
+    }
+
+    return proxy.definition.url
+            .replace('{endpoint}', parsedArgs.endpoint.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::proxy
+* @see app/Http/Controllers/Pcare/PcareController.php:46
+* @route '/api/permissions/pcare/proxy/{endpoint}'
+*/
+proxy.get = (args: { endpoint: string | number } | [endpoint: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: proxy.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::proxy
+* @see app/Http/Controllers/Pcare/PcareController.php:46
+* @route '/api/permissions/pcare/proxy/{endpoint}'
+*/
+proxy.post = (args: { endpoint: string | number } | [endpoint: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: proxy.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::proxy
+* @see app/Http/Controllers/Pcare/PcareController.php:46
+* @route '/api/permissions/pcare/proxy/{endpoint}'
+*/
+proxy.put = (args: { endpoint: string | number } | [endpoint: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+    url: proxy.url(args, options),
+    method: 'put',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::proxy
+* @see app/Http/Controllers/Pcare/PcareController.php:46
+* @route '/api/permissions/pcare/proxy/{endpoint}'
+*/
+proxy.delete = (args: { endpoint: string | number } | [endpoint: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+    url: proxy.url(args, options),
+    method: 'delete',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::proxy
+* @see app/Http/Controllers/Pcare/PcareController.php:46
+* @route '/api/permissions/pcare/proxy/{endpoint}'
+*/
+proxy.head = (args: { endpoint: string | number } | [endpoint: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: proxy.url(args, options),
     method: 'head',
 })
 
@@ -143,6 +279,50 @@ proxy.head = (args: { endpoint: string | number } | [endpoint: string | number ]
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::dokter
 * @see app/Http/Controllers/Pcare/PcareController.php:89
+* @route '/api/permissions/pcare/dokter'
+*/
+export const dokter = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: dokter.url(options),
+    method: 'get',
+})
+
+dokter.definition = {
+    methods: ["get","head"],
+    url: '/api/permissions/pcare/dokter',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::dokter
+* @see app/Http/Controllers/Pcare/PcareController.php:89
+* @route '/api/permissions/pcare/dokter'
+*/
+dokter.url = (options?: RouteQueryOptions) => {
+    return dokter.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::dokter
+* @see app/Http/Controllers/Pcare/PcareController.php:89
+* @route '/api/permissions/pcare/dokter'
+*/
+dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: dokter.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::dokter
+* @see app/Http/Controllers/Pcare/PcareController.php:89
+* @route '/api/permissions/pcare/dokter'
+*/
+dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: dokter.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::dokter
+* @see app/Http/Controllers/Pcare/PcareController.php:89
 * @route '/api/pcare/dokter'
 */
 export const dokter = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -181,6 +361,50 @@ dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 */
 dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: dokter.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::diagnosa
+* @see app/Http/Controllers/Pcare/PcareController.php:1603
+* @route '/api/permissions/pcare/diagnosa'
+*/
+export const diagnosa = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: diagnosa.url(options),
+    method: 'get',
+})
+
+diagnosa.definition = {
+    methods: ["get","head"],
+    url: '/api/permissions/pcare/diagnosa',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::diagnosa
+* @see app/Http/Controllers/Pcare/PcareController.php:1603
+* @route '/api/permissions/pcare/diagnosa'
+*/
+diagnosa.url = (options?: RouteQueryOptions) => {
+    return diagnosa.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::diagnosa
+* @see app/Http/Controllers/Pcare/PcareController.php:1603
+* @route '/api/permissions/pcare/diagnosa'
+*/
+diagnosa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: diagnosa.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::diagnosa
+* @see app/Http/Controllers/Pcare/PcareController.php:1603
+* @route '/api/permissions/pcare/diagnosa'
+*/
+diagnosa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: diagnosa.url(options),
     method: 'head',
 })
 
@@ -231,6 +455,50 @@ diagnosa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::faskes
 * @see app/Http/Controllers/Pcare/PcareController.php:136
+* @route '/api/permissions/pcare/faskes'
+*/
+export const faskes = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: faskes.url(options),
+    method: 'get',
+})
+
+faskes.definition = {
+    methods: ["get","head"],
+    url: '/api/permissions/pcare/faskes',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::faskes
+* @see app/Http/Controllers/Pcare/PcareController.php:136
+* @route '/api/permissions/pcare/faskes'
+*/
+faskes.url = (options?: RouteQueryOptions) => {
+    return faskes.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::faskes
+* @see app/Http/Controllers/Pcare/PcareController.php:136
+* @route '/api/permissions/pcare/faskes'
+*/
+faskes.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: faskes.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::faskes
+* @see app/Http/Controllers/Pcare/PcareController.php:136
+* @route '/api/permissions/pcare/faskes'
+*/
+faskes.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: faskes.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::faskes
+* @see app/Http/Controllers/Pcare/PcareController.php:136
 * @route '/api/pcare/faskes'
 */
 export const faskes = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -269,6 +537,50 @@ faskes.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 */
 faskes.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: faskes.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::poli
+* @see app/Http/Controllers/Pcare/PcareController.php:183
+* @route '/api/permissions/pcare/poli'
+*/
+export const poli = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: poli.url(options),
+    method: 'get',
+})
+
+poli.definition = {
+    methods: ["get","head"],
+    url: '/api/permissions/pcare/poli',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::poli
+* @see app/Http/Controllers/Pcare/PcareController.php:183
+* @route '/api/permissions/pcare/poli'
+*/
+poli.url = (options?: RouteQueryOptions) => {
+    return poli.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::poli
+* @see app/Http/Controllers/Pcare/PcareController.php:183
+* @route '/api/permissions/pcare/poli'
+*/
+poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: poli.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::poli
+* @see app/Http/Controllers/Pcare/PcareController.php:183
+* @route '/api/permissions/pcare/poli'
+*/
+poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: poli.url(options),
     method: 'head',
 })
 
@@ -319,6 +631,50 @@ poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::kesadaran
 * @see app/Http/Controllers/Pcare/PcareController.php:230
+* @route '/api/permissions/pcare/kesadaran'
+*/
+export const kesadaran = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: kesadaran.url(options),
+    method: 'get',
+})
+
+kesadaran.definition = {
+    methods: ["get","head"],
+    url: '/api/permissions/pcare/kesadaran',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::kesadaran
+* @see app/Http/Controllers/Pcare/PcareController.php:230
+* @route '/api/permissions/pcare/kesadaran'
+*/
+kesadaran.url = (options?: RouteQueryOptions) => {
+    return kesadaran.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::kesadaran
+* @see app/Http/Controllers/Pcare/PcareController.php:230
+* @route '/api/permissions/pcare/kesadaran'
+*/
+kesadaran.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: kesadaran.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::kesadaran
+* @see app/Http/Controllers/Pcare/PcareController.php:230
+* @route '/api/permissions/pcare/kesadaran'
+*/
+kesadaran.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: kesadaran.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::kesadaran
+* @see app/Http/Controllers/Pcare/PcareController.php:230
 * @route '/api/pcare/kesadaran'
 */
 export const kesadaran = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -357,6 +713,50 @@ kesadaran.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 */
 kesadaran.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: kesadaran.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::dpho
+* @see app/Http/Controllers/Pcare/PcareController.php:1643
+* @route '/api/permissions/pcare/dpho'
+*/
+export const dpho = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: dpho.url(options),
+    method: 'get',
+})
+
+dpho.definition = {
+    methods: ["get","head"],
+    url: '/api/permissions/pcare/dpho',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::dpho
+* @see app/Http/Controllers/Pcare/PcareController.php:1643
+* @route '/api/permissions/pcare/dpho'
+*/
+dpho.url = (options?: RouteQueryOptions) => {
+    return dpho.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::dpho
+* @see app/Http/Controllers/Pcare/PcareController.php:1643
+* @route '/api/permissions/pcare/dpho'
+*/
+dpho.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: dpho.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::dpho
+* @see app/Http/Controllers/Pcare/PcareController.php:1643
+* @route '/api/permissions/pcare/dpho'
+*/
+dpho.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: dpho.url(options),
     method: 'head',
 })
 
@@ -407,6 +807,50 @@ dpho.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::tindakan
 * @see app/Http/Controllers/Pcare/PcareController.php:1694
+* @route '/api/permissions/pcare/tindakan'
+*/
+export const tindakan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: tindakan.url(options),
+    method: 'get',
+})
+
+tindakan.definition = {
+    methods: ["get","head"],
+    url: '/api/permissions/pcare/tindakan',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::tindakan
+* @see app/Http/Controllers/Pcare/PcareController.php:1694
+* @route '/api/permissions/pcare/tindakan'
+*/
+tindakan.url = (options?: RouteQueryOptions) => {
+    return tindakan.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::tindakan
+* @see app/Http/Controllers/Pcare/PcareController.php:1694
+* @route '/api/permissions/pcare/tindakan'
+*/
+tindakan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: tindakan.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::tindakan
+* @see app/Http/Controllers/Pcare/PcareController.php:1694
+* @route '/api/permissions/pcare/tindakan'
+*/
+tindakan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: tindakan.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::tindakan
+* @see app/Http/Controllers/Pcare/PcareController.php:1694
 * @route '/api/pcare/tindakan'
 */
 export const tindakan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -445,6 +889,50 @@ tindakan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 */
 tindakan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: tindakan.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::provider
+* @see app/Http/Controllers/Pcare/PcareController.php:1763
+* @route '/api/permissions/pcare/provider'
+*/
+export const provider = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: provider.url(options),
+    method: 'get',
+})
+
+provider.definition = {
+    methods: ["get","head"],
+    url: '/api/permissions/pcare/provider',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::provider
+* @see app/Http/Controllers/Pcare/PcareController.php:1763
+* @route '/api/permissions/pcare/provider'
+*/
+provider.url = (options?: RouteQueryOptions) => {
+    return provider.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::provider
+* @see app/Http/Controllers/Pcare/PcareController.php:1763
+* @route '/api/permissions/pcare/provider'
+*/
+provider.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: provider.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::provider
+* @see app/Http/Controllers/Pcare/PcareController.php:1763
+* @route '/api/permissions/pcare/provider'
+*/
+provider.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: provider.url(options),
     method: 'head',
 })
 
@@ -495,6 +983,50 @@ provider.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::spesialis
 * @see app/Http/Controllers/Pcare/PcareController.php:1780
+* @route '/api/permissions/pcare/spesialis'
+*/
+export const spesialis = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: spesialis.url(options),
+    method: 'get',
+})
+
+spesialis.definition = {
+    methods: ["get","head"],
+    url: '/api/permissions/pcare/spesialis',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::spesialis
+* @see app/Http/Controllers/Pcare/PcareController.php:1780
+* @route '/api/permissions/pcare/spesialis'
+*/
+spesialis.url = (options?: RouteQueryOptions) => {
+    return spesialis.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::spesialis
+* @see app/Http/Controllers/Pcare/PcareController.php:1780
+* @route '/api/permissions/pcare/spesialis'
+*/
+spesialis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: spesialis.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::spesialis
+* @see app/Http/Controllers/Pcare/PcareController.php:1780
+* @route '/api/permissions/pcare/spesialis'
+*/
+spesialis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: spesialis.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::spesialis
+* @see app/Http/Controllers/Pcare/PcareController.php:1780
 * @route '/api/pcare/spesialis'
 */
 export const spesialis = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -533,6 +1065,50 @@ spesialis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 */
 spesialis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: spesialis.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::subspesialis
+* @see app/Http/Controllers/Pcare/PcareController.php:1796
+* @route '/api/permissions/pcare/spesialis/subspesialis'
+*/
+export const subspesialis = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: subspesialis.url(options),
+    method: 'get',
+})
+
+subspesialis.definition = {
+    methods: ["get","head"],
+    url: '/api/permissions/pcare/spesialis/subspesialis',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::subspesialis
+* @see app/Http/Controllers/Pcare/PcareController.php:1796
+* @route '/api/permissions/pcare/spesialis/subspesialis'
+*/
+subspesialis.url = (options?: RouteQueryOptions) => {
+    return subspesialis.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::subspesialis
+* @see app/Http/Controllers/Pcare/PcareController.php:1796
+* @route '/api/permissions/pcare/spesialis/subspesialis'
+*/
+subspesialis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: subspesialis.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::subspesialis
+* @see app/Http/Controllers/Pcare/PcareController.php:1796
+* @route '/api/permissions/pcare/spesialis/subspesialis'
+*/
+subspesialis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: subspesialis.url(options),
     method: 'head',
 })
 
@@ -583,6 +1159,50 @@ subspesialis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::sarana
 * @see app/Http/Controllers/Pcare/PcareController.php:1865
+* @route '/api/permissions/pcare/spesialis/sarana'
+*/
+export const sarana = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: sarana.url(options),
+    method: 'get',
+})
+
+sarana.definition = {
+    methods: ["get","head"],
+    url: '/api/permissions/pcare/spesialis/sarana',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::sarana
+* @see app/Http/Controllers/Pcare/PcareController.php:1865
+* @route '/api/permissions/pcare/spesialis/sarana'
+*/
+sarana.url = (options?: RouteQueryOptions) => {
+    return sarana.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::sarana
+* @see app/Http/Controllers/Pcare/PcareController.php:1865
+* @route '/api/permissions/pcare/spesialis/sarana'
+*/
+sarana.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: sarana.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::sarana
+* @see app/Http/Controllers/Pcare/PcareController.php:1865
+* @route '/api/permissions/pcare/spesialis/sarana'
+*/
+sarana.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: sarana.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::sarana
+* @see app/Http/Controllers/Pcare/PcareController.php:1865
 * @route '/api/pcare/spesialis/sarana'
 */
 export const sarana = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -621,6 +1241,50 @@ sarana.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 */
 sarana.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: sarana.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::khusus
+* @see app/Http/Controllers/Pcare/PcareController.php:1880
+* @route '/api/permissions/pcare/spesialis/khusus'
+*/
+export const khusus = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: khusus.url(options),
+    method: 'get',
+})
+
+khusus.definition = {
+    methods: ["get","head"],
+    url: '/api/permissions/pcare/spesialis/khusus',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::khusus
+* @see app/Http/Controllers/Pcare/PcareController.php:1880
+* @route '/api/permissions/pcare/spesialis/khusus'
+*/
+khusus.url = (options?: RouteQueryOptions) => {
+    return khusus.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::khusus
+* @see app/Http/Controllers/Pcare/PcareController.php:1880
+* @route '/api/permissions/pcare/spesialis/khusus'
+*/
+khusus.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: khusus.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::khusus
+* @see app/Http/Controllers/Pcare/PcareController.php:1880
+* @route '/api/permissions/pcare/spesialis/khusus'
+*/
+khusus.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: khusus.url(options),
     method: 'head',
 })
 
@@ -671,6 +1335,50 @@ khusus.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::prognosa
 * @see app/Http/Controllers/Pcare/PcareController.php:1928
+* @route '/api/permissions/pcare/prognosa'
+*/
+export const prognosa = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: prognosa.url(options),
+    method: 'get',
+})
+
+prognosa.definition = {
+    methods: ["get","head"],
+    url: '/api/permissions/pcare/prognosa',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::prognosa
+* @see app/Http/Controllers/Pcare/PcareController.php:1928
+* @route '/api/permissions/pcare/prognosa'
+*/
+prognosa.url = (options?: RouteQueryOptions) => {
+    return prognosa.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::prognosa
+* @see app/Http/Controllers/Pcare/PcareController.php:1928
+* @route '/api/permissions/pcare/prognosa'
+*/
+prognosa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: prognosa.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::prognosa
+* @see app/Http/Controllers/Pcare/PcareController.php:1928
+* @route '/api/permissions/pcare/prognosa'
+*/
+prognosa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: prognosa.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::prognosa
+* @see app/Http/Controllers/Pcare/PcareController.php:1928
 * @route '/api/pcare/prognosa'
 */
 export const prognosa = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -709,6 +1417,50 @@ prognosa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 */
 prognosa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: prognosa.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::alergi
+* @see app/Http/Controllers/Pcare/PcareController.php:1896
+* @route '/api/permissions/pcare/alergi'
+*/
+export const alergi = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: alergi.url(options),
+    method: 'get',
+})
+
+alergi.definition = {
+    methods: ["get","head"],
+    url: '/api/permissions/pcare/alergi',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::alergi
+* @see app/Http/Controllers/Pcare/PcareController.php:1896
+* @route '/api/permissions/pcare/alergi'
+*/
+alergi.url = (options?: RouteQueryOptions) => {
+    return alergi.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::alergi
+* @see app/Http/Controllers/Pcare/PcareController.php:1896
+* @route '/api/permissions/pcare/alergi'
+*/
+alergi.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: alergi.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::alergi
+* @see app/Http/Controllers/Pcare/PcareController.php:1896
+* @route '/api/permissions/pcare/alergi'
+*/
+alergi.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: alergi.url(options),
     method: 'head',
 })
 
@@ -759,6 +1511,50 @@ alergi.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::statuspulang
 * @see app/Http/Controllers/Pcare/PcareController.php:1944
+* @route '/api/permissions/pcare/statuspulang'
+*/
+export const statuspulang = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: statuspulang.url(options),
+    method: 'get',
+})
+
+statuspulang.definition = {
+    methods: ["get","head"],
+    url: '/api/permissions/pcare/statuspulang',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::statuspulang
+* @see app/Http/Controllers/Pcare/PcareController.php:1944
+* @route '/api/permissions/pcare/statuspulang'
+*/
+statuspulang.url = (options?: RouteQueryOptions) => {
+    return statuspulang.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::statuspulang
+* @see app/Http/Controllers/Pcare/PcareController.php:1944
+* @route '/api/permissions/pcare/statuspulang'
+*/
+statuspulang.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: statuspulang.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::statuspulang
+* @see app/Http/Controllers/Pcare/PcareController.php:1944
+* @route '/api/permissions/pcare/statuspulang'
+*/
+statuspulang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: statuspulang.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::statuspulang
+* @see app/Http/Controllers/Pcare/PcareController.php:1944
 * @route '/api/pcare/statuspulang'
 */
 export const statuspulang = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -797,6 +1593,67 @@ statuspulang.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 */
 statuspulang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: statuspulang.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::pesertaNokartu
+* @see app/Http/Controllers/Pcare/PcareController.php:272
+* @route '/api/permissions/pcare/peserta/{noka}/{tglPelayanan}'
+*/
+export const pesertaNokartu = (args: { noka: string | number, tglPelayanan: string | number } | [noka: string | number, tglPelayanan: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: pesertaNokartu.url(args, options),
+    method: 'get',
+})
+
+pesertaNokartu.definition = {
+    methods: ["get","head"],
+    url: '/api/permissions/pcare/peserta/{noka}/{tglPelayanan}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::pesertaNokartu
+* @see app/Http/Controllers/Pcare/PcareController.php:272
+* @route '/api/permissions/pcare/peserta/{noka}/{tglPelayanan}'
+*/
+pesertaNokartu.url = (args: { noka: string | number, tglPelayanan: string | number } | [noka: string | number, tglPelayanan: string | number ], options?: RouteQueryOptions) => {
+    if (Array.isArray(args)) {
+        args = {
+            noka: args[0],
+            tglPelayanan: args[1],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        noka: args.noka,
+        tglPelayanan: args.tglPelayanan,
+    }
+
+    return pesertaNokartu.definition.url
+            .replace('{noka}', parsedArgs.noka.toString())
+            .replace('{tglPelayanan}', parsedArgs.tglPelayanan.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::pesertaNokartu
+* @see app/Http/Controllers/Pcare/PcareController.php:272
+* @route '/api/permissions/pcare/peserta/{noka}/{tglPelayanan}'
+*/
+pesertaNokartu.get = (args: { noka: string | number, tglPelayanan: string | number } | [noka: string | number, tglPelayanan: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: pesertaNokartu.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::pesertaNokartu
+* @see app/Http/Controllers/Pcare/PcareController.php:272
+* @route '/api/permissions/pcare/peserta/{noka}/{tglPelayanan}'
+*/
+pesertaNokartu.head = (args: { noka: string | number, tglPelayanan: string | number } | [noka: string | number, tglPelayanan: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: pesertaNokartu.url(args, options),
     method: 'head',
 })
 

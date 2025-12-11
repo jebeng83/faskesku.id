@@ -2,14 +2,58 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 /**
 * @see \App\Http\Controllers\Kepegawaian\DepartemenController::index
 * @see app/Http/Controllers/Kepegawaian/DepartemenController.php:20
-* @route '/api/departemen'
+* @route '/api/permissions/departemen'
 */
-export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: index.url(options),
+const index92d85d9d8bb5cb4d78573cbb954f120e = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index92d85d9d8bb5cb4d78573cbb954f120e.url(options),
     method: 'get',
 })
 
-index.definition = {
+index92d85d9d8bb5cb4d78573cbb954f120e.definition = {
+    methods: ["get","head"],
+    url: '/api/permissions/departemen',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Kepegawaian\DepartemenController::index
+* @see app/Http/Controllers/Kepegawaian/DepartemenController.php:20
+* @route '/api/permissions/departemen'
+*/
+index92d85d9d8bb5cb4d78573cbb954f120e.url = (options?: RouteQueryOptions) => {
+    return index92d85d9d8bb5cb4d78573cbb954f120e.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Kepegawaian\DepartemenController::index
+* @see app/Http/Controllers/Kepegawaian/DepartemenController.php:20
+* @route '/api/permissions/departemen'
+*/
+index92d85d9d8bb5cb4d78573cbb954f120e.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index92d85d9d8bb5cb4d78573cbb954f120e.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Kepegawaian\DepartemenController::index
+* @see app/Http/Controllers/Kepegawaian/DepartemenController.php:20
+* @route '/api/permissions/departemen'
+*/
+index92d85d9d8bb5cb4d78573cbb954f120e.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: index92d85d9d8bb5cb4d78573cbb954f120e.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Kepegawaian\DepartemenController::index
+* @see app/Http/Controllers/Kepegawaian/DepartemenController.php:20
+* @route '/api/departemen'
+*/
+const index23bccff99181a3bb93165783bcb4d62c = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index23bccff99181a3bb93165783bcb4d62c.url(options),
+    method: 'get',
+})
+
+index23bccff99181a3bb93165783bcb4d62c.definition = {
     methods: ["get","head"],
     url: '/api/departemen',
 } satisfies RouteDefinition<["get","head"]>
@@ -19,8 +63,8 @@ index.definition = {
 * @see app/Http/Controllers/Kepegawaian/DepartemenController.php:20
 * @route '/api/departemen'
 */
-index.url = (options?: RouteQueryOptions) => {
-    return index.definition.url + queryParams(options)
+index23bccff99181a3bb93165783bcb4d62c.url = (options?: RouteQueryOptions) => {
+    return index23bccff99181a3bb93165783bcb4d62c.definition.url + queryParams(options)
 }
 
 /**
@@ -28,8 +72,8 @@ index.url = (options?: RouteQueryOptions) => {
 * @see app/Http/Controllers/Kepegawaian/DepartemenController.php:20
 * @route '/api/departemen'
 */
-index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: index.url(options),
+index23bccff99181a3bb93165783bcb4d62c.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index23bccff99181a3bb93165783bcb4d62c.url(options),
     method: 'get',
 })
 
@@ -38,10 +82,15 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 * @see app/Http/Controllers/Kepegawaian/DepartemenController.php:20
 * @route '/api/departemen'
 */
-index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: index.url(options),
+index23bccff99181a3bb93165783bcb4d62c.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: index23bccff99181a3bb93165783bcb4d62c.url(options),
     method: 'head',
 })
+
+export const index = {
+    '/api/permissions/departemen': index92d85d9d8bb5cb4d78573cbb954f120e,
+    '/api/departemen': index23bccff99181a3bb93165783bcb4d62c,
+}
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\DepartemenController::store

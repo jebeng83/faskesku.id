@@ -1,14 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:466
-=======
-* @see routes/web.php:507
->>>>>>> main
-=======
-* @see routes/web.php:923
->>>>>>> main
+* @see routes/web.php:929
 * @route '/pcare/referensi-mobilejkn/poli'
 */
 export const poli = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -22,15 +14,7 @@ poli.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:466
-=======
-* @see routes/web.php:507
->>>>>>> main
-=======
-* @see routes/web.php:923
->>>>>>> main
+* @see routes/web.php:929
 * @route '/pcare/referensi-mobilejkn/poli'
 */
 poli.url = (options?: RouteQueryOptions) => {
@@ -38,15 +22,7 @@ poli.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:466
-=======
-* @see routes/web.php:507
->>>>>>> main
-=======
-* @see routes/web.php:923
->>>>>>> main
+* @see routes/web.php:929
 * @route '/pcare/referensi-mobilejkn/poli'
 */
 poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -55,15 +31,7 @@ poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:466
-=======
-* @see routes/web.php:507
->>>>>>> main
-=======
-* @see routes/web.php:923
->>>>>>> main
+* @see routes/web.php:929
 * @route '/pcare/referensi-mobilejkn/poli'
 */
 poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -72,15 +40,7 @@ poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:471
-=======
-* @see routes/web.php:512
->>>>>>> main
-=======
-* @see routes/web.php:928
->>>>>>> main
+* @see routes/web.php:934
 * @route '/pcare/referensi-mobilejkn/dokter'
 */
 export const dokter = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,15 +54,7 @@ dokter.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:471
-=======
-* @see routes/web.php:512
->>>>>>> main
-=======
-* @see routes/web.php:928
->>>>>>> main
+* @see routes/web.php:934
 * @route '/pcare/referensi-mobilejkn/dokter'
 */
 dokter.url = (options?: RouteQueryOptions) => {
@@ -110,15 +62,7 @@ dokter.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:471
-=======
-* @see routes/web.php:512
->>>>>>> main
-=======
-* @see routes/web.php:928
->>>>>>> main
+* @see routes/web.php:934
 * @route '/pcare/referensi-mobilejkn/dokter'
 */
 dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -127,15 +71,7 @@ dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:471
-=======
-* @see routes/web.php:512
->>>>>>> main
-=======
-* @see routes/web.php:928
->>>>>>> main
+* @see routes/web.php:934
 * @route '/pcare/referensi-mobilejkn/dokter'
 */
 dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

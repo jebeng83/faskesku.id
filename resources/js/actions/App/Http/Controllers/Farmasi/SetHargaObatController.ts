@@ -2,6 +2,50 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefa
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
 * @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
+* @route '/api/permissions/set-harga-obat'
+*/
+const getPercentageData38c0dcb6286c0bebb0d75d5c63f777b3 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getPercentageData38c0dcb6286c0bebb0d75d5c63f777b3.url(options),
+    method: 'get',
+})
+
+getPercentageData38c0dcb6286c0bebb0d75d5c63f777b3.definition = {
+    methods: ["get","head"],
+    url: '/api/permissions/set-harga-obat',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
+* @route '/api/permissions/set-harga-obat'
+*/
+getPercentageData38c0dcb6286c0bebb0d75d5c63f777b3.url = (options?: RouteQueryOptions) => {
+    return getPercentageData38c0dcb6286c0bebb0d75d5c63f777b3.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
+* @route '/api/permissions/set-harga-obat'
+*/
+getPercentageData38c0dcb6286c0bebb0d75d5c63f777b3.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getPercentageData38c0dcb6286c0bebb0d75d5c63f777b3.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
+* @route '/api/permissions/set-harga-obat'
+*/
+getPercentageData38c0dcb6286c0bebb0d75d5c63f777b3.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getPercentageData38c0dcb6286c0bebb0d75d5c63f777b3.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Farmasi\SetHargaObatController::getPercentageData
+* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
 * @route '/api/set-harga-obat'
 */
 const getPercentageDatad6bb6e085ea43cb89f88eead49a50c62 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -88,6 +132,7 @@ getPercentageData3f776a6ffcf1045714a07bb1ca44f250.head = (options?: RouteQueryOp
 })
 
 export const getPercentageData = {
+    '/api/permissions/set-harga-obat': getPercentageData38c0dcb6286c0bebb0d75d5c63f777b3,
     '/api/set-harga-obat': getPercentageDatad6bb6e085ea43cb89f88eead49a50c62,
     '/farmasi/set-harga-obat/json': getPercentageData3f776a6ffcf1045714a07bb1ca44f250,
 }
