@@ -905,241 +905,114 @@ export default function Registration({
 
             {/* Stats Cards */}
             <motion.div
-                className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 lg:gap-4 mb-6"
+                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1 mb-2"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
             >
                 {/* Total Registrasi */}
                 <motion.div
-                    className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/30 p-4 rounded-xl border border-blue-200 dark:border-blue-700/50"
+                    className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/30 p-1 rounded-sm border border-blue-200 dark:border-blue-700/50"
                     whileHover={{ scale: 1.02, y: -2 }}
                     transition={{ duration: 0.2 }}
                 >
                     <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-xs lg:text-sm font-medium text-blue-600 dark:text-blue-400">
-                                Total
-                            </p>
-                            <p className="text-xl lg:text-2xl font-bold text-blue-700 dark:text-blue-300">
-                                {stats.total}
-                            </p>
-                        </div>
-                        <div className="p-2 bg-blue-500 rounded-lg">
-                            <svg
-                                className="w-4 h-4 text-white"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                />
+                        <div className="flex items-center gap-1">
+                            <svg className="w-3 h-3 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
+                            <p className="text-xs font-medium text-blue-600 dark:text-blue-400">Total</p>
                         </div>
+                        <p className="text-sm font-bold text-blue-700 dark:text-blue-300">{stats.total}</p>
                     </div>
                 </motion.div>
 
                 {/* Status Belum */}
                 <motion.div
-                    className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/30 p-4 rounded-xl border border-red-200 dark:border-red-700/50"
+                    className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/30 p-1 rounded-sm border border-red-200 dark:border-red-700/50"
                     whileHover={{ scale: 1.02, y: -2 }}
                     transition={{ duration: 0.2 }}
                 >
                     <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-xs lg:text-sm font-medium text-red-600 dark:text-red-400">
-                                Belum
-                            </p>
-                            <p className="text-xl lg:text-2xl font-bold text-red-700 dark:text-red-300">
-                                {stats.belum}
-                            </p>
-                        </div>
-                        <div className="p-2 bg-red-500 rounded-lg">
-                            <svg
-                                className="w-4 h-4 text-white"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
+                        <div className="flex items-center gap-1">
+                            <svg className="w-3 h-3 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
+                            <p className="text-xs font-medium text-red-600 dark:text-red-400">Belum</p>
                         </div>
+                        <p className="text-sm font-bold text-red-700 dark:text-red-300">{stats.belum}</p>
                     </div>
                 </motion.div>
 
                 {/* Status Selesai */}
                 <motion.div
-                    className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/30 p-4 rounded-xl border border-green-200 dark:border-green-700/50"
+                    className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/30 p-1 rounded-sm border border-green-200 dark:border-green-700/50"
                     whileHover={{ scale: 1.02, y: -2 }}
                     transition={{ duration: 0.2 }}
                 >
                     <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-xs lg:text-sm font-medium text-green-600 dark:text-green-400">
-                                Selesai
-                            </p>
-                            <p className="text-xl lg:text-2xl font-bold text-green-700 dark:text-green-300">
-                                {stats.selesai}
-                            </p>
-                        </div>
-                        <div className="p-2 bg-green-500 rounded-lg">
-                            <svg
-                                className="w-4 h-4 text-white"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M5 13l4 4L19 7"
-                                />
+                        <div className="flex items-center gap-1">
+                            <svg className="w-3 h-3 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
+                            <p className="text-xs font-medium text-green-600 dark:text-green-400">Selesai</p>
                         </div>
+                        <p className="text-sm font-bold text-green-700 dark:text-green-300">{stats.selesai}</p>
                     </div>
                 </motion.div>
 
                 {/* Status Batal */}
                 <motion.div
-                    className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900/20 dark:to-gray-800/30 p-4 rounded-xl border border-gray-200 dark:border-gray-700/50"
+                    className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900/20 dark:to-gray-800/30 p-1 rounded-sm border border-gray-200 dark:border-gray-700/50"
                     whileHover={{ scale: 1.02, y: -2 }}
                     transition={{ duration: 0.2 }}
                 >
                     <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-xs lg:text-sm font-medium text-gray-600 dark:text-gray-400">
-                                Batal
-                            </p>
-                            <p className="text-xl lg:text-2xl font-bold text-gray-700 dark:text-gray-300">
-                                {stats.batal}
-                            </p>
-                        </div>
-                        <div className="p-2 bg-gray-500 rounded-lg">
-                            <svg
-                                className="w-4 h-4 text-white"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M6 18L18 6M6 6l12 12"
-                                />
+                        <div className="flex items-center gap-1">
+                            <svg className="w-3 h-3 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
+                            <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Batal</p>
                         </div>
+                        <p className="text-sm font-bold text-gray-700 dark:text-gray-300">{stats.batal}</p>
                     </div>
                 </motion.div>
 
                 {/* Pasien Baru */}
                 <motion.div
-                    className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/30 p-4 rounded-xl border border-purple-200 dark:border-purple-700/50"
+                    className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/30 p-1 rounded-sm border border-purple-200 dark:border-purple-700/50"
                     whileHover={{ scale: 1.02, y: -2 }}
                     transition={{ duration: 0.2 }}
                 >
                     <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-xs lg:text-sm font-medium text-purple-600 dark:text-purple-400">
-                                Baru
-                            </p>
-                            <p className="text-xl lg:text-2xl font-bold text-purple-700 dark:text-purple-300">
-                                {stats.baru}
-                            </p>
-                        </div>
-                        <div className="p-2 bg-purple-500 rounded-lg">
-                            <svg
-                                className="w-4 h-4 text-white"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                                />
+                        <div className="flex items-center gap-1">
+                            <svg className="w-3 h-3 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                             </svg>
+                            <p className="text-xs font-medium text-purple-600 dark:text-purple-400">Baru</p>
                         </div>
+                        <p className="text-sm font-bold text-purple-700 dark:text-purple-300">{stats.baru}</p>
                     </div>
                 </motion.div>
 
                 {/* Pasien Lama */}
                 <motion.div
-                    className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/30 p-4 rounded-xl border border-orange-200 dark:border-orange-700/50"
+                    className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/30 p-1 rounded-sm border border-orange-200 dark:border-orange-700/50"
                     whileHover={{ scale: 1.02, y: -2 }}
                     transition={{ duration: 0.2 }}
                 >
                     <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-xs lg:text-sm font-medium text-orange-600 dark:text-orange-400">
-                                Lama
-                            </p>
-                            <p className="text-xl lg:text-2xl font-bold text-orange-700 dark:text-orange-300">
-                                {stats.lama}
-                            </p>
-                        </div>
-                        <div className="p-2 bg-orange-500 rounded-lg">
-                            <svg
-                                className="w-4 h-4 text-white"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                />
+                        <div className="flex items-center gap-1">
+                            <svg className="w-3 h-3 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
+                            <p className="text-xs font-medium text-orange-600 dark:text-orange-400">Lama</p>
                         </div>
+                        <p className="text-sm font-bold text-orange-700 dark:text-orange-300">{stats.lama}</p>
                     </div>
                 </motion.div>
 
-                {/* Total Biaya */}
-                <motion.div
-                    className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/30 p-4 rounded-xl border border-yellow-200 dark:border-yellow-700/50"
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    transition={{ duration: 0.2 }}
-                >
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-xs lg:text-sm font-medium text-yellow-600 dark:text-yellow-400">
-                                Total Biaya
-                            </p>
-                            <p className="text-lg lg:text-xl font-bold text-yellow-700 dark:text-yellow-300">
-                                Rp {stats.totalBiaya.toLocaleString("id-ID")}
-                            </p>
-                        </div>
-                        <div className="p-2 bg-yellow-500 rounded-lg">
-                            <svg
-                                className="w-4 h-4 text-white"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
-                                />
-                            </svg>
-                        </div>
-                    </div>
-                </motion.div>
+                
             </motion.div>
 
             {/* Main Content */}
