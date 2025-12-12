@@ -51,7 +51,8 @@ class RegistrationController extends Controller
             $query->search($request->search);
         }
 
-        $patients = $query->orderBy('no_rkm_medis', 'desc')
+        $patients = $query->with(['kelurahan', 'kecamatan', 'kabupaten'])
+            ->orderBy('no_rkm_medis', 'desc')
             ->limit(10)
             ->get();
 
@@ -104,7 +105,7 @@ class RegistrationController extends Controller
         $updatedAge = Patient::calculateAgeFromDate($patient->tgl_lahir);
         $patient->update(['umur' => $updatedAge]);
 
-        $registration = RegPeriksa::create([
+        $data = [
             'no_reg' => $noReg,
             'no_rawat' => $noRawat,
             'tgl_registrasi' => now()->toDateString(),
@@ -124,7 +125,21 @@ class RegistrationController extends Controller
             'sttsumur' => $sttsUmur,
             'status_bayar' => $status_bayar,
             'status_poli' => $status_poli,
-        ]);
+        ];
+
+        // Support saving address codes if they exist in table and are passed or derived
+        $addressFields = ['kode_wilayah', 'kd_prop', 'kd_kab', 'kd_kec', 'kd_kel'];
+        foreach ($addressFields as $field) {
+            if (Schema::hasColumn('reg_periksa', $field)) {
+                if ($request->filled($field)) {
+                    $data[$field] = $request->$field;
+                } elseif (isset($patient->$field)) {
+                    $data[$field] = $patient->$field;
+                }
+            }
+        }
+
+        $registration = RegPeriksa::create($data);
 
         return response()->json([
             'success' => true,
