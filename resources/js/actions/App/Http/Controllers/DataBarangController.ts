@@ -105,4 +105,9 @@ updateHargaJual.put = (args: { kode_brng: string | number } | [kode_brng: string
 
 const DataBarangController = { updateHarga, updateHargaJual }
 
+export default DataBarangController method: 'put',
+})
+
+const DataBarangController = { updateHarga, updateHargaJual }
+
 export default DataBarangController
