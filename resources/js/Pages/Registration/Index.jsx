@@ -352,10 +352,20 @@ export default function Registration({
     // Select patient for registration
     const selectPatient = (patient) => {
         setSelectedPatient(patient);
+
+        const fullAddress = [
+            patient.alamat,
+            patient.kelurahan?.nm_kel,
+            patient.kecamatan?.nm_kec,
+            patient.kabupaten?.nm_kab,
+        ]
+            .filter(Boolean)
+            .join(', ');
+
         setFormData({
             ...formData,
             p_jawab: patient.namakeluarga || "",
-            almt_pj: patient.alamatpj || patient.alamat || "",
+            almt_pj: fullAddress || patient.alamatpj || "",
         });
 
         // Initialize BPJS check by default using patient's NIK if available
@@ -1218,10 +1228,10 @@ export default function Registration({
                                                                           </p>
                                                                           <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
                                                                               {[
-                                                                                  patient.alamatpj,
-                                                                                  patient.kelurahanpj,
-                                                                                  patient.kecamatanpj,
-                                                                                  patient.kabupatenpj,
+                                                                                  patient.alamat,
+                                                                                  patient.kelurahan?.nm_kel,
+                                                                                  patient.kecamatan?.nm_kec,
+                                                                                  patient.kabupaten?.nm_kab,
                                                                               ]
                                                                                   .filter(Boolean)
                                                                                   .join(", ")}

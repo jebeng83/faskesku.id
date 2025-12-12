@@ -77,6 +77,26 @@ class Patient extends Model
         return $this->tgl_daftar ? Carbon::parse($this->tgl_daftar)->format('d/m/Y') : '';
     }
 
+    public function kelurahan()
+    {
+        return $this->belongsTo(Kelurahan::class, 'kd_kel', 'kd_kel');
+    }
+
+    public function kecamatan()
+    {
+        return $this->belongsTo(Kecamatan::class, 'kd_kec', 'kd_kec');
+    }
+
+    public function kabupaten()
+    {
+        return $this->belongsTo(Kabupaten::class, 'kd_kab', 'kd_kab');
+    }
+
+    public function propinsi()
+    {
+        return $this->belongsTo(Propinsi::class, 'kd_prop', 'kd_prop');
+    }
+
     // Accessor untuk jenis kelamin lengkap
     public function getJenisKelaminLengkapAttribute()
     {

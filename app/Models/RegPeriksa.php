@@ -38,6 +38,11 @@ class RegPeriksa extends Model
         'status_bayar',
         'status_poli',
         'keputusan',
+        'kode_wilayah',
+        'kd_prop',
+        'kd_kab',
+        'kd_kec',
+        'kd_kel',
     ];
 
     public static function generateNoReg($kd_dokter, $kd_poli)
