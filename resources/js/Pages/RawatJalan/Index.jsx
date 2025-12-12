@@ -464,9 +464,16 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                             )}
                                         </td>
 
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                            <span className="block max-w-[24rem] truncate">
-                                                {item.patient?.alamat || item.alamat || '-'}
+                                        <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
+                                            <span className="block min-w-[200px]">
+                                                {[
+                                                    item.patient?.alamat,
+                                                    item.patient?.kelurahan?.nm_kel,
+                                                    item.patient?.kecamatan?.nm_kec,
+                                                    item.patient?.kabupaten?.nm_kab,
+                                                ]
+                                                    .filter(Boolean)
+                                                    .join(', ') || '-'}
                                             </span>
                                         </td>
                                         

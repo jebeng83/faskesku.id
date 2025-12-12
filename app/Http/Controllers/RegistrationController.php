@@ -45,7 +45,7 @@ class RegistrationController extends Controller
      */
     public function searchPatients(Request $request)
     {
-        $query = Patient::query();
+        $query = Patient::with(['kelurahan', 'kecamatan', 'kabupaten']);
 
         if ($request->has('search') && $request->search) {
             $query->search($request->search);
@@ -191,7 +191,8 @@ class RegistrationController extends Controller
     {
         $query = RegPeriksa::with([
             'pasien' => function ($q) {
-                $q->select('no_rkm_medis', 'nm_pasien', 'jk', 'umur', 'alamat', 'no_ktp');
+                $q->select('no_rkm_medis', 'nm_pasien', 'jk', 'umur', 'alamat', 'no_ktp', 'kd_kel', 'kd_kec', 'kd_kab')
+                    ->with(['kelurahan:kd_kel,nm_kel', 'kecamatan:kd_kec,nm_kec', 'kabupaten:kd_kab,nm_kab']);
             },
             'dokter' => function ($q) {
                 $q->select('kd_dokter', 'nm_dokter')->with([

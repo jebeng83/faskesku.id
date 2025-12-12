@@ -165,6 +165,21 @@ class Patient extends Model
         return $this->hasMany(RawatJalan::class, 'no_rkm_medis', 'no_rkm_medis');
     }
 
+    public function kelurahan()
+    {
+        return $this->belongsTo(Kelurahan::class, 'kd_kel', 'kd_kel');
+    }
+
+    public function kecamatan()
+    {
+        return $this->belongsTo(Kecamatan::class, 'kd_kec', 'kd_kec');
+    }
+
+    public function kabupaten()
+    {
+        return $this->belongsTo(Kabupaten::class, 'kd_kab', 'kd_kab');
+    }
+
     // Relasi dengan RawatJalan terbaru
     public function rawatJalanTerbaru()
     {

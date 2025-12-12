@@ -352,10 +352,20 @@ export default function Registration({
     // Select patient for registration
     const selectPatient = (patient) => {
         setSelectedPatient(patient);
+
+        const fullAddress = [
+            patient.alamat,
+            patient.kelurahan?.nm_kel,
+            patient.kecamatan?.nm_kec,
+            patient.kabupaten?.nm_kab,
+        ]
+            .filter(Boolean)
+            .join(', ');
+
         setFormData({
             ...formData,
             p_jawab: patient.namakeluarga || "",
-            almt_pj: patient.alamatpj || patient.alamat || "",
+            almt_pj: patient.alamatpj || fullAddress || "",
         });
 
         // Initialize BPJS check by default using patient's NIK if available
@@ -1218,10 +1228,10 @@ export default function Registration({
                                                                           </p>
                                                                           <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
                                                                               {[
-                                                                                  patient.alamatpj,
-                                                                                  patient.kelurahanpj,
-                                                                                  patient.kecamatanpj,
-                                                                                  patient.kabupatenpj,
+                                                                                  patient.alamat,
+                                                                                  patient.kelurahan?.nm_kel,
+                                                                                  patient.kecamatan?.nm_kec,
+                                                                                  patient.kabupaten?.nm_kab,
                                                                               ]
                                                                                   .filter(Boolean)
                                                                                   .join(", ")}
@@ -1753,7 +1763,7 @@ export default function Registration({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
             >
-                <div className="p-4 lg:p-6">
+                <div className="p-3 lg:p-4">
                     <div className="flex items-center justify-between mb-4 lg:mb-6">
                         <h3 className="text-base lg:text-lg font-semibold text-gray-900 dark:text-white">
                             Data Registrasi
@@ -1861,7 +1871,7 @@ export default function Registration({
                                     transition={{ duration: 0.3, ease: "easeInOut" }}
                                     className="overflow-hidden"
                                 >
-                                    <div className="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg mt-2">
+                                    <div className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg mt-2">
                                         {/* Basic Filters Row */}
                                         <motion.div
                                             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4 mb-4"
@@ -2089,40 +2099,40 @@ export default function Registration({
                                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                     <thead className="bg-gray-50 dark:bg-gray-700">
                                         <tr>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
                                                 No Reg
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
                                                 No Rawat
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
                                                 Pasien
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
                                                 RM
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
                                                 Poliklinik
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
                                                 Dokter
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
                                                 Penanggung
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
                                                 Status
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
                                                 Status Poli
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
                                                 Jam
                                             </th>
-                                            <th className="px-3 py-2 text-right text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-right text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
                                                 Biaya
                                             </th>
-                                            <th className="px-3 py-2 text-center text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-center text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
                                                 Aksi
                                             </th>
                                         </tr>
@@ -2133,10 +2143,10 @@ export default function Registration({
                                                 key={reg.no_rawat}
                                                 className="hover:bg-gray-50 dark:hover:bg-gray-700"
                                             >
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
                                                     {reg.no_reg}
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
                                                     <button
                                                         type="button"
                                                         title="Buka halaman Rawat Jalan / Lanjutan dan panggil antrean otomatis"
@@ -2150,22 +2160,22 @@ export default function Registration({
                                                         {reg.no_rawat}
                                                     </button>
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
                                                     {reg.pasien?.nm_pasien}
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
                                                     {reg.no_rkm_medis}
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
                                                     {reg.poliklinik?.nm_poli}
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
                                                     {reg.dokter?.nm_dokter}
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
                                                     {reg.penjab?.png_jawab}
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm">
+                                                <td className="px-2 py-1 text-xs lg:text-sm">
                                                     <span
                                                         className={
                                                             "px-2 py-1 rounded-full text-xs " +
@@ -2181,7 +2191,7 @@ export default function Registration({
                                                         {reg.stts}
                                                     </span>
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm">
+                                                <td className="px-2 py-1 text-xs lg:text-sm">
                                                     <span
                                                         className={
                                                             "px-2 py-1 rounded-full text-xs " +
@@ -2194,16 +2204,16 @@ export default function Registration({
                                                         {reg.status_poli}
                                                     </span>
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
                                                     {reg.jam_reg?.slice(0, 5)}
                                                 </td>
-                                                <td className="px-3 py-2 text-right text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-right text-xs lg:text-sm text-gray-700 dark:text-gray-300">
                                                     Rp{" "}
                                                     {(
                                                         reg.biaya_reg ?? 0
                                                     ).toLocaleString("id-ID")}
                                                 </td>
-                                                <td className="px-3 py-2 text-center">
+                                                <td className="px-2 py-1 text-center">
                                                     <div className="relative action-dropdown">
                                                         <button
                                                             onClick={(e) => {
