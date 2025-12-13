@@ -12,13 +12,21 @@ class PenjabController extends Controller
 {
     public function index(): JsonResponse
     {
-        $penjab = Penjab::where('status', '1')
-            ->orderBy('png_jawab')
-            ->get(['kd_pj', 'png_jawab']);
+        try {
+            $penjab = Penjab::where('status', '1')
+                ->orderBy('png_jawab')
+                ->get(['kd_pj', 'png_jawab']);
 
-        return response()->json([
-            'data' => $penjab,
-        ], 200);
+            return response()->json([
+                'success' => true,
+                'data' => $penjab,
+            ], 200);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**

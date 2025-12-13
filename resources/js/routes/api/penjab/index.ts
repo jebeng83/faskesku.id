@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\API\PenjabController::nextCode
-* @see app/Http/Controllers/API/PenjabController.php:28
+* @see app/Http/Controllers/API/PenjabController.php:36
 * @route '/api/penjab/next-code'
 */
 export const nextCode = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,7 +60,7 @@ nextCode.definition = {
 
 /**
 * @see \App\Http\Controllers\API\PenjabController::nextCode
-* @see app/Http/Controllers/API/PenjabController.php:28
+* @see app/Http/Controllers/API/PenjabController.php:36
 * @route '/api/penjab/next-code'
 */
 nextCode.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ nextCode.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\PenjabController::nextCode
-* @see app/Http/Controllers/API/PenjabController.php:28
+* @see app/Http/Controllers/API/PenjabController.php:36
 * @route '/api/penjab/next-code'
 */
 nextCode.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -79,7 +79,7 @@ nextCode.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\API\PenjabController::nextCode
-* @see app/Http/Controllers/API/PenjabController.php:28
+* @see app/Http/Controllers/API/PenjabController.php:36
 * @route '/api/penjab/next-code'
 */
 nextCode.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -89,7 +89,7 @@ nextCode.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\API\PenjabController::store
-* @see app/Http/Controllers/API/PenjabController.php:62
+* @see app/Http/Controllers/API/PenjabController.php:70
 * @route '/api/penjab'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -104,7 +104,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\API\PenjabController::store
-* @see app/Http/Controllers/API/PenjabController.php:62
+* @see app/Http/Controllers/API/PenjabController.php:70
 * @route '/api/penjab'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -113,7 +113,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\PenjabController::store
-* @see app/Http/Controllers/API/PenjabController.php:62
+* @see app/Http/Controllers/API/PenjabController.php:70
 * @route '/api/penjab'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

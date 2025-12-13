@@ -21,7 +21,9 @@ class RawatJalanController extends Controller
     public function index(Request $request)
     {
         $query = RawatJalan::query()
-            ->with('patient')
+            ->with(['patient' => function ($q) {
+                $q->with(['kelurahan', 'kecamatan', 'kabupaten']);
+            }])
             ->leftJoin('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
             ->leftJoin('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli')
             ->leftJoin('penjab', 'reg_periksa.kd_pj', '=', 'penjab.kd_pj')

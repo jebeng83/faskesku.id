@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { useForm, router } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { route } from "ziggy-js";
@@ -9,6 +10,7 @@ import WilayahSearchableSelect from "@/Components/WilayahSearchableSelect";
 import AddressDisplay from "@/Components/AddressDisplay";
 import wilayahRoutes from "@/routes/api/wilayah";
 import { isValidWilayahCode, constructKodeWilayah } from "@/tools/wilayah";
+import { IdentificationIcon, PhoneIcon, ClipboardDocumentListIcon, UserGroupIcon, UserPlusIcon } from "@heroicons/react/24/outline";
 
 export default function PatientEditModal({
     isOpen,
@@ -67,6 +69,7 @@ export default function PatientEditModal({
     const { data, setData, errors, reset, post, transform } = useForm({
         nm_pasien: "",
         no_ktp: "",
+        no_kk: "",
         jk: "L",
         tmp_lahir: "",
         tgl_lahir: "",
@@ -182,6 +185,7 @@ export default function PatientEditModal({
             setData({
                 nm_pasien: patient.nm_pasien || "",
                 no_ktp: patient.no_ktp || "",
+                no_kk: patient.no_kk || "",
                 jk: patient.jk || "L",
                 tmp_lahir: patient.tmp_lahir || "",
                 // Normalize date to input-friendly format
@@ -686,6 +690,89 @@ export default function PatientEditModal({
         }
     };
 
+    // Check BPJS functions
+    const handleCheckBpjsByNik = async () => {
+        if (!data.no_ktp) {
+            alert("NIK harus diisi");
+            return;
+        }
+        try {
+            const response = await axios.get(
+                `/pcare/api/peserta/nik/${data.no_ktp}`
+            );
+            const resData = response.data.response || response.data;
+
+            if (resData && (resData.noKartu || resData.nama)) {
+                const peserta = resData;
+                setData((prev) => ({
+                    ...prev,
+                    nm_pasien: peserta.nama || prev.nm_pasien,
+                    no_peserta: peserta.noKartu || prev.no_peserta,
+                    jk: peserta.sex === "L" ? "L" : "P",
+                    tgl_lahir: peserta.tglLahir
+                        ? peserta.tglLahir.split("-").reverse().join("-")
+                        : prev.tgl_lahir,
+                    no_tlp: peserta.noHP || prev.no_tlp,
+                    gol_darah:
+                        peserta.golDarah &&
+                        ["A", "B", "O", "AB"].includes(peserta.golDarah)
+                            ? peserta.golDarah
+                            : prev.gol_darah,
+                }));
+                alert("Data ditemukan di BPJS");
+            } else {
+                alert("Data tidak ditemukan di BPJS");
+            }
+        } catch (error) {
+            console.error("Error checking BPJS by NIK:", error);
+            alert(
+                "Gagal cek BPJS: " +
+                    (error.response?.data?.metaData?.message || error.message)
+            );
+        }
+    };
+
+    const handleCheckBpjsByNoKartu = async () => {
+        if (!data.no_peserta) {
+            alert("Nomor peserta harus diisi");
+            return;
+        }
+        try {
+            const response = await axios.get(
+                `/pcare/api/peserta/${data.no_peserta}`
+            );
+            const resData = response.data.response || response.data;
+
+            if (resData && (resData.noKartu || resData.nama)) {
+                const peserta = resData;
+                setData((prev) => ({
+                    ...prev,
+                    nm_pasien: peserta.nama || prev.nm_pasien,
+                    no_ktp: peserta.noKTP || prev.no_ktp,
+                    jk: peserta.sex === "L" ? "L" : "P",
+                    tgl_lahir: peserta.tglLahir
+                        ? peserta.tglLahir.split("-").reverse().join("-")
+                        : prev.tgl_lahir,
+                    no_tlp: peserta.noHP || prev.no_tlp,
+                    gol_darah:
+                        peserta.golDarah &&
+                        ["A", "B", "O", "AB"].includes(peserta.golDarah)
+                            ? peserta.golDarah
+                            : prev.gol_darah,
+                }));
+                alert("Data ditemukan di BPJS");
+            } else {
+                alert("Data tidak ditemukan di BPJS");
+            }
+        } catch (error) {
+            console.error("Error checking BPJS by No Kartu:", error);
+            alert(
+                "Gagal cek BPJS: " +
+                    (error.response?.data?.metaData?.message || error.message)
+            );
+        }
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!patient?.no_rkm_medis) {
@@ -753,15 +840,20 @@ export default function PatientEditModal({
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.3, delay: 0.1 }}
                             >
-                                <div>
-                                    <h3 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-white">
-                                        Edit Data Pasien
-                                    </h3>
-                                    {patient?.no_rkm_medis && (
-                                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                                            RM: {patient.no_rkm_medis}
-                                        </p>
-                                    )}
+                                <div className="flex items-start gap-3">
+                                    <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-sm">
+                                        <IdentificationIcon className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-white">
+                                            Edit Data Pasien
+                                        </h3>
+                                        {patient?.no_rkm_medis && (
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                RM: {patient.no_rkm_medis}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
                                 <motion.button
                                     onClick={onClose}
@@ -802,7 +894,8 @@ export default function PatientEditModal({
                                             delay: 0.2,
                                         }}
                                     >
-                                        <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-4">
+                                        <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                            <IdentificationIcon className="w-5 h-5 text-blue-500" />
                                             Informasi Dasar
                                         </h4>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -837,45 +930,62 @@ export default function PatientEditModal({
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                     NIK
                                                 </label>
-                                                <div className="relative">
-                                                    <input
-                                                        type="text"
-                                                        name="no_ktp"
-                                                        value={data.no_ktp}
-                                                        onChange={(e) => {
-                                                            const value =
-                                                                e.target.value
-                                                                    .replace(
-                                                                        /[^0-9]/g,
-                                                                        ""
-                                                                    )
-                                                                    .slice(
-                                                                        0,
-                                                                        16
-                                                                    );
-                                                            setData(
-                                                                "no_ktp",
-                                                                value
-                                                            );
-                                                        }}
-                                                        className="w-full px-3 py-2 pr-12 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                        placeholder="Masukkan NIK (16 digit)"
-                                                        maxLength="16"
-                                                    />
-                                                    <div
-                                                        className={`absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-medium ${
-                                                            data.no_ktp
-                                                                .length === 16
-                                                                ? "text-green-600 dark:text-green-400"
-                                                                : data.no_ktp
-                                                                      .length >
-                                                                  0
-                                                                ? "text-yellow-600 dark:text-yellow-400"
-                                                                : "text-gray-400 dark:text-gray-500"
-                                                        }`}
-                                                    >
-                                                        {data.no_ktp.length}/16
+                                                <div className="flex gap-2">
+                                                    <div className="relative w-full">
+                                                        <input
+                                                            type="text"
+                                                            name="no_ktp"
+                                                            value={data.no_ktp}
+                                                            onChange={(e) => {
+                                                                const value =
+                                                                    e.target.value
+                                                                        .replace(
+                                                                            /[^0-9]/g,
+                                                                            ""
+                                                                        )
+                                                                        .slice(
+                                                                            0,
+                                                                            16
+                                                                        );
+                                                                setData(
+                                                                    "no_ktp",
+                                                                    value
+                                                                );
+                                                            }}
+                                                            className="w-full px-3 py-2 pr-12 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                            placeholder="Masukkan NIK (16 digit)"
+                                                            maxLength="16"
+                                                        />
+                                                        <div
+                                                            className={`absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-medium ${
+                                                                data.no_ktp
+                                                                    .length ===
+                                                                16
+                                                                    ? "text-green-600 dark:text-green-400"
+                                                                    : data
+                                                                          .no_ktp
+                                                                          .length >
+                                                                      0
+                                                                    ? "text-yellow-600 dark:text-yellow-400"
+                                                                    : "text-gray-400 dark:text-gray-500"
+                                                            }`}
+                                                        >
+                                                            {
+                                                                data.no_ktp
+                                                                    .length
+                                                            }
+                                                            /16
+                                                        </div>
                                                     </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={
+                                                            handleCheckBpjsByNik
+                                                        }
+                                                        className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm whitespace-nowrap transition-colors"
+                                                    >
+                                                        Cek BPJS
+                                                    </button>
                                                 </div>
                                                 {getErrorMessage("no_ktp") && (
                                                     <p className="mt-1 text-xs text-red-600">
@@ -885,6 +995,43 @@ export default function PatientEditModal({
                                                     </p>
                                                 )}
                                             </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    No. KK
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    name="no_kk"
+                                                    value={data.no_kk}
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            "no_kk",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    placeholder="Masukkan No. KK"
+                                                    maxLength="16"
+                                                />
+                                                {getErrorMessage(
+                                                    "no_kk"
+                                                ) && (
+                                                    <p className="mt-1 text-xs text-red-600">
+                                                        {getErrorMessage(
+                                                            "no_kk"
+                                                        )}
+                                                    </p>
+                                                )}
+                                            </div>
+
+
+
+
+
+
+
+
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                     Jenis Kelamin *
@@ -991,6 +1138,61 @@ export default function PatientEditModal({
                                                     </p>
                                                 )}
                                             </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    No. Peserta
+                                                </label>
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="text"
+                                                        name="no_peserta"
+                                                        value={data.no_peserta}
+                                                        onChange={(e) =>
+                                                            setData(
+                                                                "no_peserta",
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                        placeholder="Masukkan nomor peserta BPJS/Asuransi"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={
+                                                            handleCheckBpjsByNoKartu
+                                                        }
+                                                        className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm whitespace-nowrap transition-colors"
+                                                    >
+                                                        Cek BPJS
+                                                    </button>
+                                                </div>
+                                                {getErrorMessage(
+                                                    "no_peserta"
+                                                ) && (
+                                                    <p className="mt-1 text-xs text-red-600">
+                                                        {getErrorMessage(
+                                                            "no_peserta"
+                                                        )}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            <SelectWithAdd
+                                                label="Cara Bayar"
+                                                name="kd_pj"
+                                                value={data.kd_pj}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        "kd_pj",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                options={penjabOptions}
+                                                placeholder="Pilih penanggung jawab"
+                                                error={getErrorMessage("kd_pj")}
+                                                required={true}
+                                                onAdd={handleAddPenjab}
+                                                addButtonText="Tambah Penjab"
+                                            />
                                         </div>
                                     </motion.div>
 
@@ -1004,7 +1206,8 @@ export default function PatientEditModal({
                                             delay: 0.3,
                                         }}
                                     >
-                                        <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-4">
+                                        <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                            <PhoneIcon className="w-5 h-5 text-blue-500" />
                                             Informasi Kontak
                                         </h4>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1096,7 +1299,8 @@ export default function PatientEditModal({
                                             delay: 0.35,
                                         }}
                                     >
-                                        <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-4">
+                                        <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                            <ClipboardDocumentListIcon className="w-5 h-5 text-blue-500" />
                                             Informasi Tambahan
                                         </h4>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1440,33 +1644,7 @@ export default function PatientEditModal({
                                                     </p>
                                                 )}
                                             </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                    No Peserta (BPJS)
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    name="no_peserta"
-                                                    value={data.no_peserta}
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            "no_peserta",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                    placeholder="Masukkan nomor peserta"
-                                                />
-                                                {getErrorMessage(
-                                                    "no_peserta"
-                                                ) && (
-                                                    <p className="mt-1 text-xs text-red-600">
-                                                        {getErrorMessage(
-                                                            "no_peserta"
-                                                        )}
-                                                    </p>
-                                                )}
-                                            </div>
+
                                         </div>
                                     </motion.div>
 
@@ -1480,7 +1658,8 @@ export default function PatientEditModal({
                                             delay: 0.4,
                                         }}
                                     >
-                                        <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-4">
+                                        <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                            <ClipboardDocumentListIcon className="w-5 h-5 text-blue-500" />
                                             Informasi Administrasi
                                         </h4>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1627,10 +1806,39 @@ export default function PatientEditModal({
                                             delay: 0.4,
                                         }}
                                     >
-                                        <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-4">
+                                        <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                            <UserGroupIcon className="w-5 h-5 text-blue-500" />
                                             Informasi Keluarga
                                         </h4>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Nama Keluarga
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    name="namakeluarga"
+                                                    value={data.namakeluarga}
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            "namakeluarga",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    placeholder="Masukkan nama keluarga"
+                                                />
+                                                {getErrorMessage(
+                                                    "namakeluarga"
+                                                ) && (
+                                                    <p className="mt-1 text-xs text-red-600">
+                                                        {getErrorMessage(
+                                                            "namakeluarga"
+                                                        )}
+                                                    </p>
+                                                )}
+                                            </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                     Hubungan Keluarga
@@ -1681,51 +1889,6 @@ export default function PatientEditModal({
                                                     </p>
                                                 )}
                                             </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                    Nama Keluarga
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    name="namakeluarga"
-                                                    value={data.namakeluarga}
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            "namakeluarga",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                    placeholder="Masukkan nama keluarga"
-                                                />
-                                                {getErrorMessage(
-                                                    "namakeluarga"
-                                                ) && (
-                                                    <p className="mt-1 text-xs text-red-600">
-                                                        {getErrorMessage(
-                                                            "namakeluarga"
-                                                        )}
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            <SelectWithAdd
-                                                label="Cara Bayar"
-                                                name="kd_pj"
-                                                value={data.kd_pj}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        "kd_pj",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                options={penjabOptions}
-                                                placeholder="Pilih penanggung jawab"
-                                                error={getErrorMessage("kd_pj")}
-                                                required={true}
-                                                onAdd={handleAddPenjab}
-                                                addButtonText="Tambah Penjab"
-                                            />
 
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -1811,7 +1974,7 @@ export default function PatientEditModal({
 
                                     {/* Action Buttons */}
                                     <motion.div
-                                        className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4"
+                                        className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-6 mt-6 border-t border-gray-100 dark:border-gray-800"
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{
@@ -1822,7 +1985,8 @@ export default function PatientEditModal({
                                         <motion.button
                                             type="button"
                                             onClick={onClose}
-                                            className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                                            disabled={isSubmitting}
+                                            className="w-full sm:w-auto px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-900 transition-all duration-200"
                                             whileHover={{ scale: 1.02 }}
                                             whileTap={{ scale: 0.98 }}
                                         >
@@ -1831,7 +1995,7 @@ export default function PatientEditModal({
                                         <motion.button
                                             type="submit"
                                             disabled={isSubmitting}
-                                            className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                            className="w-full sm:w-auto inline-flex justify-center items-center px-5 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 border border-transparent rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/30 dark:focus:ring-offset-gray-900 transition-all duration-200"
                                             whileHover={{
                                                 scale: isSubmitting ? 1 : 1.02,
                                             }}
@@ -1839,31 +2003,33 @@ export default function PatientEditModal({
                                                 scale: isSubmitting ? 1 : 0.98,
                                             }}
                                         >
-                                            {isSubmitting && (
-                                                <svg
-                                                    className="animate-spin h-4 w-4 text-white"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <circle
-                                                        className="opacity-25"
-                                                        cx="12"
-                                                        cy="12"
-                                                        r="10"
-                                                        stroke="currentColor"
-                                                        strokeWidth="4"
-                                                    ></circle>
-                                                    <path
-                                                        className="opacity-75"
-                                                        fill="currentColor"
-                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                                    ></path>
-                                                </svg>
+                                            {isSubmitting ? (
+                                                <>
+                                                    <svg
+                                                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <circle
+                                                            className="opacity-25"
+                                                            cx="12"
+                                                            cy="12"
+                                                            r="10"
+                                                            stroke="currentColor"
+                                                            strokeWidth="4"
+                                                        ></circle>
+                                                        <path
+                                                            className="opacity-75"
+                                                            fill="currentColor"
+                                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                        ></path>
+                                                    </svg>
+                                                    Menyimpan...
+                                                </>
+                                            ) : (
+                                                "Perbaharui Data"
                                             )}
-                                            {isSubmitting
-                                                ? "Menyimpan..."
-                                                : "Perbaharui Data"}
                                         </motion.button>
                                     </motion.div>
                                 </form>

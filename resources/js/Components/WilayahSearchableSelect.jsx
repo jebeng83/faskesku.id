@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+// import axios from "axios"; // Removed to use window.axios
 
 export default function WilayahSearchableSelect({
 	label,
@@ -102,19 +103,18 @@ export default function WilayahSearchableSelect({
 					return;
 			}
 
-			const response = await fetch(url);
-			if (response.ok) {
-				const result = await response.json();
-				if (result.success) {
-					const data = result.data.map((item) => ({
-						value: item.code,
-						label: item.name,
-						fullAddress: item.full_address,
-					}));
-					setOptions(data);
-					setFilteredOptions(data);
-				}
-			}
+			const response = await window.axios.get(url, {
+                headers: { Accept: "application/json" },
+            });
+            if (response.data && response.data.success) {
+                const data = response.data.data.map((item) => ({
+                    value: item.code,
+                    label: item.name,
+                    fullAddress: item.full_address,
+                }));
+                setOptions(data);
+                setFilteredOptions(data);
+            }
 		} catch (error) {
 			console.error(`Error loading ${level}:`, error);
 		} finally {
@@ -150,17 +150,16 @@ export default function WilayahSearchableSelect({
 					)}&level=${level}`;
 				}
 
-				const response = await fetch(url);
-				if (response.ok) {
-					const result = await response.json();
-					if (result.success) {
-						const data = result.data.map((item) => ({
-							value: item.code,
-							label: item.name,
-							fullAddress: item.full_address,
-						}));
-						setFilteredOptions(data);
-					}
+				const response = await window.axios.get(url, {
+                    headers: { Accept: "application/json" },
+                });
+				if (response.data && response.data.success) {
+					const data = response.data.data.map((item) => ({
+						value: item.code,
+						label: item.name,
+						fullAddress: item.full_address,
+					}));
+					setFilteredOptions(data);
 				}
 			} catch (error) {
 				console.error("Error searching wilayah:", error);
