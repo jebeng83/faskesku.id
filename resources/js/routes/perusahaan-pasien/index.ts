@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\Pasien\PerusahaanPasienController::store
 * @see app/Http/Controllers/Pasien/PerusahaanPasienController.php:13

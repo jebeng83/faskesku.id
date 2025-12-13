@@ -1092,7 +1092,7 @@ export default function Dashboard() {
                         animate="visible"
                     >
                         <div
-                            className="relative z-20 overflow-hidden rounded-2xl text-white shadow-xl shadow-emerald-800/20 ring-1 ring-emerald-500/30 bg-center bg-cover px-8 sm:px-10 py-12 sm:py-14 flex flex-col items-center justify-center gap-6"
+                            className="relative z-20 overflow-hidden rounded-2xl text-white shadow-xl shadow-emerald-800/20 ring-1 ring-emerald-500/30 bg-center bg-cover px-8 sm:px-10 py-12 sm:py-14 flex flex-col items-center justify-center gap-6 bg-zinc-900"
                             style={{
                                 backgroundImage: heroBg
                                     ? `url('${heroBg}')`
@@ -1102,6 +1102,16 @@ export default function Dashboard() {
                             {/* Tombol Keluar di hero dihapus sesuai permintaan */}
                             {/* Overlay halus bergaya Unpas (aksen hijau) */}
                             <div className="absolute inset-0 rounded-2xl pointer-events-none z-0 bg-gradient-to-t from-emerald-950/40 via-emerald-800/25 to-transparent" />
+                            {/* Overlay pola halus di atas wallpaper: grid titik lembut */}
+                            <div
+                                className="absolute inset-0 rounded-2xl pointer-events-none z-10 opacity-15 mix-blend-soft-light"
+                                style={{
+                                    backgroundImage:
+                                        "radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px)",
+                                    backgroundSize: "22px 22px",
+                                    backgroundPosition: "0 0",
+                                }}
+                            />
                             {/* Top accent line tipis agar terlihat premium */}
                             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-white/40 via-white/20 to-transparent opacity-50" />
                             {/* Konten tengah bergaya homepage Unpas: heading + CTA, lalu pencarian & navigasi cepat */}

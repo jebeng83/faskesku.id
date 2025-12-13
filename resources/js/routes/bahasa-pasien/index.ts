@@ -38,3 +38,8 @@ const bahasaPasien = {
 }
 
 export default bahasaPasien
+const bahasaPasien = {
+    store: Object.assign(store, store),
+}
+
+export default bahasaPasien
