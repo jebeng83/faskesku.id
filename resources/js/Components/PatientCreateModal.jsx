@@ -40,6 +40,8 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
     });
     const [showCacatFisikModal, setShowCacatFisikModal] = useState(false);
     const cacatFisikForm = useForm({ nama_cacat: "" });
+    const [pekerjaanOption, setPekerjaanOption] = useState("");
+    const [pekerjaanOther, setPekerjaanOther] = useState("");
 
     const { data, setData, post, processing, errors, reset } = useForm({
         no_rkm_medis: "",
@@ -52,7 +54,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
         alamat: "",
         gol_darah: "",
         pekerjaan: "",
-        stts_nikah: "BELUM MENIKAH",
+        stts_nikah: "",
         agama: "",
         no_tlp: "",
         pnd: "SMA",
@@ -64,10 +66,10 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
         alamatpj: "",
         kode_wilayah: "",
         email: "",
-        perusahaan_pasien: "",
-        suku_bangsa: "",
-        bahasa_pasien: "",
-        cacat_fisik: "",
+        perusahaan_pasien: "-",
+        suku_bangsa: 1,
+        bahasa_pasien: 1,
+        cacat_fisik: 1,
         nip: "",
     });
 
@@ -470,8 +472,10 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
         post(route("patients.store"), {
             onSuccess: (page) => {
                 console.log("Success response:", page);
-                alert("Pasien berhasil ditambahkan!");
-                onSuccess();
+                const newPatient = page.props.flash?.new_patient;
+                if (onSuccess) {
+                    onSuccess(newPatient);
+                }
                 onClose();
             },
             onError: (errors) => {
@@ -722,7 +726,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                             </div>
 
                                             <SelectWithAdd
-                                                label="Penanggung Jawab"
+                                                label="Cara Bayar"
                                                 name="kd_pj"
                                                 value={data.kd_pj}
                                                 onChange={(e) =>
@@ -893,7 +897,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
 
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                    No. Telepon
+                                                    No. Telepon *
                                                 </label>
                                                 <input
                                                     type="text"
@@ -902,7 +906,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                     onChange={(e) =>
                                                         setData(
                                                             "no_tlp",
-                                                            e.target.value
+                                                            e.target.value.replace(/[^0-9]/g, "")
                                                         )
                                                     }
                                                     className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
@@ -1064,7 +1068,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                 <div>
                                                     <div className="flex items-center justify-between mb-2">
                                                         <span className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                            Perusahaan Pasien
+                                                            Perusahaan Pasien *
                                                         </span>
                                                         <button
                                                             type="button"
@@ -1159,6 +1163,265 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                         </p>
                                                     )}
                                                 </div>
+
+                                                {/* Golongan Darah */}
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                        Golongan Darah
+                                                    </label>
+                                                    <select
+                                                        name="gol_darah"
+                                                        value={data.gol_darah}
+                                                        onChange={(e) =>
+                                                            setData(
+                                                                "gol_darah",
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    >
+                                                        <option value="">
+                                                            -
+                                                        </option>
+                                                        <option value="A">
+                                                            A
+                                                        </option>
+                                                        <option value="B">
+                                                            B
+                                                        </option>
+                                                        <option value="O">
+                                                            O
+                                                        </option>
+                                                        <option value="AB">
+                                                            AB
+                                                        </option>
+                                                    </select>
+                                                    {getErrorMessage(
+                                                        "gol_darah"
+                                                    ) && (
+                                                        <p className="mt-1 text-xs text-red-600">
+                                                            {getErrorMessage(
+                                                                "gol_darah"
+                                                            )}
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                {/* Pekerjaan */}
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                        Pekerjaan
+                                                    </label>
+                                                    <select
+                                                        name="pekerjaan_select"
+                                                        value={pekerjaanOption}
+                                                        onChange={(e) => {
+                                                            const val =
+                                                                e.target.value;
+                                                            setPekerjaanOption(
+                                                                val
+                                                            );
+                                                            if (
+                                                                val !==
+                                                                "LAINNYA"
+                                                            ) {
+                                                                setData(
+                                                                    "pekerjaan",
+                                                                    val
+                                                                );
+                                                                setPekerjaanOther(
+                                                                    ""
+                                                                );
+                                                            } else {
+                                                                setData(
+                                                                    "pekerjaan",
+                                                                    pekerjaanOther.trim()
+                                                                );
+                                                            }
+                                                        }}
+                                                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    >
+                                                        <option value="">
+                                                            - Pilih Pekerjaan -
+                                                        </option>
+                                                        <option value="KARYAWAN SWASTA">
+                                                            KARYAWAN SWASTA
+                                                        </option>
+                                                        <option value="WIRASWASTA">
+                                                            WIRASWASTA
+                                                        </option>
+                                                        <option value="PELAJAR">
+                                                            PELAJAR
+                                                        </option>
+                                                        <option value="MAHASISWA">
+                                                            MAHASISWA
+                                                        </option>
+                                                        <option value="PNS">
+                                                            PNS
+                                                        </option>
+                                                        <option value="TNI/POLRI">
+                                                            TNI/POLRI
+                                                        </option>
+                                                        <option value="IBU RUMAH TANGGA">
+                                                            IBU RUMAH TANGGA
+                                                        </option>
+                                                        <option value="PETANI">
+                                                            PETANI
+                                                        </option>
+                                                        <option value="NELAYAN">
+                                                            NELAYAN
+                                                        </option>
+                                                        <option value="BURUH">
+                                                            BURUH
+                                                        </option>
+                                                        <option value="GURU">
+                                                            GURU
+                                                        </option>
+                                                        <option value="PERANGKAT DESA">
+                                                            PERANGKAT DESA
+                                                        </option>
+                                                        <option value="TIDAK BEKERJA">
+                                                            TIDAK BEKERJA
+                                                        </option>
+                                                        <option value="LAINNYA">
+                                                            LAINNYA
+                                                        </option>
+                                                    </select>
+                                                    {pekerjaanOption ===
+                                                        "LAINNYA" && (
+                                                        <div className="mt-2">
+                                                            <input
+                                                                type="text"
+                                                                name="pekerjaan"
+                                                                value={
+                                                                    pekerjaanOther
+                                                                }
+                                                                onChange={(
+                                                                    e
+                                                                ) => {
+                                                                    const v =
+                                                                        e.target
+                                                                            .value;
+                                                                    setPekerjaanOther(
+                                                                        v
+                                                                    );
+                                                                    setData(
+                                                                        "pekerjaan",
+                                                                        v
+                                                                    );
+                                                                }}
+                                                                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                                placeholder="Tuliskan pekerjaan"
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    {getErrorMessage(
+                                                        "pekerjaan"
+                                                    ) && (
+                                                        <p className="mt-1 text-xs text-red-600">
+                                                            {getErrorMessage(
+                                                                "pekerjaan"
+                                                            )}
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                {/* Status Pernikahan */}
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                        Status Pernikahan
+                                                    </label>
+                                                    <select
+                                                        name="stts_nikah"
+                                                        value={
+                                                            data.stts_nikah
+                                                        }
+                                                        onChange={(e) =>
+                                                            setData(
+                                                                "stts_nikah",
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    >
+                                                        <option value="">
+                                                            -
+                                                        </option>
+                                                        <option value="BELUM MENIKAH">
+                                                            Belum Menikah
+                                                        </option>
+                                                        <option value="MENIKAH">
+                                                            Menikah
+                                                        </option>
+                                                        <option value="JANDA">
+                                                            Janda
+                                                        </option>
+                                                        <option value="DUDHA">
+                                                            Dudha
+                                                        </option>
+                                                        <option value="JOMBLO">
+                                                            Jomblo
+                                                        </option>
+                                                    </select>
+                                                    {getErrorMessage(
+                                                        "stts_nikah"
+                                                    ) && (
+                                                        <p className="mt-1 text-xs text-red-600">
+                                                            {getErrorMessage(
+                                                                "stts_nikah"
+                                                            )}
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                {/* Agama */}
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                        Agama
+                                                    </label>
+                                                    <select
+                                                        name="agama"
+                                                        value={data.agama}
+                                                        onChange={(e) =>
+                                                            setData(
+                                                                "agama",
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    >
+                                                        <option value="">
+                                                            - Pilih Agama -
+                                                        </option>
+                                                        <option value="ISLAM">
+                                                            ISLAM
+                                                        </option>
+                                                        <option value="KRISTEN">
+                                                            KRISTEN
+                                                        </option>
+                                                        <option value="KATOLIK">
+                                                            KATOLIK
+                                                        </option>
+                                                        <option value="HINDU">
+                                                            HINDU
+                                                        </option>
+                                                        <option value="BUDHA">
+                                                            BUDHA
+                                                        </option>
+                                                        <option value="KONG HU CHU">
+                                                            KONG HU CHU
+                                                        </option>
+                                                    </select>
+                                                    {getErrorMessage(
+                                                        "agama"
+                                                    ) && (
+                                                        <p className="mt-1 text-xs text-red-600">
+                                                            {getErrorMessage(
+                                                                "agama"
+                                                            )}
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </motion.div>
@@ -1208,7 +1471,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
 
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                    Nama Keluarga *
+                                                    Nama Keluarga
                                                 </label>
                                                 <input
                                                     type="text"
@@ -1288,7 +1551,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                             {/* Pekerjaan Penanggung Jawab */}
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                    Pekerjaan Penanggung Jawab *
+                                                    Pekerjaan Penanggung Jawab
                                                 </label>
                                                 <input
                                                     type="text"
@@ -1320,7 +1583,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
 
                                             <div className="md:col-span-2">
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                    Alamat Keluarga *
+                                                    Alamat Keluarga
                                                 </label>
                                                 <textarea
                                                     name="alamatpj"

@@ -1035,7 +1035,7 @@ export default function PatientEditModal({
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                    No. Telepon
+                                                    No. Telepon *
                                                 </label>
                                                 <input
                                                     type="text"
@@ -1044,7 +1044,7 @@ export default function PatientEditModal({
                                                     onChange={(e) =>
                                                         setData(
                                                             "no_tlp",
-                                                            e.target.value
+                                                            e.target.value.replace(/[^0-9]/g, "")
                                                         )
                                                     }
                                                     className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
@@ -1244,6 +1244,54 @@ export default function PatientEditModal({
                                                 )}
                                             </div>
                                             <div>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <span className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                        Perusahaan Pasien *
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            setShowPerusahaanPasienModal(
+                                                                true
+                                                            )
+                                                        }
+                                                        className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-black text-white text-xs"
+                                                    >
+                                                        +
+                                                    </button>
+                                                </div>
+                                                <SearchableSelect
+                                                    options={perusahaanOptions}
+                                                    value={
+                                                        data.perusahaan_pasien
+                                                    }
+                                                    onChange={(val) =>
+                                                        setData(
+                                                            "perusahaan_pasien",
+                                                            val
+                                                        )
+                                                    }
+                                                    placeholder="Pilih atau cari perusahaan pasien"
+                                                    displayKey="label"
+                                                    valueKey="value"
+                                                    searchPlaceholder="Ketik nama perusahaan..."
+                                                    error={
+                                                        !!getErrorMessage(
+                                                            "perusahaan_pasien"
+                                                        )
+                                                    }
+                                                />
+                                                {getErrorMessage(
+                                                    "perusahaan_pasien"
+                                                ) && (
+                                                    <p className="mt-1 text-xs text-red-600">
+                                                        {getErrorMessage(
+                                                            "perusahaan_pasien"
+                                                        )}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                     Status Pernikahan
                                                 </label>
@@ -1436,54 +1484,7 @@ export default function PatientEditModal({
                                             Informasi Administrasi
                                         </h4>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <span className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                        Perusahaan Pasien *
-                                                    </span>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            setShowPerusahaanPasienModal(
-                                                                true
-                                                            )
-                                                        }
-                                                        className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-black text-white text-xs"
-                                                    >
-                                                        +
-                                                    </button>
-                                                </div>
-                                                <SearchableSelect
-                                                    options={perusahaanOptions}
-                                                    value={
-                                                        data.perusahaan_pasien
-                                                    }
-                                                    onChange={(val) =>
-                                                        setData(
-                                                            "perusahaan_pasien",
-                                                            val
-                                                        )
-                                                    }
-                                                    placeholder="Pilih atau cari perusahaan pasien"
-                                                    displayKey="label"
-                                                    valueKey="value"
-                                                    searchPlaceholder="Ketik nama perusahaan..."
-                                                    error={
-                                                        !!getErrorMessage(
-                                                            "perusahaan_pasien"
-                                                        )
-                                                    }
-                                                />
-                                                {getErrorMessage(
-                                                    "perusahaan_pasien"
-                                                ) && (
-                                                    <p className="mt-1 text-xs text-red-600">
-                                                        {getErrorMessage(
-                                                            "perusahaan_pasien"
-                                                        )}
-                                                    </p>
-                                                )}
-                                            </div>
+
                                             <div>
                                                 <div className="flex items-center justify-between mb-2">
                                                     <span className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -1682,7 +1683,7 @@ export default function PatientEditModal({
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                    Nama Keluarga *
+                                                    Nama Keluarga
                                                 </label>
                                                 <input
                                                     type="text"
@@ -1709,7 +1710,7 @@ export default function PatientEditModal({
                                             </div>
 
                                             <SelectWithAdd
-                                                label="Penanggung Jawab"
+                                                label="Cara Bayar"
                                                 name="kd_pj"
                                                 value={data.kd_pj}
                                                 onChange={(e) =>
@@ -1728,7 +1729,7 @@ export default function PatientEditModal({
 
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                    Pekerjaan Penanggung Jawab *
+                                                    Pekerjaan Penanggung Jawab
                                                 </label>
                                                 <input
                                                     type="text"
@@ -1756,7 +1757,7 @@ export default function PatientEditModal({
 
                                             <div className="md:col-span-2">
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                    Alamat Keluarga *
+                                                    Alamat Keluarga
                                                 </label>
                                                 <textarea
                                                     name="alamatpj"

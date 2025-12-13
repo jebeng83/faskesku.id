@@ -606,6 +606,25 @@ export default function Edit({ patient }) {
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Perusahaan Pasien *
+                                        </label>
+                                        <SearchableSelect
+                                            options={perusahaanOptions}
+                                            value={data.perusahaan_pasien}
+                                            onChange={(val) => setData('perusahaan_pasien', val)}
+                                            placeholder="Pilih atau cari perusahaan pasien"
+                                            displayKey="label"
+                                            valueKey="value"
+                                            searchPlaceholder="Ketik nama_perusahaan untuk mencari..."
+                                            error={errors.perusahaan_pasien}
+                                        />
+                                        {errors.perusahaan_pasien && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.perusahaan_pasien}</p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                             No. Peserta (BPJS)
                                         </label>
                                         <input
@@ -861,24 +880,7 @@ export default function Edit({ patient }) {
                             </div>
                             <div className="relative p-8">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Perusahaan Pasien *
-                                        </label>
-                                        <SearchableSelect
-                                            options={perusahaanOptions}
-                                            value={data.perusahaan_pasien}
-                                            onChange={(val) => setData('perusahaan_pasien', val)}
-                                            placeholder="Pilih atau cari perusahaan pasien"
-                                            displayKey="label"
-                                            valueKey="value"
-                                            searchPlaceholder="Ketik nama_perusahaan untuk mencari..."
-                                            error={errors.perusahaan_pasien}
-                                        />
-                                        {errors.perusahaan_pasien && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.perusahaan_pasien}</p>
-                                        )}
-                                    </div>
+
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                             Suku Bangsa *

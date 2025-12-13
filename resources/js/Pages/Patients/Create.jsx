@@ -1265,6 +1265,72 @@ export default function Create() {
                                             )}
                                         </div>
 
+                                        {/* Perusahaan Pasien: Textbox Pencarian + Dropdown (SearchableSelect) */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Perusahaan Pasien *
+                                            </label>
+                                            <div className="flex gap-2">
+                                                <div className="flex-1">
+                                                    <SearchableSelect
+                                                        options={
+                                                            perusahaanOptions
+                                                        }
+                                                        value={
+                                                            data.perusahaan_pasien
+                                                        }
+                                                        onChange={(val) => {
+                                                            setData(
+                                                                "perusahaan_pasien",
+                                                                val
+                                                            );
+                                                        }}
+                                                        placeholder="Pilih atau cari perusahaan pasien"
+                                                        searchPlaceholder="Ketik nama_perusahaan untuk mencari..."
+                                                        displayKey="label"
+                                                        valueKey="value"
+                                                        error={
+                                                            !!getErrorMessage(
+                                                                "perusahaan_pasien"
+                                                            )
+                                                        }
+                                                    />
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        setShowPerusahaanPasienModal(
+                                                            true
+                                                        )
+                                                    }
+                                                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                                                    title="Tambah Perusahaan Pasien Baru"
+                                                >
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        viewBox="0 0 24 24"
+                                                        fill="currentColor"
+                                                        className="w-5 h-5"
+                                                    >
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+                                                            clipRule="evenodd"
+                                                        />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                            {getErrorMessage(
+                                                "perusahaan_pasien"
+                                            ) && (
+                                                <p className="mt-1 text-sm text-red-600">
+                                                    {getErrorMessage(
+                                                        "perusahaan_pasien"
+                                                    )}
+                                                </p>
+                                            )}
+                                        </div>
+
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                 Pendidikan *
@@ -1589,71 +1655,7 @@ export default function Create() {
                                 </div>
                                 <div className="relative p-8">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        {/* Perusahaan Pasien: Textbox Pencarian + Dropdown (SearchableSelect) */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Perusahaan Pasien *
-                                            </label>
-                                            <div className="flex gap-2">
-                                                <div className="flex-1">
-                                                    <SearchableSelect
-                                                        options={
-                                                            perusahaanOptions
-                                                        }
-                                                        value={
-                                                            data.perusahaan_pasien
-                                                        }
-                                                        onChange={(val) => {
-                                                            setData(
-                                                                "perusahaan_pasien",
-                                                                val
-                                                            );
-                                                        }}
-                                                        placeholder="Pilih atau cari perusahaan pasien"
-                                                        searchPlaceholder="Ketik nama_perusahaan untuk mencari..."
-                                                        displayKey="label"
-                                                        valueKey="value"
-                                                        error={
-                                                            !!getErrorMessage(
-                                                                "perusahaan_pasien"
-                                                            )
-                                                        }
-                                                    />
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        setShowPerusahaanPasienModal(
-                                                            true
-                                                        )
-                                                    }
-                                                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
-                                                    title="Tambah Perusahaan Pasien Baru"
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 24 24"
-                                                        fill="currentColor"
-                                                        className="w-5 h-5"
-                                                    >
-                                                        <path
-                                                            fillRule="evenodd"
-                                                            d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
-                                                            clipRule="evenodd"
-                                                        />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                            {getErrorMessage(
-                                                "perusahaan_pasien"
-                                            ) && (
-                                                <p className="mt-1 text-sm text-red-600">
-                                                    {getErrorMessage(
-                                                        "perusahaan_pasien"
-                                                    )}
-                                                </p>
-                                            )}
-                                        </div>
+
 
                                         {/* Suku Bangsa: Dropdown dengan Popup */}
                                         <div>

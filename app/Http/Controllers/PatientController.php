@@ -77,14 +77,14 @@ class PatientController extends Controller
             'pekerjaan' => 'nullable|string|max:60',
             'stts_nikah' => 'nullable|in:BELUM MENIKAH,MENIKAH,JANDA,DUDHA,JOMBLO',
             'agama' => 'nullable|string|max:12',
-            'no_tlp' => 'nullable|string|max:40',
+            'no_tlp' => 'required|string|max:40',
             'pnd' => 'required|in:TS,TK,SD,SMP,SMA,SLTA/SEDERAJAT,D1,D2,D3,D4,S1,S2,S3,-',
             'keluarga' => 'nullable|in:AYAH,IBU,ISTRI,SUAMI,SAUDARA,ANAK,DIRI SENDIRI,LAIN-LAIN',
-            'namakeluarga' => 'required|string|max:50',
+            'namakeluarga' => 'nullable|string|max:50',
             'kd_pj' => 'required|exists:penjab,kd_pj',
             'no_peserta' => 'nullable|string|max:25',
-            'pekerjaanpj' => 'required|string|max:35',
-            'alamatpj' => 'required|string|max:100',
+            'pekerjaanpj' => 'nullable|string|max:35',
+            'alamatpj' => 'nullable|string|max:100',
             'kode_wilayah' => 'required|string|max:13|exists:wilayah,kode',
             'email' => 'nullable|email|max:50',
             'perusahaan_pasien' => 'required|string|exists:perusahaan_pasien,kode_perusahaan|max:8',
@@ -213,17 +213,27 @@ class PatientController extends Controller
         $data['kd_kab'] = $data['kd_kab'] ?? 1;
         $data['kd_kec'] = $data['kd_kec'] ?? 1;
         $data['kd_kel'] = $data['kd_kel'] ?? 1;
-        // keep non-null defaults for optional string fields
-        $data['nip'] = $data['nip'] ?? '';
-        $data['email'] = $data['email'] ?? '';
-        $data['pekerjaanpj'] = $data['pekerjaanpj'] ?? '';
+        
+        // Handle non-nullable fields that are optional in form
+        $data['namakeluarga'] = $data['namakeluarga'] ?? '-';
+        $data['pekerjaanpj'] = $data['pekerjaanpj'] ?? '-';
+        $data['alamatpj'] = $data['alamatpj'] ?? '-';
+        $data['kelurahanpj'] = $data['kelurahanpj'] ?? '-';
+        $data['kecamatanpj'] = $data['kecamatanpj'] ?? '-';
+        $data['kabupatenpj'] = $data['kabupatenpj'] ?? '-';
+        $data['propinsipj'] = $data['propinsipj'] ?? '-';
+        $data['email'] = $data['email'] ?? '-';
+        $data['nip'] = $data['nip'] ?? '-';
 
         // Ensure kd_pj references an existing penjab (validated above)
 
-        Patient::create($data);
+        $patient = Patient::create($data);
 
         // Always respond with a redirect for Inertia requests to avoid plain JSON overlay
-        return redirect()->back()->with('success', 'Data pasien berhasil ditambahkan.');
+        return redirect()->back()->with([
+            'success' => 'Data pasien berhasil ditambahkan.',
+            'new_patient' => $patient
+        ]);
     }
 
     /**
@@ -280,14 +290,14 @@ class PatientController extends Controller
             'pekerjaan' => 'nullable|string|max:60',
             'stts_nikah' => 'nullable|in:BELUM MENIKAH,MENIKAH,JANDA,DUDHA,JOMBLO',
             'agama' => 'nullable|string|max:12',
-            'no_tlp' => 'nullable|string|max:40',
+            'no_tlp' => 'required|string|max:40',
             'pnd' => 'required|in:TS,TK,SD,SMP,SMA,SLTA/SEDERAJAT,D1,D2,D3,D4,S1,S2,S3,-',
             'keluarga' => 'nullable|in:AYAH,IBU,ISTRI,SUAMI,SAUDARA,ANAK,DIRI SENDIRI,LAIN-LAIN',
-            'namakeluarga' => 'required|string|max:50',
+            'namakeluarga' => 'nullable|string|max:50',
             'kd_pj' => 'required|exists:penjab,kd_pj',
             'no_peserta' => 'nullable|string|max:25',
-            'pekerjaanpj' => 'required|string|max:35',
-            'alamatpj' => 'required|string|max:100',
+            'pekerjaanpj' => 'nullable|string|max:35',
+            'alamatpj' => 'nullable|string|max:100',
             'kode_wilayah' => 'required|string|max:13|exists:wilayah,kode',
             'email' => 'nullable|email|max:50',
             'perusahaan_pasien' => 'required|string|exists:perusahaan_pasien,kode_perusahaan|max:8',
@@ -368,6 +378,17 @@ class PatientController extends Controller
 
         // Update umur
         $data['umur'] = \Carbon\Carbon::parse($data['tgl_lahir'])->age.' Th';
+
+        // Handle non-nullable fields that are optional in form
+        $data['namakeluarga'] = $data['namakeluarga'] ?? '-';
+        $data['pekerjaanpj'] = $data['pekerjaanpj'] ?? '-';
+        $data['alamatpj'] = $data['alamatpj'] ?? '-';
+        $data['kelurahanpj'] = $data['kelurahanpj'] ?? '-';
+        $data['kecamatanpj'] = $data['kecamatanpj'] ?? '-';
+        $data['kabupatenpj'] = $data['kabupatenpj'] ?? '-';
+        $data['propinsipj'] = $data['propinsipj'] ?? '-';
+        $data['email'] = $data['email'] ?? '-';
+        $data['nip'] = $data['nip'] ?? '-';
 
         $patient->update($data);
 
