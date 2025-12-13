@@ -61,8 +61,9 @@ class PatientController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'no_rkm_medis' => 'nullable|string|max:15|unique:pasien,no_rkm_medis',
             'nm_pasien' => 'required|string|max:40',
-            'no_ktp' => 'nullable|string|max:20|unique:pasien,no_ktp',
+            'no_ktp' => 'required|string|max:20|unique:pasien,no_ktp',
             'jk' => 'required|in:L,P',
             'tmp_lahir' => 'required|string|max:15',
             'tgl_lahir' => 'required|date',
@@ -124,6 +125,7 @@ class PatientController extends Controller
             'cacat_fisik.required' => 'Cacat fisik harus diisi',
             'cacat_fisik.exists' => 'Cacat fisik tidak valid',
             'nip.max' => 'NIP maksimal 30 karakter',
+            'no_rkm_medis.unique' => 'Nomor Rekam Medis sudah ada',
         ]);
 
         if ($validator->fails()) {
@@ -171,8 +173,10 @@ class PatientController extends Controller
             }
         }
 
-        // Generate nomor RM otomatis
-        $data['no_rkm_medis'] = Patient::generateNoRM();
+        // Generate nomor RM otomatis jika tidak diisi
+        if (empty($data['no_rkm_medis'])) {
+            $data['no_rkm_medis'] = Patient::generateNoRM();
+        }
         $data['tgl_daftar'] = now()->toDateString();
         $data['umur'] = Patient::calculateAgeFromDate($data['tgl_lahir']);
 
