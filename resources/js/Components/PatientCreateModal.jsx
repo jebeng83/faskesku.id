@@ -593,7 +593,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                             role="dialog"
                             aria-modal="true"
                             aria-labelledby="patient-create-title"
-                            className="relative bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-xl shadow-2xl border border-white/30 dark:border-gray-700/50 max-w-6xl w-full max-h-[90vh] overflow-y-auto"
+                            className="relative bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-xl shadow-2xl border border-white/30 dark:border-gray-700/50 max-w-6xl w-full max-h-[90vh] flex flex-col overflow-hidden"
                             initial={{ scale: 0.7, opacity: 0, y: 50 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.7, opacity: 0, y: 50 }}
@@ -605,10 +605,10 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                             }}
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 z-10" />
                             {/* Header */}
                             <motion.div
-                                className="flex justify-between items-center p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700"
+                                className="flex-none flex justify-between items-center p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700"
                                 initial={{ opacity: 0, y: -20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.3, delay: 0.1 }}
@@ -654,8 +654,9 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                             </motion.div>
 
                             {/* Form Content */}
-                            <div className="p-4 lg:p-6 pb-24">
+                            <div className="flex-1 overflow-y-auto p-4 lg:p-6">
                                 <form
+                                    id="create-patient-form"
                                     onSubmit={handleSubmit}
                                     className="space-y-6"
                                 >
@@ -1726,64 +1727,66 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                     </motion.div>
 
                                     {/* Action Buttons */}
-                                    <motion.div
-                                        className="sticky bottom-0 -mx-4 lg:-mx-6 px-4 lg:px-6 py-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3"
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{
-                                            duration: 0.3,
-                                            delay: 0.5,
-                                        }}
-                                    >
-                                        <motion.button
-                                            type="button"
-                                            onClick={onClose}
-                                            className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                                            whileHover={{ scale: 1.02 }}
-                                            whileTap={{ scale: 0.98 }}
-                                        >
-                                            Batal
-                                        </motion.button>
-                                        <motion.button
-                                            type="submit"
-                                            disabled={processing}
-                                            className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-lg shadow-sm shadow-blue-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                            whileHover={{
-                                                scale: processing ? 1 : 1.02,
-                                            }}
-                                            whileTap={{
-                                                scale: processing ? 1 : 0.98,
-                                            }}
-                                        >
-                                            {processing && (
-                                                <svg
-                                                    className="animate-spin h-4 w-4 text-white"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <circle
-                                                        className="opacity-25"
-                                                        cx="12"
-                                                        cy="12"
-                                                        r="10"
-                                                        stroke="currentColor"
-                                                        strokeWidth="4"
-                                                    ></circle>
-                                                    <path
-                                                        className="opacity-75"
-                                                        fill="currentColor"
-                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                                    ></path>
-                                                </svg>
-                                            )}
-                                            {processing
-                                                ? "Menyimpan..."
-                                                : "Simpan Pasien"}
-                                        </motion.button>
-                                    </motion.div>
                                 </form>
                             </div>
+
+                            <motion.div
+                                className="flex-none p-4 lg:p-6 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{
+                                    duration: 0.3,
+                                    delay: 0.5,
+                                }}
+                            >
+                                <motion.button
+                                    type="button"
+                                    onClick={onClose}
+                                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                >
+                                    Batal
+                                </motion.button>
+                                <motion.button
+                                    type="submit"
+                                    form="create-patient-form"
+                                    disabled={processing}
+                                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-lg shadow-sm shadow-blue-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    whileHover={{
+                                        scale: processing ? 1 : 1.02,
+                                    }}
+                                    whileTap={{
+                                        scale: processing ? 1 : 0.98,
+                                    }}
+                                >
+                                    {processing && (
+                                        <svg
+                                            className="animate-spin h-4 w-4 text-white"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <circle
+                                                className="opacity-25"
+                                                cx="12"
+                                                cy="12"
+                                                r="10"
+                                                stroke="currentColor"
+                                                strokeWidth="4"
+                                            ></circle>
+                                            <path
+                                                className="opacity-75"
+                                                fill="currentColor"
+                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                            ></path>
+                                        </svg>
+                                    )}
+                                    {processing
+                                        ? "Menyimpan..."
+                                        : "Simpan Pasien"}
+                                </motion.button>
+                            </motion.div>
                         </motion.div>
                     </motion.div>
                 )}
