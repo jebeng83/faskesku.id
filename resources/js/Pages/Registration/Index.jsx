@@ -671,9 +671,15 @@ export default function Registration({
     };
 
     // Handle patient creation success
-    const handlePatientSuccess = () => {
+    const handlePatientSuccess = (newPatient) => {
         // Refresh search results or show success message
-        alert("Pasien berhasil ditambahkan!");
+        // alert("Pasien berhasil ditambahkan!");
+        
+        if (newPatient && newPatient.no_rkm_medis) {
+            setSearchTerm(newPatient.no_rkm_medis);
+            handleSearch(newPatient.no_rkm_medis);
+        }
+
         // Optionally refresh the page or search results
         loadRegistrations();
     };
