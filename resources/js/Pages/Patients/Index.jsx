@@ -206,8 +206,8 @@ export default function Index({
 
     const sendKunjunganSehat = async () => {
         const resp = pcareData?.response || null;
-        const noKartuFromResp = String(resp?.noKartu || "").replace(/[^0-9]/g, "");
-        const noKartuFromPatient = String(kunjunganSehatPatient?.no_peserta || "").replace(/[^0-9]/g, "");
+        const noKartuFromResp = String(resp?.noKartu || "").replace(/[^9]/g, "");
+        const noKartuFromPatient = String(kunjunganSehatPatient?.no_peserta || "").replace(/[^9]/g, "");
         const noKartu = noKartuFromResp || noKartuFromPatient;
 
         if (!noKartu || noKartu.length !== 13) {
@@ -485,28 +485,46 @@ export default function Index({
                 >
                     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
                     <div className="overflow-x-auto">
-                        <table className="min-w-full text-sm">
+                        <table className="min-w-full text-xs">
                             <thead>
                                 <tr>
-                                    <th className="text-left px-4 py-3 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300">
+                                    <th className="text-left px-3 py-2 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 font-semibold uppercase tracking-wider">
                                         No. RM
                                     </th>
-                                    <th className="text-left px-4 py-3 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300">
+                                    <th className="text-left px-3 py-2 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 font-semibold uppercase tracking-wider">
                                         Nama Pasien
                                     </th>
-                                    <th className="text-left px-4 py-3 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300">
+                                    <th className="text-left px-3 py-2 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 font-semibold uppercase tracking-wider">
                                         NIK
                                     </th>
-                                    <th className="text-left px-4 py-3 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300">
-                                        Jenis Kelamin
+                                    <th className="text-left px-3 py-2 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 font-semibold uppercase tracking-wider">
+                                        JK
                                     </th>
-                                    <th className="text-left px-4 py-3 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300">
+                                    <th className="text-left px-3 py-2 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 font-semibold uppercase tracking-wider">
                                         Umur
                                     </th>
-                                    <th className="text-left px-4 py-3 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300">
-                                        No. Telepon
+                                    <th className="text-left px-3 py-2 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 font-semibold uppercase tracking-wider">
+                                        Alamat
                                     </th>
-                                    <th className="text-left px-4 py-3 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300">
+                                    <th className="text-left px-3 py-2 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 font-semibold uppercase tracking-wider">
+                                        Ibu Kandung
+                                    </th>
+                                    <th className="text-left px-3 py-2 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 font-semibold uppercase tracking-wider">
+                                        Pekerjaan
+                                    </th>
+                                    <th className="text-left px-3 py-2 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 font-semibold uppercase tracking-wider">
+                                        Keluarga
+                                    </th>
+                                    <th className="text-left px-3 py-2 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 font-semibold uppercase tracking-wider">
+                                        Cara Bayar
+                                    </th>
+                                    <th className="text-left px-3 py-2 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 font-semibold uppercase tracking-wider">
+                                        No. Peserta
+                                    </th>
+                                    <th className="text-left px-3 py-2 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 font-semibold uppercase tracking-wider">
+                                        No. Telp
+                                    </th>
+                                    <th className="text-left px-3 py-2 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 font-semibold uppercase tracking-wider">
                                         Tgl. Daftar
                                     </th>
                                 </tr>
@@ -522,18 +540,18 @@ export default function Index({
                                         exit="exit"
                                         className="hover:bg-gray-50/80 dark:hover:bg-gray-700/50 transition-colors"
                                     >
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                                        <td className="px-3 py-1.5 whitespace-nowrap font-medium text-gray-900 dark:text-white">
                                             <div className="relative dropdown-container overflow-visible z-[1000]">
                                                 <button
                                                     onClick={(e) => toggleDropdown(patient.no_rkm_medis, e.currentTarget)}
-                                                    className="flex items-center justify-between w-full px-3 py-2 text-sm font-mono text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                                                    className="flex items-center gap-2 px-2 py-1 text-xs font-mono text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
                                                 >
                                                     <span>{patient.no_rkm_medis}</span>
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         viewBox="0 0 24 24"
                                                         fill="currentColor"
-                                                        className={`w-4 h-4 transition-transform ${
+                                                        className={`w-3 h-3 transition-transform ${
                                                             openDropdown === patient.no_rkm_medis
                                                                 ? "rotate-180"
                                                                 : ""
@@ -654,22 +672,40 @@ export default function Index({
                                                     )}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                        <td className="px-3 py-1.5 whitespace-nowrap text-gray-900 dark:text-white font-medium">
                                             {patient.nm_pasien}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                        <td className="px-3 py-1.5 whitespace-nowrap text-gray-500 dark:text-gray-400">
                                             {patient.no_ktp || "-"}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                            {patient.jk === "L" ? "Laki-laki" : "Perempuan"}
+                                        <td className="px-3 py-1.5 whitespace-nowrap text-gray-500 dark:text-gray-400">
+                                            {patient.jk === "L" ? "L" : "P"}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                        <td className="px-3 py-1.5 whitespace-nowrap text-gray-500 dark:text-gray-400">
                                             {patient.umur}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                        <td className="px-3 py-1.5 whitespace-nowrap text-gray-500 dark:text-gray-400 max-w-[250px] truncate" title={[patient.alamat, patient.kelurahan?.nm_kel, patient.kecamatan?.nm_kec, patient.kabupaten?.nm_kab].filter(Boolean).join(", ")}>
+                                            {[patient.alamat, patient.kelurahan?.nm_kel, patient.kecamatan?.nm_kec, patient.kabupaten?.nm_kab].filter(Boolean).join(", ") || "-"}
+                                        </td>
+                                        <td className="px-3 py-1.5 whitespace-nowrap text-gray-500 dark:text-gray-400">
+                                            {patient.nm_ibu || "-"}
+                                        </td>
+                                        <td className="px-3 py-1.5 whitespace-nowrap text-gray-500 dark:text-gray-400 max-w-[120px] truncate" title={patient.pekerjaan}>
+                                            {patient.pekerjaan || "-"}
+                                        </td>
+                                        <td className="px-3 py-1.5 whitespace-nowrap text-gray-500 dark:text-gray-400 max-w-[120px] truncate" title={patient.namakeluarga}>
+                                            {patient.namakeluarga || "-"}
+                                        </td>
+                                        <td className="px-3 py-1.5 whitespace-nowrap text-gray-500 dark:text-gray-400 max-w-[150px] truncate" title={patient.penjab?.png_jawab || patient.kd_pj}>
+                                            {patient.penjab?.png_jawab || patient.kd_pj || "-"}
+                                        </td>
+                                        <td className="px-3 py-1.5 whitespace-nowrap text-gray-500 dark:text-gray-400">
+                                            {patient.no_peserta || "-"}
+                                        </td>
+                                        <td className="px-3 py-1.5 whitespace-nowrap text-gray-500 dark:text-gray-400">
                                             {patient.no_tlp || "-"}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                        <td className="px-3 py-1.5 whitespace-nowrap text-gray-500 dark:text-gray-400">
                                             {patient.tgl_daftar
                                                 ? new Date(patient.tgl_daftar).toLocaleDateString(
                                                         "id-ID"
@@ -681,7 +717,7 @@ export default function Index({
                                 </AnimatePresence>
                                 {patients.data.length === 0 && (
                                     <tr>
-                                        <td colSpan={7} className="px-4 py-12">
+                                        <td colSpan={14} className="px-4 py-12">
                                             <motion.div
                                                 className="flex flex-col items-center justify-center gap-3"
                                                 initial={{ opacity: 0, y: 10 }}

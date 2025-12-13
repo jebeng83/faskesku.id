@@ -97,6 +97,11 @@ class Patient extends Model
         return $this->belongsTo(Propinsi::class, 'kd_prop', 'kd_prop');
     }
 
+    public function penjab()
+    {
+        return $this->belongsTo(Penjab::class, 'kd_pj', 'kd_pj');
+    }
+
     // Accessor untuk jenis kelamin lengkap
     public function getJenisKelaminLengkapAttribute()
     {
