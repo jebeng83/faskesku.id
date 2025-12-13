@@ -93,6 +93,10 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
         };
 
         if (isOpen) {
+            reset();
+            setSelectedWilayah(null);
+            setPekerjaanOption("");
+            setPekerjaanOther("");
             fetchNextNoRM();
         }
     }, [isOpen]);
@@ -280,6 +284,88 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
         };
 
         loadPenjabOptions();
+    };
+
+    const handleCheckBpjsByNik = async () => {
+        if (!data.no_ktp || data.no_ktp.length < 16) {
+            alert("NIK harus 16 digit");
+            return;
+        }
+        try {
+            const response = await axios.get(
+                `/pcare/api/peserta/nik?nik=${data.no_ktp}`
+            );
+            const resData = response.data.response || response.data;
+
+            if (resData && (resData.noKartu || resData.nama)) {
+                const peserta = resData;
+                setData((prev) => ({
+                    ...prev,
+                    nm_pasien: peserta.nama || prev.nm_pasien,
+                    no_peserta: peserta.noKartu || prev.no_peserta,
+                    jk: peserta.sex === "L" ? "L" : "P",
+                    tgl_lahir: peserta.tglLahir
+                        ? peserta.tglLahir.split("-").reverse().join("-")
+                        : prev.tgl_lahir,
+                    no_tlp: peserta.noHP || prev.no_tlp,
+                    gol_darah:
+                        peserta.golDarah &&
+                        ["A", "B", "O", "AB"].includes(peserta.golDarah)
+                            ? peserta.golDarah
+                            : prev.gol_darah,
+                }));
+                alert("Data ditemukan di BPJS");
+            } else {
+                alert("Data tidak ditemukan di BPJS");
+            }
+        } catch (error) {
+            console.error("Error checking BPJS by NIK:", error);
+            alert(
+                "Gagal cek BPJS: " +
+                    (error.response?.data?.metaData?.message || error.message)
+            );
+        }
+    };
+
+    const handleCheckBpjsByNoKartu = async () => {
+        if (!data.no_peserta) {
+            alert("Nomor peserta harus diisi");
+            return;
+        }
+        try {
+            const response = await axios.get(
+                `/pcare/api/peserta/${data.no_peserta}`
+            );
+            const resData = response.data.response || response.data;
+
+            if (resData && (resData.noKartu || resData.nama)) {
+                const peserta = resData;
+                setData((prev) => ({
+                    ...prev,
+                    nm_pasien: peserta.nama || prev.nm_pasien,
+                    no_ktp: peserta.noKTP || prev.no_ktp,
+                    jk: peserta.sex === "L" ? "L" : "P",
+                    tgl_lahir: peserta.tglLahir
+                        ? peserta.tglLahir.split("-").reverse().join("-")
+                        : prev.tgl_lahir,
+                    no_tlp: peserta.noHP || prev.no_tlp,
+                    gol_darah:
+                        peserta.golDarah &&
+                        ["A", "B", "O", "AB"].includes(peserta.golDarah)
+                            ? peserta.golDarah
+                            : prev.gol_darah,
+                }));
+                alert("Data ditemukan di BPJS");
+            } else {
+                alert("Data tidak ditemukan di BPJS");
+            }
+        } catch (error) {
+            console.error("Error checking BPJS by No Kartu:", error);
+            alert(
+                "Gagal cek BPJS: " +
+                    (error.response?.data?.metaData?.message || error.message)
+            );
+        }
     };
 
     const handleTambahBahasaPasien = (e) => {
@@ -648,45 +734,62 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                     NIK
                                                 </label>
-                                                <div className="relative">
-                                                    <input
-                                                        type="text"
-                                                        name="no_ktp"
-                                                        value={data.no_ktp}
-                                                        onChange={(e) => {
-                                                            const value =
-                                                                e.target.value
-                                                                    .replace(
-                                                                        /[^0-9]/g,
-                                                                        ""
-                                                                    )
-                                                                    .slice(
-                                                                        0,
-                                                                        16
-                                                                    );
-                                                            setData(
-                                                                "no_ktp",
-                                                                value
-                                                            );
-                                                        }}
-                                                        className="w-full px-3 py-2 pr-12 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                        placeholder="Masukkan NIK (16 digit)"
-                                                        maxLength="16"
-                                                    />
-                                                    <div
-                                                        className={`absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-medium ${
-                                                            data.no_ktp
-                                                                .length === 16
-                                                                ? "text-green-600 dark:text-green-400"
-                                                                : data.no_ktp
-                                                                      .length >
-                                                                  0
-                                                                ? "text-yellow-600 dark:text-yellow-400"
-                                                                : "text-gray-400 dark:text-gray-500"
-                                                        }`}
-                                                    >
-                                                        {data.no_ktp.length}/16
+                                                <div className="flex gap-2">
+                                                    <div className="relative w-full">
+                                                        <input
+                                                            type="text"
+                                                            name="no_ktp"
+                                                            value={data.no_ktp}
+                                                            onChange={(e) => {
+                                                                const value =
+                                                                    e.target.value
+                                                                        .replace(
+                                                                            /[^0-9]/g,
+                                                                            ""
+                                                                        )
+                                                                        .slice(
+                                                                            0,
+                                                                            16
+                                                                        );
+                                                                setData(
+                                                                    "no_ktp",
+                                                                    value
+                                                                );
+                                                            }}
+                                                            className="w-full px-3 py-2 pr-12 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                            placeholder="Masukkan NIK (16 digit)"
+                                                            maxLength="16"
+                                                        />
+                                                        <div
+                                                            className={`absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-medium ${
+                                                                data.no_ktp
+                                                                    .length ===
+                                                                16
+                                                                    ? "text-green-600 dark:text-green-400"
+                                                                    : data
+                                                                          .no_ktp
+                                                                          .length >
+                                                                      0
+                                                                    ? "text-yellow-600 dark:text-yellow-400"
+                                                                    : "text-gray-400 dark:text-gray-500"
+                                                            }`}
+                                                        >
+                                                            {
+                                                                data.no_ktp
+                                                                    .length
+                                                            }
+                                                            /16
+                                                        </div>
                                                     </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={
+                                                            handleCheckBpjsByNik
+                                                        }
+                                                        className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm whitespace-nowrap transition-colors"
+                                                    >
+                                                        Cek BPJS
+                                                    </button>
                                                 </div>
                                                 {getErrorMessage("no_ktp") && (
                                                     <p className="mt-1 text-xs text-red-600">
@@ -701,19 +804,30 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                     No. Peserta
                                                 </label>
-                                                <input
-                                                    type="text"
-                                                    name="no_peserta"
-                                                    value={data.no_peserta}
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            "no_peserta",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                    placeholder="Masukkan nomor peserta BPJS/Asuransi"
-                                                />
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="text"
+                                                        name="no_peserta"
+                                                        value={data.no_peserta}
+                                                        onChange={(e) =>
+                                                            setData(
+                                                                "no_peserta",
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                        placeholder="Masukkan nomor peserta BPJS/Asuransi"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={
+                                                            handleCheckBpjsByNoKartu
+                                                        }
+                                                        className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm whitespace-nowrap transition-colors"
+                                                    >
+                                                        Cek BPJS
+                                                    </button>
+                                                </div>
                                                 {getErrorMessage(
                                                     "no_peserta"
                                                 ) && (
