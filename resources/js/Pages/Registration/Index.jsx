@@ -23,8 +23,9 @@ export default function Registration({
     polikliniks,
     penjabs,
     registrations,
+    searchQuery,
 }) {
-    const [searchTerm, setSearchTerm] = useState("");
+    const [searchTerm, setSearchTerm] = useState(searchQuery || "");
     const [searchResults, setSearchResults] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState(null);

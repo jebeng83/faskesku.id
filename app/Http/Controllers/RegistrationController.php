@@ -37,6 +37,7 @@ class RegistrationController extends Controller
             'polikliniks' => $polikliniks,
             'penjabs' => $penjabs,
             'registrations' => $registrations,
+            'searchQuery' => $request->input('search'),
         ]);
     }
 

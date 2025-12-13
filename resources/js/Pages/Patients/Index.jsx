@@ -131,21 +131,10 @@ export default function Index({
 	};
 
 	const handleRegisterPeriksa = (patient) => {
-		setSelectedPatient(patient);
-		setFormData({
-			kd_dokter: "",
-			kd_poli: "",
-			kd_pj: "",
-			p_jawab: patient.nm_pasien,
-			almt_pj: patient.alamat || "",
-			hubunganpj: "DIRI SENDIRI",
+		router.visit(route('registration.index'), {
+			data: { search: patient.no_rkm_medis },
+			method: 'get'
 		});
-		setPoliStatus({
-			status_poli: "Baru",
-			biaya_reg: 0,
-			has_registered: false,
-		});
-		setShowRegisterModal(true);
 		closeDropdown();
 	};
 
