@@ -61,6 +61,7 @@ Route::prefix('public')->group(function () {
 
     // Pasien describe endpoint
     Route::get('/pasien/describe', [ApiPatientController::class, 'describe'])->name('api.pasien.describe');
+    Route::get('/pasien/next-no-rm', [ApiPatientController::class, 'nextNoRM'])->name('api.pasien.next-no-rm');
 
     // Reference lookup endpoints
     Route::get('/perusahaan-pasien', [ReferenceController::class, 'perusahaanPasien'])->name('api.perusahaan-pasien.index');

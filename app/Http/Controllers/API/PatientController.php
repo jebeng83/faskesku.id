@@ -3,10 +3,30 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Patient;
 use Illuminate\Support\Facades\DB;
 
 class PatientController extends Controller
 {
+    /**
+     * Get the next medical record number (No. RM)
+     */
+    public function nextNoRM()
+    {
+        try {
+            $nextNoRM = Patient::generateNoRM();
+            return response()->json([
+                'success' => true,
+                'data' => $nextNoRM,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     /**
      * Describe tabel pasien: columns & foreign keys
      */

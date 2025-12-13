@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\API\PatientController::describe
-* @see app/Http/Controllers/API/PatientController.php:13
+* @see app/Http/Controllers/API/PatientController.php:33
 * @route '/api/pasien/describe'
 */
 export const describe = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ describe.definition = {
 
 /**
 * @see \App\Http\Controllers\API\PatientController::describe
-* @see app/Http/Controllers/API/PatientController.php:13
+* @see app/Http/Controllers/API/PatientController.php:33
 * @route '/api/pasien/describe'
 */
 describe.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ describe.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\PatientController::describe
-* @see app/Http/Controllers/API/PatientController.php:13
+* @see app/Http/Controllers/API/PatientController.php:33
 * @route '/api/pasien/describe'
 */
 describe.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ describe.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\API\PatientController::describe
-* @see app/Http/Controllers/API/PatientController.php:13
+* @see app/Http/Controllers/API/PatientController.php:33
 * @route '/api/pasien/describe'
 */
 describe.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -43,8 +43,53 @@ describe.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+/**
+* @see \App\Http\Controllers\API\PatientController::nextNoRm
+* @see app/Http/Controllers/API/PatientController.php:14
+* @route '/api/pasien/next-no-rm'
+*/
+export const nextNoRm = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: nextNoRm.url(options),
+    method: 'get',
+})
+
+nextNoRm.definition = {
+    methods: ["get","head"],
+    url: '/api/pasien/next-no-rm',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\API\PatientController::nextNoRm
+* @see app/Http/Controllers/API/PatientController.php:14
+* @route '/api/pasien/next-no-rm'
+*/
+nextNoRm.url = (options?: RouteQueryOptions) => {
+    return nextNoRm.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\API\PatientController::nextNoRm
+* @see app/Http/Controllers/API/PatientController.php:14
+* @route '/api/pasien/next-no-rm'
+*/
+nextNoRm.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: nextNoRm.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\API\PatientController::nextNoRm
+* @see app/Http/Controllers/API/PatientController.php:14
+* @route '/api/pasien/next-no-rm'
+*/
+nextNoRm.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: nextNoRm.url(options),
+    method: 'head',
+})
+
 const pasien = {
     describe: Object.assign(describe, describe),
+    nextNoRm: Object.assign(nextNoRm, nextNoRm),
 }
 
 export default pasien

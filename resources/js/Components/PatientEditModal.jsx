@@ -289,16 +289,16 @@ export default function PatientEditModal({
                                     .split(", ")
                                     .map((p) => p.trim());
                                 setSelectedWilayah({
-                                    village: parts[0] || "",
-                                    district: parts[1] || "",
-                                    regency: parts[2] || "",
-                                    province: parts[3] || "",
+                                    village: parts[3] || "",
+                                    district: parts[2] || "",
+                                    regency: parts[1] || "",
+                                    province: parts[0] || "",
                                 });
                                 // Auto-fill related fields for display and submission
-                                setData("kelurahanpj", parts[0] || "");
-                                setData("kecamatanpj", parts[1] || "");
-                                setData("kabupatenpj", parts[2] || "");
-                                setData("propinsipj", parts[3] || "");
+                                setData("kelurahanpj", parts[3] || "");
+                                setData("kecamatanpj", parts[2] || "");
+                                setData("kabupatenpj", parts[1] || "");
+                                setData("propinsipj", parts[0] || "");
                             }
                         }
                     } catch (error) {
@@ -636,16 +636,16 @@ export default function PatientEditModal({
         if (event.fullAddress) {
             const parts = event.fullAddress.split(", ").map((p) => p.trim());
             setSelectedWilayah({
-                village: parts[0] || "",
-                district: parts[1] || "",
-                regency: parts[2] || "",
-                province: parts[3] || "",
+                village: parts[3] || "",
+                district: parts[2] || "",
+                regency: parts[1] || "",
+                province: parts[0] || "",
             });
             // Auto-fill related fields for display and submission
-            setData("kelurahanpj", parts[0] || "");
-            setData("kecamatanpj", parts[1] || "");
-            setData("kabupatenpj", parts[2] || "");
-            setData("propinsipj", parts[3] || "");
+            setData("kelurahanpj", parts[3] || "");
+            setData("kecamatanpj", parts[2] || "");
+            setData("kabupatenpj", parts[1] || "");
+            setData("propinsipj", parts[0] || "");
         } else if (value && isValidWilayahCode(String(value).trim())) {
             setLoadingWilayah(true);
             try {
@@ -658,16 +658,16 @@ export default function PatientEditModal({
                             .split(", ")
                             .map((p) => p.trim());
                         setSelectedWilayah({
-                            village: parts[0] || "",
-                            district: parts[1] || "",
-                            regency: parts[2] || "",
-                            province: parts[3] || "",
+                            village: parts[3] || "",
+                            district: parts[2] || "",
+                            regency: parts[1] || "",
+                            province: parts[0] || "",
                         });
                         // Auto-fill related fields
-                        setData("kelurahanpj", parts[0] || "");
-                        setData("kecamatanpj", parts[1] || "");
-                        setData("kabupatenpj", parts[2] || "");
-                        setData("propinsipj", parts[3] || "");
+                        setData("kelurahanpj", parts[3] || "");
+                        setData("kecamatanpj", parts[2] || "");
+                        setData("kabupatenpj", parts[1] || "");
+                        setData("propinsipj", parts[0] || "");
                     }
                 }
             } catch (error) {
