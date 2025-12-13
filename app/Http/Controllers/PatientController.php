@@ -6,6 +6,10 @@ use App\Models\Dokter;
 use App\Models\Patient;
 use App\Models\Penjab;
 use App\Models\Poliklinik;
+use App\Models\Propinsi;
+use App\Models\Kabupaten;
+use App\Models\Kecamatan;
+use App\Models\Kelurahan;
 use App\Models\RegPeriksa;
 use App\Models\Wilayah;
 use Carbon\Carbon;
@@ -147,29 +151,53 @@ class PatientController extends Controller
             // Format expected: PP.RR.DD.VVVV (e.g., 74.01.01.1001)
             if (preg_match('/^\d{2}\.\d{2}\.\d{2}\.\d{4}$/', $data['kode_wilayah'])) {
                 [$pp, $rr, $dd, $vvvv] = explode('.', $data['kode_wilayah']);
+
+                // 1. Propinsi
                 $ppInt = (int) $pp;
-                $rrInt = (int) $rr;
-                $ddInt = (int) $dd;
-                $vvvvInt = (int) $vvvv;
+                $propinsi = Propinsi::find($ppInt);
+                if (!$propinsi) {
+                    $propinsi = Propinsi::where('nm_prop', $wilayahDetails['province'])->first();
+                    if (!$propinsi) {
+                        $propinsi = Propinsi::create([
+                            'kd_prop' => $ppInt,
+                            'nm_prop' => $wilayahDetails['province']
+                        ]);
+                    }
+                }
+                $data['kd_prop'] = $propinsi->kd_prop;
 
-                // Guard: only set kd_* if corresponding legacy tables contain the reference
-                $hasProp = Schema::hasTable('propinsi') ? DB::table('propinsi')->where('kd_prop', $ppInt)->exists() : false;
-                $hasKab = Schema::hasTable('kabupaten') ? DB::table('kabupaten')->where('kd_kab', $rrInt)->exists() : false;
-                $hasKec = Schema::hasTable('kecamatan') ? DB::table('kecamatan')->where('kd_kec', $ddInt)->exists() : false;
-                $hasKel = Schema::hasTable('kelurahan') ? DB::table('kelurahan')->where('kd_kel', $vvvvInt)->exists() : false;
+                // 2. Kabupaten
+                $kabupaten = Kabupaten::where('nm_kab', $wilayahDetails['regency'])->first();
+                if (!$kabupaten) {
+                    $nextId = (Kabupaten::max('kd_kab') ?? 0) + 1;
+                    $kabupaten = Kabupaten::create([
+                        'kd_kab' => $nextId,
+                        'nm_kab' => $wilayahDetails['regency']
+                    ]);
+                }
+                $data['kd_kab'] = $kabupaten->kd_kab;
 
-                if ($hasProp) {
-                    $data['kd_prop'] = $ppInt;
+                // 3. Kecamatan
+                $kecamatan = Kecamatan::where('nm_kec', $wilayahDetails['district'])->first();
+                if (!$kecamatan) {
+                    $nextId = (Kecamatan::max('kd_kec') ?? 0) + 1;
+                    $kecamatan = Kecamatan::create([
+                        'kd_kec' => $nextId,
+                        'nm_kec' => $wilayahDetails['district']
+                    ]);
                 }
-                if ($hasKab) {
-                    $data['kd_kab'] = $rrInt;
+                $data['kd_kec'] = $kecamatan->kd_kec;
+
+                // 4. Kelurahan
+                $kelurahan = Kelurahan::where('nm_kel', $wilayahDetails['village'])->first();
+                if (!$kelurahan) {
+                    $nextId = (Kelurahan::max('kd_kel') ?? 0) + 1;
+                    $kelurahan = Kelurahan::create([
+                        'kd_kel' => $nextId,
+                        'nm_kel' => $wilayahDetails['village']
+                    ]);
                 }
-                if ($hasKec) {
-                    $data['kd_kec'] = $ddInt;
-                }
-                if ($hasKel) {
-                    $data['kd_kel'] = $vvvvInt;
-                }
+                $data['kd_kel'] = $kelurahan->kd_kel;
             }
         }
 
@@ -288,30 +316,53 @@ class PatientController extends Controller
             // Guarded by existence checks on legacy tables to avoid FK violations
             if (preg_match('/^\d{2}\.\d{2}\.\d{2}\.\d{4}$/', $data['kode_wilayah'])) {
                 [$pp, $rr, $dd, $vvvv] = explode('.', $data['kode_wilayah']);
+                
+                // 1. Propinsi
                 $ppInt = (int) $pp;
-                $rrInt = (int) $rr;
-                $ddInt = (int) $dd;
-                $vvvvInt = (int) $vvvv;
+                $propinsi = Propinsi::find($ppInt);
+                if (!$propinsi) {
+                    $propinsi = Propinsi::where('nm_prop', $wilayahDetails['province'])->first();
+                    if (!$propinsi) {
+                        $propinsi = Propinsi::create([
+                            'kd_prop' => $ppInt,
+                            'nm_prop' => $wilayahDetails['province']
+                        ]);
+                    }
+                }
+                $data['kd_prop'] = $propinsi->kd_prop;
 
-                // Check existence of legacy region rows before setting kd_*
-                $hasProp = Schema::hasTable('propinsi') ? DB::table('propinsi')->where('kd_prop', $ppInt)->exists() : false;
-                $hasKab = Schema::hasTable('kabupaten') ? DB::table('kabupaten')->where('kd_kab', $rrInt)->exists() : false;
-                $hasKec = Schema::hasTable('kecamatan') ? DB::table('kecamatan')->where('kd_kec', $ddInt)->exists() : false;
-                $hasKel = Schema::hasTable('kelurahan') ? DB::table('kelurahan')->where('kd_kel', $vvvvInt)->exists() : false;
+                // 2. Kabupaten
+                $kabupaten = Kabupaten::where('nm_kab', $wilayahDetails['regency'])->first();
+                if (!$kabupaten) {
+                    $nextId = (Kabupaten::max('kd_kab') ?? 0) + 1;
+                    $kabupaten = Kabupaten::create([
+                        'kd_kab' => $nextId,
+                        'nm_kab' => $wilayahDetails['regency']
+                    ]);
+                }
+                $data['kd_kab'] = $kabupaten->kd_kab;
 
-                // Only set kd_* values if corresponding legacy table contains the reference
-                if ($hasProp) {
-                    $data['kd_prop'] = $ppInt;
+                // 3. Kecamatan
+                $kecamatan = Kecamatan::where('nm_kec', $wilayahDetails['district'])->first();
+                if (!$kecamatan) {
+                    $nextId = (Kecamatan::max('kd_kec') ?? 0) + 1;
+                    $kecamatan = Kecamatan::create([
+                        'kd_kec' => $nextId,
+                        'nm_kec' => $wilayahDetails['district']
+                    ]);
                 }
-                if ($hasKab) {
-                    $data['kd_kab'] = $rrInt;
+                $data['kd_kec'] = $kecamatan->kd_kec;
+
+                // 4. Kelurahan
+                $kelurahan = Kelurahan::where('nm_kel', $wilayahDetails['village'])->first();
+                if (!$kelurahan) {
+                    $nextId = (Kelurahan::max('kd_kel') ?? 0) + 1;
+                    $kelurahan = Kelurahan::create([
+                        'kd_kel' => $nextId,
+                        'nm_kel' => $wilayahDetails['village']
+                    ]);
                 }
-                if ($hasKec) {
-                    $data['kd_kec'] = $ddInt;
-                }
-                if ($hasKel) {
-                    $data['kd_kel'] = $vvvvInt;
-                }
+                $data['kd_kel'] = $kelurahan->kd_kel;
             }
         }
 
