@@ -34,7 +34,8 @@ class PatientController extends Controller
         }
 
         // Pagination
-        $patients = $query->orderBy('no_rkm_medis', 'desc')
+        $patients = $query->with(['kelurahan', 'kecamatan', 'kabupaten', 'penjab'])
+            ->orderBy('no_rkm_medis', 'desc')
             ->paginate(10)
             ->withQueryString();
 
@@ -42,7 +43,7 @@ class PatientController extends Controller
         $polikliniks = Poliklinik::select('kd_poli', 'nm_poli')->get();
         $penjabs = Penjab::select('kd_pj', 'png_jawab')->get();
 
-        return Inertia::render('Patients/Index', [
+        return inertia('Patients/Index', [
             'patients' => $patients,
             'filters' => $request->only(['search']),
             'dokters' => $dokters,
