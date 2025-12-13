@@ -1,5 +1,4 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../../wayfinder'
-import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Pcare\SettingBridgingBpjsController::index
 * @see app/Http/Controllers/Pcare/SettingBridgingBpjsController.php:15
