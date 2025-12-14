@@ -15,15 +15,14 @@ class SuratKeteranganRawatInapTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('surat_keterangan_rawat_inap')->insert(array (
-          0 => 
-          array (
-            'no_surat' => 'SKR20250819001',
-            'no_rawat' => '2025/08/19/000002',
-            'tanggalawal' => '2025-08-19',
-            'tanggalakhir' => '2025-08-19',
-          ),
-        ));
+        DB::table('surat_keterangan_rawat_inap')->insert([
+            0 => [
+                'no_surat' => 'SKR20250819001',
+                'no_rawat' => '2025/08/19/000002',
+                'tanggalawal' => '2025-08-19',
+                'tanggalakhir' => '2025-08-19',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

@@ -15,18 +15,16 @@ class InventarisGambarTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('inventaris_gambar')->insert(array (
-          0 => 
-          array (
-            'no_inventaris' => 'I000000023/2023',
-            'photo' => 'pages/upload/gasss.jpg',
-          ),
-          1 => 
-          array (
-            'no_inventaris' => 'MED/09/06/2022/02',
-            'photo' => 'pages/upload/iklan.jpg',
-          ),
-        ));
+        DB::table('inventaris_gambar')->insert([
+            0 => [
+                'no_inventaris' => 'I000000023/2023',
+                'photo' => 'pages/upload/gasss.jpg',
+            ],
+            1 => [
+                'no_inventaris' => 'MED/09/06/2022/02',
+                'photo' => 'pages/upload/iklan.jpg',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

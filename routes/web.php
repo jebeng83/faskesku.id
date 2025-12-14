@@ -680,6 +680,12 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('farmasi/RiwayatTransaksiGudang');
         })->name('riwayat-transaksi-gudang');
 
+        // Riwayat Barang Medis (Inertia page + JSON data endpoint)
+        Route::get('/riwayat-barang-medis', [\App\Http\Controllers\Farmasi\RiwayatBarangMedisController::class, 'index'])
+            ->name('riwayat-barang-medis');
+        Route::get('/riwayat-barang-medis/data', [\App\Http\Controllers\Farmasi\RiwayatBarangMedisController::class, 'data'])
+            ->name('riwayat-barang-medis.data');
+
         Route::get('/stok-obat', function () {
             return Inertia::render('farmasi/StokObat');
         })->name('stok-obat');

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('employees')) {
+        if (! Schema::hasTable('employees')) {
             Schema::create('employees', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->string('nip')->unique();

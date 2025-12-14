@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('mutasibarang')) {
+        if (! Schema::hasTable('mutasibarang')) {
             Schema::create('mutasibarang', function (Blueprint $table) {
                 $table->string('kode_brng', 15)->index('kode_brng');
                 $table->double('jml')->index('jml');

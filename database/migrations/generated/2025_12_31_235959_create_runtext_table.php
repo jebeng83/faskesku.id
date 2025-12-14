@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('runtext')) {
+        if (! Schema::hasTable('runtext')) {
             Schema::create('runtext', function (Blueprint $table) {
                 $table->text('teks');
                 $table->enum('aktifkan', ['Yes', 'No']);

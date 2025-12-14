@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('riwayat_seminar')) {
+        if (! Schema::hasTable('riwayat_seminar')) {
             Schema::create('riwayat_seminar', function (Blueprint $table) {
                 $table->integer('id')->index('id');
                 $table->enum('tingkat', ['Local', 'Regional', 'Nasional', 'Internasional']);

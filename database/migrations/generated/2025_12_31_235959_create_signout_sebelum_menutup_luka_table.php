@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('signout_sebelum_menutup_luka')) {
+        if (! Schema::hasTable('signout_sebelum_menutup_luka')) {
             Schema::create('signout_sebelum_menutup_luka', function (Blueprint $table) {
                 $table->string('no_rawat', 17);
                 $table->dateTime('tanggal');

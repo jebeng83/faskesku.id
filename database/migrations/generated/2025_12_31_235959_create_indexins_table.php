@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('indexins')) {
+        if (! Schema::hasTable('indexins')) {
             Schema::create('indexins', function (Blueprint $table) {
                 $table->char('dep_id', 4)->primary();
                 $table->double('persen')->index('persen');

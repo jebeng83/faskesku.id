@@ -15,18 +15,16 @@ class AkunBayarHutangTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('akun_bayar_hutang')->insert(array (
-          0 => 
-          array (
-            'nama_bayar' => 'BAYAR CASH',
-            'kd_rek' => '111020',
-          ),
-          1 => 
-          array (
-            'nama_bayar' => 'BAYAR LEWAT BANK MANDIRI',
-            'kd_rek' => '112010',
-          ),
-        ));
+        DB::table('akun_bayar_hutang')->insert([
+            0 => [
+                'nama_bayar' => 'BAYAR CASH',
+                'kd_rek' => '111020',
+            ],
+            1 => [
+                'nama_bayar' => 'BAYAR LEWAT BANK MANDIRI',
+                'kd_rek' => '112010',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

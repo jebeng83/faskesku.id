@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('indextotal')) {
+        if (! Schema::hasTable('indextotal')) {
             Schema::create('indextotal', function (Blueprint $table) {
                 $table->char('kdindex', 4)->index('kdindex');
                 $table->double('ttl')->index('ttl');

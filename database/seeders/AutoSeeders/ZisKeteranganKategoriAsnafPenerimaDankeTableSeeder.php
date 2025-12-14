@@ -15,48 +15,40 @@ class ZisKeteranganKategoriAsnafPenerimaDankeTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('zis_keterangan_kategori_asnaf_penerima_dankes')->insert(array (
-          0 => 
-          array (
-            'kode' => '001',
-            'keterangan' => 'Fakir',
-          ),
-          1 => 
-          array (
-            'kode' => '002',
-            'keterangan' => 'Miskin',
-          ),
-          2 => 
-          array (
-            'kode' => '003',
-            'keterangan' => 'Amil',
-          ),
-          3 => 
-          array (
-            'kode' => '004',
-            'keterangan' => 'Mualaf',
-          ),
-          4 => 
-          array (
-            'kode' => '005',
-            'keterangan' => 'Riqob',
-          ),
-          5 => 
-          array (
-            'kode' => '006',
-            'keterangan' => 'Ghorimin',
-          ),
-          6 => 
-          array (
-            'kode' => '007',
-            'keterangan' => 'Fisabilillah',
-          ),
-          7 => 
-          array (
-            'kode' => '008',
-            'keterangan' => 'Ibnu Sabil / Musafir',
-          ),
-        ));
+        DB::table('zis_keterangan_kategori_asnaf_penerima_dankes')->insert([
+            0 => [
+                'kode' => '001',
+                'keterangan' => 'Fakir',
+            ],
+            1 => [
+                'kode' => '002',
+                'keterangan' => 'Miskin',
+            ],
+            2 => [
+                'kode' => '003',
+                'keterangan' => 'Amil',
+            ],
+            3 => [
+                'kode' => '004',
+                'keterangan' => 'Mualaf',
+            ],
+            4 => [
+                'kode' => '005',
+                'keterangan' => 'Riqob',
+            ],
+            5 => [
+                'kode' => '006',
+                'keterangan' => 'Ghorimin',
+            ],
+            6 => [
+                'kode' => '007',
+                'keterangan' => 'Fisabilillah',
+            ],
+            7 => [
+                'kode' => '008',
+                'keterangan' => 'Ibnu Sabil / Musafir',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

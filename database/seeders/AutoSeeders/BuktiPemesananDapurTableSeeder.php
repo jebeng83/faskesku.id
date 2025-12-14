@@ -15,28 +15,24 @@ class BuktiPemesananDapurTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('bukti_pemesanan_dapur')->insert(array (
-          0 => 
-          array (
-            'no_faktur' => 'PD20241114001',
-            'photo' => 'pages/upload/PD20241114001.jpeg',
-          ),
-          1 => 
-          array (
-            'no_faktur' => 'PD20241122001',
-            'photo' => '',
-          ),
-          2 => 
-          array (
-            'no_faktur' => 'PD20250211001',
-            'photo' => 'pages/upload/PD20250211001.jpeg',
-          ),
-          3 => 
-          array (
-            'no_faktur' => 'PD20250804001',
-            'photo' => 'pages/upload/PD20250804001.jpeg',
-          ),
-        ));
+        DB::table('bukti_pemesanan_dapur')->insert([
+            0 => [
+                'no_faktur' => 'PD20241114001',
+                'photo' => 'pages/upload/PD20241114001.jpeg',
+            ],
+            1 => [
+                'no_faktur' => 'PD20241122001',
+                'photo' => '',
+            ],
+            2 => [
+                'no_faktur' => 'PD20250211001',
+                'photo' => 'pages/upload/PD20250211001.jpeg',
+            ],
+            3 => [
+                'no_faktur' => 'PD20250804001',
+                'photo' => 'pages/upload/PD20250804001.jpeg',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

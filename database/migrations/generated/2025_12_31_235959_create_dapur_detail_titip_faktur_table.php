@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('dapur_detail_titip_faktur')) {
+        if (! Schema::hasTable('dapur_detail_titip_faktur')) {
             Schema::create('dapur_detail_titip_faktur', function (Blueprint $table) {
                 $table->string('no_tagihan', 20);
                 $table->string('no_faktur', 20)->index('no_faktur');

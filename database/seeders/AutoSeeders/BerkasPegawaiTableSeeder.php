@@ -15,22 +15,20 @@ class BerkasPegawaiTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('berkas_pegawai')->insert(array (
-          0 => 
-          array (
-            'nik' => 'D0000004',
-            'tgl_uploud' => '2024-11-12',
-            'kode_berkas' => 'MBP0001',
-            'berkas' => 'pages/berkaspegawai/berkas/ijazahS21.jpg',
-          ),
-          1 => 
-          array (
-            'nik' => 'D0000002',
-            'tgl_uploud' => '2025-06-30',
-            'kode_berkas' => 'MBP0002',
-            'berkas' => 'pages/berkaspegawai/berkas/ijazah2.jpg',
-          ),
-        ));
+        DB::table('berkas_pegawai')->insert([
+            0 => [
+                'nik' => 'D0000004',
+                'tgl_uploud' => '2024-11-12',
+                'kode_berkas' => 'MBP0001',
+                'berkas' => 'pages/berkaspegawai/berkas/ijazahS21.jpg',
+            ],
+            1 => [
+                'nik' => 'D0000002',
+                'tgl_uploud' => '2025-06-30',
+                'kode_berkas' => 'MBP0002',
+                'berkas' => 'pages/berkaspegawai/berkas/ijazah2.jpg',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

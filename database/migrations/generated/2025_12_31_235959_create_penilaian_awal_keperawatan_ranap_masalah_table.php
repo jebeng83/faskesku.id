@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('penilaian_awal_keperawatan_ranap_masalah')) {
+        if (! Schema::hasTable('penilaian_awal_keperawatan_ranap_masalah')) {
             Schema::create('penilaian_awal_keperawatan_ranap_masalah', function (Blueprint $table) {
                 $table->string('no_rawat', 17);
                 $table->string('kode_masalah', 3)->index('kode_masalah');

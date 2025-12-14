@@ -15,20 +15,19 @@ class CatatanAdimeGiziTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('catatan_adime_gizi')->insert(array (
-          0 => 
-          array (
-            'no_rawat' => '2025/05/26/000001',
-            'tanggal' => '2025-05-26 11:41:00',
-            'asesmen' => '1',
-            'diagnosis' => '',
-            'intervensi' => '',
-            'monitoring' => '-',
-            'evaluasi' => '',
-            'instruksi' => '',
-            'nip' => '123124',
-          ),
-        ));
+        DB::table('catatan_adime_gizi')->insert([
+            0 => [
+                'no_rawat' => '2025/05/26/000001',
+                'tanggal' => '2025-05-26 11:41:00',
+                'asesmen' => '1',
+                'diagnosis' => '',
+                'intervensi' => '',
+                'monitoring' => '-',
+                'evaluasi' => '',
+                'instruksi' => '',
+                'nip' => '123124',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

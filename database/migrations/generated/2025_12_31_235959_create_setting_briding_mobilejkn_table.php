@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('setting_briding_mobilejkn')) {
+        if (! Schema::hasTable('setting_briding_mobilejkn')) {
             Schema::create('setting_briding_mobilejkn', function (Blueprint $table) {
                 $table->string('user_mobilejkn', 20);
                 $table->string('pass_mobilejkn', 20);

@@ -15,16 +15,14 @@ class PenyakitPd3iTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('penyakit_pd3i')->insert(array (
-          0 => 
-          array (
-            'kd_penyakit' => 'A00',
-          ),
-          1 => 
-          array (
-            'kd_penyakit' => 'J01',
-          ),
-        ));
+        DB::table('penyakit_pd3i')->insert([
+            0 => [
+                'kd_penyakit' => 'A00',
+            ],
+            1 => [
+                'kd_penyakit' => 'J01',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('skrining_risiko_kanker_payudara')) {
+        if (! Schema::hasTable('skrining_risiko_kanker_payudara')) {
             Schema::create('skrining_risiko_kanker_payudara', function (Blueprint $table) {
                 $table->string('no_rawat', 17)->primary();
                 $table->dateTime('tanggal');

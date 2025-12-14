@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('set_lokasi')) {
+        if (! Schema::hasTable('set_lokasi')) {
             Schema::create('set_lokasi', function (Blueprint $table) {
                 $table->char('kd_bangsal', 5)->index('kd_bangsal');
                 $table->enum('asal_stok', ['Gunakan Stok Utama Obat', 'Gunakan Stok Bangsal']);

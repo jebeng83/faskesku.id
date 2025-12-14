@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('skp_kriteria_penilaian')) {
+        if (! Schema::hasTable('skp_kriteria_penilaian')) {
             Schema::create('skp_kriteria_penilaian', function (Blueprint $table) {
                 $table->string('kode_kriteria', 10)->primary();
                 $table->string('nama_kriteria', 150)->nullable();

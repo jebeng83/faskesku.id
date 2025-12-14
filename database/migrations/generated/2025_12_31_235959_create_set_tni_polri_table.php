@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('set_tni_polri')) {
+        if (! Schema::hasTable('set_tni_polri')) {
             Schema::create('set_tni_polri', function (Blueprint $table) {
                 $table->enum('tampilkan_tni_polri', ['Yes', 'No']);
             });

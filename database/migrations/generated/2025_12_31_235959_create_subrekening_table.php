@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('subrekening')) {
+        if (! Schema::hasTable('subrekening')) {
             Schema::create('subrekening', function (Blueprint $table) {
                 $table->string('kd_rek', 15)->index('kd_rek');
                 $table->string('kd_rek2', 15)->primary();

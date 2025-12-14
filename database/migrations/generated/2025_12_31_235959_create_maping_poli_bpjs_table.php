@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('maping_poli_bpjs')) {
+        if (! Schema::hasTable('maping_poli_bpjs')) {
             Schema::create('maping_poli_bpjs', function (Blueprint $table) {
                 $table->string('kd_poli_rs', 5)->primary();
                 $table->string('kd_poli_bpjs', 15)->unique('kd_poli_bpjs');

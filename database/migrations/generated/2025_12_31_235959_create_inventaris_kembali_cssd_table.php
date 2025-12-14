@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('inventaris_kembali_cssd')) {
+        if (! Schema::hasTable('inventaris_kembali_cssd')) {
             Schema::create('inventaris_kembali_cssd', function (Blueprint $table) {
                 $table->string('keterangan_kembali', 80);
                 $table->string('no_sirkulasi', 20)->primary();

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('billing')) {
+        if (! Schema::hasTable('billing')) {
             Schema::create('billing', function (Blueprint $table) {
                 $table->integer('noindex')->index('noindex');
                 $table->string('no_rawat', 17)->index('no_rawat');

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('telaah_farmasi')) {
+        if (! Schema::hasTable('telaah_farmasi')) {
             Schema::create('telaah_farmasi', function (Blueprint $table) {
                 $table->string('no_resep', 14)->primary();
                 $table->enum('resep_identifikasi_pasien', ['Ya', 'Tidak'])->nullable();

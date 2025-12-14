@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('satu_sehat_observationttvbb')) {
+        if (! Schema::hasTable('satu_sehat_observationttvbb')) {
             Schema::create('satu_sehat_observationttvbb', function (Blueprint $table) {
                 $table->string('no_rawat', 17);
                 $table->date('tgl_perawatan');

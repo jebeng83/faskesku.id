@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('bukti_pemesanan_logistik')) {
+        if (! Schema::hasTable('bukti_pemesanan_logistik')) {
             Schema::create('bukti_pemesanan_logistik', function (Blueprint $table) {
                 $table->string('no_faktur', 20)->primary();
                 $table->string('photo', 500)->nullable();

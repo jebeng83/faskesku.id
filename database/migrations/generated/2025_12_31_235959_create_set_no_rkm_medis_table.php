@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('set_no_rkm_medis')) {
+        if (! Schema::hasTable('set_no_rkm_medis')) {
             Schema::create('set_no_rkm_medis', function (Blueprint $table) {
                 $table->string('no_rkm_medis', 15);
             });

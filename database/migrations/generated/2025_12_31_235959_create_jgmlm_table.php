@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('jgmlm')) {
+        if (! Schema::hasTable('jgmlm')) {
             Schema::create('jgmlm', function (Blueprint $table) {
                 $table->date('tgl');
                 $table->integer('id')->index('id');

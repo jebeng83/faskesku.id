@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('setsms')) {
+        if (! Schema::hasTable('setsms')) {
             Schema::create('setsms', function (Blueprint $table) {
                 $table->string('kode_sms', 200)->default('')->primary();
                 $table->text('sintax_balasan')->nullable();

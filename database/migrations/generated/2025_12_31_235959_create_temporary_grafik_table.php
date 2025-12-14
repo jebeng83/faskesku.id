@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('temporary_grafik')) {
+        if (! Schema::hasTable('temporary_grafik')) {
             Schema::create('temporary_grafik', function (Blueprint $table) {
                 $table->integer('no', true);
                 $table->string('temp1', 1000);

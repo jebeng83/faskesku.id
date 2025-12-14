@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('closing_kasir')) {
+        if (! Schema::hasTable('closing_kasir')) {
             Schema::create('closing_kasir', function (Blueprint $table) {
                 $table->enum('shift', ['Pagi', 'Siang', 'Sore', 'Malam'])->primary();
                 $table->time('jam_masuk')->index('jam_masuk');

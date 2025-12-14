@@ -15,12 +15,11 @@ class SetNoRkmMediTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('set_no_rkm_medis')->insert(array (
-          0 => 
-          array (
-            'no_rkm_medis' => '000055',
-          ),
-        ));
+        DB::table('set_no_rkm_medis')->insert([
+            0 => [
+                'no_rkm_medis' => '000055',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

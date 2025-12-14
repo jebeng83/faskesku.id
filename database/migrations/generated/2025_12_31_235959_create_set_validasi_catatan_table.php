@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('set_validasi_catatan')) {
+        if (! Schema::hasTable('set_validasi_catatan')) {
             Schema::create('set_validasi_catatan', function (Blueprint $table) {
                 $table->enum('tampilkan_catatan', ['Yes', 'No'])->nullable();
             });

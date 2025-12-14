@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('detail_pemberian_obat')) {
+        if (! Schema::hasTable('detail_pemberian_obat')) {
             Schema::create('detail_pemberian_obat', function (Blueprint $table) {
                 $table->date('tgl_perawatan')->default('0000-00-00')->index('tgl_perawatan');
                 $table->time('jam')->default('00:00:00')->index('jam');

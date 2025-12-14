@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('setpenjualanumum')) {
+        if (! Schema::hasTable('setpenjualanumum')) {
             Schema::create('setpenjualanumum', function (Blueprint $table) {
                 $table->double('ralan')->nullable();
                 $table->double('kelas1')->nullable();

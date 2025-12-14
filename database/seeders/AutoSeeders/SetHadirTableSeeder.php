@@ -15,12 +15,11 @@ class SetHadirTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('set_hadir')->insert(array (
-          0 => 
-          array (
-            'tnj' => 40000.0,
-          ),
-        ));
+        DB::table('set_hadir')->insert([
+            0 => [
+                'tnj' => 40000.0,
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

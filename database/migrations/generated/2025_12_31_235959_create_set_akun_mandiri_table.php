@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('set_akun_mandiri')) {
+        if (! Schema::hasTable('set_akun_mandiri')) {
             Schema::create('set_akun_mandiri', function (Blueprint $table) {
                 $table->string('kd_rek', 15)->primary();
                 $table->string('kd_rek_biaya', 15);

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('metode_pembayaran_bankmandiri')) {
+        if (! Schema::hasTable('metode_pembayaran_bankmandiri')) {
             Schema::create('metode_pembayaran_bankmandiri', function (Blueprint $table) {
                 $table->string('kode_metode', 5)->primary();
                 $table->string('nama_metode', 40)->nullable();

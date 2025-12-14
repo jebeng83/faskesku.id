@@ -15,13 +15,12 @@ class SuratLemariTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('surat_lemari')->insert(array (
-          0 => 
-          array (
-            'kd' => 'SA001',
-            'lemari' => 'ALMARI 1',
-          ),
-        ));
+        DB::table('surat_lemari')->insert([
+            0 => [
+                'kd' => 'SA001',
+                'lemari' => 'ALMARI 1',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

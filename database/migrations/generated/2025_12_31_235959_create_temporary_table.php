@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('temporary')) {
+        if (! Schema::hasTable('temporary')) {
             Schema::create('temporary', function (Blueprint $table) {
                 $table->integer('no')->index('no');
                 $table->string('temp1', 1000);

@@ -15,7 +15,7 @@ class AuditCuciTanganMediTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        
+
         Schema::enableForeignKeyConstraints();
     }
 }

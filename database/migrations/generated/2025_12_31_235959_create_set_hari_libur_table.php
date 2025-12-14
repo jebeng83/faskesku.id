@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('set_hari_libur')) {
+        if (! Schema::hasTable('set_hari_libur')) {
             Schema::create('set_hari_libur', function (Blueprint $table) {
                 $table->date('tanggal')->primary();
                 $table->string('ktg', 40);

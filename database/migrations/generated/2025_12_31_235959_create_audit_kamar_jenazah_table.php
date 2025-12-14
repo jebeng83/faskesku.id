@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('audit_kamar_jenazah')) {
+        if (! Schema::hasTable('audit_kamar_jenazah')) {
             Schema::create('audit_kamar_jenazah', function (Blueprint $table) {
                 $table->dateTime('tanggal')->primary();
                 $table->enum('audit1', ['Ya', 'Tidak'])->nullable();

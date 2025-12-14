@@ -15,7 +15,7 @@ class PenilaianLanjutanResikoJatuhPsikiatriTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        
+
         Schema::enableForeignKeyConstraints();
     }
 }

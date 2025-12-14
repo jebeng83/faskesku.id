@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('kesling_mutu_air_limbah')) {
+        if (! Schema::hasTable('kesling_mutu_air_limbah')) {
             Schema::create('kesling_mutu_air_limbah', function (Blueprint $table) {
                 $table->string('nip', 20);
                 $table->dateTime('tanggal');

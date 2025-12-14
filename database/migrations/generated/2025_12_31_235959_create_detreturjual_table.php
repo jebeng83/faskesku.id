@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('detreturjual')) {
+        if (! Schema::hasTable('detreturjual')) {
             Schema::create('detreturjual', function (Blueprint $table) {
                 $table->string('no_retur_jual', 20)->index('no_retur_jual');
                 $table->string('nota_jual', 20)->index('nota_jual');

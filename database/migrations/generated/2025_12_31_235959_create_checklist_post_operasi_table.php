@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('checklist_post_operasi')) {
+        if (! Schema::hasTable('checklist_post_operasi')) {
             Schema::create('checklist_post_operasi', function (Blueprint $table) {
                 $table->string('no_rawat', 17);
                 $table->dateTime('tanggal');

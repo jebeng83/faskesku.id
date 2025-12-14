@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('set_tarif')) {
+        if (! Schema::hasTable('set_tarif')) {
             Schema::create('set_tarif', function (Blueprint $table) {
                 $table->enum('poli_ralan', ['Yes', 'No']);
                 $table->enum('cara_bayar_ralan', ['Yes', 'No']);

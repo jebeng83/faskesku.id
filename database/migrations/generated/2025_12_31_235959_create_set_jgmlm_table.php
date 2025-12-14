@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('set_jgmlm')) {
+        if (! Schema::hasTable('set_jgmlm')) {
             Schema::create('set_jgmlm', function (Blueprint $table) {
                 $table->double('tnj')->primary();
             });

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('barcode')) {
+        if (! Schema::hasTable('barcode')) {
             Schema::create('barcode', function (Blueprint $table) {
                 $table->integer('id')->primary();
                 $table->string('barcode', 25)->unique('barcode');

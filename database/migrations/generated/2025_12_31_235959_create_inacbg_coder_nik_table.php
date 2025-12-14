@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('inacbg_coder_nik')) {
+        if (! Schema::hasTable('inacbg_coder_nik')) {
             Schema::create('inacbg_coder_nik', function (Blueprint $table) {
                 $table->string('nik', 20)->primary();
                 $table->string('no_ik', 30)->nullable();

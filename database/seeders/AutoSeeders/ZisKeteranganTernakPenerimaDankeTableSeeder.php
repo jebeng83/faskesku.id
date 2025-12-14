@@ -15,33 +15,28 @@ class ZisKeteranganTernakPenerimaDankeTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('zis_keterangan_ternak_penerima_dankes')->insert(array (
-          0 => 
-          array (
-            'kode' => '001',
-            'keterangan' => 'Unggas',
-          ),
-          1 => 
-          array (
-            'kode' => '002',
-            'keterangan' => 'Burung',
-          ),
-          2 => 
-          array (
-            'kode' => '003',
-            'keterangan' => 'Kambing',
-          ),
-          3 => 
-          array (
-            'kode' => '004',
-            'keterangan' => 'Sapi',
-          ),
-          4 => 
-          array (
-            'kode' => '005',
-            'keterangan' => 'Kerbau',
-          ),
-        ));
+        DB::table('zis_keterangan_ternak_penerima_dankes')->insert([
+            0 => [
+                'kode' => '001',
+                'keterangan' => 'Unggas',
+            ],
+            1 => [
+                'kode' => '002',
+                'keterangan' => 'Burung',
+            ],
+            2 => [
+                'kode' => '003',
+                'keterangan' => 'Kambing',
+            ],
+            3 => [
+                'kode' => '004',
+                'keterangan' => 'Sapi',
+            ],
+            4 => [
+                'kode' => '005',
+                'keterangan' => 'Kerbau',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

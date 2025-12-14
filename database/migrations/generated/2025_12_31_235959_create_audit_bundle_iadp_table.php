@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('audit_bundle_iadp')) {
+        if (! Schema::hasTable('audit_bundle_iadp')) {
             Schema::create('audit_bundle_iadp', function (Blueprint $table) {
                 $table->dateTime('tanggal');
                 $table->string('nik', 20)->index('nik');

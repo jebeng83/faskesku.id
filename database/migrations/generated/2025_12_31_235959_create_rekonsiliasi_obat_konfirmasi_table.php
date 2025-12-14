@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('rekonsiliasi_obat_konfirmasi')) {
+        if (! Schema::hasTable('rekonsiliasi_obat_konfirmasi')) {
             Schema::create('rekonsiliasi_obat_konfirmasi', function (Blueprint $table) {
                 $table->string('no_rekonsiliasi', 20)->primary();
                 $table->dateTime('diterima_farmasi')->nullable();

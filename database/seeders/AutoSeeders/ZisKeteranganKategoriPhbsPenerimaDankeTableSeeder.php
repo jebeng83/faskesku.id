@@ -15,23 +15,20 @@ class ZisKeteranganKategoriPhbsPenerimaDankeTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('zis_keterangan_kategori_phbs_penerima_dankes')->insert(array (
-          0 => 
-          array (
-            'kode' => '001',
-            'keterangan' => 'Hijau',
-          ),
-          1 => 
-          array (
-            'kode' => '002',
-            'keterangan' => 'Kuning',
-          ),
-          2 => 
-          array (
-            'kode' => '003',
-            'keterangan' => 'Merah',
-          ),
-        ));
+        DB::table('zis_keterangan_kategori_phbs_penerima_dankes')->insert([
+            0 => [
+                'kode' => '001',
+                'keterangan' => 'Hijau',
+            ],
+            1 => [
+                'kode' => '002',
+                'keterangan' => 'Kuning',
+            ],
+            2 => [
+                'kode' => '003',
+                'keterangan' => 'Merah',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

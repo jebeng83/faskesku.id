@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('set_tnjanak')) {
+        if (! Schema::hasTable('set_tnjanak')) {
             Schema::create('set_tnjanak', function (Blueprint $table) {
                 $table->double('tnj')->primary();
             });

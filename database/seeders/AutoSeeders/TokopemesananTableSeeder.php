@@ -15,7 +15,7 @@ class TokopemesananTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        
+
         Schema::enableForeignKeyConstraints();
     }
 }

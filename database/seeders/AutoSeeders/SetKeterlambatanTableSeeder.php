@@ -15,14 +15,13 @@ class SetKeterlambatanTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('set_keterlambatan')->insert(array (
-          0 => 
-          array (
-            'toleransi' => 5,
-            'terlambat1' => 10,
-            'terlambat2' => 15,
-          ),
-        ));
+        DB::table('set_keterlambatan')->insert([
+            0 => [
+                'toleransi' => 5,
+                'terlambat1' => 10,
+                'terlambat2' => 15,
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

@@ -15,14 +15,13 @@ class SetHargaObatTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('set_harga_obat')->insert(array (
-          0 => 
-          array (
-            'setharga' => 'Umum',
-            'hargadasar' => 'Harga Diskon',
-            'ppn' => 'No',
-          ),
-        ));
+        DB::table('set_harga_obat')->insert([
+            0 => [
+                'setharga' => 'Umum',
+                'hargadasar' => 'Harga Diskon',
+                'ppn' => 'No',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

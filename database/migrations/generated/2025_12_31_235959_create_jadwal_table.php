@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('jadwal')) {
+        if (! Schema::hasTable('jadwal')) {
             Schema::create('jadwal', function (Blueprint $table) {
                 $table->string('kd_dokter', 20)->index('kd_dokter');
                 $table->enum('hari_kerja', ['SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU', 'AKHAD'])->default('SENIN');

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('gambar')) {
+        if (! Schema::hasTable('gambar')) {
             Schema::create('gambar', function (Blueprint $table) {
                 $table->integer('inde')->primary();
                 $table->binary('bpjs');

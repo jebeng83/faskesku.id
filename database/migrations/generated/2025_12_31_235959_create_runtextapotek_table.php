@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('runtextapotek')) {
+        if (! Schema::hasTable('runtextapotek')) {
             Schema::create('runtextapotek', function (Blueprint $table) {
                 $table->text('teks');
                 $table->enum('aktifkan', ['Yes', 'No']);

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('set_harga_obat')) {
+        if (! Schema::hasTable('set_harga_obat')) {
             Schema::create('set_harga_obat', function (Blueprint $table) {
                 $table->enum('setharga', ['Umum', 'Per Jenis', 'Per Barang']);
                 $table->enum('hargadasar', ['Harga Beli', 'Harga Diskon']);

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('data_batch')) {
+        if (! Schema::hasTable('data_batch')) {
             Schema::create('data_batch', function (Blueprint $table) {
                 $table->string('no_batch', 20);
                 $table->string('kode_brng', 15)->default('')->index('kode_brng');

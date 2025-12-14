@@ -15,22 +15,20 @@ class ParkirJeniTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('parkir_jenis')->insert(array (
-          0 => 
-          array (
-            'kd_parkir' => 'P0001',
-            'jns_parkir' => 'Parkir Motor Umum',
-            'biaya' => 1000.0,
-            'jenis' => 'Harian',
-          ),
-          1 => 
-          array (
-            'kd_parkir' => 'P0002',
-            'jns_parkir' => 'Parkir Mobil Umum',
-            'biaya' => 2000.0,
-            'jenis' => 'Harian',
-          ),
-        ));
+        DB::table('parkir_jenis')->insert([
+            0 => [
+                'kd_parkir' => 'P0001',
+                'jns_parkir' => 'Parkir Motor Umum',
+                'biaya' => 1000.0,
+                'jenis' => 'Harian',
+            ],
+            1 => [
+                'kd_parkir' => 'P0002',
+                'jns_parkir' => 'Parkir Mobil Umum',
+                'biaya' => 2000.0,
+                'jenis' => 'Harian',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

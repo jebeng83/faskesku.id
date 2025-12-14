@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('template_persetujuan_penolakan_tindakan')) {
+        if (! Schema::hasTable('template_persetujuan_penolakan_tindakan')) {
             Schema::create('template_persetujuan_penolakan_tindakan', function (Blueprint $table) {
                 $table->string('kode_template', 3)->primary();
                 $table->string('diagnosa', 200);

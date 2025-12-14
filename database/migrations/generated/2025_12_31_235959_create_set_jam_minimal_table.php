@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('set_jam_minimal')) {
+        if (! Schema::hasTable('set_jam_minimal')) {
             Schema::create('set_jam_minimal', function (Blueprint $table) {
                 $table->integer('lamajam');
                 $table->enum('hariawal', ['Yes', 'No']);

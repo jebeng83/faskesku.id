@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('pnm_tnj_harian')) {
+        if (! Schema::hasTable('pnm_tnj_harian')) {
             Schema::create('pnm_tnj_harian', function (Blueprint $table) {
                 $table->integer('id');
                 $table->integer('id_tnj')->index('id_tnj');

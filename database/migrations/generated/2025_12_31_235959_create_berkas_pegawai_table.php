@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('berkas_pegawai')) {
+        if (! Schema::hasTable('berkas_pegawai')) {
             Schema::create('berkas_pegawai', function (Blueprint $table) {
                 $table->string('nik', 20)->index('nik');
                 $table->date('tgl_uploud');

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('kodetransaksi_tujuan_transfer_bankmandiri')) {
+        if (! Schema::hasTable('kodetransaksi_tujuan_transfer_bankmandiri')) {
             Schema::create('kodetransaksi_tujuan_transfer_bankmandiri', function (Blueprint $table) {
                 $table->string('kode_metode', 5)->index('kode_metode');
                 $table->string('kode_bank', 10)->index('kode_bank');

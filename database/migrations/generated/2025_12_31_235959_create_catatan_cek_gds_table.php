@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('catatan_cek_gds')) {
+        if (! Schema::hasTable('catatan_cek_gds')) {
             Schema::create('catatan_cek_gds', function (Blueprint $table) {
                 $table->string('no_rawat', 17);
                 $table->date('tgl_perawatan');

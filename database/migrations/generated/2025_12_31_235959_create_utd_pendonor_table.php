@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('utd_pendonor')) {
+        if (! Schema::hasTable('utd_pendonor')) {
             Schema::create('utd_pendonor', function (Blueprint $table) {
                 $table->string('no_pendonor', 15)->primary();
                 $table->string('nama', 40);

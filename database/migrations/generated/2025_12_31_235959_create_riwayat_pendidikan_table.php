@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('riwayat_pendidikan')) {
+        if (! Schema::hasTable('riwayat_pendidikan')) {
             Schema::create('riwayat_pendidikan', function (Blueprint $table) {
                 $table->integer('id');
                 $table->enum('pendidikan', ['SD', 'SMP', 'SMA', 'SMK', 'D I', 'D II', 'D III', 'D IV', 'S1', 'S2', 'S3', 'Post Doctor']);

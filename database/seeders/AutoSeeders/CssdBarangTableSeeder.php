@@ -15,18 +15,16 @@ class CssdBarangTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('cssd_barang')->insert(array (
-          0 => 
-          array (
-            'no_inventaris' => 'I000000001',
-            'jenis_barang' => 'Heacting Set',
-          ),
-          1 => 
-          array (
-            'no_inventaris' => 'MED/09/06/2022/01',
-            'jenis_barang' => 'Heacting Set',
-          ),
-        ));
+        DB::table('cssd_barang')->insert([
+            0 => [
+                'no_inventaris' => 'I000000001',
+                'jenis_barang' => 'Heacting Set',
+            ],
+            1 => [
+                'no_inventaris' => 'MED/09/06/2022/01',
+                'jenis_barang' => 'Heacting Set',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

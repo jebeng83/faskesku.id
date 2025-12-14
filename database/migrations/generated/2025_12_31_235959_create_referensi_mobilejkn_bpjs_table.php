@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('referensi_mobilejkn_bpjs')) {
+        if (! Schema::hasTable('referensi_mobilejkn_bpjs')) {
             Schema::create('referensi_mobilejkn_bpjs', function (Blueprint $table) {
                 $table->string('nobooking', 15)->primary();
                 $table->string('no_rawat', 17)->nullable();

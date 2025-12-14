@@ -15,21 +15,20 @@ class SuratKeteranganSehatTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('surat_keterangan_sehat')->insert(array (
-          0 => 
-          array (
-            'no_surat' => 'SKD20250825001',
-            'no_rawat' => '2025/08/25/000001',
-            'tanggalsurat' => '2025-08-25',
-            'berat' => '121',
-            'tinggi' => '1',
-            'tensi' => '1',
-            'suhu' => '1',
-            'butawarna' => 'Tidak',
-            'keperluan' => '1',
-            'kesimpulan' => 'Sehat',
-          ),
-        ));
+        DB::table('surat_keterangan_sehat')->insert([
+            0 => [
+                'no_surat' => 'SKD20250825001',
+                'no_rawat' => '2025/08/25/000001',
+                'tanggalsurat' => '2025-08-25',
+                'berat' => '121',
+                'tinggi' => '1',
+                'tensi' => '1',
+                'suhu' => '1',
+                'butawarna' => 'Tidak',
+                'keperluan' => '1',
+                'kesimpulan' => 'Sehat',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

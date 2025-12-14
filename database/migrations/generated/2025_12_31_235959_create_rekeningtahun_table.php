@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('rekeningtahun')) {
+        if (! Schema::hasTable('rekeningtahun')) {
             Schema::create('rekeningtahun', function (Blueprint $table) {
                 $table->year('thn');
                 $table->string('kd_rek', 15)->default('')->index('kd_rek');

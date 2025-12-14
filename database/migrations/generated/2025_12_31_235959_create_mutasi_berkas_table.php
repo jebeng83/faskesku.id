@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('mutasi_berkas')) {
+        if (! Schema::hasTable('mutasi_berkas')) {
             Schema::create('mutasi_berkas', function (Blueprint $table) {
                 $table->string('no_rawat', 17)->primary();
                 $table->enum('status', ['Sudah Dikirim', 'Sudah Diterima', 'Sudah Kembali', 'Tidak Ada', 'Masuk Ranap'])->nullable();

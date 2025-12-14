@@ -15,14 +15,13 @@ class PerpustakaanSetPeminjamanTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('perpustakaan_set_peminjaman')->insert(array (
-          0 => 
-          array (
-            'max_pinjam' => 1,
-            'lama_pinjam' => 2,
-            'denda_perhari' => 1000.0,
-          ),
-        ));
+        DB::table('perpustakaan_set_peminjaman')->insert([
+            0 => [
+                'max_pinjam' => 1,
+                'lama_pinjam' => 2,
+                'denda_perhari' => 1000.0,
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

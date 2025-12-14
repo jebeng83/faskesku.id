@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('setting')) {
+        if (! Schema::hasTable('setting')) {
             Schema::create('setting', function (Blueprint $table) {
                 $table->string('nama_instansi', 60)->default('')->primary();
                 $table->string('alamat_instansi', 150)->nullable();

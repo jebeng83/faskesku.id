@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('bridging_rujukan_bpjs_khusus')) {
+        if (! Schema::hasTable('bridging_rujukan_bpjs_khusus')) {
             Schema::create('bridging_rujukan_bpjs_khusus', function (Blueprint $table) {
                 $table->string('no_rujukan', 40)->primary();
                 $table->string('nokapst', 25)->nullable();

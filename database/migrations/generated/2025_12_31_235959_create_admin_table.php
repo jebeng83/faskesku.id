@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('admin')) {
+        if (! Schema::hasTable('admin')) {
             Schema::create('admin', function (Blueprint $table) {
                 $table->text('usere')->nullable();
                 $table->text('passworde')->nullable();

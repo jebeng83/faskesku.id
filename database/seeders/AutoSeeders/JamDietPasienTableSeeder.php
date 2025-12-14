@@ -15,38 +15,32 @@ class JamDietPasienTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('jam_diet_pasien')->insert(array (
-          0 => 
-          array (
-            'waktu' => 'Pagi',
-            'jam' => '08:00',
-          ),
-          1 => 
-          array (
-            'waktu' => 'Pagi2',
-            'jam' => '10:00',
-          ),
-          2 => 
-          array (
-            'waktu' => 'Siang',
-            'jam' => '12:00',
-          ),
-          3 => 
-          array (
-            'waktu' => 'Siang2',
-            'jam' => '14:00',
-          ),
-          4 => 
-          array (
-            'waktu' => 'Sore',
-            'jam' => '16:00',
-          ),
-          5 => 
-          array (
-            'waktu' => 'Malam',
-            'jam' => '21:00',
-          ),
-        ));
+        DB::table('jam_diet_pasien')->insert([
+            0 => [
+                'waktu' => 'Pagi',
+                'jam' => '08:00',
+            ],
+            1 => [
+                'waktu' => 'Pagi2',
+                'jam' => '10:00',
+            ],
+            2 => [
+                'waktu' => 'Siang',
+                'jam' => '12:00',
+            ],
+            3 => [
+                'waktu' => 'Siang2',
+                'jam' => '14:00',
+            ],
+            4 => [
+                'waktu' => 'Sore',
+                'jam' => '16:00',
+            ],
+            5 => [
+                'waktu' => 'Malam',
+                'jam' => '21:00',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

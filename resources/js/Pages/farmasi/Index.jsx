@@ -82,6 +82,14 @@ const cekStokObatUrl = (() => {
     }
 })();
 
+const riwayatBarangMedisUrl = (() => {
+    try {
+        return route("farmasi.riwayat-barang-medis", {}, false);
+    } catch (_) {
+        return "/farmasi/riwayat-barang-medis";
+    }
+})();
+
 const tabs = [
     {
         key: "master",
@@ -249,7 +257,7 @@ const tabs = [
             {
                 title: "Riwayat Transaksi Obat",
                 description: "Pergerakan stok, stok minimum, dan peringatan",
-                href: route("farmasi.riwayat-barang-medis", {}, false),
+                href: riwayatBarangMedisUrl,
                 icon: ClipboardDocumentListIcon,
                 accent: "from-sky-500 to-cyan-500",
             },
