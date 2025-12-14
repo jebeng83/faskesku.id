@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import AppLayout from '@/Layouts/AppLayout';
+import SidebarBriding from '@/Layouts/SidebarBriding';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowPathIcon, CheckCircleIcon, ExclamationTriangleIcon, IdentificationIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
@@ -73,24 +73,33 @@ export default function ReferensiKhusus() {
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4">
-      {/* Header */}
-      <motion.div variants={itemVariants} className="mb-4">
-        <div className="rounded-xl bg-gradient-to-r from-pink-500 via-fuchsia-600 to-purple-600 text-white p-5 shadow">
-          <div className="flex items-start justify-between">
+  {/* Header */}
+  <motion.div variants={itemVariants} className="mb-4">
+        <motion.div
+          variants={itemVariants}
+          className="relative px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm rounded-lg"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h1 className="text-xl font-semibold">Referensi Khusus PCare</h1>
-              <p className="text-sm opacity-90">Daftar referensi khusus dari katalog BPJS PCare.</p>
+              <motion.h1
+                className="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                Referensi Khusus PCare
+              </motion.h1>
             </div>
             <div className="flex items-center gap-2">
               {badge('GET', 'bg-white/20 text-white')}
               {badge('JSON', 'bg-white/20 text-white')}
             </div>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+  </motion.div>
 
       {/* Card: Total Item + Status + Pencarian */}
-      <motion.div variants={itemVariants} className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+      <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 p-6 shadow-xl shadow-blue-500/5">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
             <div className="text-sm text-slate-600">
@@ -129,7 +138,7 @@ export default function ReferensiKhusus() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Cari khusus (kode/nama)…"
-                className="w-full rounded-md border border-slate-300 bg-white pl-8 pr-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-indigo-500"
+                className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white pl-8 pr-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
               />
             </div>
           </div>
@@ -142,7 +151,7 @@ export default function ReferensiKhusus() {
           <AnimatePresence>
             {loading && !hasResult ? (
               Array.from({ length: Math.min(4, 6) }).map((_, i) => (
-                <motion.div key={`sk-${i}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="rounded-xl border border-slate-200 bg-white p-4">
+                <motion.div key={`sk-${i}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-4 shadow-xl shadow-blue-500/5">
                   <div className="animate-pulse space-y-3">
                     <div className="h-4 w-24 bg-slate-200 rounded" />
                     <div className="h-5 w-full bg-slate-200 rounded" />
@@ -152,7 +161,7 @@ export default function ReferensiKhusus() {
               ))
             ) : hasResult ? (
               pageItems.map((item, idx) => (
-                <motion.div key={`${item.kdKhusus || idx}-${idx}`} variants={itemVariants} initial="hidden" animate="show" exit={{ opacity: 0 }} className="group relative flex flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md">
+                <motion.div key={`${item.kdKhusus || idx}-${idx}`} variants={itemVariants} initial="hidden" animate="show" exit={{ opacity: 0 }} whileHover={{ scale: 1.01, y: -2 }} className="group relative flex flex-col rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl p-4 shadow-xl shadow-blue-500/5">
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="text-sm font-semibold text-slate-800">{item.kdKhusus || '-'}</div>
@@ -166,7 +175,7 @@ export default function ReferensiKhusus() {
                 </motion.div>
               ))
             ) : (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="col-span-full rounded-xl border border-slate-200 bg-white p-6 text-center text-slate-500">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="col-span-full rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl p-6 text-center text-slate-500">
                 Tidak ada data.
               </motion.div>
             )}
@@ -176,7 +185,7 @@ export default function ReferensiKhusus() {
 
       {/* Pagination */}
       <motion.div variants={itemVariants} className="mt-4">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl p-4 shadow-xl shadow-blue-500/5">
           <div className="text-xs text-slate-600">
             Menampilkan <span className="font-medium text-slate-800">{filteredTotal === 0 ? 0 : startIndex + 1}</span>
             –
@@ -190,7 +199,7 @@ export default function ReferensiKhusus() {
               type="button"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={currentPage <= 1}
-              className={`px-3 py-1.5 text-xs rounded-md border ${currentPage <= 1 ? 'bg-slate-50 text-slate-400 border-slate-200' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
+              className={`px-3 py-1.5 text-xs rounded-md border ${currentPage <= 1 ? 'bg-slate-50 text-slate-400 border-slate-200' : 'bg-white text-slate-700 border-gray-300 hover:bg-slate-50'}`}
             >
               Prev
             </button>
@@ -201,7 +210,7 @@ export default function ReferensiKhusus() {
               type="button"
               onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
               disabled={currentPage >= pageCount}
-              className={`px-3 py-1.5 text-xs rounded-md border ${currentPage >= pageCount ? 'bg-slate-50 text-slate-400 border-slate-200' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
+              className={`px-3 py-1.5 text-xs rounded-md border ${currentPage >= pageCount ? 'bg-slate-50 text-slate-400 border-slate-200' : 'bg-white text-slate-700 border-gray-300 hover:bg-slate-50'}`}
             >
               Next
             </button>
@@ -212,19 +221,19 @@ export default function ReferensiKhusus() {
             <select
               value={perPage}
               onChange={(e) => setPerPage(Number(e.target.value))}
-              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 focus:border-indigo-500 focus:ring-indigo-500"
-            >
-              <option value={9}>9</option>
-              <option value={12}>12</option>
-              <option value={18}>18</option>
-              <option value={24}>24</option>
-            </select>
-          </div>
+              className="rounded-md border border-gray-300 dark:border-gray-600 bg-white px-2 py-1 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+          >
+            <option value={9}>9</option>
+            <option value={12}>12</option>
+            <option value={18}>18</option>
+            <option value={24}>24</option>
+          </select>
         </div>
-      </motion.div>
+      </div>
+    </motion.div>
     </motion.div>
   );
 }
 
 // Render dalam AppLayout
-ReferensiKhusus.layout = (page) => <AppLayout title="Referensi Khusus" children={page} />;
+ReferensiKhusus.layout = (page) => <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>;

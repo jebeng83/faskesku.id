@@ -8,6 +8,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
+use App\Jobs\PcareResendJob;
+use App\Jobs\PcareMassSendJob;
 
 /**
  * Controller untuk bridging BPJS PCare.
@@ -48,6 +52,7 @@ class PcareController extends Controller
         $method = strtoupper($request->method());
         $query = $request->query();
         $body = $request->all();
+        $start = microtime(true);
         try {
             $result = $this->pcareRequest($method, $endpoint, $query, $body);
 
@@ -55,6 +60,63 @@ class PcareController extends Controller
             $timestamp = $result['timestamp_used'];
             $rawBody = $response->body();
             $processed = $this->maybeDecryptAndDecompress($rawBody, $timestamp);
+            $durationMs = (int) round((microtime(true) - $start) * 1000);
+
+            if (\Illuminate\Support\Facades\Schema::hasTable('pcare_bpjs_log')) {
+                $ep = trim($endpoint);
+                if (preg_match('~^pendaftaran/peserta/([^/]+)/tglDaftar/([^/]+)/noUrut/([^/]+)/kdPoli/([^/]+)~', $ep, $m)) {
+                    $noka = (string) $m[1];
+                    $tgl = (string) $m[2];
+                    $noUrut = (string) $m[3];
+                    $kdPoli = (string) $m[4];
+                    $y = null;
+                    try { $d = \DateTime::createFromFormat('d-m-Y', $tgl); $y = $d ? $d->format('Y-m-d') : null; } catch (\Throwable $e) { $y = null; }
+                    $noRawatLog = null;
+                    if ($y) {
+                        try {
+                            $row = \Illuminate\Support\Facades\DB::table('pcare_pendaftaran')
+                                ->where('tglDaftar', $y)
+                                ->where('noUrut', $noUrut)
+                                ->where('kdPoli', $kdPoli)
+                                ->select(['no_rawat'])
+                                ->first();
+                            $noRawatLog = $row?->no_rawat ?: null;
+                        } catch (\Throwable $e) {}
+                    }
+                    if ($noRawatLog) {
+                        $maskedCard = substr($noka, 0, 6).str_repeat('*', max(strlen($noka) - 10, 0)).substr($noka, -4);
+                        $reqPayload = [
+                            'noKartu_masked' => $maskedCard,
+                            'tglDaftar' => $tgl,
+                            'noUrut' => $noUrut,
+                            'kdPoli' => $kdPoli,
+                            'query' => $query,
+                        ];
+                        $meta = is_array($processed) ? ($processed['metaData'] ?? ($processed['metadata'] ?? [])) : [];
+                        $metaCode = is_array($meta) ? (int) ($meta['code'] ?? 0) : null;
+                        $metaMessage = is_array($meta) ? (string) ($meta['message'] ?? '') : null;
+                        $statusLabel = $response->status() >= 200 && $response->status() < 300 ? 'success' : 'failed';
+                        try {
+                            \Illuminate\Support\Facades\DB::table('pcare_bpjs_log')->insert([
+                                'no_rawat' => (string) $noRawatLog,
+                                'endpoint' => 'pendaftaran_peserta',
+                                'status' => $statusLabel,
+                                'http_status' => $response->status(),
+                                'meta_code' => $metaCode,
+                                'meta_message' => $metaMessage,
+                                'duration_ms' => $durationMs,
+                                'request_payload' => json_encode($reqPayload),
+                                'response_body_raw' => $rawBody,
+                                'response_body_json' => is_array($processed) ? json_encode($processed) : null,
+                                'triggered_by' => optional(auth()->user())->nik ?? (string) optional(auth()->user())->id ?? null,
+                                'correlation_id' => $request->header('X-BPJS-LOG-ID') ?: null,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+                        } catch (\Throwable $e) {}
+                    }
+                }
+            }
 
             return response()->json([
                 'ok' => $response->successful(),
@@ -1155,9 +1217,13 @@ class PcareController extends Controller
         if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateStr)) {
             return $dateStr;
         }
-        // Jika dd-mm-YYYY → ubah ke YYYY-mm-dd
-        if (preg_match('/^(\d{2})-(\d{2})-(\d{4})$/', $dateStr, $m)) {
+        // Jika dd-mm-YYYY atau dd/mm/YYYY → ubah ke YYYY-mm-dd
+        if (preg_match('/^(\d{2})[\/-](\d{2})[\/-](\d{4})$/', $dateStr, $m)) {
             return $m[3].'-'.$m[2].'-'.$m[1];
+        }
+        // Jika YYYY/mm/dd → ubah ke YYYY-mm-dd
+        if (preg_match('/^(\d{4})[\/-](\d{2})[\/-](\d{2})$/', $dateStr, $m)) {
+            return $m[1].'-'.$m[2].'-'.$m[3];
         }
 
         return null;
@@ -1282,6 +1348,545 @@ class PcareController extends Controller
                 'message' => 'Terjadi kesalahan saat mengambil data rujukan',
             ], 500);
         }
+    }
+
+    public function monitoringSummary(Request $request)
+    {
+        $startY = $this->normalizeDateToYmd((string) $request->query('start'));
+        $endY = $this->normalizeDateToYmd((string) $request->query('end'));
+
+        $hasPcare = Schema::hasTable('pcare_kunjungan_umum');
+        $byRaw = [];
+
+        if ($hasPcare) {
+            $q1 = DB::table('pcare_kunjungan_umum')->select(['no_rawat', 'tglDaftar', 'status']);
+            $rows1 = $q1->limit(2000)->get();
+            foreach ($rows1 as $r) {
+                $key = (string) $r->no_rawat;
+                $byRaw[$key] = [
+                    'tgl' => (string) $r->tglDaftar,
+                    'status' => (string) $r->status,
+                ];
+            }
+        }
+
+        $q2 = DB::table('reg_periksa')->select(['no_rawat', DB::raw('tgl_registrasi as tglDaftar')]);
+        if (Schema::hasColumn('reg_periksa', 'status_pcare')) {
+            $q2->addSelect(DB::raw('status_pcare as status'));
+        } else {
+            $q2->addSelect(DB::raw('"" as status'));
+        }
+        if ($startY) {
+            $q2->whereDate('tgl_registrasi', '>=', $startY);
+        }
+        if ($endY) {
+            $q2->whereDate('tgl_registrasi', '<=', $endY);
+        }
+        $rows2 = $q2->limit(2000)->get();
+        foreach ($rows2 as $r) {
+            $key = (string) $r->no_rawat;
+            if (! isset($byRaw[$key])) {
+                $mapped = $r->status === 'sent' ? 'Terkirim' : ($r->status === 'failed' ? 'Gagal' : (string) $r->status);
+                $byRaw[$key] = [
+                    'tgl' => (string) $r->tglDaftar,
+                    'status' => $mapped,
+                ];
+            }
+        }
+
+        $filtered = [];
+        foreach ($byRaw as $k => $v) {
+            $ymd = $this->normalizeDateToYmd((string) $v['tgl']);
+            if ($startY && $ymd && strcmp($ymd, $startY) < 0) {
+                continue;
+            }
+            if ($endY && $ymd && strcmp($ymd, $endY) > 0) {
+                continue;
+            }
+            $filtered[$k] = $v;
+        }
+
+        $success = 0;
+        $failed = 0;
+        foreach ($filtered as $v) {
+            if ($v['status'] === 'Terkirim') {
+                $success++;
+            } elseif ($v['status'] === 'Gagal') {
+                $failed++;
+            }
+        }
+
+        return response()->json(['success' => $success, 'failed' => $failed]);
+    }
+
+    public function pendaftaranSummary(Request $request)
+    {
+        $startY = $this->normalizeDateToYmd((string) $request->query('start'));
+        $endY = $this->normalizeDateToYmd((string) $request->query('end'));
+        if (! Schema::hasTable('pcare_pendaftaran')) {
+            return response()->json(['success' => 0, 'failed' => 0]);
+        }
+        $q = DB::table('pcare_pendaftaran');
+        if ($startY) {
+            $q->whereDate('tglDaftar', '>=', $startY);
+        }
+        if ($endY) {
+            $q->whereDate('tglDaftar', '<=', $endY);
+        }
+        $rows = $q->select(['status'])->limit(5000)->get();
+        $success = 0;
+        $failed = 0;
+        foreach ($rows as $r) {
+            if ((string) ($r->status ?? '') === 'Terkirim') {
+                $success++;
+            } elseif ((string) ($r->status ?? '') === 'Gagal') {
+                $failed++;
+            }
+        }
+        return response()->json(['success' => $success, 'failed' => $failed]);
+    }
+
+    public function monitoringAttempts(Request $request)
+    {
+        $statusFilter = (string) $request->query('status', '');
+        $startY = $this->normalizeDateToYmd((string) $request->query('start'));
+        $endY = $this->normalizeDateToYmd((string) $request->query('end'));
+
+        $hasPcare = Schema::hasTable('pcare_kunjungan_umum');
+        $byRaw = [];
+
+        if ($hasPcare) {
+            $q1 = DB::table('pcare_kunjungan_umum as p')
+                ->leftJoin('reg_periksa as r', 'r.no_rawat', '=', 'p.no_rawat')
+                ->leftJoin('pasien as ps', 'ps.no_rkm_medis', '=', 'r.no_rkm_medis')
+                ->leftJoin('dokter as d', 'd.kd_dokter', '=', 'r.kd_dokter')
+                ->leftJoin('poliklinik as polr', 'polr.kd_poli', '=', 'r.kd_poli')
+                ->leftJoin('poliklinik as polp', 'polp.kd_poli', '=', 'p.kdPoli')
+                ->select([
+                    'p.no_rawat',
+                    'p.tglDaftar',
+                    DB::raw('COALESCE(p.kdPoli, r.kd_poli) as kdPoli'),
+                    DB::raw('COALESCE(p.nmPoli, polr.nm_poli, polp.nm_poli) as nmPoli'),
+                    DB::raw('COALESCE(ps.nm_pasien, p.nm_pasien, "") as nama'),
+                    DB::raw('COALESCE(r.no_rkm_medis, ps.no_rkm_medis, p.no_rkm_medis) as no_rkm_medis'),
+                    DB::raw('COALESCE(d.nm_dokter, p.nmDokter, "") as dokter'),
+                    'p.status',
+                    'p.noKunjungan',
+                ]);
+            $rows1 = $q1->limit(2000)->get();
+            foreach ($rows1 as $r) {
+                $key = (string) $r->no_rawat;
+                $byRaw[$key] = [
+                    'no_rawat' => $key,
+                    'tglDaftar' => (string) $r->tglDaftar,
+                    'kdPoli' => (string) ($r->kdPoli ?? ''),
+                    'nmPoli' => (string) ($r->nmPoli ?? ''),
+                    'nama' => (string) ($r->nama ?? ''),
+                    'no_rkm_medis' => (string) ($r->no_rkm_medis ?? ''),
+                    'dokter' => (string) ($r->dokter ?? ''),
+                    'status' => (string) ($r->status ?? ''),
+                    'noKunjungan' => (string) ($r->noKunjungan ?? ''),
+                ];
+            }
+        }
+
+        $q2 = DB::table('reg_periksa as r')
+            ->leftJoin('pasien as ps', 'ps.no_rkm_medis', '=', 'r.no_rkm_medis')
+            ->leftJoin('dokter as d', 'd.kd_dokter', '=', 'r.kd_dokter')
+            ->leftJoin('poliklinik as pol', 'pol.kd_poli', '=', 'r.kd_poli')
+            ->select([
+                'r.no_rawat',
+                DB::raw('r.tgl_registrasi as tglDaftar'),
+                DB::raw('r.kd_poli as kdPoli'),
+                DB::raw('pol.nm_poli as nmPoli'),
+                DB::raw('ps.nm_pasien as nama'),
+                DB::raw('ps.no_rkm_medis as no_rkm_medis'),
+                DB::raw('d.nm_dokter as dokter'),
+            ]);
+        if (Schema::hasColumn('reg_periksa', 'status_pcare')) {
+            $q2->addSelect(DB::raw('r.status_pcare as status'));
+        } else {
+            $q2->addSelect(DB::raw('"" as status'));
+        }
+        if (Schema::hasColumn('reg_periksa', 'response_pcare')) {
+            $q2->addSelect(DB::raw('r.response_pcare as noKunjungan'));
+        } else {
+            $q2->addSelect(DB::raw('"" as noKunjungan'));
+        }
+        if ($startY) {
+            $q2->whereDate('tgl_registrasi', '>=', $startY);
+        }
+        if ($endY) {
+            $q2->whereDate('tgl_registrasi', '<=', $endY);
+        }
+        $rows2 = $q2->limit(2000)->get();
+        foreach ($rows2 as $r) {
+            $key = (string) $r->no_rawat;
+            if (! isset($byRaw[$key])) {
+            $mapped = $r->status === 'sent' ? 'Terkirim' : ($r->status === 'failed' ? 'Gagal' : (string) $r->status);
+                $byRaw[$key] = [
+                    'no_rawat' => $key,
+                    'tglDaftar' => (string) $r->tglDaftar,
+                    'kdPoli' => (string) ($r->kdPoli ?? ''),
+                    'nmPoli' => (string) ($r->nmPoli ?? ''),
+                    'nama' => (string) ($r->nama ?? ''),
+                    'no_rkm_medis' => (string) ($r->no_rkm_medis ?? ''),
+                    'dokter' => (string) ($r->dokter ?? ''),
+                    'status' => $mapped,
+                    'noKunjungan' => (string) ($r->noKunjungan ?? ''),
+                ];
+            }
+        }
+
+        $out = [];
+        foreach ($byRaw as $row) {
+            if ($statusFilter !== '' && (string) $row['status'] !== $statusFilter) {
+                continue;
+            }
+            $ymd = $this->normalizeDateToYmd((string) $row['tglDaftar']);
+            if ($startY && $ymd && strcmp($ymd, $startY) < 0) {
+                continue;
+            }
+            if ($endY && $ymd && strcmp($ymd, $endY) > 0) {
+                continue;
+            }
+            $out[] = $row;
+        }
+
+        usort($out, function ($a, $b) {
+            $da = $this->normalizeDateToYmd((string) $a['tglDaftar']) ?? '';
+            $db = $this->normalizeDateToYmd((string) $b['tglDaftar']) ?? '';
+            return strcmp($db, $da);
+        });
+
+        if (count($out) > 500) {
+            $out = array_slice($out, 0, 500);
+        }
+
+        return response()->json(['data' => array_values($out)]);
+    }
+
+    public function bpjsLogList(Request $request)
+    {
+        if (! \Illuminate\Support\Facades\Schema::hasTable('pcare_bpjs_log')) {
+            return response()->json(['data' => []]);
+        }
+        $endpoint = trim((string) $request->query('endpoint', ''));
+        $status = trim((string) $request->query('status', ''));
+        $q = trim((string) $request->query('q', ''));
+        $startY = $this->normalizeDateToYmd((string) $request->query('start'));
+        $endY = $this->normalizeDateToYmd((string) $request->query('end'));
+        $limit = (int) $request->query('limit', 200);
+        if ($limit < 1) { $limit = 200; }
+        if ($limit > 1000) { $limit = 1000; }
+
+        $qbuilder = \Illuminate\Support\Facades\DB::table('pcare_bpjs_log');
+        if ($endpoint !== '') { $qbuilder->where('endpoint', $endpoint); }
+        if ($status !== '') { $qbuilder->where('status', $status); }
+        if ($q !== '') { $qbuilder->where('no_rawat', 'like', '%'.$q.'%'); }
+        if ($startY) { $qbuilder->whereDate('created_at', '>=', $startY); }
+        if ($endY) { $qbuilder->whereDate('created_at', '<=', $endY); }
+        $rows = $qbuilder
+            ->select(['id','no_rawat','endpoint','status','http_status','meta_code','meta_message','duration_ms','request_payload','response_body_json','response_body_raw','created_at'])
+            ->orderByDesc('created_at')
+            ->limit($limit)
+            ->get();
+
+        $out = [];
+        foreach ($rows as $r) {
+            $req = null; $resp = null; $rawPrev = '';
+            try { $req = is_string($r->request_payload) ? json_decode($r->request_payload, true) : $r->request_payload; } catch (\Throwable $e) { $req = null; }
+            try { $resp = is_string($r->response_body_json) ? json_decode($r->response_body_json, true) : $r->response_body_json; } catch (\Throwable $e) { $resp = null; }
+            try { $rawPrev = substr((string) ($r->response_body_raw ?? ''), 0, 1200); } catch (\Throwable $e) { $rawPrev = ''; }
+            $out[] = [
+                'id' => (int) $r->id,
+                'no_rawat' => (string) ($r->no_rawat ?? ''),
+                'endpoint' => (string) ($r->endpoint ?? ''),
+                'status' => (string) ($r->status ?? ''),
+                'http_status' => (int) ($r->http_status ?? 0),
+                'meta_code' => $r->meta_code !== null ? (int) $r->meta_code : null,
+                'meta_message' => (string) ($r->meta_message ?? ''),
+                'duration_ms' => $r->duration_ms !== null ? (int) $r->duration_ms : null,
+                'request_payload' => $req,
+                'response_body_json' => $resp,
+                'response_preview' => $rawPrev,
+                'created_at' => optional($r->created_at)->format('Y-m-d H:i:s'),
+            ];
+        }
+        return response()->json(['data' => $out]);
+    }
+
+    public function bpjsLogByRawat(string $noRawat)
+    {
+        $noRawat = trim($noRawat);
+        if ($noRawat === '' || ! \Illuminate\Support\Facades\Schema::hasTable('pcare_bpjs_log')) {
+            return response()->json(['data' => []]);
+        }
+        $rows = \Illuminate\Support\Facades\DB::table('pcare_bpjs_log')
+            ->where('no_rawat', $noRawat)
+            ->orderByDesc('created_at')
+            ->limit(200)
+            ->get();
+        $out = [];
+        foreach ($rows as $r) {
+            $req = null; $resp = null; $rawPrev = '';
+            try { $req = is_string($r->request_payload) ? json_decode($r->request_payload, true) : $r->request_payload; } catch (\Throwable $e) { $req = null; }
+            try { $resp = is_string($r->response_body_json) ? json_decode($r->response_body_json, true) : $r->response_body_json; } catch (\Throwable $e) { $resp = null; }
+            try { $rawPrev = substr((string) ($r->response_body_raw ?? ''), 0, 1200); } catch (\Throwable $e) { $rawPrev = ''; }
+            $out[] = [
+                'id' => (int) $r->id,
+                'no_rawat' => (string) ($r->no_rawat ?? ''),
+                'endpoint' => (string) ($r->endpoint ?? ''),
+                'status' => (string) ($r->status ?? ''),
+                'http_status' => (int) ($r->http_status ?? 0),
+                'meta_code' => $r->meta_code !== null ? (int) $r->meta_code : null,
+                'meta_message' => (string) ($r->meta_message ?? ''),
+                'duration_ms' => $r->duration_ms !== null ? (int) $r->duration_ms : null,
+                'request_payload' => $req,
+                'response_body_json' => $resp,
+                'response_preview' => $rawPrev,
+                'created_at' => optional($r->created_at)->format('Y-m-d H:i:s'),
+            ];
+        }
+        return response()->json(['data' => $out]);
+    }
+
+    public function pendaftaranList(Request $request)
+    {
+        try {
+            $status = (string) $request->query('status', '');
+            $startY = $this->normalizeDateToYmd((string) $request->query('start'));
+            $endY = $this->normalizeDateToYmd((string) $request->query('end'));
+            if (! Schema::hasTable('pcare_pendaftaran')) {
+                return response()->json(['data' => []]);
+            }
+            $q = DB::table('pcare_pendaftaran as p')->select([
+                'p.no_rawat',
+                'p.tglDaftar',
+                'p.no_rkm_medis',
+                'p.nm_pasien',
+                'p.kdPoli',
+                'p.nmPoli',
+                'p.status',
+                'p.noUrut',
+            ]);
+            $hasReg = Schema::hasTable('reg_periksa');
+            if ($hasReg) {
+                $q = $q->leftJoin('reg_periksa as r', 'r.no_rawat', '=', 'p.no_rawat');
+                if (Schema::hasColumn('reg_periksa', 'response_pcare')) {
+                    $q->addSelect(DB::raw('r.response_pcare as response_pcare'));
+                } else {
+                    $q->addSelect(DB::raw('"" as response_pcare'));
+                }
+            } else {
+                $q->addSelect(DB::raw('"" as response_pcare'));
+            }
+            if ($status !== '') {
+                $q->where('p.status', $status);
+            }
+            if ($startY) {
+                $q->whereDate('p.tglDaftar', '>=', $startY);
+            }
+            if ($endY) {
+                $q->whereDate('p.tglDaftar', '<=', $endY);
+            }
+            $rows = $q->orderByDesc('p.tglDaftar')->orderByDesc('p.noUrut')->limit(1000)->get();
+            $out = [];
+            foreach ($rows as $r) {
+                $nu = (string) ($r->noUrut ?? '');
+                if ($nu === '' && isset($r->response_pcare) && is_string($r->response_pcare)) {
+                    $decoded = json_decode($r->response_pcare, true);
+                    if (is_array($decoded)) {
+                        $resp = $decoded['response'] ?? [];
+                        if (($resp['field'] ?? '') === 'noUrut') {
+                            $nu = (string) (($resp['message'] ?? ($resp['value'] ?? '')));
+                        } elseif (isset($resp['noUrut'])) {
+                            $nu = (string) $resp['noUrut'];
+                        }
+                    }
+                }
+                $out[] = [
+                    'no_rawat' => (string) ($r->no_rawat ?? ''),
+                    'tglDaftar' => (string) ($r->tglDaftar ?? ''),
+                    'no_rkm_medis' => (string) ($r->no_rkm_medis ?? ''),
+                    'nm_pasien' => (string) ($r->nm_pasien ?? ''),
+                    'kdPoli' => (string) ($r->kdPoli ?? ''),
+                    'nmPoli' => (string) ($r->nmPoli ?? ''),
+                    'noUrut' => $nu,
+                    'dokter' => '',
+                    'status' => (string) ($r->status ?? ''),
+                ];
+            }
+            return response()->json(['data' => $out]);
+        } catch (\Throwable $e) {
+            try {
+                \Illuminate\Support\Facades\Log::channel('bpjs')->error('pendaftaranList error', [
+                    'error' => $e->getMessage(),
+                ]);
+            } catch (\Throwable $ie) {}
+            return response()->json(['data' => []], 200);
+        }
+    }
+
+    public function monitoringRaw(string $noRawat)
+    {
+        $noRawat = trim($noRawat);
+        if ($noRawat === '') {
+            return response()->json(['message' => 'no_rawat wajib diisi'], 422);
+        }
+        if (Schema::hasTable('pcare_kunjungan_umum')) {
+            $select = [
+                'p.no_rawat',
+                'p.tglDaftar',
+                'p.kdPoli',
+                'p.status',
+                'p.noKunjungan',
+            ];
+            if (Schema::hasColumn('reg_periksa', 'response_pcare')) {
+                $select[] = DB::raw('r.response_pcare as raw');
+            } else {
+                $select[] = DB::raw('"" as raw');
+            }
+            $row = DB::table('pcare_kunjungan_umum as p')
+                ->leftJoin('reg_periksa as r', 'r.no_rawat', '=', 'p.no_rawat')
+                ->select($select)
+                ->where('p.no_rawat', $noRawat)
+                ->first();
+            $data = $row ? (array) $row : null;
+            $rawCache = Cache::get('pcare_resend_raw_'.$noRawat);
+            $rawFile = null;
+            try {
+                $path = 'pcare_resend/'.$noRawat.'.json';
+                if (Storage::disk('local')->exists($path)) {
+                    $rawFile = Storage::disk('local')->get($path);
+                }
+            } catch (\Throwable $e) {}
+            if ($data) {
+                if ((string) ($data['raw'] ?? '') === '' && is_string($rawCache) && $rawCache !== '') {
+                    $data['raw'] = $rawCache;
+                } elseif ((string) ($data['raw'] ?? '') === '' && is_string($rawFile) && $rawFile !== '') {
+                    $data['raw'] = $rawFile;
+                }
+            } else {
+                if (is_string($rawCache) && $rawCache !== '') {
+                    $data = ['no_rawat' => $noRawat, 'raw' => $rawCache];
+                } elseif (is_string($rawFile) && $rawFile !== '') {
+                    $data = ['no_rawat' => $noRawat, 'raw' => $rawFile];
+                }
+            }
+            if ($data) {
+                $desc = null;
+                $rawStr = is_array($data['raw'] ?? null) ? json_encode($data['raw']) : (string) ($data['raw'] ?? '');
+                $rawArr = null;
+                try { $rawArr = json_decode($rawStr, true); } catch (\Throwable $e) {}
+                if (is_array($rawArr)) {
+                    $meta = $rawArr['metaData'] ?? [];
+                    $resp = $rawArr['response'] ?? [];
+                    $parts = [];
+                    if (isset($meta['code'])) { $parts[] = 'code: '.(string) $meta['code']; }
+                    if (isset($meta['message'])) { $parts[] = 'message: '.(string) $meta['message']; }
+                    if (isset($resp['noKunjungan'])) { $parts[] = 'noKunjungan: '.(string) $resp['noKunjungan']; }
+                    if (isset($resp['noUrut'])) { $parts[] = 'noUrut: '.(string) $resp['noUrut']; }
+                    if (isset($resp['field']) || isset($resp['message'])) {
+                        $parts[] = 'field: '.(string) ($resp['field'] ?? '').' message: '.(string) ($resp['message'] ?? '');
+                    }
+                    $desc = implode(' | ', $parts);
+                    $data['parsed'] = $rawArr;
+                }
+                $data['desc'] = $desc;
+            }
+            return response()->json(['data' => $data]);
+        }
+        $select2 = [
+            'no_rawat',
+            DB::raw('tgl_registrasi as tglDaftar'),
+            DB::raw('kd_poli as kdPoli'),
+        ];
+        if (Schema::hasColumn('reg_periksa', 'status_pcare')) {
+            $select2[] = DB::raw('status_pcare as status');
+        } else {
+            $select2[] = DB::raw('"" as status');
+        }
+        if (Schema::hasColumn('reg_periksa', 'response_pcare')) {
+            $select2[] = DB::raw('response_pcare as raw');
+        } else {
+            $select2[] = DB::raw('"" as raw');
+        }
+        $row = DB::table('reg_periksa')
+            ->where('no_rawat', $noRawat)
+            ->select($select2)
+            ->first();
+        $data = $row ? (array) $row : null;
+        $rawCache = Cache::get('pcare_resend_raw_'.$noRawat);
+        $rawFile = null;
+        try {
+            $path = 'pcare_resend/'.$noRawat.'.json';
+            if (Storage::disk('local')->exists($path)) {
+                $rawFile = Storage::disk('local')->get($path);
+            }
+        } catch (\Throwable $e) {}
+        if ($data) {
+            if ((string) ($data['raw'] ?? '') === '' && is_string($rawCache) && $rawCache !== '') {
+                $data['raw'] = $rawCache;
+            } elseif ((string) ($data['raw'] ?? '') === '' && is_string($rawFile) && $rawFile !== '') {
+                $data['raw'] = $rawFile;
+            }
+        } else {
+            if (is_string($rawCache) && $rawCache !== '') {
+                $data = ['no_rawat' => $noRawat, 'raw' => $rawCache];
+            } elseif (is_string($rawFile) && $rawFile !== '') {
+                $data = ['no_rawat' => $noRawat, 'raw' => $rawFile];
+            }
+        }
+        if ($data) {
+            $desc = null;
+            $rawStr = is_array($data['raw'] ?? null) ? json_encode($data['raw']) : (string) ($data['raw'] ?? '');
+            $rawArr = null;
+            try { $rawArr = json_decode($rawStr, true); } catch (\Throwable $e) {}
+            if (is_array($rawArr)) {
+                $meta = $rawArr['metaData'] ?? [];
+                $resp = $rawArr['response'] ?? [];
+                $parts = [];
+                if (isset($meta['code'])) { $parts[] = 'code: '.(string) $meta['code']; }
+                if (isset($meta['message'])) { $parts[] = 'message: '.(string) $meta['message']; }
+                if (isset($resp['noKunjungan'])) { $parts[] = 'noKunjungan: '.(string) $resp['noKunjungan']; }
+                if (isset($resp['noUrut'])) { $parts[] = 'noUrut: '.(string) $resp['noUrut']; }
+                if (isset($resp['field']) || isset($resp['message'])) {
+                    $parts[] = 'field: '.(string) ($resp['field'] ?? '').' message: '.(string) ($resp['message'] ?? '');
+                }
+                $desc = implode(' | ', $parts);
+                $data['parsed'] = $rawArr;
+            }
+            $data['desc'] = $desc;
+        }
+        return response()->json(['data' => $data]);
+    }
+
+    public function resendByNoRawat(Request $request, string $noRawat)
+    {
+        $noRawat = trim($noRawat);
+        if ($noRawat === '') {
+            return response()->json(['message' => 'no_rawat wajib diisi'], 422);
+        }
+        PcareResendJob::dispatch($noRawat);
+        return response()->json(['queued' => true]);
+    }
+
+    public function massSend(Request $request)
+    {
+        $list = $request->input('no_rawat');
+        if (! is_array($list) || empty($list)) {
+            if (Schema::hasTable('pcare_kunjungan_umum')) {
+                $list = DB::table('pcare_kunjungan_umum')->where('status', 'Gagal')->orderBy('tglDaftar')->limit(100)->pluck('no_rawat')->all();
+            } else {
+                $list = DB::table('reg_periksa')->where('status_pcare', 'failed')->orderBy('tgl_registrasi')->limit(100)->pluck('no_rawat')->all();
+            }
+        }
+        if (empty($list)) {
+            return response()->json(['queued' => false, 'message' => 'Tidak ada data untuk dikirim'], 200);
+        }
+        PcareMassSendJob::dispatch($list);
+        return response()->json(['queued' => true, 'count' => count($list)]);
     }
 
     /**
@@ -1495,7 +2100,7 @@ class PcareController extends Controller
             'kdTkp' => '10',
         ];
 
-        // Kirim ke PCare dengan Content-Type: text/plain
+        $start = microtime(true);
         try {
             $result = $this->pcareRequest('POST', 'pendaftaran', [], $payload, ['Content-Type' => 'text/plain']);
         } catch (\Throwable $e) {
@@ -1512,6 +2117,7 @@ class PcareController extends Controller
 
         $response = $result['response'];
         $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+        $durationMs = (int) round((microtime(true) - $start) * 1000);
 
         // Ekstrak noUrut dari response jika tersedia
         $noUrut = '';
@@ -1519,12 +2125,55 @@ class PcareController extends Controller
         if (is_array($processed) && isset($processed['response']) && is_array($processed['response'])) {
             $resp = $processed['response'];
             if (($resp['field'] ?? '') === 'noUrut') {
-                $noUrut = (string) ($resp['message'] ?? '');
+                $noUrut = (string) ($resp['message'] ?? ($resp['value'] ?? ''));
+            } elseif (isset($resp['noUrut'])) {
+                $noUrut = (string) $resp['noUrut'];
             }
         }
 
-        // Simpan ke tabel pcare_pendaftaran
         $this->savePcarePendaftaran($noRawat, $reg, $pasien, $kdProviderPeserta, $noKartu, $kdPoli, $nmPoli, $keluhan, $sistole, $diastole, $beratBadan, $tinggiBadan, $respRate, $lingkarPerut, $heartRate, '10', $noUrut, $statusOk, $tglPerawatan);
+
+        $meta = is_array($processed) ? ($processed['metaData'] ?? ($processed['metadata'] ?? [])) : [];
+        $metaCode = is_array($meta) ? (int) ($meta['code'] ?? 0) : null;
+        $metaMessage = is_array($meta) ? (string) ($meta['message'] ?? '') : null;
+        $statusLabel = $response->status() >= 200 && $response->status() < 300 ? 'success' : 'failed';
+        if (\Illuminate\Support\Facades\Schema::hasTable('pcare_bpjs_log')) {
+            $card = (string) $noKartu;
+            $maskedCard = substr($card, 0, 6).str_repeat('*', max(strlen($card) - 10, 0)).substr($card, -4);
+            $reqPayload = [
+                'kdProviderPeserta' => $kdProviderPeserta,
+                'tglDaftar' => $tglDaftarFormatted,
+                'kdPoli' => $kdPoli,
+                'keluhan' => $keluhan !== '' ? $keluhan : null,
+                'sistole' => $sistole,
+                'diastole' => $diastole,
+                'beratBadan' => $beratBadan,
+                'tinggiBadan' => $tinggiBadan,
+                'respRate' => $respRate,
+                'lingkarPerut' => $lingkarPerut,
+                'heartRate' => $heartRate,
+                'noKartu_masked' => $maskedCard,
+            ];
+            try {
+                \Illuminate\Support\Facades\DB::table('pcare_bpjs_log')->insert([
+                    'no_rawat' => $noRawat,
+                    'endpoint' => 'pendaftaran',
+                    'status' => $statusLabel,
+                    'http_status' => $response->status(),
+                    'meta_code' => $metaCode,
+                    'meta_message' => $metaMessage,
+                    'duration_ms' => $durationMs,
+                    'request_payload' => json_encode($reqPayload),
+                    'response_body_raw' => $response->body(),
+                    'response_body_json' => is_array($processed) ? json_encode($processed) : null,
+                    'triggered_by' => optional(auth()->user())->nik ?? (string) optional(auth()->user())->id ?? null,
+                    'correlation_id' => $request->header('X-BPJS-LOG-ID') ?: null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            } catch (\Throwable $e) {
+            }
+        }
 
         return response()->json($processed, $response->status());
     }

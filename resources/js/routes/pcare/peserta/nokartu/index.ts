@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:272
+* @see app/Http/Controllers/Pcare/PcareController.php:334
 * @route '/pcare/api/peserta/nokartu/{noka}/tgl/{tglPelayanan}'
 */
 export const api = (args: { noka: string | number, tglPelayanan: string | number } | [noka: string | number, tglPelayanan: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ api.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:272
+* @see app/Http/Controllers/Pcare/PcareController.php:334
 * @route '/pcare/api/peserta/nokartu/{noka}/tgl/{tglPelayanan}'
 */
 api.url = (args: { noka: string | number, tglPelayanan: string | number } | [noka: string | number, tglPelayanan: string | number ], options?: RouteQueryOptions) => {
@@ -42,7 +42,7 @@ api.url = (args: { noka: string | number, tglPelayanan: string | number } | [nok
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:272
+* @see app/Http/Controllers/Pcare/PcareController.php:334
 * @route '/pcare/api/peserta/nokartu/{noka}/tgl/{tglPelayanan}'
 */
 api.get = (args: { noka: string | number, tglPelayanan: string | number } | [noka: string | number, tglPelayanan: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -52,7 +52,7 @@ api.get = (args: { noka: string | number, tglPelayanan: string | number } | [nok
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:272
+* @see app/Http/Controllers/Pcare/PcareController.php:334
 * @route '/pcare/api/peserta/nokartu/{noka}/tgl/{tglPelayanan}'
 */
 api.head = (args: { noka: string | number, tglPelayanan: string | number } | [noka: string | number, tglPelayanan: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({

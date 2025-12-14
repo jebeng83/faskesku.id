@@ -12,6 +12,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class RegistrationController extends Controller
@@ -142,6 +145,58 @@ class RegistrationController extends Controller
 
         $registration = RegPeriksa::create($data);
 
+        try {
+            $kdPj = strtoupper(trim((string) ($registration->kd_pj ?? '')));
+            if (in_array($kdPj, ['BPJ', 'PBI'], true)) {
+                $lockKey = 'mobilejkn:antrean:add:'.$registration->no_rawat;
+                $lock = Cache::lock($lockKey, 30);
+                $acquired = $lock->get();
+                $start = microtime(true);
+                try {
+                    if ($acquired) {
+                        $endpointUrl = url('/api/mobilejkn/antrean/add');
+                        $response = Http::withHeaders([
+                            'Accept' => 'application/json',
+                            'X-Requested-With' => 'XMLHttpRequest',
+                        ])->post($endpointUrl, [
+                            'no_rkm_medis' => $registration->no_rkm_medis,
+                            'kd_poli' => $registration->kd_poli,
+                            'kd_dokter' => $registration->kd_dokter,
+                            'tanggalperiksa' => $registration->tgl_registrasi,
+                            'no_reg' => $registration->no_reg,
+                        ]);
+                        $durationMs = (int) round((microtime(true) - $start) * 1000);
+                        $rawBody = $response->body();
+                        $json = $response->json();
+                        $meta = is_array($json) ? ($json['metadata'] ?? ($json['metaData'] ?? [])) : [];
+                        $metaCode = is_array($meta) ? (int) ($meta['code'] ?? 0) : null;
+                        $metaMessage = is_array($meta) ? (string) ($meta['message'] ?? '') : null;
+                        $bpjsInfo = [
+                            'http_status' => $response->status(),
+                            'meta_code' => $metaCode,
+                            'meta_message' => $metaMessage,
+                            'duration_ms' => $durationMs,
+                        ];
+                        $bpjsSummary = $bpjsInfo;
+                    } else {
+                        Log::channel('bpjs')->info('Lewati auto tambah antrean Mobile JKN (lock tidak didapat)', [
+                            'no_rawat' => $registration->no_rawat,
+                            'kd_pj' => $kdPj,
+                        ]);
+                    }
+                } finally {
+                    if ($acquired) {
+                        try { $lock->release(); } catch (\Throwable $e) {}
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::channel('bpjs')->error('Auto tambah antrean Mobile JKN gagal', [
+                'no_rawat' => $registration->no_rawat ?? null,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Pasien berhasil didaftarkan untuk periksa.',
@@ -154,6 +209,7 @@ class RegistrationController extends Controller
                 'kd_poli' => $registration->kd_poli,
                 'no_rkm_medis' => $registration->no_rkm_medis,
             ],
+            'bpjs' => isset($bpjsSummary) ? $bpjsSummary : null,
         ]);
     }
 
@@ -246,6 +302,19 @@ class RegistrationController extends Controller
         // Filter by doctor
         if ($request->has('kd_dokter') && $request->kd_dokter) {
             $query->where('kd_dokter', $request->kd_dokter);
+        }
+
+        // Filter by penjamin (kd_pj) - mendukung single atau comma-separated
+        if ($request->has('kd_pj') && $request->kd_pj) {
+            $codes = array_filter(array_map('trim', explode(',', (string) $request->kd_pj)));
+            if (! empty($codes)) {
+                $query->whereIn('kd_pj', $codes);
+            }
+        } elseif ($request->has('kd_pj_in') && $request->kd_pj_in) {
+            $codes = array_filter(array_map('trim', explode(',', (string) $request->kd_pj_in)));
+            if (! empty($codes)) {
+                $query->whereIn('kd_pj', $codes);
+            }
         }
 
         // Filter by patient name

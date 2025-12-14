@@ -213,3 +213,140 @@ Controller contoh ada di `public/Pcare/ReferensiPoliController.php` dan `Referen
 - Simpan kredensial dengan aman dan audit akses.
 - Pastikan semua environment (dev/staging/prod) sinkron dalam konfigurasi.
 - Dokumentasi ini menjadi referensi tim saat maintenance, debugging, dan pengembangan fitur baru di modul PCare.
+
+## Monitoring Pengiriman Data ke BPJS
+
+- Tujuan
+  - Melacak tingkat keberhasilan pengiriman (success rate), kegagalan (failure rate), latensi, throughput per endpoint (mis. `pendaftaran`, `kunjungan`, referensi).
+  - Menyediakan visibility per `no_rawat` dan per periode (harian/mingguan) untuk audit dan operasional.
+
+- Sumber Data
+  - Tabel `pcare_kunjungan_umum` (status `Terkirim`/`Gagal`, `noKunjungan`, `tglDaftar`, diagnosa, dokter, poli) — lihat migrasi.
+  - Fallback di `reg_periksa` (`status_pcare`, `response_pcare`) bila tabel `pcare_kunjungan_umum` belum tersedia.
+  - Log channel `bpjs` (request/response id, status, durasi, endpoint) untuk korelasi dan forensik.
+
+- Rancangan Skema Tambahan (opsional)
+  - Tabel `pcare_send_attempts` untuk mencatat tiap percobaan kirim:
+    - Kolom: `id`, `no_rawat`, `endpoint`, `payload_hash`, `attempt_no`, `status` (`pending|success|failed`), `http_status`, `meta_code`, `error_message`, `duration_ms`, `timestamp`, `triggered_by` (user/id sistem), `correlation_id`.
+    - Index: `no_rawat`, `endpoint`, `status`, `timestamp`, `payload_hash`.
+    - Manfaat: statistik granular, audit trail, dan dasar fitur kirim ulang.
+
+- KPI & Laporan
+  - Success rate harian per endpoint dan per poli/dokter.
+  - Distribusi kode HTTP dan `metaData.code` dari BPJS.
+  - Rata-rata/median durasi (ms) per endpoint; p95/p99 untuk outlier.
+  - Daftar top-10 error message dan root cause terbanyak.
+
+- API Monitoring (usulan)
+  - `GET /api/pcare/monitoring/summary?start=YYYY-MM-DD&end=YYYY-MM-DD` — agregasi KPI.
+  - `GET /api/pcare/monitoring/attempts?status=failed&endpoint=pendaftaran` — daftar percobaan gagal.
+  - `GET /api/pcare/monitoring/raw/{no_rawat}` — detail lengkap (payload ringkas, respons, log id).
+
+- UI Monitoring (Inertia)
+  - Halaman `Pcare/MonitoringPcare.jsx` dengan filter tanggal, endpoint, status; tabel attempts; panel detail.
+  - Kolom utama: waktu, endpoint, `no_rawat`, status, HTTP/meta code, durasi, aksi `Kirim Ulang`.
+
+- Alerting (opsional)
+  - Daily digest ke Slack/Email jika failure rate > threshold (mis. >5%).
+  - Notifikasi realtime untuk spike error tertentu (mis. 503 beruntun > N menit).
+
+- Operasional
+  - Retensi log `bpjs.log` mengikuti `config/logging.php` (daily, days 30). Gunakan `id` dari `pcareRequest` untuk korelasi.
+  - Amankan logging: jangan cetak `X-signature`, `X-authorization`, `user_key`.
+
+### Log Respon ke Tabel `pcare_bpjs_log`
+
+Tujuan: menyimpan jejak setiap permintaan/resp BPJS (pendaftaran/kunjungan/antrean) per `no_rawat` untuk audit dan troubleshooting.
+
+- Struktur tabel (usulan jika belum ada):
+  - `id` bigint auto increment
+  - `no_rawat` varchar(17) FK → `reg_periksa.no_rawat`
+  - `endpoint` varchar(50) (contoh: `pendaftaran`, `kunjungan`, `antrean_add`, `antrean_panggil`)
+  - `status` enum(`success`,`failed`)
+  - `http_status` int
+  - `meta_code` int null
+  - `meta_message` varchar(255) null
+  - `duration_ms` int null
+  - `request_payload` json (disanitasi; tanpa header rahasia)
+  - `response_body_raw` longtext (hasil sebelum/ sesudah decrypt)
+  - `response_body_json` json null (hasil parse `maybeDecryptAndDecompress` bila valid)
+  - `triggered_by` varchar(50) null (user/nik yang memicu)
+  - `correlation_id` varchar(64) null (untuk mengaitkan percobaan ulang)
+  - `created_at` timestamp, `updated_at` timestamp
+
+- Indeks yang disarankan:
+  - (`no_rawat`), (`endpoint`), (`status`,`created_at`), (`meta_code`)
+
+- Keamanan: jangan simpan nilai `X-signature`, `X-authorization`, `user_key` dan mask nomor kartu jika perlu.
+
+### Rencana Integrasi Otomatis Saat Registrasi (BPJ/PBI)
+
+Alur: ketika menyimpan registrasi dan `kd_pj ∈ {BPJ,PBI}`, kirim payload pendaftaran ke BPJS lalu simpan hasilnya ke `pcare_bpjs_log`.
+
+- Titik hook: setelah create di `RegistrationController::registerPatient` pada `app/Http/Controllers/RegistrationController.php:106`.
+- Validasi penjamin: baca `kd_pj` dari `reg_periksa` yang baru dibuat.
+- Pengiriman ke BPJS:
+  - Gunakan endpoint internal `POST /api/pcare/pendaftaran` yang memetakan data RS → payload PCare. Rujukan: `app/Http/Controllers/Pcare/PcareController.php:1812`.
+  - Decrypt+decompress respons memakai `BpjsTraits::maybeDecryptAndDecompress`. Rujukan: `app/Traits/BpjsTraits.php:1` dan pemakaian di `PcareController`.
+- Pencatatan hasil:
+  - Bentuk rekam log dengan field di atas (`endpoint='pendaftaran'`, `no_rawat`, `http_status`, `meta_code`, `meta_message`, `response_body_json`).
+  - Simpan ke `pcare_bpjs_log` via `DB::table('pcare_bpjs_log')->insert([...])`.
+  - Jika respons memuat `noUrut`, lanjutkan simpan ringkasan ke `pcare_pendaftaran`. Rujukan: `PcareController::savePcarePendaftaran` dipanggil pada `app/Http/Controllers/Pcare/PcareController.php:1965`.
+- Konkurensi & reliabilitas:
+  - Terapkan cache lock per `no_rawat` agar tidak terjadi duplikasi kirim.
+  - Batasi retry otomatis untuk error 5xx/timeout; error 4xx dicatat sebagai `failed` tanpa retry.
+- Otentikasi:
+  - Jalankan dari proses server-side (controller/job) agar kredensial tidak pernah keluar ke frontend.
+
+Implementasi bertahap yang disarankan:
+
+1) Buat migrasi `create_pcare_bpjs_log_table` sesuai struktur di atas.
+2) Buat model opsional `PcareBpjsLog` (atau langsung gunakan `DB::table`).
+3) Tambahkan hook setelah `RegPeriksa::create(...)` di `RegistrationController::registerPatient` untuk:
+   - Mengecek `kd_pj` (BPJ/PBI)
+   - Memanggil `POST /api/pcare/pendaftaran` dengan `no_rawat` yang baru
+   - Menangkap respons, mendekripsi, dan menulis ke `pcare_bpjs_log`
+4) Tambahkan monitoring di UI (opsional): relasi 1→N ke `no_rawat` dan tampilkan meta code/message.
+5) Dokumentasikan masking data sensitif dan periode retensi untuk tabel ini.
+
+Catatan sinkronisasi:
+
+- Jika `pcare_pendaftaran` sudah dibuat (lihat migrasi), tetap gunakan tabel tersebut sebagai ringkasan status kunjungan (noUrut, status). `pcare_bpjs_log` melengkapi sebagai audit trail detail.
+- Endpoint `addPendaftaran` sudah memverifikasi penjamin BPJ/PBI dan mengembalikan struktur respons yang telah diproses. Rujukan: `app/Http/Controllers/Pcare/PcareController.php:1850-1994`.
+## Rancangan Kirim Ulang Saat Gagal
+
+- Prinsip Umum
+  - Idempoten: hindari duplikasi pendaftaran/kunjungan. Periksa adanya `noKunjungan` atau gunakan endpoint `PUT` jika tersedia.
+  - Batasi waktu kirim ulang (mis. hanya pada hari pelayanan atau kebijakan internal) untuk mencegah inkonsistensi.
+
+- Pemicu Kirim Ulang
+  - Manual: tombol `Kirim Ulang` pada halaman monitoring untuk baris `status=Gagal`.
+  - Otomatis: job terjadwal (scheduler) dengan backoff eksponensial untuk kegagalan sementara (5xx/timeout).
+
+- Alur Teknis Kirim Ulang (pendaftaran/kunjungan)
+  - Endpoint API (usulan): `POST /api/pcare/resend/{no_rawat}?endpoint=pendaftaran`.
+  - Server side:
+    - Kunci concurrency (`cache lock`) per `no_rawat` untuk mencegah kirim paralel.
+    - Bangun ulang payload dari data lokal (pasien, mapping poli/dokter, pemeriksaan, diagnosa) — gunakan pola di `PcareController::kirimKunjunganSehat`.
+    - Jika sebelumnya sudah mendapatkan `noKunjungan`, lakukan validasi: skip atau alihkan ke `update`/`PUT` sesuai katalog.
+    - Kirim via `BpjsTraits::pcareRequest` dengan header yang benar dan `Content-Type` sesuai endpoint.
+    - Catat hasil ke `pcare_send_attempts` (opsional) dan update `pcare_kunjungan_umum.status` menjadi `Terkirim` bila sukses; simpan `noKunjungan`.
+
+- Backoff & Kriteria Ulang
+  - Kriteria retry otomatis: HTTP 5xx, timeout, kesalahan jaringan; batasi percobaan (mis. 3–5 kali) dengan jeda 1m, 5m, 15m.
+  - Kesalahan 4xx (validasi/data) tidak diulang otomatis; tampilkan alasan di UI dan minta koreksi data.
+
+- Audit & Keamanan
+  - Simpan `triggered_by` (user) untuk kirim ulang manual.
+  - Simpan ringkasan payload (hash + ringkas) alih-alih payload penuh untuk mengurangi risiko data sensitif.
+  - Enforce peran/otorisasi untuk akses endpoint kirim ulang.
+
+- Pencegahan Duplikasi
+  - Dedup berdasarkan kombinasi `no_rawat + endpoint + payload_hash` di `pcare_send_attempts`.
+  - Validasi `noKunjungan` sebelum kirim; jika ada, gunakan jalur update daripada membuat kunjungan baru.
+
+- Observabilitas
+  - Setiap kirim ulang menghasilkan entri attempt baru dengan `correlation_id` yang mengacu ke percobaan awal.
+  - Grafik retry vs sukses per hari untuk memastikan strategi backoff efektif.
+
+Dengan rancangan ini, tim operasional memiliki alat pemantau yang jelas, kemampuan kirim ulang yang aman dan idempoten, serta audit trail lengkap untuk maintenance dan kepatuhan.

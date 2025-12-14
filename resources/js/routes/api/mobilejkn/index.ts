@@ -3,7 +3,7 @@ import ref from './ref'
 import antrean from './antrean'
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::config
-* @see app/Http/Controllers/Pcare/MobileJknController.php:22
+* @see app/Http/Controllers/Pcare/MobileJknController.php:23
 * @route '/api/mobilejkn/config'
 */
 export const config = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -18,7 +18,7 @@ config.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::config
-* @see app/Http/Controllers/Pcare/MobileJknController.php:22
+* @see app/Http/Controllers/Pcare/MobileJknController.php:23
 * @route '/api/mobilejkn/config'
 */
 config.url = (options?: RouteQueryOptions) => {
@@ -27,7 +27,7 @@ config.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::config
-* @see app/Http/Controllers/Pcare/MobileJknController.php:22
+* @see app/Http/Controllers/Pcare/MobileJknController.php:23
 * @route '/api/mobilejkn/config'
 */
 config.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -37,7 +37,7 @@ config.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::config
-* @see app/Http/Controllers/Pcare/MobileJknController.php:22
+* @see app/Http/Controllers/Pcare/MobileJknController.php:23
 * @route '/api/mobilejkn/config'
 */
 config.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -26,6 +26,7 @@ import {
     Phone,
     MapPin,
     ArrowUp,
+    Link as LinkIcon,
     Wallet,
 } from "lucide-react";
 import { route } from "ziggy-js";
@@ -55,6 +56,11 @@ const quickLinks = [
         title: "Monitoring Satusehat",
         description: "Pantau status FHIR & Encounter",
         href: "/satusehat/monitoring",
+    },
+    {
+        title: "Briding",
+        description: "Akses modul bridging",
+        href: "/pcare",
     },
     {
         title: "PCare & Rujukan",
@@ -779,6 +785,12 @@ export default function Dashboard() {
                 icon: <UserPlus className="w-5 h-5" />,
             },
             {
+                key: "bridging",
+                label: "Briding",
+                href: safeRoute("pcare.index"),
+                icon: <LinkIcon className="w-5 h-5" />,
+            },
+            {
                 key: "ugd",
                 label: "UGD",
                 href: safeRoute("igd.index"),
@@ -984,7 +996,7 @@ export default function Dashboard() {
                     initial={enableMotion ? "hidden" : false}
                     animate={enableMotion ? "visible" : false}
                 >
-                    <div className="fixed top-20 right-4 z-40">
+                    <div className="fixed top-20 right-4 z-40 hidden md:block">
                         <div className="relative w-64">
                             <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-3.5 h-3.5 bg-red-600 rounded-full shadow ring-2 ring-red-300 z-50" />
                             <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-1 h-5 bg-red-700 rounded-full blur-[0.5px] z-50" />

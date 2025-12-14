@@ -7,6 +7,7 @@ use App\Traits\BpjsTraits;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Controller untuk integrasi BPJS Mobile JKN.
@@ -247,12 +248,44 @@ class MobileJknController extends Controller
             ]);
 
             // Panggil API Mobile JKN
+            $start = microtime(true);
             $result = $this->mobilejknRequest('POST', 'antrean/add', [], $payload);
             $response = $result['response'];
             $timestamp = $result['timestamp_used'];
 
             $body = $response->body();
             $parsed = $this->maybeDecryptAndDecompressMobileJkn($body, $timestamp);
+            $durationMs = (int) round((microtime(true) - $start) * 1000);
+
+            // Tentukan no_rawat untuk keperluan logging berdasarkan data registrasi hari ini
+            $reg = DB::table('reg_periksa')
+                ->where('no_rkm_medis', $noRkmMedis)
+                ->where('kd_poli', $kdPoli)
+                ->where('tgl_registrasi', $tanggalPeriksa)
+                ->orderByDesc('jam_reg')
+                ->first();
+            $noRawat = $reg?->no_rawat ?? null;
+
+            // Siapkan payload ringkas untuk audit, mask nomor kartu
+            $maskedCard = '';
+            try {
+                $card = (string) ($pasien->no_peserta ?? '');
+                $maskedCard = substr($card, 0, 6).str_repeat('*', max(strlen($card) - 10, 0)).substr($card, -4);
+            } catch (\Throwable $e) {
+                $maskedCard = '';
+            }
+            $requestLog = [
+                'no_rkm_medis' => $noRkmMedis,
+                'kd_poli_rs' => $kdPoli,
+                'kd_poli_pcare' => (string) ($mapPoli->kd_poli_pcare ?? ''),
+                'kd_dokter_rs' => $kdDokter,
+                'kd_dokter_pcare' => (string) ($mapDokter->kd_dokter_pcare ?? ''),
+                'tanggalperiksa' => $tanggalPeriksa,
+                'jampraktek' => $jamPraktek,
+                'nomorantrean' => $nomorAntrean ?: '',
+                'angkaantrean' => $angkaAntrean ?? null,
+                'noKartu_masked' => $maskedCard,
+            ];
 
             // Kembalikan response yang telah di-parse jika memungkinkan
             if (is_array($parsed)) {
@@ -266,12 +299,68 @@ class MobileJknController extends Controller
                         'http_status' => $httpStatus,
                     ]);
 
+                    // Simpan log ke tabel pcare_bpjs_log bila tersedia
+                    if (Schema::hasTable('pcare_bpjs_log') && $noRawat) {
+                        $statusLabel = $httpStatus >= 200 && $httpStatus < 300 ? 'success' : 'failed';
+                        try {
+                            DB::table('pcare_bpjs_log')->insert([
+                                'no_rawat' => $noRawat,
+                                'endpoint' => 'Ambil Antrian',
+                                'status' => $statusLabel,
+                                'http_status' => $httpStatus,
+                                'meta_code' => (int) ($meta['code'] ?? 0),
+                                'meta_message' => (string) ($meta['message'] ?? ''),
+                                'duration_ms' => $durationMs,
+                                'request_payload' => json_encode($requestLog),
+                                'response_body_raw' => $body,
+                                'response_body_json' => is_array($parsed) ? json_encode($parsed) : null,
+                                'triggered_by' => optional($request->user())->nik ?? (string) optional($request->user())->id ?? null,
+                                'correlation_id' => $request->header('X-BPJS-LOG-ID') ?: null,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+                        } catch (\Throwable $e) {
+                            Log::channel('bpjs')->error('Gagal insert pcare_bpjs_log (antrean_add)', [
+                                'no_rawat' => $noRawat,
+                                'error' => $e->getMessage(),
+                            ]);
+                        }
+                    }
+
                     return response()->json($parsed, $httpStatus);
                 }
                 // Jika tidak ada metadata, gunakan status asli
                 Log::info('MobileJKN addAntrean response (no metadata)', [
                     'status' => $response->status(),
                 ]);
+
+                // Simpan log ke tabel pcare_bpjs_log bila tersedia
+                if (Schema::hasTable('pcare_bpjs_log') && $noRawat) {
+                    $statusLabel = $response->status() >= 200 && $response->status() < 300 ? 'success' : 'failed';
+                    try {
+                        DB::table('pcare_bpjs_log')->insert([
+                            'no_rawat' => $noRawat,
+                            'endpoint' => 'Ambil Antrian',
+                            'status' => $statusLabel,
+                            'http_status' => $response->status(),
+                            'meta_code' => null,
+                            'meta_message' => '',
+                            'duration_ms' => $durationMs,
+                            'request_payload' => json_encode($requestLog),
+                            'response_body_raw' => $body,
+                            'response_body_json' => is_array($parsed) ? json_encode($parsed) : null,
+                            'triggered_by' => optional($request->user())->nik ?? (string) optional($request->user())->id ?? null,
+                            'correlation_id' => $request->header('X-BPJS-LOG-ID') ?: null,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    } catch (\Throwable $e) {
+                        Log::channel('bpjs')->error('Gagal insert pcare_bpjs_log (antrean_add, no metadata)', [
+                            'no_rawat' => $noRawat,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
 
                 return response()->json($parsed, $response->status());
             }
@@ -495,12 +584,67 @@ class MobileJknController extends Controller
                 'method' => 'POST',
             ]);
 
+            $start = microtime(true);
             $result = $this->mobilejknRequest('POST', 'antrean/panggil', [], $payload);
             $response = $result['response'];
             $timestamp = $result['timestamp_used'];
 
             $body = $response->body();
             $parsed = $this->maybeDecryptAndDecompressMobileJkn($body, $timestamp);
+
+            $reg = DB::table('reg_periksa')
+                ->where('no_rkm_medis', $noRkmMedis)
+                ->where('kd_poli', $kdPoli)
+                ->where('tgl_registrasi', $tanggalPeriksa)
+                ->orderByDesc('jam_reg')
+                ->first();
+            $noRawat = $reg?->no_rawat ?? null;
+            $durationMs = (int) round((microtime(true) - $start) * 1000);
+            $maskedCard = '';
+            try {
+                $card = (string) ($pasien->no_peserta ?? '');
+                $maskedCard = substr($card, 0, 6).str_repeat('*', max(strlen($card) - 10, 0)).substr($card, -4);
+            } catch (\Throwable $e) {
+                $maskedCard = '';
+            }
+            $requestLog = [
+                'tanggalperiksa' => $tanggalPeriksa,
+                'kodepoli' => (string) ($mapPoli->kd_poli_pcare ?? ''),
+                'status' => $status,
+                'waktu' => $waktuMs,
+                'nomorkartu_masked' => $maskedCard,
+            ];
+            $meta = is_array($parsed) ? ($parsed['metadata'] ?? ($parsed['metaData'] ?? [])) : [];
+            $metaCode = is_array($meta) ? (int) ($meta['code'] ?? 0) : null;
+            $metaMessage = is_array($meta) ? (string) ($meta['message'] ?? '') : null;
+            $httpStatusNorm = is_array($meta) ? ($metaCode === 200 ? 200 : 400) : $response->status();
+            $statusLabel = $httpStatusNorm >= 200 && $httpStatusNorm < 300 ? 'success' : 'failed';
+
+            if (Schema::hasTable('pcare_bpjs_log') && $noRawat) {
+                try {
+                    DB::table('pcare_bpjs_log')->insert([
+                        'no_rawat' => $noRawat,
+                        'endpoint' => 'Panggil Antrian',
+                        'status' => $statusLabel,
+                        'http_status' => $httpStatusNorm,
+                        'meta_code' => $metaCode,
+                        'meta_message' => $metaMessage,
+                        'duration_ms' => $durationMs,
+                        'request_payload' => json_encode($requestLog),
+                        'response_body_raw' => $body,
+                        'response_body_json' => is_array($parsed) ? json_encode($parsed) : null,
+                        'triggered_by' => optional($request->user())->nik ?? (string) optional($request->user())->id ?? null,
+                        'correlation_id' => $request->header('X-BPJS-LOG-ID') ?: null,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                } catch (\Throwable $e) {
+                    Log::channel('bpjs')->error('Gagal insert pcare_bpjs_log (antrean_panggil)', [
+                        'no_rawat' => $noRawat,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
 
             if (is_array($parsed)) {
                 $meta = $parsed['metadata'] ?? $parsed['metaData'] ?? null;
@@ -650,12 +794,40 @@ class MobileJknController extends Controller
                 'method' => 'POST',
             ]);
 
+            $start = microtime(true);
             $result = $this->mobilejknRequest('POST', 'antrean/batal', [], $payload);
             $response = $result['response'];
             $timestamp = $result['timestamp_used'];
 
             $body = $response->body();
             $parsed = $this->maybeDecryptAndDecompressMobileJkn($body, $timestamp);
+            $durationMs = (int) round((microtime(true) - $start) * 1000);
+
+            // Tentukan no_rawat untuk keperluan logging berdasarkan data registrasi hari ini
+            $reg = \Illuminate\Support\Facades\DB::table('reg_periksa')
+                ->where('no_rkm_medis', $noRkmMedis)
+                ->where('kd_poli', $kdPoli)
+                ->where('tgl_registrasi', $tanggalPeriksa)
+                ->orderByDesc('jam_reg')
+                ->first();
+            $noRawat = $reg?->no_rawat ?? null;
+
+            // Siapkan payload ringkas untuk audit, mask nomor kartu
+            $maskedCard = '';
+            try {
+                $card = (string) ($pasien->no_peserta ?? '');
+                $maskedCard = substr($card, 0, 6).str_repeat('*', max(strlen($card) - 10, 0)).substr($card, -4);
+            } catch (\Throwable $e) {
+                $maskedCard = '';
+            }
+            $requestLog = [
+                'no_rkm_medis' => $noRkmMedis,
+                'kd_poli_rs' => $kdPoli,
+                'kd_poli_pcare' => (string) ($mapPoli->kd_poli_pcare ?? ''),
+                'tanggalperiksa' => $tanggalPeriksa,
+                'alasan' => $alasan,
+                'noKartu_masked' => $maskedCard,
+            ];
 
             if (is_array($parsed)) {
                 $meta = $parsed['metadata'] ?? $parsed['metaData'] ?? null;
@@ -667,7 +839,62 @@ class MobileJknController extends Controller
                         'http_status' => $httpStatus,
                     ]);
 
+                    // Simpan log ke tabel pcare_bpjs_log bila tersedia
+                    if (\Illuminate\Support\Facades\Schema::hasTable('pcare_bpjs_log') && $noRawat) {
+                        $statusLabel = $httpStatus >= 200 && $httpStatus < 300 ? 'success' : 'failed';
+                        try {
+                            \Illuminate\Support\Facades\DB::table('pcare_bpjs_log')->insert([
+                                'no_rawat' => $noRawat,
+                                'endpoint' => 'Batal',
+                                'status' => $statusLabel,
+                                'http_status' => $httpStatus,
+                                'meta_code' => (int) ($meta['code'] ?? 0),
+                                'meta_message' => (string) ($meta['message'] ?? ''),
+                                'duration_ms' => $durationMs,
+                                'request_payload' => json_encode($requestLog),
+                                'response_body_raw' => $body,
+                                'response_body_json' => is_array($parsed) ? json_encode($parsed) : null,
+                                'triggered_by' => optional($request->user())->nik ?? (string) optional($request->user())->id ?? null,
+                                'correlation_id' => $request->header('X-BPJS-LOG-ID') ?: null,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+                        } catch (\Throwable $e) {
+                            \Illuminate\Support\Facades\Log::channel('bpjs')->error('Gagal insert pcare_bpjs_log (antrean_batal)', [
+                                'no_rawat' => $noRawat,
+                                'error' => $e->getMessage(),
+                            ]);
+                        }
+                    }
+
                     return response()->json($parsed, $httpStatus);
+                }
+                // Simpan log ke tabel pcare_bpjs_log bila tersedia (tanpa metadata)
+                if (\Illuminate\Support\Facades\Schema::hasTable('pcare_bpjs_log') && $noRawat) {
+                    $statusLabel = $response->status() >= 200 && $response->status() < 300 ? 'success' : 'failed';
+                    try {
+                        \Illuminate\Support\Facades\DB::table('pcare_bpjs_log')->insert([
+                            'no_rawat' => $noRawat,
+                            'endpoint' => 'Batal',
+                            'status' => $statusLabel,
+                            'http_status' => $response->status(),
+                            'meta_code' => null,
+                            'meta_message' => '',
+                            'duration_ms' => $durationMs,
+                            'request_payload' => json_encode($requestLog),
+                            'response_body_raw' => $body,
+                            'response_body_json' => is_array($parsed) ? json_encode($parsed) : null,
+                            'triggered_by' => optional($request->user())->nik ?? (string) optional($request->user())->id ?? null,
+                            'correlation_id' => $request->header('X-BPJS-LOG-ID') ?: null,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    } catch (\Throwable $e) {
+                        \Illuminate\Support\Facades\Log::channel('bpjs')->error('Gagal insert pcare_bpjs_log (antrean_batal, no metadata)', [
+                            'no_rawat' => $noRawat,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
                 }
 
                 return response()->json($parsed, $response->status());

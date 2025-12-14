@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import SidebarPengaturan from '@/Layouts/SidebarPengaturan';
+import SidebarBriding from '@/Layouts/SidebarBriding';
 import { Toaster, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/Components/ui';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowPathIcon, CheckCircleIcon, ExclamationTriangleIcon, MagnifyingGlassIcon, PlusIcon, PencilSquareIcon, TrashIcon, XMarkIcon, ArrowsUpDownIcon, BeakerIcon } from '@heroicons/react/24/outline';
@@ -601,4 +601,4 @@ export default function MappingObatPcare() {
   );
 }
 
-MappingObatPcare.layout = (page) => <SidebarPengaturan title="Pengaturan" children={page} />;
+MappingObatPcare.layout = (page) => <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>;

@@ -291,139 +291,80 @@ export default function RekeningPage() {
                             : "Input Rekening"
                     }
                 >
-                    <form
-                        onSubmit={handleSubmit}
-                        className="grid grid-cols-1 md:grid-cols-3 gap-6"
-                    >
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Kode Rekening
-                            </label>
-                            <input
-                                type="text"
-                                value={form.kd_rek}
-                                onChange={(e) =>
-                                    setForm({
-                                        ...form,
-                                        kd_rek: e.target.value.toUpperCase(),
-                                    })
-                                }
-                                placeholder="Mis. 1001"
-                                maxLength={20}
-                                disabled={!!editingKey}
-                                className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 ${
-                                    errors.kd_rek
-                                        ? "border-red-500 focus:ring-red-300"
-                                        : "border-gray-300 focus:ring-blue-300"
-                                }`}
-                            />
-                            {errors.kd_rek && (
-                                <p className="mt-1 text-xs text-red-600">
-                                    {errors.kd_rek}
-                                </p>
-                            )}
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Mode Akun
-                            </label>
-                            <select
-                                value={mode}
-                                onChange={(e) => setMode(e.target.value)}
-                                className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 ${
-                                    errors.indukKd
-                                        ? "border-red-500 focus:ring-red-300"
-                                        : "border-gray-300 focus:ring-blue-300"
-                                }`}
-                            >
-                                <option value="utama">
-                                    Akun Utama (Induk)
-                                </option>
-                                <option value="sub">Sub Akun</option>
-                            </select>
-                            {mode === "sub" && (
-                                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                    <Info className="w-3 h-3" />
-                                    Sub Akun membutuhkan induk. Pilih akun induk
-                                    di kolom berikut.
-                                </p>
-                            )}
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Tipe
-                            </label>
-                            <select
-                                value={form.tipe}
-                                onChange={(e) =>
-                                    setForm({ ...form, tipe: e.target.value })
-                                }
-                                title="Tipe laporan: N=Neraca, R=Rugi/Laba, M=Perubahan Modal"
-                                className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 ${
-                                    errors.tipe
-                                        ? "border-red-500 focus:ring-red-300"
-                                        : "border-gray-300 focus:ring-blue-300"
-                                }`}
-                            >
-                                <option value="N">N (Neraca)</option>
-                                <option value="R">R (Rugi/Laba)</option>
-                                <option value="M">M (Perubahan Modal)</option>
-                            </select>
-                            {errors.tipe && (
-                                <p className="mt-1 text-xs text-red-600">
-                                    {errors.tipe}
-                                </p>
-                            )}
-                            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                <Info className="w-3 h-3" />
-                                Pilih tipe sesuai jenis akun: Neraca
-                                (aset/kewajiban/ekuitas), Rugi/Laba
-                                (pendapatan/biaya), Perubahan Modal.
-                            </p>
-                        </div>
-
-                        {mode === "sub" && (
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Induk
-                                </label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Kode Rekening</label>
+                                <input
+                                    type="text"
+                                    value={form.kd_rek}
+                                    onChange={(e) =>
+                                        setForm({
+                                            ...form,
+                                            kd_rek: e.target.value.toUpperCase(),
+                                        })
+                                    }
+                                    placeholder="Mis. 1001"
+                                    maxLength={20}
+                                    disabled={!!editingKey}
+                                    className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 ${
+                                        errors.kd_rek
+                                            ? "border-red-500 focus:ring-red-300"
+                                            : "border-gray-300 focus:ring-blue-300"
+                                    }`}
+                                />
+                                {errors.kd_rek && (
+                                    <p className="mt-1 text-xs text-red-600">{errors.kd_rek}</p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Mode Akun</label>
                                 <select
-                                    value={indukKd}
-                                    onChange={(e) => setIndukKd(e.target.value)}
+                                    value={mode}
+                                    onChange={(e) => setMode(e.target.value)}
                                     className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 ${
                                         errors.indukKd
                                             ? "border-red-500 focus:ring-red-300"
                                             : "border-gray-300 focus:ring-blue-300"
                                     }`}
                                 >
-                                    <option value="">
-                                        -- Pilih Akun Induk --
-                                    </option>
-                                    {indukList.map((induk) => (
-                                        <option
-                                            key={induk.kd_rek}
-                                            value={induk.kd_rek}
-                                        >
-                                            {induk.kd_rek} — {induk.nm_rek}
-                                        </option>
-                                    ))}
+                                    <option value="utama">Akun Utama (Induk)</option>
+                                    <option value="sub">Sub Akun</option>
                                 </select>
-                                {errors.indukKd && (
-                                    <p className="mt-1 text-xs text-red-600">
-                                        {errors.indukKd}
+                                {mode === "sub" && (
+                                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                        <Info className="w-3 h-3" />
+                                        Sub Akun membutuhkan induk. Pilih akun induk di kolom berikut.
                                     </p>
                                 )}
                             </div>
-                        )}
-
-                        <div className="md:col-span-3">
-                            <div className="flex items-center gap-4">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Balance
-                                    </span>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tipe</label>
+                                <select
+                                    value={form.tipe}
+                                    onChange={(e) => setForm({ ...form, tipe: e.target.value })}
+                                    title="Tipe laporan: N=Neraca, R=Rugi/Laba, M=Perubahan Modal"
+                                    className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 ${
+                                        errors.tipe
+                                            ? "border-red-500 focus:ring-red-300"
+                                            : "border-gray-300 focus:ring-blue-300"
+                                    }`}
+                                >
+                                    <option value="N">N (Neraca)</option>
+                                    <option value="R">R (Rugi/Laba)</option>
+                                    <option value="M">M (Perubahan Modal)</option>
+                                </select>
+                                {errors.tipe && (
+                                    <p className="mt-1 text-xs text-red-600">{errors.tipe}</p>
+                                )}
+                                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                    <Info className="w-3 h-3" />
+                                    Pilih tipe sesuai jenis akun: Neraca (aset/kewajiban/ekuitas), Rugi/Laba (pendapatan/biaya), Perubahan Modal.
+                                </p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Balance</label>
+                                <div className="mt-1 flex items-center gap-2">
                                     <Switch
                                         checked={form.balance === "Kredit"}
                                         onChange={(v) =>
@@ -437,9 +378,40 @@ export default function RekeningPage() {
                                         size="md"
                                     />
                                 </div>
-                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Nama Rekening
-                                </label>
+                                {errors.balance && (
+                                    <p className="mt-1 text-xs text-red-600">{errors.balance}</p>
+                                )}
+                            </div>
+                        </div>
+
+                        {mode === "sub" && (
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Induk</label>
+                                <select
+                                    value={indukKd}
+                                    onChange={(e) => setIndukKd(e.target.value)}
+                                    className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 ${
+                                        errors.indukKd
+                                            ? "border-red-500 focus:ring-red-300"
+                                            : "border-gray-300 focus:ring-blue-300"
+                                    }`}
+                                >
+                                    <option value="">-- Pilih Akun Induk --</option>
+                                    {indukList.map((induk) => (
+                                        <option key={induk.kd_rek} value={induk.kd_rek}>
+                                            {induk.kd_rek} — {induk.nm_rek}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.indukKd && (
+                                    <p className="mt-1 text-xs text-red-600">{errors.indukKd}</p>
+                                )}
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-end">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nama Rekening</label>
                                 <input
                                     type="text"
                                     value={form.nm_rek}
@@ -451,42 +423,34 @@ export default function RekeningPage() {
                                     }
                                     placeholder="Mis. Kas, Piutang Usaha"
                                     maxLength={100}
-                                    className={`flex-1 rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 ${
+                                    className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 ${
                                         errors.nm_rek
                                             ? "border-red-500 focus:ring-red-300"
                                             : "border-gray-300 focus:ring-blue-300"
                                     }`}
                                 />
+                                {errors.nm_rek && (
+                                    <p className="mt-1 text-xs text-red-600">{errors.nm_rek}</p>
+                                )}
                             </div>
-                            {errors.balance && (
-                                <p className="mt-1 text-xs text-red-600">
-                                    {errors.balance}
-                                </p>
-                            )}
-                            {errors.nm_rek && (
-                                <p className="mt-1 text-xs text-red-600">
-                                    {errors.nm_rek}
-                                </p>
-                            )}
-                        </div>
-
-                        <div className="md:col-span-3 mt-2 flex items-center gap-3">
-                            <button
-                                type="submit"
-                                disabled={saving}
-                                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-                            >
-                                {editingKey ? "Simpan Perubahan" : "Simpan"}
-                            </button>
-                            {editingKey && (
+                            <div className="flex gap-3 justify-end">
                                 <button
-                                    type="button"
-                                    onClick={resetForm}
-                                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                    type="submit"
+                                    disabled={saving}
+                                    className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
                                 >
-                                    Batal Edit
+                                    {editingKey ? "Simpan Perubahan" : "Simpan"}
                                 </button>
-                            )}
+                                {editingKey && (
+                                    <button
+                                        type="button"
+                                        onClick={resetForm}
+                                        className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                    >
+                                        Batal Edit
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </form>
                 </Card>

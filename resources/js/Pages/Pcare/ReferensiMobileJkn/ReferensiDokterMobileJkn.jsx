@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import AppLayout from '@/Layouts/AppLayout';
+import SidebarBriding from '@/Layouts/SidebarBriding';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowPathIcon,
@@ -261,4 +261,4 @@ export default function ReferensiDokterMobileJkn() {
 }
 
 // Render dalam AppLayout
-ReferensiDokterMobileJkn.layout = (page) => <AppLayout title="Referensi Dokter Mobile JKN" children={page} />;
+ReferensiDokterMobileJkn.layout = (page) => <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>;

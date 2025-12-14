@@ -61,6 +61,19 @@ class RegPeriksaController extends Controller
                 $query->byRangeTanggal($request->tanggal_awal, $request->tanggal_akhir);
             }
 
+            // Filter berdasarkan penjamin (kd_pj) - mendukung single atau comma-separated
+            if ($request->filled('kd_pj')) {
+                $codes = array_filter(array_map('trim', explode(',', (string) $request->kd_pj)));
+                if (! empty($codes)) {
+                    $query->whereIn('kd_pj', $codes);
+                }
+            } elseif ($request->filled('kd_pj_in')) {
+                $codes = array_filter(array_map('trim', explode(',', (string) $request->kd_pj_in)));
+                if (! empty($codes)) {
+                    $query->whereIn('kd_pj', $codes);
+                }
+            }
+
             // Search berdasarkan nama pasien atau no rawat
             if ($request->filled('search')) {
                 $search = $request->search;

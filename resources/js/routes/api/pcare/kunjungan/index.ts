@@ -35,7 +35,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareKunjunganController::preview
-* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:306
+* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:341
 * @route '/api/pcare/kunjungan/preview/{no_rawat}'
 */
 export const preview = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -50,7 +50,7 @@ preview.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareKunjunganController::preview
-* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:306
+* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:341
 * @route '/api/pcare/kunjungan/preview/{no_rawat}'
 */
 preview.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -77,7 +77,7 @@ preview.url = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareKunjunganController::preview
-* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:306
+* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:341
 * @route '/api/pcare/kunjungan/preview/{no_rawat}'
 */
 preview.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -87,7 +87,7 @@ preview.get = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareKunjunganController::preview
-* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:306
+* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:341
 * @route '/api/pcare/kunjungan/preview/{no_rawat}'
 */
 preview.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

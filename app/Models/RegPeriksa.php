@@ -104,4 +104,63 @@ class RegPeriksa extends Model
     {
         return $this->hasOne(\App\Models\Akutansi\NotaInap::class, 'no_rawat', 'no_rawat');
     }
+
+    // Query scopes
+    public function scopeByStatus($query, $status)
+    {
+        if ($status === null || $status === '') return $query;
+        return $query->where('stts', $status);
+    }
+
+    public function scopeByStatusDaftar($query, $status)
+    {
+        if ($status === null || $status === '') return $query;
+        return $query->where('stts_daftar', $status);
+    }
+
+    public function scopeByStatusLanjut($query, $status)
+    {
+        if ($status === null || $status === '') return $query;
+        return $query->where('status_lanjut', $status);
+    }
+
+    public function scopeByDokter($query, $kdDokter)
+    {
+        if ($kdDokter === null || $kdDokter === '') return $query;
+        return $query->where('kd_dokter', $kdDokter);
+    }
+
+    public function scopeByPoli($query, $kdPoli)
+    {
+        if ($kdPoli === null || $kdPoli === '') return $query;
+        return $query->where('kd_poli', $kdPoli);
+    }
+
+    public function scopeByStatusBayar($query, $status)
+    {
+        if ($status === null || $status === '') return $query;
+        return $query->where('status_bayar', $status);
+    }
+
+    public function scopeByTanggalRegistrasi($query, $tanggal)
+    {
+        if ($tanggal === null || $tanggal === '') return $query;
+        return $query->whereDate('tgl_registrasi', $tanggal);
+    }
+
+    public function scopeByRangeTanggal($query, $start, $end)
+    {
+        $start = $start ?: null;
+        $end = $end ?: null;
+        if ($start && $end) {
+            return $query->whereBetween('tgl_registrasi', [$start, $end]);
+        }
+        if ($start) {
+            return $query->whereDate('tgl_registrasi', '>=', $start);
+        }
+        if ($end) {
+            return $query->whereDate('tgl_registrasi', '<=', $end);
+        }
+        return $query;
+    }
 }
