@@ -2,58 +2,14 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefa
 /**
 * @see \App\Http\Controllers\API\WilayahController::provinces
 * @see app/Http/Controllers/API/WilayahController.php:15
-* @route '/api/public/wilayah/provinces'
-*/
-const provincesae20c4f20fdc56974372ce47c50bda64 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: provincesae20c4f20fdc56974372ce47c50bda64.url(options),
-    method: 'get',
-})
-
-provincesae20c4f20fdc56974372ce47c50bda64.definition = {
-    methods: ["get","head"],
-    url: '/api/public/wilayah/provinces',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\API\WilayahController::provinces
-* @see app/Http/Controllers/API/WilayahController.php:15
-* @route '/api/public/wilayah/provinces'
-*/
-provincesae20c4f20fdc56974372ce47c50bda64.url = (options?: RouteQueryOptions) => {
-    return provincesae20c4f20fdc56974372ce47c50bda64.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\API\WilayahController::provinces
-* @see app/Http/Controllers/API/WilayahController.php:15
-* @route '/api/public/wilayah/provinces'
-*/
-provincesae20c4f20fdc56974372ce47c50bda64.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: provincesae20c4f20fdc56974372ce47c50bda64.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\API\WilayahController::provinces
-* @see app/Http/Controllers/API/WilayahController.php:15
-* @route '/api/public/wilayah/provinces'
-*/
-provincesae20c4f20fdc56974372ce47c50bda64.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: provincesae20c4f20fdc56974372ce47c50bda64.url(options),
-    method: 'head',
-})
-
-/**
-* @see \App\Http\Controllers\API\WilayahController::provinces
-* @see app/Http/Controllers/API/WilayahController.php:15
 * @route '/api/wilayah/provinces'
 */
-const provincese1b0a063813a08cf1c8a0ea75e30cdc9 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: provincese1b0a063813a08cf1c8a0ea75e30cdc9.url(options),
+export const provinces = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: provinces.url(options),
     method: 'get',
 })
 
-provincese1b0a063813a08cf1c8a0ea75e30cdc9.definition = {
+provinces.definition = {
     methods: ["get","head"],
     url: '/api/wilayah/provinces',
 } satisfies RouteDefinition<["get","head"]>
@@ -63,8 +19,8 @@ provincese1b0a063813a08cf1c8a0ea75e30cdc9.definition = {
 * @see app/Http/Controllers/API/WilayahController.php:15
 * @route '/api/wilayah/provinces'
 */
-provincese1b0a063813a08cf1c8a0ea75e30cdc9.url = (options?: RouteQueryOptions) => {
-    return provincese1b0a063813a08cf1c8a0ea75e30cdc9.definition.url + queryParams(options)
+provinces.url = (options?: RouteQueryOptions) => {
+    return provinces.definition.url + queryParams(options)
 }
 
 /**
@@ -72,8 +28,8 @@ provincese1b0a063813a08cf1c8a0ea75e30cdc9.url = (options?: RouteQueryOptions) =>
 * @see app/Http/Controllers/API/WilayahController.php:15
 * @route '/api/wilayah/provinces'
 */
-provincese1b0a063813a08cf1c8a0ea75e30cdc9.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: provincese1b0a063813a08cf1c8a0ea75e30cdc9.url(options),
+provinces.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: provinces.url(options),
     method: 'get',
 })
 
@@ -82,75 +38,8 @@ provincese1b0a063813a08cf1c8a0ea75e30cdc9.get = (options?: RouteQueryOptions): R
 * @see app/Http/Controllers/API/WilayahController.php:15
 * @route '/api/wilayah/provinces'
 */
-provincese1b0a063813a08cf1c8a0ea75e30cdc9.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: provincese1b0a063813a08cf1c8a0ea75e30cdc9.url(options),
-    method: 'head',
-})
-
-export const provinces = {
-    '/api/public/wilayah/provinces': provincesae20c4f20fdc56974372ce47c50bda64,
-    '/api/wilayah/provinces': provincese1b0a063813a08cf1c8a0ea75e30cdc9,
-}
-
-/**
-* @see \App\Http\Controllers\API\WilayahController::regencies
-* @see app/Http/Controllers/API/WilayahController.php:43
-* @route '/api/public/wilayah/regencies/{provinceCode}'
-*/
-const regencies029df5088317a9b29596e44463452ac2 = (args: { provinceCode: string | number } | [provinceCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: regencies029df5088317a9b29596e44463452ac2.url(args, options),
-    method: 'get',
-})
-
-regencies029df5088317a9b29596e44463452ac2.definition = {
-    methods: ["get","head"],
-    url: '/api/public/wilayah/regencies/{provinceCode}',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\API\WilayahController::regencies
-* @see app/Http/Controllers/API/WilayahController.php:43
-* @route '/api/public/wilayah/regencies/{provinceCode}'
-*/
-regencies029df5088317a9b29596e44463452ac2.url = (args: { provinceCode: string | number } | [provinceCode: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { provinceCode: args }
-    }
-
-    if (Array.isArray(args)) {
-        args = {
-            provinceCode: args[0],
-        }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-        provinceCode: args.provinceCode,
-    }
-
-    return regencies029df5088317a9b29596e44463452ac2.definition.url
-            .replace('{provinceCode}', parsedArgs.provinceCode.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\API\WilayahController::regencies
-* @see app/Http/Controllers/API/WilayahController.php:43
-* @route '/api/public/wilayah/regencies/{provinceCode}'
-*/
-regencies029df5088317a9b29596e44463452ac2.get = (args: { provinceCode: string | number } | [provinceCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: regencies029df5088317a9b29596e44463452ac2.url(args, options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\API\WilayahController::regencies
-* @see app/Http/Controllers/API/WilayahController.php:43
-* @route '/api/public/wilayah/regencies/{provinceCode}'
-*/
-regencies029df5088317a9b29596e44463452ac2.head = (args: { provinceCode: string | number } | [provinceCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: regencies029df5088317a9b29596e44463452ac2.url(args, options),
+provinces.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: provinces.url(options),
     method: 'head',
 })
 
@@ -159,12 +48,12 @@ regencies029df5088317a9b29596e44463452ac2.head = (args: { provinceCode: string |
 * @see app/Http/Controllers/API/WilayahController.php:43
 * @route '/api/wilayah/regencies/{provinceCode}'
 */
-const regencies4f4f87c9e56d3a55f793a5a9315f9dc7 = (args: { provinceCode: string | number } | [provinceCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: regencies4f4f87c9e56d3a55f793a5a9315f9dc7.url(args, options),
+export const regencies = (args: { provinceCode: string | number } | [provinceCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: regencies.url(args, options),
     method: 'get',
 })
 
-regencies4f4f87c9e56d3a55f793a5a9315f9dc7.definition = {
+regencies.definition = {
     methods: ["get","head"],
     url: '/api/wilayah/regencies/{provinceCode}',
 } satisfies RouteDefinition<["get","head"]>
@@ -174,7 +63,7 @@ regencies4f4f87c9e56d3a55f793a5a9315f9dc7.definition = {
 * @see app/Http/Controllers/API/WilayahController.php:43
 * @route '/api/wilayah/regencies/{provinceCode}'
 */
-regencies4f4f87c9e56d3a55f793a5a9315f9dc7.url = (args: { provinceCode: string | number } | [provinceCode: string | number ] | string | number, options?: RouteQueryOptions) => {
+regencies.url = (args: { provinceCode: string | number } | [provinceCode: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { provinceCode: args }
     }
@@ -191,7 +80,7 @@ regencies4f4f87c9e56d3a55f793a5a9315f9dc7.url = (args: { provinceCode: string | 
         provinceCode: args.provinceCode,
     }
 
-    return regencies4f4f87c9e56d3a55f793a5a9315f9dc7.definition.url
+    return regencies.definition.url
             .replace('{provinceCode}', parsedArgs.provinceCode.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
@@ -201,8 +90,8 @@ regencies4f4f87c9e56d3a55f793a5a9315f9dc7.url = (args: { provinceCode: string | 
 * @see app/Http/Controllers/API/WilayahController.php:43
 * @route '/api/wilayah/regencies/{provinceCode}'
 */
-regencies4f4f87c9e56d3a55f793a5a9315f9dc7.get = (args: { provinceCode: string | number } | [provinceCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: regencies4f4f87c9e56d3a55f793a5a9315f9dc7.url(args, options),
+regencies.get = (args: { provinceCode: string | number } | [provinceCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: regencies.url(args, options),
     method: 'get',
 })
 
@@ -211,75 +100,8 @@ regencies4f4f87c9e56d3a55f793a5a9315f9dc7.get = (args: { provinceCode: string | 
 * @see app/Http/Controllers/API/WilayahController.php:43
 * @route '/api/wilayah/regencies/{provinceCode}'
 */
-regencies4f4f87c9e56d3a55f793a5a9315f9dc7.head = (args: { provinceCode: string | number } | [provinceCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: regencies4f4f87c9e56d3a55f793a5a9315f9dc7.url(args, options),
-    method: 'head',
-})
-
-export const regencies = {
-    '/api/public/wilayah/regencies/{provinceCode}': regencies029df5088317a9b29596e44463452ac2,
-    '/api/wilayah/regencies/{provinceCode}': regencies4f4f87c9e56d3a55f793a5a9315f9dc7,
-}
-
-/**
-* @see \App\Http\Controllers\API\WilayahController::districts
-* @see app/Http/Controllers/API/WilayahController.php:80
-* @route '/api/public/wilayah/districts/{regencyCode}'
-*/
-const districts2ebbdbabe49ed33bdf8dfa8056070162 = (args: { regencyCode: string | number } | [regencyCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: districts2ebbdbabe49ed33bdf8dfa8056070162.url(args, options),
-    method: 'get',
-})
-
-districts2ebbdbabe49ed33bdf8dfa8056070162.definition = {
-    methods: ["get","head"],
-    url: '/api/public/wilayah/districts/{regencyCode}',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\API\WilayahController::districts
-* @see app/Http/Controllers/API/WilayahController.php:80
-* @route '/api/public/wilayah/districts/{regencyCode}'
-*/
-districts2ebbdbabe49ed33bdf8dfa8056070162.url = (args: { regencyCode: string | number } | [regencyCode: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { regencyCode: args }
-    }
-
-    if (Array.isArray(args)) {
-        args = {
-            regencyCode: args[0],
-        }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-        regencyCode: args.regencyCode,
-    }
-
-    return districts2ebbdbabe49ed33bdf8dfa8056070162.definition.url
-            .replace('{regencyCode}', parsedArgs.regencyCode.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\API\WilayahController::districts
-* @see app/Http/Controllers/API/WilayahController.php:80
-* @route '/api/public/wilayah/districts/{regencyCode}'
-*/
-districts2ebbdbabe49ed33bdf8dfa8056070162.get = (args: { regencyCode: string | number } | [regencyCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: districts2ebbdbabe49ed33bdf8dfa8056070162.url(args, options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\API\WilayahController::districts
-* @see app/Http/Controllers/API/WilayahController.php:80
-* @route '/api/public/wilayah/districts/{regencyCode}'
-*/
-districts2ebbdbabe49ed33bdf8dfa8056070162.head = (args: { regencyCode: string | number } | [regencyCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: districts2ebbdbabe49ed33bdf8dfa8056070162.url(args, options),
+regencies.head = (args: { provinceCode: string | number } | [provinceCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: regencies.url(args, options),
     method: 'head',
 })
 
@@ -288,12 +110,12 @@ districts2ebbdbabe49ed33bdf8dfa8056070162.head = (args: { regencyCode: string | 
 * @see app/Http/Controllers/API/WilayahController.php:80
 * @route '/api/wilayah/districts/{regencyCode}'
 */
-const districtsf2040c4710d0444dde41436c894c635c = (args: { regencyCode: string | number } | [regencyCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: districtsf2040c4710d0444dde41436c894c635c.url(args, options),
+export const districts = (args: { regencyCode: string | number } | [regencyCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: districts.url(args, options),
     method: 'get',
 })
 
-districtsf2040c4710d0444dde41436c894c635c.definition = {
+districts.definition = {
     methods: ["get","head"],
     url: '/api/wilayah/districts/{regencyCode}',
 } satisfies RouteDefinition<["get","head"]>
@@ -303,7 +125,7 @@ districtsf2040c4710d0444dde41436c894c635c.definition = {
 * @see app/Http/Controllers/API/WilayahController.php:80
 * @route '/api/wilayah/districts/{regencyCode}'
 */
-districtsf2040c4710d0444dde41436c894c635c.url = (args: { regencyCode: string | number } | [regencyCode: string | number ] | string | number, options?: RouteQueryOptions) => {
+districts.url = (args: { regencyCode: string | number } | [regencyCode: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { regencyCode: args }
     }
@@ -320,7 +142,7 @@ districtsf2040c4710d0444dde41436c894c635c.url = (args: { regencyCode: string | n
         regencyCode: args.regencyCode,
     }
 
-    return districtsf2040c4710d0444dde41436c894c635c.definition.url
+    return districts.definition.url
             .replace('{regencyCode}', parsedArgs.regencyCode.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
@@ -330,8 +152,8 @@ districtsf2040c4710d0444dde41436c894c635c.url = (args: { regencyCode: string | n
 * @see app/Http/Controllers/API/WilayahController.php:80
 * @route '/api/wilayah/districts/{regencyCode}'
 */
-districtsf2040c4710d0444dde41436c894c635c.get = (args: { regencyCode: string | number } | [regencyCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: districtsf2040c4710d0444dde41436c894c635c.url(args, options),
+districts.get = (args: { regencyCode: string | number } | [regencyCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: districts.url(args, options),
     method: 'get',
 })
 
@@ -340,75 +162,8 @@ districtsf2040c4710d0444dde41436c894c635c.get = (args: { regencyCode: string | n
 * @see app/Http/Controllers/API/WilayahController.php:80
 * @route '/api/wilayah/districts/{regencyCode}'
 */
-districtsf2040c4710d0444dde41436c894c635c.head = (args: { regencyCode: string | number } | [regencyCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: districtsf2040c4710d0444dde41436c894c635c.url(args, options),
-    method: 'head',
-})
-
-export const districts = {
-    '/api/public/wilayah/districts/{regencyCode}': districts2ebbdbabe49ed33bdf8dfa8056070162,
-    '/api/wilayah/districts/{regencyCode}': districtsf2040c4710d0444dde41436c894c635c,
-}
-
-/**
-* @see \App\Http\Controllers\API\WilayahController::villages
-* @see app/Http/Controllers/API/WilayahController.php:117
-* @route '/api/public/wilayah/villages/{districtCode}'
-*/
-const villages921437331b319849fcab3cbfa2163336 = (args: { districtCode: string | number } | [districtCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: villages921437331b319849fcab3cbfa2163336.url(args, options),
-    method: 'get',
-})
-
-villages921437331b319849fcab3cbfa2163336.definition = {
-    methods: ["get","head"],
-    url: '/api/public/wilayah/villages/{districtCode}',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\API\WilayahController::villages
-* @see app/Http/Controllers/API/WilayahController.php:117
-* @route '/api/public/wilayah/villages/{districtCode}'
-*/
-villages921437331b319849fcab3cbfa2163336.url = (args: { districtCode: string | number } | [districtCode: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { districtCode: args }
-    }
-
-    if (Array.isArray(args)) {
-        args = {
-            districtCode: args[0],
-        }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-        districtCode: args.districtCode,
-    }
-
-    return villages921437331b319849fcab3cbfa2163336.definition.url
-            .replace('{districtCode}', parsedArgs.districtCode.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\API\WilayahController::villages
-* @see app/Http/Controllers/API/WilayahController.php:117
-* @route '/api/public/wilayah/villages/{districtCode}'
-*/
-villages921437331b319849fcab3cbfa2163336.get = (args: { districtCode: string | number } | [districtCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: villages921437331b319849fcab3cbfa2163336.url(args, options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\API\WilayahController::villages
-* @see app/Http/Controllers/API/WilayahController.php:117
-* @route '/api/public/wilayah/villages/{districtCode}'
-*/
-villages921437331b319849fcab3cbfa2163336.head = (args: { districtCode: string | number } | [districtCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: villages921437331b319849fcab3cbfa2163336.url(args, options),
+districts.head = (args: { regencyCode: string | number } | [regencyCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: districts.url(args, options),
     method: 'head',
 })
 
@@ -417,12 +172,12 @@ villages921437331b319849fcab3cbfa2163336.head = (args: { districtCode: string | 
 * @see app/Http/Controllers/API/WilayahController.php:117
 * @route '/api/wilayah/villages/{districtCode}'
 */
-const villages0170dba3d327bd2f252a53fafda04574 = (args: { districtCode: string | number } | [districtCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: villages0170dba3d327bd2f252a53fafda04574.url(args, options),
+export const villages = (args: { districtCode: string | number } | [districtCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: villages.url(args, options),
     method: 'get',
 })
 
-villages0170dba3d327bd2f252a53fafda04574.definition = {
+villages.definition = {
     methods: ["get","head"],
     url: '/api/wilayah/villages/{districtCode}',
 } satisfies RouteDefinition<["get","head"]>
@@ -432,7 +187,7 @@ villages0170dba3d327bd2f252a53fafda04574.definition = {
 * @see app/Http/Controllers/API/WilayahController.php:117
 * @route '/api/wilayah/villages/{districtCode}'
 */
-villages0170dba3d327bd2f252a53fafda04574.url = (args: { districtCode: string | number } | [districtCode: string | number ] | string | number, options?: RouteQueryOptions) => {
+villages.url = (args: { districtCode: string | number } | [districtCode: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { districtCode: args }
     }
@@ -449,7 +204,7 @@ villages0170dba3d327bd2f252a53fafda04574.url = (args: { districtCode: string | n
         districtCode: args.districtCode,
     }
 
-    return villages0170dba3d327bd2f252a53fafda04574.definition.url
+    return villages.definition.url
             .replace('{districtCode}', parsedArgs.districtCode.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
@@ -459,8 +214,8 @@ villages0170dba3d327bd2f252a53fafda04574.url = (args: { districtCode: string | n
 * @see app/Http/Controllers/API/WilayahController.php:117
 * @route '/api/wilayah/villages/{districtCode}'
 */
-villages0170dba3d327bd2f252a53fafda04574.get = (args: { districtCode: string | number } | [districtCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: villages0170dba3d327bd2f252a53fafda04574.url(args, options),
+villages.get = (args: { districtCode: string | number } | [districtCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: villages.url(args, options),
     method: 'get',
 })
 
@@ -469,57 +224,8 @@ villages0170dba3d327bd2f252a53fafda04574.get = (args: { districtCode: string | n
 * @see app/Http/Controllers/API/WilayahController.php:117
 * @route '/api/wilayah/villages/{districtCode}'
 */
-villages0170dba3d327bd2f252a53fafda04574.head = (args: { districtCode: string | number } | [districtCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: villages0170dba3d327bd2f252a53fafda04574.url(args, options),
-    method: 'head',
-})
-
-export const villages = {
-    '/api/public/wilayah/villages/{districtCode}': villages921437331b319849fcab3cbfa2163336,
-    '/api/wilayah/villages/{districtCode}': villages0170dba3d327bd2f252a53fafda04574,
-}
-
-/**
-* @see \App\Http\Controllers\API\WilayahController::search
-* @see app/Http/Controllers/API/WilayahController.php:186
-* @route '/api/public/wilayah/search'
-*/
-const searchffbb1039b5f499f4af2f598c9a8f770e = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: searchffbb1039b5f499f4af2f598c9a8f770e.url(options),
-    method: 'get',
-})
-
-searchffbb1039b5f499f4af2f598c9a8f770e.definition = {
-    methods: ["get","head"],
-    url: '/api/public/wilayah/search',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\API\WilayahController::search
-* @see app/Http/Controllers/API/WilayahController.php:186
-* @route '/api/public/wilayah/search'
-*/
-searchffbb1039b5f499f4af2f598c9a8f770e.url = (options?: RouteQueryOptions) => {
-    return searchffbb1039b5f499f4af2f598c9a8f770e.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\API\WilayahController::search
-* @see app/Http/Controllers/API/WilayahController.php:186
-* @route '/api/public/wilayah/search'
-*/
-searchffbb1039b5f499f4af2f598c9a8f770e.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: searchffbb1039b5f499f4af2f598c9a8f770e.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\API\WilayahController::search
-* @see app/Http/Controllers/API/WilayahController.php:186
-* @route '/api/public/wilayah/search'
-*/
-searchffbb1039b5f499f4af2f598c9a8f770e.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: searchffbb1039b5f499f4af2f598c9a8f770e.url(options),
+villages.head = (args: { districtCode: string | number } | [districtCode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: villages.url(args, options),
     method: 'head',
 })
 
@@ -528,12 +234,12 @@ searchffbb1039b5f499f4af2f598c9a8f770e.head = (options?: RouteQueryOptions): Rou
 * @see app/Http/Controllers/API/WilayahController.php:186
 * @route '/api/wilayah/search'
 */
-const search1ddb6c368370b96f1a505dd5884ee6a7 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: search1ddb6c368370b96f1a505dd5884ee6a7.url(options),
+export const search = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: search.url(options),
     method: 'get',
 })
 
-search1ddb6c368370b96f1a505dd5884ee6a7.definition = {
+search.definition = {
     methods: ["get","head"],
     url: '/api/wilayah/search',
 } satisfies RouteDefinition<["get","head"]>
@@ -543,8 +249,8 @@ search1ddb6c368370b96f1a505dd5884ee6a7.definition = {
 * @see app/Http/Controllers/API/WilayahController.php:186
 * @route '/api/wilayah/search'
 */
-search1ddb6c368370b96f1a505dd5884ee6a7.url = (options?: RouteQueryOptions) => {
-    return search1ddb6c368370b96f1a505dd5884ee6a7.definition.url + queryParams(options)
+search.url = (options?: RouteQueryOptions) => {
+    return search.definition.url + queryParams(options)
 }
 
 /**
@@ -552,8 +258,8 @@ search1ddb6c368370b96f1a505dd5884ee6a7.url = (options?: RouteQueryOptions) => {
 * @see app/Http/Controllers/API/WilayahController.php:186
 * @route '/api/wilayah/search'
 */
-search1ddb6c368370b96f1a505dd5884ee6a7.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: search1ddb6c368370b96f1a505dd5884ee6a7.url(options),
+search.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: search.url(options),
     method: 'get',
 })
 
@@ -562,15 +268,10 @@ search1ddb6c368370b96f1a505dd5884ee6a7.get = (options?: RouteQueryOptions): Rout
 * @see app/Http/Controllers/API/WilayahController.php:186
 * @route '/api/wilayah/search'
 */
-search1ddb6c368370b96f1a505dd5884ee6a7.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: search1ddb6c368370b96f1a505dd5884ee6a7.url(options),
+search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: search.url(options),
     method: 'head',
 })
-
-export const search = {
-    '/api/public/wilayah/search': searchffbb1039b5f499f4af2f598c9a8f770e,
-    '/api/wilayah/search': search1ddb6c368370b96f1a505dd5884ee6a7,
-}
 
 /**
 * @see \App\Http\Controllers\API\WilayahController::allVillages

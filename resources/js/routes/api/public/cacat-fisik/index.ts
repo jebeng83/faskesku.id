@@ -1,8 +1,8 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\API\ReferenceController::index
-* @see app/Http/Controllers/API/ReferenceController.php:30
-* @route '/api/suku-bangsa'
+* @see app/Http/Controllers/API/ReferenceController.php:66
+* @route '/api/cacat-fisik'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
@@ -11,13 +11,13 @@ export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 index.definition = {
     methods: ["get","head"],
-    url: '/api/suku-bangsa',
+    url: '/api/cacat-fisik',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\API\ReferenceController::index
-* @see app/Http/Controllers/API/ReferenceController.php:30
-* @route '/api/suku-bangsa'
+* @see app/Http/Controllers/API/ReferenceController.php:66
+* @route '/api/cacat-fisik'
 */
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
@@ -25,8 +25,8 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\ReferenceController::index
-* @see app/Http/Controllers/API/ReferenceController.php:30
-* @route '/api/suku-bangsa'
+* @see app/Http/Controllers/API/ReferenceController.php:66
+* @route '/api/cacat-fisik'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
@@ -35,16 +35,16 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\API\ReferenceController::index
-* @see app/Http/Controllers/API/ReferenceController.php:30
-* @route '/api/suku-bangsa'
+* @see app/Http/Controllers/API/ReferenceController.php:66
+* @route '/api/cacat-fisik'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
 })
 
-const sukuBangsa = {
+const cacatFisik = {
     index: Object.assign(index, index),
 }
 
-export default sukuBangsa
+export default cacatFisik

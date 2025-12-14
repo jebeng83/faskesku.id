@@ -103,10 +103,9 @@ export default function WilayahSearchableSelect({
 					return;
 			}
 
-			const response = await window.axios.get(url, {
-                headers: { Accept: "application/json" },
-            });
-            if (response.data && response.data.success) {
+			const response = await window.axios.get(url);
+
+			if (response.data && response.data.success) {
                 const data = response.data.data.map((item) => ({
                     value: item.code,
                     label: item.name,

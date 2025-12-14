@@ -1,8 +1,8 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\API\ReferenceController::index
-* @see app/Http/Controllers/API/ReferenceController.php:48
-* @route '/api/bahasa-pasien'
+* @see app/Http/Controllers/API/ReferenceController.php:30
+* @route '/api/suku-bangsa'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
@@ -11,13 +11,13 @@ export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 index.definition = {
     methods: ["get","head"],
-    url: '/api/bahasa-pasien',
+    url: '/api/suku-bangsa',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\API\ReferenceController::index
-* @see app/Http/Controllers/API/ReferenceController.php:48
-* @route '/api/bahasa-pasien'
+* @see app/Http/Controllers/API/ReferenceController.php:30
+* @route '/api/suku-bangsa'
 */
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
@@ -25,8 +25,8 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\ReferenceController::index
-* @see app/Http/Controllers/API/ReferenceController.php:48
-* @route '/api/bahasa-pasien'
+* @see app/Http/Controllers/API/ReferenceController.php:30
+* @route '/api/suku-bangsa'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
@@ -35,16 +35,16 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\API\ReferenceController::index
-* @see app/Http/Controllers/API/ReferenceController.php:48
-* @route '/api/bahasa-pasien'
+* @see app/Http/Controllers/API/ReferenceController.php:30
+* @route '/api/suku-bangsa'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
 })
 
-const bahasaPasien = {
+const sukuBangsa = {
     index: Object.assign(index, index),
 }
 
-export default bahasaPasien
+export default sukuBangsa
