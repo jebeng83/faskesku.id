@@ -1413,9 +1413,201 @@ export default function Registration({
                                             </div>
                                         </motion.div>
 
-                                        {/* BPJS Kepesertaan - tampil di atas form registrasi */}
+                                        {/* Form Registrasi */}
+                                        <motion.form
+                                            onSubmit={handleSubmitRegister}
+                                            className="space-y-3"
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            {/* Row 1: 2 Columns (Dokter, Poli) */}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                {/* Dokter */}
+                                                <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: 0.2 }}>
+                                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Dokter *</label>
+                                                    <select
+                                                        name="kd_dokter"
+                                                        value={formData.kd_dokter}
+                                                        onChange={handleFormChange}
+                                                        required
+                                                        className="w-full px-2.5 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                                    >
+                                                        <option value="">Pilih Dokter</option>
+                                                        {dokters?.map((dokter) => (
+                                                            <option key={dokter.kd_dokter} value={dokter.kd_dokter}>
+                                                                {dokter.nm_dokter}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </motion.div>
+
+                                                {/* Poliklinik */}
+                                                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: 0.25 }}>
+                                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Poliklinik *</label>
+                                                    <select
+                                                        name="kd_poli"
+                                                        value={formData.kd_poli}
+                                                        onChange={handleFormChange}
+                                                        required
+                                                        className="w-full px-2.5 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                                    >
+                                                        <option value="">Pilih Poliklinik</option>
+                                                        {polikliniks?.map((poli) => (
+                                                            <option key={poli.kd_poli} value={poli.kd_poli}>
+                                                                {poli.nm_poli}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </motion.div>
+                                            </div>
+
+                                            {/* Status Poli dan Biaya Registrasi - Compact Inline */}
+                                            {formData.kd_poli && (
+                                                <motion.div
+                                                    className="flex flex-wrap items-center gap-x-6 gap-y-2 px-3 py-2 bg-blue-50/50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800/50"
+                                                    initial={{ opacity: 0, height: 0 }}
+                                                    animate={{ opacity: 1, height: 'auto' }}
+                                                    transition={{ duration: 0.2 }}
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Status Poli:</span>
+                                                        <span
+                                                            className={`px-2 py-0.5 rounded text-xs font-bold border ${
+                                                                poliStatus.status_poli === "Lama"
+                                                                    ? "bg-orange-50 border-orange-200 text-orange-700 dark:bg-orange-900/30 dark:border-orange-700 dark:text-orange-300"
+                                                                    : "bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/30 dark:border-emerald-700 dark:text-emerald-300"
+                                                            }`}
+                                                        >
+                                                            {poliStatus.status_poli}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Biaya:</span>
+                                                        <span className="text-sm font-bold text-gray-900 dark:text-white">
+                                                            Rp {poliStatus.biaya_reg?.toLocaleString("id-ID") || "0"}
+                                                        </span>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+
+                                            {/* Row 2: 3 Columns (Hubungan, Nama PJ, Cara Bayar) */}
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                                {/* Hubungan Penanggung Jawab */}
+                                                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: 0.35 }}>
+                                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Hubungan *</label>
+                                                    <select
+                                                        name="hubunganpj"
+                                                        value={formData.hubunganpj}
+                                                        onChange={handleFormChange}
+                                                        required
+                                                        className="w-full px-2.5 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                                    >
+                                                        <option value="DIRI SENDIRI">Diri Sendiri</option>
+                                                        <option value="AYAH">Ayah</option>
+                                                        <option value="IBU">Ibu</option>
+                                                        <option value="ISTRI">Istri</option>
+                                                        <option value="SUAMI">Suami</option>
+                                                        <option value="SAUDARA">Saudara</option>
+                                                        <option value="ANAK">Anak</option>
+                                                        <option value="LAIN-LAIN">Lain-lain</option>
+                                                    </select>
+                                                </motion.div>
+
+                                                {/* Nama Penanggung Jawab */}
+                                                <div>
+                                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Penanggung Jawab *</label>
+                                                    <input
+                                                        type="text"
+                                                        name="p_jawab"
+                                                        value={formData.p_jawab}
+                                                        onChange={handleFormChange}
+                                                        required
+                                                        className="w-full px-2.5 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                                    />
+                                                </div>
+
+                                                {/* Cara Bayar */}
+                                                <div>
+                                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Cara Bayar *</label>
+                                                    <div className="flex items-center gap-2">
+                                                        <select
+                                                            name="kd_pj"
+                                                            value={formData.kd_pj}
+                                                            onChange={handleFormChange}
+                                                            required
+                                                            className="flex-1 w-full px-2.5 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                                        >
+                                                            <option value="">Pilih Cara Bayar</option>
+                                                            {penjabsList?.map((penjab) => (
+                                                                <option key={penjab.kd_pj} value={penjab.kd_pj}>
+                                                                    {penjab.png_jawab}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                        <button
+                                                            type="button"
+                                                            onClick={openPenjabCreate}
+                                                            className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-black text-white hover:bg-gray-800 transition-colors shadow-sm"
+                                                            title="Tambah Cara Bayar Baru"
+                                                        >
+                                                            <span className="text-lg leading-none mb-0.5">+</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Alamat Penanggung Jawab - Full Width */}
+                                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, delay: 0.4 }}>
+                                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Alamat Penanggung Jawab *</label>
+                                                <textarea
+                                                    name="almt_pj"
+                                                    value={formData.almt_pj}
+                                                    onChange={handleFormChange}
+                                                    required
+                                                    rows={3}
+                                                    className="w-full px-2.5 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200 resize-y"
+                                                />
+                                            </motion.div>
+
+                                            
+
+                                            <motion.div
+                                                className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4"
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ duration: 0.2, delay: 0.1 }}
+                                            >
+                                                <motion.button
+                                                    type="button"
+                                                    onClick={resetForm}
+                                                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                                                    whileHover={{ scale: 1.02 }}
+                                                    whileTap={{ scale: 0.98 }}
+                                                >
+                                                    Batal
+                                                </motion.button>
+                                                <motion.button
+                                                    type="submit"
+                                                    disabled={isSubmitting}
+                                                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-black hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                                    whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
+                                                    whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
+                                                >
+                                                    {isSubmitting && (
+                                                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                    )}
+                                                    {isSubmitting ? "Menyimpan..." : "Simpan Registrasi"}
+                                                </motion.button>
+                                            </motion.div>
+                                        </motion.form>
+
+                                        {/* BPJS Kepesertaan - tampil di bawah form registrasi */}
                                         <motion.div
-                                            className="mb-4"
+                                            className="mt-4 mb-4"
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.3, delay: 0.1 }}
@@ -1443,6 +1635,7 @@ export default function Registration({
                                                             className="w-40 rounded-md border border-slate-300 px-2 py-1 text-sm"
                                                         />
                                                         <button
+                                                            type="button"
                                                             onClick={() => fetchBpjsByNik()}
                                                             disabled={bpjsLoading}
                                                             className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-white shadow ${bpjsLoading ? "bg-emerald-400" : "bg-emerald-600 hover:bg-emerald-700"}`}
@@ -1455,6 +1648,7 @@ export default function Registration({
                                                             {bpjsLoading ? "Mencari…" : "Cari"}
                                                         </button>
                                                         <button
+                                                            type="button"
                                                             onClick={() => {
                                                                 setBpjsNik(sanitizeNik(selectedPatient?.no_ktp || ""));
                                                                 setBpjsError(null);
@@ -1507,6 +1701,7 @@ export default function Registration({
                                                                 <span>{bpjsData.response?.noKartu || "-"}</span>
                                                                 {bpjsData.response?.noKartu && (
                                                                     <button
+                                                                        type="button"
                                                                         onClick={async () => {
                                                                             try {
                                                                                 await navigator.clipboard.writeText(bpjsData.response.noKartu);
@@ -1554,196 +1749,6 @@ export default function Registration({
                                                 )}
                                             </div>
                                         </motion.div>
-
-                                        {/* Form Registrasi */}
-                                        <motion.form
-                                            onSubmit={handleSubmitRegister}
-                                            className="space-y-3 lg:space-y-4"
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ duration: 0.3 }}
-                                        >
-                                            <motion.div
-                                                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4"
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                transition={{ duration: 0.2, delay: 0.1 }}
-                                            >
-                                                {/* Dokter */}
-                                                <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: 0.2 }}>
-                                                    <label className="block text-xs lg:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Dokter *</label>
-                                                    <select
-                                                        name="kd_dokter"
-                                                        value={formData.kd_dokter}
-                                                        onChange={handleFormChange}
-                                                        required
-                                                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
-                                                    >
-                                                        <option value="">Pilih Dokter</option>
-                                                        {dokters?.map((dokter) => (
-                                                            <option key={dokter.kd_dokter} value={dokter.kd_dokter}>
-                                                                {dokter.nm_dokter}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                </motion.div>
-
-                                                {/* Poliklinik */}
-                                                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: 0.25 }}>
-                                                    <label className="block text-xs lg:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Poliklinik *</label>
-                                                    <select
-                                                        name="kd_poli"
-                                                        value={formData.kd_poli}
-                                                        onChange={handleFormChange}
-                                                        required
-                                                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
-                                                    >
-                                                        <option value="">Pilih Poliklinik</option>
-                                                        {polikliniks?.map((poli) => (
-                                                            <option key={poli.kd_poli} value={poli.kd_poli}>
-                                                                {poli.nm_poli}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                </motion.div>
-
-                                                {/* Penanggung Jawab */}
-                                                <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: 0.3 }}>
-                                                    <label className="block text-xs lg:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Penanggung Jawab *</label>
-                                                    <div className="flex items-center gap-2">
-                                                        <select
-                                                            name="kd_pj"
-                                                            value={formData.kd_pj}
-                                                            onChange={handleFormChange}
-                                                            required
-                                                            className="flex-1 w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
-                                                        >
-                                                            <option value="">Pilih Penanggung Jawab</option>
-                                                            {penjabsList?.map((penjab) => (
-                                                                <option key={penjab.kd_pj} value={penjab.kd_pj}>
-                                                                    {penjab.png_jawab}
-                                                                </option>
-                                                            ))}
-                                                        </select>
-                                                        <button
-                                                            type="button"
-                                                            onClick={openPenjabCreate}
-                                                            className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md bg-black text-white hover:bg-gray-800"
-                                                        >
-                                                           +
-                                                        </button>
-                                                    </div>
-                                                </motion.div>
-
-                                                {/* Hubungan Penanggung Jawab */}
-                                                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: 0.35 }}>
-                                                    <label className="block text-xs lg:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hubungan *</label>
-                                                    <select
-                                                        name="hubunganpj"
-                                                        value={formData.hubunganpj}
-                                                        onChange={handleFormChange}
-                                                        required
-                                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                    >
-                                                        <option value="DIRI SENDIRI">Diri Sendiri</option>
-                                                        <option value="AYAH">Ayah</option>
-                                                        <option value="IBU">Ibu</option>
-                                                        <option value="ISTRI">Istri</option>
-                                                        <option value="SUAMI">Suami</option>
-                                                        <option value="SAUDARA">Saudara</option>
-                                                        <option value="ANAK">Anak</option>
-                                                        <option value="LAIN-LAIN">Lain-lain</option>
-                                                    </select>
-                                                </motion.div>
-                                            </motion.div>
-
-                                            {/* Status Poli dan Biaya Registrasi */}
-                                            {formData.kd_poli && (
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status Poli</label>
-                                                        <div
-                                                            className={`px-3 py-2 rounded-lg border ${
-                                                                poliStatus.status_poli === "Lama"
-                                                                    ? "bg-orange-50 border-orange-200 text-orange-800 dark:bg-orange-900/20 dark:border-orange-700 dark:text-orange-300"
-                                                                    : "bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-700 dark:text-green-300"
-                                                            }`}
-                                                        >
-                                                            {poliStatus.status_poli}
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Biaya Registrasi</label>
-                                                        <div className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white">
-                                                            Rp {poliStatus.biaya_reg?.toLocaleString("id-ID") || "0"}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Nama & Alamat Penanggung Jawab - single row 1:3 */}
-                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 lg:gap-4 items-start">
-                                                {/* Nama Penanggung Jawab */}
-                                                <div className="md:col-span-1">
-                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Penanggung Jawab *</label>
-                                                    <input
-                                                        type="text"
-                                                        name="p_jawab"
-                                                        value={formData.p_jawab}
-                                                        onChange={handleFormChange}
-                                                        required
-                                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                    />
-                                                </div>
-
-                                                {/* Alamat Penanggung Jawab */}
-                                                <div className="md:col-span-3">
-                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Alamat Penanggung Jawab *</label>
-                                                    <textarea
-                                                        name="almt_pj"
-                                                        value={formData.almt_pj}
-                                                        onChange={handleFormChange}
-                                                        required
-                                                        rows={3}
-                                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            
-
-                                            <motion.div
-                                                className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4"
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ duration: 0.2, delay: 0.1 }}
-                                            >
-                                                <motion.button
-                                                    type="button"
-                                                    onClick={resetForm}
-                                                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                                                    whileHover={{ scale: 1.02 }}
-                                                    whileTap={{ scale: 0.98 }}
-                                                >
-                                                    Batal
-                                                </motion.button>
-                                                <motion.button
-                                                    type="submit"
-                                                    disabled={isSubmitting}
-                                                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-black hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                                    whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
-                                                    whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
-                                                >
-                                                    {isSubmitting && (
-                                                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                        </svg>
-                                                    )}
-                                                    {isSubmitting ? "Menyimpan..." : "Simpan Registrasi"}
-                                                </motion.button>
-                                            </motion.div>
-                                        </motion.form>
                                     </div>
                                 )}
                             </div>
@@ -2537,231 +2542,7 @@ export default function Registration({
                                     </div>
                                 </motion.div>
 
-                                {/* BPJS Kepesertaan - tampil di atas form registrasi */}
-                                <motion.div
-                                    className="mb-4"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.3, delay: 0.2 }}
-                                >
-                                    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                                        <div className="flex items-start justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <IdentificationIcon className="h-5 w-5 text-slate-500" />
-                                                <div>
-                                                    <div className="text-sm font-semibold text-slate-800">
-                                                        Kepesertaan BPJS
-                                                    </div>
-                                                    <div className="text-xs text-slate-500">
-                                                        Cek otomatis berdasarkan
-                                                        NIK pasien
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <input
-                                                    type="text"
-                                                    inputMode="numeric"
-                                                    value={bpjsNik}
-                                                    onChange={(e) =>
-                                                        setBpjsNik(
-                                                            sanitizeNik(
-                                                                e.target.value
-                                                            )
-                                                        )
-                                                    }
-                                                    placeholder="Masukkan NIK"
-                                                    className="w-40 rounded-md border border-slate-300 px-2 py-1 text-sm"
-                                                />
-                                                <button
-                                                    onClick={() =>
-                                                        fetchBpjsByNik()
-                                                    }
-                                                    disabled={bpjsLoading}
-                                                    className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-white shadow ${
-                                                        bpjsLoading
-                                                            ? "bg-emerald-400"
-                                                            : "bg-emerald-600 hover:bg-emerald-700"
-                                                    }`}
-                                                >
-                                                    {bpjsLoading ? (
-                                                        <ArrowPathIcon className="h-4 w-4 animate-spin" />
-                                                    ) : (
-                                                        <MagnifyingGlassIcon className="h-4 w-4" />
-                                                    )}
-                                                    {bpjsLoading
-                                                        ? "Mencari…"
-                                                        : "Cari"}
-                                                </button>
-                                                <button
-                                                    onClick={() => {
-                                                        setBpjsNik(
-                                                            sanitizeNik(
-                                                                selectedPatient?.no_ktp ||
-                                                                    ""
-                                                            )
-                                                        );
-                                                        setBpjsError(null);
-                                                        setBpjsData(null);
-                                                    }}
-                                                    className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-50"
-                                                >
-                                                    Reset
-                                                </button>
-                                            </div>
-                                        </div>
 
-                                        {/* Status */}
-                                        <div className="mt-2 flex items-center gap-2">
-                                            {bpjsLoading ? (
-                                                <>
-                                                    <ArrowPathIcon className="h-4 w-4 animate-spin text-emerald-600" />
-                                                    <span className="text-slate-700 text-sm">
-                                                        Memuat…
-                                                    </span>
-                                                </>
-                                            ) : bpjsError ? (
-                                                <>
-                                                    <ExclamationTriangleIcon className="h-4 w-4 text-red-600" />
-                                                    <span className="text-red-700 text-sm">
-                                                        {bpjsError}
-                                                    </span>
-                                                </>
-                                            ) : bpjsData?.response ? (
-                                                <>
-                                                    <CheckCircleIcon className="h-4 w-4 text-emerald-600" />
-                                                    <span className="text-slate-700 text-sm">
-                                                        {bpjsData?.metaData
-                                                            ?.message || "OK"}
-                                                    </span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <IdentificationIcon className="h-4 w-4 text-slate-500" />
-                                                    <span className="text-slate-600 text-sm">
-                                                        Siap mencari
-                                                    </span>
-                                                </>
-                                            )}
-                                        </div>
-
-                                        {/* Hasil singkat */}
-                                        {bpjsData?.response && (
-                                            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                                <div className="rounded-lg border border-slate-200 p-3">
-                                                    <div className="text-xs text-slate-500">
-                                                        Nama Peserta
-                                                    </div>
-                                                    <div className="mt-1 flex items-center gap-2 text-sm text-slate-800">
-                                                        <span>
-                                                            {bpjsData.response
-                                                                ?.nama || "-"}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className="rounded-lg border border-slate-200 p-3">
-                                                    <div className="text-xs text-slate-500">
-                                                        No. Kartu
-                                                    </div>
-                                                    <div className="mt-1 flex items-center gap-2 text-sm text-slate-800">
-                                                        <span>
-                                                            {bpjsData.response
-                                                                ?.noKartu ||
-                                                                "-"}
-                                                        </span>
-                                                        {bpjsData.response
-                                                            ?.noKartu && (
-                                                            <button
-                                                                onClick={async () => {
-                                                                    try {
-                                                                        await navigator.clipboard.writeText(
-                                                                            bpjsData
-                                                                                .response
-                                                                                .noKartu
-                                                                        );
-                                                                    } catch (_) {}
-                                                                }}
-                                                                className="ml-1 rounded p-1 text-slate-400 hover:text-slate-600"
-                                                                title="Salin No. Kartu"
-                                                            >
-                                                                <ClipboardDocumentCheckIcon className="h-4 w-4" />
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <div className="rounded-lg border border-slate-200 p-3">
-                                                    <div className="text-xs text-slate-500">
-                                                        Status
-                                                    </div>
-                                                    <div className="mt-1 text-sm">
-                                                        {bpjsData.response
-                                                            ?.aktif ? (
-                                                            <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
-                                                                AKTIF
-                                                            </span>
-                                                        ) : (
-                                                            <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
-                                                                TIDAK AKTIF
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <div className="rounded-lg border border-slate-200 p-3">
-                                                    <div className="text-xs text-slate-500">
-                                                        NIK
-                                                    </div>
-                                                    <div className="mt-1 text-sm text-slate-800">
-                                                        {bpjsData.response
-                                                            ?.noKTP || "-"}
-                                                    </div>
-                                                </div>
-                                                <div className="rounded-lg border border-slate-200 p-3">
-                                                    <div className="text-xs text-slate-500">
-                                                        Provider FKTP
-                                                    </div>
-                                                    <div className="mt-1 text-sm text-slate-800">
-                                                        {bpjsData.response
-                                                            ?.kdProviderPst
-                                                            ?.nmProvider || "-"}
-                                                    </div>
-                                                </div>
-                                                <div className="rounded-lg border border-slate-200 p-3">
-                                                    <div className="text-xs text-slate-500">
-                                                        Kelas
-                                                    </div>
-                                                    <div className="mt-1 text-sm text-slate-800">
-                                                        {bpjsData.response
-                                                            ?.jnsKelas?.nama ||
-                                                            bpjsData.response
-                                                                ?.jnsKelas
-                                                                ?.kode ||
-                                                            "-"}
-                                                    </div>
-                                                </div>
-                                                <div className="rounded-lg border border-slate-200 p-3">
-                                                    <div className="text-xs text-slate-500">
-                                                        Mulai Aktif
-                                                    </div>
-                                                    <div className="mt-1 text-sm text-slate-800">
-                                                        {bpjsData.response
-                                                            ?.tglMulaiAktif ||
-                                                            "-"}
-                                                    </div>
-                                                </div>
-                                                <div className="rounded-lg border border-slate-200 p-3">
-                                                    <div className="text-xs text-slate-500">
-                                                        Akhir Berlaku
-                                                    </div>
-                                                    <div className="mt-1 text-sm text-slate-800">
-                                                        {bpjsData.response
-                                                            ?.tglAkhirBerlaku ||
-                                                            "-"}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </motion.div>
 
                                 <motion.form
                                     onSubmit={handleSubmitRegister}
