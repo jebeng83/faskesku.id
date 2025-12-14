@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('perpustakaan_bayar_denda')) {
+        if (! Schema::hasTable('perpustakaan_bayar_denda')) {
             Schema::create('perpustakaan_bayar_denda', function (Blueprint $table) {
                 $table->date('tgl_denda')->default('0000-00-00');
                 $table->string('no_anggota', 10)->default('')->index('no_anggota');

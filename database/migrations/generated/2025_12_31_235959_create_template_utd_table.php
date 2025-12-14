@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('template_utd')) {
+        if (! Schema::hasTable('template_utd')) {
             Schema::create('template_utd', function (Blueprint $table) {
                 $table->string('kd_jenis_prw', 15)->nullable()->index('kd_jenis_prw');
                 $table->integer('id_template', true);

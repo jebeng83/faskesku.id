@@ -15,13 +15,12 @@ class PenilaianAwalKeperawatanIgdMasalahTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('penilaian_awal_keperawatan_igd_masalah')->insert(array (
-          0 => 
-          array (
-            'no_rawat' => '2025/06/30/000003',
-            'kode_masalah' => '001',
-          ),
-        ));
+        DB::table('penilaian_awal_keperawatan_igd_masalah')->insert([
+            0 => [
+                'no_rawat' => '2025/06/30/000003',
+                'kode_masalah' => '001',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

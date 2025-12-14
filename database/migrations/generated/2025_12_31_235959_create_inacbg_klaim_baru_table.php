@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('inacbg_klaim_baru')) {
+        if (! Schema::hasTable('inacbg_klaim_baru')) {
             Schema::create('inacbg_klaim_baru', function (Blueprint $table) {
                 $table->string('no_sep', 40)->default('')->primary();
                 $table->string('patient_id', 30)->nullable();

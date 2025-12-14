@@ -15,12 +15,11 @@ class AntriradiologiTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('antriradiologi')->insert(array (
-          0 => 
-          array (
-            'status' => '0',
-          ),
-        ));
+        DB::table('antriradiologi')->insert([
+            0 => [
+                'status' => '0',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

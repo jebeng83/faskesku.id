@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('tokopembelian')) {
+        if (! Schema::hasTable('tokopembelian')) {
             Schema::create('tokopembelian', function (Blueprint $table) {
                 $table->string('no_faktur', 20)->primary();
                 $table->char('kode_suplier', 5)->index('kode_suplier');

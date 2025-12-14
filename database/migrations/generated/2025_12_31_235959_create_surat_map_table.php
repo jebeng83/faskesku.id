@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('surat_map')) {
+        if (! Schema::hasTable('surat_map')) {
             Schema::create('surat_map', function (Blueprint $table) {
                 $table->string('kd', 5)->primary();
                 $table->string('map', 50);

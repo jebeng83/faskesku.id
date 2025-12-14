@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('inacbg_data_terkirim2')) {
+        if (! Schema::hasTable('inacbg_data_terkirim2')) {
             Schema::create('inacbg_data_terkirim2', function (Blueprint $table) {
                 $table->string('no_sep', 40)->primary();
                 $table->string('nik', 30)->nullable();

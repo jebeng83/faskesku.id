@@ -15,38 +15,33 @@ class TrackerTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('tracker')->insert(array (
-          0 => 
-          array (
-            'nip' => '123124',
-            'tgl_login' => '2025-08-14',
-            'jam_login' => '15:42:52',
-          ),
-          1 => 
-          array (
-            'nip' => 'Admin Utama',
-            'tgl_login' => '2025-08-14',
-            'jam_login' => '15:38:32',
-          ),
-          2 => 
-          array (
-            'nip' => 'Admin Utama',
-            'tgl_login' => '2025-08-14',
-            'jam_login' => '15:42:06',
-          ),
-          3 => 
-          array (
-            'nip' => 'Admin Utama',
-            'tgl_login' => '2025-08-14',
-            'jam_login' => '15:43:17',
-          ),
-          4 => 
-          array (
-            'nip' => 'D0000004',
-            'tgl_login' => '2025-08-14',
-            'jam_login' => '15:43:27',
-          ),
-        ));
+        DB::table('tracker')->insert([
+            0 => [
+                'nip' => '123124',
+                'tgl_login' => '2025-08-14',
+                'jam_login' => '15:42:52',
+            ],
+            1 => [
+                'nip' => 'Admin Utama',
+                'tgl_login' => '2025-08-14',
+                'jam_login' => '15:38:32',
+            ],
+            2 => [
+                'nip' => 'Admin Utama',
+                'tgl_login' => '2025-08-14',
+                'jam_login' => '15:42:06',
+            ],
+            3 => [
+                'nip' => 'Admin Utama',
+                'tgl_login' => '2025-08-14',
+                'jam_login' => '15:43:17',
+            ],
+            4 => [
+                'nip' => 'D0000004',
+                'tgl_login' => '2025-08-14',
+                'jam_login' => '15:43:27',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

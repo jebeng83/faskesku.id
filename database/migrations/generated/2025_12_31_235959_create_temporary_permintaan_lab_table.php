@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('temporary_permintaan_lab')) {
+        if (! Schema::hasTable('temporary_permintaan_lab')) {
             Schema::create('temporary_permintaan_lab', function (Blueprint $table) {
                 $table->integer('no')->index('no');
                 $table->string('temp1', 1000);

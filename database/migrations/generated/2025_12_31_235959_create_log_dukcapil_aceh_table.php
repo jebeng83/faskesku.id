@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('log_dukcapil_aceh')) {
+        if (! Schema::hasTable('log_dukcapil_aceh')) {
             Schema::create('log_dukcapil_aceh', function (Blueprint $table) {
                 $table->string('no_ktp', 20);
                 $table->dateTime('tanggal');

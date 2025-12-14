@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('referensi_mobilejkn_bpjs_taskid')) {
+        if (! Schema::hasTable('referensi_mobilejkn_bpjs_taskid')) {
             Schema::create('referensi_mobilejkn_bpjs_taskid', function (Blueprint $table) {
                 $table->string('no_rawat', 17);
                 $table->enum('taskid', ['1', '2', '3', '4', '5', '6', '7', '99']);

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('patients')) {
+        if (! Schema::hasTable('patients')) {
             Schema::create('patients', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->string('no_rm')->unique()->comment('Nomor Rekam Medis');

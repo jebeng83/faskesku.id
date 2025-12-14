@@ -9,11 +9,11 @@ use App\Models\Poliklinik;
 use App\Models\RegPeriksa;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
 
 class RegistrationController extends Controller
@@ -185,7 +185,10 @@ class RegistrationController extends Controller
                     }
                 } finally {
                     if ($acquired) {
-                        try { $lock->release(); } catch (\Throwable $e) {}
+                        try {
+                            $lock->release();
+                        } catch (\Throwable $e) {
+                        }
                     }
                 }
             }
@@ -232,7 +235,7 @@ class RegistrationController extends Controller
             ->orderBy('tgl_registrasi', 'desc')
             ->orderBy('jam_reg', 'desc')
             ->first();
-            
+
         $hasRegistered = $lastRegistration ? true : false;
 
         // Get polyclinic data for biaya registrasi
@@ -350,7 +353,7 @@ class RegistrationController extends Controller
 
         // Debug: Log sample data untuk memastikan field stts ada
         if ($registrations->count() > 0) {
-            \Log::info('RegistrationController::getRegistrations - Sample data', [
+            Log::info('RegistrationController::getRegistrations - Sample data', [
                 'total' => $registrations->total(),
                 'sample_no_rawat' => $registrations->first()->no_rawat ?? null,
                 'sample_stts' => $registrations->first()->stts ?? null,
@@ -529,12 +532,18 @@ class RegistrationController extends Controller
                     }
 
                     if (is_string($logoBlob) && ! empty($logoBlob)) {
-                        // Detect MIME type
-                        $mime = 'image/png'; // default
-                        if (function_exists('finfo_open')) {
-                            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-                            $mime = finfo_buffer($finfo, $logoBlob) ?: 'image/png';
-                            finfo_close($finfo);
+                        $mime = 'image/png';
+                        if (function_exists('getimagesizefromstring')) {
+                            $info = @getimagesizefromstring($logoBlob);
+                            if (is_array($info) && isset($info['mime']) && is_string($info['mime']) && $info['mime'] !== '') {
+                                $mime = $info['mime'];
+                            }
+                        } elseif (class_exists(\finfo::class)) {
+                            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+                            $detected = $finfo->buffer($logoBlob);
+                            if (is_string($detected) && $detected !== '') {
+                                $mime = $detected;
+                            }
                         }
 
                         $logoBase64 = 'data:'.$mime.';base64,'.base64_encode($logoBlob);

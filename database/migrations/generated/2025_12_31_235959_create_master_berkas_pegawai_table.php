@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('master_berkas_pegawai')) {
+        if (! Schema::hasTable('master_berkas_pegawai')) {
             Schema::create('master_berkas_pegawai', function (Blueprint $table) {
                 $table->string('kode', 10)->primary();
                 $table->enum('kategori', ['Tenaga klinis Dokter Umum', 'Tenaga klinis Dokter Spesialis', 'Tenaga klinis Perawat dan Bidan', 'Tenaga klinis Profesi Lain', 'Tenaga Non Klinis']);

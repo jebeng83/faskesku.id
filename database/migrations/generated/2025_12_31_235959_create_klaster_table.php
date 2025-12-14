@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('klaster')) {
+        if (! Schema::hasTable('klaster')) {
             Schema::create('klaster', function (Blueprint $table) {
                 $table->char('kd_klaster', 3)->primary();
                 $table->string('nm_klaster', 20)->nullable();

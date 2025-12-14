@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('set_tarif_online')) {
+        if (! Schema::hasTable('set_tarif_online')) {
             Schema::create('set_tarif_online', function (Blueprint $table) {
                 $table->string('kd_jenis_prw', 15)->primary();
             });

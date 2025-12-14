@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('indekref')) {
+        if (! Schema::hasTable('indekref')) {
             Schema::create('indekref', function (Blueprint $table) {
                 $table->char('kdindex', 4)->index('kdindex');
                 $table->double('n')->index('n');

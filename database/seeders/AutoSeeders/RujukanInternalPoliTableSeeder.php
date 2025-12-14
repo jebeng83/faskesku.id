@@ -15,26 +15,23 @@ class RujukanInternalPoliTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('rujukan_internal_poli')->insert(array (
-          0 => 
-          array (
-            'no_rawat' => '2025/05/26/000003',
-            'kd_dokter' => 'D0000003',
-            'kd_poli' => 'U0002',
-          ),
-          1 => 
-          array (
-            'no_rawat' => '2025/08/13/000001',
-            'kd_dokter' => 'D0000003',
-            'kd_poli' => 'U0007',
-          ),
-          2 => 
-          array (
-            'no_rawat' => '2025/06/23/000001',
-            'kd_dokter' => 'D0000003',
-            'kd_poli' => 'U0012',
-          ),
-        ));
+        DB::table('rujukan_internal_poli')->insert([
+            0 => [
+                'no_rawat' => '2025/05/26/000003',
+                'kd_dokter' => 'D0000003',
+                'kd_poli' => 'U0002',
+            ],
+            1 => [
+                'no_rawat' => '2025/08/13/000001',
+                'kd_dokter' => 'D0000003',
+                'kd_poli' => 'U0007',
+            ],
+            2 => [
+                'no_rawat' => '2025/06/23/000001',
+                'kd_dokter' => 'D0000003',
+                'kd_poli' => 'U0012',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

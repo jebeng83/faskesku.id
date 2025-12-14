@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('set_urut_no_rkm_medis')) {
+        if (! Schema::hasTable('set_urut_no_rkm_medis')) {
             Schema::create('set_urut_no_rkm_medis', function (Blueprint $table) {
                 $table->enum('urutan', ['Straight', 'Middle', 'Terminal'])->primary();
                 $table->enum('tahun', ['Yes', 'No']);

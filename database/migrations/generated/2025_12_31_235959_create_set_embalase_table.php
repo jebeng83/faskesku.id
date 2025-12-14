@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('set_embalase')) {
+        if (! Schema::hasTable('set_embalase')) {
             Schema::create('set_embalase', function (Blueprint $table) {
                 $table->double('embalase_per_obat');
                 $table->double('tuslah_per_obat')->nullable();

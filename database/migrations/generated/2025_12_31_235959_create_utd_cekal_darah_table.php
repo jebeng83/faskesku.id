@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('utd_cekal_darah')) {
+        if (! Schema::hasTable('utd_cekal_darah')) {
             Schema::create('utd_cekal_darah', function (Blueprint $table) {
                 $table->string('no_donor', 15)->primary();
                 $table->date('tanggal')->nullable();

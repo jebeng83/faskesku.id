@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('trackersql')) {
+        if (! Schema::hasTable('trackersql')) {
             Schema::create('trackersql', function (Blueprint $table) {
                 $table->dateTime('tanggal');
                 $table->text('sqle');

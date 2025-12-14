@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('ipsrs_titip_faktur')) {
+        if (! Schema::hasTable('ipsrs_titip_faktur')) {
             Schema::create('ipsrs_titip_faktur', function (Blueprint $table) {
                 $table->string('no_tagihan', 20)->primary();
                 $table->date('tanggal')->nullable();

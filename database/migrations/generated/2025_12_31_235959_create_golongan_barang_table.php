@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('golongan_barang')) {
+        if (! Schema::hasTable('golongan_barang')) {
             Schema::create('golongan_barang', function (Blueprint $table) {
                 $table->char('kode', 4)->primary();
                 $table->string('nama', 30)->nullable();

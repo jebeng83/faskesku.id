@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('pengkajian_restrain_yang_menyetujui')) {
+        if (! Schema::hasTable('pengkajian_restrain_yang_menyetujui')) {
             Schema::create('pengkajian_restrain_yang_menyetujui', function (Blueprint $table) {
                 $table->string('no_rawat', 17)->primary();
                 $table->string('photo', 500)->nullable();

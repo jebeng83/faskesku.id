@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('bpjs')) {
+        if (! Schema::hasTable('bpjs')) {
             Schema::create('bpjs', function (Blueprint $table) {
                 $table->char('stts', 5)->primary();
                 $table->double('biaya');

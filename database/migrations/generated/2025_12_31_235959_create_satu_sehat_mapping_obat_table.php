@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('satu_sehat_mapping_obat')) {
+        if (! Schema::hasTable('satu_sehat_mapping_obat')) {
             Schema::create('satu_sehat_mapping_obat', function (Blueprint $table) {
                 $table->string('kode_brng', 15)->primary();
                 $table->string('obat_code', 15)->nullable();

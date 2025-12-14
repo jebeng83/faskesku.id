@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('audit_fasilitas_apd')) {
+        if (! Schema::hasTable('audit_fasilitas_apd')) {
             Schema::create('audit_fasilitas_apd', function (Blueprint $table) {
                 $table->dateTime('tanggal');
                 $table->string('id_ruang', 5)->index('id_ruang');

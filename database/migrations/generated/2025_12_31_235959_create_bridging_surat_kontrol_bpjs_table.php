@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('bridging_surat_kontrol_bpjs')) {
+        if (! Schema::hasTable('bridging_surat_kontrol_bpjs')) {
             Schema::create('bridging_surat_kontrol_bpjs', function (Blueprint $table) {
                 $table->string('no_sep', 40)->nullable()->index('bridging_surat_kontrol_bpjs_ibfk_1');
                 $table->date('tgl_surat');

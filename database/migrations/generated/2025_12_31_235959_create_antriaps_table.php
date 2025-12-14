@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('antriaps')) {
+        if (! Schema::hasTable('antriaps')) {
             Schema::create('antriaps', function (Blueprint $table) {
                 $table->string('no_pernyataan', 20)->nullable();
                 $table->string('no_rawat', 17);

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('set_jgtambah')) {
+        if (! Schema::hasTable('set_jgtambah')) {
             Schema::create('set_jgtambah', function (Blueprint $table) {
                 $table->double('tnj');
                 $table->string('pendidikan', 80)->primary();

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('set_input_parsial')) {
+        if (! Schema::hasTable('set_input_parsial')) {
             Schema::create('set_input_parsial', function (Blueprint $table) {
                 $table->char('kd_pj', 3)->primary();
             });

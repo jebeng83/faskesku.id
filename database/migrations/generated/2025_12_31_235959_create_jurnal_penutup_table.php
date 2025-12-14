@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('jurnal_penutup')) {
+        if (! Schema::hasTable('jurnal_penutup')) {
             Schema::create('jurnal_penutup', function (Blueprint $table) {
                 $table->string('no_jurnal', 30)->primary();
                 $table->enum('period', ['year', 'month', 'day']);

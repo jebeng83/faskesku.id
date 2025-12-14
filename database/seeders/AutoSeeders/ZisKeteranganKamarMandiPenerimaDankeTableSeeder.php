@@ -15,7 +15,7 @@ class ZisKeteranganKamarMandiPenerimaDankeTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        
+
         Schema::enableForeignKeyConstraints();
     }
 }

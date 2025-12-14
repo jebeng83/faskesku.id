@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('perpustakaan_set_peminjaman')) {
+        if (! Schema::hasTable('perpustakaan_set_peminjaman')) {
             Schema::create('perpustakaan_set_peminjaman', function (Blueprint $table) {
                 $table->integer('max_pinjam')->nullable();
                 $table->integer('lama_pinjam')->nullable();

@@ -19,11 +19,10 @@ class SeedAllTablesSeeder extends Seeder
                 ->filter(fn ($n) => Str::endsWith($n, 'TableSeeder.php'))
                 ->values();
             foreach ($files as $filename) {
-                $class = 'Database\\Seeders\\AutoSeeders\\' . Str::replaceLast('.php', '', $filename);
+                $class = 'Database\\Seeders\\AutoSeeders\\'.Str::replaceLast('.php', '', $filename);
                 $this->call([$class]);
             }
         }
         Schema::enableForeignKeyConstraints();
     }
 }
-

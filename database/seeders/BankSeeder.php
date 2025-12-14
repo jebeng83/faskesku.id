@@ -23,4 +23,3 @@ class BankSeeder extends Seeder
         }
     }
 }
-

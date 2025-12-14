@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('catatan_perawatan')) {
+        if (! Schema::hasTable('catatan_perawatan')) {
             Schema::create('catatan_perawatan', function (Blueprint $table) {
                 $table->date('tanggal')->nullable();
                 $table->time('jam')->nullable();

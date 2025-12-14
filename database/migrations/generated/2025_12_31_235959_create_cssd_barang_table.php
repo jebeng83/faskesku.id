@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('cssd_barang')) {
+        if (! Schema::hasTable('cssd_barang')) {
             Schema::create('cssd_barang', function (Blueprint $table) {
                 $table->string('no_inventaris', 30)->primary();
                 $table->enum('jenis_barang', ['Heacting Set', 'Partus Set', 'Set Bedah', 'Set Minor', 'Set SC', 'Set Kuret', 'Set Hernia', 'Set THT', 'Set APP', 'Set Histerektomi', 'Set Tonsil', 'Set Mata', 'Set Pheco', 'Set Bedah Mulut', 'Set Othopedi Minor', 'Set Bor Orthopedi', 'Set Vaskuler', 'Set Hemoroid', 'Set Duk', 'Set Instrumen Satuan', 'Selang', '-'])->nullable();

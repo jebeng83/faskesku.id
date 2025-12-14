@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('setoran_bank')) {
+        if (! Schema::hasTable('setoran_bank')) {
             Schema::create('setoran_bank', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->date('tgl_setor');

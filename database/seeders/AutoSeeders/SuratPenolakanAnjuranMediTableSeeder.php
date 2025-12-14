@@ -15,24 +15,23 @@ class SuratPenolakanAnjuranMediTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('surat_penolakan_anjuran_medis')->insert(array (
-          0 => 
-          array (
-            'no_surat' => 'PAM20250729001',
-            'no_rawat' => '2025/07/29/000001',
-            'tanggal' => '2025-07-29 14:24:39',
-            'hubungan' => 'Suami',
-            'nama_pj' => '-',
-            'umur_pj' => '-',
-            'no_ktppj' => '-',
-            'jkpj' => 'L',
-            'no_telp' => '-',
-            'kode_penolakan' => '003',
-            'alasan_penolakan' => '-',
-            'informasi_risiko_penolakan' => '-',
-            'nik' => 'D0000003',
-          ),
-        ));
+        DB::table('surat_penolakan_anjuran_medis')->insert([
+            0 => [
+                'no_surat' => 'PAM20250729001',
+                'no_rawat' => '2025/07/29/000001',
+                'tanggal' => '2025-07-29 14:24:39',
+                'hubungan' => 'Suami',
+                'nama_pj' => '-',
+                'umur_pj' => '-',
+                'no_ktppj' => '-',
+                'jkpj' => 'L',
+                'no_telp' => '-',
+                'kode_penolakan' => '003',
+                'alasan_penolakan' => '-',
+                'informasi_risiko_penolakan' => '-',
+                'nik' => 'D0000003',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

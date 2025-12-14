@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('pcare_rujuk_internal')) {
+        if (! Schema::hasTable('pcare_rujuk_internal')) {
             Schema::create('pcare_rujuk_internal', function (Blueprint $table) {
                 $table->string('no_rawat', 17)->primary();
                 $table->string('noKunjungan', 40)->nullable();

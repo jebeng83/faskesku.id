@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('konver_sat')) {
+        if (! Schema::hasTable('konver_sat')) {
             Schema::create('konver_sat', function (Blueprint $table) {
                 $table->double('nilai')->index('nilai');
                 $table->char('kode_sat', 4)->default('')->index('kode_sat');

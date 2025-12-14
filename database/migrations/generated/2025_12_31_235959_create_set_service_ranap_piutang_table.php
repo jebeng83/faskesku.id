@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('set_service_ranap_piutang')) {
+        if (! Schema::hasTable('set_service_ranap_piutang')) {
             Schema::create('set_service_ranap_piutang', function (Blueprint $table) {
                 $table->string('nama_service', 100)->default('')->primary();
                 $table->double('besar')->nullable();

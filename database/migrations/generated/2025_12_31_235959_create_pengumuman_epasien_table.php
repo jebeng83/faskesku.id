@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('pengumuman_epasien')) {
+        if (! Schema::hasTable('pengumuman_epasien')) {
             Schema::create('pengumuman_epasien', function (Blueprint $table) {
                 $table->string('nik', 20);
                 $table->dateTime('tanggal');

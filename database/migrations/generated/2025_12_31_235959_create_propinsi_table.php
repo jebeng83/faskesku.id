@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('propinsi')) {
+        if (! Schema::hasTable('propinsi')) {
             Schema::create('propinsi', function (Blueprint $table) {
                 $table->integer('kd_prop', true);
                 $table->string('nm_prop', 30)->unique('nm_prop');

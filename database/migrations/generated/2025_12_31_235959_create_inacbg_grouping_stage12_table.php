@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('inacbg_grouping_stage12')) {
+        if (! Schema::hasTable('inacbg_grouping_stage12')) {
             Schema::create('inacbg_grouping_stage12', function (Blueprint $table) {
                 $table->string('no_sep', 40)->primary();
                 $table->string('code_cbg', 10)->nullable();

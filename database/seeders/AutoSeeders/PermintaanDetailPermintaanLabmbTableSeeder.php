@@ -15,22 +15,20 @@ class PermintaanDetailPermintaanLabmbTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('permintaan_detail_permintaan_labmb')->insert(array (
-          0 => 
-          array (
-            'noorder' => 'MB202508050001',
-            'kd_jenis_prw' => 'J000108',
-            'id_template' => 3262,
-            'stts_bayar' => 'Belum',
-          ),
-          1 => 
-          array (
-            'noorder' => 'MB202508050002',
-            'kd_jenis_prw' => 'J000108',
-            'id_template' => 3262,
-            'stts_bayar' => 'Belum',
-          ),
-        ));
+        DB::table('permintaan_detail_permintaan_labmb')->insert([
+            0 => [
+                'noorder' => 'MB202508050001',
+                'kd_jenis_prw' => 'J000108',
+                'id_template' => 3262,
+                'stts_bayar' => 'Belum',
+            ],
+            1 => [
+                'noorder' => 'MB202508050002',
+                'kd_jenis_prw' => 'J000108',
+                'id_template' => 3262,
+                'stts_bayar' => 'Belum',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

@@ -15,44 +15,38 @@ class ResikoKerjaTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('resiko_kerja')->insert(array (
-          0 => 
-          array (
-            'kode_resiko' => '-',
-            'nama_resiko' => '-',
-            'indek' => 0,
-          ),
-          1 => 
-          array (
-            'kode_resiko' => 'I',
-            'nama_resiko' => 'GRADE I ( KEUANGAN,SDI,PHD,REKAM MEDIS)',
-            'indek' => 3,
-          ),
-          2 => 
-          array (
-            'kode_resiko' => 'II',
-            'nama_resiko' => 'GRADE II( Gizi, Unit Jenazah, Farmasi,ips,loundry,sopir)',
-            'indek' => 5,
-          ),
-          3 => 
-          array (
-            'kode_resiko' => 'III',
-            'nama_resiko' => 'GRADE II( Gizi, Unit Jenazah, Farmasi,ips,loundry,sopir)',
-            'indek' => 7,
-          ),
-          4 => 
-          array (
-            'kode_resiko' => 'IV',
-            'nama_resiko' => 'GRADE IV( IGD,IKO,VK,HCU,PERINATOLOGI)',
-            'indek' => 9,
-          ),
-          5 => 
-          array (
-            'kode_resiko' => 'SB',
-            'nama_resiko' => 'SANGAT BERESIKO',
-            'indek' => 10,
-          ),
-        ));
+        DB::table('resiko_kerja')->insert([
+            0 => [
+                'kode_resiko' => '-',
+                'nama_resiko' => '-',
+                'indek' => 0,
+            ],
+            1 => [
+                'kode_resiko' => 'I',
+                'nama_resiko' => 'GRADE I ( KEUANGAN,SDI,PHD,REKAM MEDIS)',
+                'indek' => 3,
+            ],
+            2 => [
+                'kode_resiko' => 'II',
+                'nama_resiko' => 'GRADE II( Gizi, Unit Jenazah, Farmasi,ips,loundry,sopir)',
+                'indek' => 5,
+            ],
+            3 => [
+                'kode_resiko' => 'III',
+                'nama_resiko' => 'GRADE II( Gizi, Unit Jenazah, Farmasi,ips,loundry,sopir)',
+                'indek' => 7,
+            ],
+            4 => [
+                'kode_resiko' => 'IV',
+                'nama_resiko' => 'GRADE IV( IGD,IKO,VK,HCU,PERINATOLOGI)',
+                'indek' => 9,
+            ],
+            5 => [
+                'kode_resiko' => 'SB',
+                'nama_resiko' => 'SANGAT BERESIKO',
+                'indek' => 10,
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

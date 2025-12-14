@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('toko_bayar_pemesanan')) {
+        if (! Schema::hasTable('toko_bayar_pemesanan')) {
             Schema::create('toko_bayar_pemesanan', function (Blueprint $table) {
                 $table->date('tgl_bayar')->nullable()->index('tgl_bayar');
                 $table->string('no_faktur', 20)->nullable()->index('no_faktur');

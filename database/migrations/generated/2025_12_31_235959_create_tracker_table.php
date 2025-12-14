@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('tracker')) {
+        if (! Schema::hasTable('tracker')) {
             Schema::create('tracker', function (Blueprint $table) {
                 $table->string('nip', 20);
                 $table->date('tgl_login');

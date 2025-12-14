@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('returbeli')) {
+        if (! Schema::hasTable('returbeli')) {
             Schema::create('returbeli', function (Blueprint $table) {
                 $table->string('no_retur_beli', 20)->primary();
                 $table->date('tgl_retur')->nullable();

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('bridging_resep_apotek_bpjs_racikan')) {
+        if (! Schema::hasTable('bridging_resep_apotek_bpjs_racikan')) {
             Schema::create('bridging_resep_apotek_bpjs_racikan', function (Blueprint $table) {
                 $table->string('no_sep_apotek', 40)->index('no_sep_apotek');
                 $table->string('nomor_racik', 3)->nullable();

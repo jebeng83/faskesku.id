@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('set_resume')) {
+        if (! Schema::hasTable('set_resume')) {
             Schema::create('set_resume', function (Blueprint $table) {
                 $table->year('tahun');
                 $table->tinyInteger('bulan');

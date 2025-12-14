@@ -15,13 +15,12 @@ class AdminTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('admin')->insert(array (
-          0 => 
-          array (
-            'usere' => 'q½YÄ™\'â•É…£Å¸Êe',
-            'passworde' => 'Ç§\\§' . "\0" . 'ôgÈº®c²WÛ„',
-          ),
-        ));
+        DB::table('admin')->insert([
+            0 => [
+                'usere' => 'q½YÄ™\'â•É…£Å¸Êe',
+                'passworde' => 'Ç§\\§'."\0".'ôgÈº®c²WÛ„',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

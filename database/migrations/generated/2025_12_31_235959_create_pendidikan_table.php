@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('pendidikan')) {
+        if (! Schema::hasTable('pendidikan')) {
             Schema::create('pendidikan', function (Blueprint $table) {
                 $table->string('tingkat', 80)->primary();
                 $table->tinyInteger('indek');

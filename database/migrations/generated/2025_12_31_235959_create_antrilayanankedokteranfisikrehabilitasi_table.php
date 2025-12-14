@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('antrilayanankedokteranfisikrehabilitasi')) {
+        if (! Schema::hasTable('antrilayanankedokteranfisikrehabilitasi')) {
             Schema::create('antrilayanankedokteranfisikrehabilitasi', function (Blueprint $table) {
                 $table->string('no_rawat', 17);
             });

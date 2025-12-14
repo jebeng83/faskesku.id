@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('set_modal_payment')) {
+        if (! Schema::hasTable('set_modal_payment')) {
             Schema::create('set_modal_payment', function (Blueprint $table) {
                 $table->double('modal_awal')->nullable();
             });

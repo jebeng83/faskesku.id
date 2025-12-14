@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('data_triase_igdprimer')) {
+        if (! Schema::hasTable('data_triase_igdprimer')) {
             Schema::create('data_triase_igdprimer', function (Blueprint $table) {
                 $table->string('no_rawat', 17)->primary();
                 $table->string('keluhan_utama', 400);

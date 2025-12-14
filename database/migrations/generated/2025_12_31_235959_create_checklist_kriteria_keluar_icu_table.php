@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('checklist_kriteria_keluar_icu')) {
+        if (! Schema::hasTable('checklist_kriteria_keluar_icu')) {
             Schema::create('checklist_kriteria_keluar_icu', function (Blueprint $table) {
                 $table->string('no_rawat', 17);
                 $table->dateTime('tanggal');

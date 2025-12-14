@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('booking_mcu_perusahaan')) {
+        if (! Schema::hasTable('booking_mcu_perusahaan')) {
             Schema::create('booking_mcu_perusahaan', function (Blueprint $table) {
                 $table->date('tanggal_booking')->nullable();
                 $table->time('jam_booking')->nullable();

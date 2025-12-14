@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('riwayat_lab')) {
+        if (! Schema::hasTable('riwayat_lab')) {
             Schema::create('riwayat_lab', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->string('no_rawat', 17);

@@ -10,7 +10,9 @@ use App\Models\RawatJlPr;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class NotaJalanController extends Controller
@@ -83,7 +85,7 @@ class NotaJalanController extends Controller
                 ->pluck('no_nota')
                 ->toArray();
 
-            \Log::info("NotaJalanController: Existing notas untuk tanggal {$date->toDateString()}", [
+            Log::info("NotaJalanController: Existing notas untuk tanggal {$date->toDateString()}", [
                 'prefix' => $prefix,
                 'existing_notas' => $existingNotas,
                 'count' => count($existingNotas),
@@ -113,9 +115,9 @@ class NotaJalanController extends Controller
             if (! empty($existingSuffixes)) {
                 $maxSuffix = max($existingSuffixes);
                 $newSuffix = $maxSuffix + 1;
-                \Log::info("NotaJalanController: Max suffix ditemukan: {$maxSuffix}, next suffix: {$newSuffix}");
+                Log::info("NotaJalanController: Max suffix ditemukan: {$maxSuffix}, next suffix: {$newSuffix}");
             } else {
-                \Log::info("NotaJalanController: Tidak ada nota sebelumnya, mulai dari suffix: {$newSuffix}");
+                Log::info("NotaJalanController: Tidak ada nota sebelumnya, mulai dari suffix: {$newSuffix}");
             }
 
             // Pastikan nomor belum digunakan (untuk menghindari race condition)
@@ -126,7 +128,7 @@ class NotaJalanController extends Controller
 
             // Validasi panjang: pastikan tidak melebihi 17 karakter
             if (strlen($noNota) > 17) {
-                \Log::error("NotaJalanController: no_nota terlalu panjang: {$noNota} (length: ".strlen($noNota).')');
+                Log::error("NotaJalanController: no_nota terlalu panjang: {$noNota} (length: ".strlen($noNota).')');
                 throw new \Exception("no_nota terlalu panjang: {$noNota}. Maksimal 17 karakter.");
             }
 
@@ -142,7 +144,7 @@ class NotaJalanController extends Controller
                     throw new \Exception("no_nota terlalu panjang setelah increment: {$noNota}");
                 }
                 $attempt++;
-                \Log::warning("NotaJalanController: no_nota {$noNota} sudah ada, coba suffix berikutnya: {$newSuffix}");
+                Log::warning("NotaJalanController: no_nota {$noNota} sudah ada, coba suffix berikutnya: {$newSuffix}");
             }
 
             if ($attempt >= $maxAttempts) {
@@ -155,7 +157,7 @@ class NotaJalanController extends Controller
                 ->exists();
 
             if ($finalCheck) {
-                \Log::warning("NotaJalanController: no_nota {$noNota} masih ada di database setelah generate, akan increment");
+                Log::warning("NotaJalanController: no_nota {$noNota} masih ada di database setelah generate, akan increment");
                 // Increment lagi jika masih ada
                 $newSuffix += 1;
                 $suffix = str_pad((string) $newSuffix, 4, '0', STR_PAD_LEFT);
@@ -184,7 +186,7 @@ class NotaJalanController extends Controller
                 }
             }
 
-            \Log::info("NotaJalanController: Final no_nota yang akan digunakan: {$noNota} (suffix: {$newSuffix})");
+            Log::info("NotaJalanController: Final no_nota yang akan digunakan: {$noNota} (suffix: {$newSuffix})");
 
             // Insert nota_jalan dengan retry mechanism untuk menghindari duplicate
             $maxRetries = 5;
@@ -199,7 +201,7 @@ class NotaJalanController extends Controller
                     ->exists();
 
                 if ($existsCheck) {
-                    \Log::warning("no_nota sudah ada sebelum insert: {$noNota}, akan generate nomor baru");
+                    Log::warning("no_nota sudah ada sebelum insert: {$noNota}, akan generate nomor baru");
                     $retryCount++;
                     if ($retryCount < $maxRetries) {
                         // Ambil ulang semua no_nota yang ada dengan logika yang sama
@@ -269,7 +271,7 @@ class NotaJalanController extends Controller
                             }
                         }
 
-                        \Log::info("Retry generate no_nota baru: {$noNota} (suffix: {$currentSuffix})");
+                        Log::info("Retry generate no_nota baru: {$noNota} (suffix: {$currentSuffix})");
 
                         continue; // Lanjut ke iterasi berikutnya
                     } else {
@@ -285,12 +287,12 @@ class NotaJalanController extends Controller
                         'jam' => $time,
                     ]);
                     $inserted = true;
-                    \Log::info("Berhasil insert nota_jalan: {$noNota} untuk no_rawat: {$noRawat}");
+                    Log::info("Berhasil insert nota_jalan: {$noNota} untuk no_rawat: {$noRawat}");
                 } catch (\Illuminate\Database\QueryException $e) {
                     // Jika error duplicate entry, coba generate nomor baru
                     if ($e->getCode() == 23000 && strpos($e->getMessage(), 'Duplicate entry') !== false) {
                         $retryCount++;
-                        \Log::warning("Duplicate entry untuk no_nota: {$noNota}, retry ke-{$retryCount}");
+                        Log::warning("Duplicate entry untuk no_nota: {$noNota}, retry ke-{$retryCount}");
 
                         if ($retryCount < $maxRetries) {
                             // Ambil ulang semua no_nota yang ada dengan lock untuk mendapatkan nomor yang benar-benar belum digunakan
@@ -360,9 +362,9 @@ class NotaJalanController extends Controller
                                 }
                             }
 
-                            \Log::info("Exception retry generate no_nota: {$noNota} (suffix: {$currentSuffix})");
+                            Log::info("Exception retry generate no_nota: {$noNota} (suffix: {$currentSuffix})");
                         } else {
-                            \Log::error("Gagal insert nota_jalan setelah {$maxRetries} kali retry", [
+                            Log::error("Gagal insert nota_jalan setelah {$maxRetries} kali retry", [
                                 'no_rawat' => $noRawat,
                                 'last_no_nota' => $noNota,
                                 'error' => $e->getMessage(),
@@ -402,7 +404,7 @@ class NotaJalanController extends Controller
                             ->where('no_rawat', $noRawat)
                             ->update($updateData);
 
-                        \Log::info("NotaJalanController: Updated reg_periksa untuk no_rawat {$noRawat}", [
+                        Log::info("NotaJalanController: Updated reg_periksa untuk no_rawat {$noRawat}", [
                             'updates' => $updateData,
                             'no_nota' => $noNota,
                         ]);
@@ -410,7 +412,7 @@ class NotaJalanController extends Controller
                 }
             } catch (\Throwable $e) {
                 // Log error tapi jangan gagalkan pembuatan nota
-                \Log::warning('Gagal update reg_periksa setelah nota_jalan dibuat: '.$e->getMessage(), [
+                Log::warning('Gagal update reg_periksa setelah nota_jalan dibuat: '.$e->getMessage(), [
                     'no_rawat' => $noRawat,
                     'no_nota' => $noNota,
                 ]);
@@ -420,11 +422,11 @@ class NotaJalanController extends Controller
             try {
                 \App\Http\Controllers\Akutansi\TagihanSadewaController::createFromNota(
                     $noNota,
-                    auth()->user()?->name ?? 'System'
+                    Auth::user()?->name ?? 'System'
                 );
             } catch (\Throwable $e) {
                 // Log error tapi jangan gagalkan pembuatan nota
-                \Log::warning('Gagal membuat tagihan_sadewa otomatis: '.$e->getMessage());
+                Log::warning('Gagal membuat tagihan_sadewa otomatis: '.$e->getMessage());
             }
 
             return response()->json(['no_nota' => $noNota], 201);
@@ -454,7 +456,7 @@ class NotaJalanController extends Controller
             }
         } catch (\Throwable $e) {
             // Lanjutkan, tetapi catat error
-            \Log::warning('Gagal cek nota_jalan exists: '.$e->getMessage());
+            Log::warning('Gagal cek nota_jalan exists: '.$e->getMessage());
         }
 
         $items = $request->input('items', []);
@@ -604,7 +606,7 @@ class NotaJalanController extends Controller
             // Skip jika sudah ada item dengan kombinasi no + status yang sama
             if (isset($seenKeys[$uniqueKey])) {
                 // Log lebih detail untuk debugging perbedaan total
-                \Log::warning('Item duplikat diabaikan di snapshot billing', [
+                Log::warning('Item duplikat diabaikan di snapshot billing', [
                     'no' => $it['no'] ?? null,
                     'status' => $it['status'] ?? null,
                     'no_rawat' => $noRawat,
@@ -767,12 +769,15 @@ class NotaJalanController extends Controller
                     $mimeType = 'image/gif';
                 } elseif (substr($firstBytes, 0, 4) === 'RIFF' && substr($firstBytes, 8, 4) === 'WEBP') {
                     $mimeType = 'image/webp';
-                } elseif (function_exists('finfo_open')) {
-                    // Gunakan finfo jika tersedia
-                    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-                    $detectedMime = finfo_buffer($finfo, $logoBlob);
-                    finfo_close($finfo);
-                    if ($detectedMime && strpos($detectedMime, 'image/') === 0) {
+                } elseif (function_exists('getimagesizefromstring')) {
+                    $info = @getimagesizefromstring($logoBlob);
+                    if (is_array($info) && isset($info['mime']) && is_string($info['mime']) && $info['mime'] !== '' && strpos($info['mime'], 'image/') === 0) {
+                        $mimeType = $info['mime'];
+                    }
+                } elseif (class_exists(\finfo::class)) {
+                    $finfo = new \finfo(FILEINFO_MIME_TYPE);
+                    $detectedMime = $finfo->buffer($logoBlob);
+                    if (is_string($detectedMime) && $detectedMime !== '' && strpos($detectedMime, 'image/') === 0) {
                         $mimeType = $detectedMime;
                     }
                 }
@@ -814,14 +819,14 @@ class NotaJalanController extends Controller
      */
     public function pdf(string $no_rawat)
     {
-        \Log::info('NotaJalanController::pdf called', [
+        Log::info('NotaJalanController::pdf called', [
             'no_rawat_param' => $no_rawat,
         ]);
 
         // Decode no_rawat jika ada encoding
         $noRawat = urldecode($no_rawat);
 
-        \Log::info('NotaJalanController::pdf decoded', [
+        Log::info('NotaJalanController::pdf decoded', [
             'no_rawat_decoded' => $noRawat,
         ]);
 
@@ -945,11 +950,15 @@ class NotaJalanController extends Controller
                     $mimeType = 'image/gif';
                 } elseif (substr($firstBytes, 0, 4) === 'RIFF' && substr($firstBytes, 8, 4) === 'WEBP') {
                     $mimeType = 'image/webp';
-                } elseif (function_exists('finfo_open')) {
-                    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-                    $detectedMime = finfo_buffer($finfo, $logoBlob);
-                    finfo_close($finfo);
-                    if ($detectedMime && strpos($detectedMime, 'image/') === 0) {
+                } elseif (function_exists('getimagesizefromstring')) {
+                    $info = @getimagesizefromstring($logoBlob);
+                    if (is_array($info) && isset($info['mime']) && is_string($info['mime']) && $info['mime'] !== '' && strpos($info['mime'], 'image/') === 0) {
+                        $mimeType = $info['mime'];
+                    }
+                } elseif (class_exists(\finfo::class)) {
+                    $finfo = new \finfo(FILEINFO_MIME_TYPE);
+                    $detectedMime = $finfo->buffer($logoBlob);
+                    if (is_string($detectedMime) && $detectedMime !== '' && strpos($detectedMime, 'image/') === 0) {
                         $mimeType = $detectedMime;
                     }
                 }

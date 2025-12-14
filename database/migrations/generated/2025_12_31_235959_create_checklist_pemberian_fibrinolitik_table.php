@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('checklist_pemberian_fibrinolitik')) {
+        if (! Schema::hasTable('checklist_pemberian_fibrinolitik')) {
             Schema::create('checklist_pemberian_fibrinolitik', function (Blueprint $table) {
                 $table->string('no_rawat', 17)->primary();
                 $table->dateTime('tanggal');

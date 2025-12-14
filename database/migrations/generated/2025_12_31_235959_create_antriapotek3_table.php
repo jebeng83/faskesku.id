@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('antriapotek3')) {
+        if (! Schema::hasTable('antriapotek3')) {
             Schema::create('antriapotek3', function (Blueprint $table) {
                 $table->string('no_resep', 14)->nullable();
                 $table->enum('status', ['0', '1'])->nullable();

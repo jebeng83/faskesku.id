@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('setting_bridging_bpjs')) {
+        if (! Schema::hasTable('setting_bridging_bpjs')) {
             Schema::create('setting_bridging_bpjs', function (Blueprint $table) {
                 $table->string('user_pcare', 20);
                 $table->string('pass_pcare', 20);

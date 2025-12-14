@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('permintaan_resep_pulang')) {
+        if (! Schema::hasTable('permintaan_resep_pulang')) {
             Schema::create('permintaan_resep_pulang', function (Blueprint $table) {
                 $table->string('no_permintaan', 14)->default('')->primary();
                 $table->date('tgl_permintaan')->nullable();

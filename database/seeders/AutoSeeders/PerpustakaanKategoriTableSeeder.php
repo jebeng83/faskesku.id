@@ -15,23 +15,20 @@ class PerpustakaanKategoriTableSeeder extends Seeder
         Schema::enableForeignKeyConstraints();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('perpustakaan_kategori')->insert(array (
-          0 => 
-          array (
-            'id_kategori' => 'KK001',
-            'nama_kategori' => 'BUKU NOVEL',
-          ),
-          1 => 
-          array (
-            'id_kategori' => 'KK002',
-            'nama_kategori' => 'BUKU KOMIK',
-          ),
-          2 => 
-          array (
-            'id_kategori' => 'KK003',
-            'nama_kategori' => 'BUKU KEDOKTERAN',
-          ),
-        ));
+        DB::table('perpustakaan_kategori')->insert([
+            0 => [
+                'id_kategori' => 'KK001',
+                'nama_kategori' => 'BUKU NOVEL',
+            ],
+            1 => [
+                'id_kategori' => 'KK002',
+                'nama_kategori' => 'BUKU KOMIK',
+            ],
+            2 => [
+                'id_kategori' => 'KK003',
+                'nama_kategori' => 'BUKU KEDOKTERAN',
+            ],
+        ]);
         Schema::enableForeignKeyConstraints();
     }
 }

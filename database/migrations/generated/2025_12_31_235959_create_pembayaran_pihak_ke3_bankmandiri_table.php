@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('pembayaran_pihak_ke3_bankmandiri')) {
+        if (! Schema::hasTable('pembayaran_pihak_ke3_bankmandiri')) {
             Schema::create('pembayaran_pihak_ke3_bankmandiri', function (Blueprint $table) {
                 $table->string('nomor_pembayaran', 30)->primary();
                 $table->dateTime('tgl_pembayaran')->nullable();

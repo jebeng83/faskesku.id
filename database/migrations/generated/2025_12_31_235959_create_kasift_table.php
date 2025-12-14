@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('kasift')) {
+        if (! Schema::hasTable('kasift')) {
             Schema::create('kasift', function (Blueprint $table) {
                 $table->integer('id')->primary();
                 $table->bigInteger('jmlks')->index('jmlks');

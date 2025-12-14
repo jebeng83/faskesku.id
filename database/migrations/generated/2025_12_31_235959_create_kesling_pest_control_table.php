@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('kesling_pest_control')) {
+        if (! Schema::hasTable('kesling_pest_control')) {
             Schema::create('kesling_pest_control', function (Blueprint $table) {
                 $table->string('nip', 20);
                 $table->dateTime('tanggal');

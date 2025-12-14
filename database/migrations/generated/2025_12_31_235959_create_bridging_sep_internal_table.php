@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('bridging_sep_internal')) {
+        if (! Schema::hasTable('bridging_sep_internal')) {
             Schema::create('bridging_sep_internal', function (Blueprint $table) {
                 $table->string('no_sep', 40)->default('')->index('no_sep');
                 $table->string('no_rawat', 17)->nullable()->index('no_rawat');

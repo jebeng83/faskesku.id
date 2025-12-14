@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('stts_wp')) {
+        if (! Schema::hasTable('stts_wp')) {
             Schema::create('stts_wp', function (Blueprint $table) {
                 $table->char('stts', 5)->primary();
                 $table->string('ktg', 50);

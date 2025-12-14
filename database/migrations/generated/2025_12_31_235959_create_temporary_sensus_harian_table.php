@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('temporary_sensus_harian')) {
+        if (! Schema::hasTable('temporary_sensus_harian')) {
             Schema::create('temporary_sensus_harian', function (Blueprint $table) {
                 $table->integer('no', true);
                 $table->string('temp1', 1000);

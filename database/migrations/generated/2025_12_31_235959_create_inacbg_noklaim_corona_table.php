@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('inacbg_noklaim_corona')) {
+        if (! Schema::hasTable('inacbg_noklaim_corona')) {
             Schema::create('inacbg_noklaim_corona', function (Blueprint $table) {
                 $table->string('no_rawat', 17)->primary();
                 $table->string('no_klaim', 40)->nullable()->unique('no_klaim');

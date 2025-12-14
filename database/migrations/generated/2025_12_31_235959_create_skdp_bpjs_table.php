@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('skdp_bpjs')) {
+        if (! Schema::hasTable('skdp_bpjs')) {
             Schema::create('skdp_bpjs', function (Blueprint $table) {
                 $table->year('tahun');
                 $table->string('no_rkm_medis', 15)->nullable()->index('no_rkm_medis');

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('bridging_surat_pri_bpjs')) {
+        if (! Schema::hasTable('bridging_surat_pri_bpjs')) {
             Schema::create('bridging_surat_pri_bpjs', function (Blueprint $table) {
                 $table->string('no_rawat', 17)->nullable()->index('no_rawat');
                 $table->string('no_kartu', 25)->nullable();

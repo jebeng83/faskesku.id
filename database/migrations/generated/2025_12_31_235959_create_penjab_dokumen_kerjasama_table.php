@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('penjab_dokumen_kerjasama')) {
+        if (! Schema::hasTable('penjab_dokumen_kerjasama')) {
             Schema::create('penjab_dokumen_kerjasama', function (Blueprint $table) {
                 $table->char('kd_pj', 3)->primary();
                 $table->date('kerjasama_berakhir');

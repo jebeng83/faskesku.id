@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('tampjurnal')) {
+        if (! Schema::hasTable('tampjurnal')) {
             Schema::create('tampjurnal', function (Blueprint $table) {
                 $table->char('kd_rek', 15)->index('kd_rek');
                 $table->string('nm_rek', 100)->index('nm_rek');

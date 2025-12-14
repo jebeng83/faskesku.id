@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('jam_jaga')) {
+        if (! Schema::hasTable('jam_jaga')) {
             Schema::create('jam_jaga', function (Blueprint $table) {
                 $table->integer('no_id', true);
                 $table->char('dep_id', 4)->index('dep_id');
