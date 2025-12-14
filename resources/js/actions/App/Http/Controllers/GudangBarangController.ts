@@ -35,9 +35,4 @@ updateStok.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 const GudangBarangController = { updateStok }
 
-export default GudangBarangControllerod: 'post',
-})
-
-const GudangBarangController = { updateStok }
-
 export default GudangBarangController
