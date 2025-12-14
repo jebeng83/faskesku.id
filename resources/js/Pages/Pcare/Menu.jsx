@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import AppLayout from '@/Layouts/AppLayout';
+import SidebarBriding from '@/Layouts/SidebarBriding';
 
 // Pcare Menu Page
 // - 3 Tabs: Referensi Pcare, Mapping Pcare, Layanan Pcare
@@ -440,6 +440,33 @@ const cardsByTab = {
         </svg>
       )
     },
+    {
+      key: 'monitoringPcare',
+      title: 'Monitoring Pcare',
+      desc: 'Pantau pengiriman & kirim ulang',
+      href: '/pcare/monitoring',
+      gradient: 'from-sky-500 to-blue-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <rect x="3" y="4" width="18" height="12" rx="2" />
+          <path d="M5 12l3-3 3 3 4-5" />
+        </svg>
+      )
+    },
+    {
+      key: 'monitoringStatusPcare',
+      title: 'Monitoring Status Pcare',
+      desc: 'Pantau status 4 endpoint',
+      href: '/pcare/monitoring-status',
+      gradient: 'from-indigo-500 to-purple-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <rect x="3" y="4" width="18" height="12" rx="2" />
+          <path d="M6 10h6" />
+          <path d="M6 14h10" />
+        </svg>
+      )
+    },
   ],
 };
 
@@ -510,4 +537,4 @@ export default function PcareMenu() {
 }
 
 // Attach the application layout so this page renders inside the global sidebar/header
-PcareMenu.layout = (page) => <AppLayout title="Bridging Pcare" children={page} />;
+PcareMenu.layout = (page) => <SidebarBriding title="Briding Pcare" wide={true}>{page}</SidebarBriding>;

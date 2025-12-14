@@ -66,13 +66,14 @@ class PcareKunjunganController extends Controller
         } catch (\Throwable $e) {
         }
 
-        // Kirim ke PCare
+        $start = microtime(true);
         $result = $this->pcareRequest('POST', 'kunjungan/v1', [], $payload, [
             'Content-Type' => 'text/plain',
         ]);
 
         $response = $result['response'];
         $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+        $durationMs = (int) round((microtime(true) - $start) * 1000);
 
         // Upsert status ke DB bila tersedia nomor rawat dalam payload
         try {
@@ -114,6 +115,40 @@ class PcareKunjunganController extends Controller
         } catch (\Throwable $e) {
             Log::error('Gagal menyimpan data kunjungan ke DB', ['error' => $e->getMessage()]);
         }
+
+        try {
+            $noRawatLog = trim((string) ($payload['no_rawat'] ?? ''));
+            if (\Illuminate\Support\Facades\Schema::hasTable('pcare_bpjs_log') && $noRawatLog !== '') {
+                $meta = is_array($processed) ? ($processed['metaData'] ?? ($processed['metadata'] ?? [])) : [];
+                $metaCode = is_array($meta) ? (int) ($meta['code'] ?? 0) : null;
+                $metaMessage = is_array($meta) ? (string) ($meta['message'] ?? '') : null;
+                $statusLabel = $response->status() >= 200 && $response->status() < 300 ? 'success' : 'failed';
+                $reqPayload = $payload;
+                if (isset($reqPayload['noKartu'])) {
+                    $card = (string) $reqPayload['noKartu'];
+                    $reqPayload['noKartu_masked'] = substr($card, 0, 6).str_repeat('*', max(strlen($card) - 10, 0)).substr($card, -4);
+                    unset($reqPayload['noKartu']);
+                }
+                try {
+                    \Illuminate\Support\Facades\DB::table('pcare_bpjs_log')->insert([
+                        'no_rawat' => $noRawatLog,
+                        'endpoint' => 'kunjungan',
+                        'status' => $statusLabel,
+                        'http_status' => $response->status(),
+                        'meta_code' => $metaCode,
+                        'meta_message' => $metaMessage,
+                        'duration_ms' => $durationMs,
+                        'request_payload' => json_encode($reqPayload),
+                        'response_body_raw' => $response->body(),
+                        'response_body_json' => is_array($processed) ? json_encode($processed) : null,
+                        'triggered_by' => optional(auth()->user())->nik ?? (string) optional(auth()->user())->id ?? null,
+                        'correlation_id' => $request->header('X-BPJS-LOG-ID') ?: null,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                } catch (\Throwable $e) {}
+            }
+        } catch (\Throwable $e) {}
 
         // Kembalikan hasil sesuai HTTP status asli dari PCare
         if (is_array($processed)) {

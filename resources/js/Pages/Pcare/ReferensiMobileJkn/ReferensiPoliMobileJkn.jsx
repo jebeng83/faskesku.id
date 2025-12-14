@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import AppLayout from '@/Layouts/AppLayout';
+import SidebarBriding from '@/Layouts/SidebarBriding';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowPathIcon,
@@ -246,4 +246,4 @@ export default function ReferensiPoliMobileJkn() {
 }
 
 // Render dalam AppLayout
-ReferensiPoliMobileJkn.layout = (page) => <AppLayout title="Referensi Poli Mobile JKN" children={page} />;
+ReferensiPoliMobileJkn.layout = (page) => <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>;

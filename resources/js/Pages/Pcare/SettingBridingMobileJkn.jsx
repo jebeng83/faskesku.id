@@ -1,7 +1,7 @@
 import React from "react";
 import { Head, useForm, Link } from "@inertiajs/react";
 import { motion } from "framer-motion";
-import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
+import SidebarBriding from "@/Layouts/SidebarBriding";
 
 export default function SettingBridingMobileJkn({ setting, flash }) {
     // Animations
@@ -67,40 +67,39 @@ export default function SettingBridingMobileJkn({ setting, flash }) {
             <Head title="Setting Bridging Mobile JKN" />
             <div className="max-w-5xl mx-auto px-4 md:px-6 py-8">
                 {/* Header */}
-                <motion.div
-                    initial="hidden"
-                    animate="show"
-                    variants={fade}
-                    className="mb-6 flex items-center justify-between"
-                >
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-sky-600 text-white shadow">
-                            <svg
-                                viewBox="0 0 24 24"
-                                className="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.6"
-                            >
-                                <path d="M12 3l8 4-8 4-8-4 8-4z" />
-                                <path d="M4 7v6l8 4 8-4V7" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-semibold text-slate-800 tracking-tight">
-                                Setting Bridging Mobile JKN
-                            </h1>
-                            <p className="text-xs text-slate-500">
-                                Konfigurasi kredensial dan key untuk integrasi Mobile JKN.
-                            </p>
-                        </div>
-                    </div>
-                    <Link
-                        href={route("pcare.index")}
-                        className="text-xs inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-slate-700 hover:bg-slate-200 transition-colors"
+                <motion.div initial="hidden" animate="show" variants={fade} className="mb-6">
+                    <motion.div
+                        variants={fade}
+                        className="relative px-6 py-4 border-b border-gray-200/60 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 backdrop-blur-sm rounded-lg"
                     >
-                        ← Kembali ke Menu PCare
-                    </Link>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-sky-600 text-white shadow">
+                                    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.6">
+                                        <path d="M12 3l8 4-8 4-8-4 8-4z" />
+                                        <path d="M4 7v6l8 4 8-4V7" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <motion.h1
+                                        className="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ duration: 0.6, delay: 0.2 }}
+                                    >
+                                        Setting Bridging Mobile JKN
+                                    </motion.h1>
+                                    <p className="text-xs text-slate-600">Konfigurasi kredensial dan key untuk integrasi Mobile JKN.</p>
+                                </div>
+                            </div>
+                            <Link
+                                href={route("pcare.index")}
+                                className="text-xs inline-flex items-center rounded-full border border-slate-300 bg-white px-3 py-1.5 text-slate-700 hover:bg-slate-50"
+                            >
+                                ← Kembali ke Menu PCare
+                            </Link>
+                        </div>
+                    </motion.div>
                 </motion.div>
 
                 {/* Flash success */}
@@ -123,10 +122,7 @@ export default function SettingBridingMobileJkn({ setting, flash }) {
                     className="grid grid-cols-1 md:grid-cols-3 gap-5"
                 >
                     {/* Info card */}
-                    <motion.div
-                        variants={item}
-                        className="rounded-2xl border border-slate-200 bg-white/95 p-5 shadow-sm ring-1 ring-slate-200"
-                    >
+                    <motion.div variants={item} className="rounded-2xl bg-white/90 backdrop-blur-xl border border-white/20 p-5 shadow-xl shadow-blue-500/5">
                         <div className="flex items-center gap-2">
                             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-indigo-500 to-sky-600 text-white shadow">
                                 <svg
@@ -149,18 +145,14 @@ export default function SettingBridingMobileJkn({ setting, flash }) {
                     </motion.div>
 
                     {/* Form card */}
-                    <motion.form
-                        onSubmit={onSubmit}
-                        variants={item}
-                        className="md:col-span-2 space-y-5 rounded-2xl border border-slate-200 bg-white/95 p-6 shadow-sm ring-1 ring-slate-200"
-                    >
+                    <motion.form onSubmit={onSubmit} variants={item} className="md:col-span-2 space-y-5 rounded-2xl bg-white/90 backdrop-blur-xl border border-white/20 p-6 shadow-xl shadow-blue-500/5">
                         {/* Endpoint URLs */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="md:col-span-2">
                                 <label className="block text-sm font-medium text-slate-700">Base URL Mobile JKN</label>
                                 <input
                                     type="text"
-                                    className="mt-1 w-full rounded-lg border-slate-300 bg-white/90 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
+                                    className="mt-1 w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-600 shadow-sm"
                                     value={data.base_url_mobilejkn}
                                     onChange={(e) => setData("base_url_mobilejkn", e.target.value)}
                                     maxLength={200}
@@ -175,7 +167,7 @@ export default function SettingBridingMobileJkn({ setting, flash }) {
                                 <label className="block text-sm font-medium text-slate-700">Base URL v1 (opsional)</label>
                                 <input
                                     type="text"
-                                    className="mt-1 w-full rounded-lg border-slate-300 bg-white/90 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
+                                    className="mt-1 w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-600 shadow-sm"
                                     value={data.base_url_v1}
                                     onChange={(e) => setData("base_url_v1", e.target.value)}
                                     maxLength={200}
@@ -189,7 +181,7 @@ export default function SettingBridingMobileJkn({ setting, flash }) {
                                 <label className="block text-sm font-medium text-slate-700">Base URL v2 (opsional)</label>
                                 <input
                                     type="text"
-                                    className="mt-1 w-full rounded-lg border-slate-300 bg-white/90 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
+                                    className="mt-1 w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-600 shadow-sm"
                                     value={data.base_url_v2}
                                     onChange={(e) => setData("base_url_v2", e.target.value)}
                                     maxLength={200}
@@ -205,12 +197,13 @@ export default function SettingBridingMobileJkn({ setting, flash }) {
                             <label className="block text-sm font-medium text-slate-700">User Mobile JKN</label>
                             <input
                                 type="text"
-                                className="mt-1 w-full rounded-lg border-slate-300 bg-white/90 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
+                                className="mt-1 w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-600 shadow-sm"
                                 value={data.user_mobilejkn}
                                 onChange={(e) => setData("user_mobilejkn", e.target.value)}
                                 maxLength={20}
                                 placeholder="Username Mobile JKN"
                                 required
+                                autoComplete="off"
                             />
                             {errors.user_mobilejkn && (
                                 <p className="mt-1 text-xs text-red-600">{errors.user_mobilejkn}</p>
@@ -221,12 +214,13 @@ export default function SettingBridingMobileJkn({ setting, flash }) {
                             <label className="block text-sm font-medium text-slate-700">Password Mobile JKN</label>
                             <input
                                 type="password"
-                                className="mt-1 w-full rounded-lg border-slate-300 bg-white/90 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
+                                className="mt-1 w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-600 shadow-sm"
                                 value={data.pass_mobilejkn}
                                 onChange={(e) => setData("pass_mobilejkn", e.target.value)}
                                 maxLength={20}
                                 placeholder="Password Mobile JKN"
                                 required
+                                autoComplete="off"
                             />
                             {errors.pass_mobilejkn && (
                                 <p className="mt-1 text-xs text-red-600">{errors.pass_mobilejkn}</p>
@@ -238,12 +232,13 @@ export default function SettingBridingMobileJkn({ setting, flash }) {
                                 <label className="block text-sm font-medium text-slate-700">Cons ID Mobile JKN</label>
                                 <input
                                     type="password"
-                                    className="mt-1 w-full rounded-lg border-slate-300 bg-white/90 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
+                                    className="mt-1 w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-600 shadow-sm"
                                     value={data.cons_id_mobilejkn}
                                     onChange={(e) => setData("cons_id_mobilejkn", e.target.value)}
                                     maxLength={20}
                                     placeholder="Cons ID"
                                     required
+                                    autoComplete="off"
                                 />
                                 {errors.cons_id_mobilejkn && (
                                     <p className="mt-1 text-xs text-red-600">{errors.cons_id_mobilejkn}</p>
@@ -253,12 +248,13 @@ export default function SettingBridingMobileJkn({ setting, flash }) {
                                 <label className="block text-sm font-medium text-slate-700">Secret Key Mobile JKN</label>
                                 <input
                                     type="password"
-                                    className="mt-1 w-full rounded-lg border-slate-300 bg-white/90 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
+                                    className="mt-1 w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-600 shadow-sm"
                                     value={data.secretkey_mobilejkn}
                                     onChange={(e) => setData("secretkey_mobilejkn", e.target.value)}
                                     maxLength={200}
                                     placeholder="Secret Key"
                                     required
+                                    autoComplete="off"
                                 />
                                 {errors.secretkey_mobilejkn && (
                                     <p className="mt-1 text-xs text-red-600">{errors.secretkey_mobilejkn}</p>
@@ -270,12 +266,13 @@ export default function SettingBridingMobileJkn({ setting, flash }) {
                             <label className="block text-sm font-medium text-slate-700">User Key Mobile JKN</label>
                             <input
                                 type="password"
-                                className="mt-1 w-full rounded-lg border-slate-300 bg-white/90 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
+                                className="mt-1 w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-600 shadow-sm"
                                 value={data.userkey_mobilejkn}
                                 onChange={(e) => setData("userkey_mobilejkn", e.target.value)}
                                 maxLength={200}
                                 placeholder="User Key dari BPJS Mobile JKN"
                                 required
+                                autoComplete="off"
                             />
                             {errors.userkey_mobilejkn && (
                                 <p className="mt-1 text-xs text-red-600">{errors.userkey_mobilejkn}</p>
@@ -288,7 +285,7 @@ export default function SettingBridingMobileJkn({ setting, flash }) {
                                 <label className="block text-sm font-medium text-slate-700">Username Antrol</label>
                                 <input
                                     type="text"
-                                    className="mt-1 w-full rounded-lg border-slate-300 bg-white/90 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
+                                    className="mt-1 w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-600 shadow-sm"
                                     value={data.username_antrol}
                                     onChange={(e) => setData("username_antrol", e.target.value)}
                                     maxLength={50}
@@ -302,11 +299,12 @@ export default function SettingBridingMobileJkn({ setting, flash }) {
                                 <label className="block text-sm font-medium text-slate-700">Password Antrol</label>
                                 <input
                                     type="password"
-                                    className="mt-1 w-full rounded-lg border-slate-300 bg-white/90 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
+                                    className="mt-1 w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-600 shadow-sm"
                                     value={data.password_antrol}
                                     onChange={(e) => setData("password_antrol", e.target.value)}
                                     maxLength={50}
                                     placeholder="Password untuk layanan Antrol (opsional)"
+                                    autoComplete="off"
                                 />
                                 {errors.password_antrol && (
                                     <p className="mt-1 text-xs text-red-600">{errors.password_antrol}</p>
@@ -337,7 +335,6 @@ export default function SettingBridingMobileJkn({ setting, flash }) {
     );
 }
 
-// Layout: render di dalam SidebarPengaturan
 SettingBridingMobileJkn.layout = (page) => (
-    <SidebarPengaturan title="Pengaturan" children={page} />
+    <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>
 );

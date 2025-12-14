@@ -815,6 +815,14 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('Pcare/MappingObatPcare');
         })->name('mapping.obat');
 
+        Route::get('/monitoring', function () {
+            return Inertia::render('Pcare/MonitoringPcare');
+        })->name('monitoring');
+
+        Route::get('/monitoring-status', function () {
+            return Inertia::render('Pcare/MonitoringStatusPcare');
+        })->name('monitoring.status');
+
         // Referensi Diagnosa page (Inertia)
         Route::get('/referensi/diagnosa', function () {
             return Inertia::render('Pcare/ReferensiPcare/ReferensiDiagnosa');
@@ -988,6 +996,28 @@ Route::middleware('auth')->group(function () {
         // API: Kirim Kunjungan Sehat ke BPJS PCare (POST)
         Route::post('/api/kunjungan-sehat', [\App\Http\Controllers\Pcare\PcareController::class, 'kirimKunjunganSehat'])
             ->name('kunjungan.sehat.api');
+
+        Route::get('/api/monitoring/summary', [\App\Http\Controllers\Pcare\PcareController::class, 'monitoringSummary'])
+            ->name('monitoring.summary.api');
+        Route::get('/api/monitoring/attempts', [\App\Http\Controllers\Pcare\PcareController::class, 'monitoringAttempts'])
+            ->name('monitoring.attempts.api');
+        Route::get('/api/pendaftaran/summary', [\App\Http\Controllers\Pcare\PcareController::class, 'pendaftaranSummary'])
+            ->name('pendaftaran.summary.api');
+        Route::get('/api/pendaftaran/list', [\App\Http\Controllers\Pcare\PcareController::class, 'pendaftaranList'])
+            ->name('pendaftaran.list.api');
+        Route::get('/api/monitoring/raw/{no_rawat}', [\App\Http\Controllers\Pcare\PcareController::class, 'monitoringRaw'])
+            ->where('no_rawat', '.*')
+            ->name('monitoring.raw.api');
+        Route::get('/api/bpjs-log/list', [\App\Http\Controllers\Pcare\PcareController::class, 'bpjsLogList'])
+            ->name('bpjs.log.list.api');
+        Route::get('/api/bpjs-log/rawat/{no_rawat}', [\App\Http\Controllers\Pcare\PcareController::class, 'bpjsLogByRawat'])
+            ->where('no_rawat', '.*')
+            ->name('bpjs.log.byrawat.api');
+        Route::post('/api/resend/{no_rawat}', [\App\Http\Controllers\Pcare\PcareController::class, 'resendByNoRawat'])
+            ->where('no_rawat', '.*')
+            ->name('resend.api');
+        Route::post('/api/mass-send', [\App\Http\Controllers\Pcare\PcareController::class, 'massSend'])
+            ->name('mass-send.api');
 
         // API: Get Peserta by No. Kartu (versi sederhana — tanpa tanggal pelayanan)
         Route::get('/api/peserta/{noka}', [\App\Http\Controllers\Pcare\PcareController::class, 'getPeserta'])

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
+import SidebarBriding from "@/Layouts/SidebarBriding";
 import { motion, AnimatePresence } from "framer-motion";
 import { Toaster, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/Components/ui";
 import {
@@ -851,5 +851,5 @@ export default function MappingDokterPcare() {
 }
 
 MappingDokterPcare.layout = (page) => (
-    <SidebarPengaturan title="Pengaturan" children={page} />
+    <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>
 );

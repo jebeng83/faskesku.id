@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import AppLayout from '@/Layouts/AppLayout';
+import SidebarBriding from '@/Layouts/SidebarBriding';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowPathIcon, CheckCircleIcon, ExclamationTriangleIcon, BuildingOfficeIcon, MagnifyingGlassIcon, CalendarDaysIcon } from '@heroicons/react/24/outline';
 
@@ -200,25 +200,34 @@ export default function ReferensiFaskesRujukan() {
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4">
       {/* Header */}
       <motion.div variants={itemVariants} className="mb-4">
-        <div className="rounded-xl bg-gradient-to-r from-indigo-500 via-sky-600 to-cyan-600 text-white p-5 shadow">
-          <div className="flex items-start justify-between">
+        <motion.div
+          variants={itemVariants}
+          className="relative px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm rounded-lg"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h1 className="text-xl font-semibold">Referensi Faskes Rujukan PCare</h1>
-              <p className="text-sm opacity-90">Daftar faskes rujukan berdasarkan Sub Spesialis, Sarana, dan Tanggal estimasi rujuk.</p>
+              <motion.h1
+                className="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                Referensi Faskes Rujukan PCare
+              </motion.h1>
             </div>
             <div className="flex items-center gap-2">
               {badge('GET', 'bg-white/20 text-white')}
               {badge('JSON', 'bg-white/20 text-white')}
             </div>
           </div>
-        </div>
+        </motion.div>
       </motion.div>
 
       {/* Form Pencarian */}
-      <motion.div variants={itemVariants} className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+      <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 p-6 shadow-xl shadow-blue-500/5">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
           {/* Spesialis (typeahead) */}
-          <div className="relative">
+          <div className="relative md:col-span-4">
             <label className="block text-xs text-slate-500 mb-1">Spesialis</label>
             <input
               type="text"
@@ -228,7 +237,7 @@ export default function ReferensiFaskesRujukan() {
               onFocus={() => setShowSpDropdown(true)}
               onBlur={() => setTimeout(() => setShowSpDropdown(false), 120)}
               placeholder="Ketik nama/kode spesialis"
-              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-indigo-500"
+              className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
             />
             <AnimatePresence>
               {showSpDropdown && spesialisSuggestions.length > 0 && (
@@ -249,13 +258,13 @@ export default function ReferensiFaskesRujukan() {
           </div>
 
           {/* Sub Spesialis (pilih setelah Spesialis) */}
-          <div>
+          <div className="md:col-span-3">
             <label className="block text-xs text-slate-500 mb-1">Sub Spesialis</label>
             <select
               value={kdSubSpesialis}
               onChange={(e) => setKdSubSpesialis(e.target.value)}
               disabled={!kdSpesialis || subSpList.length === 0}
-              className={`w-full rounded-md border bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 ${!kdSpesialis || subSpList.length === 0 ? 'border-slate-200 text-slate-400' : 'border-slate-300 text-slate-700'}`}
+              className={`w-full rounded-md border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${!kdSpesialis || subSpList.length === 0 ? 'border-slate-200 text-slate-400' : 'border-gray-300 dark:border-gray-600 text-slate-700'}`}
             >
               <option value="" disabled>Pilih sub spesialis…</option>
               {subSpList.map((ss) => (
@@ -267,13 +276,13 @@ export default function ReferensiFaskesRujukan() {
           </div>
 
           {/* Sarana (aktif setelah Sub Spesialis terpilih) */}
-          <div>
+          <div className="md:col-span-3">
             <label className="block text-xs text-slate-500 mb-1">Sarana</label>
             <select
               value={kdSarana}
               onChange={(e) => setKdSarana(e.target.value)}
               disabled={!kdSubSpesialis || saranaList.length === 0}
-              className={`w-full rounded-md border bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 ${!kdSubSpesialis || saranaList.length === 0 ? 'border-slate-200 text-slate-400' : 'border-slate-300 text-slate-700'}`}
+              className={`w-full rounded-md border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${!kdSubSpesialis || saranaList.length === 0 ? 'border-slate-200 text-slate-400' : 'border-gray-300 dark:border-gray-600 text-slate-700'}`}
             >
               <option value="" disabled>Pilih sarana…</option>
               {saranaList.map((s) => (
@@ -285,7 +294,7 @@ export default function ReferensiFaskesRujukan() {
           </div>
 
           {/* Tanggal Estimasi Rujuk (aktif setelah Sarana terpilih) */}
-          <div>
+          <div className="md:col-span-2">
             <label className="block text-xs text-slate-500 mb-1">Tanggal Estimasi Rujuk</label>
             <div className="relative">
               <CalendarDaysIcon className="pointer-events-none absolute left-2 top-2.5 h-4 w-4 text-slate-400" />
@@ -294,19 +303,19 @@ export default function ReferensiFaskesRujukan() {
                 value={tglEstRujuk}
                 onChange={(e) => setTglEstRujuk(e.target.value)}
                 disabled={!kdSarana}
-                className={`w-full rounded-md border bg-white pl-8 pr-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 ${!kdSarana ? 'border-slate-200 text-slate-400' : 'border-slate-300 text-slate-700'}`}
+                className={`w-full rounded-md border bg-white pl-8 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${!kdSarana ? 'border-slate-200 text-slate-400' : 'border-gray-300 dark:border-gray-600 text-slate-700'}`}
               />
             </div>
             <div className="mt-1 text-[10px] text-slate-400">Format dikirim: dd-mm-yyyy</div>
           </div>
 
           {/* Tombol Cari */}
-          <div className="flex items-end">
+          <div className="md:col-span-12 lg:col-span-2 flex items-end">
             <button
               type="button"
               onClick={fetchFaskesRujukan}
               disabled={!canSearch || loading}
-              className={`w-full md:w-auto px-3 py-2 text-xs rounded-md border ${!canSearch || loading ? 'bg-slate-50 text-slate-400 border-slate-200' : 'bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700'}`}
+              className={`w-full md:w-auto inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs shadow transition-all duration-200 ${!canSearch || loading ? 'bg-slate-50 text-slate-400 border border-slate-200' : 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white'}`}
             >
               {loading ? 'Memuat…' : 'Cari Faskes Rujukan'}
             </button>
@@ -343,7 +352,7 @@ export default function ReferensiFaskesRujukan() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Cari faskes (kode/nama/kotamadya)…"
-                className="w-full rounded-md border border-slate-300 bg-white pl-8 pr-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-indigo-500"
+                className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white pl-8 pr-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
               />
             </div>
           </div>
@@ -356,7 +365,7 @@ export default function ReferensiFaskesRujukan() {
           <AnimatePresence>
             {loading && !hasResult ? (
               Array.from({ length: Math.min(4, 6) }).map((_, i) => (
-                <motion.div key={`sk-${i}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="rounded-xl border border-slate-200 bg-white p-4">
+                <motion.div key={`sk-${i}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-4 shadow-xl shadow-blue-500/5">
                   <div className="animate-pulse space-y-3">
                     <div className="h-4 w-24 bg-slate-200 rounded" />
                     <div className="h-5 w-full bg-slate-200 rounded" />
@@ -366,7 +375,7 @@ export default function ReferensiFaskesRujukan() {
               ))
             ) : hasResult ? (
               pageItems.map((item, idx) => (
-                <motion.div key={`${item.kdppk || idx}-${idx}`} variants={itemVariants} initial="hidden" animate="show" exit={{ opacity: 0 }} className="group relative flex flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md">
+                <motion.div key={`${item.kdppk || idx}-${idx}`} variants={itemVariants} initial="hidden" animate="show" exit={{ opacity: 0 }} whileHover={{ scale: 1.01, y: -2 }} className="group relative flex flex-col rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl p-4 shadow-xl shadow-blue-500/5">
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="text-sm font-semibold text-slate-800">{item.kdppk || '-'}</div>
@@ -388,7 +397,7 @@ export default function ReferensiFaskesRujukan() {
                 </motion.div>
               ))
             ) : (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="col-span-full rounded-xl border border-slate-200 bg-white p-6 text-center text-slate-500">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="col-span-full rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl p-6 text-center text-slate-500">
                 Tidak ada data. Isi parameter dan klik "Cari Faskes Rujukan".
               </motion.div>
             )}
@@ -398,7 +407,7 @@ export default function ReferensiFaskesRujukan() {
 
       {/* Pagination */}
       <motion.div variants={itemVariants} className="mt-4">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl p-4 shadow-xl shadow-blue-500/5">
           <div className="text-xs text-slate-600">
             Menampilkan <span className="font-medium text-slate-800">{filteredTotal === 0 ? 0 : startIndex + 1}</span>
             –
@@ -412,7 +421,7 @@ export default function ReferensiFaskesRujukan() {
               type="button"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={currentPage <= 1}
-              className={`px-3 py-1.5 text-xs rounded-md border ${currentPage <= 1 ? 'bg-slate-50 text-slate-400 border-slate-200' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
+              className={`px-3 py-1.5 text-xs rounded-md border ${currentPage <= 1 ? 'bg-slate-50 text-slate-400 border-slate-200' : 'bg-white text-slate-700 border-gray-300 hover:bg-slate-50'}`}
             >
               Prev
             </button>
@@ -423,7 +432,7 @@ export default function ReferensiFaskesRujukan() {
               type="button"
               onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
               disabled={currentPage >= pageCount}
-              className={`px-3 py-1.5 text-xs rounded-md border ${currentPage >= pageCount ? 'bg-slate-50 text-slate-400 border-slate-200' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
+              className={`px-3 py-1.5 text-xs rounded-md border ${currentPage >= pageCount ? 'bg-slate-50 text-slate-400 border-slate-200' : 'bg-white text-slate-700 border-gray-300 hover:bg-slate-50'}`}
             >
               Next
             </button>
@@ -434,19 +443,19 @@ export default function ReferensiFaskesRujukan() {
             <select
               value={perPage}
               onChange={(e) => setPerPage(Number(e.target.value))}
-              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 focus:border-indigo-500 focus:ring-indigo-500"
-            >
-              <option value={9}>9</option>
-              <option value={12}>12</option>
-              <option value={18}>18</option>
-              <option value={24}>24</option>
-            </select>
-          </div>
+              className="rounded-md border border-gray-300 dark:border-gray-600 bg-white px-2 py-1 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+          >
+            <option value={9}>9</option>
+            <option value={12}>12</option>
+            <option value={18}>18</option>
+            <option value={24}>24</option>
+          </select>
         </div>
-      </motion.div>
+      </div>
+    </motion.div>
     </motion.div>
   );
 }
 
 // Render dalam AppLayout
-ReferensiFaskesRujukan.layout = (page) => <AppLayout title="Referensi Faskes Rujukan" children={page} />;
+ReferensiFaskesRujukan.layout = (page) => <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>;

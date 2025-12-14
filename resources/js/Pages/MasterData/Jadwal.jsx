@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
+import SidebarBriding from "@/Layouts/SidebarBriding";
 import { Head } from "@inertiajs/react";
 import {
   CalendarDaysIcon,
@@ -322,7 +322,7 @@ export default function Jadwal() {
   }
 
   return (
-    <SidebarPengaturan title="Pengaturan">
+    <SidebarBriding title="Briding Pcare">
       <Head title="Jadwal Dokter" />
       <div className="px-4 sm:px-6 lg:px-8 py-4 space-y-6">
         {/* Header */}
@@ -686,6 +686,6 @@ export default function Jadwal() {
           </div>
         </div>
       </div>
-    </SidebarPengaturan>
+    </SidebarBriding>
   );
 }

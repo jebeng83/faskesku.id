@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
-import { usePage } from "@inertiajs/react";
+import { usePage, Link } from "@inertiajs/react";
+import { LinkIcon } from "@heroicons/react/24/outline";
 import LayoutDokumentasi from "../Layouts/LayoutDokumentasi";
 import dashboardMd from "../../../docs/DokumentasiUser/Dashboard.md?raw";
 import masterDataMd from "../../../docs/DokumentasiUser/MasterData.md?raw";
@@ -142,11 +143,22 @@ export default function Docs() {
     };
 
     return (
-        <LayoutDokumentasi
-            title="Dokumentasi Pengguna"
-            items={items}
-            render={render}
-            initialSelect={section}
-        />
+        <div className="space-y-4">
+            <div className="flex items-center gap-2">
+                <Link
+                    href="/pcare"
+                    className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm hover:border-slate-300"
+                >
+                    <LinkIcon className="w-5 h-5 text-indigo-600" />
+                    <span className="text-sm font-medium text-slate-700">Briding</span>
+                </Link>
+            </div>
+            <LayoutDokumentasi
+                title="Dokumentasi Pengguna"
+                items={items}
+                render={render}
+                initialSelect={section}
+            />
+        </div>
     );
 }

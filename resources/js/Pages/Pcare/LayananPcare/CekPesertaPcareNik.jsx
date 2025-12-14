@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import AppLayout from '@/Layouts/AppLayout';
+import SidebarBriding from '@/Layouts/SidebarBriding';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowPathIcon,
@@ -99,25 +99,33 @@ export default function CekPesertaPcareNik() {
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4">
       {/* Header */}
       <motion.div variants={itemVariants} className="mb-4">
-        <div className="rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white p-5 shadow">
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-xl font-semibold">Cek Peserta BPJS PCare by NIK</h1>
-              <p className="text-sm opacity-90">Masukkan NIK untuk melihat informasi peserta BPJS melalui layanan PCare.</p>
-            </div>
-            <div className="flex items-center gap-2">
-              {badge('GET', 'bg-white/20 text-white')}
-              {badge('JSON', 'bg-white/20 text-white')}
+        <div className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-gray-200/60 dark:border-gray-700/50 shadow-xl">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+          <div className="px-5 py-4">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-gradient-to-br from-indigo-600 to-sky-600 text-white p-2 shadow">
+                  <MagnifyingGlassIcon className="h-5 w-5" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">Cek Peserta BPJS PCare (NIK)</h1>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Masukkan NIK untuk melihat informasi peserta melalui layanan PCare.</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {badge('GET', 'bg-indigo-50 text-indigo-700')}
+                {badge('JSON', 'bg-indigo-50 text-indigo-700')}
+              </div>
             </div>
           </div>
         </div>
       </motion.div>
 
       {/* Input */}
-      <motion.div variants={itemVariants} className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+      <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-gray-200/60 dark:border-gray-700/50 p-4 shadow-xl">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div className="md:col-span-2">
-            <label htmlFor="nik" className="text-xs text-slate-500">NIK Peserta</label>
+            <label htmlFor="nik" className="text-xs font-medium text-slate-700">NIK Peserta</label>
             <div className="mt-1 flex items-center gap-2">
               <div className="relative flex-1">
                 <MagnifyingGlassIcon className="pointer-events-none absolute left-2 top-2.5 h-4 w-4 text-slate-400" />
@@ -129,7 +137,7 @@ export default function CekPesertaPcareNik() {
                   value={nik}
                   onChange={onChangeNik}
                   onKeyDown={onKeyDown}
-                  className="w-full rounded-md border-slate-300 pl-8 pr-8 text-sm"
+                  className="mt-1 w-full rounded-md border-2 border-slate-300 bg-white pl-8 pr-8 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-600 shadow-sm"
                 />
                 {nik && (
                   <button onClick={() => setNik('')} className="absolute right-2 top-2 rounded p-1 text-slate-400 hover:text-slate-600" title="Clear">
@@ -148,7 +156,7 @@ export default function CekPesertaPcareNik() {
             <div className="mt-1 text-xs text-slate-500">Tekan Enter untuk mencari. Esc untuk menghapus.</div>
           </div>
           <div className="md:col-span-1">
-            <div className="rounded-lg border border-slate-200 p-3">
+            <div className="rounded-lg border-2 border-slate-200/60 bg-white/80 dark:bg-gray-800/80 p-3">
               <div className="text-xs text-slate-500">Status</div>
               <div className="mt-1 flex items-center gap-2">
                 {loading ? (
@@ -265,4 +273,4 @@ export default function CekPesertaPcareNik() {
 }
 
 // Render dalam AppLayout
-CekPesertaPcareNik.layout = (page) => <AppLayout title="Cek Peserta by NIK" children={page} />;
+CekPesertaPcareNik.layout = (page) => <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>;

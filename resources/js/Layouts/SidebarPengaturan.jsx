@@ -324,53 +324,7 @@ export default function SidebarPengaturan({
                         />
                     </Section>
 
-                    <Section
-                        title="Bridging PCare"
-                        collapsed={isSidebarCollapsed}
-                    >
-                        <NavItem
-                            collapsed={isSidebarCollapsed}
-                            href={paths.pcareSetting}
-                            icon={LinkIcon}
-                            label="Setting Bridging PCare"
-                            active={isActive(paths.pcareSetting)}
-                        />
-                        <NavItem
-                            collapsed={isSidebarCollapsed}
-                            href={paths.mobileJknSetting}
-                            icon={LinkIcon}
-                            label="Setting Mobile JKN"
-                            active={isActive(paths.mobileJknSetting)}
-                        />
-                        <NavItem
-                            collapsed={isSidebarCollapsed}
-                            href={paths.pcareMapDokter}
-                            icon={Stethoscope}
-                            label="Mapping Dokter PCare"
-                            active={isActive(paths.pcareMapDokter)}
-                        />
-                        <NavItem
-                            collapsed={isSidebarCollapsed}
-                            href={paths.pcareMapPoli}
-                            icon={NotebookTabs}
-                            label="Mapping Poli PCare"
-                            active={isActive(paths.pcareMapPoli)}
-                        />
-                        <NavItem
-                            collapsed={isSidebarCollapsed}
-                            href={paths.pcareMapObat}
-                            icon={Pill}
-                            label="Mapping Obat PCare"
-                            active={isActive(paths.pcareMapObat)}
-                        />
-                        <NavItem
-                            collapsed={isSidebarCollapsed}
-                            href={paths.jadwalDokter}
-                            icon={CalendarDays}
-                            label="Jadwal Dokter"
-                            active={isActive(paths.jadwalDokter)}
-                        />
-                    </Section>
+                    
 
                     <Section
                         title="Bridging Satu Sehat"

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import AppLayout from '@/Layouts/AppLayout';
+import SidebarBriding from '@/Layouts/SidebarBriding';
 
 const cardVariants = {
   hidden: { opacity: 0, y: 16, scale: 0.98 },
@@ -36,26 +36,28 @@ export default function ClubProlanis() {
         <p className="text-xs text-slate-500">Katalog BPJS: GET /kelompok/club/{'{kdProgram}'}</p>
       </div>
 
-      <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div className="col-span-1">
-          <label className="block text-xs text-slate-600 mb-1">Jenis Kelompok (kdProgram)</label>
-          <select
-            value={kdProgram}
-            onChange={(e) => setKdProgram(e.target.value)}
-            className="w-full rounded-md border-slate-300 text-sm"
-          >
-            <option value="01">01 - Diabetes Melitus</option>
-            <option value="02">02 - Hipertensi</option>
-          </select>
-        </div>
-        <div className="flex items-end">
-          <button
-            onClick={fetchData}
-            disabled={loading}
-            className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-indigo-700 disabled:opacity-50"
-          >
-            {loading ? 'Memuat...' : 'Ambil Data'}
-          </button>
+      <div className="mb-4 rounded-xl border border-gray-200/60 bg-white/90 backdrop-blur-sm shadow-sm p-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="col-span-1">
+            <label className="block text-xs font-medium text-slate-700 mb-1">Jenis Kelompok (kdProgram)</label>
+            <select
+              value={kdProgram}
+              onChange={(e) => setKdProgram(e.target.value)}
+              className="mt-1 w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-600 shadow-sm"
+            >
+              <option value="01">01 - Diabetes Melitus</option>
+              <option value="02">02 - Hipertensi</option>
+            </select>
+          </div>
+          <div className="flex items-end">
+            <button
+              onClick={fetchData}
+              disabled={loading}
+              className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-indigo-700 disabled:opacity-50"
+            >
+              {loading ? 'Memuat...' : 'Ambil Data'}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -101,4 +103,4 @@ export default function ClubProlanis() {
   );
 }
 
-ClubProlanis.layout = (page) => <AppLayout title="Club Prolanis" children={page} />;
+ClubProlanis.layout = (page) => <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>;

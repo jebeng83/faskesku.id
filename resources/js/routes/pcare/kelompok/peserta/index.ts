@@ -3,7 +3,7 @@ import add from './add'
 import deleteMethod from './delete'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:2333
+* @see app/Http/Controllers/Pcare/PcareController.php:2982
 * @route '/pcare/api/kelompok/peserta/{eduId}'
 */
 export const api = (args: { eduId: string | number } | [eduId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -18,7 +18,7 @@ api.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:2333
+* @see app/Http/Controllers/Pcare/PcareController.php:2982
 * @route '/pcare/api/kelompok/peserta/{eduId}'
 */
 api.url = (args: { eduId: string | number } | [eduId: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -45,7 +45,7 @@ api.url = (args: { eduId: string | number } | [eduId: string | number ] | string
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:2333
+* @see app/Http/Controllers/Pcare/PcareController.php:2982
 * @route '/pcare/api/kelompok/peserta/{eduId}'
 */
 api.get = (args: { eduId: string | number } | [eduId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -55,7 +55,7 @@ api.get = (args: { eduId: string | number } | [eduId: string | number ] | string
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:2333
+* @see app/Http/Controllers/Pcare/PcareController.php:2982
 * @route '/pcare/api/kelompok/peserta/{eduId}'
 */
 api.head = (args: { eduId: string | number } | [eduId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

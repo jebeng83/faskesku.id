@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import AppLayout from '@/Layouts/AppLayout';
+import SidebarBriding from '@/Layouts/SidebarBriding';
 import SearchableSelect from '@/Components/SearchableSelect';
 import { route } from 'ziggy-js';
 
@@ -585,4 +585,4 @@ export default function LayananPcare() {
 }
 
 // Render dalam AppLayout
-LayananPcare.layout = (page) => <AppLayout title="Layanan PCare" children={page} />;
+LayananPcare.layout = (page) => <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>;
