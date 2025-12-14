@@ -172,9 +172,13 @@ class RegistrationController extends Controller
         }
 
         // Check if patient has ever registered in this polyclinic
-        $hasRegistered = RegPeriksa::where('no_rkm_medis', $patient->no_rkm_medis)
+        $lastRegistration = RegPeriksa::where('no_rkm_medis', $patient->no_rkm_medis)
             ->where('kd_poli', $kd_poli)
-            ->exists();
+            ->orderBy('tgl_registrasi', 'desc')
+            ->orderBy('jam_reg', 'desc')
+            ->first();
+            
+        $hasRegistered = $lastRegistration ? true : false;
 
         // Get polyclinic data for biaya registrasi
         $poliklinik = Poliklinik::where('kd_poli', $kd_poli)->first();
@@ -196,6 +200,7 @@ class RegistrationController extends Controller
                 'status_poli' => $status_poli,
                 'biaya_reg' => $biaya_reg,
                 'has_registered' => $hasRegistered,
+                'last_visit' => $lastRegistration ? $lastRegistration->tgl_registrasi : null,
             ],
         ]);
     }
