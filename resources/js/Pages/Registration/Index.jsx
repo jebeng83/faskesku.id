@@ -1149,7 +1149,7 @@ export default function Registration({
                             </motion.div>
 
                             {/* Search Results */}
-                            <div className="flex-1 overflow-y-auto max-h-[640px]">
+                            <div className="flex-1 overflow-y-auto max-h-[450px]">
                                 <AnimatePresence>
                                     {searchTerm && (
                                         <motion.div
@@ -1488,6 +1488,18 @@ export default function Registration({
                                                             Rp {poliStatus.biaya_reg?.toLocaleString("id-ID") || "0"}
                                                         </span>
                                                     </div>
+                                                    {poliStatus.last_visit && (
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Terakhir:</span>
+                                                            <span className="text-sm font-bold text-gray-900 dark:text-white">
+                                                                {new Date(poliStatus.last_visit).toLocaleDateString("id-ID", {
+                                                                    day: "numeric",
+                                                                    month: "short",
+                                                                    year: "numeric",
+                                                                })}
+                                                            </span>
+                                                        </div>
+                                                    )}
                                                 </motion.div>
                                             )}
 
@@ -1565,7 +1577,7 @@ export default function Registration({
                                                     value={formData.almt_pj}
                                                     onChange={handleFormChange}
                                                     required
-                                                    rows={3}
+                                                    rows={2}
                                                     className="w-full px-2.5 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200 resize-y"
                                                 />
                                             </motion.div>
@@ -1688,16 +1700,16 @@ export default function Registration({
 
                                                 {/* Hasil singkat */}
                                                 {bpjsData?.response && (
-                                                    <div className="mt-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                                        <div className="rounded-lg border border-slate-200 p-3">
-                                                            <div className="text-xs text-slate-500">Nama Peserta</div>
-                                                            <div className="mt-1 flex items-center gap-2 text-sm text-slate-800">
-                                                                <span>{bpjsData.response?.nama || "-"}</span>
+                                                    <div className="mt-2 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                                                        <div className="rounded-lg border border-slate-200 px-2 py-1.5">
+                                                            <div className="text-[10px] text-slate-500">Nama Peserta</div>
+                                                            <div className="mt-0.5 flex items-center gap-1 text-xs text-slate-800">
+                                                                <span className="truncate">{bpjsData.response?.nama || "-"}</span>
                                                             </div>
                                                         </div>
-                                                        <div className="rounded-lg border border-slate-200 p-3">
-                                                            <div className="text-xs text-slate-500">No. Kartu</div>
-                                                            <div className="mt-1 flex items-center gap-2 text-sm text-slate-800">
+                                                        <div className="rounded-lg border border-slate-200 px-2 py-1.5">
+                                                            <div className="text-[10px] text-slate-500">No. Kartu</div>
+                                                            <div className="mt-0.5 flex items-center gap-1 text-xs text-slate-800">
                                                                 <span>{bpjsData.response?.noKartu || "-"}</span>
                                                                 {bpjsData.response?.noKartu && (
                                                                     <button
@@ -1707,43 +1719,43 @@ export default function Registration({
                                                                                 await navigator.clipboard.writeText(bpjsData.response.noKartu);
                                                                             } catch (_) {}
                                                                         }}
-                                                                        className="ml-1 rounded p-1 text-slate-400 hover:text-slate-600"
+                                                                        className="ml-1 rounded p-0.5 text-slate-400 hover:text-slate-600"
                                                                         title="Salin No. Kartu"
                                                                     >
-                                                                        <ClipboardDocumentCheckIcon className="h-4 w-4" />
+                                                                        <ClipboardDocumentCheckIcon className="h-3 w-3" />
                                                                     </button>
                                                                 )}
                                                             </div>
                                                         </div>
-                                                        <div className="rounded-lg border border-slate-200 p-3">
-                                                            <div className="text-xs text-slate-500">Status</div>
-                                                            <div className="mt-1 text-sm">
+                                                        <div className="rounded-lg border border-slate-200 px-2 py-1.5">
+                                                            <div className="text-[10px] text-slate-500">Status</div>
+                                                            <div className="mt-0.5 text-xs">
                                                                 {bpjsData.response?.aktif ? (
-                                                                    <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">AKTIF</span>
+                                                                    <span className="inline-flex items-center rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">AKTIF</span>
                                                                 ) : (
-                                                                    <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">TIDAK AKTIF</span>
+                                                                    <span className="inline-flex items-center rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-700">TIDAK AKTIF</span>
                                                                 )}
                                                             </div>
                                                         </div>
-                                                        <div className="rounded-lg border border-slate-200 p-3">
-                                                            <div className="text-xs text-slate-500">NIK</div>
-                                                            <div className="mt-1 text-sm text-slate-800">{bpjsData.response?.noKTP || "-"}</div>
+                                                        <div className="rounded-lg border border-slate-200 px-2 py-1.5">
+                                                            <div className="text-[10px] text-slate-500">NIK</div>
+                                                            <div className="mt-0.5 text-xs text-slate-800">{bpjsData.response?.noKTP || "-"}</div>
                                                         </div>
-                                                        <div className="rounded-lg border border-slate-200 p-3">
-                                                            <div className="text-xs text-slate-500">Provider FKTP</div>
-                                                            <div className="mt-1 text-sm text-slate-800">{bpjsData.response?.kdProviderPst?.nmProvider || "-"}</div>
+                                                        <div className="rounded-lg border border-slate-200 px-2 py-1.5">
+                                                            <div className="text-[10px] text-slate-500">Provider FKTP</div>
+                                                            <div className="mt-0.5 text-xs text-slate-800 truncate">{bpjsData.response?.kdProviderPst?.nmProvider || "-"}</div>
                                                         </div>
-                                                        <div className="rounded-lg border border-slate-200 p-3">
-                                                            <div className="text-xs text-slate-500">Kelas</div>
-                                                            <div className="mt-1 text-sm text-slate-800">{bpjsData.response?.jnsKelas?.nama || bpjsData.response?.jnsKelas?.kode || "-"}</div>
+                                                        <div className="rounded-lg border border-slate-200 px-2 py-1.5">
+                                                            <div className="text-[10px] text-slate-500">Kelas</div>
+                                                            <div className="mt-0.5 text-xs text-slate-800">{bpjsData.response?.jnsKelas?.nama || bpjsData.response?.jnsKelas?.kode || "-"}</div>
                                                         </div>
-                                                        <div className="rounded-lg border border-slate-200 p-3">
-                                                            <div className="text-xs text-slate-500">Mulai Aktif</div>
-                                                            <div className="mt-1 text-sm text-slate-800">{bpjsData.response?.tglMulaiAktif || "-"}</div>
+                                                        <div className="rounded-lg border border-slate-200 px-2 py-1.5">
+                                                            <div className="text-[10px] text-slate-500">Mulai Aktif</div>
+                                                            <div className="mt-0.5 text-xs text-slate-800">{bpjsData.response?.tglMulaiAktif || "-"}</div>
                                                         </div>
-                                                        <div className="rounded-lg border border-slate-200 p-3">
-                                                            <div className="text-xs text-slate-500">Akhir Berlaku</div>
-                                                            <div className="mt-1 text-sm text-slate-800">{bpjsData.response?.tglAkhirBerlaku || "-"}</div>
+                                                        <div className="rounded-lg border border-slate-200 px-2 py-1.5">
+                                                            <div className="text-[10px] text-slate-500">Akhir Berlaku</div>
+                                                            <div className="mt-0.5 text-xs text-slate-800">{bpjsData.response?.tglAkhirBerlaku || "-"}</div>
                                                         </div>
                                                     </div>
                                                 )}
