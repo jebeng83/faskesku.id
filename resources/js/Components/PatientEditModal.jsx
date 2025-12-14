@@ -798,7 +798,15 @@ export default function PatientEditModal({
             },
             onError: (errs) => {
                 console.error("Update errors:", errs);
-                alert("Terjadi kesalahan saat memperbarui data pasien");
+                // Format error messages for display
+                let errorMessage = "Terjadi kesalahan saat memperbarui data pasien:\n";
+                if (typeof errs === 'object' && errs !== null) {
+                    Object.keys(errs).forEach((key) => {
+                        const message = Array.isArray(errs[key]) ? errs[key][0] : errs[key];
+                        errorMessage += `- ${message}\n`;
+                    });
+                }
+                alert(errorMessage);
             },
             onFinish: () => {
                 setIsSubmitting(false);

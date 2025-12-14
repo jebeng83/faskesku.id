@@ -1149,7 +1149,7 @@ export default function Registration({
                             </motion.div>
 
                             {/* Search Results */}
-                            <div className="flex-1 overflow-y-auto">
+                            <div className="flex-1 overflow-y-auto max-h-[640px]">
                                 <AnimatePresence>
                                     {searchTerm && (
                                         <motion.div
@@ -1172,7 +1172,7 @@ export default function Registration({
                                                                           patient
                                                                       )
                                                                   }
-                                                                  className="p-3 lg:p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                                                                  className="p-2 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
                                                                   initial={{
                                                                       opacity: 0,
                                                                       y: 20,
@@ -1204,36 +1204,29 @@ export default function Registration({
                                                                       scale: 0.98,
                                                                   }}
                                                               >
-                                                                  <div className="flex justify-between items-start">
-                                                          <div className="flex-1">
-                                                                  <h4 className="font-medium text-gray-900 dark:text-white">
-                                                                      {patient.nm_pasien}
-                                                                  </h4>
-                                                                  <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
-                                                                      RM:{" "}
-                                                                      {
-                                                                          patient.no_rkm_medis
-                                                                      }
-                                                                  </p>
-                                                                          {patient.no_ktp && (
-                                                                              <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
-                                                                                  KTP:{" "}
-                                                                                  {
-                                                                                      patient.no_ktp
-                                                                                  }
-                                                                              </p>
-                                                                          )}
-                                                                          <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">
-                                                                              {patient.jk ===
-                                                                              "L"
-                                                                                  ? "Laki-laki"
-                                                                                  : "Perempuan"}
-                                                                              ,{" "}
-                                                                              {
-                                                                                  patient.umur
-                                                                              }
-                                                                          </p>
-                                                                          <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                                                                  <div className="flex justify-between items-start gap-2">
+                                                                      <div className="flex-1 min-w-0">
+                                                                          <div className="flex items-center gap-2 mb-1">
+                                                                              <h4 className="font-medium text-sm text-gray-900 dark:text-white truncate">
+                                                                                  {patient.nm_pasien}
+                                                                              </h4>
+                                                                              <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">
+                                                                                  {patient.no_rkm_medis}
+                                                                              </span>
+                                                                          </div>
+                                                                          
+                                                                          <div className="flex flex-wrap gap-x-3 gap-y-1 mb-1 text-xs text-gray-600 dark:text-gray-400">
+                                                                              {patient.no_ktp && (
+                                                                                  <span>{patient.no_ktp}</span>
+                                                                              )}
+                                                                              <span className="flex items-center gap-1">
+                                                                                  <span>{patient.jk === "L" ? "L" : "P"}</span>
+                                                                                  <span>•</span>
+                                                                                  <span>{patient.umur}</span>
+                                                                              </span>
+                                                                          </div>
+
+                                                                          <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight line-clamp-2">
                                                                               {[
                                                                                   patient.alamat,
                                                                                   patient.kelurahan?.nm_kel,
@@ -1244,9 +1237,9 @@ export default function Registration({
                                                                                   .join(", ")}
                                                                           </p>
                                                                       </div>
-                                                                      <div className="flex items-center gap-2 ml-2">
+                                                                      <div className="flex flex-col gap-1">
                                                                           <motion.button
-                                                                              className="px-2 lg:px-3 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 transition-colors flex-shrink-0"
+                                                                              className="px-2 py-1 bg-blue-600 text-white text-[10px] rounded hover:bg-blue-700 transition-colors flex-shrink-0 w-full text-center"
                                                                               whileHover={{
                                                                                   scale: 1.05,
                                                                               }}
@@ -1257,15 +1250,11 @@ export default function Registration({
                                                                               Pilih
                                                                           </motion.button>
                                                                           <motion.button
-                                                                              onClick={(
-                                                                                  e
-                                                                              ) => {
+                                                                              onClick={(e) => {
                                                                                   e.stopPropagation();
-                                                                                  openEditModal(
-                                                                                      patient
-                                                                                  );
+                                                                                  openEditModal(patient);
                                                                               }}
-                                                                              className="px-2 lg:px-3 py-1 bg-indigo-600 text-white text-xs rounded-md hover:bg-indigo-700 transition-colors flex-shrink-0"
+                                                                              className="px-2 py-1 bg-indigo-600 text-white text-[10px] rounded hover:bg-indigo-700 transition-colors flex-shrink-0 w-full text-center"
                                                                               whileHover={{
                                                                                   scale: 1.05,
                                                                               }}

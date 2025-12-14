@@ -122,6 +122,7 @@ window.axios.interceptors.response.use(
     async (error) => {
         const status = error?.response?.status;
         const is419 = status === 419;
+        const is401 = status === 401;
         const isCsrfMismatch =
             typeof error?.response?.data === "string" &&
             /CSRF|Page Expired/i.test(error.response.data);

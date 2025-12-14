@@ -47,11 +47,4 @@ const departemen = {
     index: Object.assign(index, index),
 }
 
-export default departemend',
-})
-
-const departemen = {
-    index: Object.assign(index, index),
-}
-
 export default departemen

@@ -77,15 +77,12 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
     useEffect(() => {
         const fetchNextNoRM = async () => {
             try {
-                const response = await fetch("/api/pasien/next-no-rm");
-                if (response.ok) {
-                    const result = await response.json();
-                    if (result.success) {
-                        setData((prevData) => ({
-                            ...prevData,
-                            no_rkm_medis: result.data,
-                        }));
-                    }
+                const response = await axios.get("/api/pasien/next-no-rm");
+                if (response.data && response.data.success) {
+                    setData((prevData) => ({
+                        ...prevData,
+                        no_rkm_medis: response.data.data,
+                    }));
                 }
             } catch (error) {
                 console.error("Error loading next No. RM:", error);
@@ -105,9 +102,9 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
     useEffect(() => {
         const loadPenjabOptions = async () => {
             try {
-                const response = await fetch("/api/penjab");
-                if (response.ok) {
-                    const result = await response.json();
+                const response = await axios.get("/api/penjab");
+                if (response.data && response.data.success) {
+                    const result = response.data;
                     const options = result.data.map((penjab) => ({
                         value: penjab.kd_pj,
                         label: penjab.png_jawab,
@@ -178,11 +175,8 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
         const loadNextKodePerusahaan = async () => {
             const computeFromList = async () => {
                 try {
-                    const r = await fetch("/api/perusahaan-pasien", {
-                        credentials: "include",
-                    });
-                    if (!r.ok) return;
-                    const j = await r.json();
+                    const r = await axios.get("/api/perusahaan-pasien");
+                    const j = r.data;
                     const arr = Array.isArray(j?.data) ? j.data : [];
                     let max = 0;
                     for (const d of arr) {
@@ -200,14 +194,8 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                 } catch {}
             };
             try {
-                const res = await fetch("/api/perusahaan-pasien/next-code", {
-                    credentials: "include",
-                });
-                if (!res.ok) {
-                    await computeFromList();
-                    return;
-                }
-                const json = await res.json();
+                const res = await axios.get("/api/perusahaan-pasien/next-code");
+                const json = res.data;
                 if (json?.next_code) {
                     perusahaanPasienForm.setData(
                         "kode_perusahaan",
@@ -566,7 +554,17 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
             },
             onError: (errors) => {
                 console.error("Form submission errors:", errors);
-                alert("Terjadi kesalahan: " + JSON.stringify(errors));
+                // Format error messages for display
+                let errorMessage = "Terjadi kesalahan:\n";
+                if (typeof errors === 'object' && errors !== null) {
+                    Object.keys(errors).forEach((key) => {
+                        const message = Array.isArray(errors[key]) ? errors[key][0] : errors[key];
+                        errorMessage += `- ${message}\n`;
+                    });
+                } else {
+                    errorMessage += String(errors);
+                }
+                alert(errorMessage);
             },
             onFinish: () => {
                 console.log("Form submission finished");

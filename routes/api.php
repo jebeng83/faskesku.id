@@ -38,14 +38,25 @@ use Illuminate\Support\Facades\Route;
 
 // Public endpoints (tidak memerlukan authentication)
 // Hanya endpoint referensi yang benar-benar tidak sensitif
-Route::prefix('public')->group(function () {
-    // Wilayah routes (public karena digunakan untuk form dropdown)
-    Route::get('/wilayah/provinces', [WilayahController::class, 'provinces'])->name('api.public.wilayah.provinces');
-    Route::get('/wilayah/regencies/{provinceCode}', [WilayahController::class, 'regencies'])->name('api.public.wilayah.regencies');
-    Route::get('/wilayah/districts/{regencyCode}', [WilayahController::class, 'districts'])->name('api.public.wilayah.districts');
-    Route::get('/wilayah/villages/{districtCode}', [WilayahController::class, 'villages'])->name('api.public.wilayah.villages');
-    Route::get('/wilayah/search', [WilayahController::class, 'search'])->name('api.public.wilayah.search');
-});
+
+// Wilayah routes (public karena digunakan untuk form dropdown) - Tanpa prefix 'public'
+Route::get('/wilayah/provinces', [WilayahController::class, 'provinces'])->name('api.public.wilayah.provinces');
+Route::get('/wilayah/regencies/{provinceCode}', [WilayahController::class, 'regencies'])->name('api.public.wilayah.regencies');
+Route::get('/wilayah/districts/{regencyCode}', [WilayahController::class, 'districts'])->name('api.public.wilayah.districts');
+Route::get('/wilayah/villages/{districtCode}', [WilayahController::class, 'villages'])->name('api.public.wilayah.villages');
+Route::get('/wilayah/search', [WilayahController::class, 'search'])->name('api.public.wilayah.search');
+
+// Public endpoints for Registration (Pasien Baru) - Tanpa prefix 'public' agar sesuai dengan frontend
+Route::get('/wilayah/all-villages', [WilayahController::class, 'allVillages'])->name('api.public.wilayah.all-villages');
+Route::get('/pasien/next-no-rm', [ApiPatientController::class, 'nextNoRM'])->name('api.public.pasien.next-no-rm');
+Route::get('/penjab', [PenjabController::class, 'index'])->name('api.public.penjab.index');
+
+// Public endpoints for Reference Options
+Route::get('/perusahaan-pasien', [ReferenceController::class, 'perusahaanPasien'])->name('api.public.perusahaan-pasien.index');
+Route::get('/perusahaan-pasien/next-code', [\App\Http\Controllers\API\PerusahaanPasienController::class, 'nextCode'])->name('api.public.perusahaan-pasien.next-code');
+Route::get('/suku-bangsa', [ReferenceController::class, 'sukuBangsa'])->name('api.public.suku-bangsa.index');
+Route::get('/bahasa-pasien', [ReferenceController::class, 'bahasaPasien'])->name('api.public.bahasa-pasien.index');
+Route::get('/cacat-fisik', [ReferenceController::class, 'cacatFisik'])->name('api.public.cacat-fisik.index');
 
 // Protected API endpoints (memerlukan authentication)
 // Menggunakan 'auth:sanctum' untuk Inertia.js SPA authentication
@@ -55,28 +66,20 @@ Route::prefix('public')->group(function () {
     Route::post('/employees', [EmployeeController::class, 'store'])->name('api.employees.store');
     Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('api.employees.destroy');
 
-    Route::get('/penjab', [PenjabController::class, 'index'])->name('api.penjab.index');
     Route::get('/penjab/next-code', [PenjabController::class, 'nextCode'])->name('api.penjab.next-code');
     Route::post('/penjab', [PenjabController::class, 'store'])->name('api.penjab.store');
 
     // Pasien describe endpoint
     Route::get('/pasien/describe', [ApiPatientController::class, 'describe'])->name('api.pasien.describe');
-    Route::get('/pasien/next-no-rm', [ApiPatientController::class, 'nextNoRM'])->name('api.pasien.next-no-rm');
 
-    // Reference lookup endpoints
-    Route::get('/perusahaan-pasien', [ReferenceController::class, 'perusahaanPasien'])->name('api.perusahaan-pasien.index');
-    Route::get('/perusahaan-pasien/next-code', [\App\Http\Controllers\API\PerusahaanPasienController::class, 'nextCode'])->name('api.perusahaan-pasien.next-code');
-    Route::get('/suku-bangsa', [ReferenceController::class, 'sukuBangsa'])->name('api.suku-bangsa.index');
-    Route::get('/bahasa-pasien', [ReferenceController::class, 'bahasaPasien'])->name('api.bahasa-pasien.index');
-    Route::get('/cacat-fisik', [ReferenceController::class, 'cacatFisik'])->name('api.cacat-fisik.index');
-
+    // Reference lookup endpoints - moved to public
+    
     // Wilayah routes (protected version)
     Route::get('/wilayah/provinces', [WilayahController::class, 'provinces'])->name('api.wilayah.provinces');
     Route::get('/wilayah/regencies/{provinceCode}', [WilayahController::class, 'regencies'])->name('api.wilayah.regencies');
     Route::get('/wilayah/districts/{regencyCode}', [WilayahController::class, 'districts'])->name('api.wilayah.districts');
     Route::get('/wilayah/villages/{districtCode}', [WilayahController::class, 'villages'])->name('api.wilayah.villages');
-    Route::get('/wilayah/all-villages', [WilayahController::class, 'allVillages'])->name('api.wilayah.all-villages');
-    Route::get('/wilayah/search', [WilayahController::class, 'search'])->name('api.wilayah.search');
+    // all-villages moved to public
     Route::get('/wilayah/{code}', [WilayahController::class, 'show'])->name('api.wilayah.show');
 
     // Permission Management Routes

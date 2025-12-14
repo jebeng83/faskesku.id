@@ -364,7 +364,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Registration routes
-    Route::get('/registration', [RegistrationController::class, 'index'])->name('registration.index')->middleware('menu.permission');
+    Route::get('/registration', [RegistrationController::class, 'index'])->name('registration.index');
     // Registration Lanjutan: arahkan ke halaman Index agar konsisten
     Route::get('/registration/lanjutan', [RegistrationController::class, 'index'])
         ->name('registration.lanjutan')
