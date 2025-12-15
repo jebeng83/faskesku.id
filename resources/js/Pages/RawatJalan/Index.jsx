@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { setRawatJalanFilters, clearRawatJalanFilters } from '@/tools/rawatJalanFilters';
@@ -16,6 +16,7 @@ import {
   UserIcon,
   BanknotesIcon,
   ArrowPathIcon,
+  EllipsisVerticalIcon,
 } from '@heroicons/react/24/outline';
 
 // Simple Dropdown Component
@@ -143,6 +144,39 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         filters?.kd_poli,
     ]);
 
+    // Column Resizing Logic
+    const [alamatWidth, setAlamatWidth] = useState(300);
+    const resizingRef = useRef(false);
+    const startXRef = useRef(0);
+    const startWidthRef = useRef(0);
+
+    const handleMouseMove = (e) => {
+        if (resizingRef.current) {
+            const diff = e.pageX - startXRef.current;
+            setAlamatWidth(Math.max(150, startWidthRef.current + diff));
+        }
+    };
+
+    const handleMouseUp = () => {
+        resizingRef.current = false;
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+        document.body.style.cursor = 'default';
+        document.body.style.userSelect = 'auto';
+    };
+
+    const startResizing = (e) => {
+        e.preventDefault();
+        resizingRef.current = true;
+        startXRef.current = e.pageX;
+        startWidthRef.current = alamatWidth;
+        
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+    };
+
     const handleFilterChange = (key, value) => {
         const newParams = { ...searchParams, [key]: value };
         setSearchParams(newParams);
@@ -201,12 +235,12 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         return time.substring(0, 5);
     };
 
-    const handleSuratSehat = (noRawat) => {
-        router.get(route('rawat-jalan.surat-sehat', noRawat));
+    const handleSuratSehat = (noRawAt) => {
+        router.get(route('rawat-jalan.surat-sehat', noRawAt));
     };
 
-    const handleSuratSakit = (noRawat) => {
-        router.get(route('rawat-jalan.surat-sakit', noRawat));
+    const handleSuratSakit = (noRawAt) => {
+        router.get(route('rawat-jalan.surat-sakit', noRawAt));
     };
 
     return (
@@ -230,108 +264,97 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                     </div>
                 </motion.div>
 
-                {/* GitHub-style Simple Filter */}
-                <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-3 mb-4">
-                    <div className="flex flex-wrap items-center justify-end gap-2">
-                        <div className="flex items-center gap-1">
-                            <FunnelIcon className="w-4 h-4 text-gray-500" />
-                            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Filter:</span>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                            <input
-                                type="date"
-                                value={searchParams.start_date}
-                                onChange={(e) => handleFilterChange('start_date', e.target.value)}
-                                className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
-                            />
-                            <span className="text-xs text-gray-500">s/d</span>
-                            <input
-                                type="date"
-                                value={searchParams.end_date}
-                                onChange={(e) => handleFilterChange('end_date', e.target.value)}
-                                className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
-                            />
-                        </div>
-                        
-                        <select
-                            value={searchParams.status}
-                            onChange={(e) => handleFilterChange('status', e.target.value)}
-                            className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
-                        >
-                            <option value="">Status</option>
-                            {Object.entries(statusOptions).map(([key, value]) => (
-                                <option key={key} value={key}>{value}</option>
-                            ))}
-                        </select>
-                        
-                        <select
-                            value={searchParams.status_bayar}
-                            onChange={(e) => handleFilterChange('status_bayar', e.target.value)}
-                            className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
-                        >
-                            <option value="">Pembayaran</option>
-                            {Object.entries(statusBayarOptions).map(([key, value]) => (
-                                <option key={key} value={key}>{value}</option>
-                            ))}
-                        </select>
-
-                        {/* Filter Dokter (statis) */}
-                        <select
-                            value={searchParams.kd_dokter}
-                            onChange={(e) => handleFilterChange('kd_dokter', e.target.value)}
-                            className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
-                        >
-                            <option value="">Dokter</option>
-                            {Array.isArray(dokterOptions) && dokterOptions.map((d) => (
-                                <option key={d.kd_dokter} value={d.kd_dokter}>{d.nm_dokter}</option>
-                            ))}
-                        </select>
-
-                        {/* Filter Poliklinik (statis) */}
-                        <select
-                            value={searchParams.kd_poli}
-                            onChange={(e) => handleFilterChange('kd_poli', e.target.value)}
-                            className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
-                        >
-                            <option value="">Poliklinik</option>
-                            {Array.isArray(poliOptions) && poliOptions.map((p) => (
-                                <option key={p.kd_poli} value={p.kd_poli}>{p.nm_poli}</option>
-                            ))}
-                        </select>
-                        
-                        <div className="relative">
-                            <MagnifyingGlassIcon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
-                            <input
-                                type="text"
-                                value={searchParams.nama_pasien}
-                                onChange={(e) => handleFilterChange('nama_pasien', e.target.value)}
-                                placeholder="Cari pasien..."
-                                className="pl-6 pr-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white w-32"
-                            />
-                        </div>
-                        
-                        {(searchParams.start_date || searchParams.end_date || searchParams.status || searchParams.status_bayar || searchParams.nama_pasien || searchParams.kd_dokter || searchParams.kd_poli) && (
-                            <button
-                                onClick={resetFilters}
-                                className="ml-2 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                                title="Reset filters"
-                            >
-                                ✕
-                            </button>
-                        )}
-                    </div>
-                </div>
-
+                {/* GitHub-style Simple Filter removed */}
+                
                 {/* Enhanced Data Table */}
                 <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
                     <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center justify-between">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        <div className="flex flex-col gap-4">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white shrink-0">
                                 Daftar Pasien Rawat Jalan
                             </h3>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
-                                Total: <span className="font-semibold text-blue-600 dark:text-blue-400">{rawatJalan.total || 0}</span> pasien
+                            
+                            <div className="flex items-center gap-2 overflow-x-auto pb-2 w-full">
+                                <div className="relative shrink-0">
+                                    <MagnifyingGlassIcon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        value={searchParams.nama_pasien}
+                                        onChange={(e) => handleFilterChange('nama_pasien', e.target.value)}
+                                        placeholder="Cari pasien..."
+                                        className="pl-6 pr-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white w-32"
+                                    />
+                                </div>
+
+                                <div className="flex items-center gap-2 shrink-0">
+                                    <input
+                                        type="date"
+                                        value={searchParams.start_date}
+                                        onChange={(e) => handleFilterChange('start_date', e.target.value)}
+                                        className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
+                                    />
+                                    <span className="text-xs text-gray-500">s/d</span>
+                                    <input
+                                        type="date"
+                                        value={searchParams.end_date}
+                                        onChange={(e) => handleFilterChange('end_date', e.target.value)}
+                                        className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
+                                    />
+                                </div>
+                                
+                                <select
+                                    value={searchParams.status}
+                                    onChange={(e) => handleFilterChange('status', e.target.value)}
+                                    className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white shrink-0"
+                                >
+                                    <option value="">Status</option>
+                                    {Object.entries(statusOptions).map(([key, value]) => (
+                                        <option key={key} value={key}>{value}</option>
+                                    ))}
+                                </select>
+                                
+                                <select
+                                    value={searchParams.status_bayar}
+                                    onChange={(e) => handleFilterChange('status_bayar', e.target.value)}
+                                    className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white shrink-0"
+                                >
+                                    <option value="">Pembayaran</option>
+                                    {Object.entries(statusBayarOptions).map(([key, value]) => (
+                                        <option key={key} value={key}>{value}</option>
+                                    ))}
+                                </select>
+
+                                <select
+                                    value={searchParams.kd_dokter}
+                                    onChange={(e) => handleFilterChange('kd_dokter', e.target.value)}
+                                    className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white shrink-0"
+                                >
+                                    <option value="">Dokter</option>
+                                    {Array.isArray(dokterOptions) && dokterOptions.map((d) => (
+                                        <option key={d.kd_dokter} value={d.kd_dokter}>{d.nm_dokter}</option>
+                                    ))}
+                                </select>
+
+                                <select
+                                    value={searchParams.kd_poli}
+                                    onChange={(e) => handleFilterChange('kd_poli', e.target.value)}
+                                    className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white shrink-0"
+                                >
+                                    <option value="">Poliklinik</option>
+                                    {Array.isArray(poliOptions) && poliOptions.map((p) => (
+                                        <option key={p.kd_poli} value={p.kd_poli}>{p.nm_poli}</option>
+                                    ))}
+                                </select>
+                                
+                                {(searchParams.start_date || searchParams.end_date || searchParams.status || searchParams.status_bayar || searchParams.nama_pasien || searchParams.kd_dokter || searchParams.kd_poli) && (
+                                    <button
+                                        onClick={resetFilters}
+                                        className="ml-2 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors shrink-0"
+                                        title="Reset filters"
+                                    >
+                                        ✕
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -342,8 +365,8 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                 <tr>
                                     <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                                         <div className="flex items-center gap-2">
-                                            <DocumentTextIcon className="w-4 h-4" />
-                                            No. Rawat
+                                            <UserIcon className="w-4 h-4" />
+                                            Nama Pasien
                                         </div>
                                     </th>
                                     <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
@@ -355,12 +378,22 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                     <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">No. RM</th>
                                     <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                                         <div className="flex items-center gap-2">
-                                            <UserIcon className="w-4 h-4" />
-                                            Nama Pasien
+                                            <DocumentTextIcon className="w-4 h-4" />
+                                            No. Rawat
                                         </div>
                                     </th>
-
-                                    <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Alamat</th>
+                                    <th 
+                                        className="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider relative group"
+                                        style={{ width: alamatWidth }}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <span>Alamat</span>
+                                            <div 
+                                                className="w-1 h-4 bg-gray-300 dark:bg-gray-600 cursor-col-resize opacity-0 group-hover:opacity-100 hover:bg-blue-500 transition-colors rounded"
+                                                onMouseDown={startResizing}
+                                            />
+                                        </div>
+                                    </th>
                                     
                                     <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Poliklinik</th>
                                     <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Nama Dokter</th>
@@ -394,14 +427,14 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                         className={`group transition-all duration-200 ${item.stts === 'Sudah' ? 'bg-green-100 dark:bg-green-900/20 hover:bg-green-200 dark:hover:bg-green-900/30' : 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-800 dark:hover:to-gray-700'}`}
                                     >
                                         <td className="px-4 py-2 whitespace-nowrap">
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-2">
                                                 <SimpleDropdown
                                                     trigger={
                                                         <button 
-                                                            className="p-1.5 rounded-xl bg-gradient-to-r from-orange-100 to-red-100 hover:from-orange-200 hover:to-red-200 dark:from-orange-900/20 dark:to-red-900/20 dark:hover:from-orange-900/30 dark:hover:to-red-900/30 transition-all duration-200 border border-orange-200 dark:border-orange-700 shadow-sm hover:shadow-md group-hover:scale-105"
+                                                            className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                                                             title="Menu Surat Keterangan"
                                                         >
-                                                            <DocumentTextIcon className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                                                            <EllipsisVerticalIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                                                         </button>
                                                     }
                                                 >
@@ -418,59 +451,77 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                                         Surat Sakit
                                                     </DropdownItem>
                                                 </SimpleDropdown>
-                                                <div className="bg-gray-50 dark:bg-gray-800/20 px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700">
-                                                    <span className="font-mono text-sm font-semibold text-gray-800 dark:text-gray-200">
-                                                        {item.no_rawat}
-                                                    </span>
-                                                </div>
+                                                {item.patient?.nm_pasien ? (
+                                                    <Link
+                                                        href={route('rawat-jalan.lanjutan', {
+                                                            t: btoa(
+                                                                JSON.stringify({
+                                                                    no_rawat: item.no_rawat,
+                                                                    no_rkm_medis: item.no_rkm_medis || '',
+                                                                })
+                                                            )
+                                                                .replace(/=+$/, '')
+                                                                .replace(/\+/g, '-')
+                                                                .replace(/\//g, '_'),
+                                                        })}
+                                                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold hover:underline transition-colors duration-200"
+                                                        title="Lihat detail pasien"
+                                                    >
+                                                        {item.patient.nm_pasien}
+                                                        {item.umurdaftar ? ` (${item.umurdaftar} ${item.sttsumur || ''})` : ''}
+                                                    </Link>
+                                                ) : (
+                                                    <span className="text-gray-500 dark:text-gray-400 italic">Nama tidak tersedia</span>
+                                                )}
                                             </div>
                                         </td>
                                         
                                         <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                            <div className="flex items-center gap-2">
-                                                <BanknotesIcon className="w-4 h-4 text-green-500" />
-                                                {item.nm_penjamin || item.penjab?.png_jawab || item.png_jawab || (
+                                            {(() => {
+                                                const penjamin = item.nm_penjamin || item.penjab?.png_jawab || item.png_jawab;
+                                                const isBpjs = penjamin && penjamin.toUpperCase().includes('BPJS');
+                                                
+                                                return penjamin ? (
+                                                    <div className={`inline-block px-2.5 py-1 rounded-lg text-xs font-medium border ${
+                                                        isBpjs 
+                                                            ? 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700' 
+                                                            : 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700'
+                                                    }`}>
+                                                        {penjamin}
+                                                    </div>
+                                                ) : (
                                                     <span className="text-gray-500 dark:text-gray-400 italic">Penjamin tidak tersedia</span>
-                                                )}
-                                            </div>
+                                                );
+                                            })()}
                                         </td>
                                         <td className="px-4 py-2 whitespace-nowrap">
-                                            <span className="font-mono text-xs bg-gray-50 dark:bg-gray-800/20 text-gray-700 dark:text-gray-300 px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700">
+                                            <span className="font-mono text-xs text-gray-700 dark:text-gray-300">
                                                 {item.no_rkm_medis}
                                             </span>
                                         </td>
                                         <td className="px-4 py-2 whitespace-nowrap">
-                                            {item.patient?.nm_pasien ? (
-                                                <Link
-                                                    href={route('rawat-jalan.lanjutan', {
-                                                        t: btoa(
-                                                            JSON.stringify({
-                                                                no_rawat: item.no_rawat,
-                                                                no_rkm_medis: item.no_rkm_medis || '',
-                                                            })
-                                                        )
-                                                            .replace(/=+$/, '')
-                                                            .replace(/\+/g, '-')
-                                                            .replace(/\//g, '_'),
-                                                    })}
-                                                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold hover:underline transition-colors duration-200"
-                                                    title="Lihat detail pasien"
-                                                >
-                                                    {item.patient.nm_pasien}
-                                                    {item.umurdaftar ? ` (${item.umurdaftar} ${item.sttsumur || ''})` : ''}
-                                                </Link>
-                                            ) : (
-                                                <span className="text-gray-500 dark:text-gray-400 italic">Nama tidak tersedia</span>
-                                            )}
+                                            <span className="font-mono text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                                {item.no_rawat}
+                                            </span>
                                         </td>
 
                                         <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                            <span className="block max-w-[24rem] truncate">
-                                                {item.patient?.alamat || item.alamat || '-'}
+                                            <span className="block truncate" style={{ maxWidth: alamatWidth }} title={[
+                                                item.patient?.alamat,
+                                                item.patient?.kelurahan?.nm_kel ? `Kel. ${item.patient?.kelurahan?.nm_kel}` : '',
+                                                item.patient?.kecamatan?.nm_kec ? `Kec. ${item.patient?.kecamatan?.nm_kec}` : '',
+                                                item.patient?.kabupaten?.nm_kab ? `Kab. ${item.patient?.kabupaten?.nm_kab}` : ''
+                                            ].filter(Boolean).join(', ')}>
+                                                {[
+                                                    item.patient?.alamat,
+                                                    item.patient?.kelurahan?.nm_kel ? `Kel. ${item.patient?.kelurahan?.nm_kel}` : '',
+                                                    item.patient?.kecamatan?.nm_kec ? `Kec. ${item.patient?.kecamatan?.nm_kec}` : '',
+                                                    item.patient?.kabupaten?.nm_kab ? `Kab. ${item.patient?.kabupaten?.nm_kab}` : ''
+                                                ].filter(Boolean).join(', ') || 'Alamat tidak tersedia'}
                                             </span>
                                         </td>
                                         
-                                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                        <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                             {item.nm_poli || item.poliklinik?.nm_poli || (
                                                 <span className="text-gray-500 dark:text-gray-400 italic">Poli tidak tersedia</span>
                                             )}
