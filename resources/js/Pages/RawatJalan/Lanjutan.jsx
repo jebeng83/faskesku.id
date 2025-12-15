@@ -655,7 +655,7 @@ export default function Lanjutan({ rawatJalan, params }) {
                                 </button>
                             </div>
                             {openAcc.pemeriksaan && (
-                                <div className="p-4 max-h-[calc(100vh-12rem)] min-h-[calc(100vh-10rem)] overflow-y-auto">
+                                <div className="p-4 max-h-[25vh] overflow-y-auto">
                                     {/* Updated to use the new combined component */}
                                     <RiwayatPerawatan
                                         token={
