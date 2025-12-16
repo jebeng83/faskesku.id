@@ -1507,19 +1507,19 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                         <div className="space-y-px md:space-y-px">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-1 md:gap-1">
                                 <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Penilaian (Assessment)</label>
+                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Penilaian (Assessment)</label>
                                     <textarea name="penilaian" value={formData.penilaian} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Diagnosis dan analisis kondisi pasien..." />
                                 </div>
                                 <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Rencana Tindak Lanjut (Planning)</label>
+                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Rencana Tindak Lanjut (Planning)</label>
                                     <textarea name="rtl" value={formData.rtl} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Rencana pengobatan dan tindakan..." />
                                 </div>
                                 <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Instruksi Medis</label>
+                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Instruksi Medis</label>
                                     <textarea name="instruksi" value={formData.instruksi} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Instruksi untuk pasien dan perawat..." />
                                 </div>
                                 <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Evaluasi</label>
+                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Evaluasi</label>
                                     <textarea name="evaluasi" value={formData.evaluasi} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Evaluasi hasil pengobatan..." />
                                 </div>
                             </div>
