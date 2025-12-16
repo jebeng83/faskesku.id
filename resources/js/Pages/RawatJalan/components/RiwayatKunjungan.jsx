@@ -482,7 +482,7 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
     return (
         <div className="overflow-hidden">
             {/* Mobile: Card list */}
-            <div className="md:hidden grid gap-3">
+            <div className="md:hidden grid gap-3 h-[532px] overflow-y-auto pr-1">
                 {items.map((row, index) => {
                     const isOpen = expandedVisit && expandedVisit.no_rawat === row.no_rawat;
                     return (
@@ -492,7 +492,7 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                         >
                             <button
                                 onClick={() => toggleVisitDetails(row)}
-                                className={`w-full text-left px-3 py-3 flex items-start justify-between gap-3 bg-gray-50 dark:bg-gray-800/60 ${isOpen ? 'rounded-t-lg' : 'rounded-lg'}`}
+                                className={`w-full text-left px-3 h-14 flex items-center justify-between gap-3 bg-gray-50 dark:bg-gray-800/60 ${isOpen ? 'rounded-t-lg' : 'rounded-lg'}`}
                                 aria-expanded={isOpen}
                                 aria-controls={`visit-${index}`}
                             >
@@ -510,7 +510,7 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                                             {row.no_rawat}
                                         </span>
                                     </div>
-                                    <div className="text-xs text-gray-700 dark:text-gray-300">{row.nm_poli || row.kd_poli || '-'}</div>
+                                    
                                 </div>
                                 <svg className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -533,7 +533,7 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
 
             {/* Desktop: List dengan header klik-untuk-expand (tanpa tabel) */}
             <div className="hidden md:block">
-                <div className="space-y-3">
+                <div className="space-y-2 h-[504px] overflow-y-auto pr-1">
                     {items.map((row) => (
                         <div
                             key={row.no_rawat}
@@ -545,7 +545,7 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                                 type="button"
                                 onClick={() => toggleVisitDetails(row)}
                                 aria-expanded={expandedVisit && expandedVisit.no_rawat === row.no_rawat ? 'true' : 'false'}
-                                className={`w-full flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-700/30 ${
+                                className={`w-full flex items-center justify-between px-3 h-14 bg-gray-50 dark:bg-gray-700/30 ${
                                     expandedVisit && expandedVisit.no_rawat === row.no_rawat ? 'border-b border-gray-200 dark:border-gray-700' : ''
                                 }`}
                             >

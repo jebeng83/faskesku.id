@@ -714,82 +714,16 @@ export default function Resep({
     };
 
     return (
-        <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
-            {/* Header dengan Tab */}
-            <div className="bg-teal-500 dark:bg-teal-600 px-4 md:px-6 py-3 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                        <div className="flex-shrink-0">
-                            <svg
-                                className="w-6 h-6 text-white"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                />
-                            </svg>
-                        </div>
-                        <h3 className="text-lg font-semibold text-white">
-                            Resep
-                        </h3>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <button
-                            type="button"
-                            className="text-white hover:text-gray-200 transition-colors"
-                            title="Fullscreen"
-                        >
-                            <svg
-                                className="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-                                />
-                            </svg>
-                        </button>
-                        <button
-                            type="button"
-                            className="text-white hover:text-gray-200 transition-colors"
-                            title="Minimize"
-                        >
-                            <svg
-                                className="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M20 12H4"
-                                />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
+        <div className="space-y-6 p-4 md:p-6">
             {/* Tab Navigation */}
             <div className="flex border-b border-gray-200 dark:border-gray-700">
                 <button
                     type="button"
                     onClick={() => setActiveTab("resep")}
-                    className={`px-6 py-3 text-sm font-medium transition-colors ${
+                    className={`px-6 py-3 text-sm font-medium transition-colors border-b-2 ${
                         activeTab === "resep"
-                            ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-b-2 border-gray-900 dark:border-white"
-                            : "text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                            ? "border-teal-600 text-teal-600 dark:border-teal-400 dark:text-teal-400"
+                            : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                     }`}
                 >
                     Resep
@@ -797,10 +731,10 @@ export default function Resep({
                 <button
                     type="button"
                     onClick={() => setActiveTab("resep-racikan")}
-                    className={`px-6 py-3 text-sm font-medium transition-colors ${
+                    className={`px-6 py-3 text-sm font-medium transition-colors border-b-2 ${
                         activeTab === "resep-racikan"
-                            ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-b-2 border-gray-900 dark:border-white"
-                            : "text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                            ? "border-teal-600 text-teal-600 dark:border-teal-400 dark:text-teal-400"
+                            : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                     }`}
                 >
                     Resep Racikan
@@ -808,7 +742,7 @@ export default function Resep({
             </div>
 
             {activeTab === "resep" && (
-                <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Dokter Penanggung Jawab - ditampilkan sesuai reg_periksa.kd_dokter (join dokter untuk nm_dokter) */}
                     <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                         <div className="flex items-center justify-between">

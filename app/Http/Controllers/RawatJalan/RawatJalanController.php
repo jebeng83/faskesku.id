@@ -234,16 +234,39 @@ class RawatJalanController extends Controller
         // Cari data bila parameter ada; jangan 404-kan agar tidak memutus navigasi
         $rawat = null;
         if ($noRawat) {
-            $rawat = RawatJalan::with('patient')
+            $rawat = RawatJalan::with(['patient.kelurahan', 'patient.kecamatan', 'patient.kabupaten'])
                 ->when($noRkmMedis, fn ($q) => $q->where('no_rkm_medis', $noRkmMedis))
                 ->where('no_rawat', $noRawat)
                 ->first();
         } elseif ($noRkmMedis) {
-            $rawat = RawatJalan::with('patient')
+            $rawat = RawatJalan::with(['patient.kelurahan', 'patient.kecamatan', 'patient.kabupaten'])
                 ->where('no_rkm_medis', $noRkmMedis)
                 ->orderByDesc('tgl_registrasi')
                 ->orderByDesc('jam_reg')
                 ->first();
+        }
+
+        // Hitung hari sejak kunjungan terakhir (reg_periksa sebelumnya)
+        $lastVisitDays = null;
+        $lastVisitDate = null;
+        if ($rawat && $rawat->no_rkm_medis) {
+            $prev = DB::table('reg_periksa')
+                ->where('no_rkm_medis', $rawat->no_rkm_medis)
+                ->where(function ($q) use ($rawat) {
+                    $q->where('tgl_registrasi', '<', $rawat->tgl_registrasi)
+                        ->orWhere(function ($qq) use ($rawat) {
+                            $qq->where('tgl_registrasi', '=', $rawat->tgl_registrasi)
+                                ->where('jam_reg', '<', $rawat->jam_reg);
+                        });
+                })
+                ->orderByDesc('tgl_registrasi')
+                ->orderByDesc('jam_reg')
+                ->first();
+
+            if ($prev) {
+                $lastVisitDate = \Carbon\Carbon::parse($prev->tgl_registrasi)->toDateString();
+                $lastVisitDays = \Carbon\Carbon::parse($prev->tgl_registrasi)->diffInDays(\Carbon\Carbon::today());
+            }
         }
 
         // Get medication data for this patient visit
@@ -259,6 +282,8 @@ class RawatJalanController extends Controller
                 'no_rawat' => $noRawat,
                 'no_rkm_medis' => $noRkmMedis,
             ],
+            'lastVisitDays' => $lastVisitDays,
+            'lastVisitDate' => $lastVisitDate,
         ]);
     }
 

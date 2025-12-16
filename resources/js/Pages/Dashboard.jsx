@@ -1244,13 +1244,13 @@ export default function Dashboard() {
                         </div>
                     </motion.section>
 
-                    {/* Panel grafik batang kunjungan poli per bulan + panel informasi (3/4 : 1/4) */}
-                    <section className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-                        {/* Panel kiri: 3/4 lebar untuk grafik batang */}
+                    {/* Panel grafik batang kunjungan poli per bulan + panel informasi (2/3 : 1/3) */}
+                    <section className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                        {/* Panel kiri: 2/3 lebar untuk grafik batang */}
                         <motion.div
                             ref={chartSectionRef}
                             variants={itemVariants}
-                            className="relative overflow-hidden xl:col-span-3 rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/85 backdrop-blur-xl p-6 shadow-xl shadow-blue-500/5"
+                            className="relative overflow-hidden xl:col-span-2 rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/85 backdrop-blur-xl p-6 shadow-xl shadow-blue-500/5"
                         >
                             {/* Top border gradient */}
                             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />

@@ -2,36 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { route } from 'ziggy-js';
 import SearchableSelect from '../../../Components/SearchableSelect.jsx';
 import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
+import { Eraser } from 'lucide-react';
 
 export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) {
-    // UI/UX variants (guided by docs/UI_UX_IMPROVEMENTS_GUIDE.md)
-    const prefersReducedMotion = useReducedMotion();
-    const containerVariants = {
-        hidden: { opacity: prefersReducedMotion ? 1 : 0 },
-        visible: {
-            opacity: 1,
-            transition: prefersReducedMotion
-                ? { duration: 0 }
-                : { staggerChildren: 0.08, delayChildren: 0.1 }
-        }
-    };
-    const itemVariants = {
-        hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 24, scale: prefersReducedMotion ? 1 : 0.98 },
-        visible: {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            transition: prefersReducedMotion
-                ? { duration: 0 }
-                : { duration: 0.35, ease: [0.22, 1, 0.36, 1] }
-        }
-    };
-    const cardHoverVariants = {
-        rest: { scale: 1, y: 0 },
-        hover: prefersReducedMotion ? { scale: 1, y: 0 } : { scale: 1.01, y: -2, transition: { duration: 0.25, ease: 'easeOut' } }
-    };
     // Gunakan helper untuk mendapatkan tanggal/waktu dengan timezone yang benar
     const nowDateString = todayDateString();
     const nowTimeString = nowDateTimeString().split(' ')[1].substring(0, 5);
@@ -1337,218 +1311,228 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
     }, [pegawaiQuery]);
 
     return (
-        <>
-            <motion.form onSubmit={handleSubmit} variants={containerVariants} initial="hidden" animate="visible" className="p-4 md:p-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
-                {/* Baris atas: kiri card CPPT/SOAP (Informasi Dasar), kanan card Template */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 items-stretch">
-                    <div className="lg:col-span-2">
-                        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/85 dark:bg-gray-800/85 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 p-4 md:p-6" whileHover={prefersReducedMotion ? {} : { scale: 1.01, y: -2 }}>
-                            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-                            <h4 className="text-base md:text-lg font-semibold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent mb-3">Informasi Dasar</h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Tanggal Perawatan</label>
-                                    <input type="date" name="tgl_perawatan" value={formData.tgl_perawatan} onChange={handleChange} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Jam Rawat</label>
-                                    <input type="time" name="jam_rawat" value={formData.jam_rawat} onChange={handleChange} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Kesadaran</label>
-                                    <select name="kesadaran" value={formData.kesadaran} onChange={handleChange} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+        <div className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-3 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                            <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                />
+                            </svg>
+                        </div>
+                        <div className="flex-1">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">CPPT / SOAP</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 font-normal">Catatan Perkembangan Pasien</p>
+                        </div>
+                        <div className="flex items-center gap-4 flex-wrap">
+                            <div className="flex items-center gap-2">
+                                <label htmlFor="tgl_perawatan" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-0">
+                                    Tanggal Perawatan
+                                </label>
+                                <input
+                                    id="tgl_perawatan"
+                                    type="date"
+                                    name="tgl_perawatan"
+                                    value={formData.tgl_perawatan}
+                                    onChange={handleChange}
+                                    className="text-sm h-9 md:h-10 px-2.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                />
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <label htmlFor="jam_rawat" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-0">
+                                    Jam Rawat
+                                </label>
+                                <input
+                                    id="jam_rawat"
+                                    type="time"
+                                    name="jam_rawat"
+                                    value={formData.jam_rawat}
+                                    onChange={handleChange}
+                                    className="text-sm h-9 md:h-10 px-2.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div className="p-2 md:p-3">
+                <div className="grid grid-cols-1 gap-2 md:gap-3">
+                    {/* Kolom Utama */}
+                    <div className="order-2 md:order-1 space-y-2 min-w-0">
+                        {/* Informasi Dasar */}
+                        <div className="space-y-px md:space-y-px bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-md p-px md:p-1">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-px md:gap-px">
+                                <div className="min-w-0 flex flex-row items-center gap-1">
+                                    <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Kesadaran :</label>
+                                    <select name="kesadaran" value={formData.kesadaran} onChange={handleChange} className="w-full md:flex-1 text-sm h-7 px-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
                                         {kesadaranOptions.map((opt) => (
                                             <option key={opt} value={opt}>{opt}</option>
                                         ))}
                                     </select>
                                 </div>
-                            </div>
-                        </motion.div>
-                        {/* Hanya card Informasi Dasar di kolom kiri atas */}
-                    </div>
-                    <aside className="lg:col-span-1 h-full">
-                        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/85 dark:bg-gray-800/85 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 p-4 md:p-6 lg:sticky lg:top-4 h-full">
-                            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-                            <div className="space-y-3 md:space-y-4">
-                                <div>                     
-                                    <SearchableSelect
-                                        options={templateOptions}
-                                        value={selectedTemplate}
-                                        onChange={(val) => { setSelectedTemplate(val); applyTemplate(val); }}
-                                        placeholder="— Pilih template —"
-                                        searchPlaceholder="Cari diagnosa..."
-                                        displayKey="label"
-                                        valueKey="key"
-                                    />
-                                </div>
-                                <div className="flex gap-2">
-                                    <button type="button" onClick={clearTemplateFields} className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors w-full">
-                                        Bersihkan isian
-                                    </button>
-                                </div>
-                            </div>
-                        </motion.div>
-                    </aside>
-                </div>
-
-                {/* Baris bawah: card lain tetap penuh lebar seperti sebelumnya */}
-                <div className="space-y-3 md:space-y-4 mt-3 md:mt-4">
-                    {/* Alergi & Petugas Pemeriksa diletakkan tepat di bawah Informasi Dasar sebagai card penuh lebar */}
-                    <motion.div variants={itemVariants} className="relative z-10 overflow-visible rounded-2xl bg-white/85 dark:bg-gray-800/85 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 p-4 md:p-6">
-                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-                        <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                            <svg className="w-4 h-4 mr-2 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                            </svg>
-                            Alergi & Petugas Pemeriksa
-                        </h4>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
-                            <div>
-                                <label className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
-                                    <svg className="w-4 h-4 mr-1.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                                    </svg>
-                                    Alergi
-                                </label>
-                                <input type="text" name="alergi" value={formData.alergi} onChange={handleChange} placeholder="Contoh: Penisilin, Aspirin" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                            </div>
-                            <div className="relative">
-                                <label className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
-                                    <svg className="w-4 h-4 mr-1.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
-                                    Petugas Pemeriksa
-                                </label>
-                                <input
-                                    type="text"
-                                    value={pegawaiQuery}
-                                    onChange={(e) => setPegawaiQuery(e.target.value)}
-                                    placeholder="Ketik nama atau NIK pegawai..."
-                                    className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                />
-                                {pegawaiOptions.length > 0 && (
-                                    <div className="absolute z-50 mt-1 w-full max-h-48 overflow-auto rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg">
-                                        {pegawaiOptions.map((p) => (
-                                            <button
-                                                key={p.nik}
-                                                type="button"
-                                                onClick={() => {
-                                                    setFormData((prev) => ({ ...prev, nip: p.nik }));
-                                                    setPegawaiQuery(p.nama + ' (' + p.nik + ')');
-                                                    setPegawaiOptions([]);
-                                                }}
-                                                className="w-full text-left px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700/50 text-sm border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors"
-                                            >
-                                                <div className="font-medium text-gray-900 dark:text-white">{p.nama}</div>
-                                                <div className="text-xs text-gray-500 dark:text-gray-400">NIK: {p.nik}</div>
-                                            </button>
-                                        ))}
+                                <div className="relative">
+                                    <div className="min-w-0 flex flex-row items-center gap-1">
+                                        <label className="shrink-0 text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Pemeriksa :</label>
+                                        <input
+                                            type="text"
+                                            value={pegawaiQuery}
+                                            onChange={(e) => setPegawaiQuery(e.target.value)}
+                                            placeholder="Ketik nama atau NIK pegawai..."
+                                            className="w-full md:flex-1 text-sm h-7 px-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                        />
                                     </div>
-                                )}
-                                <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">💡 Mulai ketik untuk mencari pegawai</p>
+                                    {pegawaiOptions.length > 0 && (
+                                        <div className="absolute z-50 mt-1 md:mt-1 w-full max-h-48 overflow-auto rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg">
+                                            {pegawaiOptions.map((p) => (
+                                                <button
+                                                    key={p.nik}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setFormData((prev) => ({ ...prev, nip: p.nik }));
+                                                        setPegawaiQuery(p.nama + ' (' + p.nik + ')');
+                                                        setPegawaiOptions([]);
+                                                    }}
+                                                    className="w-full text-left px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700/50 text-sm border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors"
+                                                >
+                                                    <div className="font-medium text-gray-900 dark:text-white">{p.nama}</div>
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400">NIK: {p.nik}</div>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                </div>
+                                <div className="min-w-0 flex flex-row items-center gap-1">
+                                    <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">
+                                        Alergi :
+                                    </label>
+                                    <input type="text" name="alergi" value={formData.alergi} onChange={handleChange} placeholder="Contoh: Penisilin, Aspirin" className="w-full md:flex-1 text-sm h-7 px-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                </div>
+                                <div className="min-w-0 flex flex-row items-center gap-1">
+                                    <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Template :</label>
+                                    <div className="w-full md:flex-1">
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-1">
+                                            <div className="w-full sm:w-52 md:w-52">
+                                                <SearchableSelect
+                                                    options={templateOptions}
+                                                    value={selectedTemplate}
+                                                    onChange={(val) => { setSelectedTemplate(val); applyTemplate(val); }}
+                                                    placeholder="Pilih template..."
+                                                    searchPlaceholder="Cari diagnosa..."
+                                                    displayKey="label"
+                                                    valueKey="key"
+                                                    className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none"
+                                                />
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={clearTemplateFields}
+                                                className="inline-flex items-center w-auto self-start sm:self-auto p-1 text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                                aria-label="Bersihkan Form"
+                                                title="Bersihkan"
+                                            >
+                                                <Eraser className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </motion.div>
-                    <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/85 dark:bg-gray-800/85 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 p-4 md:p-6">
-                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-                        <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                            <svg className="w-4 h-4 mr-2 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2" />
-                            </svg>
-                            Tanda-Tanda Vital & Antropometri
-                        </h4>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
-                            <div>
-                                <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Suhu (°C)</label>
-                                <input type="text" name="suhu_tubuh" value={formData.suhu_tubuh} onChange={handleChange} placeholder="36.8" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                            </div>
-                            <div>
-                                <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Tensi (mmHg)</label>
-                                <input type="text" name="tensi" value={formData.tensi} onChange={handleChange} placeholder="120/80" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                            </div>
-                            <div>
-                                <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Nadi (/menit)</label>
-                                <input type="text" name="nadi" value={formData.nadi} onChange={handleChange} placeholder="80" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                            </div>
-                            <div>
-                                <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Respirasi (/menit)</label>
-                                <input type="text" name="respirasi" value={formData.respirasi} onChange={handleChange} placeholder="20" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                            </div>
-                            <div>
-                                <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">SpO2 (%)</label>
-                                <input type="text" name="spo2" value={formData.spo2} onChange={handleChange} placeholder="98" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                            </div>
-                            <div>
-                                <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Tinggi (cm)</label>
-                                <input type="text" name="tinggi" value={formData.tinggi} onChange={handleChange} placeholder="165" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                            </div>
-                            <div>
-                                <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Berat (kg)</label>
-                                <input type="text" name="berat" value={formData.berat} onChange={handleChange} placeholder="60" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                            </div>
-                            <div>
-                                <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">GCS</label>
-                                <input type="text" name="gcs" value={formData.gcs} onChange={handleChange} placeholder="E4V5M6" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                            </div>
-                            <div>
-                                <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Lingkar Perut (cm)</label>
-                                <input type="text" name="lingkar_perut" value={formData.lingkar_perut} onChange={handleChange} placeholder="80" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                            </div>
-                        </div>
-                    </motion.div>
 
-                    <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/85 dark:bg-gray-800/85 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 p-4 md:p-6">
-                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-                        <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                            <svg className="w-4 h-4 mr-2 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            Subjektif & Objektif
-                        </h4>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
-                            <div>
-                                <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Keluhan Utama (Subjektif)</label>
-                                <textarea name="keluhan" value={formData.keluhan} onChange={handleChange} rows={4} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Keluhan yang dirasakan pasien..." />
-                            </div>
-                            <div>
-                                <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Pemeriksaan Fisik (Objektif)</label>
-                                <textarea name="pemeriksaan" value={formData.pemeriksaan} onChange={handleChange} rows={4} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Hasil pemeriksaan fisik dan penunjang..." />
+                        {/* Subjektif & Objektif */}
+                        <div className="space-y-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-stretch">
+                                <div className="flex flex-col h-full">
+                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Keluhan Utama (Subjektif)</label>
+                                    <textarea name="keluhan" value={formData.keluhan} onChange={handleChange} rows={4} className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
+                                </div>
+                                <div className="flex flex-col h-full">
+                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Pemeriksaan Fisik (Objektif)</label>
+                                    <textarea name="pemeriksaan" value={formData.pemeriksaan} onChange={handleChange} rows={4} className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
+                                </div>
                             </div>
                         </div>
-                    </motion.div>
 
-                    {/* Alergi & Petugas Pemeriksa dipindahkan ke bawah panel Informasi Dasar */}
-
-                    <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/85 dark:bg-gray-800/85 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 p-4 md:p-6">
-                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-                        <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                            <svg className="w-4 h-4 mr-2 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                            </svg>
-                            Assessment & Planning
-                        </h4>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
-                            <div>
-                                <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Penilaian (Assessment)</label>
-                                <textarea name="penilaian" value={formData.penilaian} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Diagnosis dan analisis kondisi pasien..." />
-                            </div>
-                            <div>
-                                <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Rencana Tindak Lanjut (Planning)</label>
-                                <textarea name="rtl" value={formData.rtl} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Rencana pengobatan dan tindakan..." />
-                            </div>
-                            <div>
-                                <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Instruksi Medis</label>
-                                <textarea name="instruksi" value={formData.instruksi} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Instruksi untuk pasien dan perawat..." />
-                            </div>
-                            <div>
-                                <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Evaluasi</label>
-                                <textarea name="evaluasi" value={formData.evaluasi} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Evaluasi hasil pengobatan..." />
+                        {/* Tanda-Tanda Vital & Antropometri */}
+                        <div className="space-y-px md:space-y-px">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1 md:gap-1">
+                                <div>
+                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Suhu (°C)</label>
+                                    <input type="text" name="suhu_tubuh" value={formData.suhu_tubuh} onChange={handleChange} placeholder="36.8" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Tensi (mmHg)</label>
+                                    <input type="text" name="tensi" value={formData.tensi} onChange={handleChange} placeholder="120/80" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Nadi (/menit)</label>
+                                    <input type="text" name="nadi" value={formData.nadi} onChange={handleChange} placeholder="80" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Respirasi (/menit)</label>
+                                    <input type="text" name="respirasi" value={formData.respirasi} onChange={handleChange} placeholder="20" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">SpO2 (%)</label>
+                                    <input type="text" name="spo2" value={formData.spo2} onChange={handleChange} placeholder="98" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Tinggi (cm)</label>
+                                    <input type="text" name="tinggi" value={formData.tinggi} onChange={handleChange} placeholder="165" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Berat (kg)</label>
+                                    <input type="text" name="berat" value={formData.berat} onChange={handleChange} placeholder="60" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">GCS</label>
+                                    <input type="text" name="gcs" value={formData.gcs} onChange={handleChange} placeholder="E4V5M6" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Lingkar Perut (cm)</label>
+                                    <input type="text" name="lingkar_perut" value={formData.lingkar_perut} onChange={handleChange} placeholder="80" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                </div>
                             </div>
                         </div>
-                    </motion.div>
+
+                        {/* Assessment & Planning */}
+                        <div className="space-y-px md:space-y-px">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-1 md:gap-1 items-stretch">
+                                <div className="flex flex-col h-full">
+                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Penilaian (Assessment)</label>
+                                    <textarea name="penilaian" value={formData.penilaian} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" placeholder="Diagnosis dan analisis kondisi pasien..." />
+                                </div>
+                                <div className="flex flex-col h-full">
+                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Rencana Tindak Lanjut (Planning)</label>
+                                    <textarea name="rtl" value={formData.rtl} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" placeholder="Rencana pengobatan dan tindakan..." />
+                                </div>
+                                <div className="flex flex-col h-full">
+                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Instruksi Medis</label>
+                                    <textarea name="instruksi" value={formData.instruksi} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" placeholder="Instruksi untuk pasien dan perawat..." />
+                                </div>
+                                <div className="flex flex-col h-full">
+                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Evaluasi</label>
+                                    <textarea name="evaluasi" value={formData.evaluasi} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" placeholder="Evaluasi hasil pengobatan..." />
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                    {/* Kolom kedua dihapus; konten template kini di dalam main form */}
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+                {/* Footer Buttons */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 mt-6">
                     {editKey && (
                         <button
                             type="button"
@@ -2188,7 +2172,8 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                         </button>
                     )}
                 </div>
-            </motion.form>
+                </div>
+            </form>
             {bridgingOpen && (
                 <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto">
                     <div className="absolute inset-0 bg-black/50" onClick={closeBridgingModal}></div>
@@ -2747,7 +2732,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                         <span>{error || message}</span>
                     </div>
                 )}
-                <div className="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-4 md:p-6">
                     <div className="flex items-center justify-between mb-4">
                         <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
                             <svg className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2945,7 +2930,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                     )}
                 </div>
             </div>
-        </>
+        </div>
     );
 }
-
