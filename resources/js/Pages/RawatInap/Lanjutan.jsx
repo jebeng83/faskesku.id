@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Head, Link } from '@inertiajs/react';
-import { route } from 'ziggy-js';
+import { Head } from '@inertiajs/react';
 import LanjutanRalanLayout from '@/Layouts/LanjutanRalanLayout';
 import RiwayatPemeriksaan from './components/RiwayatPemeriksaan';
+import RiwayatPerawatan from '../RawatJalan/components/RiwayatPerawatan';
 import CpptSoap from '../RawatJalan/components/CpptSoap';
 import Resep from './components/Resep';
 import Diagnosa from './components/Diagnosa';
@@ -54,7 +54,9 @@ export default function Lanjutan({ rawatInap, params }) {
         const commonProps = {
             token: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('t') : '',
             noRkmMedis: params?.no_rkm_medis || rawatInap?.patient?.no_rkm_medis,
-            noRawat: params?.no_rawat || rawatInap?.no_rawat
+            noRawat: params?.no_rawat || rawatInap?.no_rawat,
+            kdBangsal: rawatInap?.kd_bangsal || '',
+            kdPj: rawatInap?.kd_pj || '',
         };
 
         switch (activeTab) {
@@ -134,30 +136,6 @@ export default function Lanjutan({ rawatInap, params }) {
                     </div>
                 </div>
 
-                {/* Tab Navigation */}
-                <div className="bg-white rounded-2xl border shadow-sm mb-6">
-                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b">
-                        <h3 className="text-lg font-semibold">Menu Perawatan Inap</h3>
-                        <p className="text-sm text-gray-500 mt-1">Pilih menu untuk mengelola perawatan pasien</p>
-                    </div>
-                    <div className="px-6 py-4 bg-gray-50 border-b">
-                        <div className="flex flex-wrap gap-2">
-                            {menuTabs.map((tab) => {
-                                const isActive = activeTab === tab.key;
-                                return (
-                                    <button
-                                        key={tab.key}
-                                        onClick={() => handleTabChange(tab.key)}
-                                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg border-2 transition-all duration-200 font-medium text-sm ${getTabColorClasses(tab.color, isActive)} ${isActive ? 'border-current shadow-sm' : 'border-transparent'}`}
-                                    >
-                                        {tab.icon}
-                                        <span>{tab.title}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </div>
 
                 {/* Content Area */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -182,9 +160,8 @@ export default function Lanjutan({ rawatInap, params }) {
                         </div>
                         {openAcc.pemeriksaan && (
                             <div className="p-4 max-h-[700px] overflow-y-auto">
-                                <RiwayatPemeriksaan
+                                <RiwayatPerawatan
                                     token={typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('t') : ''}
-                                    noRawat={params?.no_rawat || rawatInap?.no_rawat}
                                     noRkmMedis={params?.no_rkm_medis || rawatInap?.patient?.no_rkm_medis}
                                 />
                             </div>
