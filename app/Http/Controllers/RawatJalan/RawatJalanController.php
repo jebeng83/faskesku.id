@@ -234,12 +234,12 @@ class RawatJalanController extends Controller
         // Cari data bila parameter ada; jangan 404-kan agar tidak memutus navigasi
         $rawat = null;
         if ($noRawat) {
-            $rawat = RawatJalan::with('patient')
+            $rawat = RawatJalan::with(['patient.kelurahan', 'patient.kecamatan', 'patient.kabupaten'])
                 ->when($noRkmMedis, fn ($q) => $q->where('no_rkm_medis', $noRkmMedis))
                 ->where('no_rawat', $noRawat)
                 ->first();
         } elseif ($noRkmMedis) {
-            $rawat = RawatJalan::with('patient')
+            $rawat = RawatJalan::with(['patient.kelurahan', 'patient.kecamatan', 'patient.kabupaten'])
                 ->where('no_rkm_medis', $noRkmMedis)
                 ->orderByDesc('tgl_registrasi')
                 ->orderByDesc('jam_reg')

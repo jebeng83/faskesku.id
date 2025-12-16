@@ -417,7 +417,7 @@ export default function Lanjutan({ rawatJalan, params }) {
                             {/* Ringkasan utama di atas card */}
                             <button
                                 type="button"
-                                className="w-full text-left px-3 py-2 text-xs rounded-md border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors mb-3 flex items-center justify-between"
+                                className="w-full text-left px-3 py-2 text-xs rounded-md border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors mb-3 flex items-center justify-between lg:hidden"
                                 onClick={() => setShowPatientDetails((v) => !v)}
                                 aria-expanded={showPatientDetails}
                                 aria-controls="patient-details-card"
@@ -490,7 +490,14 @@ export default function Lanjutan({ rawatJalan, params }) {
                                         </div>
                                         <div className="py-0.5 flex items-baseline gap-1">
                                             <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Alamat</span>
-                                            <span className="text-gray-900 dark:text-white flex-1 break-words">{rawatJalan.patient?.alamat || '-'}</span>
+                                            <span className="text-gray-900 dark:text-white flex-1 break-words">
+                                                {[
+                                                    rawatJalan?.patient?.alamat,
+                                                    rawatJalan?.patient?.kelurahan?.nm_kel || rawatJalan?.patient?.kd_kel,
+                                                    rawatJalan?.patient?.kecamatan?.nm_kec || rawatJalan?.patient?.kd_kec,
+                                                    rawatJalan?.patient?.kabupaten?.nm_kab || rawatJalan?.patient?.kd_kab,
+                                                ].filter(Boolean).join(', ') || '-'}
+                                            </span>
                                         </div>
                                         <div className="py-0.5 flex items-baseline gap-1">
                                             <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Keluarga</span>
@@ -653,6 +660,44 @@ export default function Lanjutan({ rawatJalan, params }) {
                                         </svg>
                                     )}
                                 </button>
+                            </div>
+                            {/* Patient summary under the Riwayat header for large screens */}
+                            <div className="hidden lg:block px-2 py-0.5 border-b border-gray-200 dark:border-gray-700">
+                                <div className="text-[11px] font-medium text-gray-800 dark:text-gray-200 mb-1">Identitas Pasien</div>
+                                <div className="space-y-0 text-[12px] leading-tight">
+                                    <div className="grid grid-cols-[7.5rem_0.75rem_1fr] md:grid-cols-[8.5rem_0.9rem_1fr] items-baseline gap-x-0.5">
+                                        <span className="text-left text-gray-700 dark:text-gray-300">Nama</span>
+                                        <span className="text-gray-400 text-center">:</span>
+                                        <span className="text-gray-900 dark:text-white font-semibold">{rawatJalan?.patient?.nm_pasien || rawatJalan?.nama_pasien || '-'}</span>
+                                    </div>
+                                    <div className="grid grid-cols-[7.5rem_0.75rem_1fr] md:grid-cols-[8.5rem_0.9rem_1fr] items-baseline gap-x-0.5">
+                                        <span className="text-left text-gray-700 dark:text-gray-300">Umur</span>
+                                        <span className="text-gray-400 text-center">:</span>
+                                        <span className="text-gray-900 dark:text-white">{(rawatJalan?.patient?.umur || rawatJalan?.umurdaftar) ? `${rawatJalan?.patient?.umur || rawatJalan?.umurdaftar} ${rawatJalan?.sttsumur || 'Th'}` : '-'}</span>
+                                    </div>
+                                    <div className="grid grid-cols-[7.5rem_0.75rem_1fr] md:grid-cols-[8.5rem_0.9rem_1fr] items-baseline gap-x-0.5">
+                                        <span className="text-left text-gray-700 dark:text-gray-300">JK</span>
+                                        <span className="text-gray-400 text-center">:</span>
+                                        <span className="text-gray-900 dark:text-white">{rawatJalan?.patient?.jk || '-'}</span>
+                                    </div>
+                                    <div className="grid grid-cols-[7.5rem_0.75rem_1fr] md:grid-cols-[8.5rem_0.9rem_1fr] items-baseline gap-x-0.5">
+                                        <span className="text-left text-gray-700 dark:text-gray-300">Alamat</span>
+                                        <span className="text-gray-400 text-center">:</span>
+                                        <span className="text-gray-900 dark:text-white break-words">
+                                            {[
+                                                rawatJalan?.patient?.alamat,
+                                                rawatJalan?.patient?.kelurahan?.nm_kel || rawatJalan?.patient?.kd_kel,
+                                                rawatJalan?.patient?.kecamatan?.nm_kec || rawatJalan?.patient?.kd_kec,
+                                                rawatJalan?.patient?.kabupaten?.nm_kab || rawatJalan?.patient?.kd_kab,
+                                            ].filter(Boolean).join(', ') || '-'}
+                                        </span>
+                                    </div>
+                                    <div className="grid grid-cols-[7.5rem_0.75rem_1fr] md:grid-cols-[8.5rem_0.9rem_1fr] items-baseline gap-x-0.5">
+                                        <span className="text-left text-gray-700 dark:text-gray-300">Cara bayar</span>
+                                        <span className="text-gray-400 text-center">:</span>
+                                        <span className="text-gray-900 dark:text-white">{rawatJalan?.penjab?.png_jawab || rawatJalan?.cara_bayar || 'BPJS'}</span>
+                                    </div>
+                                </div>
                             </div>
                             {openAcc.pemeriksaan && (
                                 <div className="p-4 max-h-[25vh] overflow-y-auto">
