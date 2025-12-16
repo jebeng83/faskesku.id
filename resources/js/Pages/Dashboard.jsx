@@ -390,7 +390,7 @@ const Footer = React.memo(function Footer() {
         { label: "SATUSEHAT Monitoring", href: "/satusehat/monitoring" },
         { label: "Penjaminan Mutu (Audit)", href: "/permissions" },
         { label: "Laboratorium", href: route("laboratorium.index") },
-        { label: "Radiologi", href: "/radiologi" },
+        { label: "Radiologi", href: route("radiologi.index") },
         { label: "Farmasi", href: "/farmasi" },
     ];
 
