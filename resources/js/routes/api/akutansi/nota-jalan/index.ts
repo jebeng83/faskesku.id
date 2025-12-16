@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::exists
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:32
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:34
 * @route '/api/akutansi/nota-jalan/exists'
 */
 export const exists = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ exists.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::exists
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:32
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:34
 * @route '/api/akutansi/nota-jalan/exists'
 */
 exists.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ exists.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::exists
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:32
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:34
 * @route '/api/akutansi/nota-jalan/exists'
 */
 exists.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ exists.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::exists
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:32
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:34
 * @route '/api/akutansi/nota-jalan/exists'
 */
 exists.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ exists.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::store
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:49
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:51
 * @route '/api/akutansi/nota-jalan'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +60,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::store
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:49
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:51
 * @route '/api/akutansi/nota-jalan'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::store
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:49
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:51
 * @route '/api/akutansi/nota-jalan'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -79,7 +79,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::snapshot
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:439
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:441
 * @route '/api/akutansi/nota-jalan/snapshot'
 */
 export const snapshot = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -94,7 +94,7 @@ snapshot.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::snapshot
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:439
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:441
 * @route '/api/akutansi/nota-jalan/snapshot'
 */
 snapshot.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ snapshot.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::snapshot
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:439
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:441
 * @route '/api/akutansi/nota-jalan/snapshot'
 */
 snapshot.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -113,7 +113,7 @@ snapshot.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::pdf
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:815
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:820
 * @route '/api/akutansi/nota-jalan/{no_rawat}/pdf'
 */
 export const pdf = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -128,7 +128,7 @@ pdf.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::pdf
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:815
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:820
 * @route '/api/akutansi/nota-jalan/{no_rawat}/pdf'
 */
 pdf.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -155,7 +155,7 @@ pdf.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | 
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::pdf
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:815
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:820
 * @route '/api/akutansi/nota-jalan/{no_rawat}/pdf'
 */
 pdf.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -165,7 +165,7 @@ pdf.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | 
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::pdf
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:815
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:820
 * @route '/api/akutansi/nota-jalan/{no_rawat}/pdf'
 */
 pdf.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -175,7 +175,7 @@ pdf.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] |
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::show
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:659
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:661
 * @route '/api/akutansi/nota-jalan/{no_rawat}'
 */
 export const show = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -190,7 +190,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::show
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:659
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:661
 * @route '/api/akutansi/nota-jalan/{no_rawat}'
 */
 show.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -217,7 +217,7 @@ show.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] |
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::show
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:659
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:661
 * @route '/api/akutansi/nota-jalan/{no_rawat}'
 */
 show.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -227,7 +227,7 @@ show.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] |
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::show
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:659
+* @see app/Http/Controllers/Akutansi/NotaJalanController.php:661
 * @route '/api/akutansi/nota-jalan/{no_rawat}'
 */
 show.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
