@@ -149,6 +149,17 @@ class PermissionSeeder extends Seeder
             'sip-pegawai.create',
             'sip-pegawai.edit',
             'sip-pegawai.delete',
+
+            'group.farmasi.access',
+            'group.keuangan.access',
+            'group.pengaturan.access',
+            'group.laboratorium.access',
+            'group.rawatjalan.access',
+            'group.masterdata.access',
+            'group.laporan.access',
+            'group.pcare.access',
+            'group.satusehat.access',
+            'group.radiologi.access',
         ];
 
         foreach ($permissions as $permission) {

@@ -17,6 +17,8 @@ export default function PermissionsIndex() {
 	const [showPermissionModal, setShowPermissionModal] = useState(false);
 	const [editingRole, setEditingRole] = useState(null);
 	const [editingPermission, setEditingPermission] = useState(null);
+	const [roleSearch, setRoleSearch] = useState("");
+	const [permissionSearch, setPermissionSearch] = useState("");
 
 	// Fetch data
 	const fetchRoles = async () => {
@@ -51,6 +53,14 @@ export default function PermissionsIndex() {
 		};
 		loadData();
 	}, []);
+
+	const filteredRoles = roles.filter((role) =>
+		role.name.toLowerCase().includes(roleSearch.toLowerCase())
+	);
+
+	const filteredPermissions = permissions.filter((permission) =>
+		permission.name.toLowerCase().includes(permissionSearch.toLowerCase())
+	);
 
 	// Role columns
 	const roleColumns = [
@@ -389,29 +399,40 @@ export default function PermissionsIndex() {
 				{/* Content */}
 				{activeTab === "roles" && (
 					<div className="space-y-4">
-						<div className="flex justify-end">
-							<Button
-								onClick={() => {
-									setEditingRole(null);
-									setShowRoleModal(true);
-								}}
-								className="bg-blue-600 hover:bg-blue-700 text-white"
-							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									viewBox="0 0 24 24"
-									fill="currentColor"
-									className="w-4 h-4 mr-2"
+						<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+							<div className="w-full sm:w-1/2">
+								<input
+									type="text"
+									value={roleSearch}
+									onChange={(e) => setRoleSearch(e.target.value)}
+									placeholder="Cari role..."
+									className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+								/>
+							</div>
+							<div className="flex justify-end">
+								<Button
+									onClick={() => {
+										setEditingRole(null);
+										setShowRoleModal(true);
+									}}
+									className="bg-blue-600 hover:bg-blue-700 text-white"
 								>
-									<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-								</svg>
-								Tambah Role
-							</Button>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 24 24"
+										fill="currentColor"
+										className="w-4 h-4 mr-2"
+									>
+										<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+									</svg>
+									Tambah Role
+								</Button>
+							</div>
 						</div>
 
 						<ResponsiveTable
 							columns={roleColumns}
-							data={roles}
+							data={filteredRoles}
 							keyField="id"
 							emptyMessage="Belum ada roles"
 							emptyIcon={
@@ -430,29 +451,40 @@ export default function PermissionsIndex() {
 
 				{activeTab === "permissions" && (
 					<div className="space-y-4">
-						<div className="flex justify-end">
-							<Button
-								onClick={() => {
-									setEditingPermission(null);
-									setShowPermissionModal(true);
-								}}
-								className="bg-purple-600 hover:bg-purple-700 text-white"
-							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									viewBox="0 0 24 24"
-									fill="currentColor"
-									className="w-4 h-4 mr-2"
+						<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+							<div className="w-full sm:w-1/2">
+								<input
+									type="text"
+									value={permissionSearch}
+									onChange={(e) => setPermissionSearch(e.target.value)}
+									placeholder="Cari permission..."
+									className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+								/>
+							</div>
+							<div className="flex justify-end">
+								<Button
+									onClick={() => {
+										setEditingPermission(null);
+										setShowPermissionModal(true);
+									}}
+									className="bg-purple-600 hover:bg-purple-700 text-white"
 								>
-									<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-								</svg>
-								Tambah Permission
-							</Button>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 24 24"
+										fill="currentColor"
+										className="w-4 h-4 mr-2"
+									>
+										<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+									</svg>
+									Tambah Permission
+								</Button>
+							</div>
 						</div>
 
 						<ResponsiveTable
 							columns={permissionColumns}
-							data={permissions}
+							data={filteredPermissions}
 							keyField="id"
 							emptyMessage="Belum ada permissions"
 							emptyIcon={
