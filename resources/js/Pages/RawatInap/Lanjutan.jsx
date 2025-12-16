@@ -2,15 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Head } from '@inertiajs/react';
 import LanjutanRalanLayout from '@/Layouts/LanjutanRalanLayout';
 import RiwayatKunjunganRanap from './components/RiwayatKunjungan';
-// Ralan accordion tidak ditampilkan pada halaman ini sesuai permintaan
 import CpptSoap from './components/CpptSoap';
-import Resep from './components/Resep';
 import Diagnosa from './components/Diagnosa';
 import PermintaanLab from './components/PermintaanLab';
 import PermintaanRadiologi from './components/PermintaanRadiologi';
 import TarifTindakan from './components/TarifTindakan';
 import Operasi from './components/Operasi';
 import Konsultasi from './components/Konsultasi';
+import Resep from './components/Resep';
 
 export default function Lanjutan({ rawatInap, params }) {
     const [activeTab, setActiveTab] = useState('cppt');
@@ -61,15 +60,29 @@ export default function Lanjutan({ rawatInap, params }) {
         };
 
         switch (activeTab) {
-            case 'cppt': return <CpptSoap {...commonProps} />;
-            case 'operasi': return <Operasi {...commonProps} />;
-            case 'konsultasi': return <Konsultasi {...commonProps} />;
-            case 'tarifTindakan': return <TarifTindakan {...commonProps} />;
-            case 'resep': return <Resep {...commonProps} kdPoli={rawatInap?.kd_poli || ''} />;
-            case 'diagnosa': return <Diagnosa {...commonProps} />;
-            case 'lab': return <PermintaanLab {...commonProps} />;
-            case 'radiologi': return <PermintaanRadiologi {...commonProps} />;
-            default: return <CpptSoap {...commonProps} />;
+            case 'cppt':
+                return <CpptSoap {...commonProps} />;
+            case 'operasi':
+                return <Operasi {...commonProps} />;
+            case 'konsultasi':
+                return <Konsultasi {...commonProps} />;
+            case 'tarifTindakan':
+                return <TarifTindakan {...commonProps} />;
+            case 'resep':
+                return (
+                    <Resep
+                        {...commonProps}
+                        kdPoli={rawatInap?.kd_poli || params?.kd_poli || ''}
+                    />
+                );
+            case 'diagnosa':
+                return <Diagnosa {...commonProps} />;
+            case 'lab':
+                return <PermintaanLab {...commonProps} />;
+            case 'radiologi':
+                return <PermintaanRadiologi {...commonProps} />;
+            default:
+                return <CpptSoap {...commonProps} />;
         }
     };
 
