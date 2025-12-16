@@ -578,9 +578,9 @@ export default function Lanjutan({ rawatJalan, params }) {
 
                 {/* Main Content Area - two columns 50:50 (riwayat : input) */}
                 {/* Note: Sidebar (first column) is handled by LanjutanRalanLayout */}
-                <div className={`grid grid-cols-1 ${openAcc.pemeriksaan ? 'lg:grid-cols-2' : 'lg:grid-cols-1'} gap-6 w-full max-w-full overflow-x-hidden`}>
+                <div className={`grid grid-cols-1 ${openAcc.pemeriksaan ? 'lg:grid-cols-12' : 'lg:grid-cols-1'} gap-6 w-full max-w-full overflow-x-hidden`}>
                     {/* Left Column - Riwayat Perawatan (scrollable) */}
-                    <div className={`transition-all duration-300 w-full lg:overflow-auto ${openAcc.pemeriksaan ? '' : 'hidden lg:hidden'}`}>
+                    <div className={`transition-all duration-300 w-full lg:overflow-auto ${openAcc.pemeriksaan ? 'lg:col-span-4' : 'hidden lg:hidden'}`}>
                         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden sticky top-6 transition-all duration-300">
                             <div className={`bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-900/20 dark:to-blue-900/20 border-b border-gray-200 dark:border-gray-700 transition-all duration-300 ${
                                 openAcc.pemeriksaan ? "px-4 py-3" : "px-2 py-3"
@@ -676,7 +676,7 @@ export default function Lanjutan({ rawatJalan, params }) {
                     </div>
 
                     {/* Right Column - Input Form Content (50%) */}
-                    <div className={`transition-all duration-300 w-full max-w-full overflow-x-hidden min-w-0`}>
+                    <div className={`transition-all duration-300 w-full max-w-full overflow-x-hidden min-w-0 ${openAcc.pemeriksaan ? 'lg:col-span-8' : ''}`}>
                         {!openAcc.pemeriksaan && (
                             <div className="flex justify-end mb-2">
                                 <button

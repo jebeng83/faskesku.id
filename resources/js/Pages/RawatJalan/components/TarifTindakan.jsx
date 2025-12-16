@@ -527,7 +527,7 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat }) => {
 
     return (
         <>
-        <div className="space-y-4">
+        <div className="space-y-6 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-4 md:p-6">
             {/* Staging Jurnal Rawat Jalan (Umum) */}
             <div className="flex justify-end">
                 <button
@@ -539,7 +539,7 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat }) => {
                 </button>
             </div>
             {/* Tab Navigation */}
-            <div className="flex space-x-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
+            <div className="flex border-b border-gray-200 dark:border-gray-700 mb-4">
                 {[
                     { key: 'dokter', label: 'Dokter', color: 'blue' },
                     { key: 'perawat', label: 'Perawat', color: 'green' },
@@ -548,10 +548,10 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat }) => {
                     <button
                         key={tab.key}
                         onClick={() => setActiveTab(tab.key)}
-                        className={`flex-1 py-2 px-3 text-xs font-medium rounded-md transition-all duration-200 ${
+                        className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
                             activeTab === tab.key
-                                ? `bg-${tab.color}-500 text-white shadow-sm`
-                                : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                                ? `border-${tab.color}-600 text-${tab.color}-600 dark:border-${tab.color}-400 dark:text-${tab.color}-400`
+                                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                         }`}
                     >
                         {tab.label}
@@ -660,51 +660,52 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat }) => {
 
             {/* Selected Tindakan */}
             {selectedTindakan.length > 0 && (
-                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-3">
-                    <div className="flex justify-between items-start mb-3">
-                        <h4 className="font-medium text-blue-900 dark:text-blue-100">Tindakan Dipilih ({selectedTindakan.length})</h4>
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div className="flex justify-between items-center mb-4">
+                        <h4 className="font-semibold text-gray-900 dark:text-white">Tindakan Dipilih ({selectedTindakan.length})</h4>
                         <button
                             onClick={() => setSelectedTindakan([])}
-                            className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200"
+                            className="text-xs font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
                         >
                             Hapus Semua
                         </button>
                     </div>
                     
-                    <div className="space-y-2 mb-3">
+                    <div className="space-y-2 mb-4">
                         {selectedTindakan.map(item => (
-                            <div key={item.kd_jenis_prw} className="flex justify-between items-center bg-white dark:bg-gray-800 p-2 rounded border">
+                            <div key={item.kd_jenis_prw} className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
                                 <div className="flex-1">
                                     <div className="font-medium text-gray-900 dark:text-white text-sm">{item.nm_perawatan}</div>
                                     <div className="text-xs text-gray-500 dark:text-gray-400">{item.kd_jenis_prw}</div>
                                 </div>
-                                <div className="flex items-center space-x-2">
-                                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
                                         {formatCurrency(
-                      activeTab === 'dokter' ? parseFloat(item.total_byrdr) || 0 :
-                      activeTab === 'perawat' ? parseFloat(item.total_byrpr) || 0 :
-                      activeTab === 'dokter-perawat' ? parseFloat(item.total_byrdrpr) || 0 : 0
-                  )}
+                                            activeTab === 'dokter' ? parseFloat(item.total_byrdr) || 0 :
+                                            activeTab === 'perawat' ? parseFloat(item.total_byrpr) || 0 :
+                                            activeTab === 'dokter-perawat' ? parseFloat(item.total_byrdrpr) || 0 : 0
+                                        )}
                                     </span>
                                     <button
                                         onClick={() => setSelectedTindakan(selectedTindakan.filter(selected => selected.kd_jenis_prw !== item.kd_jenis_prw))}
-                                        className="text-red-500 hover:text-red-700 text-sm"
+                                        className="text-gray-400 hover:text-red-500 transition-colors"
                                     >
-                                        ×
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
                                     </button>
                                 </div>
                             </div>
                         ))}
                     </div>
                     
-                    <div className="pt-2 border-t border-blue-200 dark:border-blue-700 space-y-2">
-                        {/* Breakdown Tarif */}
-    
-                        
-                        {/* Total Sesuai Tab Aktif */}
+                    <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
                          <div className="flex justify-between items-center">
-                             <div className="font-medium text-blue-900 dark:text-blue-100">
-                                 Total: {formatCurrency(selectedTindakan.reduce((total, item) => {
+                             <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                 Total Biaya
+                             </div>
+                             <div className="text-lg font-bold text-gray-900 dark:text-white">
+                                 {formatCurrency(selectedTindakan.reduce((total, item) => {
                                      let tarif = 0;
                                      if (activeTab === 'dokter') {
                                          tarif = parseFloat(item.total_byrdr) || 0;
@@ -716,10 +717,12 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat }) => {
                                      return total + tarif;
                                  }, 0))}
                              </div>
+                         </div>
+                         <div className="mt-4 flex justify-end">
                              <button
                                  onClick={handleSubmitTindakan}
                                  disabled={loading || postingLoading}
-                                 className="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                 className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition-colors"
                              >
                                  {loading || postingLoading ? 'Menyimpan & Posting...' : `Simpan ${selectedTindakan.length} Tindakan`}
                              </button>
