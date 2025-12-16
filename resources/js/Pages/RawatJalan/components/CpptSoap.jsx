@@ -3,6 +3,7 @@ import { route } from 'ziggy-js';
 import SearchableSelect from '../../../Components/SearchableSelect.jsx';
 import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
+import { Eraser } from 'lucide-react';
 
 export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) {
     // Gunakan helper untuk mendapatkan tanggal/waktu dengan timezone yang benar
@@ -1313,7 +1314,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
         <div className="space-y-6">
             <form onSubmit={handleSubmit} className="space-y-3 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
                 <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-between gap-3">
                         <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                             <svg
                                 className="w-5 h-5"
@@ -1329,66 +1330,68 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                 />
                             </svg>
                         </div>
-                        <div>
+                        <div className="flex-1">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">CPPT / SOAP</h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400 font-normal">Catatan Perkembangan Pasien</p>
                         </div>
+                        <div className="flex items-center gap-4 flex-wrap">
+                            <div className="flex items-center gap-2">
+                                <label htmlFor="tgl_perawatan" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-0">
+                                    Tanggal Perawatan
+                                </label>
+                                <input
+                                    id="tgl_perawatan"
+                                    type="date"
+                                    name="tgl_perawatan"
+                                    value={formData.tgl_perawatan}
+                                    onChange={handleChange}
+                                    className="text-sm h-9 md:h-10 px-2.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                />
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <label htmlFor="jam_rawat" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-0">
+                                    Jam Rawat
+                                </label>
+                                <input
+                                    id="jam_rawat"
+                                    type="time"
+                                    name="jam_rawat"
+                                    value={formData.jam_rawat}
+                                    onChange={handleChange}
+                                    className="text-sm h-9 md:h-10 px-2.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div className="p-4 md:p-6">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                <div className="p-3 md:p-4">
+                <div className="grid grid-cols-1 gap-2 md:gap-3">
                     {/* Kolom Utama */}
-                    <div className="lg:col-span-2 space-y-3">
+                    <div className="order-2 md:order-1 space-y-2 min-w-0">
                         {/* Informasi Dasar */}
-                        <div className="space-y-2">
-                            <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-                                Informasi Dasar
-                            </h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal Perawatan</label>
-                                    <input type="date" name="tgl_perawatan" value={formData.tgl_perawatan} onChange={handleChange} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jam Rawat</label>
-                                    <input type="time" name="jam_rawat" value={formData.jam_rawat} onChange={handleChange} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kesadaran</label>
-                                    <select name="kesadaran" value={formData.kesadaran} onChange={handleChange} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                        <div className="space-y-1 md:space-y-1 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-md p-1 md:p-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-1 md:gap-1">
+                                <div className="min-w-0 flex flex-row items-center gap-1">
+                                    <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Kesadaran :</label>
+                                    <select name="kesadaran" value={formData.kesadaran} onChange={handleChange} className="w-full md:flex-1 text-sm h-7 px-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
                                         {kesadaranOptions.map((opt) => (
                                             <option key={opt} value={opt}>{opt}</option>
                                         ))}
                                     </select>
                                 </div>
-                            </div>
-                        </div>
-
-                        {/* Alergi & Petugas Pemeriksa */}
-                        <div className="space-y-2">
-                            <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-                                Alergi & Petugas Pemeriksa
-                            </h4>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-                                <div>
-                                    <label className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center">
-                                        Alergi
-                                    </label>
-                                    <input type="text" name="alergi" value={formData.alergi} onChange={handleChange} placeholder="Contoh: Penisilin, Aspirin" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
                                 <div className="relative">
-                                    <label className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center">
-                                        Petugas Pemeriksa
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={pegawaiQuery}
-                                        onChange={(e) => setPegawaiQuery(e.target.value)}
-                                        placeholder="Ketik nama atau NIK pegawai..."
-                                        className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                    />
+                                    <div className="min-w-0 flex flex-row items-center gap-1">
+                                        <label className="shrink-0 text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Pemeriksa :</label>
+                                        <input
+                                            type="text"
+                                            value={pegawaiQuery}
+                                            onChange={(e) => setPegawaiQuery(e.target.value)}
+                                            placeholder="Ketik nama atau NIK pegawai..."
+                                            className="w-full md:flex-1 text-sm h-7 px-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                        />
+                                    </div>
                                     {pegawaiOptions.length > 0 && (
-                                        <div className="absolute z-50 mt-1 w-full max-h-48 overflow-auto rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg">
+                                        <div className="absolute z-50 mt-1 md:mt-1 w-full max-h-48 overflow-auto rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg">
                                             {pegawaiOptions.map((p) => (
                                                 <button
                                                     key={p.nik}
@@ -1402,10 +1405,44 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                                 >
                                                     <div className="font-medium text-gray-900 dark:text-white">{p.nama}</div>
                                                     <div className="text-xs text-gray-500 dark:text-gray-400">NIK: {p.nik}</div>
-                                                </button>
-                                            ))}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                </div>
+                                <div className="min-w-0 flex flex-row items-center gap-1">
+                                    <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">
+                                        Alergi :
+                                    </label>
+                                    <input type="text" name="alergi" value={formData.alergi} onChange={handleChange} placeholder="Contoh: Penisilin, Aspirin" className="w-full md:flex-1 text-sm h-7 px-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                </div>
+                                <div className="min-w-0 flex flex-row items-center gap-1">
+                                    <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Template :</label>
+                                    <div className="w-full md:flex-1">
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-1">
+                                            <div className="w-full sm:w-52 md:w-52">
+                                                <SearchableSelect
+                                                    options={templateOptions}
+                                                    value={selectedTemplate}
+                                                    onChange={(val) => { setSelectedTemplate(val); applyTemplate(val); }}
+                                                    placeholder="Pilih template..."
+                                                    searchPlaceholder="Cari diagnosa..."
+                                                    displayKey="label"
+                                                    valueKey="key"
+                                                    className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none"
+                                                />
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={clearTemplateFields}
+                                                className="inline-flex items-center w-auto self-start sm:self-auto p-1 text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                                aria-label="Bersihkan Form"
+                                                title="Bersihkan"
+                                            >
+                                                <Eraser className="w-4 h-4" />
+                                            </button>
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1460,7 +1497,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                             <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
                                 Subjektif & Objektif
                             </h4>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                 <div>
                                     <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Keluhan Utama (Subjektif)</label>
                                     <textarea name="keluhan" value={formData.keluhan} onChange={handleChange} rows={4} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Keluhan yang dirasakan pasien..." />
@@ -1477,7 +1514,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                             <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
                                 Assessment & Planning
                             </h4>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                 <div>
                                     <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Penilaian (Assessment)</label>
                                     <textarea name="penilaian" value={formData.penilaian} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Diagnosis dan analisis kondisi pasien..." />
@@ -1496,30 +1533,11 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                 </div>
                             </div>
                         </div>
+
+
                     </div>
 
-                    {/* Kolom Kanan: Template & Tools */}
-                    <aside className="lg:col-span-1 space-y-3">
-                        <div className="sticky top-4 space-y-3">
-                            <div className="space-y-2">
-                                <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Template CPPT</h4>
-                                <div className="space-y-2">
-                                    <SearchableSelect
-                                        options={templateOptions}
-                                        value={selectedTemplate}
-                                        onChange={(val) => { setSelectedTemplate(val); applyTemplate(val); }}
-                                        placeholder="Pilih template..."
-                                        searchPlaceholder="Cari diagnosa..."
-                                        displayKey="label"
-                                        valueKey="key"
-                                    />
-                                    <button type="button" onClick={clearTemplateFields} className="w-full py-2 px-3 text-xs font-medium text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                                        Bersihkan Form
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </aside>
+                    {/* Kolom kedua dihapus; konten template kini di dalam main form */}
                 </div>
 
                 {/* Footer Buttons */}
