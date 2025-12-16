@@ -515,6 +515,22 @@ Route::middleware('auth')->group(function () {
     Route::get('pegawai/search', [RawatJalanController::class, 'searchPegawai'])->name('pegawai.search');
     Route::get('rawat-jalan-statistics', [RawatJalanController::class, 'getStatistics'])->name('rawat-jalan.statistics');
 
+    // Rawat Inap: CPPT/Pemeriksaan (pemeriksaan_ranap)
+    Route::get('rawat-inap/pemeriksaan-ranap', [RawatInapController::class, 'pemeriksaanRanap'])->name('rawat-inap.pemeriksaan-ranap');
+    Route::post('rawat-inap/pemeriksaan-ranap', [RawatInapController::class, 'storePemeriksaanRanap'])->name('rawat-inap.pemeriksaan-ranap.store');
+    Route::delete('rawat-inap/pemeriksaan-ranap', [RawatInapController::class, 'deletePemeriksaanRanap'])->name('rawat-inap.pemeriksaan-ranap.delete');
+    Route::put('rawat-inap/pemeriksaan-ranap', [RawatInapController::class, 'updatePemeriksaanRanap'])->name('rawat-inap.pemeriksaan-ranap.update');
+    Route::get('rawat-inap/obat-ranap/{no_rawat}', [RawatInapController::class, 'getObatRanapPublic'])
+        ->name('rawat-inap.obat-ranap')
+        ->where('no_rawat', '.*');
+    Route::get('rawat-inap/lab/{no_rawat}', [RawatInapController::class, 'getPemeriksaanLabPublic'])
+        ->name('rawat-inap.lab')
+        ->where('no_rawat', '.*');
+    Route::get('rawat-inap/radiologi/{no_rawat}', [RawatInapController::class, 'getRadiologiPublic'])
+        ->name('rawat-inap.radiologi')
+        ->where('no_rawat', '.*');
+    Route::get('rawat-inap/riwayat', [RawatInapController::class, 'riwayat'])->name('rawat-inap.riwayat');
+
     // Surat Sehat dan Surat Sakit routes
     Route::get('rawat-jalan/surat-sehat/{no_rawat}', [RawatJalanController::class, 'suratSehat'])
         ->where('no_rawat', '.*')
