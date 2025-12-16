@@ -12,7 +12,7 @@ import PermintaanRadiologi from "./components/PermintaanRadiologi";
 import TarifTindakan from "./components/TarifTindakan";
 import { getAppTimeZone } from '@/tools/datetime';
 
-export default function Lanjutan({ rawatJalan, params }) {
+export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitDate }) {
     // UI/UX variants (guided by docs/UI_UX_IMPROVEMENTS_GUIDE.md)
     const prefersReducedMotion = useReducedMotion();
     const itemVariants = {
@@ -333,14 +333,13 @@ export default function Lanjutan({ rawatJalan, params }) {
             />
 
             <div className="px-4 sm:px-6 lg:px-8 py-6 w-full max-w-full overflow-x-hidden mx-auto max-w-[1600px]">
-                {/* Header dengan Gradient */}
-                <div className="mb-8">
-                    <div className="bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 rounded-2xl p-8 text-white">
+                <div className="mb-4">
+                    <div className="bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 rounded-xl p-4 text-white">
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-white/20 backdrop-blur rounded-xl">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-white/20 backdrop-blur rounded-lg">
                                     <svg
-                                        className="w-8 h-8 text-white"
+                                        className="w-6 h-6 text-white"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -354,12 +353,11 @@ export default function Lanjutan({ rawatJalan, params }) {
                                     </svg>
                                 </div>
                                 <div>
-                                    <h1 className="text-3xl font-bold mb-2">
+                                    <h1 className="text-2xl font-bold">
                                         Pelayanan Rawat Jalan
                                     </h1>
                                 </div>
                             </div>
-                            {/* Auto-save Status Indicator */}
                             {autoSaveStatus && (
                                 <div className="bg-white/20 backdrop-blur border border-white/20 rounded-xl px-4 py-2 flex items-center gap-2">
                                     <svg
@@ -379,205 +377,6 @@ export default function Lanjutan({ rawatJalan, params }) {
                                 </div>
                             )}
                         </div>
-                    </div>
-                </div>
-
-                {/* Informasi Pasien */}
-                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm mb-8 overflow-hidden">
-                    <div className="bg-gray-50 dark:bg-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                            <svg
-                                className="w-5 h-5 text-gray-500 dark:text-gray-300"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                />
-                            </svg>
-                            Informasi Pasien
-                        </h3>
-                    </div>
-                    <div className="p-6">
-                        {error ? (
-                            <ErrorMessage
-                                message={error}
-                                onRetry={() => {
-                                    setError(null);
-                                    setIsLoading(true);
-                                    setTimeout(() => setIsLoading(false), 1000);
-                                }}
-                            />
-                        ) : rawatJalan?.patient ? (
-                            <>
-                            {/* Ringkasan utama di atas card */}
-                            <button
-                                type="button"
-                                className="w-full text-left px-3 py-2 text-xs rounded-md border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors mb-3 flex items-center justify-between lg:hidden"
-                                onClick={() => setShowPatientDetails((v) => !v)}
-                                aria-expanded={showPatientDetails}
-                                aria-controls="patient-details-card"
-                                title="Klik untuk menampilkan/sembunyikan detail pasien"
-                            >
-                                <div className="flex-1 flex flex-wrap gap-x-6 gap-y-1 items-baseline">
-                                    <div className="flex items-baseline">
-                                        <span className="text-gray-900 dark:text-white font-semibold">{rawatJalan.patient?.nm_pasien || rawatJalan.nama_pasien || '-'}</span>
-                                    </div>
-                                    <div className="flex items-baseline">
-                                        <span className="text-gray-900 dark:text-white font-mono font-semibold">{rawatJalan.no_rawat || '-'}</span>
-                                    </div>
-                                    <div className="flex items-baseline">
-                                        <span className="text-gray-900 dark:text-white font-semibold">{(rawatJalan.patient?.umur || rawatJalan.umurdaftar) ? `${rawatJalan.patient?.umur || rawatJalan.umurdaftar} ${rawatJalan.sttsumur || 'Th'}` : '-'}</span>
-                                    </div>
-                                    <div className="flex items-baseline">
-                                        <span className="text-gray-900 dark:text-white font-semibold">{rawatJalan.penjab?.png_jawab || rawatJalan.cara_bayar || 'BPJS'}</span>
-                                    </div>
-                                </div>
-                                <div className="ml-3 shrink-0 flex items-center gap-1 text-gray-600 dark:text-gray-300">
-                                    <span className="hidden sm:inline text-[10px]">{showPatientDetails ? 'Sembunyikan' : 'Lihat'} detail</span>
-                                    <svg
-                                        className={`w-3.5 h-3.5 transition-transform ${showPatientDetails ? 'rotate-180' : 'rotate-0'}`}
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </div>
-                            </button>
-                            {showPatientDetails && (
-                            <section id="patient-details-card" className="rounded-md border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
-                                <div className="px-2 py-1 border-b border-gray-200 dark:border-gray-800 text-[11px] font-medium text-gray-800 dark:text-gray-200">
-                                    Informasi Pasien
-                                </div>
-                                <div className="px-2 py-1.5 text-[11px] leading-tight">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
-                                        <div className="py-0.5 flex items-baseline gap-1">
-                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Alergi</span>
-                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.alergi || rawatJalan.patient?.alergi || "Tidak ada"}</span>
-                                        </div>
-                                        <div className="py-0.5 flex items-baseline gap-1">
-                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">No KTP</span>
-                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.patient?.no_ktp || "-"}</span>
-                                        </div>
-                                        <div className="py-0.5 flex items-baseline gap-1">
-                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Gender</span>
-                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.patient?.jk === 'L' ? 'Laki-laki' : rawatJalan.patient?.jk === 'P' ? 'Perempuan' : (rawatJalan.patient?.jk || '-')}</span>
-                                        </div>
-                                        <div className="py-0.5 flex items-baseline gap-1">
-                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Gol Darah</span>
-                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.patient?.gol_darah || '-'}</span>
-                                        </div>
-                                        <div className="py-0.5 flex items-baseline gap-1">
-                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">TTL</span>
-                                            <span className="text-gray-900 dark:text-white flex-1">{(rawatJalan.patient?.tmp_lahir || '-') + ', ' + (rawatJalan.patient?.tgl_lahir ? formatDate(rawatJalan.patient.tgl_lahir) : '-')}</span>
-                                        </div>
-                                        <div className="py-0.5 flex items-baseline gap-1">
-                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Telp</span>
-                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.patient?.no_tlp || '-'}</span>
-                                        </div>
-                                        <div className="py-0.5 flex items-baseline gap-1">
-                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Pekerjaan</span>
-                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.patient?.pekerjaan || '-'}</span>
-                                        </div>
-                                        <div className="py-0.5 flex items-baseline gap-1">
-                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Nama Ibu</span>
-                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.patient?.namakk || rawatJalan.patient?.nama_ibu || '-'}</span>
-                                        </div>
-                                        <div className="py-0.5 flex items-baseline gap-1">
-                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Alamat</span>
-                                            <span className="text-gray-900 dark:text-white flex-1 break-words">
-                                                {[
-                                                    rawatJalan?.patient?.alamat,
-                                                    rawatJalan?.patient?.kelurahan?.nm_kel || rawatJalan?.patient?.kd_kel,
-                                                    rawatJalan?.patient?.kecamatan?.nm_kec || rawatJalan?.patient?.kd_kec,
-                                                    rawatJalan?.patient?.kabupaten?.nm_kab || rawatJalan?.patient?.kd_kab,
-                                                ].filter(Boolean).join(', ') || '-'}
-                                            </span>
-                                        </div>
-                                        <div className="py-0.5 flex items-baseline gap-1">
-                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Keluarga</span>
-                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.patient?.keluarga || '-'}</span>
-                                        </div>
-                                        <div className="py-0.5 flex items-baseline gap-1">
-                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Status</span>
-                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.patient?.stts_nikah || '-'}</span>
-                                        </div>
-                                        <div className="py-0.5 flex items-baseline gap-1">
-                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Agama</span>
-                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.patient?.agama || '-'}</span>
-                                        </div>
-                                        <div className="py-0.5 flex items-baseline gap-1">
-                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Pekerjaan PJ</span>
-                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.pj?.pekerjaan || '-'}</span>
-                                        </div>
-                                        <div className="py-0.5 flex items-baseline gap-1">
-                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">Alamat PJ</span>
-                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.pj?.alamat || '-'}</span>
-                                        </div>
-                                        <div className="py-0.5 flex items-baseline gap-1">
-                                            <span className="basis-32 md:basis-40 text-gray-600 dark:text-gray-300 after:content-[':'] after:ml-0 after:text-gray-400">No Peserta</span>
-                                            <span className="text-gray-900 dark:text-white flex-1">{rawatJalan.patient?.no_peserta || '-'}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>
-                            )}
-                            </>
-                        ) : (
-                            <div className="bg-gray-50 dark:bg-gray-800/60 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-xl">
-                                        <svg
-                                            className="w-6 h-6 text-gray-500 dark:text-gray-300"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                                            />
-                                        </svg>
-                                    </div>
-                                    <div className="flex-1">
-                                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                            Data Pasien Tidak Ditemukan
-                                        </h4>
-                                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                                            No. Rawat: {params?.no_rawat || "-"}{" "}
-                                            | No. RM: {" "}
-                                            {params?.no_rkm_medis || "-"}
-                                        </p>
-                                    </div>
-                                    <button
-                                        onClick={() => window.location.reload()}
-                                        className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
-                                    >
-                                        <svg
-                                            className="w-4 h-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                                            />
-                                        </svg>
-                                        Muat Ulang
-                                    </button>
-                                </div>
-                            </div>
-                        )}
                     </div>
                 </div>
 
@@ -696,6 +495,13 @@ export default function Lanjutan({ rawatJalan, params }) {
                                         <span className="text-left text-gray-700 dark:text-gray-300">Cara bayar</span>
                                         <span className="text-gray-400 text-center">:</span>
                                         <span className="text-gray-900 dark:text-white">{rawatJalan?.penjab?.png_jawab || rawatJalan?.cara_bayar || 'BPJS'}</span>
+                                    </div>
+                                    <div className="grid grid-cols-[7.5rem_0.75rem_1fr] md:grid-cols-[8.5rem_0.9rem_1fr] items-baseline gap-x-0.5">
+                                        <span className="text-left text-gray-700 dark:text-gray-300">Kunjung Terakhir</span>
+                                        <span className="text-gray-400 text-center">:</span>
+                                        <span className="text-gray-900 dark:text-white">
+                                            {typeof lastVisitDays === 'number' ? `${lastVisitDays} hari` : '-'}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
