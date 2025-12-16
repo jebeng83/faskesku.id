@@ -1364,13 +1364,13 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                         </div>
                     </div>
                 </div>
-                <div className="p-3 md:p-4">
+                <div className="p-2 md:p-3">
                 <div className="grid grid-cols-1 gap-2 md:gap-3">
                     {/* Kolom Utama */}
                     <div className="order-2 md:order-1 space-y-2 min-w-0">
                         {/* Informasi Dasar */}
-                        <div className="space-y-1 md:space-y-1 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-md p-1 md:p-2">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-1 md:gap-1">
+                        <div className="space-y-px md:space-y-px bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-md p-px md:p-1">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-px md:gap-px">
                                 <div className="min-w-0 flex flex-row items-center gap-1">
                                     <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Kesadaran :</label>
                                     <select name="kesadaran" value={formData.kesadaran} onChange={handleChange} className="w-full md:flex-1 text-sm h-7 px-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
@@ -1447,89 +1447,80 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                             </div>
                         </div>
 
-                        {/* Tanda-Tanda Vital & Antropometri */}
+                        {/* Subjektif & Objektif */}
                         <div className="space-y-2">
-                            <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-                                Tanda-Tanda Vital & Antropometri
-                            </h4>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                 <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Suhu (°C)</label>
-                                    <input type="text" name="suhu_tubuh" value={formData.suhu_tubuh} onChange={handleChange} placeholder="36.8" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Keluhan Utama (Subjektif)</label>
+                                    <textarea name="keluhan" value={formData.keluhan} onChange={handleChange} rows={4} className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tensi (mmHg)</label>
-                                    <input type="text" name="tensi" value={formData.tensi} onChange={handleChange} placeholder="120/80" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nadi (/menit)</label>
-                                    <input type="text" name="nadi" value={formData.nadi} onChange={handleChange} placeholder="80" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Respirasi (/menit)</label>
-                                    <input type="text" name="respirasi" value={formData.respirasi} onChange={handleChange} placeholder="20" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SpO2 (%)</label>
-                                    <input type="text" name="spo2" value={formData.spo2} onChange={handleChange} placeholder="98" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tinggi (cm)</label>
-                                    <input type="text" name="tinggi" value={formData.tinggi} onChange={handleChange} placeholder="165" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Berat (kg)</label>
-                                    <input type="text" name="berat" value={formData.berat} onChange={handleChange} placeholder="60" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">GCS</label>
-                                    <input type="text" name="gcs" value={formData.gcs} onChange={handleChange} placeholder="E4V5M6" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lingkar Perut (cm)</label>
-                                    <input type="text" name="lingkar_perut" value={formData.lingkar_perut} onChange={handleChange} placeholder="80" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Pemeriksaan Fisik (Objektif)</label>
+                                    <textarea name="pemeriksaan" value={formData.pemeriksaan} onChange={handleChange} rows={4} className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Subjektif & Objektif */}
-                        <div className="space-y-2">
-                            <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-                                Subjektif & Objektif
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {/* Tanda-Tanda Vital & Antropometri */}
+                        <div className="space-y-px md:space-y-px">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1 md:gap-1">
                                 <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Keluhan Utama (Subjektif)</label>
-                                    <textarea name="keluhan" value={formData.keluhan} onChange={handleChange} rows={4} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Keluhan yang dirasakan pasien..." />
+                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Suhu (°C)</label>
+                                    <input type="text" name="suhu_tubuh" value={formData.suhu_tubuh} onChange={handleChange} placeholder="36.8" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pemeriksaan Fisik (Objektif)</label>
-                                    <textarea name="pemeriksaan" value={formData.pemeriksaan} onChange={handleChange} rows={4} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Hasil pemeriksaan fisik dan penunjang..." />
+                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Tensi (mmHg)</label>
+                                    <input type="text" name="tensi" value={formData.tensi} onChange={handleChange} placeholder="120/80" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Nadi (/menit)</label>
+                                    <input type="text" name="nadi" value={formData.nadi} onChange={handleChange} placeholder="80" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Respirasi (/menit)</label>
+                                    <input type="text" name="respirasi" value={formData.respirasi} onChange={handleChange} placeholder="20" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">SpO2 (%)</label>
+                                    <input type="text" name="spo2" value={formData.spo2} onChange={handleChange} placeholder="98" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Tinggi (cm)</label>
+                                    <input type="text" name="tinggi" value={formData.tinggi} onChange={handleChange} placeholder="165" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Berat (kg)</label>
+                                    <input type="text" name="berat" value={formData.berat} onChange={handleChange} placeholder="60" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">GCS</label>
+                                    <input type="text" name="gcs" value={formData.gcs} onChange={handleChange} placeholder="E4V5M6" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Lingkar Perut (cm)</label>
+                                    <input type="text" name="lingkar_perut" value={formData.lingkar_perut} onChange={handleChange} placeholder="80" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                                 </div>
                             </div>
                         </div>
 
                         {/* Assessment & Planning */}
-                        <div className="space-y-2">
-                            <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-                                Assessment & Planning
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <div className="space-y-px md:space-y-px">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-1 md:gap-1">
                                 <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Penilaian (Assessment)</label>
-                                    <textarea name="penilaian" value={formData.penilaian} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Diagnosis dan analisis kondisi pasien..." />
+                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Penilaian (Assessment)</label>
+                                    <textarea name="penilaian" value={formData.penilaian} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Diagnosis dan analisis kondisi pasien..." />
                                 </div>
                                 <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rencana Tindak Lanjut (Planning)</label>
-                                    <textarea name="rtl" value={formData.rtl} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Rencana pengobatan dan tindakan..." />
+                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Rencana Tindak Lanjut (Planning)</label>
+                                    <textarea name="rtl" value={formData.rtl} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Rencana pengobatan dan tindakan..." />
                                 </div>
                                 <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Instruksi Medis</label>
-                                    <textarea name="instruksi" value={formData.instruksi} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Instruksi untuk pasien dan perawat..." />
+                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Instruksi Medis</label>
+                                    <textarea name="instruksi" value={formData.instruksi} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Instruksi untuk pasien dan perawat..." />
                                 </div>
                                 <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Evaluasi</label>
-                                    <textarea name="evaluasi" value={formData.evaluasi} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Evaluasi hasil pengobatan..." />
+                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Evaluasi</label>
+                                    <textarea name="evaluasi" value={formData.evaluasi} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Evaluasi hasil pengobatan..." />
                                 </div>
                             </div>
                         </div>
