@@ -696,42 +696,44 @@ export default function Lanjutan({ rawatJalan, params }) {
                                 </button>
                             </div>
                         )}
-                        <div className="space-y-4 w-full max-w-full overflow-x-hidden">
+                        <div className={`space-y-4 w-full max-w-full overflow-x-hidden ${openAcc.pemeriksaan ? 'lg:mt-6' : ''}`}>
                             {/* Tab Content Header */}
-                            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
-                                <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                                            {
-                                                menuTabs.find(
-                                                    (tab) =>
-                                                        tab.key === activeTab
-                                                )?.icon
-                                            }
-                                        </div>
-                                        <div>
-                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                            {activeTab !== 'cppt' && (
+                                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                                                 {
                                                     menuTabs.find(
                                                         (tab) =>
-                                                            tab.key ===
-                                                            activeTab
-                                                    )?.title
+                                                            tab.key === activeTab
+                                                    )?.icon
                                                 }
-                                            </h3>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400 font-normal">
-                                                {
-                                                    menuTabs.find(
-                                                        (tab) =>
-                                                            tab.key ===
-                                                            activeTab
-                                                    )?.subtitle
-                                                }
-                                            </p>
+                                            </div>
+                                            <div>
+                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                                    {
+                                                        menuTabs.find(
+                                                            (tab) =>
+                                                                tab.key ===
+                                                                activeTab
+                                                        )?.title
+                                                    }
+                                                </h3>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400 font-normal">
+                                                    {
+                                                        menuTabs.find(
+                                                            (tab) =>
+                                                                tab.key ===
+                                                                activeTab
+                                                        )?.subtitle
+                                                    }
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Tab Content */}
                             <div className="w-full max-w-full overflow-x-hidden">
