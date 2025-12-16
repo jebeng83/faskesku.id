@@ -34,6 +34,7 @@ import poliklinik from './poliklinik'
 import akutansi from './akutansi'
 import menu from './menu'
 import tarifTindakan from './tarif-tindakan'
+import tarifTindakanRanap from './tarif-tindakan-ranap'
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
 * @see app/Http/Controllers/PermintaanLabController.php:922
@@ -204,6 +205,7 @@ const api = {
     akutansi: Object.assign(akutansi, akutansi),
     menu: Object.assign(menu, menu),
     tarifTindakan: Object.assign(tarifTindakan, tarifTindakan),
+    tarifTindakanRanap: Object.assign(tarifTindakanRanap, tarifTindakanRanap),
 }
 
 export default api

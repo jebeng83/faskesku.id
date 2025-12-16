@@ -647,6 +647,15 @@ Route::middleware('auth')->group(function () {
         Route::match(['delete', 'post'], '/', [TarifTindakanController::class, 'deleteTindakan'])->name('delete');
     });
 
+    // Tarif Tindakan Rawat Inap API routes
+    Route::prefix('api/tarif-tindakan-ranap')->name('api.tarif-tindakan-ranap.')->group(function () {
+        Route::get('/', [TarifTindakanController::class, 'indexRanap'])->name('index');
+        Route::post('/dokter', [TarifTindakanController::class, 'storeRanapDokter'])->name('store-dokter');
+        Route::post('/perawat', [TarifTindakanController::class, 'storeRanapPerawat'])->name('store-perawat');
+        Route::post('/dokter-perawat', [TarifTindakanController::class, 'storeRanapDokterPerawat'])->name('store-dokter-perawat');
+        Route::get('/riwayat/{noRawat}', [TarifTindakanController::class, 'getRiwayatTindakanRanap'])->name('riwayat')->where('noRawat', '.*');
+    });
+
     // Farmasi routes
     Route::prefix('farmasi')->name('farmasi.')->group(function () {
         // Landing page for Farmasi module

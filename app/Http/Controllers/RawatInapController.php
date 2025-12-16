@@ -168,6 +168,7 @@ class RawatInapController extends Controller
             $rawat = RegPeriksa::query()
                 ->with(['patient', 'dokter'])
                 ->join('kamar_inap', 'kamar_inap.no_rawat', '=', 'reg_periksa.no_rawat')
+                ->join('kamar', 'kamar_inap.kd_kamar', '=', 'kamar.kd_kamar')
                 ->leftJoin('pasien', 'pasien.no_rkm_medis', '=', 'reg_periksa.no_rkm_medis')
                 ->select([
                     'reg_periksa.*',
@@ -177,6 +178,9 @@ class RawatInapController extends Controller
                     'kamar_inap.tgl_keluar',
                     'kamar_inap.jam_keluar',
                     'kamar_inap.stts_pulang',
+                    'reg_periksa.kd_pj',
+                    'kamar.kd_bangsal',
+                    'kamar.kelas',
                 ])
                 ->when($noRkmMedis, fn ($q) => $q->where('reg_periksa.no_rkm_medis', $noRkmMedis))
                 ->where('reg_periksa.no_rawat', $noRawat)
@@ -185,6 +189,7 @@ class RawatInapController extends Controller
             $rawat = RegPeriksa::query()
                 ->with(['patient', 'dokter'])
                 ->join('kamar_inap', 'kamar_inap.no_rawat', '=', 'reg_periksa.no_rawat')
+                ->join('kamar', 'kamar_inap.kd_kamar', '=', 'kamar.kd_kamar')
                 ->leftJoin('pasien', 'pasien.no_rkm_medis', '=', 'reg_periksa.no_rkm_medis')
                 ->where('reg_periksa.status_lanjut', 'Ranap')
                 ->select([
@@ -195,6 +200,9 @@ class RawatInapController extends Controller
                     'kamar_inap.tgl_keluar',
                     'kamar_inap.jam_keluar',
                     'kamar_inap.stts_pulang',
+                    'reg_periksa.kd_pj',
+                    'kamar.kd_bangsal',
+                    'kamar.kelas',
                 ])
                 ->where('reg_periksa.no_rkm_medis', $noRkmMedis)
                 ->orderByDesc('reg_periksa.tgl_registrasi')
