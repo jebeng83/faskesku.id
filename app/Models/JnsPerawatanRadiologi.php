@@ -82,8 +82,7 @@ class JnsPerawatanRadiologi extends Model
     {
         return $this->belongsTo(Penjab::class, 'kd_pj', 'kd_pj');
     }
-}
-    
+
     /**
      * Generate kode otomatis untuk pemeriksaan radiologi
      * Format: R000001, R000002, dst.
