@@ -389,10 +389,10 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
 
                 {/* Main Content Area - two columns 50:50 (riwayat : input) */}
                 {/* Note: Sidebar (first column) is handled by LanjutanRalanLayout */}
-                <div className={`grid grid-cols-1 ${openAcc.pemeriksaan ? 'lg:grid-cols-12' : 'lg:grid-cols-1'} gap-6 w-full max-w-full overflow-x-hidden`}>
+                <div className={`grid grid-cols-1 ${openAcc.pemeriksaan ? 'lg:grid-cols-12' : 'lg:grid-cols-1'} gap-6 w-full max-w-full overflow-x-hidden items-stretch`}>
                     {/* Left Column - Riwayat Perawatan (scrollable) */}
-                    <div className={`transition-all duration-300 w-full lg:overflow-auto ${openAcc.pemeriksaan ? 'lg:col-span-4' : 'hidden lg:hidden'}`}>
-                        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden sticky top-3 transition-all duration-300">
+                    <div className={`transition-all duration-300 w-full lg:overflow-auto self-start ${openAcc.pemeriksaan ? 'lg:col-span-4' : 'hidden lg:hidden'}`}>
+                        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden transition-all duration-300 flex flex-col">
                             <div className={`bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-900/20 dark:to-blue-900/20 border-b border-gray-200 dark:border-gray-700 transition-all duration-300 ${
                                 openAcc.pemeriksaan ? "px-4 py-3" : "px-2 py-3"
                             }`}>
@@ -511,7 +511,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                 </div>
                             </div>
                             {openAcc.pemeriksaan && (
-                                <div className="p-3 max-h-[20rem] overflow-y-auto">
+                                <div className="p-3">
                                     {/* Updated to use the new combined component */}
                                     <RiwayatPerawatan
                                         token={
@@ -532,7 +532,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                     </div>
 
                     {/* Right Column - Input Form Content (50%) */}
-                    <div className={`transition-all duration-300 w-full max-w-full overflow-x-hidden min-w-0 ${openAcc.pemeriksaan ? 'lg:col-span-8' : ''}`}>
+                    <div className={`transition-all duration-300 w-full max-w-full overflow-x-hidden min-w-0 ${openAcc.pemeriksaan ? 'lg:col-span-8' : ''} flex flex-col h-full`}>
                         {!openAcc.pemeriksaan && (
                             <div className="flex justify-end mb-2">
                                 <button
@@ -552,7 +552,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                 </button>
                             </div>
                         )}
-                        <div className={`space-y-4 w-full max-w-full overflow-x-hidden ${openAcc.pemeriksaan ? 'lg:mt-6' : ''}`}>
+                        <div className="space-y-4 w-full max-w-full overflow-x-hidden h-full">
                             {/* Tab Content Header */}
                             {activeTab !== 'cppt' && (
                                 <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
@@ -592,7 +592,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                             )}
 
                             {/* Tab Content */}
-                            <div className="w-full max-w-full overflow-x-hidden">
+                            <div className="w-full max-w-full overflow-x-hidden h-full">
                                 {isLoading ? (
                                     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-12">
                                         <div className="flex items-center justify-center">
@@ -617,7 +617,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                         />
                                     </div>
                                 ) : (
-                                    <div className="w-full max-w-full overflow-x-hidden">
+                                    <div className="w-full max-w-full overflow-x-hidden h-full">
                                         {renderActiveTabContent()}
                                     </div>
                                 )}

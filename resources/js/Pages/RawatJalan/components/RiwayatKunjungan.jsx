@@ -482,7 +482,7 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
     return (
         <div className="overflow-hidden">
             {/* Mobile: Card list */}
-            <div className="md:hidden grid gap-3 h-[532px] overflow-y-auto pr-1">
+            <div className="md:hidden grid gap-3 pr-1 h-[396px] overflow-y-auto">
                 {items.map((row, index) => {
                     const isOpen = expandedVisit && expandedVisit.no_rawat === row.no_rawat;
                     return (
@@ -533,7 +533,7 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
 
             {/* Desktop: List dengan header klik-untuk-expand (tanpa tabel) */}
             <div className="hidden md:block">
-                <div className="space-y-2 h-[504px] overflow-y-auto pr-1">
+                <div className="space-y-2 pr-1 h-[376px] overflow-y-auto">
                     {items.map((row) => (
                         <div
                             key={row.no_rawat}

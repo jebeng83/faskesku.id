@@ -1353,7 +1353,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
 
     return (
         <div className="space-y-6">
-            <form onSubmit={handleSubmit} className="space-y-3 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+            <form onSubmit={handleSubmit} className="space-y-3 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden h-full flex flex-col">
                 <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between gap-3">
                         <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
@@ -1405,7 +1405,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                         </div>
                     </div>
                 </div>
-                <div className="p-2 md:p-3">
+                <div className="p-2 md:p-3 flex-1 overflow-y-auto">
                 <div className="grid grid-cols-1 gap-2 md:gap-3">
                     {/* Kolom Utama */}
                     <div className="order-2 md:order-1 space-y-2 min-w-0">
@@ -1499,7 +1499,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
 
                         {/* Subjektif & Objektif */}
                         <div className="space-y-2">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-end">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-stretch">
                                 <div className="flex flex-col h-full">
                                     <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Keluhan Utama (Subjektif)</label>
                                     <textarea name="keluhan" value={formData.keluhan} onChange={handleChange} rows={4} className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
@@ -1555,7 +1555,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
 
                         {/* Assessment & Planning */}
                         <div className="space-y-px md:space-y-px">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-1 md:gap-1 items-end">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-1 md:gap-1 items-stretch">
                                 <div className="flex flex-col h-full">
                                     <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Penilaian (Assessment)</label>
                                     <textarea name="penilaian" value={formData.penilaian} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" placeholder="Diagnosis dan analisis kondisi pasien..." />
@@ -1582,11 +1582,11 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                 </div>
                                 <div className="flex flex-col h-full">
                                     <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Instruksi Medis</label>
-                                    <textarea name="instruksi" value={formData.instruksi} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" placeholder="Instruksi untuk pasien dan perawat..." />
+                                    <textarea name="instruksi" value={formData.instruksi} onChange={handleChange} rows={2} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Instruksi untuk pasien dan perawat..." />
                                 </div>
                                 <div className="flex flex-col h-full">
                                     <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Evaluasi</label>
-                                    <textarea name="evaluasi" value={formData.evaluasi} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" placeholder="Evaluasi hasil pengobatan..." />
+                                    <textarea name="evaluasi" value={formData.evaluasi} onChange={handleChange} rows={2} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Evaluasi hasil pengobatan..." />
                                 </div>
                             </div>
                         </div>
@@ -1598,7 +1598,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 </div>
 
                 {/* Footer Buttons */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 mt-6">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 mt-3">
                     {editKey && (
                         <button
                             type="button"
@@ -2828,24 +2828,24 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                         </div>
                     ) : (
                         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden w-full">
-                            <div className="overflow-x-auto w-full max-w-full">
-                                <table className="w-full text-sm table-auto">
+                            <div className="overflow-x-auto overflow-y-auto max-h-[376px] w-full max-w-full">
+                                <table className="w-full text-sm table-fixed">
                                     <thead className="bg-gray-50 dark:bg-gray-700/50">
                                         <tr className="text-left text-gray-600 dark:text-gray-300">
-                                            <th className="px-4 py-3 font-medium">Tanggal</th>
-                                            <th className="px-4 py-3 font-medium">Jam</th>
-                                            <th className="px-4 py-3 font-medium">TTV</th>
-                                            <th className="px-4 py-3 font-medium">Kesadaran</th>
-                                            <th className="px-4 py-3 font-medium">Keluhan</th>
-                                            <th className="px-4 py-3 font-medium">Pemeriksaan</th>
-                                            <th className="px-4 py-3 font-medium">Penilaian</th>
-                                            <th className="px-4 py-3 font-medium text-center">Aksi</th>
+                                            <th className="px-4 py-3 font-medium w-28">Tanggal</th>
+                                            <th className="px-4 py-3 font-medium w-20">Jam</th>
+                                            <th className="px-4 py-3 font-medium w-36">TTV</th>
+                                            <th className="px-4 py-3 font-medium w-32">Kesadaran</th>
+                                            <th className="px-4 py-3 font-medium w-64">Keluhan</th>
+                                            <th className="px-4 py-3 font-medium w-64">Pemeriksaan</th>
+                                            <th className="px-4 py-3 font-medium w-48">Penilaian</th>
+                                            <th className="px-4 py-3 font-medium text-center w-28">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                                         {list.map((row, idx) => (
                                             <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                                                <td className="px-4 py-3 text-gray-900 dark:text-white font-medium">
+                                                <td className="px-4 py-3 text-gray-900 dark:text-white font-medium w-28 whitespace-nowrap">
                                                     {(() => {
                                                         const tz = getAppTimeZone();
                                                         return new Date(row.tgl_perawatan).toLocaleDateString('id-ID', {
@@ -2856,8 +2856,8 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                         });
                                                     })()}
                                                 </td>
-                                                <td className="px-4 py-3 text-gray-900 dark:text-white font-mono">{String(row.jam_rawat).substring(0,5)}</td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                                                <td className="px-4 py-3 text-gray-900 dark:text-white font-mono w-20 whitespace-nowrap">{String(row.jam_rawat).substring(0,5)}</td>
+                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 w-36">
                                                     <div className="space-y-1 text-xs">
                                                         <div className="flex justify-between">
                                                             <span className="text-gray-500">Suhu:</span>
@@ -2877,27 +2877,27 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3">
+                                                <td className="px-4 py-3 w-32">
                                                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
                                                         {row.kesadaran}
                                                     </span>
                                                 </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 max-w-xs">
-                                                    <div className="truncate" title={row.keluhan || ''}>
+                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 w-64">
+                                                    <div className="truncate whitespace-nowrap" title={row.keluhan || ''}>
                                                         {row.keluhan || <span className="text-gray-400 italic">Tidak ada keluhan</span>}
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 max-w-xs">
-                                                    <div className="truncate" title={row.pemeriksaan || ''}>
+                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 w-64">
+                                                    <div className="truncate whitespace-nowrap" title={row.pemeriksaan || ''}>
                                                         {row.pemeriksaan || <span className="text-gray-400 italic">Belum diperiksa</span>}
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 max-w-xs">
-                                                    <div className="truncate" title={row.penilaian || ''}>
+                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 w-48">
+                                                    <div className="truncate whitespace-nowrap" title={row.penilaian || ''}>
                                                         {row.penilaian || <span className="text-gray-400 italic">Belum dinilai</span>}
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3">
+                                                <td className="px-4 py-3 w-28">
                                                     <div className="flex items-center justify-center space-x-2">
                                                         <button
                                                             type="button"
