@@ -1,9 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\OpnameController::getLokasi
-* @see app/Http/Controllers/OpnameController.php:28
-* @route '/api/opname/lokasi'
-*/
+ * @see app/Http/Controllers/OpnameController.php:28
+ * @route '/api/opname/lokasi'
+ */
 export const getLokasi = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: getLokasi.url(options),
     method: 'get',
@@ -16,28 +16,27 @@ getLokasi.definition = {
 
 /**
 * @see \App\Http\Controllers\OpnameController::getLokasi
-* @see app/Http/Controllers/OpnameController.php:28
-* @route '/api/opname/lokasi'
-*/
+ * @see app/Http/Controllers/OpnameController.php:28
+ * @route '/api/opname/lokasi'
+ */
 getLokasi.url = (options?: RouteQueryOptions) => {
     return getLokasi.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\OpnameController::getLokasi
-* @see app/Http/Controllers/OpnameController.php:28
-* @route '/api/opname/lokasi'
-*/
+ * @see app/Http/Controllers/OpnameController.php:28
+ * @route '/api/opname/lokasi'
+ */
 getLokasi.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: getLokasi.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\OpnameController::getLokasi
-* @see app/Http/Controllers/OpnameController.php:28
-* @route '/api/opname/lokasi'
-*/
+ * @see app/Http/Controllers/OpnameController.php:28
+ * @route '/api/opname/lokasi'
+ */
 getLokasi.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: getLokasi.url(options),
     method: 'head',
@@ -45,9 +44,9 @@ getLokasi.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\OpnameController::getDataBarang
-* @see app/Http/Controllers/OpnameController.php:51
-* @route '/api/opname/data-barang'
-*/
+ * @see app/Http/Controllers/OpnameController.php:51
+ * @route '/api/opname/data-barang'
+ */
 export const getDataBarang = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: getDataBarang.url(options),
     method: 'get',
@@ -60,28 +59,27 @@ getDataBarang.definition = {
 
 /**
 * @see \App\Http\Controllers\OpnameController::getDataBarang
-* @see app/Http/Controllers/OpnameController.php:51
-* @route '/api/opname/data-barang'
-*/
+ * @see app/Http/Controllers/OpnameController.php:51
+ * @route '/api/opname/data-barang'
+ */
 getDataBarang.url = (options?: RouteQueryOptions) => {
     return getDataBarang.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\OpnameController::getDataBarang
-* @see app/Http/Controllers/OpnameController.php:51
-* @route '/api/opname/data-barang'
-*/
+ * @see app/Http/Controllers/OpnameController.php:51
+ * @route '/api/opname/data-barang'
+ */
 getDataBarang.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: getDataBarang.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\OpnameController::getDataBarang
-* @see app/Http/Controllers/OpnameController.php:51
-* @route '/api/opname/data-barang'
-*/
+ * @see app/Http/Controllers/OpnameController.php:51
+ * @route '/api/opname/data-barang'
+ */
 getDataBarang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: getDataBarang.url(options),
     method: 'head',
@@ -89,9 +87,9 @@ getDataBarang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 
 /**
 * @see \App\Http\Controllers\OpnameController::store
-* @see app/Http/Controllers/OpnameController.php:124
-* @route '/api/opname/store'
-*/
+ * @see app/Http/Controllers/OpnameController.php:124
+ * @route '/api/opname/store'
+ */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -104,18 +102,18 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\OpnameController::store
-* @see app/Http/Controllers/OpnameController.php:124
-* @route '/api/opname/store'
-*/
+ * @see app/Http/Controllers/OpnameController.php:124
+ * @route '/api/opname/store'
+ */
 store.url = (options?: RouteQueryOptions) => {
     return store.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\OpnameController::store
-* @see app/Http/Controllers/OpnameController.php:124
-* @route '/api/opname/store'
-*/
+ * @see app/Http/Controllers/OpnameController.php:124
+ * @route '/api/opname/store'
+ */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -123,9 +121,9 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\OpnameController::getOpnameData
-* @see app/Http/Controllers/OpnameController.php:325
-* @route '/api/opname/list'
-*/
+ * @see app/Http/Controllers/OpnameController.php:325
+ * @route '/api/opname/list'
+ */
 export const getOpnameData = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: getOpnameData.url(options),
     method: 'get',
@@ -138,28 +136,27 @@ getOpnameData.definition = {
 
 /**
 * @see \App\Http\Controllers\OpnameController::getOpnameData
-* @see app/Http/Controllers/OpnameController.php:325
-* @route '/api/opname/list'
-*/
+ * @see app/Http/Controllers/OpnameController.php:325
+ * @route '/api/opname/list'
+ */
 getOpnameData.url = (options?: RouteQueryOptions) => {
     return getOpnameData.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\OpnameController::getOpnameData
-* @see app/Http/Controllers/OpnameController.php:325
-* @route '/api/opname/list'
-*/
+ * @see app/Http/Controllers/OpnameController.php:325
+ * @route '/api/opname/list'
+ */
 getOpnameData.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: getOpnameData.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\OpnameController::getOpnameData
-* @see app/Http/Controllers/OpnameController.php:325
-* @route '/api/opname/list'
-*/
+ * @see app/Http/Controllers/OpnameController.php:325
+ * @route '/api/opname/list'
+ */
 getOpnameData.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: getOpnameData.url(options),
     method: 'head',
@@ -167,9 +164,9 @@ getOpnameData.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 
 /**
 * @see \App\Http\Controllers\OpnameController::searchOpnameData
-* @see app/Http/Controllers/OpnameController.php:384
-* @route '/api/opname/search'
-*/
+ * @see app/Http/Controllers/OpnameController.php:384
+ * @route '/api/opname/search'
+ */
 export const searchOpnameData = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: searchOpnameData.url(options),
     method: 'get',
@@ -182,28 +179,27 @@ searchOpnameData.definition = {
 
 /**
 * @see \App\Http\Controllers\OpnameController::searchOpnameData
-* @see app/Http/Controllers/OpnameController.php:384
-* @route '/api/opname/search'
-*/
+ * @see app/Http/Controllers/OpnameController.php:384
+ * @route '/api/opname/search'
+ */
 searchOpnameData.url = (options?: RouteQueryOptions) => {
     return searchOpnameData.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\OpnameController::searchOpnameData
-* @see app/Http/Controllers/OpnameController.php:384
-* @route '/api/opname/search'
-*/
+ * @see app/Http/Controllers/OpnameController.php:384
+ * @route '/api/opname/search'
+ */
 searchOpnameData.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: searchOpnameData.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\OpnameController::searchOpnameData
-* @see app/Http/Controllers/OpnameController.php:384
-* @route '/api/opname/search'
-*/
+ * @see app/Http/Controllers/OpnameController.php:384
+ * @route '/api/opname/search'
+ */
 searchOpnameData.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: searchOpnameData.url(options),
     method: 'head',
@@ -211,9 +207,9 @@ searchOpnameData.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =
 
 /**
 * @see \App\Http\Controllers\OpnameController::destroy
-* @see app/Http/Controllers/OpnameController.php:453
-* @route '/api/opname/delete'
-*/
+ * @see app/Http/Controllers/OpnameController.php:453
+ * @route '/api/opname/delete'
+ */
 export const destroy = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(options),
     method: 'delete',
@@ -226,23 +222,22 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\OpnameController::destroy
-* @see app/Http/Controllers/OpnameController.php:453
-* @route '/api/opname/delete'
-*/
+ * @see app/Http/Controllers/OpnameController.php:453
+ * @route '/api/opname/delete'
+ */
 destroy.url = (options?: RouteQueryOptions) => {
     return destroy.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\OpnameController::destroy
-* @see app/Http/Controllers/OpnameController.php:453
-* @route '/api/opname/delete'
-*/
+ * @see app/Http/Controllers/OpnameController.php:453
+ * @route '/api/opname/delete'
+ */
 destroy.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(options),
     method: 'delete',
 })
-
 const OpnameController = { getLokasi, getDataBarang, store, getOpnameData, searchOpnameData, destroy }
 
 export default OpnameController

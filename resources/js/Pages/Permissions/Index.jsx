@@ -23,7 +23,7 @@ export default function PermissionsIndex() {
 	// Fetch data
 	const fetchRoles = async () => {
 		try {
-			const response = await fetch(route("api.permissions.roles.index"));
+			const response = await fetch("/api/permissions/roles");
 			const data = await response.json();
 			if (data.success) {
 				setRoles(data.data);
@@ -35,7 +35,7 @@ export default function PermissionsIndex() {
 
 	const fetchPermissions = async () => {
 		try {
-			const response = await fetch(route("api.permissions.index"));
+			const response = await fetch("/api/permissions");
 			const data = await response.json();
 			if (data.success) {
 				setPermissions(data.data);
@@ -237,12 +237,9 @@ export default function PermissionsIndex() {
 		if (!confirm("Apakah Anda yakin ingin menghapus role ini?")) return;
 
 		try {
-			const response = await fetch(
-				route("api.permissions.roles.destroy", roleId),
-				{
-					method: "DELETE",
-				}
-			);
+			const response = await fetch(`/api/permissions/roles/${roleId}`, {
+				method: "DELETE",
+			});
 			const data = await response.json();
 
 			if (data.success) {
@@ -260,12 +257,9 @@ export default function PermissionsIndex() {
 		if (!confirm("Apakah Anda yakin ingin menghapus permission ini?")) return;
 
 		try {
-			const response = await fetch(
-				route("api.permissions.destroy", permissionId),
-				{
-					method: "DELETE",
-				}
-			);
+			const response = await fetch(`/api/permissions/${permissionId}`, {
+				method: "DELETE",
+			});
 			const data = await response.json();
 
 			if (data.success) {
@@ -282,8 +276,8 @@ export default function PermissionsIndex() {
 	const handleRoleSubmit = async (roleData) => {
 		try {
 			const url = editingRole
-				? route("api.permissions.roles.update", editingRole.id)
-				: route("api.permissions.roles.store");
+				? `/api/permissions/roles/${editingRole.id}`
+				: "/api/permissions/roles";
 			const method = editingRole ? "PUT" : "POST";
 
 			const response = await fetch(url, {
@@ -314,8 +308,8 @@ export default function PermissionsIndex() {
 	const handlePermissionSubmit = async (permissionData) => {
 		try {
 			const url = editingPermission
-				? route("api.permissions.update", editingPermission.id)
-				: route("api.permissions.store");
+				? `/api/permissions/${editingPermission.id}`
+				: "/api/permissions";
 			const method = editingPermission ? "PUT" : "POST";
 
 			const response = await fetch(url, {

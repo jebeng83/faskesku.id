@@ -2,7 +2,7 @@ import React from "react";
 import { Head, Link } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import SidebarRadiologi from "@/Layouts/SidebarRadiologi";
-import { XRay } from "lucide-react";
+import { Scan } from "lucide-react";
 
 export default function Show({ title, permintaan, has_hasil }) {
     const details = permintaan?.detail_permintaan || [];
@@ -43,7 +43,7 @@ export default function Show({ title, permintaan, has_hasil }) {
                     <div className="mb-4 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="h-10 w-10 rounded-lg bg-rose-100 dark:bg-rose-900/40 flex items-center justify-center">
-                                <XRay className="w-5 h-5 text-rose-600 dark:text-rose-300" />
+                                <Scan className="w-5 h-5 text-rose-600 dark:text-rose-300" />
                             </div>
                             <div>
                                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
@@ -253,4 +253,3 @@ export default function Show({ title, permintaan, has_hasil }) {
         </SidebarRadiologi>
     );
 }
-
