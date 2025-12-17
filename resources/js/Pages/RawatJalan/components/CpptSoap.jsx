@@ -579,6 +579,27 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     };
 
     useEffect(() => {
+        try {
+            const q = sessionStorage.getItem('cpptSoap_pegawaiQuery');
+            if (q) setPegawaiQuery(q);
+            const nip = sessionStorage.getItem('cpptSoap_nip');
+            if (nip) setFormData((prev) => ({ ...prev, nip }));
+        } catch (_) {}
+    }, []);
+
+    useEffect(() => {
+        try {
+            sessionStorage.setItem('cpptSoap_pegawaiQuery', pegawaiQuery || '');
+        } catch (_) {}
+    }, [pegawaiQuery]);
+
+    useEffect(() => {
+        try {
+            sessionStorage.setItem('cpptSoap_nip', formData.nip || '');
+        } catch (_) {}
+    }, [formData.nip]);
+
+    useEffect(() => {
         if (appendToPlanning && Array.isArray(appendToPlanning) && appendToPlanning.length > 0) {
             const items = appendToPlanning.map((it) => {
                 const name = String(it.name ?? '').trim();
