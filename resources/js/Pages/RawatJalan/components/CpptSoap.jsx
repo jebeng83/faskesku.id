@@ -1236,7 +1236,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         if (!noRawat) return;
         setLoadingList(true);
         try {
-            const url = route('rawat-jalan.pemeriksaan-ralan', { no_rawat: noRawat, t: token });
+            const url = route('rawat-jalan.pemeriksaan-ralan', { no_rawat: noRawat });
             const res = await fetch(url);
             const json = await res.json();
             setList(json.data || []);
