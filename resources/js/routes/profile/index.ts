@@ -1,9 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\ProfileController::show
-* @see app/Http/Controllers/ProfileController.php:14
-* @route '/profile'
-*/
+ * @see app/Http/Controllers/ProfileController.php:14
+ * @route '/profile'
+ */
 export const show = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(options),
     method: 'get',
@@ -16,28 +16,27 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\ProfileController::show
-* @see app/Http/Controllers/ProfileController.php:14
-* @route '/profile'
-*/
+ * @see app/Http/Controllers/ProfileController.php:14
+ * @route '/profile'
+ */
 show.url = (options?: RouteQueryOptions) => {
     return show.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\ProfileController::show
-* @see app/Http/Controllers/ProfileController.php:14
-* @route '/profile'
-*/
+ * @see app/Http/Controllers/ProfileController.php:14
+ * @route '/profile'
+ */
 show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\ProfileController::show
-* @see app/Http/Controllers/ProfileController.php:14
-* @route '/profile'
-*/
+ * @see app/Http/Controllers/ProfileController.php:14
+ * @route '/profile'
+ */
 show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(options),
     method: 'head',
@@ -45,9 +44,9 @@ show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\ProfileController::update
-* @see app/Http/Controllers/ProfileController.php:28
-* @route '/profile'
-*/
+ * @see app/Http/Controllers/ProfileController.php:28
+ * @route '/profile'
+ */
 export const update = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(options),
     method: 'put',
@@ -60,27 +59,27 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\ProfileController::update
-* @see app/Http/Controllers/ProfileController.php:28
-* @route '/profile'
-*/
+ * @see app/Http/Controllers/ProfileController.php:28
+ * @route '/profile'
+ */
 update.url = (options?: RouteQueryOptions) => {
     return update.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\ProfileController::update
-* @see app/Http/Controllers/ProfileController.php:28
-* @route '/profile'
-*/
+ * @see app/Http/Controllers/ProfileController.php:28
+ * @route '/profile'
+ */
 update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(options),
     method: 'put',
 })
 
 /**
-* @see routes/web.php:562
-* @route '/profile/menu'
-*/
+ * @see routes/web.php:562
+ * @route '/profile/menu'
+ */
 export const menu = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: menu.url(options),
     method: 'get',
@@ -92,35 +91,34 @@ menu.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:562
-* @route '/profile/menu'
-*/
+ * @see routes/web.php:562
+ * @route '/profile/menu'
+ */
 menu.url = (options?: RouteQueryOptions) => {
     return menu.definition.url + queryParams(options)
 }
 
 /**
-* @see routes/web.php:562
-* @route '/profile/menu'
-*/
+ * @see routes/web.php:562
+ * @route '/profile/menu'
+ */
 menu.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: menu.url(options),
     method: 'get',
 })
-
 /**
-* @see routes/web.php:562
-* @route '/profile/menu'
-*/
+ * @see routes/web.php:562
+ * @route '/profile/menu'
+ */
 menu.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: menu.url(options),
     method: 'head',
 })
 
 /**
-* @see routes/web.php:566
-* @route '/profile/home'
-*/
+ * @see routes/web.php:566
+ * @route '/profile/home'
+ */
 export const home = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: home.url(options),
     method: 'get',
@@ -132,36 +130,34 @@ home.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:566
-* @route '/profile/home'
-*/
+ * @see routes/web.php:566
+ * @route '/profile/home'
+ */
 home.url = (options?: RouteQueryOptions) => {
     return home.definition.url + queryParams(options)
 }
 
 /**
-* @see routes/web.php:566
-* @route '/profile/home'
-*/
+ * @see routes/web.php:566
+ * @route '/profile/home'
+ */
 home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: home.url(options),
     method: 'get',
 })
-
 /**
-* @see routes/web.php:566
-* @route '/profile/home'
-*/
+ * @see routes/web.php:566
+ * @route '/profile/home'
+ */
 home.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: home.url(options),
     method: 'head',
 })
-
 const profile = {
     show: Object.assign(show, show),
-    update: Object.assign(update, update),
-    menu: Object.assign(menu, menu),
-    home: Object.assign(home, home),
+update: Object.assign(update, update),
+menu: Object.assign(menu, menu),
+home: Object.assign(home, home),
 }
 
 export default profile

@@ -1,9 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:1875
-* @route '/pcare/api/mass-send'
-*/
+ * @see app/Http/Controllers/Pcare/PcareController.php:1875
+ * @route '/pcare/api/mass-send'
+ */
 export const api = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: api.url(options),
     method: 'post',
@@ -16,23 +16,22 @@ api.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:1875
-* @route '/pcare/api/mass-send'
-*/
+ * @see app/Http/Controllers/Pcare/PcareController.php:1875
+ * @route '/pcare/api/mass-send'
+ */
 api.url = (options?: RouteQueryOptions) => {
     return api.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:1875
-* @route '/pcare/api/mass-send'
-*/
+ * @see app/Http/Controllers/Pcare/PcareController.php:1875
+ * @route '/pcare/api/mass-send'
+ */
 api.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: api.url(options),
     method: 'post',
 })
-
 const massSend = {
     api: Object.assign(api, api),
 }

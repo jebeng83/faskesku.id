@@ -191,9 +191,9 @@ export default function Index() {
         }));
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setErrors({});
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+		setErrors({});
 
         // Validasi sederhana untuk password konfirmasi
         if (
@@ -205,17 +205,18 @@ export default function Index() {
                 password_confirmation: ["Konfirmasi password tidak sama"],
             }));
             return;
-        }
+		}
 
-        try {
-            if (modalMode === "create") {
-                await axios.post("/api/users", formData);
-            } else {
-                // Gunakan PUT dengan JSON agar array roles/permissions terkirim dengan benar
-                await axios.put(`/api/users/${selectedUser.id}`, formData);
-            }
-            closeModal();
-            fetchUsers();
+		try {
+			if (modalMode === "create") {
+				await axios.post("/api/users", formData);
+				setSearch("");
+				setRoleFilter("");
+			} else {
+				await axios.put(`/api/users/${selectedUser.id}`, formData);
+			}
+			closeModal();
+			fetchUsers();
         } catch (error) {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.errors);
