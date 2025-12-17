@@ -1,9 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\API\MenuSearchController::search
- * @see app/Http/Controllers/API/MenuSearchController.php:15
- * @route '/api/menu/search'
- */
+* @see app/Http/Controllers/API/MenuSearchController.php:15
+* @route '/api/menu/search'
+*/
 export const search = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: search.url(options),
     method: 'get',
@@ -16,27 +16,28 @@ search.definition = {
 
 /**
 * @see \App\Http\Controllers\API\MenuSearchController::search
- * @see app/Http/Controllers/API/MenuSearchController.php:15
- * @route '/api/menu/search'
- */
+* @see app/Http/Controllers/API/MenuSearchController.php:15
+* @route '/api/menu/search'
+*/
 search.url = (options?: RouteQueryOptions) => {
     return search.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\API\MenuSearchController::search
- * @see app/Http/Controllers/API/MenuSearchController.php:15
- * @route '/api/menu/search'
- */
+* @see app/Http/Controllers/API/MenuSearchController.php:15
+* @route '/api/menu/search'
+*/
 search.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: search.url(options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\API\MenuSearchController::search
- * @see app/Http/Controllers/API/MenuSearchController.php:15
- * @route '/api/menu/search'
- */
+* @see app/Http/Controllers/API/MenuSearchController.php:15
+* @route '/api/menu/search'
+*/
 search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: search.url(options),
     method: 'head',
@@ -44,9 +45,9 @@ search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\API\MenuSearchController::popular
- * @see app/Http/Controllers/API/MenuSearchController.php:51
- * @route '/api/menu/popular'
- */
+* @see app/Http/Controllers/API/MenuSearchController.php:51
+* @route '/api/menu/popular'
+*/
 export const popular = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: popular.url(options),
     method: 'get',
@@ -59,34 +60,36 @@ popular.definition = {
 
 /**
 * @see \App\Http\Controllers\API\MenuSearchController::popular
- * @see app/Http/Controllers/API/MenuSearchController.php:51
- * @route '/api/menu/popular'
- */
+* @see app/Http/Controllers/API/MenuSearchController.php:51
+* @route '/api/menu/popular'
+*/
 popular.url = (options?: RouteQueryOptions) => {
     return popular.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\API\MenuSearchController::popular
- * @see app/Http/Controllers/API/MenuSearchController.php:51
- * @route '/api/menu/popular'
- */
+* @see app/Http/Controllers/API/MenuSearchController.php:51
+* @route '/api/menu/popular'
+*/
 popular.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: popular.url(options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\API\MenuSearchController::popular
- * @see app/Http/Controllers/API/MenuSearchController.php:51
- * @route '/api/menu/popular'
- */
+* @see app/Http/Controllers/API/MenuSearchController.php:51
+* @route '/api/menu/popular'
+*/
 popular.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: popular.url(options),
     method: 'head',
 })
+
 const menu = {
     search: Object.assign(search, search),
-popular: Object.assign(popular, popular),
+    popular: Object.assign(popular, popular),
 }
 
 export default menu

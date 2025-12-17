@@ -32,6 +32,7 @@ page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: page.url(options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::page
 * @see app/Http/Controllers/Akutansi/NotaJalanController.php:23
@@ -41,6 +42,7 @@ page.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: page.url(options),
     method: 'head',
 })
+
 const notaJalan = {
     page: Object.assign(page, page),
 }

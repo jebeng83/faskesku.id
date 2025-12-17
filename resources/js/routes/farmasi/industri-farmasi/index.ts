@@ -1,9 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Farmasi\IndustriFarmasiController::index
- * @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:15
- * @route '/farmasi/industri-farmasi'
- */
+* @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:15
+* @route '/farmasi/industri-farmasi'
+*/
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
@@ -16,27 +16,28 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\IndustriFarmasiController::index
- * @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:15
- * @route '/farmasi/industri-farmasi'
- */
+* @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:15
+* @route '/farmasi/industri-farmasi'
+*/
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\Farmasi\IndustriFarmasiController::index
- * @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:15
- * @route '/farmasi/industri-farmasi'
- */
+* @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:15
+* @route '/farmasi/industri-farmasi'
+*/
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\Farmasi\IndustriFarmasiController::index
- * @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:15
- * @route '/farmasi/industri-farmasi'
- */
+* @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:15
+* @route '/farmasi/industri-farmasi'
+*/
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
@@ -44,9 +45,9 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\IndustriFarmasiController::store
- * @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:51
- * @route '/farmasi/industri-farmasi'
- */
+* @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:51
+* @route '/farmasi/industri-farmasi'
+*/
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -59,18 +60,18 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\IndustriFarmasiController::store
- * @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:51
- * @route '/farmasi/industri-farmasi'
- */
+* @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:51
+* @route '/farmasi/industri-farmasi'
+*/
 store.url = (options?: RouteQueryOptions) => {
     return store.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\Farmasi\IndustriFarmasiController::store
- * @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:51
- * @route '/farmasi/industri-farmasi'
- */
+* @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:51
+* @route '/farmasi/industri-farmasi'
+*/
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -78,9 +79,9 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\IndustriFarmasiController::update
- * @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:73
- * @route '/farmasi/industri-farmasi/{kode_industri}'
- */
+* @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:73
+* @route '/farmasi/industri-farmasi/{kode_industri}'
+*/
 export const update = (args: { kode_industri: string | number } | [kode_industri: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
@@ -93,26 +94,25 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\IndustriFarmasiController::update
- * @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:73
- * @route '/farmasi/industri-farmasi/{kode_industri}'
- */
+* @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:73
+* @route '/farmasi/industri-farmasi/{kode_industri}'
+*/
 update.url = (args: { kode_industri: string | number } | [kode_industri: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { kode_industri: args }
     }
 
-    
     if (Array.isArray(args)) {
         args = {
-                    kode_industri: args[0],
-                }
+            kode_industri: args[0],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        kode_industri: args.kode_industri,
-                }
+        kode_industri: args.kode_industri,
+    }
 
     return update.definition.url
             .replace('{kode_industri}', parsedArgs.kode_industri.toString())
@@ -121,9 +121,9 @@ update.url = (args: { kode_industri: string | number } | [kode_industri: string 
 
 /**
 * @see \App\Http\Controllers\Farmasi\IndustriFarmasiController::update
- * @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:73
- * @route '/farmasi/industri-farmasi/{kode_industri}'
- */
+* @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:73
+* @route '/farmasi/industri-farmasi/{kode_industri}'
+*/
 update.put = (args: { kode_industri: string | number } | [kode_industri: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
@@ -131,9 +131,9 @@ update.put = (args: { kode_industri: string | number } | [kode_industri: string 
 
 /**
 * @see \App\Http\Controllers\Farmasi\IndustriFarmasiController::destroy
- * @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:94
- * @route '/farmasi/industri-farmasi/{kode_industri}'
- */
+* @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:94
+* @route '/farmasi/industri-farmasi/{kode_industri}'
+*/
 export const destroy = (args: { kode_industri: string | number } | [kode_industri: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
@@ -146,26 +146,25 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\IndustriFarmasiController::destroy
- * @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:94
- * @route '/farmasi/industri-farmasi/{kode_industri}'
- */
+* @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:94
+* @route '/farmasi/industri-farmasi/{kode_industri}'
+*/
 destroy.url = (args: { kode_industri: string | number } | [kode_industri: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { kode_industri: args }
     }
 
-    
     if (Array.isArray(args)) {
         args = {
-                    kode_industri: args[0],
-                }
+            kode_industri: args[0],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        kode_industri: args.kode_industri,
-                }
+        kode_industri: args.kode_industri,
+    }
 
     return destroy.definition.url
             .replace('{kode_industri}', parsedArgs.kode_industri.toString())
@@ -174,18 +173,19 @@ destroy.url = (args: { kode_industri: string | number } | [kode_industri: string
 
 /**
 * @see \App\Http\Controllers\Farmasi\IndustriFarmasiController::destroy
- * @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:94
- * @route '/farmasi/industri-farmasi/{kode_industri}'
- */
+* @see app/Http/Controllers/Farmasi/IndustriFarmasiController.php:94
+* @route '/farmasi/industri-farmasi/{kode_industri}'
+*/
 destroy.delete = (args: { kode_industri: string | number } | [kode_industri: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
+
 const industriFarmasi = {
     index: Object.assign(index, index),
-store: Object.assign(store, store),
-update: Object.assign(update, update),
-destroy: Object.assign(destroy, destroy),
+    store: Object.assign(store, store),
+    update: Object.assign(update, update),
+    destroy: Object.assign(destroy, destroy),
 }
 
 export default industriFarmasi

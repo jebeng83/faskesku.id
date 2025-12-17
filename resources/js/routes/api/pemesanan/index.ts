@@ -1,9 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::generateNoOrder
- * @see app/Http/Controllers/Farmasi/PemesananController.php:236
- * @route '/api/pemesanan/generate-no-order'
- */
+* @see app/Http/Controllers/Farmasi/PemesananController.php:236
+* @route '/api/pemesanan/generate-no-order'
+*/
 export const generateNoOrder = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: generateNoOrder.url(options),
     method: 'get',
@@ -16,27 +16,28 @@ generateNoOrder.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::generateNoOrder
- * @see app/Http/Controllers/Farmasi/PemesananController.php:236
- * @route '/api/pemesanan/generate-no-order'
- */
+* @see app/Http/Controllers/Farmasi/PemesananController.php:236
+* @route '/api/pemesanan/generate-no-order'
+*/
 generateNoOrder.url = (options?: RouteQueryOptions) => {
     return generateNoOrder.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::generateNoOrder
- * @see app/Http/Controllers/Farmasi/PemesananController.php:236
- * @route '/api/pemesanan/generate-no-order'
- */
+* @see app/Http/Controllers/Farmasi/PemesananController.php:236
+* @route '/api/pemesanan/generate-no-order'
+*/
 generateNoOrder.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: generateNoOrder.url(options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::generateNoOrder
- * @see app/Http/Controllers/Farmasi/PemesananController.php:236
- * @route '/api/pemesanan/generate-no-order'
- */
+* @see app/Http/Controllers/Farmasi/PemesananController.php:236
+* @route '/api/pemesanan/generate-no-order'
+*/
 generateNoOrder.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: generateNoOrder.url(options),
     method: 'head',
@@ -44,9 +45,9 @@ generateNoOrder.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::store
- * @see app/Http/Controllers/Farmasi/PemesananController.php:145
- * @route '/api/pemesanan/store'
- */
+* @see app/Http/Controllers/Farmasi/PemesananController.php:145
+* @route '/api/pemesanan/store'
+*/
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -59,25 +60,26 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::store
- * @see app/Http/Controllers/Farmasi/PemesananController.php:145
- * @route '/api/pemesanan/store'
- */
+* @see app/Http/Controllers/Farmasi/PemesananController.php:145
+* @route '/api/pemesanan/store'
+*/
 store.url = (options?: RouteQueryOptions) => {
     return store.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::store
- * @see app/Http/Controllers/Farmasi/PemesananController.php:145
- * @route '/api/pemesanan/store'
- */
+* @see app/Http/Controllers/Farmasi/PemesananController.php:145
+* @route '/api/pemesanan/store'
+*/
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
 })
+
 const pemesanan = {
     generateNoOrder: Object.assign(generateNoOrder, generateNoOrder),
-store: Object.assign(store, store),
+    store: Object.assign(store, store),
 }
 
 export default pemesanan
