@@ -2835,7 +2835,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                             <th className="px-4 py-3 font-medium w-28">Tanggal</th>
                                             <th className="px-4 py-3 font-medium w-20">Jam</th>
                                             <th className="px-4 py-3 font-medium w-36">TTV</th>
-                                            <th className="px-4 py-3 font-medium w-32">Kesadaran</th>
                                             <th className="px-4 py-3 font-medium w-64">Keluhan</th>
                                             <th className="px-4 py-3 font-medium w-64">Pemeriksaan</th>
                                             <th className="px-4 py-3 font-medium w-48">Penilaian</th>
@@ -2876,11 +2875,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                             <span className="font-medium">{row.spo2 || '-'}%</span>
                                                         </div>
                                                     </div>
-                                                </td>
-                                                <td className="px-4 py-3 w-32">
-                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                                                        {row.kesadaran}
-                                                    </span>
                                                 </td>
                                                 <td className="px-4 py-3 text-gray-700 dark:text-gray-300 w-64">
                                                     <div className="truncate whitespace-nowrap" title={row.keluhan || ''}>
