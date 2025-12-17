@@ -1,422 +1,612 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { 
-    PlusIcon, 
-    MagnifyingGlassIcon, 
-    ClipboardDocumentCheckIcon,
-    CameraIcon,
-    ClockIcon,
-    CheckCircleIcon,
-    XCircleIcon,
-    ExclamationTriangleIcon,
-    DocumentTextIcon
-} from '@heroicons/react/24/outline';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { todayDateString, nowDateTimeString } from '@/tools/datetime';
 
-const PermintaanRadiologi = () => {
-    const [radioRequests, setRadioRequests] = useState([]);
-    const [selectedExams, setSelectedExams] = useState([]);
-    const [searchExam, setSearchExam] = useState('');
-    const [urgency, setUrgency] = useState('normal');
-    const [clinicalInfo, setClinicalInfo] = useState('');
-    const [indication, setIndication] = useState('');
-    const [activeTab, setActiveTab] = useState('request');
+export default function PermintaanRadiologi({ token = '', noRkmMedis = '', noRawat = '' }) {
+    const [availableTests, setAvailableTests] = useState([]);
+    const [selectedTests, setSelectedTests] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [diagnosisKlinis, setDiagnosisKlinis] = useState('');
+    const [informasiTambahan, setInformasiTambahan] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [riwayatPermintaan, setRiwayatPermintaan] = useState([]);
+    const [loadingRiwayat, setLoadingRiwayat] = useState(false);
 
-    // Mock radiology exam data
-    const radioExams = [
-        { id: 1, code: 'XRAY-CHEST', name: 'Rontgen Thorax PA', category: 'X-Ray', price: 150000, bodyPart: 'Dada' },
-        { id: 2, code: 'XRAY-ABD', name: 'Rontgen Abdomen', category: 'X-Ray', price: 120000, bodyPart: 'Perut' },
-        { id: 3, code: 'XRAY-SPINE', name: 'Rontgen Vertebra Lumbal', category: 'X-Ray', price: 200000, bodyPart: 'Tulang Belakang' },
-        { id: 4, code: 'CT-HEAD', name: 'CT Scan Kepala', category: 'CT Scan', price: 800000, bodyPart: 'Kepala' },
-        { id: 5, code: 'CT-CHEST', name: 'CT Scan Thorax', category: 'CT Scan', price: 900000, bodyPart: 'Dada' },
-        { id: 6, code: 'CT-ABD', name: 'CT Scan Abdomen', category: 'CT Scan', price: 1000000, bodyPart: 'Perut' },
-        { id: 7, code: 'MRI-HEAD', name: 'MRI Kepala', category: 'MRI', price: 1500000, bodyPart: 'Kepala' },
-        { id: 8, code: 'MRI-SPINE', name: 'MRI Vertebra', category: 'MRI', price: 1800000, bodyPart: 'Tulang Belakang' },
-        { id: 9, code: 'USG-ABD', name: 'USG Abdomen', category: 'USG', price: 250000, bodyPart: 'Perut' },
-        { id: 10, code: 'USG-PELVIS', name: 'USG Pelvis', category: 'USG', price: 300000, bodyPart: 'Panggul' },
-        { id: 11, code: 'USG-CARDIAC', name: 'Echocardiography', category: 'USG', price: 400000, bodyPart: 'Jantung' },
-        { id: 12, code: 'MAMMO', name: 'Mammografi', category: 'Mammografi', price: 500000, bodyPart: 'Payudara' }
-    ];
+    const loadAvailableTests = async () => {
+        try {
+            const response = await axios.get('/api/radiologi-tests', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
 
-    const mockRequests = [
-        {
-            id: 1,
-            requestNumber: 'RAD-2024-001',
-            exams: ['Rontgen Thorax PA', 'CT Scan Kepala'],
-            urgency: 'urgent',
-            status: 'completed',
-            requestDate: '2024-01-15 10:30',
-            completedDate: '2024-01-15 16:45',
-            clinicalInfo: 'Pasien post trauma kepala, sesak napas',
-            indication: 'Evaluasi trauma kepala dan pneumonia'
-        },
-        {
-            id: 2,
-            requestNumber: 'RAD-2024-002',
-            exams: ['USG Abdomen'],
-            urgency: 'normal',
-            status: 'in_progress',
-            requestDate: '2024-01-16 14:20',
-            clinicalInfo: 'Nyeri perut kanan atas',
-            indication: 'Evaluasi hepatomegali'
+            if (response.data && response.data.success) {
+                setAvailableTests(response.data.data || []);
+            }
+        } catch (error) {
+            console.error('Error loading radiology tests:', error);
+            setAvailableTests([]);
         }
-    ];
+    };
 
-    const filteredExams = radioExams.filter(exam => 
-        exam.name.toLowerCase().includes(searchExam.toLowerCase()) ||
-        exam.code.toLowerCase().includes(searchExam.toLowerCase()) ||
-        exam.category.toLowerCase().includes(searchExam.toLowerCase()) ||
-        exam.bodyPart.toLowerCase().includes(searchExam.toLowerCase())
+    const loadRiwayatPermintaan = async () => {
+        if (!noRawat) return;
+
+        setLoadingRiwayat(true);
+        try {
+            const response = await axios.get(
+                `/api/permintaan-radiologi/riwayat/${encodeURIComponent(noRawat)}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                },
+            );
+
+            if (response.data && response.data.success) {
+                setRiwayatPermintaan(response.data.data || []);
+            }
+        } catch (error) {
+            console.error('Error loading radiology history:', error);
+            setRiwayatPermintaan([]);
+        } finally {
+            setLoadingRiwayat(false);
+        }
+    };
+
+    useEffect(() => {
+        loadAvailableTests();
+        loadRiwayatPermintaan();
+    }, [token, noRawat]);
+
+    const addTest = (test) => {
+        if (!selectedTests.find((t) => t.kd_jenis_prw === test.kd_jenis_prw)) {
+            setSelectedTests((prev) => [...prev, { ...test, status: 'Rencana' }]);
+        }
+    };
+
+    const removeTest = (kdJenisPrw) => {
+        setSelectedTests((prev) => prev.filter((test) => test.kd_jenis_prw !== kdJenisPrw));
+    };
+
+    const updateTestStatus = (kdJenisPrw, status) => {
+        setSelectedTests((prev) =>
+            prev.map((test) =>
+                test.kd_jenis_prw === kdJenisPrw ? { ...test, status } : test,
+            ),
+        );
+    };
+
+    const filteredTests = availableTests.filter(
+        (test) =>
+            test.nm_perawatan &&
+            test.nm_perawatan.toLowerCase().includes(searchTerm.toLowerCase()),
     );
 
-    const toggleExamSelection = (exam) => {
-        const isSelected = selectedExams.some(e => e.id === exam.id);
-        if (isSelected) {
-            setSelectedExams(selectedExams.filter(e => e.id !== exam.id));
-        } else {
-            setSelectedExams([...selectedExams, exam]);
+    const handleDeletePermintaan = async (noorder) => {
+        if (!confirm('Apakah Anda yakin ingin menghapus permintaan ini?')) {
+            return;
+        }
+
+        try {
+            const fd = new FormData();
+            fd.append('_method', 'DELETE');
+            const response = await axios.post(
+                `/api/permintaan-radiologi/${noorder}`,
+                fd,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'multipart/form-data',
+                    },
+                },
+            );
+
+            if (response.data && response.data.success) {
+                alert('Permintaan radiologi berhasil dihapus');
+                loadRiwayatPermintaan();
+            } else {
+                alert('Gagal menghapus permintaan radiologi');
+            }
+        } catch (error) {
+            console.error('Error deleting radiology request:', error);
+            alert('Terjadi kesalahan saat menghapus permintaan');
         }
     };
 
-    const submitRadioRequest = () => {
-        if (selectedExams.length === 0) return;
-        
-        const newRequest = {
-            id: Date.now(),
-            requestNumber: `RAD-${new Date().getFullYear()}-${String(radioRequests.length + 3).padStart(3, '0')}`,
-            exams: selectedExams.map(e => e.name),
-            urgency,
-            status: 'pending',
-            requestDate: new Date().toLocaleString('id-ID'),
-            clinicalInfo,
-            indication
-        };
-        
-        setRadioRequests([newRequest, ...radioRequests]);
-        setSelectedExams([]);
-        setClinicalInfo('');
-        setIndication('');
-        setSearchExam('');
-        setActiveTab('history');
-    };
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-    const getStatusColor = (status) => {
-        switch(status) {
-            case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-            case 'in_progress': return 'bg-blue-100 text-blue-800 border-blue-200';
-            case 'completed': return 'bg-green-100 text-green-800 border-green-200';
-            case 'cancelled': return 'bg-red-100 text-red-800 border-red-200';
-            default: return 'bg-gray-100 text-gray-800 border-gray-200';
+        if (selectedTests.length === 0) {
+            alert('Pilih minimal satu pemeriksaan radiologi');
+            return;
+        }
+
+        if (!diagnosisKlinis || diagnosisKlinis.trim() === '') {
+            alert('Diagnosis klinis wajib diisi');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const now = nowDateTimeString();
+            const jamPermintaan = now.split(' ')[1].substring(0, 5);
+
+            const detailTests = selectedTests.map((test) => ({
+                kd_jenis_prw: test.kd_jenis_prw,
+                stts_bayar: 'Belum',
+            }));
+
+            const requestData = {
+                no_rawat: noRawat,
+                tgl_permintaan: todayDateString(),
+                jam_permintaan: jamPermintaan,
+                tgl_sampel: null,
+                jam_sampel: null,
+                tgl_hasil: null,
+                jam_hasil: null,
+                status: 'ranap',
+                informasi_tambahan:
+                    informasiTambahan && informasiTambahan.trim() !== ''
+                        ? informasiTambahan
+                        : '-',
+                diagnosa_klinis: diagnosisKlinis,
+                dokter_perujuk: '-',
+                detail_tests: detailTests,
+            };
+
+            const response = await axios.post(
+                '/api/permintaan-radiologi',
+                requestData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                },
+            );
+
+            if (response.data && response.data.success) {
+                alert('Permintaan radiologi berhasil disimpan');
+                setSelectedTests([]);
+                setDiagnosisKlinis('');
+                setInformasiTambahan('');
+                loadRiwayatPermintaan();
+            } else {
+                alert('Gagal menyimpan permintaan radiologi');
+            }
+        } catch (error) {
+            console.error('Error saving radiology request:', error);
+            alert('Terjadi kesalahan saat menyimpan permintaan');
+        } finally {
+            setLoading(false);
         }
     };
-
-    const getStatusIcon = (status) => {
-        switch(status) {
-            case 'pending': return <ClockIcon className="w-4 h-4" />;
-            case 'in_progress': return <ExclamationTriangleIcon className="w-4 h-4" />;
-            case 'completed': return <CheckCircleIcon className="w-4 h-4" />;
-            case 'cancelled': return <XCircleIcon className="w-4 h-4" />;
-            default: return <ClipboardDocumentCheckIcon className="w-4 h-4" />;
-        }
-    };
-
-    const getUrgencyColor = (urgency) => {
-        switch(urgency) {
-            case 'emergency': return 'bg-red-100 text-red-800';
-            case 'urgent': return 'bg-orange-100 text-orange-800';
-            case 'normal': return 'bg-green-100 text-green-800';
-            default: return 'bg-gray-100 text-gray-800';
-        }
-    };
-
-    const getCategoryColor = (category) => {
-        switch(category) {
-            case 'X-Ray': return 'bg-blue-100 text-blue-800';
-            case 'CT Scan': return 'bg-purple-100 text-purple-800';
-            case 'MRI': return 'bg-red-100 text-red-800';
-            case 'USG': return 'bg-green-100 text-green-800';
-            case 'Mammografi': return 'bg-pink-100 text-pink-800';
-            default: return 'bg-gray-100 text-gray-800';
-        }
-    };
-
-    const totalPrice = selectedExams.reduce((sum, exam) => sum + exam.price, 0);
 
     return (
         <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg">
-                        <CameraIcon className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                        <h3 className="text-lg font-semibold text-gray-900">Permintaan Radiologi</h3>
-                        <p className="text-sm text-gray-600">Kelola permintaan pemeriksaan radiologi</p>
+            <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="px-4 md:px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700">
+                    <div className="flex items-center space-x-3">
+                        <div className="flex-shrink-0">
+                            <svg
+                                className="w-6 h-6 text-blue-600 dark:text-blue-400"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                Permintaan Radiologi
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                Kelola permintaan pemeriksaan radiologi untuk pasien
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Tabs */}
-            <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
-                <button
-                    onClick={() => setActiveTab('request')}
-                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${
-                        activeTab === 'request'
-                            ? 'bg-white text-indigo-700 shadow-sm'
-                            : 'text-gray-500 hover:text-gray-700'
-                    }`}
+                <form
+                    onSubmit={handleSubmit}
+                    className="p-4 md:p-6 space-y-6"
                 >
-                    Buat Permintaan
-                </button>
-                <button
-                    onClick={() => setActiveTab('history')}
-                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${
-                        activeTab === 'history'
-                            ? 'bg-white text-indigo-700 shadow-sm'
-                            : 'text-gray-500 hover:text-gray-700'
-                    }`}
-                >
-                    Riwayat ({mockRequests.length + radioRequests.length})
-                </button>
-            </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Diagnosis Klinis *
+                            </label>
+                            <textarea
+                                value={diagnosisKlinis}
+                                onChange={(e) => setDiagnosisKlinis(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                rows={3}
+                                placeholder="Masukkan diagnosis klinis..."
+                                required
+                            />
+                        </div>
 
-            {activeTab === 'request' && (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="space-y-6"
-                >
-                    {/* Urgency Selection */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <h4 className="font-medium text-gray-900 mb-4">Tingkat Urgensi</h4>
-                        <div className="grid grid-cols-3 gap-3">
-                            {[
-                                { value: 'normal', label: 'Normal', desc: 'Hasil dalam 2-3 hari' },
-                                { value: 'urgent', label: 'Mendesak', desc: 'Hasil dalam 24 jam' },
-                                { value: 'emergency', label: 'Darurat', desc: 'Hasil segera' }
-                            ].map((level) => (
-                                <label key={level.value} className="cursor-pointer">
-                                    <input
-                                        type="radio"
-                                        name="urgency"
-                                        value={level.value}
-                                        checked={urgency === level.value}
-                                        onChange={(e) => setUrgency(e.target.value)}
-                                        className="sr-only"
-                                    />
-                                    <div className={`p-4 rounded-lg border-2 transition-all ${
-                                        urgency === level.value
-                                            ? 'border-indigo-500 bg-indigo-50'
-                                            : 'border-gray-200 hover:border-gray-300'
-                                    }`}>
-                                        <div className="text-sm font-medium text-gray-900">{level.label}</div>
-                                        <div className="text-xs text-gray-500 mt-1">{level.desc}</div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Informasi Tambahan
+                            </label>
+                            <textarea
+                                value={informasiTambahan}
+                                onChange={(e) =>
+                                    setInformasiTambahan(e.target.value)
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                rows={3}
+                                placeholder="Informasi tambahan (opsional)..."
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                            Pilih Pemeriksaan Radiologi
+                        </h4>
+
+                        <div className="mb-4">
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                placeholder="Cari pemeriksaan radiologi..."
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-md p-3">
+                            {filteredTests.map((test) => (
+                                <div
+                                    key={test.kd_jenis_prw}
+                                    className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-md"
+                                >
+                                    <div className="flex-1">
+                                        <h5 className="text-sm font-medium text-gray-900 dark:text-white">
+                                            {test.nm_perawatan}
+                                        </h5>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                            Kode: {test.kd_jenis_prw}
+                                        </p>
                                     </div>
-                                </label>
+                                    <button
+                                        type="button"
+                                        onClick={() => addTest(test)}
+                                        disabled={selectedTests.find(
+                                            (t) =>
+                                                t.kd_jenis_prw ===
+                                                test.kd_jenis_prw,
+                                        )}
+                                        className={`ml-2 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                                            selectedTests.find(
+                                                (t) =>
+                                                    t.kd_jenis_prw ===
+                                                    test.kd_jenis_prw,
+                                            )
+                                                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                                                : 'bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50'
+                                        }`}
+                                    >
+                                        {selectedTests.find(
+                                            (t) =>
+                                                t.kd_jenis_prw ===
+                                                test.kd_jenis_prw,
+                                        )
+                                            ? 'Terpilih'
+                                            : 'Pilih'}
+                                    </button>
+                                </div>
                             ))}
                         </div>
                     </div>
 
-                    {/* Exam Search */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <h4 className="font-medium text-gray-900 mb-4">Pilih Pemeriksaan Radiologi</h4>
-                        <div className="relative mb-4">
-                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                            <input
-                                type="text"
-                                value={searchExam}
-                                onChange={(e) => setSearchExam(e.target.value)}
-                                placeholder="Cari pemeriksaan radiologi..."
-                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            />
-                        </div>
-
-                        <div className="max-h-60 overflow-y-auto space-y-2">
-                            {filteredExams.map((exam) => {
-                                const isSelected = selectedExams.some(e => e.id === exam.id);
-                                return (
-                                    <div
-                                        key={exam.id}
-                                        onClick={() => toggleExamSelection(exam)}
-                                        className={`p-4 rounded-lg border cursor-pointer transition-all ${
-                                            isSelected
-                                                ? 'border-indigo-500 bg-indigo-50'
-                                                : 'border-gray-200 hover:border-gray-300'
-                                        }`}
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex-1">
-                                                <div className="flex items-center space-x-3 mb-2">
-                                                    <span className="font-medium text-indigo-700">{exam.code}</span>
-                                                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${getCategoryColor(exam.category)}`}>
-                                                        {exam.category}
-                                                    </span>
-                                                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                                                        {exam.bodyPart}
-                                                    </span>
-                                                </div>
-                                                <div className="text-gray-900 mb-1">{exam.name}</div>
-                                                <div className="text-sm text-gray-600">
-                                                    Harga: Rp {exam.price.toLocaleString('id-ID')}
-                                                </div>
-                                            </div>
-                                            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                                                isSelected ? 'border-indigo-500 bg-indigo-500' : 'border-gray-300'
-                                            }`}>
-                                                {isSelected && <CheckCircleIcon className="w-3 h-3 text-white" />}
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-                    {/* Selected Exams Summary */}
-                    {selectedExams.length > 0 && (
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                            <h4 className="font-medium text-gray-900 mb-4">
-                                Pemeriksaan Dipilih ({selectedExams.length})
+                    {selectedTests.length > 0 && (
+                        <div>
+                            <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                                Pemeriksaan Terpilih ({selectedTests.length})
                             </h4>
-                            <div className="space-y-2 mb-4">
-                                {selectedExams.map((exam) => (
-                                    <div key={exam.id} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
-                                        <div>
-                                            <span className="text-gray-900">{exam.name}</span>
-                                            <span className={`ml-2 text-xs font-medium px-2 py-1 rounded-full ${getCategoryColor(exam.category)}`}>
-                                                {exam.category}
-                                            </span>
+                            <div className="space-y-2">
+                                {selectedTests.map((test) => (
+                                    <div
+                                        key={test.kd_jenis_prw}
+                                        className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md"
+                                    >
+                                        <div className="flex-1">
+                                            <h5 className="text-sm font-medium text-gray-900 dark:text-white">
+                                                {test.nm_perawatan}
+                                            </h5>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                Kode: {test.kd_jenis_prw} | Status:{' '}
+                                                {test.status}
+                                            </p>
                                         </div>
-                                        <span className="text-sm text-gray-600">Rp {exam.price.toLocaleString('id-ID')}</span>
+                                        <div className="flex items-center space-x-2">
+                                            <select
+                                                value={test.status}
+                                                onChange={(e) =>
+                                                    updateTestStatus(
+                                                        test.kd_jenis_prw,
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-700 dark:text-white"
+                                            >
+                                                <option value="Rencana">
+                                                    Rencana
+                                                </option>
+                                                <option value="Urgent">
+                                                    Urgent
+                                                </option>
+                                                <option value="CITO">
+                                                    CITO
+                                                </option>
+                                            </select>
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    removeTest(test.kd_jenis_prw)
+                                                }
+                                                className="ml-3 inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50 transition-colors"
+                                                title="Hapus tindakan"
+                                            >
+                                                <svg
+                                                    className="w-3 h-3 mr-1"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                    />
+                                                </svg>
+                                                Hapus
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
-                            <div className="border-t pt-4">
-                                <div className="flex items-center justify-between font-semibold">
-                                    <span>Total Biaya:</span>
-                                    <span className="text-indigo-600">Rp {totalPrice.toLocaleString('id-ID')}</span>
-                                </div>
-                            </div>
                         </div>
                     )}
 
-                    {/* Clinical Information */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                            <h4 className="font-medium text-gray-900 mb-4">Informasi Klinis</h4>
-                            <textarea
-                                value={clinicalInfo}
-                                onChange={(e) => setClinicalInfo(e.target.value)}
-                                placeholder="Masukkan informasi klinis yang relevan..."
-                                rows={4}
-                                className="w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent p-3"
-                            />
-                        </div>
-
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                            <h4 className="font-medium text-gray-900 mb-4">Indikasi Pemeriksaan</h4>
-                            <textarea
-                                value={indication}
-                                onChange={(e) => setIndication(e.target.value)}
-                                placeholder="Masukkan indikasi atau tujuan pemeriksaan..."
-                                rows={4}
-                                className="w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent p-3"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Submit Button */}
-                    <div className="flex justify-end">
+                    <div className="flex justify-end space-x-3">
                         <button
-                            onClick={submitRadioRequest}
-                            disabled={selectedExams.length === 0}
-                            className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+                            type="button"
+                            onClick={() => {
+                                setSelectedTests([]);
+                                setDiagnosisKlinis('');
+                                setInformasiTambahan('');
+                            }}
+                            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         >
-                            <PlusIcon className="w-5 h-5" />
-                            <span>Buat Permintaan Radiologi</span>
+                            Reset
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={loading || selectedTests.length === 0}
+                            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {loading ? 'Menyimpan...' : 'Simpan Permintaan'}
                         </button>
                     </div>
-                </motion.div>
-            )}
+                </form>
+            </div>
 
-            {activeTab === 'history' && (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="space-y-4"
-                >
-                    {[...radioRequests, ...mockRequests].length === 0 ? (
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-                            <CameraIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-gray-900 mb-2">Belum Ada Permintaan Radiologi</h3>
-                            <p className="text-gray-600">Buat permintaan pemeriksaan radiologi untuk pasien ini</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-3">
-                            {[...radioRequests, ...mockRequests].map((request) => (
-                                <motion.div
-                                    key={request.id}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+            <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="px-4 md:px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-700">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                            <div className="flex-shrink-0">
+                                <svg
+                                    className="w-6 h-6 text-green-600 dark:text-green-400"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
                                 >
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div>
-                                            <div className="flex items-center space-x-3 mb-2">
-                                                <span className="font-semibold text-gray-900">{request.requestNumber}</span>
-                                                <span className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(request.status)}`}>
-                                                    {getStatusIcon(request.status)}
-                                                    <span className="capitalize">{request.status.replace('_', ' ')}</span>
-                                                </span>
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getUrgencyColor(request.urgency)}`}>
-                                                    {request.urgency}
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                    />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    Riwayat Permintaan
+                                </h3>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                    Daftar permintaan radiologi yang telah dibuat (
+                                    {riwayatPermintaan.length})
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="p-4 md:p-6">
+                    {loadingRiwayat ? (
+                        <div className="text-center py-8">
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                                Memuat riwayat permintaan...
+                            </div>
+                        </div>
+                    ) : riwayatPermintaan.length > 0 ? (
+                        <div className="space-y-4">
+                            {riwayatPermintaan.map((permintaan, index) => (
+                                <div
+                                    key={index}
+                                    className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700/30"
+                                >
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1">
+                                            <div className="flex items-center space-x-2 mb-2">
+                                                <h5 className="text-sm font-semibold text-gray-900 dark:text-white">
+                                                    No. Order: {permintaan.noorder}
+                                                </h5>
+                                                <span
+                                                    className={`px-2 py-1 text-xs rounded-full ${
+                                                        permintaan.detail_permintaan?.some(
+                                                            (p) =>
+                                                                p.stts_bayar ===
+                                                                'Sudah',
+                                                        )
+                                                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                                                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                                                    }`}
+                                                >
+                                                    {permintaan.detail_permintaan?.some(
+                                                        (p) =>
+                                                            p.stts_bayar ===
+                                                            'Sudah',
+                                                    )
+                                                        ? 'Lunas'
+                                                        : 'Belum Bayar'}
                                                 </span>
                                             </div>
-                                            <div className="text-sm text-gray-600">
-                                                Diminta: {request.requestDate}
-                                                {request.completedDate && (
-                                                    <span> • Selesai: {request.completedDate}</span>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                                <div>
+                                                    <p className="text-gray-600 dark:text-gray-400">
+                                                        <span className="font-medium">
+                                                            Tanggal:
+                                                        </span>{' '}
+                                                        {permintaan.tgl_permintaan}
+                                                    </p>
+                                                    <p className="text-gray-600 dark:text-gray-400">
+                                                        <span className="font-medium">
+                                                            Jam:
+                                                        </span>{' '}
+                                                        {permintaan.jam_permintaan}
+                                                    </p>
+                                                    <p className="text-gray-600 dark:text-gray-400">
+                                                        <span className="font-medium">
+                                                            Dokter:
+                                                        </span>{' '}
+                                                        {permintaan.dokter?.nm_dokter ||
+                                                            '-'}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-gray-600 dark:text-gray-400">
+                                                        <span className="font-medium">
+                                                            Diagnosis:
+                                                        </span>{' '}
+                                                        {permintaan.diagnosa_klinis ||
+                                                            '-'}
+                                                    </p>
+                                                    {permintaan.informasi_tambahan && (
+                                                        <p className="text-gray-600 dark:text-gray-400">
+                                                            <span className="font-medium">
+                                                                Info Tambahan:
+                                                            </span>{' '}
+                                                            {
+                                                                permintaan.informasi_tambahan
+                                                            }
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {permintaan.detail_permintaan &&
+                                                permintaan.detail_permintaan
+                                                    .length > 0 && (
+                                                    <div className="mt-3">
+                                                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                            Pemeriksaan:
+                                                        </p>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {permintaan.detail_permintaan.map(
+                                                                (
+                                                                    detail,
+                                                                    idx,
+                                                                ) => (
+                                                                    <span
+                                                                        key={
+                                                                            idx
+                                                                        }
+                                                                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                                                                    >
+                                                                        {detail
+                                                                            .jns_perawatan_radiologi
+                                                                            ?.nm_perawatan ||
+                                                                            detail.kd_jenis_prw}
+                                                                    </span>
+                                                                ),
+                                                            )}
+                                                        </div>
+                                                    </div>
                                                 )}
-                                            </div>
+                                        </div>
+
+                                        <div className="flex-shrink-0 ml-4">
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    handleDeletePermintaan(
+                                                        permintaan.noorder,
+                                                    )
+                                                }
+                                                className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50 transition-colors"
+                                                title="Hapus permintaan"
+                                            >
+                                                <svg
+                                                    className="w-3 h-3"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                    />
+                                                </svg>
+                                            </button>
                                         </div>
                                     </div>
-                                    
-                                    <div className="space-y-3">
-                                        <div>
-                                            <h5 className="font-medium text-gray-900 mb-2">Pemeriksaan:</h5>
-                                            <div className="flex flex-wrap gap-2">
-                                                {request.exams.map((exam, index) => (
-                                                    <span key={index} className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm">
-                                                        {exam}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        </div>
-                                        
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {request.clinicalInfo && (
-                                                <div>
-                                                    <h5 className="font-medium text-gray-900 mb-2">Informasi Klinis:</h5>
-                                                    <p className="text-gray-700 bg-gray-50 p-3 rounded-lg text-sm">{request.clinicalInfo}</p>
-                                                </div>
-                                            )}
-                                            
-                                            {request.indication && (
-                                                <div>
-                                                    <h5 className="font-medium text-gray-900 mb-2">Indikasi:</h5>
-                                                    <p className="text-gray-700 bg-gray-50 p-3 rounded-lg text-sm">{request.indication}</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </motion.div>
+                                </div>
                             ))}
                         </div>
+                    ) : (
+                        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                            <svg
+                                className="mx-auto h-12 w-12 text-gray-400"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                            </svg>
+                            <p className="mt-2 text-sm">
+                                Belum ada riwayat permintaan
+                            </p>
+                            <p className="text-xs text-gray-400">
+                                Riwayat permintaan radiologi akan muncul di sini
+                            </p>
+                        </div>
                     )}
-                </motion.div>
-            )}
+                </div>
+            </div>
         </div>
     );
-};
-
-export default PermintaanRadiologi;
+}

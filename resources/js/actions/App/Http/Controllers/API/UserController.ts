@@ -1,9 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\API\UserController::index
-* @see app/Http/Controllers/API/UserController.php:17
-* @route '/api/users'
-*/
+ * @see app/Http/Controllers/API/UserController.php:17
+ * @route '/api/users'
+ */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
@@ -16,28 +16,27 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\API\UserController::index
-* @see app/Http/Controllers/API/UserController.php:17
-* @route '/api/users'
-*/
+ * @see app/Http/Controllers/API/UserController.php:17
+ * @route '/api/users'
+ */
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\API\UserController::index
-* @see app/Http/Controllers/API/UserController.php:17
-* @route '/api/users'
-*/
+ * @see app/Http/Controllers/API/UserController.php:17
+ * @route '/api/users'
+ */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\API\UserController::index
-* @see app/Http/Controllers/API/UserController.php:17
-* @route '/api/users'
-*/
+ * @see app/Http/Controllers/API/UserController.php:17
+ * @route '/api/users'
+ */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
@@ -45,9 +44,9 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\API\UserController::store
-* @see app/Http/Controllers/API/UserController.php:44
-* @route '/api/users'
-*/
+ * @see app/Http/Controllers/API/UserController.php:44
+ * @route '/api/users'
+ */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -60,18 +59,18 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\API\UserController::store
-* @see app/Http/Controllers/API/UserController.php:44
-* @route '/api/users'
-*/
+ * @see app/Http/Controllers/API/UserController.php:44
+ * @route '/api/users'
+ */
 store.url = (options?: RouteQueryOptions) => {
     return store.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\API\UserController::store
-* @see app/Http/Controllers/API/UserController.php:44
-* @route '/api/users'
-*/
+ * @see app/Http/Controllers/API/UserController.php:44
+ * @route '/api/users'
+ */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -79,9 +78,9 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\API\UserController::getRoles
-* @see app/Http/Controllers/API/UserController.php:159
-* @route '/api/users/roles'
-*/
+ * @see app/Http/Controllers/API/UserController.php:163
+ * @route '/api/users/roles'
+ */
 export const getRoles = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: getRoles.url(options),
     method: 'get',
@@ -94,28 +93,27 @@ getRoles.definition = {
 
 /**
 * @see \App\Http\Controllers\API\UserController::getRoles
-* @see app/Http/Controllers/API/UserController.php:159
-* @route '/api/users/roles'
-*/
+ * @see app/Http/Controllers/API/UserController.php:163
+ * @route '/api/users/roles'
+ */
 getRoles.url = (options?: RouteQueryOptions) => {
     return getRoles.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\API\UserController::getRoles
-* @see app/Http/Controllers/API/UserController.php:159
-* @route '/api/users/roles'
-*/
+ * @see app/Http/Controllers/API/UserController.php:163
+ * @route '/api/users/roles'
+ */
 getRoles.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: getRoles.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\API\UserController::getRoles
-* @see app/Http/Controllers/API/UserController.php:159
-* @route '/api/users/roles'
-*/
+ * @see app/Http/Controllers/API/UserController.php:163
+ * @route '/api/users/roles'
+ */
 getRoles.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: getRoles.url(options),
     method: 'head',
@@ -123,9 +121,9 @@ getRoles.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\API\UserController::getPermissions
-* @see app/Http/Controllers/API/UserController.php:169
-* @route '/api/users/permissions'
-*/
+ * @see app/Http/Controllers/API/UserController.php:173
+ * @route '/api/users/permissions'
+ */
 export const getPermissions = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: getPermissions.url(options),
     method: 'get',
@@ -138,28 +136,27 @@ getPermissions.definition = {
 
 /**
 * @see \App\Http\Controllers\API\UserController::getPermissions
-* @see app/Http/Controllers/API/UserController.php:169
-* @route '/api/users/permissions'
-*/
+ * @see app/Http/Controllers/API/UserController.php:173
+ * @route '/api/users/permissions'
+ */
 getPermissions.url = (options?: RouteQueryOptions) => {
     return getPermissions.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\API\UserController::getPermissions
-* @see app/Http/Controllers/API/UserController.php:169
-* @route '/api/users/permissions'
-*/
+ * @see app/Http/Controllers/API/UserController.php:173
+ * @route '/api/users/permissions'
+ */
 getPermissions.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: getPermissions.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\API\UserController::getPermissions
-* @see app/Http/Controllers/API/UserController.php:169
-* @route '/api/users/permissions'
-*/
+ * @see app/Http/Controllers/API/UserController.php:173
+ * @route '/api/users/permissions'
+ */
 getPermissions.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: getPermissions.url(options),
     method: 'head',
@@ -167,9 +164,9 @@ getPermissions.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => 
 
 /**
 * @see \App\Http\Controllers\API\UserController::getEmployees
-* @see app/Http/Controllers/API/UserController.php:179
-* @route '/api/users/employees'
-*/
+ * @see app/Http/Controllers/API/UserController.php:183
+ * @route '/api/users/employees'
+ */
 export const getEmployees = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: getEmployees.url(options),
     method: 'get',
@@ -182,28 +179,27 @@ getEmployees.definition = {
 
 /**
 * @see \App\Http\Controllers\API\UserController::getEmployees
-* @see app/Http/Controllers/API/UserController.php:179
-* @route '/api/users/employees'
-*/
+ * @see app/Http/Controllers/API/UserController.php:183
+ * @route '/api/users/employees'
+ */
 getEmployees.url = (options?: RouteQueryOptions) => {
     return getEmployees.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\API\UserController::getEmployees
-* @see app/Http/Controllers/API/UserController.php:179
-* @route '/api/users/employees'
-*/
+ * @see app/Http/Controllers/API/UserController.php:183
+ * @route '/api/users/employees'
+ */
 getEmployees.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: getEmployees.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\API\UserController::getEmployees
-* @see app/Http/Controllers/API/UserController.php:179
-* @route '/api/users/employees'
-*/
+ * @see app/Http/Controllers/API/UserController.php:183
+ * @route '/api/users/employees'
+ */
 getEmployees.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: getEmployees.url(options),
     method: 'head',
@@ -211,9 +207,9 @@ getEmployees.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\API\UserController::checkUserByNik
-* @see app/Http/Controllers/API/UserController.php:189
-* @route '/api/users/check-by-nik/{nik}'
-*/
+ * @see app/Http/Controllers/API/UserController.php:193
+ * @route '/api/users/check-by-nik/{nik}'
+ */
 export const checkUserByNik = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: checkUserByNik.url(args, options),
     method: 'get',
@@ -226,25 +222,26 @@ checkUserByNik.definition = {
 
 /**
 * @see \App\Http\Controllers\API\UserController::checkUserByNik
-* @see app/Http/Controllers/API/UserController.php:189
-* @route '/api/users/check-by-nik/{nik}'
-*/
+ * @see app/Http/Controllers/API/UserController.php:193
+ * @route '/api/users/check-by-nik/{nik}'
+ */
 checkUserByNik.url = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { nik: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            nik: args[0],
-        }
+                    nik: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        nik: args.nik,
-    }
+                        nik: args.nik,
+                }
 
     return checkUserByNik.definition.url
             .replace('{nik}', parsedArgs.nik.toString())
@@ -253,19 +250,18 @@ checkUserByNik.url = (args: { nik: string | number } | [nik: string | number ] |
 
 /**
 * @see \App\Http\Controllers\API\UserController::checkUserByNik
-* @see app/Http/Controllers/API/UserController.php:189
-* @route '/api/users/check-by-nik/{nik}'
-*/
+ * @see app/Http/Controllers/API/UserController.php:193
+ * @route '/api/users/check-by-nik/{nik}'
+ */
 checkUserByNik.get = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: checkUserByNik.url(args, options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\API\UserController::checkUserByNik
-* @see app/Http/Controllers/API/UserController.php:189
-* @route '/api/users/check-by-nik/{nik}'
-*/
+ * @see app/Http/Controllers/API/UserController.php:193
+ * @route '/api/users/check-by-nik/{nik}'
+ */
 checkUserByNik.head = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: checkUserByNik.url(args, options),
     method: 'head',
@@ -273,9 +269,9 @@ checkUserByNik.head = (args: { nik: string | number } | [nik: string | number ] 
 
 /**
 * @see \App\Http\Controllers\API\UserController::show
-* @see app/Http/Controllers/API/UserController.php:85
-* @route '/api/users/{user}'
-*/
+ * @see app/Http/Controllers/API/UserController.php:87
+ * @route '/api/users/{user}'
+ */
 export const show = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
@@ -288,31 +284,31 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\API\UserController::show
-* @see app/Http/Controllers/API/UserController.php:85
-* @route '/api/users/{user}'
-*/
+ * @see app/Http/Controllers/API/UserController.php:87
+ * @route '/api/users/{user}'
+ */
 show.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { user: args }
     }
 
-    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-        args = { user: args.id }
-    }
-
+            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+            args = { user: args.id }
+        }
+    
     if (Array.isArray(args)) {
         args = {
-            user: args[0],
-        }
+                    user: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        user: typeof args.user === 'object'
-        ? args.user.id
-        : args.user,
-    }
+                        user: typeof args.user === 'object'
+                ? args.user.id
+                : args.user,
+                }
 
     return show.definition.url
             .replace('{user}', parsedArgs.user.toString())
@@ -321,19 +317,18 @@ show.url = (args: { user: number | { id: number } } | [user: number | { id: numb
 
 /**
 * @see \App\Http\Controllers\API\UserController::show
-* @see app/Http/Controllers/API/UserController.php:85
-* @route '/api/users/{user}'
-*/
+ * @see app/Http/Controllers/API/UserController.php:87
+ * @route '/api/users/{user}'
+ */
 show.get = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\API\UserController::show
-* @see app/Http/Controllers/API/UserController.php:85
-* @route '/api/users/{user}'
-*/
+ * @see app/Http/Controllers/API/UserController.php:87
+ * @route '/api/users/{user}'
+ */
 show.head = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
@@ -341,9 +336,9 @@ show.head = (args: { user: number | { id: number } } | [user: number | { id: num
 
 /**
 * @see \App\Http\Controllers\API\UserController::update
-* @see app/Http/Controllers/API/UserController.php:95
-* @route '/api/users/{user}'
-*/
+ * @see app/Http/Controllers/API/UserController.php:97
+ * @route '/api/users/{user}'
+ */
 export const update = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
@@ -356,31 +351,31 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\API\UserController::update
-* @see app/Http/Controllers/API/UserController.php:95
-* @route '/api/users/{user}'
-*/
+ * @see app/Http/Controllers/API/UserController.php:97
+ * @route '/api/users/{user}'
+ */
 update.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { user: args }
     }
 
-    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-        args = { user: args.id }
-    }
-
+            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+            args = { user: args.id }
+        }
+    
     if (Array.isArray(args)) {
         args = {
-            user: args[0],
-        }
+                    user: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        user: typeof args.user === 'object'
-        ? args.user.id
-        : args.user,
-    }
+                        user: typeof args.user === 'object'
+                ? args.user.id
+                : args.user,
+                }
 
     return update.definition.url
             .replace('{user}', parsedArgs.user.toString())
@@ -389,9 +384,9 @@ update.url = (args: { user: number | { id: number } } | [user: number | { id: nu
 
 /**
 * @see \App\Http\Controllers\API\UserController::update
-* @see app/Http/Controllers/API/UserController.php:95
-* @route '/api/users/{user}'
-*/
+ * @see app/Http/Controllers/API/UserController.php:97
+ * @route '/api/users/{user}'
+ */
 update.put = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
@@ -399,9 +394,9 @@ update.put = (args: { user: number | { id: number } } | [user: number | { id: nu
 
 /**
 * @see \App\Http\Controllers\API\UserController::destroy
-* @see app/Http/Controllers/API/UserController.php:141
-* @route '/api/users/{user}'
-*/
+ * @see app/Http/Controllers/API/UserController.php:145
+ * @route '/api/users/{user}'
+ */
 export const destroy = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
@@ -414,31 +409,31 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\API\UserController::destroy
-* @see app/Http/Controllers/API/UserController.php:141
-* @route '/api/users/{user}'
-*/
+ * @see app/Http/Controllers/API/UserController.php:145
+ * @route '/api/users/{user}'
+ */
 destroy.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { user: args }
     }
 
-    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-        args = { user: args.id }
-    }
-
+            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+            args = { user: args.id }
+        }
+    
     if (Array.isArray(args)) {
         args = {
-            user: args[0],
-        }
+                    user: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        user: typeof args.user === 'object'
-        ? args.user.id
-        : args.user,
-    }
+                        user: typeof args.user === 'object'
+                ? args.user.id
+                : args.user,
+                }
 
     return destroy.definition.url
             .replace('{user}', parsedArgs.user.toString())
@@ -447,9 +442,9 @@ destroy.url = (args: { user: number | { id: number } } | [user: number | { id: n
 
 /**
 * @see \App\Http\Controllers\API\UserController::destroy
-* @see app/Http/Controllers/API/UserController.php:141
-* @route '/api/users/{user}'
-*/
+ * @see app/Http/Controllers/API/UserController.php:145
+ * @route '/api/users/{user}'
+ */
 destroy.delete = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
@@ -457,9 +452,9 @@ destroy.delete = (args: { user: number | { id: number } } | [user: number | { id
 
 /**
 * @see \App\Http\Controllers\API\UserController::updatePassword
-* @see app/Http/Controllers/API/UserController.php:208
-* @route '/api/users/{user}/password'
-*/
+ * @see app/Http/Controllers/API/UserController.php:212
+ * @route '/api/users/{user}/password'
+ */
 export const updatePassword = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: updatePassword.url(args, options),
     method: 'put',
@@ -472,31 +467,31 @@ updatePassword.definition = {
 
 /**
 * @see \App\Http\Controllers\API\UserController::updatePassword
-* @see app/Http/Controllers/API/UserController.php:208
-* @route '/api/users/{user}/password'
-*/
+ * @see app/Http/Controllers/API/UserController.php:212
+ * @route '/api/users/{user}/password'
+ */
 updatePassword.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { user: args }
     }
 
-    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-        args = { user: args.id }
-    }
-
+            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+            args = { user: args.id }
+        }
+    
     if (Array.isArray(args)) {
         args = {
-            user: args[0],
-        }
+                    user: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        user: typeof args.user === 'object'
-        ? args.user.id
-        : args.user,
-    }
+                        user: typeof args.user === 'object'
+                ? args.user.id
+                : args.user,
+                }
 
     return updatePassword.definition.url
             .replace('{user}', parsedArgs.user.toString())
@@ -505,14 +500,13 @@ updatePassword.url = (args: { user: number | { id: number } } | [user: number | 
 
 /**
 * @see \App\Http\Controllers\API\UserController::updatePassword
-* @see app/Http/Controllers/API/UserController.php:208
-* @route '/api/users/{user}/password'
-*/
+ * @see app/Http/Controllers/API/UserController.php:212
+ * @route '/api/users/{user}/password'
+ */
 updatePassword.put = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: updatePassword.url(args, options),
     method: 'put',
 })
-
 const UserController = { index, store, getRoles, getPermissions, getEmployees, checkUserByNik, show, update, destroy, updatePassword }
 
 export default UserController

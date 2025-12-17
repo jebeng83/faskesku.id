@@ -15,7 +15,6 @@ export default function Index() {
     const [modalMode, setModalMode] = useState("create"); // create, edit
     const [selectedUser, setSelectedUser] = useState(null);
     const [roles, setRoles] = useState([]);
-    const [permissions, setPermissions] = useState([]);
     const [employees, setEmployees] = useState([]);
     const [formData, setFormData] = useState({
         name: "",
@@ -25,7 +24,6 @@ export default function Index() {
         password_confirmation: "",
         nik: "",
         roles: [],
-        permissions: [],
     });
     const [copySourceUserId, setCopySourceUserId] = useState("");
     const [passwordData, setPasswordData] = useState({
@@ -70,15 +68,6 @@ export default function Index() {
         }
     };
 
-    const fetchPermissions = async () => {
-        try {
-            const response = await axios.get("/api/users/permissions");
-            setPermissions(response.data.data);
-        } catch (error) {
-            console.error("Error fetching permissions:", error);
-        }
-    };
-
     const fetchEmployees = async () => {
         try {
             const response = await axios.get("/api/users/employees");
@@ -91,7 +80,6 @@ export default function Index() {
     useEffect(() => {
         fetchUsers();
         fetchRoles();
-        fetchPermissions();
         fetchEmployees();
     }, []);
 
@@ -114,7 +102,6 @@ export default function Index() {
             password_confirmation: "",
             nik: "",
             roles: [],
-            permissions: [],
         });
         setErrors({});
         setShowModal(true);
@@ -131,7 +118,6 @@ export default function Index() {
             password_confirmation: "",
             nik: user.nik || "",
             roles: user.roles.map((role) => role.name),
-            permissions: user.permissions.map((permission) => permission.name),
         });
         setErrors({});
         setShowModal(true);
@@ -162,7 +148,6 @@ export default function Index() {
             password_confirmation: "",
             nik: "",
             roles: [],
-            permissions: [],
         });
         setPasswordData({
             current_password: "",
@@ -206,9 +191,9 @@ export default function Index() {
         }));
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setErrors({});
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+		setErrors({});
 
         // Validasi sederhana untuk password konfirmasi
         if (
@@ -220,17 +205,18 @@ export default function Index() {
                 password_confirmation: ["Konfirmasi password tidak sama"],
             }));
             return;
-        }
+		}
 
-        try {
-            if (modalMode === "create") {
-                await axios.post("/api/users", formData);
-            } else {
-                // Gunakan PUT dengan JSON agar array roles/permissions terkirim dengan benar
-                await axios.put(`/api/users/${selectedUser.id}`, formData);
-            }
-            closeModal();
-            fetchUsers();
+		try {
+			if (modalMode === "create") {
+				await axios.post("/api/users", formData);
+				setSearch("");
+				setRoleFilter("");
+			} else {
+				await axios.put(`/api/users/${selectedUser.id}`, formData);
+			}
+			closeModal();
+			fetchUsers();
         } catch (error) {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.errors);
@@ -399,9 +385,6 @@ export default function Index() {
                                         Roles
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Permissions
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Tanggal Dibuat
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -458,34 +441,6 @@ export default function Index() {
                                                             {role.name}
                                                         </span>
                                                     ))}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                                <div className="flex flex-wrap gap-1">
-                                                    {user.permissions
-                                                        .slice(0, 3)
-                                                        .map((permission) => (
-                                                            <span
-                                                                key={
-                                                                    permission.id
-                                                                }
-                                                                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                                                            >
-                                                                {
-                                                                    permission.name
-                                                                }
-                                                            </span>
-                                                        ))}
-                                                    {user.permissions.length >
-                                                        3 && (
-                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
-                                                            +
-                                                            {user.permissions
-                                                                .length -
-                                                                3}{" "}
-                                                            lainnya
-                                                        </span>
-                                                    )}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
@@ -874,42 +829,6 @@ export default function Index() {
                                         )}
                                     </div>
 
-                                    {/* Permissions */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Permissions
-                                        </label>
-                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-40 overflow-y-auto">
-                                            {permissions.map((permission) => (
-                                                <label
-                                                    key={permission.id}
-                                                    className="flex items-center space-x-2 cursor-pointer"
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        name="permissions"
-                                                        value={permission.name}
-                                                        checked={formData.permissions.includes(
-                                                            permission.name
-                                                        )}
-                                                        onChange={
-                                                            handleFormChange
-                                                        }
-                                                        className="rounded border-gray-300 text-green-600 focus:ring-green-500"
-                                                    />
-                                                    <span className="text-sm text-gray-700 dark:text-gray-300">
-                                                        {permission.name}
-                                                    </span>
-                                                </label>
-                                            ))}
-                                        </div>
-                                        {errors.permissions && (
-                                            <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                                                {errors.permissions[0]}
-                                            </p>
-                                        )}
-                                    </div>
-
                                     <div className="flex justify-end space-x-3 pt-4">
                                         <button
                                             type="button"
@@ -1098,15 +1017,14 @@ export default function Index() {
                                     Ringkasan dari docs/user.md:
                                 </p>
                                 <ul className="list-disc pl-6 text-sm text-gray-700 dark:text-gray-300 space-y-2">
-                                    <li>
+                                        <li>
                                         Pembuatan user baru: isi Nama, Username,
-                                        Password. Assign Roles/Permissions
-                                        sesuai kebutuhan.
+                                        Password, dan pilih Roles sesuai
+                                        kebutuhan.
                                     </li>
                                     <li>
-                                        Hak akses berbasis Roles dan
-                                        Permissions. Gunakan fitur copy untuk
-                                        menyalin akses dari user lain.
+                                        Hak akses berbasis Roles. Permissions
+                                        diturunkan dari Roles yang dipilih.
                                     </li>
                                     <li>
                                         Keamanan: password di-hash (server),
@@ -1224,10 +1142,6 @@ export default function Index() {
                                                         roles: source.roles.map(
                                                             (r) => r.name
                                                         ),
-                                                        permissions:
-                                                            source.permissions.map(
-                                                                (p) => p.name
-                                                            ),
                                                     };
                                                     await axios.put(
                                                         `/api/users/${selectedUser.id}`,

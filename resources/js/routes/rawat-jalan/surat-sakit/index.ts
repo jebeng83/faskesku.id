@@ -32,7 +32,6 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
 })
-
 const suratSakit = {
     store: Object.assign(store, store),
 }
