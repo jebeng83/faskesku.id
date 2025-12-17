@@ -41,52 +41,60 @@ const MonthlyInfoPanelLazy = React.lazy(() =>
 
 // Stats akan dibuat dinamis di dalam komponen menggunakan data dari endpoint
 
-const quickLinks = [
+const quickLinksConfig = [
     {
         title: "Pengaturan",
         description: "Kelola konfigurasi aplikasi & bridging",
         href: route("profile.home"),
+        requiredPermission: "group.pengaturan.access",
     },
     {
         title: "Pendaftaran Pasien",
         description: "Registrasi cepat atau tambah pasien baru",
         href: "/registration/lanjutan",
+        requiredPermission: "group.registrasi.access",
     },
     {
         title: "Monitoring Satusehat",
         description: "Pantau status FHIR & Encounter",
         href: "/satusehat/monitoring",
+        requiredPermission: "group.satusehat.access",
     },
     {
         title: "Briding",
         description: "Akses modul bridging",
         href: "/pcare",
+        requiredPermission: "group.pcare.access",
     },
     {
         title: "PCare & Rujukan",
         description: "Sinkron data PCare dan status rujukan",
         href: "/pcare",
+        requiredPermission: "group.pcare.access",
     },
     {
         title: "Rawat Jalan",
         description: "Kelola pemeriksaan & SOAP RME",
         href: "/rawat-jalan",
+        requiredPermission: "group.rawatjalan.access",
     },
     {
         title: "Laboratorium",
         description: "Kelola pemeriksaan laboratorium & data hasil",
         href: route("laboratorium.index"),
+        requiredPermission: "group.laboratorium.access",
     },
     {
         title: "Pembayaran",
         description: "Kelola pembayaran Ralan & Ranap",
         href: "/pembayaran",
+        requiredPermission: "group.keuangan.access",
     },
     {
         title: "Keuangan",
         description: "Kelola Rekening, Jurnal, dan Nota",
-        // Arahkan ke halaman Home Akutansi
         href: "/akutansi/home",
+        requiredPermission: "group.keuangan.access",
     },
 ];
 
@@ -211,6 +219,11 @@ const TopNavbar = React.memo(function TopNavbar() {
         props?.setting?.nama_instansi ||
         props?.nama_instansi ||
         "Faskesku.id";
+    const permissionNames = Array.isArray(props?.auth?.permissions)
+        ? props.auth.permissions
+        : [];
+    const canAccess = (permission) =>
+        permissionNames.includes(permission);
 
     return (
         <header className="fixed top-0 left-0 right-0 z-50 bg-white/70 dark:bg-gray-900/70 backdrop-blur border-b border-slate-200/70 dark:border-gray-800">
@@ -231,56 +244,78 @@ const TopNavbar = React.memo(function TopNavbar() {
                         </span>
                     </Link>
                     <nav className="hidden md:flex items-center gap-1">
-                        <Link
-                            href={route("registration.index")}
-                            className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
-                        >
-                            <UserPlus className="w-4 h-4 transition-transform group-hover:scale-110" />
-                            <span className="relative">
-                                Pendaftaran
-                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
-                            </span>
-                        </Link>
-                        <Link
-                            href={route("rawat-jalan.index")}
-                            className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
-                        >
-                            <Stethoscope className="w-4 h-4 transition-transform group-hover:scale-110" />
-                            <span className="relative">
-                                Rawat Jalan
-                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
-                            </span>
-                        </Link>
-                        <Link
-                            href={route("laboratorium.index")}
-                            className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
-                        >
-                            <FlaskConical className="w-4 h-4 transition-transform group-hover:scale-110" />
-                            <span className="relative">
-                                Laborat
-                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
-                            </span>
-                        </Link>
-                        <Link
-                            href={route("farmasi.permintaan-resep")}
-                            className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
-                        >
-                            <Pill className="w-4 h-4 transition-transform group-hover:scale-110" />
-                            <span className="relative">
-                                Farmasi
-                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
-                            </span>
-                        </Link>
-                        <Link
-                            href={route("akutansi.kasir-ralan.page")}
-                            className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
-                        >
-                            <CreditCard className="w-4 h-4 transition-transform group-hover:scale-110" />
-                            <span className="relative">
-                                Kasir
-                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
-                            </span>
-                        </Link>
+                        {canAccess("group.registrasi.access") && (
+                            <Link
+                                href={route("registration.index")}
+                                className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
+                            >
+                                <UserPlus className="w-4 h-4 transition-transform group-hover:scale-110" />
+                                <span className="relative">
+                                    Pendaftaran
+                                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
+                                </span>
+                            </Link>
+                        )}
+                        {canAccess("group.rawatjalan.access") && (
+                            <Link
+                                href={route("rawat-jalan.index")}
+                                className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
+                            >
+                                <Stethoscope className="w-4 h-4 transition-transform group-hover:scale-110" />
+                                <span className="relative">
+                                    Rawat Jalan
+                                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
+                                </span>
+                            </Link>
+                        )}
+                        {canAccess("group.laboratorium.access") && (
+                            <Link
+                                href={route("laboratorium.index")}
+                                className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
+                            >
+                                <FlaskConical className="w-4 h-4 transition-transform group-hover:scale-110" />
+                                <span className="relative">
+                                    Laborat
+                                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
+                                </span>
+                            </Link>
+                        )}
+                        {canAccess("group.radiologi.access") && (
+                            <Link
+                                href={route("radiologi.index")}
+                                className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
+                            >
+                                <Radiation className="w-4 h-4 transition-transform group-hover:scale-110" />
+                                <span className="relative">
+                                    Radiologi
+                                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
+                                </span>
+                            </Link>
+                        )}
+                        {canAccess("group.farmasi.access") && (
+                            <Link
+                                href={route("farmasi.permintaan-resep")}
+                                className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
+                            >
+                                <Pill className="w-4 h-4 transition-transform group-hover:scale-110" />
+                                <span className="relative">
+                                    Farmasi
+                                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
+                                </span>
+                            </Link>
+                        )}
+                        {canAccess("group.keuangan.access") && (
+                            <Link
+                                href={route("akutansi.kasir-ralan.page")}
+                                className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
+                            >
+                                <CreditCard className="w-4 h-4 transition-transform group-hover:scale-110" />
+                                <span className="relative">
+                                    Kasir
+                                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
+                                </span>
+                            </Link>
+                        )}
                     </nav>
                     <div className="flex items-center gap-2">
                         <Link
@@ -334,6 +369,11 @@ const Footer = React.memo(function Footer() {
         props?.setting?.nama_instansi ||
         props?.nama_instansi ||
         "Faskesku.id";
+    const permissionNames = Array.isArray(props?.auth?.permissions)
+        ? props.auth.permissions
+        : [];
+    const canAccess = (permission) =>
+        !permission || permissionNames.includes(permission);
 
     // Ambil informasi dari tabel `setting` (legacy) untuk menampilkan detail instansi
     const [appSetting, setAppSetting] = useState(null);
@@ -387,11 +427,31 @@ const Footer = React.memo(function Footer() {
     ];
 
     const unitLinks = [
-        { label: "SATUSEHAT Monitoring", href: "/satusehat/monitoring" },
-        { label: "Penjaminan Mutu (Audit)", href: "/permissions" },
-        { label: "Laboratorium", href: route("laboratorium.index") },
-        { label: "Radiologi", href: "/radiologi" },
-        { label: "Farmasi", href: "/farmasi" },
+        {
+            label: "SATUSEHAT Monitoring",
+            href: "/satusehat/monitoring",
+            requiredPermission: "group.satusehat.access",
+        },
+        {
+            label: "Penjaminan Mutu (Audit)",
+            href: "/permissions",
+            requiredPermission: "group.pengaturan.access",
+        },
+        {
+            label: "Laboratorium",
+            href: route("laboratorium.index"),
+            requiredPermission: "group.laboratorium.access",
+        },
+        {
+            label: "Radiologi",
+            href: route("radiologi.index"),
+            requiredPermission: "group.radiologi.access",
+        },
+        {
+            label: "Farmasi",
+            href: "/farmasi",
+            requiredPermission: "group.farmasi.access",
+        },
     ];
 
     return (
@@ -483,17 +543,21 @@ const Footer = React.memo(function Footer() {
                                     Layanan Sistem
                                 </div>
                                 <ul className="space-y-2 text-sm">
-                                    {unitLinks.map((l) => (
-                                        <li key={l.label}>
-                                            <Link
-                                                href={l.href}
-                                                className="inline-flex items-center gap-2 text-slate-700 dark:text-slate-200 hover:text-blue-600"
-                                            >
-                                                <ArrowRight className="w-4 h-4" />
-                                                <span>{l.label}</span>
-                                            </Link>
-                                        </li>
-                                    ))}
+                                    {unitLinks
+                                        .filter((l) =>
+                                            canAccess(l.requiredPermission)
+                                        )
+                                        .map((l) => (
+                                            <li key={l.label}>
+                                                <Link
+                                                    href={l.href}
+                                                    className="inline-flex items-center gap-2 text-slate-700 dark:text-slate-200 hover:text-blue-600"
+                                                >
+                                                    <ArrowRight className="w-4 h-4" />
+                                                    <span>{l.label}</span>
+                                                </Link>
+                                            </li>
+                                        ))}
                                 </ul>
                             </div>
                         </div>
@@ -536,7 +600,19 @@ export default function Dashboard() {
     //     : "/img/wallpaper.png";
     // Nama faskes akan diambil langsung saat render, tanpa variabel terpisah
 
-    // Reduce motion if user prefers reduced motion
+    const permissionNames = Array.isArray(props?.auth?.permissions)
+        ? props.auth.permissions
+        : [];
+    const hasPermission = (permission) =>
+        !permission || permissionNames.includes(permission);
+    const quickLinks = useMemo(
+        () =>
+            quickLinksConfig.filter((item) =>
+                hasPermission(item.requiredPermission)
+            ),
+        [permissionNames]
+    );
+
     const [enableMotion, setEnableMotion] = useState(true);
     useEffect(() => {
         try {
@@ -548,7 +624,6 @@ export default function Dashboard() {
         } catch (_) {}
     }, []);
 
-    // Lazy-load hero wallpaper only on good network; fallback to gradient if save-data/slow
     const [heroBg, setHeroBg] = useState(null);
     useEffect(() => {
         try {
@@ -577,7 +652,6 @@ export default function Dashboard() {
         };
     }, [wallpaperUrl]);
 
-    // State untuk jumlah registrasi/pasien hari ini
     const [pasienHariIniCount, setPasienHariIniCount] = useState(null);
     // State untuk jumlah registrasi/pasien kemarin
     const [pasienKemarinCount, setPasienKemarinCount] = useState(null);
@@ -777,70 +851,81 @@ export default function Dashboard() {
     };
 
     const shortcuts = useMemo(
-        () => [
-            {
-                key: "register",
-                label: "Register",
-                href: safeRoute("registration.lanjutan"),
-                icon: <UserPlus className="w-5 h-5" />,
-            },
-            {
-                key: "bridging",
-                label: "Briding",
-                href: safeRoute("pcare.index"),
-                icon: <LinkIcon className="w-5 h-5" />,
-            },
-            {
-                key: "ugd",
-                label: "UGD",
-                href: safeRoute("igd.index"),
-                icon: <Ambulance className="w-5 h-5" />,
-            },
-            {
-                key: "lab",
-                label: "Laboratorium",
-                href: safeRoute("laboratorium.index"),
-                icon: <FlaskConical className="w-5 h-5" />,
-            },
-            {
-                key: "rad",
-                label: "Radiologi",
-                href: safeRoute("radiologi.index"),
-                icon: <Radiation className="w-5 h-5" />,
-            },
-            {
-                key: "farmasi",
-                label: "Farmasi",
-                href: safeRoute("farmasi.index"),
-                icon: <Pill className="w-5 h-5" />,
-            },
-            {
-                key: "rajal",
-                label: "Rawat Jalan",
-                href: safeRoute("rawat-jalan.index"),
-                icon: <Stethoscope className="w-5 h-5" />,
-            },
-            {
-                key: "ranap",
-                label: "Rawat Inap",
-                href: safeRoute("rawat-inap.index"),
-                icon: <Bed className="w-5 h-5" />,
-            },
-            {
-                key: "keuangan",
-                label: "Keuangan",
-                // Arahkan ke halaman Home Akutansi
-                href: "/akutansi/home",
-                icon: <Wallet className="w-5 h-5" />,
-            },
-            {
-                key: "settings",
-                label: "Pengaturan",
-                href: safeRoute("profile.home", "/profile/home"),
-                icon: <Settings className="w-5 h-5" />,
-            },
-        ],
-        []
+        () =>
+            [
+                {
+                    key: "register",
+                    label: "Register",
+                    href: safeRoute("registration.lanjutan"),
+                    icon: <UserPlus className="w-5 h-5" />,
+                    requiredPermission: "group.registrasi.access",
+                },
+                {
+                    key: "bridging",
+                    label: "Briding",
+                    href: safeRoute("pcare.index"),
+                    icon: <LinkIcon className="w-5 h-5" />,
+                    requiredPermission: "group.pcare.access",
+                },
+                {
+                    key: "ugd",
+                    label: "UGD",
+                    href: safeRoute("igd.index"),
+                    icon: <Ambulance className="w-5 h-5" />,
+                    requiredPermission: "group.rawatjalan.access",
+                },
+                {
+                    key: "lab",
+                    label: "Laboratorium",
+                    href: safeRoute("laboratorium.index"),
+                    icon: <FlaskConical className="w-5 h-5" />,
+                    requiredPermission: "group.laboratorium.access",
+                },
+                {
+                    key: "rad",
+                    label: "Radiologi",
+                    href: safeRoute("radiologi.index"),
+                    icon: <Radiation className="w-5 h-5" />,
+                    requiredPermission: "group.radiologi.access",
+                },
+                {
+                    key: "farmasi",
+                    label: "Farmasi",
+                    href: safeRoute("farmasi.index"),
+                    icon: <Pill className="w-5 h-5" />,
+                    requiredPermission: "group.farmasi.access",
+                },
+                {
+                    key: "rajal",
+                    label: "Rawat Jalan",
+                    href: safeRoute("rawat-jalan.index"),
+                    icon: <Stethoscope className="w-5 h-5" />,
+                    requiredPermission: "group.rawatjalan.access",
+                },
+                {
+                    key: "ranap",
+                    label: "Rawat Inap",
+                    href: safeRoute("rawat-inap.index"),
+                    icon: <Bed className="w-5 h-5" />,
+                    requiredPermission: "group.rawatjalan.access",
+                },
+                {
+                    key: "keuangan",
+                    label: "Keuangan",
+                    // Arahkan ke halaman Home Akutansi
+                    href: "/akutansi/home",
+                    icon: <Wallet className="w-5 h-5" />,
+                    requiredPermission: "group.keuangan.access",
+                },
+                {
+                    key: "settings",
+                    label: "Pengaturan",
+                    href: safeRoute("profile.home", "/profile/home"),
+                    icon: <Settings className="w-5 h-5" />,
+                    requiredPermission: "group.pengaturan.access",
+                },
+            ].filter((item) => hasPermission(item.requiredPermission)),
+        [permissionNames]
     );
 
     // Stats dinamis yang menggunakan hasil dari endpoint

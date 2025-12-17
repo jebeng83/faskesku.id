@@ -32,7 +32,6 @@ exists.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: exists.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::exists
 * @see app/Http/Controllers/Akutansi/NotaJalanController.php:34
@@ -136,17 +135,18 @@ pdf.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | 
         args = { no_rawat: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            no_rawat: args[0],
-        }
+                    no_rawat: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        no_rawat: args.no_rawat,
-    }
+                        no_rawat: args.no_rawat,
+                }
 
     return pdf.definition.url
             .replace('{no_rawat}', parsedArgs.no_rawat.toString())
@@ -162,7 +162,6 @@ pdf.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | 
     url: pdf.url(args, options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::pdf
 * @see app/Http/Controllers/Akutansi/NotaJalanController.php:820
@@ -198,17 +197,18 @@ show.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] |
         args = { no_rawat: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            no_rawat: args[0],
-        }
+                    no_rawat: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        no_rawat: args.no_rawat,
-    }
+                        no_rawat: args.no_rawat,
+                }
 
     return show.definition.url
             .replace('{no_rawat}', parsedArgs.no_rawat.toString())
@@ -224,7 +224,6 @@ show.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] |
     url: show.url(args, options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::show
 * @see app/Http/Controllers/Akutansi/NotaJalanController.php:661
@@ -237,9 +236,9 @@ show.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] 
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::destroy
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:0
-* @route '/api/akutansi/nota-jalan/{no_rawat}'
-*/
+ * @see app/Http/Controllers/Akutansi/NotaJalanController.php:0
+ * @route '/api/akutansi/nota-jalan/{no_rawat}'
+ */
 export const destroy = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
@@ -252,25 +251,26 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::destroy
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:0
-* @route '/api/akutansi/nota-jalan/{no_rawat}'
-*/
+ * @see app/Http/Controllers/Akutansi/NotaJalanController.php:0
+ * @route '/api/akutansi/nota-jalan/{no_rawat}'
+ */
 destroy.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { no_rawat: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            no_rawat: args[0],
-        }
+                    no_rawat: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        no_rawat: args.no_rawat,
-    }
+                        no_rawat: args.no_rawat,
+                }
 
     return destroy.definition.url
             .replace('{no_rawat}', parsedArgs.no_rawat.toString())
@@ -279,21 +279,20 @@ destroy.url = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\Akutansi\NotaJalanController::destroy
-* @see app/Http/Controllers/Akutansi/NotaJalanController.php:0
-* @route '/api/akutansi/nota-jalan/{no_rawat}'
-*/
+ * @see app/Http/Controllers/Akutansi/NotaJalanController.php:0
+ * @route '/api/akutansi/nota-jalan/{no_rawat}'
+ */
 destroy.delete = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
-
 const notaJalan = {
     exists: Object.assign(exists, exists),
-    store: Object.assign(store, store),
-    snapshot: Object.assign(snapshot, snapshot),
-    pdf: Object.assign(pdf, pdf),
-    show: Object.assign(show, show),
-    destroy: Object.assign(destroy, destroy),
+store: Object.assign(store, store),
+snapshot: Object.assign(snapshot, snapshot),
+pdf: Object.assign(pdf, pdf),
+show: Object.assign(show, show),
+destroy: Object.assign(destroy, destroy),
 }
 
 export default notaJalan

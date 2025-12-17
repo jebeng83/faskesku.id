@@ -100,11 +100,10 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(options),
     method: 'put',
 })
-
 const pemeriksaanRalan = {
     store: Object.assign(store, store),
-    delete: Object.assign(deleteMethod, deleteMethod),
-    update: Object.assign(update, update),
+delete: Object.assign(deleteMethod, deleteMethod),
+update: Object.assign(update, update),
 }
 
 export default pemeriksaanRalan

@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::getDiagnosaPasien
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:737
 * @route '/api/rawat-jalan/diagnosa'
 */
@@ -15,7 +15,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::getDiagnosaPasien
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:737
 * @route '/api/rawat-jalan/diagnosa'
 */
@@ -24,7 +24,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::getDiagnosaPasien
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:737
 * @route '/api/rawat-jalan/diagnosa'
 */
@@ -32,9 +32,8 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
-
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::getDiagnosaPasien
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:737
 * @route '/api/rawat-jalan/diagnosa'
 */
@@ -44,7 +43,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeDiagnosaPasien
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:770
 * @route '/api/rawat-jalan/diagnosa'
 */
@@ -59,7 +58,7 @@ store.definition = {
 } satisfies RouteDefinition<["post"]>
 
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeDiagnosaPasien
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:770
 * @route '/api/rawat-jalan/diagnosa'
 */
@@ -68,7 +67,7 @@ store.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeDiagnosaPasien
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:770
 * @route '/api/rawat-jalan/diagnosa'
 */
@@ -76,10 +75,9 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
 })
-
 const diagnosa = {
     index: Object.assign(index, index),
-    store: Object.assign(store, store),
+store: Object.assign(store, store),
 }
 
 export default diagnosa
