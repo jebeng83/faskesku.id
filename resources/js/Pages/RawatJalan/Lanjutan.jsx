@@ -317,7 +317,6 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                 try {
                     const url = route("rawat-jalan.pemeriksaan-ralan", {
                         no_rawat: v.no_rawat,
-                        t: token,
                     });
                     const r = await fetch(url);
                     const j = await r.json();
@@ -362,22 +361,29 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                 const pending = [];
                 const seen = new Set();
                 for (const h of soapModalItems) {
-                    const nip = h?.latest?.nip;
-                    if (!nip) continue;
-                    if (pegawaiNameMap && pegawaiNameMap[nip]) continue;
-                    if (seen.has(nip)) continue;
-                    seen.add(nip);
-                    try {
-                        const url = route('pegawai.search', { q: nip });
-                        pending.push(fetch(url).then(r => r.json()).then(json => {
-                            const arr = Array.isArray(json?.data) ? json.data : [];
-                            const match = arr.find(row => String(row.nik) === String(nip)) || null;
-                            const nama = match ? (match.nama || match.nm_pegawai || '').trim() : '';
-                            if (nama && match) {
-                                setPegawaiNameMap((prev) => ({ ...prev, [nip]: nama }));
-                            }
-                        }).catch(() => {}));
-                    } catch (_) {}
+                    const allNips = [];
+                    if (h?.latest?.nip) allNips.push(h.latest.nip);
+                    const entries = Array.isArray(h?.entries) ? h.entries : [];
+                    for (const e of entries) {
+                        if (e?.nip) allNips.push(e.nip);
+                    }
+                    for (const nip of allNips) {
+                        if (!nip) continue;
+                        if (pegawaiNameMap && pegawaiNameMap[nip]) continue;
+                        if (seen.has(nip)) continue;
+                        seen.add(nip);
+                        try {
+                            const url = route('pegawai.search', { q: nip });
+                            pending.push(fetch(url).then(r => r.json()).then(json => {
+                                const arr = Array.isArray(json?.data) ? json.data : [];
+                                const match = arr.find(row => String(row.nik) === String(nip)) || null;
+                                const nama = match ? (match.nama || match.nm_pegawai || '').trim() : '';
+                                if (nama && match) {
+                                    setPegawaiNameMap((prev) => ({ ...prev, [nip]: nama }));
+                                }
+                            }).catch(() => {}));
+                        } catch (_) {}
+                    }
                 }
                 if (pending.length) {
                     await Promise.allSettled(pending);
@@ -859,22 +865,40 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                                     tanggal = new Date(h.tgl_registrasi).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
                                                                 }
                                                             } catch (_) {}
+                                                            const countDisplay = (() => {
+                                                                if (Array.isArray(h.entries)) {
+                                                                    const seen = new Set();
+                                                                    for (const e of h.entries) {
+                                                                        const t = String(e.jam_rawat || '').substring(0,5);
+                                                                        if (!t) continue;
+                                                                        seen.add(t);
+                                                                    }
+                                                                    return seen.size || h.entries.length;
+                                                                } else if (Array.isArray(h.cpptTimes)) {
+                                                                    const uniq = new Set(h.cpptTimes.filter(Boolean));
+                                                                    return uniq.size;
+                                                                }
+                                                                return Number(h.cpptCount || 0);
+                                                            })();
                                                             return (
                                                                 <>
                                                                     <tr key={`${h.no_rawat}-summary`} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                                                                        <td className="px-3 py-2 w-44">
+                                                                        <td className="px-3 py-2" colSpan={4}>
                                                                             <div className="flex items-baseline gap-2">
                                                                                 <div className="text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">{tanggal}</div>
-                                                                                <div className="text-[11px] text-gray-900 dark:text-white font-mono w-20 whitespace-nowrap">
-                                                                                    {typeof latest.jam_rawat === 'string' && latest.jam_rawat.trim()
-                                                                                        ? latest.jam_rawat.trim().substring(0, 5)
-                                                                                        : '-'}
-                                                                                </div>
+                                                                                <span className="text-[11px] text-gray-700 dark:text-gray-300">{countDisplay} data</span>
                                                                             </div>
-                                                                            <div className="text-[11px] text-gray-500 dark:text-gray-400 whitespace-nowrap">{h.no_rawat || '-'}</div>
-                                                                            <div className="text-[11px] font-semibold text-gray-900 dark:text-white whitespace-nowrap">{(latest.nip && pegawaiNameMap[latest.nip]) || '-'}</div>
-                                                                            <div className="text-[11px] text-gray-600 dark:text-gray-300 whitespace-nowrap">
-                                                                                {`CPPT: ${Number(h.cpptCount || 0)} data${(h.cpptTimes && h.cpptTimes.length) ? ' — ' + h.cpptTimes.join(' , ') : ''}`}
+                                                                            <div className="mt-1 space-y-0.5 text-[11px] leading-tight">
+                                                                                <div className="grid grid-cols-[6.5rem_0.75rem_1fr] items-baseline gap-x-0.5">
+                                                                                    <span className="text-gray-600 dark:text-gray-300">No. Rawat</span>
+                                                                                    <span className="text-gray-400 text-center">:</span>
+                                                                                    <span className="font-mono text-gray-900 dark:text-white">{h.no_rawat || '-'}</span>
+                                                                                </div>
+                                                                                <div className="grid grid-cols-[6.5rem_0.75rem_1fr] items-baseline gap-x-0.5">
+                                                                                    <span className="text-gray-600 dark:text-gray-300">CPPT</span>
+                                                                                    <span className="text-gray-400 text-center">:</span>
+                                                                                    <span className="text-gray-700 dark:text-gray-300 truncate">{`${(Array.isArray(h.entries) ? h.entries.length : (Array.isArray(h.cpptTimes) ? [...new Set(h.cpptTimes)].length : Number(h.cpptCount || 0)))} data${(h.cpptTimes && h.cpptTimes.length) ? ' — ' + h.cpptTimes.join(' , ') : ''}`}</span>
+                                                                                </div>
                                                                             </div>
                                                                             <div className="mt-1">
                                                                                 <button
@@ -885,33 +909,6 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                                                     {expandedSoapRows[h.no_rawat] ? 'Tutup' : 'Detail'}
                                                                                 </button>
                                                                             </div>
-                                                                        </td>
-                                                                        <td className="px-3 py-2 text-gray-700 dark:text-gray-300 w-36">
-                                                                            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                                                                                <div className="text-gray-500">Suhu</div>
-                                                                                <div className="font-medium text-right">{latest.suhu_tubuh || '-'}°C</div>
-                                                                                <div className="text-gray-500">Tensi</div>
-                                                                                <div className="font-medium text-right">{latest.tensi || '-'}</div>
-                                                                                <div className="text-gray-500">Nadi</div>
-                                                                                <div className="font-medium text-right">{latest.nadi || '-'}/min</div>
-                                                                                <div className="text-gray-500">SpO2</div>
-                                                                                <div className="font-medium text-right">{latest.spo2 || '-'}%</div>
-                                                                            </div>
-                                                                        </td>
-                                                                        <td className="px-3 py-2 w-32">
-                                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                                                                                {h.cpptCount ? (latest.kesadaran || 'Compos Mentis') : '-'}
-                                                                            </span>
-                                                                        </td>
-                                                                        <td className="px-3 py-2 text-gray-700 dark:text-gray-300 w-64">
-                                                                            {(() => {
-                                                                                const keluhanText = typeof latest.keluhan === 'string' ? latest.keluhan.trim() : '';
-                                                                                return (
-                                                                                    <div className="truncate whitespace-nowrap" title={keluhanText}>
-                                                                                        {keluhanText || '-'}
-                                                                                    </div>
-                                                                                );
-                                                                            })()}
                                                                         </td>
                                                                     </tr>
                                                                     {expandedSoapRows[h.no_rawat] && Array.isArray(h.cpptTimes) && h.cpptTimes.length > 0 && Array.isArray(h.entries) && h.entries.length > 0 && (
@@ -934,7 +931,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                                                                 return aa < bb ? 1 : aa > bb ? -1 : 0;
                                                                                             }).map((e, i) => (
                                                                                                 <tr key={`${h.no_rawat}-e-${i}`}>
-                                                                                                    <td className="px-2 py-1 font-mono text-gray-900 dark:text-white">{`${tanggal} ${(typeof e.jam_rawat === 'string' && e.jam_rawat.trim()) ? e.jam_rawat.trim().substring(0,5) : '-'}`}</td>
+                                                                                                    <td className="px-2 py-1 font-mono text-gray-900 dark:text-white">{`${tanggal} ${(typeof e.jam_rawat === 'string' && e.jam_rawat.trim()) ? e.jam_rawat.trim().substring(0,5) : '-'} — ${(e?.nip && pegawaiNameMap[e.nip]) || '-'}`}</td>
                                                                                                     <td className="px-2 py-1 text-gray-700 dark:text-gray-300">
                                                                                                         <div className="grid grid-cols-2 gap-x-2">
                                                                                                             <div className="text-gray-500">Suhu</div>
@@ -993,22 +990,40 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                         tanggal = new Date(h.tgl_registrasi).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
                                                     }
                                                 } catch (_) {}
+                                                const countDisplay = (() => {
+                                                    if (Array.isArray(h.entries)) {
+                                                        const seen = new Set();
+                                                        for (const e of h.entries) {
+                                                            const t = String(e.jam_rawat || '').substring(0,5);
+                                                            if (!t) continue;
+                                                            seen.add(t);
+                                                        }
+                                                        return seen.size || h.entries.length;
+                                                    } else if (Array.isArray(h.cpptTimes)) {
+                                                        const uniq = new Set(h.cpptTimes.filter(Boolean));
+                                                        return uniq.size;
+                                                    }
+                                                    return Number(h.cpptCount || 0);
+                                                })();
                                                 return (
                                                     <div key={`${h.no_rawat}-card`} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
                                                         <div className="grid grid-cols-1 md:grid-cols-[14rem_12rem_1fr] gap-3 items-start">
                                                             <div>
                                                                 <div className="flex items-baseline gap-2">
                                                                     <div className="text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">{tanggal}</div>
-                                                                    <div className="text-[11px] text-gray-900 dark:text-white font-mono w-20 whitespace-nowrap">
-                                                                        {typeof latest.jam_rawat === 'string' && latest.jam_rawat.trim()
-                                                                            ? latest.jam_rawat.trim().substring(0, 5)
-                                                                            : '-'}
-                                                                    </div>
+                                                                    <span className="text-[11px] text-gray-700 dark:text-gray-300">{countDisplay} data</span>
                                                                 </div>
-                                                                <div className="text-[11px] text-gray-500 dark:text-gray-400 whitespace-nowrap">{h.no_rawat || '-'}</div>
-                                                                <div className="text-[11px] font-semibold text-gray-900 dark:text-white whitespace-nowrap">{(latest.nip && pegawaiNameMap[latest.nip]) || '-'}</div>
-                                                                <div className="text-[11px] text-gray-600 dark:text-gray-300 whitespace-nowrap">
-                                                                    {`CPPT: ${Number(h.cpptCount || 0)} data${(h.cpptTimes && h.cpptTimes.length) ? ' — ' + h.cpptTimes.join(' , ') : ''}`}
+                                                                <div className="mt-1 space-y-0.5 text-[11px] leading-tight">
+                                                                    <div className="grid grid-cols-[6.5rem_0.75rem_1fr] items-baseline gap-x-0.5">
+                                                                        <span className="text-gray-600 dark:text-gray-300">No. Rawat</span>
+                                                                        <span className="text-gray-400 text-center">:</span>
+                                                                        <span className="font-mono text-gray-900 dark:text-white">{h.no_rawat || '-'}</span>
+                                                                    </div>
+                                                                    <div className="grid grid-cols-[6.5rem_0.75rem_1fr] items-baseline gap-x-0.5">
+                                                                        <span className="text-gray-600 dark:text-gray-300">CPPT</span>
+                                                                        <span className="text-gray-400 text-center">:</span>
+                                                                        <span className="text-gray-700 dark:text-gray-300 truncate">{`${(Array.isArray(h.entries) ? h.entries.length : (Array.isArray(h.cpptTimes) ? [...new Set(h.cpptTimes)].length : Number(h.cpptCount || 0)))} data${(h.cpptTimes && h.cpptTimes.length) ? ' — ' + h.cpptTimes.join(' , ') : ''}`}</span>
+                                                                    </div>
                                                                 </div>
                                                                 <div className="mt-1">
                                                                     <button
@@ -1050,32 +1065,42 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                         </div>
                                                         {expandedSoapRows[h.no_rawat] && Array.isArray(h.entries) && h.entries.length > 0 && (
                                                             <div className="mt-2 border-t border-gray-200 dark:border-gray-700 pt-2">
-                                                                {h.entries.slice().sort((a, b) => {
-                                                                    const aa = String(a.jam_rawat || '').substring(0,5);
-                                                                    const bb = String(b.jam_rawat || '').substring(0,5);
-                                                                    return aa < bb ? 1 : aa > bb ? -1 : 0;
-                                                                }).map((e, i) => (
-                                                                    <div key={`${h.no_rawat}-cv-${i}`} className="grid grid-cols-[14rem_12rem_1fr] gap-2 py-1">
-                                                                        <div className="font-mono text-gray-900 dark:text-white">{`${tanggal} ${(typeof e.jam_rawat === 'string' && e.jam_rawat.trim()) ? e.jam_rawat.trim().substring(0,5) : '-'}`}</div>
-                                                                        <div className="text-gray-700 dark:text-gray-300">
-                                                                            <div className="grid grid-cols-2 gap-x-2">
-                                                                                <div className="text-gray-500">Suhu</div>
-                                                                                <div className="text-right">{e.suhu_tubuh || '-'}°C</div>
-                                                                                <div className="text-gray-500">Tensi</div>
-                                                                                <div className="text-right">{e.tensi || '-'}</div>
-                                                                                <div className="text-gray-500">Nadi</div>
-                                                                                <div className="text-right">{e.nadi || '-'}/min</div>
-                                                                                <div className="text-gray-500">SpO2</div>
-                                                                                <div className="text-right">{e.spo2 || '-'}%</div>
+                                                                {(() => {
+                                                                    const uniq = [];
+                                                                    const seen = new Set();
+                                                                    for (const e of (Array.isArray(h.entries) ? h.entries : [])) {
+                                                                        const t = String(e.jam_rawat || '').substring(0,5);
+                                                                        if (seen.has(t)) continue;
+                                                                        seen.add(t);
+                                                                        uniq.push(e);
+                                                                    }
+                                                                    return uniq.slice().sort((a, b) => {
+                                                                        const aa = String(a.jam_rawat || '').substring(0,5);
+                                                                        const bb = String(b.jam_rawat || '').substring(0,5);
+                                                                        return aa < bb ? 1 : aa > bb ? -1 : 0;
+                                                                    }).map((e, i) => (
+                                                                        <div key={`${h.no_rawat}-cv-${i}`} className="grid grid-cols-[14rem_12rem_1fr] gap-2 py-1">
+                                                                            <div className="font-mono text-gray-900 dark:text-white">{`${tanggal} ${(typeof e.jam_rawat === 'string' && e.jam_rawat.trim()) ? e.jam_rawat.trim().substring(0,5) : '-'} — ${(e?.nip && pegawaiNameMap[e.nip]) || '-'}`}</div>
+                                                                            <div className="text-gray-700 dark:text-gray-300">
+                                                                                <div className="grid grid-cols-2 gap-x-2">
+                                                                                    <div className="text-gray-500">Suhu</div>
+                                                                                    <div className="text-right">{e.suhu_tubuh || '-'}°C</div>
+                                                                                    <div className="text-gray-500">Tensi</div>
+                                                                                    <div className="text-right">{e.tensi || '-'}</div>
+                                                                                    <div className="text-gray-500">Nadi</div>
+                                                                                    <div className="text-right">{e.nadi || '-'}/min</div>
+                                                                                    <div className="text-gray-500">SpO2</div>
+                                                                                    <div className="text-right">{e.spo2 || '-'}%</div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div className="text-gray-700 dark:text-gray-300">
+                                                                                <div className="truncate" title={typeof e.keluhan === 'string' ? e.keluhan.trim() : ''}>
+                                                                                    {(typeof e.keluhan === 'string' && e.keluhan.trim()) ? e.keluhan.trim() : '-'}
+                                                                                </div>
                                                                             </div>
                                                                         </div>
-                                                                        <div className="text-gray-700 dark:text-gray-300">
-                                                                            <div className="truncate" title={typeof e.keluhan === 'string' ? e.keluhan.trim() : ''}>
-                                                                                {(typeof e.keluhan === 'string' && e.keluhan.trim()) ? e.keluhan.trim() : '-'}
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                ))}
+                                                                    ));
+                                                                })()}
                                                             </div>
                                                         )}
                                                     </div>
@@ -1123,11 +1148,6 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                                     <td className="px-3 py-2 w-44">
                                                                         <div className="flex items-baseline gap-2">
                                                                             <div className="text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">{tanggal}</div>
-                                                                            <div className="text-[11px] text-gray-900 dark:text-white font-mono w-20 whitespace-nowrap">
-                                                                                {typeof latest.jam_rawat === 'string' && latest.jam_rawat.trim()
-                                                                                    ? latest.jam_rawat.trim().substring(0, 5)
-                                                                                    : '-'}
-                                                                            </div>
                                                                         </div>
                                                                     </td>
                                                                     <td className="px-3 py-2 text-gray-700 dark:text-gray-300 w-36">

@@ -85,7 +85,7 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
         if (soapData[noRawat]) return;
         setLoadingSoap(prev => ({ ...prev, [noRawat]: true }));
         try {
-            const url = route('rawat-jalan.pemeriksaan-ralan', { no_rawat: noRawat, t: token });
+            const url = route('rawat-jalan.pemeriksaan-ralan', { no_rawat: noRawat });
             const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const json = await res.json();
@@ -97,7 +97,7 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
         } finally {
             setLoadingSoap(prev => ({ ...prev, [noRawat]: false }));
         }
-    }, [soapData, token]);
+    }, [soapData]);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -413,7 +413,18 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                 </div>
             );
         }
-        const sorted = rows.slice().sort((a, b) => {
+        const deduped = (() => {
+            const seen = new Set();
+            const out = [];
+            for (const e of rows) {
+                const t = String(e.jam_rawat || '').substring(0,5);
+                if (seen.has(t)) continue;
+                seen.add(t);
+                out.push(e);
+            }
+            return out;
+        })();
+        const sorted = deduped.slice().sort((a, b) => {
             const aa = String(a.jam_rawat || '').substring(0,5);
             const bb = String(b.jam_rawat || '').substring(0,5);
             return aa < bb ? 1 : aa > bb ? -1 : 0;
@@ -457,14 +468,7 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                                         </div>
                                     </td>
                                     <td className="px-3 py-2 w-48 text-gray-700 dark:text-gray-300">
-                                        <div className="space-y-0.5">
-                                            <div className="truncate">
-                                                {e.nip || e.kd_dokter || '-'}
-                                            </div>
-                                            <div className="text-[11px] text-gray-600 dark:text-gray-400 truncate">
-                                                {e.nm_dokter || e.nama_dokter || e.nm_pegawai || ''}
-                                            </div>
-                                        </div>
+                                        <div className="truncate">{e.nip || e.kd_dokter || e.nm_dokter || e.nama_dokter || e.nm_pegawai || '-'}</div>
                                     </td>
                                     <td className="px-3 py-2 w-64 text-gray-700 dark:text-gray-300">
                                         <div className="truncate whitespace-nowrap" title={typeof e.keluhan === 'string' ? e.keluhan.trim() : ''}>
