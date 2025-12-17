@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Head, Link } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import { motion, useReducedMotion } from "framer-motion";
@@ -44,7 +44,6 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     const [soapModalError, setSoapModalError] = useState("");
     const [soapModalItems, setSoapModalItems] = useState([]);
     const [pegawaiNameMap, setPegawaiNameMap] = useState({});
-    const [expandedSoapRows, setExpandedSoapRows] = useState({});
     const [soapViewMode, setSoapViewMode] = useState('table');
 
     const toggle = (section) => {
@@ -773,7 +772,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                         className="absolute inset-0 bg-black/50"
                         onClick={() => setSoapModalOpen(false)}
                     ></div>
-                    <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-full md:max-w-3xl lg:max-w-5xl mx-2 sm:mx-4 my-4 sm:my-8 overflow-hidden">
+                    <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-full md:max-w-5xl lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[90vw] mx-2 sm:mx-4 my-4 sm:my-8 overflow-hidden">
                         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                             <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">Riwayat SOAP</h3>
                             <button
@@ -835,14 +834,16 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                     </div>
                                     {soapViewMode === 'table' ? (
                                         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden w-full">
-                                            <div className="overflow-x-auto overflow-y-auto max-h-[376px] w-full max-w-full">
-                                                    <table className="w-full text-xs table-fixed">
+                                            <div className="overflow-x-auto lg:overflow-x-hidden overflow-y-auto max-h-[376px] w-full max-w-full">
+                                                    <table className="w-full text-xs table-auto">
                                                         <thead className="bg-gray-50 dark:bg-gray-700/50">
                                                             <tr className="text-left text-gray-600 dark:text-gray-300">
-                                                                <th className="px-3 py-2 font-medium w-44">Tanggal</th>
-                                                                <th className="px-3 py-2 font-medium w-36">TTV</th>
-                                                                <th className="px-3 py-2 font-medium w-32">Kesadaran</th>
-                                                                <th className="px-3 py-2 font-medium w-64">Subjektif</th>
+                                                                <th className="px-3 py-2 font-bold w-44 lg:w-auto">Tanggal</th>
+                                                                <th className="px-3 py-2 font-bold w-56 lg:w-auto">Keluhan (Subjektif)</th>
+                                                                <th className="px-3 py-2 font-bold min-w-[9rem] w-28 lg:w-auto">TTV</th>
+                                                                <th className="px-3 py-2 font-bold w-56 lg:w-auto">Pemeriksaan Fisik (Objektif)</th>
+                                                                <th className="px-3 py-2 font-bold w-48 lg:w-auto">Penilaian (Assessment)</th>
+                                                                <th className="px-3 py-2 font-bold w-48 lg:w-auto">Tindak Lanjut (Planning)</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -881,88 +882,80 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                                 return Number(h.cpptCount || 0);
                                                             })();
                                                             return (
-                                                                <>
-                                                                    <tr key={`${h.no_rawat}-summary`} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                                                                        <td className="px-3 py-2" colSpan={4}>
-                                                                            <div className="flex items-baseline gap-2">
-                                                                                <div className="text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">{tanggal}</div>
-                                                                                <span className="text-[11px] text-gray-700 dark:text-gray-300">{countDisplay} data</span>
-                                                                            </div>
-                                                                            <div className="mt-1 space-y-0.5 text-[11px] leading-tight">
-                                                                                <div className="grid grid-cols-[6.5rem_0.75rem_1fr] items-baseline gap-x-0.5">
-                                                                                    <span className="text-gray-600 dark:text-gray-300">No. Rawat</span>
-                                                                                    <span className="text-gray-400 text-center">:</span>
-                                                                                    <span className="font-mono text-gray-900 dark:text-white">{h.no_rawat || '-'}</span>
-                                                                                </div>
-                                                                                <div className="grid grid-cols-[6.5rem_0.75rem_1fr] items-baseline gap-x-0.5">
-                                                                                    <span className="text-gray-600 dark:text-gray-300">CPPT</span>
-                                                                                    <span className="text-gray-400 text-center">:</span>
-                                                                                    <span className="text-gray-700 dark:text-gray-300 truncate">{`${(Array.isArray(h.entries) ? h.entries.length : (Array.isArray(h.cpptTimes) ? [...new Set(h.cpptTimes)].length : Number(h.cpptCount || 0)))} data${(h.cpptTimes && h.cpptTimes.length) ? ' — ' + h.cpptTimes.join(' , ') : ''}`}</span>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div className="mt-1">
-                                                                                <button
-                                                                                    type="button"
-                                                                                    onClick={() => setExpandedSoapRows((p) => ({ ...p, [h.no_rawat]: !p[h.no_rawat] }))}
-                                                                                    className="inline-flex items-center px-2 py-0.5 border border-blue-200 text-[11px] font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors"
-                                                                                >
-                                                                                    {expandedSoapRows[h.no_rawat] ? 'Tutup' : 'Detail'}
-                                                                                </button>
-                                                                            </div>
-                                                                        </td>
-                                                                    </tr>
-                                                                    {expandedSoapRows[h.no_rawat] && Array.isArray(h.cpptTimes) && h.cpptTimes.length > 0 && Array.isArray(h.entries) && h.entries.length > 0 && (
-                                                                        <tr key={`${h.no_rawat}-details`} className="bg-gray-50/50 dark:bg-gray-800/30">
-                                                                            <td colSpan={4} className="px-3 py-2">
-                                                                                <div className="overflow-x-auto">
-                                                                                    <table className="min-w-full text-[11px]">
-                                                                                        <thead>
-                                                                                            <tr className="text-left text-gray-600 dark:text-gray-300">
-                                                                                                <th className="px-2 py-1 w-44">Tanggal</th>
-                                                                                                <th className="px-2 py-1 w-28">TTV</th>
-                                                                                                <th className="px-2 py-1 w-28">Kesadaran</th>
-                                                                                            <th className="px-2 py-1 w-64">Subjektif</th>
-                                                                                            </tr>
-                                                                                        </thead>
-                                                                                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                                                                            {h.entries.slice().sort((a, b) => {
-                                                                                                const aa = String(a.jam_rawat || '').substring(0,5);
-                                                                                                const bb = String(b.jam_rawat || '').substring(0,5);
-                                                                                                return aa < bb ? 1 : aa > bb ? -1 : 0;
-                                                                                            }).map((e, i) => (
-                                                                                                <tr key={`${h.no_rawat}-e-${i}`}>
-                                                                                                    <td className="px-2 py-1 font-mono text-gray-900 dark:text-white">{`${tanggal} ${(typeof e.jam_rawat === 'string' && e.jam_rawat.trim()) ? e.jam_rawat.trim().substring(0,5) : '-'} — ${(e?.nip && pegawaiNameMap[e.nip]) || '-'}`}</td>
-                                                                                                    <td className="px-2 py-1 text-gray-700 dark:text-gray-300">
-                                                                                                        <div className="grid grid-cols-2 gap-x-2">
-                                                                                                            <div className="text-gray-500">Suhu</div>
-                                                                                                            <div className="text-right">{e.suhu_tubuh || '-'}°C</div>
-                                                                                                            <div className="text-gray-500">Tensi</div>
-                                                                                                            <div className="text-right">{e.tensi || '-'}</div>
-                                                                                                            <div className="text-gray-500">Nadi</div>
-                                                                                                            <div className="text-right">{e.nadi || '-'}/min</div>
-                                                                                                            <div className="text-gray-500">SpO2</div>
-                                                                                                            <div className="text-right">{e.spo2 || '-'}%</div>
-                                                                                                        </div>
-                                                                                                    </td>
-                                                                                                    <td className="px-2 py-1">
-                                                                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                                                                                                            {e.kesadaran || 'Compos Mentis'}
-                                                                                                        </span>
-                                                                                                    </td>
-                                                                                                    <td className="px-2 py-1 text-gray-700 dark:text-gray-300">
-                                                                                                        <div className="truncate" title={typeof e.keluhan === 'string' ? e.keluhan.trim() : ''}>
-                                                                                                            {(typeof e.keluhan === 'string' && e.keluhan.trim()) ? e.keluhan.trim() : '-'}
-                                                                                                        </div>
-                                                                                                    </td>
-                                                                                                </tr>
-                                                                                            ))}
-                                                                                        </tbody>
-                                                                                    </table>
-                                                                                </div>
-                                                                            </td>
-                                                                        </tr>
+                                                                <React.Fragment key={`${h.no_rawat}-group`}>
+                                                                    {Array.isArray(h.entries) && h.entries.length > 0 && (
+                                                                        h.entries
+                                                                            .slice()
+                                                                            .sort((a, b) => {
+                                                                                const aa = String(a.jam_rawat || '').substring(0,5);
+                                                                                const bb = String(b.jam_rawat || '').substring(0,5);
+                                                                                return aa < bb ? 1 : aa > bb ? -1 : 0;
+                                                                            })
+                                                                            .map((e, i) => (
+                                                                                <tr key={`${h.no_rawat}-e-${i}`} className="bg-white dark:bg-gray-900/40 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                                                                    <td className="px-3 py-2 text-gray-900 dark:text-white">
+                                                                                        <div className="space-y-0.5">
+                                                                                            <div className="font-mono">
+                                                                                                {tanggal} {(typeof e.jam_rawat === 'string' && e.jam_rawat.trim()) ? e.jam_rawat.trim().substring(0,5) : '-'}
+                                                                                            </div>
+                                                                                            <div className="text-[11px] font-mono text-gray-900 dark:text-white">{h.no_rawat || '-'}</div>
+                                                                                            <div className="text-[11px] truncate">{(e?.nip && pegawaiNameMap[e.nip]) || '-'}</div>
+                                                                                        </div>
+                                                                                    </td>
+                                                                                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
+                                                                                        <div className="break-words whitespace-normal" title={typeof e.keluhan === 'string' ? e.keluhan.trim() : ''}>
+                                                                                            {(typeof e.keluhan === 'string' && e.keluhan.trim()) ? e.keluhan.trim() : '-'}
+                                                                                        </div>
+                                                                                    </td>
+                                                                                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300 min-w-[9rem]">
+                                                                                        <div className="space-y-0.5 text-[11px] leading-tight">
+                                                                                            <div className="flex justify-between gap-2">
+                                                                                                <span className="text-gray-500 whitespace-nowrap">Suhu</span>
+                                                                                                <span className="text-right">{e.suhu_tubuh || '-'}°C</span>
+                                                                                            </div>
+                                                                                            <div className="flex justify-between gap-2">
+                                                                                                <span className="text-gray-500 whitespace-nowrap">Tensi</span>
+                                                                                                <span className="text-right">{e.tensi || '-'}</span>
+                                                                                            </div>
+                                                                                            <div className="flex justify-between gap-2">
+                                                                                                <span className="text-gray-500 whitespace-nowrap">Nadi</span>
+                                                                                                <span className="text-right">{e.nadi || '-'}/min</span>
+                                                                                            </div>
+                                                                                            <div className="flex justify-between gap-2">
+                                                                                                <span className="text-gray-500 whitespace-nowrap">SpO2</span>
+                                                                                                <span className="text-right">{e.spo2 || '-'}%</span>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </td>
+                                                                                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
+                                                                                        <div className="break-words whitespace-normal" title={typeof e.pemeriksaan === 'string' ? e.pemeriksaan.trim() : ''}>
+                                                                                            {(typeof e.pemeriksaan === 'string' && e.pemeriksaan.trim()) ? e.pemeriksaan.trim() : '-'}
+                                                                                        </div>
+                                                                                    </td>
+                                                                                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
+                                                                                        <div className="break-words whitespace-normal" title={typeof e.penilaian === 'string' ? e.penilaian.trim() : ''}>
+                                                                                            {(typeof e.penilaian === 'string' && e.penilaian.trim()) ? e.penilaian.trim() : '-'}
+                                                                                        </div>
+                                                                                    </td>
+                                                                                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
+                                                                                        <div className="break-words whitespace-normal" title={(() => {
+                                                                                            const s = typeof e.rtl === 'string' ? e.rtl.trim() : '';
+                                                                                            const i = typeof e.instruksi === 'string' ? e.instruksi.trim() : '';
+                                                                                            const v = typeof e.evaluasi === 'string' ? e.evaluasi.trim() : '';
+                                                                                            return s || i || v || '';
+                                                                                        })()}>
+                                                                                            {(() => {
+                                                                                                const s = typeof e.rtl === 'string' ? e.rtl.trim() : '';
+                                                                                                const i = typeof e.instruksi === 'string' ? e.instruksi.trim() : '';
+                                                                                                const v = typeof e.evaluasi === 'string' ? e.evaluasi.trim() : '';
+                                                                                                return s || i || v || '-';
+                                                                                            })()}
+                                                                                        </div>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            ))
                                                                     )}
-                                                                </>
+                                                                </React.Fragment>
                                                             );
                                                         })}
                                                     </tbody>
@@ -1026,13 +1019,6 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                                     </div>
                                                                 </div>
                                                                 <div className="mt-1">
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => setExpandedSoapRows((p) => ({ ...p, [h.no_rawat]: !p[h.no_rawat] }))}
-                                                                        className="inline-flex items-center px-2 py-0.5 border border-blue-200 text-[11px] font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors"
-                                                                    >
-                                                                        {expandedSoapRows[h.no_rawat] ? 'Tutup' : 'Detail'}
-                                                                    </button>
                                                                 </div>
                                                             </div>
                                                             <div className="text-gray-700 dark:text-gray-300">
@@ -1063,7 +1049,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        {expandedSoapRows[h.no_rawat] && Array.isArray(h.entries) && h.entries.length > 0 && (
+                                                        {Array.isArray(h.entries) && h.entries.length > 0 && (
                                                             <div className="mt-2 border-t border-gray-200 dark:border-gray-700 pt-2">
                                                                 {(() => {
                                                                     const uniq = [];
@@ -1080,24 +1066,32 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                                         return aa < bb ? 1 : aa > bb ? -1 : 0;
                                                                     }).map((e, i) => (
                                                                         <div key={`${h.no_rawat}-cv-${i}`} className="grid grid-cols-[14rem_12rem_1fr] gap-2 py-1">
-                                                                            <div className="font-mono text-gray-900 dark:text-white">{`${tanggal} ${(typeof e.jam_rawat === 'string' && e.jam_rawat.trim()) ? e.jam_rawat.trim().substring(0,5) : '-'} — ${(e?.nip && pegawaiNameMap[e.nip]) || '-'}`}</div>
-                                                                            <div className="text-gray-700 dark:text-gray-300">
-                                                                                <div className="grid grid-cols-2 gap-x-2">
-                                                                                    <div className="text-gray-500">Suhu</div>
-                                                                                    <div className="text-right">{e.suhu_tubuh || '-'}°C</div>
-                                                                                    <div className="text-gray-500">Tensi</div>
-                                                                                    <div className="text-right">{e.tensi || '-'}</div>
-                                                                                    <div className="text-gray-500">Nadi</div>
-                                                                                    <div className="text-right">{e.nadi || '-'}/min</div>
-                                                                                    <div className="text-gray-500">SpO2</div>
-                                                                                    <div className="text-right">{e.spo2 || '-'}%</div>
+                                                                            <div className="text-gray-900 dark:text-white">
+                                                                                <div className="space-y-0.5">
+                                                                                    <div className="font-mono">
+                                                                                        {`${tanggal} ${(typeof e.jam_rawat === 'string' && e.jam_rawat.trim()) ? e.jam_rawat.trim().substring(0,5) : '-'}`}
+                                                                                    </div>
+                                                                                    <div className="text-[11px] font-mono text-gray-900 dark:text-white">{h.no_rawat || '-'}</div>
+                                                                                    <div className="text-[11px] truncate">{(e?.nip && pegawaiNameMap[e.nip]) || '-'}</div>
                                                                                 </div>
                                                                             </div>
                                                                             <div className="text-gray-700 dark:text-gray-300">
-                                                                                <div className="truncate" title={typeof e.keluhan === 'string' ? e.keluhan.trim() : ''}>
-                                                                                    {(typeof e.keluhan === 'string' && e.keluhan.trim()) ? e.keluhan.trim() : '-'}
+                                                                                <div className="grid grid-cols-2 gap-x-1">
+                                                                                    <div className="text-gray-500 text-[11px]">Suhu</div>
+                                                                                    <div className="text-right text-[11px]">{e.suhu_tubuh || '-'}°C</div>
+                                                                                    <div className="text-gray-500 text-[11px]">Tensi</div>
+                                                                                    <div className="text-right text-[11px]">{e.tensi || '-'}</div>
+                                                                                    <div className="text-gray-500 text-[11px]">Nadi</div>
+                                                                                    <div className="text-right text-[11px]">{e.nadi || '-'}/min</div>
+                                                                                    <div className="text-gray-500 text-[11px]">SpO2</div>
+                                                                                    <div className="text-right text-[11px]">{e.spo2 || '-'}%</div>
                                                                                 </div>
                                                                             </div>
+                                                                                    <div className="text-gray-700 dark:text-gray-300">
+                                                                                        <div className="break-words whitespace-normal" title={typeof e.keluhan === 'string' ? e.keluhan.trim() : ''}>
+                                                                                            {(typeof e.keluhan === 'string' && e.keluhan.trim()) ? e.keluhan.trim() : '-'}
+                                                                                        </div>
+                                                                                    </div>
                                                                         </div>
                                                                     ));
                                                                 })()}
@@ -1110,17 +1104,16 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                     )}
                                     {soapViewMode === 'full' && (
                                         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden w-full">
-                                            <div className="overflow-x-auto overflow-y-auto max-h-[376px] w-full max-w-full">
-                                                <table className="w-full text-xs table-fixed">
+                                            <div className="overflow-x-auto lg:overflow-x-hidden overflow-y-auto max-h-[376px] w-full max-w-full">
+                                                <table className="w-full text-xs table-auto">
                                                     <thead className="bg-gray-50 dark:bg-gray-700/50">
                                                         <tr className="text-left text-gray-600 dark:text-gray-300">
-                                                            <th className="px-3 py-2 font-medium w-44">Tanggal</th>
-                                                            <th className="px-3 py-2 font-medium w-36">TTV</th>
-                                                            <th className="px-3 py-2 font-medium w-32">Kesadaran</th>
-                                                            <th className="px-3 py-2 font-medium w-64">Subjektif</th>
-                                                            <th className="px-3 py-2 font-medium w-64">Pemeriksaan</th>
-                                                            <th className="px-3 py-2 font-medium w-48">Penilaian</th>
-                                                            <th className="px-3 py-2 font-medium text-center w-28">Aksi</th>
+                                                            <th className="px-3 py-2 font-bold w-44 lg:w-auto">Tanggal</th>
+                                                            <th className="px-3 py-2 font-bold w-56 lg:w-auto">Keluhan (Subjektif)</th>
+                                                            <th className="px-3 py-2 font-bold w-28 lg:w-auto">TTV</th>
+                                                            <th className="px-3 py-2 font-bold w-64 lg:w-auto">Pemeriksaan</th>
+                                                            <th className="px-3 py-2 font-bold w-48 lg:w-auto">Penilaian</th>
+                                                            <th className="px-3 py-2 font-bold text-center w-28 lg:w-auto">Aksi</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -1147,11 +1140,16 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                                 <tr key={`${h.no_rawat}-full`}>
                                                                     <td className="px-3 py-2 w-44">
                                                                         <div className="flex items-baseline gap-2">
-                                                                            <div className="text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">{tanggal}</div>
+                                                                            <div className="text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">{`${tanggal} — ${h.no_rawat || '-'}`}</div>
                                                                         </div>
                                                                     </td>
-                                                                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300 w-36">
-                                                                        <div className="space-y-1 text-xs">
+                                                                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300 w-64">
+                                                                        <div className="break-words whitespace-normal" title={typeof latest.keluhan === 'string' ? latest.keluhan.trim() : ''}>
+                                                                            {(typeof latest.keluhan === 'string' && latest.keluhan.trim()) ? latest.keluhan.trim() : '-'}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300 w-28">
+                                                                        <div className="space-y-0.5 text-[11px]">
                                                                             <div className="flex justify-between">
                                                                                 <span className="text-gray-500">Suhu:</span>
                                                                                 <span className="font-medium">{latest.suhu_tubuh || '-'}°C</span>
@@ -1168,25 +1166,15 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                                                 <span className="text-gray-500">SpO2:</span>
                                                                                 <span className="font-medium">{latest.spo2 || '-'}%</span>
                                                                             </div>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className="px-3 py-2 w-32">
-                                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                                                                            {h.cpptCount ? (latest.kesadaran || 'Compos Mentis') : '-'}
-                                                                        </span>
-                                                                    </td>
-                                                                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300 w-64">
-                                                                        <div className="truncate whitespace-nowrap" title={typeof latest.keluhan === 'string' ? latest.keluhan.trim() : ''}>
-                                                                            {(typeof latest.keluhan === 'string' && latest.keluhan.trim()) ? latest.keluhan.trim() : '-'}
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300 w-64">
-                                                                        <div className="truncate whitespace-nowrap" title={latest.pemeriksaan || ''}>
-                                                                            {latest.pemeriksaan || '-'}
-                                                                        </div>
-                                                                    </td>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td className="px-3 py-2 text-gray-700 dark:text-gray-300 w-64">
+                                                                            <div className="break-words whitespace-normal" title={latest.pemeriksaan || ''}>
+                                                                                {latest.pemeriksaan || '-'}
+                                                                            </div>
+                                                                        </td>
                                                                     <td className="px-3 py-2 text-gray-700 dark:text-gray-300 w-48">
-                                                                        <div className="truncate whitespace-nowrap" title={latest.penilaian || ''}>
+                                                                        <div className="break-words whitespace-normal" title={latest.penilaian || ''}>
                                                                             {latest.penilaian || '-'}
                                                                         </div>
                                                                     </td>
