@@ -337,7 +337,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                 }`}
             />
 
-            <div className="px-4 sm:px-6 lg:px-8 py-6 w-full max-w-full overflow-x-hidden mx-auto max-w-[1600px]">
+            <div className="px-4 sm:px-6 lg:px-8 py-6 w-full overflow-x-hidden mx-auto max-w-[1600px]">
                 <div className="mb-1">
                     <div className="bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 rounded-lg p-2 text-white">
                         <div className="flex items-center justify-between">
