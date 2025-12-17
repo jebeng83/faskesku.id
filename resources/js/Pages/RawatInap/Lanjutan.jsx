@@ -58,7 +58,7 @@ export default function Lanjutan({ rawatInap, params }) {
         };
 
         switch (activeTab) {
-            case 'cppt': return <CpptSoap {...commonProps} />;
+            case 'cppt': return <CpptSoap {...commonProps} onOpenResep={() => handleTabChange('resep')} />;
             case 'operasi': return <Operasi {...commonProps} />;
             case 'konsultasi': return <Konsultasi {...commonProps} />;
             case 'tarifTindakan': return <TarifTindakan {...commonProps} />;

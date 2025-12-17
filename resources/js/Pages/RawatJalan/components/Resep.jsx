@@ -12,6 +12,7 @@ export default function Resep({
     noRkmMedis = "",
     noRawat = "",
     kdPoli = "",
+    onResepSaved = null,
 }) {
     const [items, setItems] = useState([
         {
@@ -694,6 +695,18 @@ export default function Resep({
                 // Refresh obat list untuk update stok
                 if (kdPoli) {
                     fetchObat();
+                }
+                if (typeof onResepSaved === "function") {
+                    const appended = items
+                        .filter((item) => item.kodeObat && item.jumlah > 0)
+                        .map((item) => ({
+                            name: item.namaObat,
+                            qty: item.jumlah,
+                            instruction: item.aturanPakai || "",
+                        }));
+                    try {
+                        onResepSaved(appended);
+                    } catch (_) {}
                 }
             } else {
                 alert(

@@ -37,6 +37,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     const [error, setError] = useState(null);
     const [autoSaveStatus, setAutoSaveStatus] = useState("");
     const [showPatientDetails, setShowPatientDetails] = useState(false);
+    const [resepAppendItems, setResepAppendItems] = useState(null);
 
     const toggle = (section) => {
         setOpenAcc((prev) => ({
@@ -251,7 +252,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
 
         switch (activeTab) {
             case "cppt":
-                return <CpptSoap {...commonProps} />;
+                return <CpptSoap {...commonProps} onOpenResep={() => setActiveTab("resep")} appendToPlanning={resepAppendItems} onPlanningAppended={() => setResepAppendItems(null)} />;
             case "tarifTindakan":
                 return <TarifTindakan {...commonProps} />;
             case "resep":
@@ -259,6 +260,10 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                     <Resep
                         {...commonProps}
                         kdPoli={rawatJalan?.kd_poli || params?.kd_poli || ""}
+                        onResepSaved={(items) => {
+                            setResepAppendItems(items);
+                            setActiveTab("cppt");
+                        }}
                     />
                 );
             case "diagnosa":
@@ -497,7 +502,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                         <span className="text-gray-900 dark:text-white">{rawatJalan?.penjab?.png_jawab || rawatJalan?.cara_bayar || 'BPJS'}</span>
                                     </div>
                                     <div className="grid grid-cols-[7.5rem_0.75rem_1fr] md:grid-cols-[8.5rem_0.9rem_1fr] items-baseline gap-x-0.5">
-                                        <span className="text-left text-gray-700 dark:text-gray-300">Kunjung Terakhir</span>
+                                        <span className="block mb-1 text-left text-gray-700 dark:text-gray-300">Kunjung Terakhir</span>
                                         <span className="text-gray-400 text-center">:</span>
                                         <span className="text-gray-900 dark:text-white">
                                             {typeof lastVisitDays === 'number' ? `${lastVisitDays} hari` : '-'}
