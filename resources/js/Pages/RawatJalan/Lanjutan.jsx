@@ -38,6 +38,14 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     const [autoSaveStatus, setAutoSaveStatus] = useState("");
     const [showPatientDetails, setShowPatientDetails] = useState(false);
     const [resepAppendItems, setResepAppendItems] = useState(null);
+    const [selectedNoRawat, setSelectedNoRawat] = useState(params?.no_rawat || rawatJalan?.no_rawat || "");
+    const [soapModalOpen, setSoapModalOpen] = useState(false);
+    const [soapModalLoading, setSoapModalLoading] = useState(false);
+    const [soapModalError, setSoapModalError] = useState("");
+    const [soapModalItems, setSoapModalItems] = useState([]);
+    const [pegawaiNameMap, setPegawaiNameMap] = useState({});
+    const [expandedSoapRows, setExpandedSoapRows] = useState({});
+    const [soapViewMode, setSoapViewMode] = useState('table');
 
     const toggle = (section) => {
         setOpenAcc((prev) => ({
@@ -247,7 +255,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                     : "",
             noRkmMedis:
                 params?.no_rkm_medis || rawatJalan?.patient?.no_rkm_medis,
-            noRawat: params?.no_rawat || rawatJalan?.no_rawat,
+            noRawat: selectedNoRawat || params?.no_rawat || rawatJalan?.no_rawat,
         };
 
         switch (activeTab) {
@@ -275,6 +283,119 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
             default:
                 return <CpptSoap {...commonProps} />;
         }
+    };
+
+    const openSoapHistoryModal = async () => {
+        setSoapModalOpen(true);
+        setSoapModalLoading(true);
+        setSoapModalError("");
+        try {
+            const token =
+                typeof window !== "undefined"
+                    ? new URLSearchParams(window.location.search).get("t")
+                    : "";
+            const noRkmMedis =
+                params?.no_rkm_medis || rawatJalan?.patient?.no_rkm_medis || "";
+            const qs = token
+                ? `t=${encodeURIComponent(token)}`
+                : `no_rkm_medis=${encodeURIComponent(noRkmMedis)}`;
+            const res = await fetch(`/rawat-jalan/riwayat?${qs}`, {
+                headers: { Accept: "application/json" },
+            });
+            const json = await res.json();
+            let arr = Array.isArray(json.data) ? json.data : [];
+            arr = arr
+                .slice()
+                .sort(
+                    (a, b) =>
+                        new Date(b.tgl_registrasi || 0) -
+                        new Date(a.tgl_registrasi || 0)
+                )
+                .slice(0, 5);
+            const results = [];
+            for (const v of arr) {
+                try {
+                    const url = route("rawat-jalan.pemeriksaan-ralan", {
+                        no_rawat: v.no_rawat,
+                        t: token,
+                    });
+                    const r = await fetch(url);
+                    const j = await r.json();
+                    const list = Array.isArray(j.data) ? j.data : [];
+                    const filtered = list && list.length && list.some(row => Object.prototype.hasOwnProperty.call(row, 'no_rawat'))
+                        ? list.filter(row => String(row.no_rawat) === String(v.no_rawat))
+                        : list;
+                    const parse = (x) => {
+                        const d = x.tgl_perawatan || "";
+                        const t =
+                            typeof x.jam_rawat === "string" ? x.jam_rawat : "";
+                        const iso = `${d}T${
+                            (t.length === 5 ? `${t}:00` : t) || "00:00:00"
+                        }`;
+                        const dt = new Date(iso);
+                        return isNaN(dt.getTime()) ? new Date() : dt;
+                    };
+                    const sorted = filtered.slice().sort((a, b) => parse(b) - parse(a));
+                    const latest = sorted[0] || null;
+                    const times = filtered
+                        .map((row) => {
+                            const s = typeof row.jam_rawat === 'string' ? row.jam_rawat.trim() : '';
+                            return s ? s.substring(0, 5) : '';
+                        })
+                        .filter(Boolean)
+                        .sort((a, b) => (a > b ? -1 : a < b ? 1 : 0));
+                    results.push({ no_rawat: v.no_rawat, tgl_registrasi: v.tgl_registrasi, latest, cpptCount: filtered.length, cpptTimes: times, entries: sorted });
+                } catch (_) {}
+            }
+            setSoapModalItems(results);
+        } catch (e) {
+            setSoapModalError(e.message || "Gagal memuat riwayat SOAP");
+            setSoapModalItems([]);
+        } finally {
+            setSoapModalLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const loadPegawaiNames = async () => {
+            try {
+                const pending = [];
+                const seen = new Set();
+                for (const h of soapModalItems) {
+                    const nip = h?.latest?.nip;
+                    if (!nip) continue;
+                    if (pegawaiNameMap && pegawaiNameMap[nip]) continue;
+                    if (seen.has(nip)) continue;
+                    seen.add(nip);
+                    try {
+                        const url = route('pegawai.search', { q: nip });
+                        pending.push(fetch(url).then(r => r.json()).then(json => {
+                            const arr = Array.isArray(json?.data) ? json.data : [];
+                            const match = arr.find(row => String(row.nik) === String(nip)) || null;
+                            const nama = match ? (match.nama || match.nm_pegawai || '').trim() : '';
+                            if (nama && match) {
+                                setPegawaiNameMap((prev) => ({ ...prev, [nip]: nama }));
+                            }
+                        }).catch(() => {}));
+                    } catch (_) {}
+                }
+                if (pending.length) {
+                    await Promise.allSettled(pending);
+                }
+            } catch (_) {}
+        };
+        loadPegawaiNames();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [soapModalItems]);
+
+    const openCpptFromHistory = (nr) => {
+        setSelectedNoRawat(nr);
+        setActiveTab("cppt");
+        setSoapModalOpen(false);
+        setTimeout(() => {
+            const el = document.getElementById("cppt-root");
+            if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
     };
 
     const ErrorMessage = ({ message, onRetry }) => (
@@ -475,6 +596,11 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                         <span className="text-gray-900 dark:text-white font-semibold">{rawatJalan?.patient?.nm_pasien || rawatJalan?.nama_pasien || '-'}</span>
                                     </div>
                                     <div className="grid grid-cols-[7.5rem_0.75rem_1fr] md:grid-cols-[8.5rem_0.9rem_1fr] items-baseline gap-x-0.5">
+                                        <span className="text-left text-gray-700 dark:text-gray-300">No RM (rekamedis)</span>
+                                        <span className="text-gray-400 text-center">:</span>
+                                        <span className="text-gray-900 dark:text-white font-mono">{rawatJalan?.patient?.no_rkm_medis || rawatJalan?.no_rkm_medis || '-'}</span>
+                                    </div>
+                                    <div className="grid grid-cols-[7.5rem_0.75rem_1fr] md:grid-cols-[8.5rem_0.9rem_1fr] items-baseline gap-x-0.5">
                                         <span className="text-left text-gray-700 dark:text-gray-300">Umur</span>
                                         <span className="text-gray-400 text-center">:</span>
                                         <span className="text-gray-900 dark:text-white">{(rawatJalan?.patient?.umur || rawatJalan?.umurdaftar) ? `${rawatJalan?.patient?.umur || rawatJalan?.umurdaftar} ${rawatJalan?.sttsumur || 'Th'}` : '-'}</span>
@@ -507,6 +633,15 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                         <span className="text-gray-900 dark:text-white">
                                             {typeof lastVisitDays === 'number' ? `${lastVisitDays} hari` : '-'}
                                         </span>
+                                    </div>
+                                    <div className="mt-2">
+                                        <button
+                                            onClick={openSoapHistoryModal}
+                                            className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded border border-blue-200"
+                                            title="Tampilkan Riwayat SOAP"
+                                        >
+                                            CPPT
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -626,6 +761,456 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                     </div>
                 </div>
             </div>
+            {soapModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto">
+                    <div
+                        className="absolute inset-0 bg-black/50"
+                        onClick={() => setSoapModalOpen(false)}
+                    ></div>
+                    <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-full md:max-w-3xl lg:max-w-5xl mx-2 sm:mx-4 my-4 sm:my-8 overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                            <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">Riwayat SOAP</h3>
+                            <button
+                                onClick={() => setSoapModalOpen(false)}
+                                className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="p-3 sm:p-4 space-y-2">
+                            {soapModalLoading ? (
+                                <div className="text-xs text-gray-500">Memuat...</div>
+                            ) : soapModalError ? (
+                                <div className="text-xs text-red-600 dark:text-red-400">{soapModalError}</div>
+                            ) : soapModalItems.length === 0 ? (
+                                <div className="text-xs text-gray-500">Tidak ada data</div>
+                            ) : (
+                                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-4 md:p-6">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                                            <svg className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                            </svg>
+                                            Riwayat SOAP
+                                        </h4>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                                                {soapModalItems.length} record
+                                            </span>
+                                            <div className="flex items-center gap-1">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSoapViewMode('table')}
+                                                    className={`px-2 py-1 text-[11px] rounded border ${soapViewMode === 'table' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'}`}
+                                                    title="Tampilan Tabel"
+                                                >
+                                                    Tabel
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSoapViewMode('compact')}
+                                                    className={`px-2 py-1 text-[11px] rounded border ${soapViewMode === 'compact' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'}`}
+                                                    title="Tampilan Kartu"
+                                                >
+                                                    Kartu
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSoapViewMode('full')}
+                                                    className={`px-2 py-1 text-[11px] rounded border ${soapViewMode === 'full' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'}`}
+                                                    title="Tampilan Lengkap"
+                                                >
+                                                    Lengkap
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {soapViewMode === 'table' ? (
+                                        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden w-full">
+                                            <div className="overflow-x-auto overflow-y-auto max-h-[376px] w-full max-w-full">
+                                                    <table className="w-full text-xs table-fixed">
+                                                        <thead className="bg-gray-50 dark:bg-gray-700/50">
+                                                            <tr className="text-left text-gray-600 dark:text-gray-300">
+                                                                <th className="px-3 py-2 font-medium w-44">Tanggal</th>
+                                                                <th className="px-3 py-2 font-medium w-36">TTV</th>
+                                                                <th className="px-3 py-2 font-medium w-32">Kesadaran</th>
+                                                                <th className="px-3 py-2 font-medium w-64">Subjektif</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                                                            {soapModalItems.map((h) => {
+                                                                const latest = h.latest || {};
+                                                                let tanggal = '-';
+                                                            try {
+                                                                if (typeof h.no_rawat === 'string') {
+                                                                    const m = h.no_rawat.match(/^(\d{4})\/(\d{2})\/(\d{2})\//);
+                                                                    if (m) {
+                                                                        const y = m[1];
+                                                                        const mm = m[2];
+                                                                        const dd = m[3];
+                                                                        const dt = new Date(`${y}-${mm}-${dd}T00:00:00`);
+                                                                        tanggal = dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+                                                                    } else if (h.tgl_registrasi) {
+                                                                        tanggal = new Date(h.tgl_registrasi).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+                                                                    }
+                                                                } else if (h.tgl_registrasi) {
+                                                                    tanggal = new Date(h.tgl_registrasi).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+                                                                }
+                                                            } catch (_) {}
+                                                            return (
+                                                                <>
+                                                                    <tr key={`${h.no_rawat}-summary`} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                                                        <td className="px-3 py-2 w-44">
+                                                                            <div className="flex items-baseline gap-2">
+                                                                                <div className="text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">{tanggal}</div>
+                                                                                <div className="text-[11px] text-gray-900 dark:text-white font-mono w-20 whitespace-nowrap">
+                                                                                    {typeof latest.jam_rawat === 'string' && latest.jam_rawat.trim()
+                                                                                        ? latest.jam_rawat.trim().substring(0, 5)
+                                                                                        : '-'}
+                                                                                </div>
+                                                                            </div>
+                                                                            <div className="text-[11px] text-gray-500 dark:text-gray-400 whitespace-nowrap">{h.no_rawat || '-'}</div>
+                                                                            <div className="text-[11px] font-semibold text-gray-900 dark:text-white whitespace-nowrap">{(latest.nip && pegawaiNameMap[latest.nip]) || '-'}</div>
+                                                                            <div className="text-[11px] text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                                                                                {`CPPT: ${Number(h.cpptCount || 0)} data${(h.cpptTimes && h.cpptTimes.length) ? ' — ' + h.cpptTimes.join(' , ') : ''}`}
+                                                                            </div>
+                                                                            <div className="mt-1">
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => setExpandedSoapRows((p) => ({ ...p, [h.no_rawat]: !p[h.no_rawat] }))}
+                                                                                    className="inline-flex items-center px-2 py-0.5 border border-blue-200 text-[11px] font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors"
+                                                                                >
+                                                                                    {expandedSoapRows[h.no_rawat] ? 'Tutup' : 'Detail'}
+                                                                                </button>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td className="px-3 py-2 text-gray-700 dark:text-gray-300 w-36">
+                                                                            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                                                                                <div className="text-gray-500">Suhu</div>
+                                                                                <div className="font-medium text-right">{latest.suhu_tubuh || '-'}°C</div>
+                                                                                <div className="text-gray-500">Tensi</div>
+                                                                                <div className="font-medium text-right">{latest.tensi || '-'}</div>
+                                                                                <div className="text-gray-500">Nadi</div>
+                                                                                <div className="font-medium text-right">{latest.nadi || '-'}/min</div>
+                                                                                <div className="text-gray-500">SpO2</div>
+                                                                                <div className="font-medium text-right">{latest.spo2 || '-'}%</div>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td className="px-3 py-2 w-32">
+                                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                                                                {h.cpptCount ? (latest.kesadaran || 'Compos Mentis') : '-'}
+                                                                            </span>
+                                                                        </td>
+                                                                        <td className="px-3 py-2 text-gray-700 dark:text-gray-300 w-64">
+                                                                            {(() => {
+                                                                                const keluhanText = typeof latest.keluhan === 'string' ? latest.keluhan.trim() : '';
+                                                                                return (
+                                                                                    <div className="truncate whitespace-nowrap" title={keluhanText}>
+                                                                                        {keluhanText || '-'}
+                                                                                    </div>
+                                                                                );
+                                                                            })()}
+                                                                        </td>
+                                                                    </tr>
+                                                                    {expandedSoapRows[h.no_rawat] && Array.isArray(h.cpptTimes) && h.cpptTimes.length > 0 && Array.isArray(h.entries) && h.entries.length > 0 && (
+                                                                        <tr key={`${h.no_rawat}-details`} className="bg-gray-50/50 dark:bg-gray-800/30">
+                                                                            <td colSpan={4} className="px-3 py-2">
+                                                                                <div className="overflow-x-auto">
+                                                                                    <table className="min-w-full text-[11px]">
+                                                                                        <thead>
+                                                                                            <tr className="text-left text-gray-600 dark:text-gray-300">
+                                                                                                <th className="px-2 py-1 w-44">Tanggal</th>
+                                                                                                <th className="px-2 py-1 w-28">TTV</th>
+                                                                                                <th className="px-2 py-1 w-28">Kesadaran</th>
+                                                                                            <th className="px-2 py-1 w-64">Subjektif</th>
+                                                                                            </tr>
+                                                                                        </thead>
+                                                                                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                                                                                            {h.entries.slice().sort((a, b) => {
+                                                                                                const aa = String(a.jam_rawat || '').substring(0,5);
+                                                                                                const bb = String(b.jam_rawat || '').substring(0,5);
+                                                                                                return aa < bb ? 1 : aa > bb ? -1 : 0;
+                                                                                            }).map((e, i) => (
+                                                                                                <tr key={`${h.no_rawat}-e-${i}`}>
+                                                                                                    <td className="px-2 py-1 font-mono text-gray-900 dark:text-white">{`${tanggal} ${(typeof e.jam_rawat === 'string' && e.jam_rawat.trim()) ? e.jam_rawat.trim().substring(0,5) : '-'}`}</td>
+                                                                                                    <td className="px-2 py-1 text-gray-700 dark:text-gray-300">
+                                                                                                        <div className="grid grid-cols-2 gap-x-2">
+                                                                                                            <div className="text-gray-500">Suhu</div>
+                                                                                                            <div className="text-right">{e.suhu_tubuh || '-'}°C</div>
+                                                                                                            <div className="text-gray-500">Tensi</div>
+                                                                                                            <div className="text-right">{e.tensi || '-'}</div>
+                                                                                                            <div className="text-gray-500">Nadi</div>
+                                                                                                            <div className="text-right">{e.nadi || '-'}/min</div>
+                                                                                                            <div className="text-gray-500">SpO2</div>
+                                                                                                            <div className="text-right">{e.spo2 || '-'}%</div>
+                                                                                                        </div>
+                                                                                                    </td>
+                                                                                                    <td className="px-2 py-1">
+                                                                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                                                                                            {e.kesadaran || 'Compos Mentis'}
+                                                                                                        </span>
+                                                                                                    </td>
+                                                                                                    <td className="px-2 py-1 text-gray-700 dark:text-gray-300">
+                                                                                                        <div className="truncate" title={typeof e.keluhan === 'string' ? e.keluhan.trim() : ''}>
+                                                                                                            {(typeof e.keluhan === 'string' && e.keluhan.trim()) ? e.keluhan.trim() : '-'}
+                                                                                                        </div>
+                                                                                                    </td>
+                                                                                                </tr>
+                                                                                            ))}
+                                                                                        </tbody>
+                                                                                    </table>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                    )}
+                                                                </>
+                                                            );
+                                                        })}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {soapModalItems.map((h) => {
+                                                const latest = h.latest || {};
+                                                let tanggal = '-';
+                                                try {
+                                                    if (typeof h.no_rawat === 'string') {
+                                                        const m = h.no_rawat.match(/^(\d{4})\/(\d{2})\/(\d{2})\//);
+                                                        if (m) {
+                                                            const y = m[1];
+                                                            const mm = m[2];
+                                                            const dd = m[3];
+                                                            const dt = new Date(`${y}-${mm}-${dd}T00:00:00`);
+                                                            tanggal = dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+                                                        } else if (h.tgl_registrasi) {
+                                                            tanggal = new Date(h.tgl_registrasi).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+                                                        }
+                                                    } else if (h.tgl_registrasi) {
+                                                        tanggal = new Date(h.tgl_registrasi).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+                                                    }
+                                                } catch (_) {}
+                                                return (
+                                                    <div key={`${h.no_rawat}-card`} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                                                        <div className="grid grid-cols-1 md:grid-cols-[14rem_12rem_1fr] gap-3 items-start">
+                                                            <div>
+                                                                <div className="flex items-baseline gap-2">
+                                                                    <div className="text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">{tanggal}</div>
+                                                                    <div className="text-[11px] text-gray-900 dark:text-white font-mono w-20 whitespace-nowrap">
+                                                                        {typeof latest.jam_rawat === 'string' && latest.jam_rawat.trim()
+                                                                            ? latest.jam_rawat.trim().substring(0, 5)
+                                                                            : '-'}
+                                                                    </div>
+                                                                </div>
+                                                                <div className="text-[11px] text-gray-500 dark:text-gray-400 whitespace-nowrap">{h.no_rawat || '-'}</div>
+                                                                <div className="text-[11px] font-semibold text-gray-900 dark:text-white whitespace-nowrap">{(latest.nip && pegawaiNameMap[latest.nip]) || '-'}</div>
+                                                                <div className="text-[11px] text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                                                                    {`CPPT: ${Number(h.cpptCount || 0)} data${(h.cpptTimes && h.cpptTimes.length) ? ' — ' + h.cpptTimes.join(' , ') : ''}`}
+                                                                </div>
+                                                                <div className="mt-1">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setExpandedSoapRows((p) => ({ ...p, [h.no_rawat]: !p[h.no_rawat] }))}
+                                                                        className="inline-flex items-center px-2 py-0.5 border border-blue-200 text-[11px] font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors"
+                                                                    >
+                                                                        {expandedSoapRows[h.no_rawat] ? 'Tutup' : 'Detail'}
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            <div className="text-gray-700 dark:text-gray-300">
+                                                                <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                                                                    <div className="text-gray-500">Suhu</div>
+                                                                    <div className="font-medium text-right">{latest.suhu_tubuh || '-'}°C</div>
+                                                                    <div className="text-gray-500">Tensi</div>
+                                                                    <div className="font-medium text-right">{latest.tensi || '-'}</div>
+                                                                    <div className="text-gray-500">Nadi</div>
+                                                                    <div className="font-medium text-right">{latest.nadi || '-'}/min</div>
+                                                                    <div className="text-gray-500">SpO2</div>
+                                                                    <div className="font-medium text-right">{latest.spo2 || '-'}%</div>
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                                                    {h.cpptCount ? (latest.kesadaran || 'Compos Mentis') : '-'}
+                                                                </span>
+                                                                <div className="mt-1 text-gray-700 dark:text-gray-300">
+                                                                    {(() => {
+                                                                        const keluhanText = typeof latest.keluhan === 'string' ? latest.keluhan.trim() : '';
+                                                                        return (
+                                                                            <div className="truncate whitespace-nowrap" title={keluhanText}>
+                                                                                {keluhanText || '-'}
+                                                                            </div>
+                                                                        );
+                                                                    })()}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        {expandedSoapRows[h.no_rawat] && Array.isArray(h.entries) && h.entries.length > 0 && (
+                                                            <div className="mt-2 border-t border-gray-200 dark:border-gray-700 pt-2">
+                                                                {h.entries.slice().sort((a, b) => {
+                                                                    const aa = String(a.jam_rawat || '').substring(0,5);
+                                                                    const bb = String(b.jam_rawat || '').substring(0,5);
+                                                                    return aa < bb ? 1 : aa > bb ? -1 : 0;
+                                                                }).map((e, i) => (
+                                                                    <div key={`${h.no_rawat}-cv-${i}`} className="grid grid-cols-[14rem_12rem_1fr] gap-2 py-1">
+                                                                        <div className="font-mono text-gray-900 dark:text-white">{`${tanggal} ${(typeof e.jam_rawat === 'string' && e.jam_rawat.trim()) ? e.jam_rawat.trim().substring(0,5) : '-'}`}</div>
+                                                                        <div className="text-gray-700 dark:text-gray-300">
+                                                                            <div className="grid grid-cols-2 gap-x-2">
+                                                                                <div className="text-gray-500">Suhu</div>
+                                                                                <div className="text-right">{e.suhu_tubuh || '-'}°C</div>
+                                                                                <div className="text-gray-500">Tensi</div>
+                                                                                <div className="text-right">{e.tensi || '-'}</div>
+                                                                                <div className="text-gray-500">Nadi</div>
+                                                                                <div className="text-right">{e.nadi || '-'}/min</div>
+                                                                                <div className="text-gray-500">SpO2</div>
+                                                                                <div className="text-right">{e.spo2 || '-'}%</div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="text-gray-700 dark:text-gray-300">
+                                                                            <div className="truncate" title={typeof e.keluhan === 'string' ? e.keluhan.trim() : ''}>
+                                                                                {(typeof e.keluhan === 'string' && e.keluhan.trim()) ? e.keluhan.trim() : '-'}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                    {soapViewMode === 'full' && (
+                                        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden w-full">
+                                            <div className="overflow-x-auto overflow-y-auto max-h-[376px] w-full max-w-full">
+                                                <table className="w-full text-xs table-fixed">
+                                                    <thead className="bg-gray-50 dark:bg-gray-700/50">
+                                                        <tr className="text-left text-gray-600 dark:text-gray-300">
+                                                            <th className="px-3 py-2 font-medium w-44">Tanggal</th>
+                                                            <th className="px-3 py-2 font-medium w-36">TTV</th>
+                                                            <th className="px-3 py-2 font-medium w-32">Kesadaran</th>
+                                                            <th className="px-3 py-2 font-medium w-64">Subjektif</th>
+                                                            <th className="px-3 py-2 font-medium w-64">Pemeriksaan</th>
+                                                            <th className="px-3 py-2 font-medium w-48">Penilaian</th>
+                                                            <th className="px-3 py-2 font-medium text-center w-28">Aksi</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                                                        {soapModalItems.map((h) => {
+                                                            const latest = h.latest || {};
+                                                            let tanggal = '-';
+                                                            try {
+                                                                if (typeof h.no_rawat === 'string') {
+                                                                    const m = h.no_rawat.match(/^(\d{4})\/(\d{2})\/(\d{2})\//);
+                                                                    if (m) {
+                                                                        const y = m[1];
+                                                                        const mm = m[2];
+                                                                        const dd = m[3];
+                                                                        const dt = new Date(`${y}-${mm}-${dd}T00:00:00`);
+                                                                        tanggal = dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+                                                                    } else if (h.tgl_registrasi) {
+                                                                        tanggal = new Date(h.tgl_registrasi).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+                                                                    }
+                                                                } else if (h.tgl_registrasi) {
+                                                                    tanggal = new Date(h.tgl_registrasi).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+                                                                }
+                                                            } catch (_) {}
+                                                            return (
+                                                                <tr key={`${h.no_rawat}-full`}>
+                                                                    <td className="px-3 py-2 w-44">
+                                                                        <div className="flex items-baseline gap-2">
+                                                                            <div className="text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">{tanggal}</div>
+                                                                            <div className="text-[11px] text-gray-900 dark:text-white font-mono w-20 whitespace-nowrap">
+                                                                                {typeof latest.jam_rawat === 'string' && latest.jam_rawat.trim()
+                                                                                    ? latest.jam_rawat.trim().substring(0, 5)
+                                                                                    : '-'}
+                                                                            </div>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300 w-36">
+                                                                        <div className="space-y-1 text-xs">
+                                                                            <div className="flex justify-between">
+                                                                                <span className="text-gray-500">Suhu:</span>
+                                                                                <span className="font-medium">{latest.suhu_tubuh || '-'}°C</span>
+                                                                            </div>
+                                                                            <div className="flex justify-between">
+                                                                                <span className="text-gray-500">Tensi:</span>
+                                                                                <span className="font-medium">{latest.tensi || '-'}</span>
+                                                                            </div>
+                                                                            <div className="flex justify-between">
+                                                                                <span className="text-gray-500">Nadi:</span>
+                                                                                <span className="font-medium">{latest.nadi || '-'}/min</span>
+                                                                            </div>
+                                                                            <div className="flex justify-between">
+                                                                                <span className="text-gray-500">SpO2:</span>
+                                                                                <span className="font-medium">{latest.spo2 || '-'}%</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="px-3 py-2 w-32">
+                                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                                                            {h.cpptCount ? (latest.kesadaran || 'Compos Mentis') : '-'}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300 w-64">
+                                                                        <div className="truncate whitespace-nowrap" title={typeof latest.keluhan === 'string' ? latest.keluhan.trim() : ''}>
+                                                                            {(typeof latest.keluhan === 'string' && latest.keluhan.trim()) ? latest.keluhan.trim() : '-'}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300 w-64">
+                                                                        <div className="truncate whitespace-nowrap" title={latest.pemeriksaan || ''}>
+                                                                            {latest.pemeriksaan || '-'}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300 w-48">
+                                                                        <div className="truncate whitespace-nowrap" title={latest.penilaian || ''}>
+                                                                            {latest.penilaian || '-'}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="px-3 py-2 w-28">
+                                                                        <div className="flex items-center justify-center">
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => openCpptFromHistory(h.no_rawat)}
+                                                                                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors"
+                                                                            >
+                                                                                Buka
+                                                                            </button>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                            <button
+                                type="button"
+                                onClick={openSoapHistoryModal}
+                                className="text-[11px] bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded border border-gray-200 dark:border-gray-700"
+                            >
+                                Muat
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setSoapModalOpen(false)}
+                                className="text-[11px] bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded border border-gray-200 dark:border-gray-700"
+                            >
+                                Tutup
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </LanjutanRalanLayout>
     );
 }
