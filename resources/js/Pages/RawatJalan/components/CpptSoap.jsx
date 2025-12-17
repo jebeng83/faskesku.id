@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import SearchableSelect from '../../../Components/SearchableSelect.jsx';
 import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
 import { Eraser } from 'lucide-react';
 
-export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) {
+export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, appendToPlanning = null, onPlanningAppended = null }) {
     // Gunakan helper untuk mendapatkan tanggal/waktu dengan timezone yang benar
     const nowDateString = todayDateString();
     const nowTimeString = nowDateTimeString().split(' ')[1].substring(0, 5);
@@ -576,6 +577,25 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
             alergi: tpl.alergi || prev.alergi || '',
         }));
     };
+
+    useEffect(() => {
+        if (appendToPlanning && Array.isArray(appendToPlanning) && appendToPlanning.length > 0) {
+            const items = appendToPlanning.map((it) => {
+                const name = String(it.name ?? '').trim();
+                const qty = it.qty ?? '';
+                const instruction = String(it.instruction ?? '').trim();
+                return ` - ${name}, ${qty}, ${instruction}`;
+            });
+            const block = `RESEP:\n${items.join('\n')}`;
+            setFormData((prev) => ({
+                ...prev,
+                rtl: prev.rtl ? `${prev.rtl}\n${block}` : block,
+            }));
+            if (typeof onPlanningAppended === 'function') {
+                try { onPlanningAppended(); } catch (_) {}
+            }
+        }
+    }, [appendToPlanning]);
     const clearTemplateFields = () => {
         setFormData((prev) => ({
             ...prev,
@@ -1520,7 +1540,23 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                     <textarea name="penilaian" value={formData.penilaian} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" placeholder="Diagnosis dan analisis kondisi pasien..." />
                                 </div>
                                 <div className="flex flex-col h-full">
-                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Rencana Tindak Lanjut (Planning)</label>
+                                    <div className="flex items-center justify-between">
+                                        <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Rencana Tindak Lanjut (Planning)</label>
+                                        <Link
+                                            href={noRawat ? `/rawat-jalan/obat-ralan/${encodeURIComponent(noRawat)}` : '/farmasi/resep-obat'}
+                                            onClick={(e) => {
+                                                if (typeof onOpenResep === 'function') {
+                                                    e.preventDefault();
+                                                    onOpenResep();
+                                                }
+                                            }}
+                                            className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700"
+                                            aria-label="Buka tab Resep"
+                                            title="Buka Resep Obat"
+                                        >
+                                            Resep
+                                        </Link>
+                                    </div>
                                     <textarea name="rtl" value={formData.rtl} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" placeholder="Rencana pengobatan dan tindakan..." />
                                 </div>
                                 <div className="flex flex-col h-full">
