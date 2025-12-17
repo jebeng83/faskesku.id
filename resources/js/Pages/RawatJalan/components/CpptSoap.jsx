@@ -1414,7 +1414,16 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                     <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">
                                         Alergi :
                                     </label>
-                                    <input type="text" name="alergi" value={formData.alergi} onChange={handleChange} placeholder="Contoh: Penisilin, Aspirin" className="w-full md:flex-1 text-sm h-7 px-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                    <input
+                                        type="text"
+                                        name="alergi"
+                                        value={formData.alergi}
+                                        onChange={handleChange}
+                                        placeholder="Contoh: Penisilin, Aspirin"
+                                        className={`w-full md:flex-1 text-sm h-7 px-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                                            ((formData.alergi || '').trim() !== '' && (formData.alergi || '').trim() !== '-') ? 'text-red-600 dark:text-red-400' : 'dark:text-white'
+                                        }`}
+                                    />
                                 </div>
                                 <div className="min-w-0 flex flex-row items-center gap-1">
                                     <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Template :</label>
@@ -1449,7 +1458,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
 
                         {/* Subjektif & Objektif */}
                         <div className="space-y-2">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-stretch">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-end">
                                 <div className="flex flex-col h-full">
                                     <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Keluhan Utama (Subjektif)</label>
                                     <textarea name="keluhan" value={formData.keluhan} onChange={handleChange} rows={4} className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
@@ -1505,7 +1514,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
 
                         {/* Assessment & Planning */}
                         <div className="space-y-px md:space-y-px">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-1 md:gap-1 items-stretch">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-1 md:gap-1 items-end">
                                 <div className="flex flex-col h-full">
                                     <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Penilaian (Assessment)</label>
                                     <textarea name="penilaian" value={formData.penilaian} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" placeholder="Diagnosis dan analisis kondisi pasien..." />
