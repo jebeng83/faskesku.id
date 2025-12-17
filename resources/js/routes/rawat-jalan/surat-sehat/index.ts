@@ -32,6 +32,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
 })
+
 const suratSehat = {
     store: Object.assign(store, store),
 }
