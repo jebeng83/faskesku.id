@@ -639,7 +639,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                             {typeof lastVisitDays === 'number' ? `${lastVisitDays} hari` : '-'}
                                         </span>
                                     </div>
-                                    <div className="mt-2">
+                                    <div className="mt-2 mb-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded px-2 py-1.5">
                                         <button
                                             onClick={openSoapHistoryModal}
                                             className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded border border-blue-200"
@@ -793,7 +793,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                 <div className="text-xs text-gray-500">Tidak ada data</div>
                             ) : (
                                 <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-4 md:p-6">
-                                    <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center justify-between mb-4 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-2 rounded">
                                         <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
                                             <svg className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
