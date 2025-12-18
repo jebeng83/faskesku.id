@@ -57,6 +57,8 @@ Route::get('/perusahaan-pasien/next-code', [\App\Http\Controllers\API\Perusahaan
 Route::get('/suku-bangsa', [ReferenceController::class, 'sukuBangsa'])->name('api.public.suku-bangsa.index');
 Route::get('/bahasa-pasien', [ReferenceController::class, 'bahasaPasien'])->name('api.public.bahasa-pasien.index');
 Route::get('/cacat-fisik', [ReferenceController::class, 'cacatFisik'])->name('api.public.cacat-fisik.index');
+// Public endpoint for doctors list (minimal fields) for dev preview dropdowns
+Route::get('/public/dokter', [DokterController::class, 'index'])->name('api.public.dokter');
 
 // Protected API endpoints (memerlukan authentication)
 // Menggunakan 'auth:sanctum' untuk Inertia.js SPA authentication

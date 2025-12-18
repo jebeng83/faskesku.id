@@ -37,11 +37,11 @@ export default defineConfig(() => ({
 		},
 	},
     server: {
-        host: '127.0.0.1',
+        host: 'localhost',
         port: Number(process.env.VITE_PORT || process.env.PORT || 5177),
         strictPort: false,
         cors: true,
-        origin: process.env.VITE_DEV_ORIGIN || undefined,
+        origin: process.env.VITE_DEV_ORIGIN || 'http://localhost:5177',
         headers: {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET,OPTIONS',

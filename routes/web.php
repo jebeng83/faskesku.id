@@ -512,6 +512,9 @@ Route::middleware('auth')->group(function () {
     Route::get('rawat-jalan/radiologi/{no_rawat}', [RawatJalanController::class, 'getRadiologiPublic'])
         ->name('rawat-jalan.radiologi')
         ->where('no_rawat', '.*');
+    // Public doctor list for dropdowns in dev/preview (minimal fields)
+    Route::get('rawat-jalan/dokter', [\App\Http\Controllers\API\DokterController::class, 'index'])
+        ->name('rawat-jalan.dokter.public');
     Route::get('pegawai/search', [RawatJalanController::class, 'searchPegawai'])->name('pegawai.search');
     Route::get('rawat-jalan-statistics', [RawatJalanController::class, 'getStatistics'])->name('rawat-jalan.statistics');
 
