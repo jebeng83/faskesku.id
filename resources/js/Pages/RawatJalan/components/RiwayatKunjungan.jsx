@@ -637,12 +637,12 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                         >
                             <button
                                 onClick={() => toggleVisitDetails(row)}
-                                className={`w-full text-left px-3 h-14 flex items-center justify-between gap-3 bg-gray-50 dark:bg-gray-800/60 ${isOpen ? 'rounded-t-lg' : 'rounded-lg'}`}
+                                className={`w-full text-left px-3 min-h-14 py-2 flex flex-wrap items-start justify-between gap-2 bg-gray-50 dark:bg-gray-800/60 ${isOpen ? 'rounded-t-lg' : 'rounded-lg'}`}
                                 aria-expanded={isOpen}
                                 aria-controls={`visit-${index}`}
                             >
                                 <div className="flex-1 min-w-0 space-y-1">
-                                    <div className="flex items-center justify-between">
+                                    <div className="flex items-center justify-between gap-2 min-w-0 flex-wrap">
                                         <div className="flex items-center gap-2">
                                             <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a4 4 0 118 0v4M12 11v10m0 0l-3-3m3 3l3-3" />
@@ -651,13 +651,13 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                                                 {row.tgl_registrasi ? new Date(row.tgl_registrasi).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
                                             </span>
                                         </div>
-                                        <span className="text-xs font-medium px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                                        <span className="text-xs font-medium px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 break-words whitespace-normal max-w-full sm:whitespace-nowrap sm:max-w-[12rem] max-[360px]:break-all">
                                             {row.no_rawat}
                                         </span>
                                     </div>
                                     
                                 </div>
-                                <svg className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''} flex-shrink-0 self-start ml-2`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>

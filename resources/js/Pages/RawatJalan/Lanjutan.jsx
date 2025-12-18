@@ -45,6 +45,8 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     const [soapModalItems, setSoapModalItems] = useState([]);
     const [pegawaiNameMap, setPegawaiNameMap] = useState({});
     const [soapViewMode, setSoapViewMode] = useState('table');
+    const [soapShowAll, setSoapShowAll] = useState(false);
+    const [soapPage, setSoapPage] = useState(1);
 
     const toggle = (section) => {
         setOpenAcc((prev) => ({
@@ -284,7 +286,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
         }
     };
 
-    const openSoapHistoryModal = async () => {
+    const openSoapHistoryModal = async (showAll = false) => {
         setSoapModalOpen(true);
         setSoapModalLoading(true);
         setSoapModalError("");
@@ -309,43 +311,75 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                     (a, b) =>
                         new Date(b.tgl_registrasi || 0) -
                         new Date(a.tgl_registrasi || 0)
-                )
-                .slice(0, 5);
-            const results = [];
-            for (const v of arr) {
-                try {
-                    const url = route("rawat-jalan.pemeriksaan-ralan", {
-                        no_rawat: v.no_rawat,
-                    });
-                    const r = await fetch(url);
-                    const j = await r.json();
-                    const list = Array.isArray(j.data) ? j.data : [];
-                    const filtered = list && list.length && list.some(row => Object.prototype.hasOwnProperty.call(row, 'no_rawat'))
-                        ? list.filter(row => String(row.no_rawat) === String(v.no_rawat))
-                        : list;
-                    const parse = (x) => {
-                        const d = x.tgl_perawatan || "";
-                        const t =
-                            typeof x.jam_rawat === "string" ? x.jam_rawat : "";
-                        const iso = `${d}T${
-                            (t.length === 5 ? `${t}:00` : t) || "00:00:00"
-                        }`;
-                        const dt = new Date(iso);
-                        return isNaN(dt.getTime()) ? new Date() : dt;
-                    };
-                    const sorted = filtered.slice().sort((a, b) => parse(b) - parse(a));
-                    const latest = sorted[0] || null;
-                    const times = filtered
-                        .map((row) => {
-                            const s = typeof row.jam_rawat === 'string' ? row.jam_rawat.trim() : '';
-                            return s ? s.substring(0, 5) : '';
-                        })
-                        .filter(Boolean)
-                        .sort((a, b) => (a > b ? -1 : a < b ? 1 : 0));
-                    results.push({ no_rawat: v.no_rawat, tgl_registrasi: v.tgl_registrasi, latest, cpptCount: filtered.length, cpptTimes: times, entries: sorted });
-                } catch (_) {}
+                );
+            if (!showAll) {
+                arr = arr.slice(0, 5);
             }
-            setSoapModalItems(results);
+            setSoapShowAll(showAll);
+            const results = await Promise.all(
+                arr.map(async (v) => {
+                    try {
+                        const url = route("rawat-jalan.pemeriksaan-ralan", {
+                            no_rawat: v.no_rawat,
+                        });
+                        const r = await fetch(url);
+                        const j = await r.json();
+                        const list = Array.isArray(j.data) ? j.data : [];
+                        const filtered =
+                            list &&
+                            list.length &&
+                            list.some((row) =>
+                                Object.prototype.hasOwnProperty.call(
+                                    row,
+                                    "no_rawat"
+                                )
+                            )
+                                ? list.filter(
+                                      (row) =>
+                                          String(row.no_rawat) ===
+                                          String(v.no_rawat)
+                                  )
+                                : list;
+                        const parse = (x) => {
+                            const d = x.tgl_perawatan || "";
+                            const t =
+                                typeof x.jam_rawat === "string"
+                                    ? x.jam_rawat
+                                    : "";
+                            const iso = `${d}T${
+                                (t.length === 5 ? `${t}:00` : t) || "00:00:00"
+                            }`;
+                            const dt = new Date(iso);
+                            return isNaN(dt.getTime()) ? new Date() : dt;
+                        };
+                        const sorted = filtered
+                            .slice()
+                            .sort((a, b) => parse(b) - parse(a));
+                        const latest = sorted[0] || null;
+                        const times = filtered
+                            .map((row) => {
+                                const s =
+                                    typeof row.jam_rawat === "string"
+                                        ? row.jam_rawat.trim()
+                                        : "";
+                                return s ? s.substring(0, 5) : "";
+                            })
+                            .filter(Boolean)
+                            .sort((a, b) => (a > b ? -1 : a < b ? 1 : 0));
+                        return {
+                            no_rawat: v.no_rawat,
+                            tgl_registrasi: v.tgl_registrasi,
+                            latest,
+                            cpptCount: filtered.length,
+                            cpptTimes: times,
+                            entries: sorted,
+                        };
+                    } catch (_) {
+                        return null;
+                    }
+                })
+            );
+            setSoapModalItems(results.filter(Boolean));
         } catch (e) {
             setSoapModalError(e.message || "Gagal memuat riwayat SOAP");
             setSoapModalItems([]);
@@ -393,6 +427,10 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [soapModalItems]);
 
+    useEffect(() => {
+        setSoapPage(1);
+    }, [soapModalItems]);
+
     const openCpptFromHistory = (nr) => {
         setSelectedNoRawat(nr);
         setActiveTab("cppt");
@@ -402,6 +440,26 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
             if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
         }, 100);
     };
+
+    const SOAP_PAGE_SIZE = 5;
+    const soapTotalRows = soapModalItems.reduce((acc, h) => {
+        if (Array.isArray(h?.entries)) {
+            return acc + h.entries.length;
+        }
+        return acc;
+    }, 0);
+    const soapTotalPages = Math.max(
+        1,
+        Math.ceil(soapTotalRows / SOAP_PAGE_SIZE || 1)
+    );
+    const soapCurrentPage =
+        soapPage < 1
+            ? 1
+            : soapPage > soapTotalPages
+            ? soapTotalPages
+            : soapPage;
+    const soapPageStart = (soapCurrentPage - 1) * SOAP_PAGE_SIZE;
+    const soapPageEnd = soapPageStart + SOAP_PAGE_SIZE;
 
     const ErrorMessage = ({ message, onRetry }) => (
         <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800">
@@ -801,6 +859,19 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                             Riwayat SOAP
                                         </h4>
                                         <div className="flex items-center gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => openSoapHistoryModal(!soapShowAll)}
+                                                aria-pressed={soapShowAll}
+                                                className={`text-xs px-3 py-1 rounded border transition-colors ${
+                                                    soapShowAll
+                                                        ? 'bg-indigo-600 text-white border-indigo-600'
+                                                        : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
+                                                }`}
+                                                title="Tampilkan semua riwayat SOAP"
+                                            >
+                                                Semua record
+                                            </button>
                                             <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
                                                 {soapModalItems.length} record
                                             </span>
@@ -834,8 +905,8 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                     </div>
                                     {soapViewMode === 'table' ? (
                                         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden w-full">
-                                            <div className="overflow-x-auto lg:overflow-x-hidden overflow-y-auto max-h-[376px] w-full max-w-full">
-                                                    <table className="w-full text-xs table-auto">
+                                            <div className="overflow-x-auto lg:overflow-x-hidden w-full max-w-full">
+                                                <table className="w-full text-xs table-auto">
                                                         <thead className="bg-gray-50 dark:bg-gray-700/50">
                                                             <tr className="text-left text-gray-600 dark:text-gray-300">
                                                                 <th className="px-3 py-2 font-bold w-44 lg:w-auto">Tanggal</th>
@@ -847,52 +918,44 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                             </tr>
                                                         </thead>
                                                         <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                                            {soapModalItems.map((h) => {
-                                                                const latest = h.latest || {};
-                                                                let tanggal = '-';
-                                                            try {
-                                                                if (typeof h.no_rawat === 'string') {
-                                                                    const m = h.no_rawat.match(/^(\d{4})\/(\d{2})\/(\d{2})\//);
-                                                                    if (m) {
-                                                                        const y = m[1];
-                                                                        const mm = m[2];
-                                                                        const dd = m[3];
-                                                                        const dt = new Date(`${y}-${mm}-${dd}T00:00:00`);
-                                                                        tanggal = dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-                                                                    } else if (h.tgl_registrasi) {
-                                                                        tanggal = new Date(h.tgl_registrasi).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-                                                                    }
-                                                                } else if (h.tgl_registrasi) {
-                                                                    tanggal = new Date(h.tgl_registrasi).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-                                                                }
-                                                            } catch (_) {}
-                                                            const countDisplay = (() => {
-                                                                if (Array.isArray(h.entries)) {
-                                                                    const seen = new Set();
-                                                                    for (const e of h.entries) {
-                                                                        const t = String(e.jam_rawat || '').substring(0,5);
-                                                                        if (!t) continue;
-                                                                        seen.add(t);
-                                                                    }
-                                                                    return seen.size || h.entries.length;
-                                                                } else if (Array.isArray(h.cpptTimes)) {
-                                                                    const uniq = new Set(h.cpptTimes.filter(Boolean));
-                                                                    return uniq.size;
-                                                                }
-                                                                return Number(h.cpptCount || 0);
-                                                            })();
-                                                            return (
-                                                                <React.Fragment key={`${h.no_rawat}-group`}>
-                                                                    {Array.isArray(h.entries) && h.entries.length > 0 && (
-                                                                        h.entries
-                                                                            .slice()
-                                                                            .sort((a, b) => {
-                                                                                const aa = String(a.jam_rawat || '').substring(0,5);
-                                                                                const bb = String(b.jam_rawat || '').substring(0,5);
-                                                                                return aa < bb ? 1 : aa > bb ? -1 : 0;
-                                                                            })
-                                                                            .map((e, i) => (
-                                                                                <tr key={`${h.no_rawat}-e-${i}`} className="bg-white dark:bg-gray-900/40 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                                            {(() => {
+                                                                let rowIndex = -1;
+                                                                return soapModalItems.map((h) => {
+                                                                    const latest = h.latest || {};
+                                                                    let tanggal = '-';
+                                                                    try {
+                                                                        if (typeof h.no_rawat === 'string') {
+                                                                            const m = h.no_rawat.match(/^(\d{4})\/(\d{2})\/(\d{2})\//);
+                                                                            if (m) {
+                                                                                const y = m[1];
+                                                                                const mm = m[2];
+                                                                                const dd = m[3];
+                                                                                const dt = new Date(`${y}-${mm}-${dd}T00:00:00`);
+                                                                                tanggal = dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+                                                                            } else if (h.tgl_registrasi) {
+                                                                                tanggal = new Date(h.tgl_registrasi).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+                                                                            }
+                                                                        } else if (h.tgl_registrasi) {
+                                                                            tanggal = new Date(h.tgl_registrasi).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+                                                                        }
+                                                                    } catch (_) {}
+                                                                    return (
+                                                                        <React.Fragment key={`${h.no_rawat}-group`}>
+                                                                            {Array.isArray(h.entries) && h.entries.length > 0 &&
+                                                                                h.entries
+                                                                                    .slice()
+                                                                                    .sort((a, b) => {
+                                                                                        const aa = String(a.jam_rawat || '').substring(0, 5);
+                                                                                        const bb = String(b.jam_rawat || '').substring(0, 5);
+                                                                                        return aa < bb ? 1 : aa > bb ? -1 : 0;
+                                                                                    })
+                                                                                    .map((e, i) => {
+                                                                                        rowIndex += 1;
+                                                                                        if (rowIndex < soapPageStart || rowIndex >= soapPageEnd) {
+                                                                                            return null;
+                                                                                        }
+                                                                                        return (
+                                                                                            <tr key={`${h.no_rawat}-e-${i}`} className="bg-white dark:bg-gray-900/40 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                                                                                     <td className="px-3 py-2 text-gray-900 dark:text-white">
                                                                                         <div className="space-y-0.5">
                                                                                             <div className="font-mono">
@@ -953,13 +1016,50 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                                                         </div>
                                                                                     </td>
                                                                                 </tr>
-                                                                            ))
-                                                                    )}
-                                                                </React.Fragment>
-                                                            );
-                                                        })}
-                                                    </tbody>
-                                                </table>
+                                                                                        );
+                                                                                    })}
+                                                                        </React.Fragment>
+                                                                    );
+                                                                });
+                                                            })()}
+                                                        </tbody>
+                                                    </table>
+                                            </div>
+                                            <div className="flex items-center justify-between px-3 py-2 border-t border-gray-200 dark:border-gray-700 text-[11px] text-gray-600 dark:text-gray-300">
+                                                <span>
+                                                    {soapTotalRows === 0
+                                                        ? "Tidak ada data"
+                                                        : `Menampilkan ${soapPageStart + 1}-${Math.min(soapPageEnd, soapTotalRows)} dari ${soapTotalRows} data`}
+                                                </span>
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSoapPage((p) => Math.max(1, p - 1))}
+                                                        disabled={soapCurrentPage <= 1}
+                                                        className={`px-2 py-1 rounded border text-[11px] ${
+                                                            soapCurrentPage <= 1
+                                                                ? "bg-gray-100 text-gray-400 border-gray-200 dark:bg-gray-700 dark:text-gray-500 dark:border-gray-600 cursor-not-allowed"
+                                                                : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700"
+                                                        }`}
+                                                    >
+                                                        Sebelumnya
+                                                    </button>
+                                                    <span>
+                                                        Hal {soapCurrentPage} / {soapTotalPages}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSoapPage((p) => Math.min(soapTotalPages, p + 1))}
+                                                        disabled={soapCurrentPage >= soapTotalPages}
+                                                        className={`px-2 py-1 rounded border text-[11px] ${
+                                                            soapCurrentPage >= soapTotalPages
+                                                                ? "bg-gray-100 text-gray-400 border-gray-200 dark:bg-gray-700 dark:text-gray-500 dark:border-gray-600 cursor-not-allowed"
+                                                                : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700"
+                                                        }`}
+                                                    >
+                                                        Berikutnya
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     ) : (
