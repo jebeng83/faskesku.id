@@ -4,12 +4,12 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefa
 * @see app/Http/Controllers/API/DokterController.php:14
 * @route '/api/dokter'
 */
-export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: index.url(options),
+const index2d187505c9fce4532e881abbe2b885ae = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index2d187505c9fce4532e881abbe2b885ae.url(options),
     method: 'get',
 })
 
-index.definition = {
+index2d187505c9fce4532e881abbe2b885ae.definition = {
     methods: ["get","head"],
     url: '/api/dokter',
 } satisfies RouteDefinition<["get","head"]>
@@ -19,8 +19,8 @@ index.definition = {
 * @see app/Http/Controllers/API/DokterController.php:14
 * @route '/api/dokter'
 */
-index.url = (options?: RouteQueryOptions) => {
-    return index.definition.url + queryParams(options)
+index2d187505c9fce4532e881abbe2b885ae.url = (options?: RouteQueryOptions) => {
+    return index2d187505c9fce4532e881abbe2b885ae.definition.url + queryParams(options)
 }
 
 /**
@@ -28,8 +28,8 @@ index.url = (options?: RouteQueryOptions) => {
 * @see app/Http/Controllers/API/DokterController.php:14
 * @route '/api/dokter'
 */
-index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: index.url(options),
+index2d187505c9fce4532e881abbe2b885ae.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index2d187505c9fce4532e881abbe2b885ae.url(options),
     method: 'get',
 })
 
@@ -38,10 +38,59 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 * @see app/Http/Controllers/API/DokterController.php:14
 * @route '/api/dokter'
 */
-index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: index.url(options),
+index2d187505c9fce4532e881abbe2b885ae.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: index2d187505c9fce4532e881abbe2b885ae.url(options),
     method: 'head',
 })
+
+/**
+* @see \App\Http\Controllers\API\DokterController::index
+* @see app/Http/Controllers/API/DokterController.php:14
+* @route '/rawat-jalan/dokter'
+*/
+const index0dcbc8d7ccddf8ed28e5f7c2b15f980f = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index0dcbc8d7ccddf8ed28e5f7c2b15f980f.url(options),
+    method: 'get',
+})
+
+index0dcbc8d7ccddf8ed28e5f7c2b15f980f.definition = {
+    methods: ["get","head"],
+    url: '/rawat-jalan/dokter',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\API\DokterController::index
+* @see app/Http/Controllers/API/DokterController.php:14
+* @route '/rawat-jalan/dokter'
+*/
+index0dcbc8d7ccddf8ed28e5f7c2b15f980f.url = (options?: RouteQueryOptions) => {
+    return index0dcbc8d7ccddf8ed28e5f7c2b15f980f.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\API\DokterController::index
+* @see app/Http/Controllers/API/DokterController.php:14
+* @route '/rawat-jalan/dokter'
+*/
+index0dcbc8d7ccddf8ed28e5f7c2b15f980f.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index0dcbc8d7ccddf8ed28e5f7c2b15f980f.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\API\DokterController::index
+* @see app/Http/Controllers/API/DokterController.php:14
+* @route '/rawat-jalan/dokter'
+*/
+index0dcbc8d7ccddf8ed28e5f7c2b15f980f.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: index0dcbc8d7ccddf8ed28e5f7c2b15f980f.url(options),
+    method: 'head',
+})
+
+export const index = {
+    '/api/dokter': index2d187505c9fce4532e881abbe2b885ae,
+    '/rawat-jalan/dokter': index0dcbc8d7ccddf8ed28e5f7c2b15f980f,
+}
 
 /**
 * @see \App\Http\Controllers\API\DokterController::show

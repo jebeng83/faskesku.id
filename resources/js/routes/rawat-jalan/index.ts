@@ -1,5 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
 import pemeriksaanRalanC19e15 from './pemeriksaan-ralan'
+import dokter from './dokter'
 import suratSehat47d9f7 from './surat-sehat'
 import suratSakit4a9f0c from './surat-sakit'
 /**
@@ -901,6 +902,7 @@ const rawatJalan = {
     obatRalan: Object.assign(obatRalan, obatRalan),
     lab: Object.assign(lab, lab),
     radiologi: Object.assign(radiologi, radiologi),
+    dokter: Object.assign(dokter, dokter),
     statistics: Object.assign(statistics, statistics),
     suratSehat: Object.assign(suratSehat, suratSehat47d9f7),
     suratSakit: Object.assign(suratSakit, suratSakit4a9f0c),

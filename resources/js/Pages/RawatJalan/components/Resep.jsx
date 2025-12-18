@@ -88,8 +88,10 @@ export default function Resep({
             const response = await axios.get("/api/resep/stok-info", {
                 params: {
                     kode_brng: kodeBrng,
-                    kd_poli: kdPoli,
+                    kd_poli: kdPoli || undefined,
                 },
+                withCredentials: true,
+                headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
             });
 
             if (response.data.success) {
@@ -97,7 +99,7 @@ export default function Resep({
             }
             return null;
         } catch (error) {
-            console.error("Error getting stok info:", error);
+            console.warn("Error getting stok info:", error?.message || error);
             return null;
         }
     };
@@ -106,7 +108,10 @@ export default function Resep({
     const fetchDokter = async () => {
         setLoadingDokter(true);
         try {
-            const response = await axios.get("/api/dokter");
+            const response = await axios.get("/api/dokter", {
+                withCredentials: true,
+                headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+            });
 
             if (response.data.success) {
                 // Filter dokter yang bukan "-" (placeholder)
@@ -117,11 +122,53 @@ export default function Resep({
 
                 // Jangan memaksa default ke dokter pertama; kita akan sync ke reg_periksa
             } else {
-                setDokterOptions([]);
+                // Fallback ke endpoint RS jika endpoint utama tidak success
+                try {
+                    const respAlt = await axios.get("/api/public/dokter", {
+                        withCredentials: true,
+                        headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+                        params: { search: "" },
+                    });
+                    const arr = Array.isArray(respAlt?.data?.data)
+                        ? respAlt.data.data
+                        : Array.isArray(respAlt?.data)
+                        ? respAlt.data
+                        : [];
+                    const normalized = arr
+                        .map((d) => ({
+                            kd_dokter: d.kd_dokter ?? d.kode ?? "",
+                            nm_dokter: d.nm_dokter ?? d.nama ?? "",
+                        }))
+                        .filter((d) => d.kd_dokter && d.nm_dokter);
+                    setDokterOptions(normalized);
+                } catch (e) {
+                    setDokterOptions([]);
+                }
             }
         } catch (error) {
-            console.error("Error fetching dokter:", error);
-            setDokterOptions([]);
+            console.warn("Error fetching dokter:", error?.message || error);
+            // Fallback ke endpoint RS jika terjadi error (mis. redirect login)
+            try {
+                const respAlt = await axios.get("/api/public/dokter", {
+                    withCredentials: true,
+                    headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+                    params: { search: "" },
+                });
+                const arr = Array.isArray(respAlt?.data?.data)
+                    ? respAlt.data.data
+                    : Array.isArray(respAlt?.data)
+                    ? respAlt.data
+                    : [];
+                const normalized = arr
+                    .map((d) => ({
+                        kd_dokter: d.kd_dokter ?? d.kode ?? "",
+                        nm_dokter: d.nm_dokter ?? d.nama ?? "",
+                    }))
+                    .filter((d) => d.kd_dokter && d.nm_dokter);
+                setDokterOptions(normalized);
+            } catch (_) {
+                setDokterOptions([]);
+            }
         } finally {
             setLoadingDokter(false);
         }
@@ -136,10 +183,11 @@ export default function Resep({
             // Endpoint khusus by-rawat (aman utk no_rawat mengandung '/')
             let regData = null;
             try {
-                const respRegExact = await axios.get(
-                    "/api/reg-periksa/by-rawat",
-                    { params: { no_rawat: noRawat } }
-                );
+                const respRegExact = await axios.get("/api/reg-periksa/by-rawat", {
+                    params: { no_rawat: noRawat },
+                    withCredentials: true,
+                    headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+                });
                 regData = respRegExact?.data?.data || null;
             } catch (e) {
                 console.warn(
@@ -152,6 +200,8 @@ export default function Resep({
                 // Fallback: gunakan index dengan search
                 const respReg = await axios.get("/api/reg-periksa", {
                     params: { search: noRawat, per_page: 1 },
+                    withCredentials: true,
+                    headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
                 });
                 regData = respReg?.data?.data?.data?.[0] || null;
             }
@@ -165,9 +215,10 @@ export default function Resep({
                     "";
                 if (!nm) {
                     try {
-                        const respDokter = await axios.get(
-                            `/api/dokter/${encodeURIComponent(kd)}`
-                        );
+                        const respDokter = await axios.get(`/api/dokter/${encodeURIComponent(kd)}`, {
+                            withCredentials: true,
+                            headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+                        });
                         nm = respDokter?.data?.data?.nm_dokter || nm;
                     } catch (e) {
                         console.warn("Gagal mengambil detail dokter:", e);
@@ -189,7 +240,7 @@ export default function Resep({
                 setDokterPJ({ kd_dokter: "", nm_dokter: "" });
             }
         } catch (error) {
-            console.error("Error fetching dokter penanggung jawab:", error);
+            console.warn("Error fetching dokter penanggung jawab:", error?.message || error);
             setDokterPJError("Gagal memuat dokter penanggung jawab");
         } finally {
             setLoadingDokterPJ(false);
@@ -367,15 +418,11 @@ export default function Resep({
             );
 
             // Fetch dengan limit 5 untuk loading awal
-            const response = await axios.get(
-                `/api/resep/pasien/${encodedNoRkmMedis}`,
-                {
-                    params: {
-                        limit: 5,
-                        offset: 0,
-                    },
-                }
-            );
+            const response = await axios.get(`/api/resep/pasien/${encodedNoRkmMedis}`, {
+                params: { limit: 5, offset: 0 },
+                withCredentials: true,
+                headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+            });
 
             console.log("fetchRiwayatResep: response:", response.data);
             if (response.data.success) {
@@ -406,7 +453,7 @@ export default function Resep({
                 console.log("fetchRiwayatResep: response tidak success");
             }
         } catch (error) {
-            console.error("Error fetching riwayat resep:", error);
+            console.warn("Error fetching riwayat resep:", error?.message || error);
             setRiwayatResep([]);
             setHasMoreResep(false);
             setNextOffset(null);
