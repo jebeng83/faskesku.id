@@ -17,14 +17,25 @@ createInertiaApp({
       `./Pages/${normalized}.tsx`,
       `./Pages/${normalized}.ts`,
     ];
-    for (const key of candidates) {
-      if (pages[key]) return pages[key]();
-    }
+    const tryLoad = () => {
+      for (const key of candidates) {
+        const loader = pages[key];
+        if (loader) return loader();
+      }
+      return import(`./Pages/${normalized}.jsx`).catch(() => import(`./Pages/${normalized}.js`)).catch(() => {
+        throw new Error(`Page not found: ${name}`);
+      });
+    };
+    const attempt = (n) =>
+      tryLoad().catch((err) => {
+        if (n > 0) {
+          return new Promise((resolve) => setTimeout(resolve, 200)).then(() => attempt(n - 1));
+        }
+        throw err;
+      });
 
     // Fallback to dynamic import to cope with newly added files in dev or case-insensitive FS quirks
-    return import(`./Pages/${normalized}.jsx`).catch(() => import(`./Pages/${normalized}.js`)).catch(() => {
-      throw new Error(`Page not found: ${name}`);
-    });
+    return attempt(1);
   },
   setup({ el, App, props }) {
     createRoot(el).render(<App {...props} />);
@@ -40,5 +51,4 @@ createInertiaApp({
 // Handle 419 CSRF Token Expired Error for Inertia
 // Inertia akan otomatis handle 419 error melalui backend redirect dengan flash message
 // Flash message akan tersedia di page props dan bisa ditampilkan di UI
-
 
