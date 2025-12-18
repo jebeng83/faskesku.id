@@ -1152,26 +1152,25 @@ export default function DataObatPage() {
     const submitForm = (e) => {
         e.preventDefault();
         if (isEdit && selected) {
-            const kodeBrng = selected.kode_brng?.trim();
+            const kodeBrng = (data.kode_brng || selected.kode_brng || "").trim();
             if (!kodeBrng) {
                 alert(
                     "Kode barang kosong. Pilih data yang benar sebelum menyimpan perubahan."
                 );
                 return;
             }
-            const updateUrl = route("farmasi.data-obat.update", {
-                kode_brng: kodeBrng,
+            const updateUrl = route("farmasi.data-obat.update", { kode_brng: kodeBrng });
+            const payload = { ...data, _method: "PUT" };
+            payload.stokminimal =
+                payload.stokminimal !== "" && payload.stokminimal !== null
+                    ? parseInt(payload.stokminimal, 10)
+                    : undefined;
+            router.post(updateUrl, payload, {
+                forceFormData: true,
+                preserveScroll: true,
+                preserveState: false,
+                onSuccess: () => setModalOpen(false),
             });
-            router.post(
-                updateUrl,
-                { ...data, _method: "PUT" },
-                {
-                    forceFormData: true,
-                    preserveScroll: true,
-                    preserveState: false,
-                    onSuccess: () => setModalOpen(false),
-                }
-            );
         } else {
             post(route("farmasi.data-obat.store"), {
                 preserveScroll: true,
