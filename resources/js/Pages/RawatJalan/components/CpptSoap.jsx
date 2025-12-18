@@ -6,7 +6,14 @@ import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
 
-export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) {
+export default function CpptSoap({
+    token = '',
+    noRkmMedis = '',
+    noRawat = '',
+    appendToPlanning = null,
+    onPlanningAppended,
+    onOpenResep,
+}) {
     // UI/UX variants (guided by docs/UI_UX_IMPROVEMENTS_GUIDE.md)
     const prefersReducedMotion = useReducedMotion();
     const containerVariants = {
@@ -3099,8 +3106,8 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                             </div>
                         </div>
                     )}
-                </>
             </div>
+        </div>
         </>
     );
 }
