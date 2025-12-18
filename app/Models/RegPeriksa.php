@@ -45,18 +45,26 @@ class RegPeriksa extends Model
         'kd_kel',
     ];
 
-    public static function generateNoReg($kd_dokter, $kd_poli)
+    public static function generateNoReg($kd_dokter, $kd_poli, $tgl_registrasi = null)
     {
-        $lastNoReg = self::where('tgl_registrasi', date('Y-m-d'))->where('kd_dokter', $kd_dokter)->where('kd_poli', $kd_poli)->max('no_reg');
+        $date = $tgl_registrasi ? date('Y-m-d', strtotime($tgl_registrasi)) : date('Y-m-d');
+        $lastNoReg = self::where('tgl_registrasi', $date)
+            ->where('kd_dokter', $kd_dokter)
+            ->where('kd_poli', $kd_poli)
+            ->max('no_reg');
 
         return str_pad($lastNoReg + 1, 3, '0', STR_PAD_LEFT);
     }
 
-    public static function generateNoRawat()
+    public static function generateNoRawat($tgl_registrasi = null)
     {
-        $lastNoRawat = self::where('tgl_registrasi', date('Y-m-d'))->selectRaw('ifnull(MAX(CONVERT(RIGHT(reg_periksa.no_rawat,6),signed)),0) as no')->first()->no;
+        $date = $tgl_registrasi ? date('Y-m-d', strtotime($tgl_registrasi)) : date('Y-m-d');
+        $lastNoRawat = self::where('tgl_registrasi', $date)
+            ->selectRaw('ifnull(MAX(CONVERT(RIGHT(reg_periksa.no_rawat,6),signed)),0) as no')
+            ->first()->no;
 
-        return date('Y/m/d').'/'.str_pad($lastNoRawat + 1, 6, '0', STR_PAD_LEFT);
+        $prefix = date('Y/m/d', strtotime($date));
+        return $prefix.'/'.str_pad($lastNoRawat + 1, 6, '0', STR_PAD_LEFT);
     }
 
     public function pasien()

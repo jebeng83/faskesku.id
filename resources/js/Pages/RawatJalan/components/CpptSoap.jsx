@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import SearchableSelect from '../../../Components/SearchableSelect.jsx';
 import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
@@ -552,6 +553,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
     const [sendingKunjungan, setSendingKunjungan] = useState(false);
     const [kunjunganResult, setKunjunganResult] = useState(null); // hasil kirim kunjungan
     const [rujukForm, setRujukForm] = useState({ kdppk: '', tglEstRujuk: '', kdSubSpesialis1: '', kdSarana: '' });
+    const [viewMode, setViewMode] = useState('current');
     // Referensi Poli & Dokter (untuk menampilkan nama pada KD Poli/Dokter)
     const [poliOptions, setPoliOptions] = useState([]);
     const [dokterOptions, setDokterOptions] = useState([]);
@@ -580,9 +582,26 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
     };
 
     const [selectedTemplate, setSelectedTemplate] = useState('');
+    const stripTTV = (text) => {
+        if (!text) return '';
+        let s = String(text);
+        const pFull = /TD\s*\d{2,3}\/\d{2,3}\s*(?:mmHg)?;\s*(?:Nadi|N)\s*\d+(?:\s*x\/menit)?(?:\s*\w+)?;\s*RR\s*\d+(?:\s*x\/menit)?;\s*Suhu\s*\d+(?:\.\d+)?\s*°C;\s*SpO2\s*\d+\s*%\.?/gi;
+        const pShort = /Suhu\s*\d+(?:\.\d+)?\s*°C;\s*SpO2\s*\d+\s*%\.?/gi;
+        const pTD = /TD\s*\d{2,3}\/\d{2,3}\s*(?:mmHg)?;?/gi;
+        const pN = /(?:Nadi|N)\s*\d+\s*(?:x\/menit)?(?:\s*\w+)?;?/gi;
+        const pRR = /RR\s*\d+\s*(?:x\/menit)?;?/gi;
+        const pSuhu = /Suhu\s*\d+(?:\.\d+)?\s*°C;?/gi;
+        const pSpO2 = /SpO2\s*\d+\s*%\.?/gi;
+        s = s.replace(pFull, '').replace(pShort, '');
+        s = s.replace(pTD, '').replace(pN, '').replace(pRR, '').replace(pSuhu, '').replace(pSpO2, '');
+        s = s.replace(/;\s*;\s*/g, '; ').replace(/,\s*;/g, ';').replace(/;\s*\./g, '.');
+        s = s.replace(/[ \t]{2,}/g, ' ').trim();
+        return s;
+    };
     const applyTemplate = (key) => {
         const tpl = key ? templatesMap[key] : null;
         if (!tpl) return;
+        const cleanedPemeriksaan = stripTTV(tpl.pemeriksaan || '');
         setFormData((prev) => ({
             ...prev,
             // Keep tgl_perawatan, jam_rawat, kesadaran, nip as-is
@@ -594,7 +613,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
             gcs: tpl.gcs || prev.gcs || '',
             lingkar_perut: tpl.lingkar_perut || prev.lingkar_perut || '',
             keluhan: tpl.keluhan || '',
-            pemeriksaan: tpl.pemeriksaan || '',
+            pemeriksaan: cleanedPemeriksaan || '',
             penilaian: tpl.penilaian || '',
             rtl: tpl.rtl || '',
             instruksi: tpl.instruksi || '',
@@ -602,6 +621,46 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
             alergi: tpl.alergi || prev.alergi || '',
         }));
     };
+
+    useEffect(() => {
+        try {
+            const q = sessionStorage.getItem('cpptSoap_pegawaiQuery');
+            if (q) setPegawaiQuery(q);
+            const nip = sessionStorage.getItem('cpptSoap_nip');
+            if (nip) setFormData((prev) => ({ ...prev, nip }));
+        } catch (_) {}
+    }, []);
+
+    useEffect(() => {
+        try {
+            sessionStorage.setItem('cpptSoap_pegawaiQuery', pegawaiQuery || '');
+        } catch (_) {}
+    }, [pegawaiQuery]);
+
+    useEffect(() => {
+        try {
+            sessionStorage.setItem('cpptSoap_nip', formData.nip || '');
+        } catch (_) {}
+    }, [formData.nip]);
+
+    useEffect(() => {
+        if (appendToPlanning && Array.isArray(appendToPlanning) && appendToPlanning.length > 0) {
+            const items = appendToPlanning.map((it) => {
+                const name = String(it.name ?? '').trim();
+                const qty = it.qty ?? '';
+                const instruction = String(it.instruction ?? '').trim();
+                return ` - ${name}, ${qty}, ${instruction}`;
+            });
+            const block = `RESEP:\n${items.join('\n')}`;
+            setFormData((prev) => ({
+                ...prev,
+                rtl: prev.rtl ? `${prev.rtl}\n${block}` : block,
+            }));
+            if (typeof onPlanningAppended === 'function') {
+                try { onPlanningAppended(); } catch (_) {}
+            }
+        }
+    }, [appendToPlanning]);
     const clearTemplateFields = () => {
         setFormData((prev) => ({
             ...prev,
@@ -1221,7 +1280,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
         if (!noRawat) return;
         setLoadingList(true);
         try {
-            const url = route('rawat-jalan.pemeriksaan-ralan', { no_rawat: noRawat, t: token });
+            const url = route('rawat-jalan.pemeriksaan-ralan', { no_rawat: noRawat });
             const res = await fetch(url);
             const json = await res.json();
             setList(json.data || []);
@@ -1232,10 +1291,54 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
         }
     };
 
+    const fetchAllByNoRm = async () => {
+        if (!noRkmMedis) return;
+        setLoadingList(true);
+        try {
+            const base = route('rawat-jalan.riwayat');
+            const res = await fetch(`${base}?no_rkm_medis=${encodeURIComponent(noRkmMedis)}`, { headers: { 'Accept': 'application/json' } });
+            const json = await res.json();
+            const regs = (Array.isArray(json.data) ? json.data : []).filter((r) => String(r?.stts || '').toLowerCase() !== 'batal');
+            const promises = regs
+                .map((r) => r?.no_rawat)
+                .filter(Boolean)
+                .map((nr) => {
+                    const url = route('rawat-jalan.pemeriksaan-ralan', { no_rawat: nr });
+                    return fetch(url, { headers: { 'Accept': 'application/json' } })
+                        .then((x) => x.json())
+                        .then((j) => (Array.isArray(j.data) ? j.data : []))
+                        .catch(() => []);
+                });
+            const results = await Promise.all(promises);
+            const allRows = results.flat();
+            allRows.sort((a, b) => {
+                const ta = a?.tgl_perawatan || '';
+                const tb = b?.tgl_perawatan || '';
+                if (ta === tb) {
+                    const ja = String(a?.jam_rawat || '');
+                    const jb = String(b?.jam_rawat || '');
+                    return jb.localeCompare(ja);
+                }
+                const da = new Date(ta);
+                const db = new Date(tb);
+                return db - da;
+            });
+            setList(allRows);
+        } catch (e) {
+            console.error('Gagal memuat riwayat pemeriksaan pasien', e);
+        } finally {
+            setLoadingList(false);
+        }
+    };
+
     useEffect(() => {
-        fetchList();
+        if (viewMode === 'current') {
+            fetchList();
+        } else {
+            fetchAllByNoRm();
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [noRawat]);
+    }, [noRawat, noRkmMedis, viewMode]);
 
     // Cek status pendaftaran PCare dari tabel pcare_pendaftaran
     useEffect(() => {
@@ -2748,7 +2851,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                     </div>
                 </div>
             )}
-            <div className="px-4 md:px-6 pb-4 md:pb-6">
+            <div className="relative z-20 -mx-4 sm:-mx-6 lg:-mx-8 pb-4 md:pb-6 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
                 {(message || error) && (
                     <div className={`mb-4 text-sm px-4 py-3 rounded-lg border flex items-start ${error ? 'bg-red-50 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800' : 'bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800'}`}>
                         <svg className={`w-5 h-5 mr-2 mt-0.5 flex-shrink-0 ${error ? 'text-red-500' : 'text-green-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2769,9 +2872,36 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                             </svg>
                             Riwayat Pemeriksaan
                         </h4>
-                        <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                            {list.length} record
-                        </span>
+                        <div className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setViewMode('current')}
+                                aria-pressed={viewMode === 'current'}
+                                className={`text-sm px-3 py-1 rounded ${viewMode === 'current'
+                                    ? 'bg-indigo-600 text-white'
+                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                }`}
+                                title="Tampilkan pemeriksaan untuk kunjungan ini"
+                            >
+                                Kunjungan ini
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setViewMode('all')}
+                                disabled={!noRkmMedis}
+                                aria-pressed={viewMode === 'all'}
+                                className={`text-sm px-3 py-1 rounded ${viewMode === 'all'
+                                    ? 'bg-indigo-600 text-white'
+                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                } ${!noRkmMedis ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                title="Tampilkan semua pemeriksaan berdasarkan no RM"
+                            >
+                                Semua record
+                            </button>
+                            <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                                {list.length} record
+                            </span>
+                        </div>
                     </div>
                     {loadingList ? (
                         <div className="flex items-center justify-center py-8">
@@ -2792,35 +2922,52 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                     ) : (
                         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden w-full">
                             <div className="overflow-x-auto w-full max-w-full">
-                                <table className="w-full text-sm table-auto">
+                                <table className="w-full text-sm table-fixed">
                                     <thead className="bg-gray-50 dark:bg-gray-700/50">
                                         <tr className="text-left text-gray-600 dark:text-gray-300">
-                                            <th className="px-4 py-3 font-medium">Tanggal</th>
-                                            <th className="px-4 py-3 font-medium">Jam</th>
-                                            <th className="px-4 py-3 font-medium">TTV</th>
-                                            <th className="px-4 py-3 font-medium">Kesadaran</th>
-                                            <th className="px-4 py-3 font-medium">Keluhan</th>
-                                            <th className="px-4 py-3 font-medium">Pemeriksaan</th>
-                                            <th className="px-4 py-3 font-medium">Penilaian</th>
-                                            <th className="px-4 py-3 font-medium text-center">Aksi</th>
+                                            <th className="px-4 py-3 font-medium w-28">Tanggal</th>
+                                            <th className="px-4 py-3 font-medium w-20">Jam</th>
+                                            {viewMode === 'all' && (
+                                                <th className="px-4 py-3 font-medium w-36">No. Rawat</th>
+                                            )}
+                                            <th className="px-4 py-3 font-medium w-36">TTV</th>
+                                            <th className="px-4 py-3 font-medium w-64">Keluhan</th>
+                                            <th className="px-4 py-3 font-medium w-64">Pemeriksaan</th>
+                                            <th className="px-4 py-3 font-medium w-48">Penilaian</th>
+                                            <th className="px-4 py-3 font-medium text-center w-28">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                                         {list.map((row, idx) => (
                                             <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                                                <td className="px-4 py-3 text-gray-900 dark:text-white font-medium">
+                                                <td className="px-4 py-3 text-gray-900 dark:text-white font-medium w-28 whitespace-nowrap">
                                                     {(() => {
-                                                        const tz = getAppTimeZone();
-                                                        return new Date(row.tgl_perawatan).toLocaleDateString('id-ID', {
-                                                            timeZone: tz,
-                                                            day: '2-digit',
-                                                            month: 'short',
-                                                            year: 'numeric'
-                                                        });
+                                                        const v = row.tgl_perawatan;
+                                                        if (!v) return '-';
+                                                        try {
+                                                            const tz = getAppTimeZone();
+                                                            const d = new Date(v);
+                                                            if (isNaN(d.getTime())) return '-';
+                                                            return d.toLocaleDateString('id-ID', {
+                                                                timeZone: tz,
+                                                                day: '2-digit',
+                                                                month: 'short',
+                                                                year: 'numeric'
+                                                            });
+                                                        } catch (_) {
+                                                            return '-';
+                                                        }
                                                     })()}
                                                 </td>
-                                                <td className="px-4 py-3 text-gray-900 dark:text-white font-mono">{String(row.jam_rawat).substring(0,5)}</td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                                                <td className="px-4 py-3 text-gray-900 dark:text-white font-mono w-20 whitespace-nowrap">{row.jam_rawat ? String(row.jam_rawat).substring(0,5) : '-'}</td>
+                                                {viewMode === 'all' && (
+                                                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300 w-36">
+                                                        <div className="truncate whitespace-nowrap" title={row.no_rawat || ''}>
+                                                            {row.no_rawat || '-'}
+                                                        </div>
+                                                    </td>
+                                                )}
+                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 w-36">
                                                     <div className="space-y-1 text-xs">
                                                         <div className="flex justify-between">
                                                             <span className="text-gray-500">Suhu:</span>
@@ -2840,27 +2987,22 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3">
-                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                                                        {row.kesadaran}
-                                                    </span>
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 max-w-xs">
-                                                    <div className="truncate" title={row.keluhan || ''}>
+                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top w-64">
+                                                    <div className="whitespace-normal break-words">
                                                         {row.keluhan || <span className="text-gray-400 italic">Tidak ada keluhan</span>}
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 max-w-xs">
-                                                    <div className="truncate" title={row.pemeriksaan || ''}>
+                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top w-64">
+                                                    <div className="whitespace-normal break-words">
                                                         {row.pemeriksaan || <span className="text-gray-400 italic">Belum diperiksa</span>}
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 max-w-xs">
-                                                    <div className="truncate" title={row.penilaian || ''}>
+                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top w-48">
+                                                    <div className="whitespace-normal break-words">
                                                         {row.penilaian || <span className="text-gray-400 italic">Belum dinilai</span>}
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3">
+                                                <td className="px-4 py-3 w-28">
                                                     <div className="flex items-center justify-center space-x-2">
                                                         <button
                                                             type="button"
@@ -2957,7 +3099,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '' }) 
                             </div>
                         </div>
                     )}
-                </div>
+                </>
             </div>
         </>
     );

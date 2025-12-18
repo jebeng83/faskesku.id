@@ -53,6 +53,23 @@ const currency = new Intl.NumberFormat("id-ID", {
     minimumFractionDigits: 0,
 });
 
+const formatShortDateId = (date) => {
+    if (!date) return "-";
+    try {
+        const tz = getAppTimeZone();
+        const d = new Date(date);
+        if (isNaN(d.getTime())) return "-";
+        return d.toLocaleDateString("id-ID", {
+            timeZone: tz,
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+        });
+    } catch {
+        return "-";
+    }
+};
+
 function Field({ label, children, icon: Icon }) {
     return (
         <div className="space-y-2">
@@ -740,8 +757,15 @@ export default function KasirRalanPage() {
                                                 </td>
                                                 <td className="px-4 py-3 font-medium">
                                                     <div className="flex flex-col">
-                                                        <span className="font-mono text-xs font-bold text-gray-900 dark:text-gray-100">
+                                                        <span className="font-mono text-xs text-gray-900 dark:text-gray-100">
+                                                            {formatShortDateId(r?.tgl_registrasi)}{" "}
+                                                            {String(r?.jam_reg || "").slice(0, 5)}
+                                                        </span>
+                                                        <span className="font-mono text-xs font-bold text-gray-900 dark:text-gray-100 mt-0.5">
                                                             {r?.no_rawat || "-"}
+                                                        </span>
+                                                        <span className="text-[11px] truncate text-gray-900 dark:text-white mt-0.5">
+                                                            {r?.dokter?.nm_dokter ? `dr. ${r.dokter.nm_dokter}` : "-"}
                                                         </span>
                                                         <span className="text-xs text-gray-600 dark:text-gray-400 font-normal mt-0.5">
                                                             {r?.no_reg || "-"}
