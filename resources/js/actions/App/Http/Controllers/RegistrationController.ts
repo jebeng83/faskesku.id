@@ -196,7 +196,7 @@ registerPatient.post = (args: { patient: string | { no_rkm_medis: string } } | [
 
 /**
 * @see \App\Http\Controllers\RegistrationController::checkPatientPoliStatus
-* @see app/Http/Controllers/RegistrationController.php:221
+* @see app/Http/Controllers/RegistrationController.php:228
 * @route '/registration/{patient}/check-poli-status'
 */
 export const checkPatientPoliStatus = (args: { patient: string | { no_rkm_medis: string } } | [patient: string | { no_rkm_medis: string } ] | string | { no_rkm_medis: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -211,7 +211,7 @@ checkPatientPoliStatus.definition = {
 
 /**
 * @see \App\Http\Controllers\RegistrationController::checkPatientPoliStatus
-* @see app/Http/Controllers/RegistrationController.php:221
+* @see app/Http/Controllers/RegistrationController.php:228
 * @route '/registration/{patient}/check-poli-status'
 */
 checkPatientPoliStatus.url = (args: { patient: string | { no_rkm_medis: string } } | [patient: string | { no_rkm_medis: string } ] | string | { no_rkm_medis: string }, options?: RouteQueryOptions) => {
@@ -244,7 +244,7 @@ checkPatientPoliStatus.url = (args: { patient: string | { no_rkm_medis: string }
 
 /**
 * @see \App\Http\Controllers\RegistrationController::checkPatientPoliStatus
-* @see app/Http/Controllers/RegistrationController.php:221
+* @see app/Http/Controllers/RegistrationController.php:228
 * @route '/registration/{patient}/check-poli-status'
 */
 checkPatientPoliStatus.get = (args: { patient: string | { no_rkm_medis: string } } | [patient: string | { no_rkm_medis: string } ] | string | { no_rkm_medis: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -254,7 +254,7 @@ checkPatientPoliStatus.get = (args: { patient: string | { no_rkm_medis: string }
 
 /**
 * @see \App\Http\Controllers\RegistrationController::checkPatientPoliStatus
-* @see app/Http/Controllers/RegistrationController.php:221
+* @see app/Http/Controllers/RegistrationController.php:228
 * @route '/registration/{patient}/check-poli-status'
 */
 checkPatientPoliStatus.head = (args: { patient: string | { no_rkm_medis: string } } | [patient: string | { no_rkm_medis: string } ] | string | { no_rkm_medis: string }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -264,7 +264,7 @@ checkPatientPoliStatus.head = (args: { patient: string | { no_rkm_medis: string 
 
 /**
 * @see \App\Http\Controllers\RegistrationController::getRegistrations
-* @see app/Http/Controllers/RegistrationController.php:269
+* @see app/Http/Controllers/RegistrationController.php:276
 * @route '/registration/get-registrations'
 */
 export const getRegistrations = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -279,7 +279,7 @@ getRegistrations.definition = {
 
 /**
 * @see \App\Http\Controllers\RegistrationController::getRegistrations
-* @see app/Http/Controllers/RegistrationController.php:269
+* @see app/Http/Controllers/RegistrationController.php:276
 * @route '/registration/get-registrations'
 */
 getRegistrations.url = (options?: RouteQueryOptions) => {
@@ -288,7 +288,7 @@ getRegistrations.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RegistrationController::getRegistrations
-* @see app/Http/Controllers/RegistrationController.php:269
+* @see app/Http/Controllers/RegistrationController.php:276
 * @route '/registration/get-registrations'
 */
 getRegistrations.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -298,7 +298,7 @@ getRegistrations.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => 
 
 /**
 * @see \App\Http\Controllers\RegistrationController::getRegistrations
-* @see app/Http/Controllers/RegistrationController.php:269
+* @see app/Http/Controllers/RegistrationController.php:276
 * @route '/registration/get-registrations'
 */
 getRegistrations.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -308,7 +308,7 @@ getRegistrations.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =
 
 /**
 * @see \App\Http\Controllers\RegistrationController::poliMonthlyStats
-* @see app/Http/Controllers/RegistrationController.php:419
+* @see app/Http/Controllers/RegistrationController.php:426
 * @route '/registration/poli-monthly-stats'
 */
 export const poliMonthlyStats = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -323,7 +323,7 @@ poliMonthlyStats.definition = {
 
 /**
 * @see \App\Http\Controllers\RegistrationController::poliMonthlyStats
-* @see app/Http/Controllers/RegistrationController.php:419
+* @see app/Http/Controllers/RegistrationController.php:426
 * @route '/registration/poli-monthly-stats'
 */
 poliMonthlyStats.url = (options?: RouteQueryOptions) => {
@@ -332,7 +332,7 @@ poliMonthlyStats.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RegistrationController::poliMonthlyStats
-* @see app/Http/Controllers/RegistrationController.php:419
+* @see app/Http/Controllers/RegistrationController.php:426
 * @route '/registration/poli-monthly-stats'
 */
 poliMonthlyStats.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -342,7 +342,7 @@ poliMonthlyStats.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => 
 
 /**
 * @see \App\Http\Controllers\RegistrationController::poliMonthlyStats
-* @see app/Http/Controllers/RegistrationController.php:419
+* @see app/Http/Controllers/RegistrationController.php:426
 * @route '/registration/poli-monthly-stats'
 */
 poliMonthlyStats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -352,7 +352,7 @@ poliMonthlyStats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =
 
 /**
 * @see \App\Http\Controllers\RegistrationController::cancelRegistration
-* @see app/Http/Controllers/RegistrationController.php:373
+* @see app/Http/Controllers/RegistrationController.php:380
 * @route '/registration/cancel'
 */
 export const cancelRegistration = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -367,7 +367,7 @@ cancelRegistration.definition = {
 
 /**
 * @see \App\Http\Controllers\RegistrationController::cancelRegistration
-* @see app/Http/Controllers/RegistrationController.php:373
+* @see app/Http/Controllers/RegistrationController.php:380
 * @route '/registration/cancel'
 */
 cancelRegistration.url = (options?: RouteQueryOptions) => {
@@ -376,7 +376,7 @@ cancelRegistration.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RegistrationController::cancelRegistration
-* @see app/Http/Controllers/RegistrationController.php:373
+* @see app/Http/Controllers/RegistrationController.php:380
 * @route '/registration/cancel'
 */
 cancelRegistration.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -386,7 +386,7 @@ cancelRegistration.post = (options?: RouteQueryOptions): RouteDefinition<'post'>
 
 /**
 * @see \App\Http\Controllers\RegistrationController::print
-* @see app/Http/Controllers/RegistrationController.php:487
+* @see app/Http/Controllers/RegistrationController.php:494
 * @route '/registration/{no_rawat}/print'
 */
 export const print = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -401,7 +401,7 @@ print.definition = {
 
 /**
 * @see \App\Http\Controllers\RegistrationController::print
-* @see app/Http/Controllers/RegistrationController.php:487
+* @see app/Http/Controllers/RegistrationController.php:494
 * @route '/registration/{no_rawat}/print'
 */
 print.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -428,7 +428,7 @@ print.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] 
 
 /**
 * @see \App\Http\Controllers\RegistrationController::print
-* @see app/Http/Controllers/RegistrationController.php:487
+* @see app/Http/Controllers/RegistrationController.php:494
 * @route '/registration/{no_rawat}/print'
 */
 print.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -438,7 +438,7 @@ print.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] 
 
 /**
 * @see \App\Http\Controllers\RegistrationController::print
-* @see app/Http/Controllers/RegistrationController.php:487
+* @see app/Http/Controllers/RegistrationController.php:494
 * @route '/registration/{no_rawat}/print'
 */
 print.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

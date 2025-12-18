@@ -16,6 +16,7 @@ import axios from "axios";
 import PatientCreateModal from "@/Components/PatientCreateModal";
 import PatientEditModal from "@/Components/PatientEditModal";
 import PenjabQuickCreateModal from "@/Components/PenjabQuickCreateModal";
+import { todayDateString, nowDateTimeString } from "@/tools/datetime";
 
 export default function Registration({
     auth,
@@ -71,6 +72,8 @@ export default function Registration({
         p_jawab: "",
         almt_pj: "",
         hubunganpj: "DIRI SENDIRI",
+        tgl_registrasi: todayDateString(),
+        jam_reg: nowDateTimeString().split(" ")[1].substring(0, 5),
     });
 
     const [poliStatus, setPoliStatus] = useState({
@@ -442,9 +445,13 @@ export default function Registration({
             try { console.debug("RegisterPatient POST URL:", url); } catch (_) {}
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+            const payload = { ...formData };
+            if (typeof payload.jam_reg === "string" && /^\d{2}:\d{2}$/.test(payload.jam_reg)) {
+                payload.jam_reg = `${payload.jam_reg}:00`;
+            }
             const response = await axios.post(
                 url,
-                formData,
+                payload,
                 {
                     headers: {
                         'X-CSRF-TOKEN': csrfToken,
@@ -588,6 +595,8 @@ export default function Registration({
             p_jawab: "",
             almt_pj: "",
             hubunganpj: "DIRI SENDIRI",
+            tgl_registrasi: todayDateString(),
+            jam_reg: nowDateTimeString().split(" ")[1].substring(0, 5),
         });
         setPoliStatus({
             status_poli: "",
@@ -1416,22 +1425,44 @@ export default function Registration({
                                         {/* Form Registrasi */}
                                         <motion.form
                                             onSubmit={handleSubmitRegister}
-                                            className="space-y-3"
+                                            className="space-y-2"
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.3 }}
                                         >
-                                            {/* Row 1: 2 Columns (Dokter, Poli) */}
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                {/* Dokter */}
-                                                <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: 0.2 }}>
-                                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Dokter *</label>
+                                            {/* Row: 4 Columns (Tanggal, Jam, Dokter, Poli) */}
+                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+                                                <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: 0.1 }}>
+                                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-0.5">Tanggal *</label>
+                                                    <input
+                                                        type="date"
+                                                        name="tgl_registrasi"
+                                                        value={formData.tgl_registrasi}
+                                                        onChange={handleFormChange}
+                                                        required
+                                                        className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                                    />
+                                                </motion.div>
+                                                <motion.div initial={{ opacity: 0, x: -5 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: 0.15 }}>
+                                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-0.5">Jam *</label>
+                                                    <input
+                                                        type="time"
+                                                        name="jam_reg"
+                                                        value={formData.jam_reg}
+                                                        onChange={handleFormChange}
+                                                        required
+                                                        step="60"
+                                                        className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                                    />
+                                                </motion.div>
+                                                <motion.div initial={{ opacity: 0, x: 5 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: 0.2 }}>
+                                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-0.5">Dokter *</label>
                                                     <select
                                                         name="kd_dokter"
                                                         value={formData.kd_dokter}
                                                         onChange={handleFormChange}
                                                         required
-                                                        className="w-full px-2.5 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                                        className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                     >
                                                         <option value="">Pilih Dokter</option>
                                                         {dokters?.map((dokter) => (
@@ -1441,16 +1472,14 @@ export default function Registration({
                                                         ))}
                                                     </select>
                                                 </motion.div>
-
-                                                {/* Poliklinik */}
                                                 <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: 0.25 }}>
-                                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Poliklinik *</label>
+                                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-0.5">Poliklinik *</label>
                                                     <select
                                                         name="kd_poli"
                                                         value={formData.kd_poli}
                                                         onChange={handleFormChange}
                                                         required
-                                                        className="w-full px-2.5 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                                        className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                     >
                                                         <option value="">Pilih Poliklinik</option>
                                                         {polikliniks?.map((poli) => (
@@ -1465,7 +1494,7 @@ export default function Registration({
                                             {/* Status Poli dan Biaya Registrasi - Compact Inline */}
                                             {formData.kd_poli && (
                                                 <motion.div
-                                                    className="flex flex-wrap items-center gap-x-6 gap-y-2 px-3 py-2 bg-blue-50/50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800/50"
+                                                    className="flex flex-wrap items-center gap-x-4 gap-y-1 px-2 py-1 bg-blue-50/50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800/50"
                                                     initial={{ opacity: 0, height: 0 }}
                                                     animate={{ opacity: 1, height: 'auto' }}
                                                     transition={{ duration: 0.2 }}
@@ -1504,16 +1533,16 @@ export default function Registration({
                                             )}
 
                                             {/* Row 2: 3 Columns (Hubungan, Nama PJ, Cara Bayar) */}
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                                                 {/* Hubungan Penanggung Jawab */}
                                                 <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: 0.35 }}>
-                                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Hubungan *</label>
+                                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-0.5">Hubungan *</label>
                                                     <select
                                                         name="hubunganpj"
                                                         value={formData.hubunganpj}
                                                         onChange={handleFormChange}
                                                         required
-                                                        className="w-full px-2.5 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                                        className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                     >
                                                         <option value="DIRI SENDIRI">Diri Sendiri</option>
                                                         <option value="AYAH">Ayah</option>
@@ -1528,27 +1557,27 @@ export default function Registration({
 
                                                 {/* Nama Penanggung Jawab */}
                                                 <div>
-                                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Penanggung Jawab *</label>
+                                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-0.5">Nama Penanggung Jawab *</label>
                                                     <input
                                                         type="text"
                                                         name="p_jawab"
                                                         value={formData.p_jawab}
                                                         onChange={handleFormChange}
                                                         required
-                                                        className="w-full px-2.5 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                                        className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                     />
                                                 </div>
 
                                                 {/* Cara Bayar */}
                                                 <div>
-                                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Cara Bayar *</label>
+                                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-0.5">Cara Bayar *</label>
                                                     <div className="flex items-center gap-2">
                                                         <select
                                                             name="kd_pj"
                                                             value={formData.kd_pj}
                                                             onChange={handleFormChange}
                                                             required
-                                                            className="flex-1 w-full px-2.5 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                                            className="flex-1 w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                         >
                                                             <option value="">Pilih Cara Bayar</option>
                                                             {penjabsList?.map((penjab) => (
@@ -1571,21 +1600,21 @@ export default function Registration({
 
                                             {/* Alamat Penanggung Jawab - Full Width */}
                                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, delay: 0.4 }}>
-                                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Alamat Penanggung Jawab *</label>
+                                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-0.5">Alamat Penanggung Jawab *</label>
                                                 <textarea
                                                     name="almt_pj"
                                                     value={formData.almt_pj}
                                                     onChange={handleFormChange}
                                                     required
-                                                    rows={2}
-                                                    className="w-full px-2.5 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200 resize-y"
+                                                    rows={1}
+                                                    className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200 resize-y"
                                                 />
                                             </motion.div>
 
                                             
 
                                             <motion.div
-                                                className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4"
+                                                className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-2"
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ duration: 0.2, delay: 0.1 }}

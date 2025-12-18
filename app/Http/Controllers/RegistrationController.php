@@ -77,6 +77,8 @@ class RegistrationController extends Controller
             'p_jawab' => 'required|string|max:100',
             'almt_pj' => 'required|string|max:200',
             'hubunganpj' => 'required|string|max:20',
+            'tgl_registrasi' => 'nullable|date',
+            'jam_reg' => 'nullable',
         ]);
 
         // Check if patient has ever registered in this polyclinic
@@ -108,11 +110,16 @@ class RegistrationController extends Controller
         $updatedAge = Patient::calculateAgeFromDate($patient->tgl_lahir);
         $patient->update(['umur' => $updatedAge]);
 
+        $tglInput = (string) $request->input('tgl_registrasi', '');
+        $jamInput = (string) $request->input('jam_reg', '');
+        $tglReg = $tglInput !== '' ? Carbon::parse($tglInput)->toDateString() : now()->toDateString();
+        $jamReg = $jamInput !== '' ? (preg_match('/^\d{2}:\d{2}$/', $jamInput) ? $jamInput.':00' : (preg_match('/^\d{2}:\d{2}:\d{2}$/', $jamInput) ? $jamInput : Carbon::parse($jamInput)->toTimeString())) : now()->toTimeString();
+
         $data = [
             'no_reg' => $noReg,
             'no_rawat' => $noRawat,
-            'tgl_registrasi' => now()->toDateString(),
-            'jam_reg' => now()->toTimeString(),
+            'tgl_registrasi' => $tglReg,
+            'jam_reg' => $jamReg,
             'kd_dokter' => $request->kd_dokter,
             'no_rkm_medis' => $patient->no_rkm_medis,
             'kd_poli' => $request->kd_poli,
