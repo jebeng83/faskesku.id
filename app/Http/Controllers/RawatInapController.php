@@ -121,7 +121,69 @@ class RawatInapController extends Controller
      */
     public function store(Request $request)
     {
-        // Implementation for storing rawat inap data
+        $validated = $request->validate([
+            'no_rawat' => 'required|string|max:17|exists:reg_periksa,no_rawat',
+            'tgl_masuk' => 'required|date',
+            'jam_masuk' => 'required|date_format:H:i',
+            'kd_kamar' => 'required|string|max:15|exists:kamar,kd_kamar',
+            'diagnosa_awal' => 'nullable|string|max:100',
+        ]);
+
+        $existingActive = DB::table('kamar_inap')
+            ->where('no_rawat', $validated['no_rawat'])
+            ->whereNull('tgl_keluar')
+            ->exists();
+
+        if ($existingActive) {
+            return back()
+                ->withErrors(['no_rawat' => 'Pasien ini sudah memiliki rawat inap aktif.'])
+                ->withInput();
+        }
+
+        $tarifKamar = DB::table('kamar')
+            ->where('kd_kamar', $validated['kd_kamar'])
+            ->value('trf_kamar');
+
+        $tarifKamar = $tarifKamar !== null ? (float) $tarifKamar : 0.0;
+
+        $jamMasuk = sprintf('%s:00', $validated['jam_masuk']);
+
+        try {
+            DB::transaction(function () use ($validated, $tarifKamar, $jamMasuk) {
+                DB::table('kamar_inap')->insert([
+                    'no_rawat' => $validated['no_rawat'],
+                    'kd_kamar' => $validated['kd_kamar'],
+                    'trf_kamar' => $tarifKamar,
+                    'diagnosa_awal' => $validated['diagnosa_awal'] ?? '-',
+                    'diagnosa_akhir' => null,
+                    'tgl_masuk' => $validated['tgl_masuk'],
+                    'jam_masuk' => $jamMasuk,
+                    'tgl_keluar' => null,
+                    'jam_keluar' => null,
+                    'lama' => 0,
+                    'ttl_biaya' => 0,
+                    'stts_pulang' => '-',
+                ]);
+
+                DB::table('reg_periksa')
+                    ->where('no_rawat', $validated['no_rawat'])
+                    ->update([
+                        'status_lanjut' => 'Ranap',
+                        'stts' => 'Dirawat',
+                    ]);
+            });
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Gagal menyimpan data kamar_inap', [
+                'no_rawat' => $validated['no_rawat'],
+                'kd_kamar' => $validated['kd_kamar'],
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()
+                ->withErrors(['error' => 'Gagal menyimpan data rawat inap.'])
+                ->withInput();
+        }
+
         return redirect()->route('rawat-inap.index')
             ->with('success', 'Data rawat inap berhasil ditambahkan.');
     }
