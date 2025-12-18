@@ -140,15 +140,98 @@ class LaboratoriumController extends Controller
 
     /**
      * Display the specified resource.
+     *
+     * Parameter utama:
+     * - path: {no_rawat} (contoh: 2025/08/13/000003)
+     * - optional query: ?tgl=YYYY-MM-DD&jam=HH:MM(:SS)
      */
-    public function show($noRawat)
+    public function show(Request $request, $noRawat)
     {
-        $periksaLab = PeriksaLab::with([
+        $decodedNoRawat = null;
+        $tglPeriksa = null;
+        $jam = null;
+
+        $token = $request->query('t');
+        if ($token) {
+            $padded = str_replace(['-', '_'], ['+', '/'], $token);
+            $paddingNeeded = 4 - (strlen($padded) % 4);
+            if ($paddingNeeded < 4) {
+                $padded .= str_repeat('=', $paddingNeeded);
+            }
+            $decoded = json_decode(base64_decode($padded), true);
+            if (is_array($decoded)) {
+                $decodedNoRawat = $decoded['no_rawat'] ?? null;
+                $tglPeriksa = $decoded['tgl'] ?? null;
+                $jam = $decoded['jam'] ?? null;
+            }
+        }
+
+        if (! $decodedNoRawat) {
+            $decodedNoRawat = urldecode($noRawat);
+        }
+
+        if (! $tglPeriksa) {
+            $tglPeriksa = $request->query('tgl');
+            if (! $tglPeriksa && preg_match('/^(\d{4})\/(\d{2})\/(\d{2})\//', $decodedNoRawat, $matches)) {
+                $tglPeriksa = $matches[1].'-'.$matches[2].'-'.$matches[3];
+            }
+        }
+
+        if ($jam === null) {
+            $jam = $request->query('jam');
+        }
+
+        $normalizedJam = null;
+        if ($jam) {
+            if (preg_match('/^\d{2}:\d{2}$/', $jam)) {
+                $normalizedJam = $jam.':00';
+            } elseif (preg_match('/^\d{2}:\d{2}:\d{2}$/', $jam)) {
+                $normalizedJam = $jam;
+            }
+        }
+
+        $periksaBaseQuery = PeriksaLab::with([
             'regPeriksa.patient',
             'jenisPerawatan',
             'petugas',
-            'detailPemeriksaan',
-        ])->findOrFail($noRawat);
+        ])->where('no_rawat', $decodedNoRawat);
+
+        if ($tglPeriksa) {
+            $periksaBaseQuery->whereDate('tgl_periksa', $tglPeriksa);
+        }
+
+        if ($normalizedJam) {
+            $periksaBaseQuery->whereTime('jam', $normalizedJam);
+        }
+
+        $periksaQueryForMain = clone $periksaBaseQuery;
+
+        $periksaLab = $periksaQueryForMain
+            ->orderBy('tgl_periksa', 'desc')
+            ->orderBy('jam', 'desc')
+            ->firstOrFail();
+
+        $periksaGroup = $periksaBaseQuery
+            ->orderBy('tgl_periksa', 'asc')
+            ->orderBy('jam', 'asc')
+            ->orderBy('kd_jenis_prw', 'asc')
+            ->get();
+
+        $periksaLab->load([
+            'detailPemeriksaan.template',
+            'detailPemeriksaan.jenisPerawatan',
+        ]);
+
+        $detailRowsByJenis = DetailPeriksaLab::with('template')
+            ->where('no_rawat', $decodedNoRawat)
+            ->get()
+            ->groupBy('kd_jenis_prw');
+
+        $periksaGroup->each(function ($item) use ($detailRowsByJenis) {
+            $kdJenisPrw = $item->kd_jenis_prw;
+            $details = $detailRowsByJenis->get($kdJenisPrw, collect());
+            $item->setRelation('detailPemeriksaan', $details);
+        });
 
         $riwayatLab = RiwayatLab::byPasien($periksaLab->regPeriksa->no_rkm_medis)
             ->with('jenisPerawatan')
@@ -158,6 +241,7 @@ class LaboratoriumController extends Controller
 
         return Inertia::render('Laboratorium/Show', [
             'periksaLab' => $periksaLab,
+            'periksaGroup' => $periksaGroup,
             'riwayatLab' => $riwayatLab,
         ]);
     }
