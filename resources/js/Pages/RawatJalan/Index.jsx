@@ -150,6 +150,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         kd_kamar: '',
         diagnosa_awal: '',
     });
+    const [isMasukRanapSubmitting, setIsMasukRanapSubmitting] = useState(false);
 
     const [alamatWidth, setAlamatWidth] = useState(300);
     const resizingRef = useRef(false);
@@ -274,6 +275,36 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
             ...prev,
             [field]: value,
         }));
+    };
+
+    const handleSimpanMasukRanap = () => {
+        if (!masukRanapData.no_rawat || !masukRanapData.tgl_masuk || !masukRanapData.jam_masuk || !masukRanapData.kd_kamar) {
+            alert('Lengkapi tanggal masuk, jam masuk, dan kamar.');
+            return;
+        }
+
+        setIsMasukRanapSubmitting(true);
+
+        router.post(
+            route('rawat-inap.store'),
+            {
+                no_rawat: masukRanapData.no_rawat,
+                tgl_masuk: masukRanapData.tgl_masuk,
+                jam_masuk: masukRanapData.jam_masuk,
+                kd_kamar: masukRanapData.kd_kamar,
+                diagnosa_awal: masukRanapData.diagnosa_awal,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setIsMasukRanapSubmitting(false);
+                    setIsMasukRanapOpen(false);
+                },
+                onError: () => {
+                    setIsMasukRanapSubmitting(false);
+                },
+            }
+        );
     };
 
     return (
@@ -742,9 +773,15 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                 </button>
                                 <button
                                     type="button"
-                                    className="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow-md transition-colors"
+                                    onClick={handleSimpanMasukRanap}
+                                    disabled={isMasukRanapSubmitting}
+                                    className={`w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-white shadow-sm transition-colors ${
+                                        isMasukRanapSubmitting
+                                            ? 'bg-blue-400 cursor-not-allowed'
+                                            : 'bg-blue-600 hover:bg-blue-700 hover:shadow-md'
+                                    }`}
                                 >
-                                    Simpan Masuk Ranap
+                                    {isMasukRanapSubmitting ? 'Menyimpan...' : 'Simpan Masuk Ranap'}
                                 </button>
                             </div>
                         </motion.div>
