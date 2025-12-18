@@ -22,7 +22,7 @@ export default function SidebarLaboratorium({
 
     // State tampilan
     const [openPemeriksaan, setOpenPemeriksaan] = useState(true);
-    const [openMaster, setOpenMaster] = useState(true);
+    const [openMaster, setOpenMaster] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isDark, setIsDark] = useState(false);
@@ -102,7 +102,7 @@ export default function SidebarLaboratorium({
         () => [
             {
                 label: "Dashboard",
-                href: route("dashboard"), // global dashboard sesuai permintaan
+                href: route("dashboard"),
                 icon: <Gauge className="w-4 h-4" />,
             },
             {
@@ -113,6 +113,11 @@ export default function SidebarLaboratorium({
                         label: "Permintaan Lab",
                         href: route("laboratorium.permintaan-lab.index"),
                         icon: <ClipboardList className="w-4 h-4" />,
+                    },
+                    {
+                        label: "Periksa Lab",
+                        href: route("laboratorium.index"),
+                        icon: <TestTube className="w-4 h-4" />,
                     },
                 ],
             },
