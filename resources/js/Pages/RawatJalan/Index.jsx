@@ -3,8 +3,10 @@ import { Head, Link, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { setRawatJalanFilters, clearRawatJalanFilters } from '@/tools/rawatJalanFilters';
 import SidebarRalan from '@/Layouts/SidebarRalan';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { todayDateString, getAppTimeZone } from '@/tools/datetime';
+import { DropdownItem } from '@/Components/DropdownMenu';
+import SearchableSelect from '@/Components/SearchableSelect';
 import {
   PlusIcon,
   FunnelIcon,
@@ -17,19 +19,21 @@ import {
   BanknotesIcon,
   ArrowPathIcon,
   EllipsisVerticalIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 
-// Simple Dropdown Component
-function SimpleDropdown({ children, trigger }) {
+function SimpleDropdown({ trigger, children }) {
     const [isOpen, setIsOpen] = useState(false);
     const [position, setPosition] = useState({ top: 0, left: 0 });
-    const dropdownRef = React.useRef(null);
+    const triggerRef = useRef(null);
+    const menuRef = useRef(null);
 
-    React.useEffect(() => {
+    useEffect(() => {
         function handleClickOutside(event) {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setIsOpen(false);
-            }
+            const inTrigger = triggerRef.current && triggerRef.current.contains(event.target);
+            const inMenu = menuRef.current && menuRef.current.contains(event.target);
+            if (inTrigger || inMenu) return;
+            setIsOpen(false);
         }
 
         function handleScroll() {
@@ -41,9 +45,7 @@ function SimpleDropdown({ children, trigger }) {
         }
 
         if (isOpen) {
-            setTimeout(() => {
-                document.addEventListener('mousedown', handleClickOutside);
-            }, 100);
+            document.addEventListener('mousedown', handleClickOutside);
             window.addEventListener('scroll', handleScroll, true);
             window.addEventListener('resize', handleResize);
         }
@@ -55,58 +57,52 @@ function SimpleDropdown({ children, trigger }) {
         };
     }, [isOpen]);
 
-    const handleToggle = () => {
-        if (!isOpen && dropdownRef.current) {
-            const rect = dropdownRef.current.getBoundingClientRect();
+    const toggleDropdown = () => {
+        if (!isOpen && triggerRef.current) {
+            const rect = triggerRef.current.getBoundingClientRect();
             const viewportWidth = window.innerWidth;
             const dropdownWidth = 224;
-            
+
             let left = rect.left + window.scrollX;
             if (left + dropdownWidth > viewportWidth) {
                 left = rect.right + window.scrollX - dropdownWidth;
             }
-            
-            setPosition({
-                top: rect.bottom + window.scrollY + 4,
-                left: left
-            });
+
+            const top = rect.bottom + window.scrollY + 4;
+
+            setPosition({ top, left });
         }
-        setIsOpen(!isOpen);
+        setIsOpen((prev) => !prev);
     };
 
     return (
-        <div className="relative inline-block text-left" ref={dropdownRef}>
-            <div onClick={handleToggle}>
+        <div className="relative inline-block text-left">
+            <div ref={triggerRef} onClick={toggleDropdown}>
                 {trigger}
             </div>
             {isOpen && (
-                <div className="fixed z-[9999] w-56 rounded-lg bg-white dark:bg-gray-800 shadow-xl border border-gray-200 dark:border-gray-600 animate-in slide-in-from-top-2 duration-200 overflow-hidden"
-                     style={{
-                         top: position.top,
-                         left: position.left
-                     }}>
+                <div
+                    className="fixed z-[9999] w-56 rounded-md bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-600 overflow-hidden"
+                    style={{ top: position.top, left: position.left }}
+                    ref={menuRef}
+                >
                     <div className="py-1">
-                        {children}
+                        {React.Children.map(children, (child) => {
+                            if (!React.isValidElement(child)) return child;
+                            const originalOnClick = child.props.onClick;
+                            return React.cloneElement(child, {
+                                onClick: (...args) => {
+                                    if (originalOnClick) {
+                                        originalOnClick(...args);
+                                    }
+                                    setIsOpen(false);
+                                },
+                            });
+                        })}
                     </div>
                 </div>
             )}
         </div>
-    );
-}
-
-function DropdownItem({ children, onClick, icon, variant = "default" }) {
-    return (
-        <button
-            onClick={onClick}
-            className="group flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150"
-        >
-            {icon && (
-                <span className="mr-3 w-4 h-4 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors">
-                    {icon}
-                </span>
-            )}
-            <span className="flex-1 text-left">{children}</span>
-        </button>
     );
 }
 
@@ -144,7 +140,17 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         filters?.kd_poli,
     ]);
 
-    // Column Resizing Logic
+    const [isMasukRanapOpen, setIsMasukRanapOpen] = useState(false);
+    const [masukRanapData, setMasukRanapData] = useState({
+        no_rawat: '',
+        no_rkm_medis: '',
+        nama_pasien: '',
+        tgl_masuk: todayDateString(),
+        jam_masuk: '',
+        kd_kamar: '',
+        diagnosa_awal: '',
+    });
+
     const [alamatWidth, setAlamatWidth] = useState(300);
     const resizingRef = useRef(false);
     const startXRef = useRef(0);
@@ -243,6 +249,33 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         router.get(route('rawat-jalan.surat-sakit', noRawAt));
     };
 
+    const openMasukRanap = (item) => {
+        const tglMasuk = item.tgl_registrasi || todayDateString();
+        const jamMasuk = (item.jam_reg || '').substring(0, 5) || '';
+
+        setMasukRanapData({
+            no_rawat: item.no_rawat || '',
+            no_rkm_medis: item.no_rkm_medis || '',
+            nama_pasien: item.patient?.nm_pasien || '',
+            tgl_masuk: tglMasuk,
+            jam_masuk: jamMasuk,
+            kd_kamar: '',
+            diagnosa_awal: '',
+        });
+        setIsMasukRanapOpen(true);
+    };
+
+    const closeMasukRanap = () => {
+        setIsMasukRanapOpen(false);
+    };
+
+    const updateMasukRanapField = (field, value) => {
+        setMasukRanapData((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
+    };
+
     return (
         <SidebarRalan>
             <Head title="Data Rawat Jalan" />
@@ -264,10 +297,8 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                     </div>
                 </motion.div>
 
-                {/* GitHub-style Simple Filter removed */}
-                
                 {/* Enhanced Data Table */}
-                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
                     <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                         <div className="flex flex-col gap-4">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white shrink-0">
@@ -430,14 +461,21 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                             <div className="flex items-center gap-2">
                                                 <SimpleDropdown
                                                     trigger={
-                                                        <button 
-                                                            className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-                                                            title="Menu Surat Keterangan"
+                                                        <button
+                                                            className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                                                            title="Menu Aksi Rawat Jalan"
+                                                            type="button"
                                                         >
                                                             <EllipsisVerticalIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                                                         </button>
                                                     }
                                                 >
+                                                    <DropdownItem
+                                                        onClick={() => openMasukRanap(item)}
+                                                        icon={<DocumentCheckIcon className="w-4 h-4" />}
+                                                    >
+                                                        Masuk Rawat Inap
+                                                    </DropdownItem>
                                                     <DropdownItem
                                                         onClick={() => handleSuratSehat(item.no_rawat)}
                                                         icon={<DocumentCheckIcon className="w-4 h-4" />}
@@ -582,9 +620,8 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                     )}
                 </div>
 
-                {/* Enhanced Empty State */}
                 {rawatJalan.data.length === 0 && (
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden"
@@ -610,6 +647,110 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                     </motion.div>
                 )}
             </div>
+
+            <AnimatePresence>
+                {isMasukRanapOpen && (
+                    <motion.div
+                        className="fixed inset-0 bg-black/20 backdrop-blur-md flex items-center justify-center z-[9999] p-4"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={closeMasukRanap}
+                    >
+                        <motion.div
+                            className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-lg max-h-[90vh] overflow-y-auto"
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            transition={{ duration: 0.25 }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                                <div>
+                                    <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                                        Masuk Rawat Inap
+                                    </h2>
+                                    <p className="mt-1 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                                        {masukRanapData.nama_pasien || '-'} • No. RM {masukRanapData.no_rkm_medis || '-'} • No. Rawat {masukRanapData.no_rawat || '-'}
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={closeMasukRanap}
+                                    className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
+                                >
+                                    <XMarkIcon className="w-5 h-5" />
+                                </button>
+                            </div>
+                            <div className="px-4 sm:px-6 py-4 space-y-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div className="space-y-1">
+                                        <div className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                            Tanggal Masuk
+                                        </div>
+                                        <input
+                                            type="date"
+                                            value={masukRanapData.tgl_masuk}
+                                            onChange={(e) => updateMasukRanapField('tgl_masuk', e.target.value)}
+                                            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <div className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                            Jam Masuk
+                                        </div>
+                                        <input
+                                            type="time"
+                                            value={masukRanapData.jam_masuk}
+                                            onChange={(e) => updateMasukRanapField('jam_masuk', e.target.value)}
+                                            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <div className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                        Kamar / Bed
+                                    </div>
+                                    <SearchableSelect
+                                        source="kamar"
+                                        value={masukRanapData.kd_kamar}
+                                        onChange={(val) => updateMasukRanapField('kd_kamar', val)}
+                                        placeholder="Pilih kamar atau bed"
+                                        className="w-full"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <div className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                        Diagnosa Awal
+                                    </div>
+                                    <textarea
+                                        rows={3}
+                                        value={masukRanapData.diagnosa_awal}
+                                        onChange={(e) => updateMasukRanapField('diagnosa_awal', e.target.value)}
+                                        className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500 resize-none"
+                                        placeholder="Tuliskan diagnosa awal pasien"
+                                    />
+                                </div>
+                            </div>
+                            <div className="px-4 sm:px-6 py-3 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row gap-2 sm:justify-end">
+                                <button
+                                    type="button"
+                                    onClick={closeMasukRanap}
+                                    className="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 rounded-lg text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="button"
+                                    className="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow-md transition-colors"
+                                >
+                                    Simpan Masuk Ranap
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </SidebarRalan>
     );
 }
