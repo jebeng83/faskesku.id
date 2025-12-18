@@ -2847,7 +2847,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                     </div>
                 </div>
             )}
-            <div className="px-4 md:px-6 pb-4 md:pb-6">
+            <div className="relative z-20 -mx-4 sm:-mx-6 lg:-mx-8 pb-4 md:pb-6 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
                 {(message || error) && (
                     <div className={`mb-4 text-sm px-4 py-3 rounded-lg border flex items-start ${error ? 'bg-red-50 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800' : 'bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800'}`}>
                         <svg className={`w-5 h-5 mr-2 mt-0.5 flex-shrink-0 ${error ? 'text-red-500' : 'text-green-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2917,7 +2917,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                         </div>
                     ) : (
                         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden w-full">
-                            <div className="overflow-x-auto overflow-y-auto max-h-[376px] w-full max-w-full">
+                            <div className="overflow-x-auto w-full max-w-full">
                                 <table className="w-full text-sm table-fixed">
                                     <thead className="bg-gray-50 dark:bg-gray-700/50">
                                         <tr className="text-left text-gray-600 dark:text-gray-300">
@@ -2983,18 +2983,18 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 w-64">
-                                                    <div className="truncate whitespace-nowrap" title={row.keluhan || ''}>
+                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top w-64">
+                                                    <div className="whitespace-normal break-words">
                                                         {row.keluhan || <span className="text-gray-400 italic">Tidak ada keluhan</span>}
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 w-64">
-                                                    <div className="truncate whitespace-nowrap" title={row.pemeriksaan || ''}>
+                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top w-64">
+                                                    <div className="whitespace-normal break-words">
                                                         {row.pemeriksaan || <span className="text-gray-400 italic">Belum diperiksa</span>}
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 w-48">
-                                                    <div className="truncate whitespace-nowrap" title={row.penilaian || ''}>
+                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top w-48">
+                                                    <div className="whitespace-normal break-words">
                                                         {row.penilaian || <span className="text-gray-400 italic">Belum dinilai</span>}
                                                     </div>
                                                 </td>
