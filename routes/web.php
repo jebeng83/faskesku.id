@@ -695,6 +695,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/stok-opname', function () {
             return Inertia::render('farmasi/StokOpname');
         })->name('stok-opname');
+        Route::get('/darurat-stok', function () {
+            return Inertia::render('farmasi/DaruratStok');
+        })->name('darurat-stok');
 
         // Farmasi - Data Opname (laporan/daftar hasil opname)
         Route::get('/data-opname', function () {

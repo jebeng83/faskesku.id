@@ -228,6 +228,7 @@ Route::get('/public/dokter', [DokterController::class, 'index'])->name('api.publ
 
     Route::get('/inventori/sisa-stok', [SisaStokController::class, 'index'])->name('api.inventori.sisa-stok');
     Route::get('/inventori/sirkulasi-barang', [SirkulasiObatController::class, 'index'])->name('api.inventori.sirkulasi-barang');
+    Route::get('/inventori/darurat-stok', [\App\Http\Controllers\Farmasi\DaruratStokController::class, 'index'])->name('api.inventori.darurat-stok');
 
     // DataBarang price update endpoints (used by Pembelian Obat page)
     Route::put('/databarang/update-harga/{kode_brng}', [DataBarangController::class, 'updateHarga'])
