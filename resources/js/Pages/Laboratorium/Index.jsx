@@ -10,6 +10,16 @@ import Alert from "@/Components/Alert";
 import Modal from "@/Components/Modal";
 import { Search, Plus, Eye, Trash2, Clock, ClipboardList, RefreshCw, Printer } from "lucide-react";
 
+const toBase64Url = (obj) => {
+    try {
+        const json = JSON.stringify(obj || {});
+        const base = btoa(json);
+        return base.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+    } catch (_) {
+        return "";
+    }
+};
+
 // Helper function untuk mendapatkan tanggal hari ini dalam format YYYY-MM-DD
 // Menggunakan timezone Asia/Jakarta (UTC+7)
 const getTodayDate = () => {
@@ -926,17 +936,23 @@ export default function Index({
 
     if (isPeriksaMode) {
         const periksaData = periksaLab?.data || [];
-        const seenPeriksa = new Set();
-        const periksaRows = periksaData.filter((item) => {
-            const date = item.tgl_periksa || "";
-            const time = item.jam || "";
-            const key = `${item.no_rawat}|${date}|${time}`;
-            if (seenPeriksa.has(key)) {
-                return false;
+
+        const groupedMap = new Map();
+        periksaData.forEach((item) => {
+            const rawTanggal =
+                typeof item.tgl_periksa === "string"
+                    ? item.tgl_periksa
+                    : "";
+            const dateKey = rawTanggal ? rawTanggal.substring(0, 10) : "";
+            const jamKey = item.jam || "";
+            const key = `${item.no_rawat}__${dateKey}__${jamKey}`;
+
+            if (!groupedMap.has(key)) {
+                groupedMap.set(key, item);
             }
-            seenPeriksa.add(key);
-            return true;
         });
+
+        const periksaRows = Array.from(groupedMap.values());
 
         const handlePeriksaSearch = () => {
             router.get(
@@ -1005,17 +1021,43 @@ export default function Index({
                 label: "Pasien",
                 render: (item) => (
                     <div>
-                        <Link
-                            href={route("laboratorium.show", {
-                                noRawat: item.no_rawat,
-                            })}
-                            className="font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                        >
-                            {item.reg_periksa?.patient?.nm_pasien || "-"}
-                        </Link>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                            {item.reg_periksa?.patient?.no_rkm_medis || "-"}
-                        </div>
+                        {(() => {
+                            const rawTanggal =
+                                typeof item.tgl_periksa === "string"
+                                    ? item.tgl_periksa
+                                    : "";
+                            const datePart = rawTanggal
+                                ? rawTanggal.substring(0, 10)
+                                : "";
+
+                            const token = toBase64Url({
+                                no_rawat: item.no_rawat,
+                                tgl: datePart || null,
+                                jam: item.jam || null,
+                            });
+
+                            const baseUrl = route("laboratorium.show", {
+                                noRawat: "t",
+                            });
+
+                            const finalUrl = token
+                                ? `${baseUrl}?t=${encodeURIComponent(token)}`
+                                : baseUrl;
+
+                            return (
+                                <>
+                                    <Link
+                                        href={finalUrl}
+                                        className="font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                    >
+                                        {item.reg_periksa?.patient?.nm_pasien || "-"}
+                                    </Link>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                        {item.reg_periksa?.patient?.no_rkm_medis || "-"}
+                                    </div>
+                                </>
+                            );
+                        })()}
                     </div>
                 ),
             },

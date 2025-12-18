@@ -100,14 +100,17 @@ class PeriksaLab extends Model
         return $query->whereBetween('tgl_periksa', [$startDate, $endDate]);
     }
 
-    // Scope untuk pencarian
-    public function scopeSearch($query, $search)
-    {
-        return $query->whereHas('patient', function ($patientQuery) use ($search) {
-            $patientQuery->where('pasien.nm_pasien', 'like', "%{$search}%")
-                ->orWhere('pasien.no_rkm_medis', 'like', "%{$search}%");
-        });
-    }
+	// Scope untuk pencarian
+	public function scopeSearch($query, $search)
+	{
+		return $query->where(function ($q) use ($search) {
+			$q->where('no_rawat', 'like', "%{$search}%")
+				->orWhereHas('patient', function ($patientQuery) use ($search) {
+					$patientQuery->where('pasien.nm_pasien', 'like', "%{$search}%")
+						->orWhere('pasien.no_rkm_medis', 'like', "%{$search}%");
+				});
+		});
+	}
 
     // Accessor untuk format tanggal
     public function getTglPeriksaFormattedAttribute()
