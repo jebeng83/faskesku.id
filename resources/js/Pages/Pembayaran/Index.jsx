@@ -52,6 +52,8 @@ export default function PembayaranIndex() {
     const [ranapData, setRanapData] = useState({ summary: [], rows: [] });
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
+    const [groupPage, setGroupPage] = useState(1);
+    const [groupsPerPage, setGroupsPerPage] = useState(10);
 
     const buildUrl = (path, params = {}) => {
         try {
@@ -137,6 +139,17 @@ export default function PembayaranIndex() {
         const id = setTimeout(() => setDebouncedSearch(search.trim()), 350);
         return () => clearTimeout(id);
     }, [search]);
+
+    React.useEffect(() => {
+        setGroupPage(1);
+    }, [debouncedSearch, activeTab, ralanData.groups]);
+
+    const groups = ralanData.groups || [];
+    const totalGroups = groups.length;
+    const totalGroupPages = Math.max(1, Math.ceil(totalGroups / groupsPerPage));
+    const startGroupIdx = Math.min((groupPage - 1) * groupsPerPage, totalGroups);
+    const endGroupIdx = Math.min(startGroupIdx + groupsPerPage, totalGroups);
+    const paginatedGroups = groups.slice(startGroupIdx, endGroupIdx);
 
     return (
         <AppLayout title="Pembayaran">
@@ -239,17 +252,54 @@ export default function PembayaranIndex() {
                                             : "Pembayaran rawat jalan terbaru."}
                                     </p>
                                 </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                                        Menampilkan <span className="font-mono">{totalGroups === 0 ? 0 : startGroupIdx + 1}</span>–<span className="font-mono">{endGroupIdx}</span> dari <span className="font-mono">{totalGroups}</span> tanggal
+                                    </div>
+                                    <select
+                                        value={groupsPerPage}
+                                        onChange={(e) => {
+                                            const v = Number(e.target.value) || 10;
+                                            setGroupsPerPage(v);
+                                            setGroupPage(1);
+                                        }}
+                                        className="rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2 py-1 text-xs"
+                                    >
+                                        <option value={5}>5</option>
+                                        <option value={10}>10</option>
+                                        <option value={20}>20</option>
+                                    </select>
+                                    <div className="inline-flex items-center">
+                                        <button
+                                            onClick={() => setGroupPage((p) => Math.max(1, p - 1))}
+                                            disabled={groupPage <= 1}
+                                            className={`px-2 py-1 rounded-l-md text-xs border ${groupPage <= 1 ? "text-gray-400 border-gray-200 dark:border-gray-700" : "text-gray-700 border-gray-200 dark:text-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"}`}
+                                        >
+                                            &larr;
+                                        </button>
+                                        <span className="px-2 py-1 text-xs border-t border-b border-gray-200 dark:border-gray-700 font-mono">
+                                            {groupPage}/{totalGroupPages}
+                                        </span>
+                                        <button
+                                            onClick={() => setGroupPage((p) => Math.min(totalGroupPages, p + 1))}
+                                            disabled={groupPage >= totalGroupPages}
+                                            className={`px-2 py-1 rounded-r-md text-xs border ${groupPage >= totalGroupPages ? "text-gray-400 border-gray-200 dark:border-gray-700" : "text-gray-700 border-gray-200 dark:text-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"}`}
+                                        >
+                                            &rarr;
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                            {/* Tabel ringkas per tanggal (maks 1-2 tanggal terbaru) */}
+                            {/* Tabel ringkas per tanggal */}
                             <div className="mt-2 space-y-6">
-                                {(ralanData.groups || []).slice(0, 2).map((group) => (
+                                {paginatedGroups.map((group) => (
                                     <div key={group.tanggal} className="rounded-xl border border-gray-100 dark:border-gray-800">
                                         <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
                                             <div className="text-sm">
                                                 <div className="font-semibold text-gray-900 dark:text-white">{group.display_tanggal}</div>
                                                 <div className="text-gray-500 dark:text-gray-400">{(group.items || []).length} pasien</div>
                                             </div>
-                        </div>
+                                        </div>
                                         <div className="overflow-x-auto">
                                             <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-800 text-sm">
                                                 <thead>
@@ -262,7 +312,7 @@ export default function PembayaranIndex() {
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                                                    {(group.items || []).slice(0, 10).map((row) => (
+                                                    {(group.items || []).map((row) => (
                                                         <tr key={row.no_rawat} className="hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors">
                                                             <td className="py-3 px-4">{row.jam_reg}</td>
                                                             <td className="py-3 px-4 font-semibold text-blue-600 dark:text-blue-400">
@@ -336,4 +386,3 @@ function Stat({ label, value }) {
         </div>
     );
 }
-

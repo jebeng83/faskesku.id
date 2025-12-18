@@ -97,9 +97,7 @@ class RegistrationController extends Controller
         $status_lanjut = 'Ralan';
         $status_bayar = 'Belum Bayar';
 
-        // Generate nomor registrasi dan rawat
-        $noReg = RegPeriksa::generateNoReg($request->kd_dokter, $request->kd_poli);
-        $noRawat = RegPeriksa::generateNoRawat();
+        
 
         // Hitung umur pasien untuk registrasi
         $tglLahir = Carbon::parse($patient->tgl_lahir);
@@ -114,6 +112,9 @@ class RegistrationController extends Controller
         $jamInput = (string) $request->input('jam_reg', '');
         $tglReg = $tglInput !== '' ? Carbon::parse($tglInput)->toDateString() : now()->toDateString();
         $jamReg = $jamInput !== '' ? (preg_match('/^\d{2}:\d{2}$/', $jamInput) ? $jamInput.':00' : (preg_match('/^\d{2}:\d{2}:\d{2}$/', $jamInput) ? $jamInput : Carbon::parse($jamInput)->toTimeString())) : now()->toTimeString();
+
+        $noReg = RegPeriksa::generateNoReg($request->kd_dokter, $request->kd_poli, $tglReg);
+        $noRawat = RegPeriksa::generateNoRawat($tglReg);
 
         $data = [
             'no_reg' => $noReg,
