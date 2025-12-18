@@ -6,6 +6,7 @@ use App\Models\DetailPeriksaLab;
 use App\Models\Employee;
 use App\Models\JnsPerawatanLab;
 use App\Models\PeriksaLab;
+use App\Models\PermintaanLab;
 use App\Models\RegPeriksa;
 use App\Models\RiwayatLab;
 use App\Models\TemplateLaboratorium;
@@ -239,10 +240,16 @@ class LaboratoriumController extends Controller
             ->limit(5)
             ->get();
 
+        $permintaanNoorder = PermintaanLab::where('no_rawat', $periksaLab->no_rawat)
+            ->orderBy('tgl_permintaan', 'desc')
+            ->orderBy('jam_permintaan', 'desc')
+            ->value('noorder');
+
         return Inertia::render('Laboratorium/Show', [
             'periksaLab' => $periksaLab,
             'periksaGroup' => $periksaGroup,
             'riwayatLab' => $riwayatLab,
+            'permintaanNoorder' => $permintaanNoorder,
         ]);
     }
 

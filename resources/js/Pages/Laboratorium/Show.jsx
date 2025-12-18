@@ -54,7 +54,8 @@ export default function Show({
 	usiaTahun, 
 	mode = 'periksa-lab',
 	flash,
-	errors: pageErrors 
+	errors: pageErrors,
+	permintaanNoorder,
 }) {
 	const [showAlert, setShowAlert] = useState(false);
 	const [alertConfig, setAlertConfig] = useState({
@@ -903,16 +904,28 @@ export default function Show({
 										Input Hasil
 									</Link>
 								)}
-								{!isPermintaanMode && periksaLab?.status === "Selesai" && (
-									<motion.button
-										onClick={handlePrint}
-										whileHover={{ scale: 1.02 }}
-										whileTap={{ scale: 0.98 }}
-										className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 hover:from-green-700 hover:via-emerald-700 hover:to-teal-700 shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30 transition-all duration-300 text-white font-semibold rounded-lg"
-									>
-										<Printer className="w-4 h-4" />
-										Cetak
-									</motion.button>
+								{!isPermintaanMode && (
+									permintaanNoorder ? (
+										<a
+											href={route("laboratorium.permintaan-lab.preview", permintaanNoorder)}
+											target="_blank"
+											rel="noopener noreferrer"
+											className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 hover:from-green-700 hover:via-emerald-700 hover:to-teal-700 shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30 transition-all duration-300 text-white font-semibold rounded-lg"
+										>
+											<Printer className="w-4 h-4" />
+											Cetak
+										</a>
+									) : (
+										<motion.button
+											onClick={handlePrint}
+											whileHover={{ scale: 1.02 }}
+											whileTap={{ scale: 0.98 }}
+											className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 hover:from-green-700 hover:via-emerald-700 hover:to-teal-700 shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30 transition-all duration-300 text-white font-semibold rounded-lg"
+										>
+											<Printer className="w-4 h-4" />
+											Cetak
+										</motion.button>
+									)
 								)}
 							</motion.div>
 						</div>
