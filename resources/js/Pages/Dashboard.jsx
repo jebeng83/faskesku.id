@@ -81,7 +81,7 @@ const quickLinksConfig = [
     {
         title: "Laboratorium",
         description: "Kelola pemeriksaan laboratorium & data hasil",
-        href: route("laboratorium.index"),
+        href: route("laboratorium.permintaan-lab.index"),
         requiredPermission: "group.laboratorium.access",
     },
     {
@@ -270,7 +270,7 @@ const TopNavbar = React.memo(function TopNavbar() {
                         )}
                         {canAccess("group.laboratorium.access") && (
                             <Link
-                                href={route("laboratorium.index")}
+                                href={route("laboratorium.permintaan-lab.index")}
                                 className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
                             >
                                 <FlaskConical className="w-4 h-4 transition-transform group-hover:scale-110" />
@@ -426,7 +426,7 @@ const Footer = React.memo(function Footer() {
         { label: "Map Faskes", href: "/master-data" },
     ];
 
-    const unitLinks = [
+        const unitLinks = [
         {
             label: "SATUSEHAT Monitoring",
             href: "/satusehat/monitoring",
@@ -437,9 +437,9 @@ const Footer = React.memo(function Footer() {
             href: "/permissions",
             requiredPermission: "group.pengaturan.access",
         },
-        {
-            label: "Laboratorium",
-            href: route("laboratorium.index"),
+            {
+                label: "Laboratorium",
+                href: route("laboratorium.permintaan-lab.index"),
             requiredPermission: "group.laboratorium.access",
         },
         {
@@ -877,7 +877,7 @@ export default function Dashboard() {
                 {
                     key: "lab",
                     label: "Laboratorium",
-                    href: safeRoute("laboratorium.index"),
+                    href: safeRoute("laboratorium.permintaan-lab.index"),
                     icon: <FlaskConical className="w-5 h-5" />,
                     requiredPermission: "group.laboratorium.access",
                 },

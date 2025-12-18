@@ -5,11 +5,13 @@ import SidebarRadiologi from "@/Layouts/SidebarRadiologi";
 import ActionDropdown from "@/Components/ActionDropdown";
 import Alert from "@/Components/Alert";
 import Pagination from "@/Components/Pagination";
+import Modal from "@/Components/Modal";
 import {
     Search,
     RefreshCw,
     CalendarRange,
     Stethoscope,
+    Clock,
 } from "lucide-react";
 
 const getTodayDate = () => {
@@ -38,7 +40,7 @@ export default function Index({
 
     const [search, setSearch] = useState(filters.search || "");
     const [dokter, setDokter] = useState(filters.dokter || "");
-    const [status, setStatus] = useState(filters.status || "");
+    const [activeTab, setActiveTab] = useState(filters.status || "ralan");
     const [startDate, setStartDate] = useState(defaultStartDate);
     const [endDate, setEndDate] = useState(defaultEndDate);
 
@@ -49,6 +51,10 @@ export default function Index({
         message: "",
         autoClose: false,
     });
+    const [showSampleModal, setShowSampleModal] = useState(false);
+    const [sampleDate, setSampleDate] = useState("");
+    const [sampleTime, setSampleTime] = useState("");
+    const [selectedPermintaan, setSelectedPermintaan] = useState(null);
 
     useEffect(() => {
         if (flash?.success) {
@@ -71,15 +77,21 @@ export default function Index({
         }
     }, [flash, pageErrors]);
 
-    const data = permintaanRadiologi?.data || [];
+    const allData = permintaanRadiologi?.data || [];
+    const data =
+        activeTab === "ralan" || activeTab === "ranap"
+            ? allData.filter((item) => item.status === activeTab)
+            : allData;
 
     const handleSearch = () => {
+        const statusToUse =
+            activeTab === "ralan" || activeTab === "ranap" ? activeTab : "";
         router.get(
             route("radiologi.index"),
             {
                 search: search || undefined,
                 dokter: dokter || undefined,
-                status: status || undefined,
+                status: statusToUse || undefined,
                 start_date: startDate || undefined,
                 end_date: endDate || undefined,
             },
@@ -94,17 +106,131 @@ export default function Index({
         const today = getTodayDate();
         setSearch("");
         setDokter("");
-        setStatus("");
+        setActiveTab("ralan");
         setStartDate(today);
         setEndDate(today);
         router.get(
             route("radiologi.index"),
             {
+                status: "ralan",
                 start_date: today,
                 end_date: today,
             },
             {
                 replace: true,
+            }
+        );
+    };
+
+    const openSampleModal = (item) => {
+        if (!item) return;
+
+        if (item.has_hasil) {
+            setAlertConfig({
+                type: "error",
+                title: "Tidak Bisa Update Sampel",
+                message:
+                    "Tidak dapat memperbarui waktu sampel karena hasil radiologi sudah tersedia.",
+                autoClose: true,
+            });
+            setShowAlert(true);
+            return;
+        }
+
+        setSelectedPermintaan(item);
+
+        const now = new Date();
+        const dateFormatter = new Intl.DateTimeFormat("en-CA", {
+            timeZone: "Asia/Jakarta",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+        });
+        const defaultDate = dateFormatter.format(now);
+
+        const timeFormatter = new Intl.DateTimeFormat("en-US", {
+            timeZone: "Asia/Jakarta",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+        });
+        const defaultTime = timeFormatter.format(now);
+
+        setSampleDate(
+            item.tgl_sampel && item.tgl_sampel !== "0000-00-00"
+                ? item.tgl_sampel
+                : defaultDate
+        );
+        setSampleTime(
+            item.jam_sampel && item.jam_sampel !== "00:00:00"
+                ? item.jam_sampel.toString().substring(0, 5)
+                : defaultTime
+        );
+
+        setShowSampleModal(true);
+    };
+
+    const submitSample = () => {
+        if (!selectedPermintaan?.noorder) return;
+
+        if (!sampleDate || !sampleTime) {
+            setAlertConfig({
+                type: "error",
+                title: "Validasi Gagal",
+                message: "Tanggal dan jam sampel harus diisi.",
+                autoClose: true,
+            });
+            setShowAlert(true);
+            return;
+        }
+
+        router.post(
+            route("radiologi.update", selectedPermintaan.noorder),
+            {
+                _method: "PUT",
+                tgl_sampel: sampleDate,
+                jam_sampel: sampleTime,
+            },
+            {
+                preserveScroll: true,
+                preserveState: true,
+                onSuccess: (page) => {
+                    setShowSampleModal(false);
+                    setSelectedPermintaan(null);
+                    const message =
+                        page?.props?.flash?.success ||
+                        "Tanggal dan jam sampel radiologi berhasil diperbarui.";
+                    setAlertConfig({
+                        type: "success",
+                        title: "Berhasil",
+                        message,
+                        autoClose: true,
+                    });
+                    setShowAlert(true);
+                    setTimeout(() => {
+                        handleSearch();
+                    }, 500);
+                },
+                onError: (errs) => {
+                    let message =
+                        "Terjadi kesalahan saat memperbarui sampel.";
+                    if (errs?.error) {
+                        const val = errs.error;
+                        if (Array.isArray(val))
+                            message = val[0] || message;
+                        else if (typeof val === "string")
+                            message = val;
+                        else if (val?.message)
+                            message = val.message || message;
+                    }
+                    setAlertConfig({
+                        type: "error",
+                        title: "Gagal",
+                        message,
+                        autoClose: true,
+                    });
+                    setShowAlert(true);
+                },
             }
         );
     };
@@ -215,7 +341,7 @@ export default function Index({
             <div className="py-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="bg-white dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden">
-                        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-gradient-to-r from-rose-50 via-red-50 to-orange-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800">
+                        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex flex-col gap-1 bg-gradient-to-r from-rose-50 via-red-50 to-orange-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800">
                             <div>
                                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                                     Data Permintaan Radiologi
@@ -224,19 +350,11 @@ export default function Index({
                                     Kelola permintaan pemeriksaan radiologi rawat jalan dan rawat inap
                                 </p>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <Link
-                                    href={route("radiologi.create")}
-                                    className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 shadow-sm"
-                                >
-                                    Tambah Permintaan
-                                </Link>
-                            </div>
                         </div>
 
                         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-900/60">
                             <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                                <div className="md:col-span-2">
+                                <div className="md:col-span-2 lg:col-span-3">
                                     <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
                                         Pencarian
                                     </label>
@@ -262,46 +380,21 @@ export default function Index({
                                     <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
                                         Dokter Perujuk
                                     </label>
-                                    <div className="relative">
-                                        <Stethoscope className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                                        <select
-                                            value={dokter}
-                                            onChange={(e) =>
-                                                setDokter(e.target.value)
-                                            }
-                                            className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-rose-500/70 focus:border-rose-500"
-                                        >
-                                            <option value="">Semua Dokter</option>
-                                            {dokters.map((d) => (
-                                                <option
-                                                    key={d.kd_dokter}
-                                                    value={d.kd_dokter}
-                                                >
-                                                    {d.nm_dokter}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
-                                        Status
-                                    </label>
                                     <select
-                                        value={status}
-                                        onChange={(e) =>
-                                            setStatus(e.target.value)
-                                        }
+                                        value={dokter}
+                                        onChange={(e) => setDokter(e.target.value)}
                                         className="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-rose-500/70 focus:border-rose-500"
                                     >
-                                        <option value="">Semua</option>
-                                        <option value="ralan">Rawat Jalan</option>
-                                        <option value="ranap">Rawat Inap</option>
+                                        <option value="">Semua Dokter</option>
+                                        {dokters.map((d) => (
+                                            <option key={d.kd_dokter} value={d.kd_dokter}>
+                                                {d.nm_dokter}
+                                            </option>
+                                        ))}
                                     </select>
                                 </div>
 
-                                <div className="lg:col-span-2 grid grid-cols-2 gap-3">
+                                <div className="md:col-span-1 lg:col-span-2 grid grid-cols-2 gap-3">
                                     <div>
                                         <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
                                             Tanggal Mulai
@@ -357,6 +450,65 @@ export default function Index({
                                     Terapkan Filter
                                 </button>
                             </div>
+                        </div>
+
+                        <div className="border-t border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-900/80">
+                            <nav className="flex -mb-px px-6">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setActiveTab("ralan");
+                                        router.get(
+                                            route("radiologi.index"),
+                                            {
+                                                search,
+                                                dokter,
+                                                status: "ralan",
+                                                start_date: startDate,
+                                                end_date: endDate,
+                                            },
+                                            {
+                                                preserveState: true,
+                                                replace: true,
+                                            }
+                                        );
+                                    }}
+                                    className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors ${
+                                        activeTab === "ralan"
+                                            ? "border-rose-500 text-rose-600 dark:text-rose-400 bg-rose-50/40 dark:bg-gray-900"
+                                            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
+                                    }`}
+                                >
+                                    Rawat Jalan
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setActiveTab("ranap");
+                                        router.get(
+                                            route("radiologi.index"),
+                                            {
+                                                search,
+                                                dokter,
+                                                status: "ranap",
+                                                start_date: startDate,
+                                                end_date: endDate,
+                                            },
+                                            {
+                                                preserveState: true,
+                                                replace: true,
+                                            }
+                                        );
+                                    }}
+                                    className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors ${
+                                        activeTab === "ranap"
+                                            ? "border-rose-500 text-rose-600 dark:text-rose-400 bg-rose-50/40 dark:bg-gray-900"
+                                            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
+                                    }`}
+                                >
+                                    Rawat Inap
+                                </button>
+                            </nav>
                         </div>
 
                         <div className="px-2 sm:px-4 py-4">
@@ -512,6 +664,23 @@ export default function Index({
                                                         onDelete={() =>
                                                             handleDelete(item)
                                                         }
+                                                        customItems={
+                                                            <>
+                                                                <button
+                                                                    onClick={() =>
+                                                                        openSampleModal(
+                                                                            item
+                                                                        )
+                                                                    }
+                                                                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
+                                                                >
+                                                                    <span className="mr-3 text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300">
+                                                                        <Clock className="w-4 h-4" />
+                                                                    </span>
+                                                                    Update Sampel
+                                                                </button>
+                                                            </>
+                                                        }
                                                     />
                                                 </td>
                                             </tr>
@@ -532,7 +701,72 @@ export default function Index({
                     </div>
                 </div>
             </div>
+
+            <Modal
+                show={showSampleModal}
+                onClose={() => setShowSampleModal(false)}
+                title="Update Waktu Sampel"
+            >
+                <div className="space-y-6 p-6">
+                    {selectedPermintaan && (
+                        <div className="p-4 rounded-xl bg-gradient-to-r from-rose-50/60 to-orange-50/60 dark:from-rose-900/20 dark:to-orange-900/20 border border-rose-200/60 dark:border-rose-800/60">
+                            <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                                <span className="font-semibold">No. Permintaan:</span>{" "}
+                                <span className="font-mono text-sm px-2 py-1 bg-white/80 dark:bg-gray-800/80 rounded-lg border border-gray-200/60 dark:border-gray-700/60">
+                                    {selectedPermintaan.noorder}
+                                </span>
+                            </p>
+                            <p className="text-sm text-gray-700 dark:text-gray-300 mb-1">
+                                <span className="font-semibold">Pasien:</span>{" "}
+                                {selectedPermintaan.reg_periksa?.patient?.nm_pasien || "-"}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                <span className="font-semibold">No. Rawat:</span>{" "}
+                                {selectedPermintaan.no_rawat}
+                            </p>
+                        </div>
+                    )}
+
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            Tanggal Sampel
+                        </label>
+                        <input
+                            type="date"
+                            value={sampleDate}
+                            onChange={(e) => setSampleDate(e.target.value)}
+                            className="w-full px-4 py-2.5 border border-gray-300/70 dark:border-gray-600/70 rounded-lg focus:ring-2 focus:ring-rose-500/60 focus:border-rose-500 dark:bg-gray-800/80 dark:text-white"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            Jam Sampel
+                        </label>
+                        <input
+                            type="time"
+                            value={sampleTime}
+                            onChange={(e) => setSampleTime(e.target.value)}
+                            className="w-full px-4 py-2.5 border border-gray-300/70 dark:border-gray-600/70 rounded-lg focus:ring-2 focus:ring-rose-500/60 focus:border-rose-500 dark:bg-gray-800/80 dark:text-white"
+                        />
+                    </div>
+                    <div className="flex justify-end gap-3 pt-4">
+                        <button
+                            type="button"
+                            onClick={() => setShowSampleModal(false)}
+                            className="px-6 py-2.5 bg-white/90 dark:bg-gray-800/90 border border-gray-200/70 dark:border-gray-600/70 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold rounded-lg transition-all duration-200"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="button"
+                            onClick={submitSample}
+                            className="px-6 py-2.5 bg-gradient-to-r from-rose-600 via-red-600 to-orange-500 hover:from-rose-700 hover:via-red-700 hover:to-orange-600 text-white font-semibold rounded-lg shadow-md shadow-rose-500/30 hover:shadow-lg hover:shadow-rose-500/40 transition-all duration-200"
+                        >
+                            Simpan
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </SidebarRadiologi>
     );
 }
-

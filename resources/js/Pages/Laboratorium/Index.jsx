@@ -62,24 +62,31 @@ const cardHoverVariants = {
     },
 };
 
-export default function Index({ permintaanLab, dokters = [], filters = {}, flash, errors: pageErrors }) {
+export default function Index({
+    permintaanLab,
+    periksaLab,
+    statusOptions = {},
+    dokters = [],
+    filters = {},
+    flash,
+    errors: pageErrors,
+}) {
     const { auth } = usePage().props;
     const page = usePage();
-    
-    // Set default tanggal ke hari ini jika tidak ada filter dari server
+
+    const isPeriksaMode = !!periksaLab;
+
     const defaultStartDate = filters.start_date || getTodayDate();
     const defaultEndDate = filters.end_date || getTodayDate();
-    
+
     const [search, setSearch] = useState(filters.search || "");
     const [dokter, setDokter] = useState(filters.dokter || "");
     const [startDate, setStartDate] = useState(defaultStartDate);
     const [endDate, setEndDate] = useState(defaultEndDate);
-    
-    // Tab state - default berdasarkan filter status dari server, atau 'ralan' jika tidak ada
-    const [activeTab, setActiveTab] = useState(filters.status || "ralan"); // 'ralan' atau 'ranap'
-    const [activeSubTab, setActiveSubTab] = useState("permintaan"); // 'permintaan' atau 'item'
-    
-    // Alert state
+
+    const [activeTab, setActiveTab] = useState(filters.status || "ralan");
+    const [activeSubTab, setActiveSubTab] = useState("permintaan");
+
     const [showAlert, setShowAlert] = useState(false);
     const [alertConfig, setAlertConfig] = useState({
         type: "success",
@@ -88,7 +95,6 @@ export default function Index({ permintaanLab, dokters = [], filters = {}, flash
         autoClose: false,
     });
 
-    // Handle flash messages dari server
     useEffect(() => {
         if (flash?.success) {
             setAlertConfig({
@@ -149,13 +155,33 @@ export default function Index({ permintaanLab, dokters = [], filters = {}, flash
         }
     }, [flash, pageErrors]);
 
-    // Ambil Sampel modal state
+    useEffect(() => {
+        if (!isPeriksaMode) return;
+
+        const timeoutId = setTimeout(() => {
+            router.get(
+                route("laboratorium.index"),
+                {
+                    search: search || undefined,
+                    status: filters.status || undefined,
+                    start_date: startDate || undefined,
+                    end_date: endDate || undefined,
+                },
+                {
+                    preserveState: true,
+                    replace: true,
+                }
+            );
+        }, 500);
+
+        return () => clearTimeout(timeoutId);
+    }, [isPeriksaMode, search, startDate, endDate, filters.status]);
+
     const [showSampleModal, setShowSampleModal] = useState(false);
     const [sampleDate, setSampleDate] = useState("");
     const [sampleTime, setSampleTime] = useState("");
     const [selectedPermintaan, setSelectedPermintaan] = useState(null);
 
-    // Delete confirmation modal state
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteProcessing, setDeleteProcessing] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
@@ -919,6 +945,289 @@ export default function Index({ permintaanLab, dokters = [], filters = {}, flash
 
     const currentColumns = activeSubTab === "item" ? itemColumns : permintaanColumns;
     const currentData = activeSubTab === "item" ? itemPermintaanData : filteredData;
+
+    if (isPeriksaMode) {
+        const periksaData = periksaLab?.data || [];
+        const seenPeriksa = new Set();
+        const periksaRows = periksaData.filter((item) => {
+            const date = item.tgl_periksa || "";
+            const time = item.jam || "";
+            const key = `${item.no_rawat}|${date}|${time}`;
+            if (seenPeriksa.has(key)) {
+                return false;
+            }
+            seenPeriksa.add(key);
+            return true;
+        });
+
+        const handlePeriksaSearch = () => {
+            router.get(
+                route("laboratorium.index"),
+                {
+                    search: search || undefined,
+                    status: filters.status || undefined,
+                    start_date: startDate || undefined,
+                    end_date: endDate || undefined,
+                },
+                {
+                    preserveState: true,
+                    replace: true,
+                }
+            );
+        };
+
+        const handlePeriksaReset = () => {
+            const today = getTodayDate();
+            setSearch("");
+            setStartDate(today);
+            setEndDate(today);
+            router.get(
+                route("laboratorium.index"),
+                {
+                    start_date: today,
+                    end_date: today,
+                },
+                {
+                    replace: true,
+                }
+            );
+        };
+
+        const periksaColumns = [
+            {
+                key: "tgl_periksa",
+                header: "Tanggal/Jam",
+                label: "Tanggal/Jam",
+                render: (item) => (
+                    <div className="text-sm text-gray-900 dark:text-white">
+                        <div>
+                            {item.tgl_periksa
+                                ? new Date(item.tgl_periksa).toLocaleDateString("id-ID")
+                                : "-"}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {item.jam || "-"}
+                        </div>
+                    </div>
+                ),
+            },
+            {
+                key: "no_rawat",
+                header: "No. Rawat",
+                label: "No. Rawat",
+                render: (item) => (
+                    <div className="font-mono text-sm text-gray-900 dark:text-white">
+                        {item.no_rawat}
+                    </div>
+                ),
+            },
+            {
+                key: "pasien",
+                header: "Pasien",
+                label: "Pasien",
+                render: (item) => (
+                    <div>
+                        <Link
+                            href={route("laboratorium.show", {
+                                noRawat: item.no_rawat,
+                            })}
+                            className="font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                        >
+                            {item.reg_periksa?.patient?.nm_pasien || "-"}
+                        </Link>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {item.reg_periksa?.patient?.no_rkm_medis || "-"}
+                        </div>
+                    </div>
+                ),
+            },
+        ];
+
+        return (
+            <SidebarLaboratorium title="Periksa Laboratorium">
+                <Head title="Periksa Laboratorium" />
+
+                {showAlert && (
+                    <Alert
+                        type={alertConfig.type}
+                        title={alertConfig.title}
+                        message={alertConfig.message}
+                        autoClose={alertConfig.autoClose}
+                        onClose={() => setShowAlert(false)}
+                    />
+                )}
+
+                <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 py-8">
+                    <motion.div
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="mx-auto px-2 sm:px-3 lg:px-6 xl:px-8 max-w-[98%]"
+                    >
+                        <motion.div
+                            variants={itemVariants}
+                            className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-purple-500/10 pointer-events-none" />
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+
+                            <motion.div
+                                variants={itemVariants}
+                                className="relative px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm"
+                            >
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                    <div>
+                                        <motion.h1
+                                            className="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ duration: 0.6, delay: 0.2 }}
+                                        >
+                                            Data Periksa Laboratorium
+                                        </motion.h1>
+                                        <p className="mt-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                                            Daftar pemeriksaan hasil lab berdasarkan pasien
+                                        </p>
+                                    </div>
+                                </div>
+                            </motion.div>
+
+                            <motion.div
+                                variants={itemVariants}
+                                className="relative p-8 border-b border-gray-200/50 dark:border-gray-700/50 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+                            >
+                                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                                    <div className="md:col-span-2 lg:col-span-2">
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                            Pencarian
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                value={search}
+                                                onChange={(e) => setSearch(e.target.value)}
+                                                onKeyPress={(e) =>
+                                                    e.key === "Enter" && handlePeriksaSearch()
+                                                }
+                                                placeholder="Cari nama pasien atau No. RM..."
+                                                className="w-full pl-11 pr-4 py-2.5 border border-gray-300/50 dark:border-gray-600/50 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:bg-gray-700/80 dark:text-white backdrop-blur-sm transition-all duration-200"
+                                            />
+                                            <Search className="absolute left-3.5 top-3 h-5 w-5 text-gray-400" />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                            Status
+                                        </label>
+                                        <select
+                                            value={filters.status || ""}
+                                            onChange={(e) =>
+                                                router.get(
+                                                    route("laboratorium.index"),
+                                                    {
+                                                        search: search || undefined,
+                                                        status:
+                                                            e.target.value || undefined,
+                                                        start_date:
+                                                            startDate || undefined,
+                                                        end_date: endDate || undefined,
+                                                    },
+                                                    {
+                                                        preserveState: true,
+                                                        replace: true,
+                                                    }
+                                                )
+                                            }
+                                            className="w-full px-4 py-2.5 border border-gray-300/50 dark:border-gray-600/50 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:bg-gray-700/80 dark:text-white backdrop-blur-sm transition-all duration-200"
+                                        >
+                                            <option value="">Semua Status</option>
+                                            {Object.keys(statusOptions || {}).map(
+                                                (key) => (
+                                                    <option key={key} value={key}>
+                                                        {statusOptions[key]}
+                                                    </option>
+                                                )
+                                            )}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                            Tanggal Mulai
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={startDate}
+                                            onChange={(e) =>
+                                                setStartDate(e.target.value)
+                                            }
+                                            className="w-full px-4 py-2.5 border border-gray-300/50 dark:border-gray-600/50 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:bg-gray-700/80 dark:text-white backdrop-blur-sm transition-all duration-200"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                            Tanggal Akhir
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={endDate}
+                                            onChange={(e) => setEndDate(e.target.value)}
+                                            className="w-full px-4 py-2.5 border border-gray-300/50 dark:border-gray-600/50 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:bg-gray-700/80 dark:text-white backdrop-blur-sm transition-all duration-200"
+                                        />
+                                    </div>
+                                    <div className="flex items-end gap-3">
+                                        <motion.button
+                                            onClick={handlePeriksaSearch}
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 text-white font-semibold rounded-lg"
+                                        >
+                                            <Search className="w-4 h-4" />
+                                            Cari
+                                        </motion.button>
+                                        <motion.button
+                                            onClick={handlePeriksaReset}
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white/90 dark:bg-gray-700/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold rounded-lg transition-all duration-200"
+                                        >
+                                            <RefreshCw className="w-4 h-4" />
+                                        </motion.button>
+                                    </div>
+                                </div>
+                            </motion.div>
+
+                            <motion.div
+                                variants={itemVariants}
+                                className="p-8"
+                            >
+                        <div className="overflow-x-auto rounded-xl border border-gray-200/50 dark:border-gray-700/50 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+                            <ResponsiveTable
+                                        data={periksaRows}
+                                        columns={periksaColumns}
+                                        emptyMessage="Tidak ada data pemeriksaan laboratorium"
+                                    />
+                                </div>
+                            </motion.div>
+
+                            {periksaLab?.links && (
+                                <motion.div
+                                    variants={itemVariants}
+                                    className="px-8 pb-8"
+                                >
+                                    <Pagination
+                                        links={periksaLab.links}
+                                        from={periksaLab.from}
+                                        to={periksaLab.to}
+                                        total={periksaLab.total}
+                                    />
+                                </motion.div>
+                            )}
+                        </motion.div>
+                    </motion.div>
+                </div>
+            </SidebarLaboratorium>
+        );
+    }
 
     return (
         <SidebarLaboratorium title="Permintaan Laboratorium">

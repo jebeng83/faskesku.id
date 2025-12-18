@@ -25,14 +25,23 @@ class LaboratoriumController extends Controller
         $query = PeriksaLab::with(['regPeriksa.patient', 'jenisPerawatan', 'petugas'])
             ->orderBy('tgl_periksa', 'desc');
 
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
         // Filter berdasarkan status
         if ($request->filled('status')) {
             $query->byStatus($request->status);
         }
 
         // Filter berdasarkan tanggal
-        if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->byDateRange($request->start_date, $request->end_date);
+        if (! $startDate && ! $endDate) {
+            $today = now()->toDateString();
+            $startDate = $today;
+            $endDate = $today;
+        }
+
+        if ($startDate && $endDate) {
+            $query->byDateRange($startDate, $endDate);
         }
 
         // Pencarian
@@ -51,7 +60,12 @@ class LaboratoriumController extends Controller
         return Inertia::render('Laboratorium/Index', [
             'periksaLab' => $periksaLab,
             'statusOptions' => $statusOptions,
-            'filters' => $request->only(['status', 'start_date', 'end_date', 'search']),
+            'filters' => [
+                'status' => $request->input('status'),
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'search' => $request->input('search'),
+            ],
         ]);
     }
 
