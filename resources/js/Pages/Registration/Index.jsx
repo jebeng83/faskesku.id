@@ -1440,7 +1440,7 @@ export default function Registration({
                                                         value={formData.tgl_registrasi}
                                                         onChange={handleFormChange}
                                                         required
-                                                        className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                                        className="w-full px-1 py-0.5 text-[11px] border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                     />
                                                 </motion.div>
                                                 <motion.div initial={{ opacity: 0, x: -5 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: 0.15 }}>
@@ -1452,7 +1452,7 @@ export default function Registration({
                                                         onChange={handleFormChange}
                                                         required
                                                         step="60"
-                                                        className="w-full px-1.5 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                                        className="w-full px-1 py-0.5 text-[11px] border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                     />
                                                 </motion.div>
                                                 <motion.div initial={{ opacity: 0, x: 5 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: 0.2 }}>
