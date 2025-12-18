@@ -90,7 +90,8 @@ class PermintaanLabController extends Controller
 
         $permintaanLab = $query->orderBy('tgl_permintaan', 'desc')
             ->orderBy('jam_permintaan', 'desc')
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
         // Tambahkan informasi has_hasil untuk setiap permintaan
         // Pastikan detailPermintaan sudah dimuat untuk setiap item

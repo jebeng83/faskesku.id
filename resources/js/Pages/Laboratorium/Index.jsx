@@ -155,28 +155,6 @@ export default function Index({
         }
     }, [flash, pageErrors]);
 
-    useEffect(() => {
-        if (!isPeriksaMode) return;
-
-        const timeoutId = setTimeout(() => {
-            router.get(
-                route("laboratorium.index"),
-                {
-                    search: search || undefined,
-                    status: filters.status || undefined,
-                    start_date: startDate || undefined,
-                    end_date: endDate || undefined,
-                },
-                {
-                    preserveState: true,
-                    replace: true,
-                }
-            );
-        }, 500);
-
-        return () => clearTimeout(timeoutId);
-    }, [isPeriksaMode, search, startDate, endDate, filters.status]);
-
     const [showSampleModal, setShowSampleModal] = useState(false);
     const [sampleDate, setSampleDate] = useState("");
     const [sampleTime, setSampleTime] = useState("");
