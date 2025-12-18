@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { route } from 'ziggy-js';
 import { BeakerIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 
 export default function RiwayatKunjungan({ token, noRkmMedis }) {
@@ -12,6 +13,8 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
     const [loadingLab, setLoadingLab] = useState({});
     const [radData, setRadData] = useState({});
     const [loadingRad, setLoadingRad] = useState({});
+    const [soapData, setSoapData] = useState({});
+    const [loadingSoap, setLoadingSoap] = useState({});
     const [openSections, setOpenSections] = useState({}); // { [noRawat]: { obat:boolean, lab:boolean, rad:boolean } }
 
     const fetchMedicationData = useCallback(async (noRawat) => {
@@ -78,6 +81,24 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
         }
     }, [radData]);
 
+    const fetchSoapData = useCallback(async (noRawat) => {
+        if (soapData[noRawat]) return;
+        setLoadingSoap(prev => ({ ...prev, [noRawat]: true }));
+        try {
+            const url = route('rawat-jalan.pemeriksaan-ralan', { no_rawat: noRawat });
+            const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const json = await res.json();
+            const data = Array.isArray(json.data) ? json.data : [];
+            setSoapData(prev => ({ ...prev, [noRawat]: data }));
+        } catch (e) {
+            console.error('Error fetching pemeriksaan_ralan:', e);
+            setSoapData(prev => ({ ...prev, [noRawat]: [] }));
+        } finally {
+            setLoadingSoap(prev => ({ ...prev, [noRawat]: false }));
+        }
+    }, [soapData]);
+
     useEffect(() => {
         const controller = new AbortController();
         async function fetchData() {
@@ -119,9 +140,10 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
             // Auto-open Obat section for this visit and fetch immediately
             setOpenSections(prev => ({
                 ...prev,
-                [visit.no_rawat]: { obat: true, lab: false, rad: false }
+                [visit.no_rawat]: { obat: true, soap: true, lab: false, rad: false }
             }));
             fetchMedicationData(visit.no_rawat);
+            fetchSoapData(visit.no_rawat);
         }
     };
 
@@ -380,9 +402,130 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
         });
     };
 
+    const renderSoap = (noRawat) => {
+        const rows = soapData[noRawat] || [];
+        const isLoading = loadingSoap[noRawat];
+        if (isLoading) return (<div className="py-6 text-center text-xs text-gray-500">Memuat data SOAP...</div>);
+        if (!Array.isArray(rows) || rows.length === 0) {
+            return (
+                <div className="text-center py-6 text-gray-500">
+                    <p className="text-xs">Belum ada data SOAP</p>
+                </div>
+            );
+        }
+        const deduped = (() => {
+            const seen = new Set();
+            const out = [];
+            for (const e of rows) {
+                const t = String(e.jam_rawat || '').substring(0,5);
+                if (seen.has(t)) continue;
+                seen.add(t);
+                out.push(e);
+            }
+            return out;
+        })();
+        const sorted = deduped.slice().sort((a, b) => {
+            const aa = String(a.jam_rawat || '').substring(0,5);
+            const bb = String(b.jam_rawat || '').substring(0,5);
+            return aa < bb ? 1 : aa > bb ? -1 : 0;
+        });
+        return (
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden w-full">
+                <div className="bg-gray-50 dark:bg-gray-700/50 px-3 py-2 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                        </svg>
+                        <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">Riwayat SOAP</span>
+                    </div>
+                    <span className="text-[11px] text-gray-600 dark:text-gray-300">{sorted.length} record</span>
+                </div>
+                <div className="overflow-x-auto overflow-y-auto max-h-[320px] w-full">
+                    <table className="w-full text-xs table-fixed">
+                        <thead className="bg-gray-50 dark:bg-gray-700/50">
+                            <tr className="text-left text-gray-600 dark:text-gray-300">
+                                <th className="px-3 py-2 font-medium w-44">Tanggal</th>
+                                <th className="px-3 py-2 font-medium w-48">Dokter/Paramedis</th>
+                                <th className="px-3 py-2 font-medium w-64">Subjek</th>
+                                <th className="px-3 py-2 font-medium w-64">Objek</th>
+                                <th className="px-3 py-2 font-medium w-48">Asesmen</th>
+                                <th className="px-3 py-2 font-medium w-48">Plan</th>
+                                <th className="px-3 py-2 font-medium w-48">Inst/Impl</th>
+                                <th className="px-3 py-2 font-medium w-48">Evaluasi</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                            {sorted.map((e, i) => (
+                                <tr key={`${noRawat}-soap-${i}`} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                    <td className="px-3 py-2 w-44">
+                                        <div className="flex items-baseline gap-2">
+                                            <div className="text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                                                {e.tgl_perawatan ? new Date(e.tgl_perawatan).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                                            </div>
+                                            <div className="text-[11px] text-gray-900 dark:text-white font-mono w-20 whitespace-nowrap">
+                                                {typeof e.jam_rawat === 'string' && e.jam_rawat.trim() ? e.jam_rawat.trim().substring(0,5) : '-'}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-3 py-2 w-48 text-gray-700 dark:text-gray-300">
+                                        <div className="truncate">{e.nip || e.kd_dokter || e.nm_dokter || e.nama_dokter || e.nm_pegawai || '-'}</div>
+                                    </td>
+                                    <td className="px-3 py-2 w-64 text-gray-700 dark:text-gray-300">
+                                        <div className="truncate whitespace-nowrap" title={typeof e.keluhan === 'string' ? e.keluhan.trim() : ''}>
+                                            {(typeof e.keluhan === 'string' && e.keluhan.trim()) ? e.keluhan.trim() : '-'}
+                                        </div>
+                                    </td>
+                                    <td className="px-3 py-2 w-64 text-gray-700 dark:text-gray-300">
+                                        <div className="space-y-1">
+                                            <div className="truncate whitespace-nowrap" title={typeof e.pemeriksaan === 'string' ? e.pemeriksaan.trim() : ''}>
+                                                {(typeof e.pemeriksaan === 'string' && e.pemeriksaan.trim()) ? e.pemeriksaan.trim() : '-'}
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[11px]">
+                                                <div className="text-gray-500">Kesadaran</div>
+                                                <div className="text-right">{e.kesadaran || 'Compos Mentis'}</div>
+                                                <div className="text-gray-500">SUHU</div>
+                                                <div className="text-right">{e.suhu_tubuh || '-'}°C</div>
+                                                <div className="text-gray-500">TENSI</div>
+                                                <div className="text-right">{e.tensi || '-'}</div>
+                                                <div className="text-gray-500">NADI</div>
+                                                <div className="text-right">{e.nadi || '-'}/min</div>
+                                                <div className="text-gray-500">SpO2</div>
+                                                <div className="text-right">{e.spo2 || '-'}%</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-3 py-2 w-48 text-gray-700 dark:text-gray-300">
+                                        <div className="truncate whitespace-nowrap" title={typeof e.penilaian === 'string' ? e.penilaian.trim() : ''}>
+                                            {(typeof e.penilaian === 'string' && e.penilaian.trim()) ? e.penilaian.trim() : '-'}
+                                        </div>
+                                    </td>
+                                    <td className="px-3 py-2 w-48 text-gray-700 dark:text-gray-300">
+                                        <div className="truncate whitespace-nowrap" title={typeof e.rtl === 'string' ? e.rtl.trim() : ''}>
+                                            {(typeof e.rtl === 'string' && e.rtl.trim()) ? e.rtl.trim() : '-'}
+                                        </div>
+                                    </td>
+                                    <td className="px-3 py-2 w-48 text-gray-700 dark:text-gray-300">
+                                        <div className="truncate whitespace-nowrap" title={typeof e.instruksi === 'string' ? e.instruksi.trim() : ''}>
+                                            {(typeof e.instruksi === 'string' && e.instruksi.trim()) ? e.instruksi.trim() : '-'}
+                                        </div>
+                                    </td>
+                                    <td className="px-3 py-2 w-48 text-gray-700 dark:text-gray-300">
+                                        <div className="truncate whitespace-nowrap" title={typeof e.evaluasi === 'string' ? e.evaluasi.trim() : ''}>
+                                            {(typeof e.evaluasi === 'string' && e.evaluasi.trim()) ? e.evaluasi.trim() : '-'}
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        );
+    };
+
     const toggleSection = async (noRawat, key) => {
         setOpenSections(prev => {
-            const prevForVisit = prev[noRawat] || { obat: false, lab: false, rad: false };
+            const prevForVisit = prev[noRawat] || { obat: false, soap: false, lab: false, rad: false };
             const nextVal = !prevForVisit[key];
             return { ...prev, [noRawat]: { ...prevForVisit, [key]: nextVal } };
         });
@@ -391,6 +534,8 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
         try {
             if (key === 'obat' && !medicationData[noRawat]) {
                 await fetchMedicationData(noRawat);
+            } else if (key === 'soap' && !soapData[noRawat]) {
+                await fetchSoapData(noRawat);
             } else if (key === 'lab' && !labData[noRawat]) {
                 await fetchLabData(noRawat);
             } else if (key === 'rad' && !radData[noRawat]) {
@@ -482,7 +627,7 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
     return (
         <div className="overflow-hidden">
             {/* Mobile: Card list */}
-            <div className="md:hidden grid gap-3 h-[532px] overflow-y-auto pr-1">
+            <div className="md:hidden grid gap-3 pr-1 h-[396px] overflow-y-auto">
                 {items.map((row, index) => {
                     const isOpen = expandedVisit && expandedVisit.no_rawat === row.no_rawat;
                     return (
@@ -492,12 +637,12 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                         >
                             <button
                                 onClick={() => toggleVisitDetails(row)}
-                                className={`w-full text-left px-3 h-14 flex items-center justify-between gap-3 bg-gray-50 dark:bg-gray-800/60 ${isOpen ? 'rounded-t-lg' : 'rounded-lg'}`}
+                                className={`w-full text-left px-3 min-h-14 py-2 flex flex-wrap items-start justify-between gap-2 bg-gray-50 dark:bg-gray-800/60 ${isOpen ? 'rounded-t-lg' : 'rounded-lg'}`}
                                 aria-expanded={isOpen}
                                 aria-controls={`visit-${index}`}
                             >
                                 <div className="flex-1 min-w-0 space-y-1">
-                                    <div className="flex items-center justify-between">
+                                    <div className="flex items-center justify-between gap-2 min-w-0 flex-wrap">
                                         <div className="flex items-center gap-2">
                                             <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a4 4 0 118 0v4M12 11v10m0 0l-3-3m3 3l3-3" />
@@ -506,13 +651,13 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                                                 {row.tgl_registrasi ? new Date(row.tgl_registrasi).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
                                             </span>
                                         </div>
-                                        <span className="text-xs font-medium px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                                        <span className="text-xs font-medium px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 break-words whitespace-normal max-w-full sm:whitespace-nowrap sm:max-w-[12rem] max-[360px]:break-all">
                                             {row.no_rawat}
                                         </span>
                                     </div>
                                     
                                 </div>
-                                <svg className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''} flex-shrink-0 self-start ml-2`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
@@ -533,7 +678,7 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
 
             {/* Desktop: List dengan header klik-untuk-expand (tanpa tabel) */}
             <div className="hidden md:block">
-                <div className="space-y-2 h-[504px] overflow-y-auto pr-1">
+                <div className="space-y-2 pr-1 h-[376px] overflow-y-auto">
                     {items.map((row) => (
                         <div
                             key={row.no_rawat}
@@ -598,6 +743,32 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                                         </button>
                                         <div className={`${openSections[row.no_rawat]?.obat ? 'block' : 'hidden'} p-2`}>
                                             {renderMedicationTable(row.no_rawat)}
+                                        </div>
+                                    </div>
+
+                                    {/* Section SOAP */}
+                                    <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleSection(row.no_rawat, 'soap')}
+                                            className="w-full flex items-center justify-between px-3 py-2 bg-white dark:bg-gray-800"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm font-medium text-gray-800 dark:text-gray-100">Riwayat SOAP</span>
+                                                <span className="text-[11px] text-gray-500">{(soapData[row.no_rawat] || []).length} record</span>
+                                            </div>
+                                            {openSections[row.no_rawat]?.soap ? (
+                                                <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 12H6" />
+                                                </svg>
+                                            ) : (
+                                                <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12M6 12h12" />
+                                                </svg>
+                                            )}
+                                        </button>
+                                        <div className={`${openSections[row.no_rawat]?.soap ? 'block' : 'hidden'} p-2`}>
+                                            {renderSoap(row.no_rawat)}
                                         </div>
                                     </div>
 

@@ -18,13 +18,8 @@ export default function RiwayatPemeriksaan({ token = '', noRawat = '', noRkmMedi
                 try {
                     setLoading(true);
                     
-                    // Construct the URL with proper encoding
                     const baseUrl = `/rawat-jalan/obat-ralan/${noRawat}`;
-                    const qs = token 
-                        ? `t=${encodeURIComponent(token)}`
-                        : `no_rawat=${encodeURIComponent(noRawat)}`;
-                    
-                    const url = `${baseUrl}?${qs}`;
+                    const url = baseUrl;
                     
                     const res = await fetch(url, {
                         signal: controller.signal,
@@ -58,7 +53,7 @@ export default function RiwayatPemeriksaan({ token = '', noRawat = '', noRkmMedi
         } else {
             setMedicationItems([]);
         }
-    }, [token, noRawat]);
+    }, [noRawat]);
 
     const sections = [
         {
