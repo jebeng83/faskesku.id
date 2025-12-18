@@ -22,6 +22,7 @@ export default function PermintaanLab({ token = '', noRkmMedis = '', noRawat = '
     const [selectedTemplates, setSelectedTemplates] = useState({});
     const [templatesData, setTemplatesData] = useState({});
     const [loadingTemplates, setLoadingTemplates] = useState({});
+    const [riwayatRefreshKey, setRiwayatRefreshKey] = useState(0);
 
     const [formData, setFormData] = useState({
         tgl_permintaan: todayDateString(),
@@ -295,6 +296,7 @@ export default function PermintaanLab({ token = '', noRkmMedis = '', noRawat = '
                     setDokterSearch('');
                     setSelectedTemplates({});
                     setTemplatesData({});
+                    setRiwayatRefreshKey((prev) => prev + 1);
 
                     let noorder = null;
                     const successMsg = page.props.flash?.success || '';
@@ -1004,7 +1006,7 @@ export default function PermintaanLab({ token = '', noRkmMedis = '', noRawat = '
                 </div>
             </form>
 
-            <RiwayatPermintaanLab noRawat={noRawat} />
+            <RiwayatPermintaanLab noRawat={noRawat} refreshKey={riwayatRefreshKey} />
         </div>
     );
 }
