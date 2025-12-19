@@ -109,31 +109,87 @@ export default function PembayaranRalan({ groups = [], stats = {}, filters = {} 
                                     <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-800 text-sm">
                                         <thead>
                                             <tr className="text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                                                <th className="py-3 pr-4">Jam</th>
-                                                <th className="py-3 pr-4">No. Rawat</th>
-                                                <th className="py-3 pr-4">Pasien</th>
+                                                <th className="py-3 pr-4">Kode Dokter</th>
+                                                <th className="py-3 pr-4">No. RM</th>
+                                                <th className="py-3 pr-4">Poliklinik</th>
+                                                <th className="py-3 pr-4">Penanggung Jawab</th>
                                                 <th className="py-3 pr-4">Penjamin</th>
-                                                <th className="py-3 pr-4">Tarif Registrasi</th>
+                                                <th className="py-3 pr-4">Status</th>
+                                                <th className="py-3 pr-4">No. Rawat</th>
+                                                <th className="py-3 pr-4">Tgl</th>
+                                                <th className="py-3 pr-4">Jam</th>
                                                 <th className="py-3">Status Bayar</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                                             {(group.items || []).map((row) => (
                                                 <tr key={row.no_rawat} className="hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors">
-                                                    <td className="py-3 pr-4 text-gray-900 dark:text-white">{row.jam_reg}</td>
-                                                    <td className="py-3 pr-4 font-semibold text-blue-600 dark:text-blue-400">
-                                                        <Link href={route("pembayaran.ralan.detail", row.no_rawat)} className="hover:underline">
-                                                            {row.no_rawat}
-                                                        </Link>
+                                                    <td className="py-3 pr-4">
+                                                        <div className="flex flex-col">
+                                                            <span className="font-mono text-xs font-semibold text-gray-900 dark:text-gray-100">
+                                                                {row.kd_dokter || "-"}
+                                                            </span>
+                                                            <span className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                                                                {row.nm_dokter || "-"}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-3 pr-4">
+                                                        <div className="flex flex-col">
+                                                            <span className="font-mono text-xs font-semibold text-gray-900 dark:text-gray-100">
+                                                                {row.no_rkm_medis || "-"}
+                                                            </span>
+                                                            <Link
+                                                                href={route("akutansi.billing.page", {
+                                                                    no_rawat: row.no_rawat,
+                                                                })}
+                                                                className="text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline mt-0.5"
+                                                            >
+                                                                {row.pasien}
+                                                            </Link>
+                                                        </div>
                                                     </td>
                                                     <td className="py-3 pr-4 text-gray-900 dark:text-white">
-                                                        <Link href={route("pembayaran.ralan.detail", row.no_rawat)} className="block font-medium hover:underline">
-                                                            {row.pasien}
-                                                        </Link>
-                                                        <span className="text-xs text-gray-500 dark:text-gray-400">{row.no_rkm_medis}</span>
+                                                        {row.nm_poli || "-"}
                                                     </td>
-                                                    <td className="py-3 pr-4">{row.penjamin}</td>
-                                                    <td className="py-3 pr-4 font-semibold">{currencyFormatter.format(row.total || 0)}</td>
+                                                    <td className="py-3 pr-4">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-gray-900 dark:text-gray-100">
+                                                                {row.p_jawab || "-"}
+                                                            </span>
+                                                            <span className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                                                {row.almt_pj || "-"}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-3 pr-4">
+                                                        <div className="flex flex-col">
+                                                            <span>{row.penjamin}</span>
+                                                            <span className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                                                                {currencyFormatter.format(row.total || 0)}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-3 pr-4">
+                                                        <span
+                                                            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
+                                                                row.status === "Belum"
+                                                                    ? "bg-amber-100 text-amber-700 dark:bg-amber-400/20 dark:text-amber-200"
+                                                                    : "bg-emerald-100 text-emerald-700 dark:bg-emerald-400/20 dark:text-emerald-200"
+                                                            }`}
+                                                        >
+                                                            {row.status || "-"}
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-3 pr-4 font-mono text-xs text-gray-900 dark:text-white">
+                                                        {row.no_rawat}
+                                                    </td>
+                                                    <td className="py-3 pr-4 text-gray-900 dark:text-white">
+                                                        {group.tanggal}
+                                                    </td>
+                                                    <td className="py-3 pr-4 text-gray-900 dark:text-white">
+                                                        {row.jam_reg}
+                                                    </td>
                                                     <td className="py-3">
                                                         <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${statusClasses[row.status_bayar] ?? "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300"}`}>
                                                             {row.status_bayar}
@@ -152,4 +208,3 @@ export default function PembayaranRalan({ groups = [], stats = {}, filters = {} 
         </AppLayout>
     );
 }
-

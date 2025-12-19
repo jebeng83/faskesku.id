@@ -607,52 +607,34 @@ export default function KasirRalanPage() {
             >
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
                 <div className="overflow-x-auto">
-                    <table className="min-w-full text-sm">
+                    <table className="min-w-full text-xs sm:text-sm">
                         <thead>
-                            <tr className="bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Kode Dokter
-                                </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    No. RM
-                                </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Poliklinik
-                                </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Penanggung Jawab
-                                </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Penjamin
-                                </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Status
-                                </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                            <tr className="bg-gray-50/80 dark:bg-gray-800/80 border-b border-gray-100 dark:border-gray-800">
+                                <th className="px-3 sm:px-4 py-3 text-left font-semibold uppercase tracking-wide text-[10px] sm:text-xs text-gray-600 dark:text-gray-300">
                                     No. Rawat
                                 </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Tgl
+                                <th className="px-3 sm:px-4 py-3 text-left font-semibold uppercase tracking-wide text-[10px] sm:text-xs text-gray-600 dark:text-gray-300">
+                                    Pasien
                                 </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Jam
+                                <th className="px-3 sm:px-4 py-3 text-left font-semibold uppercase tracking-wide text-[10px] sm:text-xs text-gray-600 dark:text-gray-300">
+                                    Poliklinik
                                 </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                <th className="px-3 sm:px-4 py-3 text-left font-semibold uppercase tracking-wide text-[10px] sm:text-xs text-gray-600 dark:text-gray-300">
+                                    Penjamin
+                                </th>
+                                <th className="px-3 sm:px-4 py-3 text-left font-semibold uppercase tracking-wide text-[10px] sm:text-xs text-gray-600 dark:text-gray-300">
                                     Status Bayar
                                 </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    No. Tlp
-                                </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Aksi
+                                <th className="px-3 sm:px-4 py-3 text-left font-semibold uppercase tracking-wide text-[10px] sm:text-xs text-gray-600 dark:text-gray-300">
+                                    Tgl Periksa
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr>
-                                    <td
-                                        colSpan={12}
+                            <tr>
+                            <td
+                                        colSpan={6}
                                         className="px-4 py-12 text-center"
                                     >
                                         <motion.div
@@ -660,7 +642,7 @@ export default function KasirRalanPage() {
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
                                         >
-                                            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                                                <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
                                             <span className="text-sm text-gray-600 dark:text-gray-400">
                                                 Memuat data...
                                             </span>
@@ -687,142 +669,67 @@ export default function KasirRalanPage() {
                                                 }}
                                                 whileHover={{ scale: 1.01 }}
                                             >
-                                                <td className="px-4 py-3">
-                                                    <div className="flex flex-col">
-                                                        <span className="font-mono text-xs font-semibold text-gray-900 dark:text-gray-100">
-                                                            {r?.kd_dokter ||
-                                                                "-"}
+                                                <td className="px-3 sm:px-4 py-3 align-top">
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <span className="font-mono text-[11px] sm:text-xs font-semibold text-gray-900 dark:text-gray-100">
+                                                            {r?.no_rawat || "-"}
                                                         </span>
-                                                        <span className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                                                            {r?.dokter
-                                                                ?.nm_dokter ||
-                                                                "-"}
+                                                        <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                                                            RM: {r?.no_rkm_medis || "-"}
                                                         </span>
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3">
-                                                    <div className="flex flex-col">
-                                                        <span className="font-mono text-xs font-semibold text-gray-900 dark:text-gray-100">
-                                                            {r?.no_rkm_medis ||
-                                                                "-"}
-                                                        </span>
-                                                        <span className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                                                            {r?.pasien
-                                                                ?.nm_pasien ||
-                                                                "-"}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
-                                                    {r?.poliklinik?.nm_poli ||
-                                                        "-"}
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-gray-900 dark:text-gray-100">
-                                                            {r?.p_jawab || "-"}
-                                                        </span>
-                                                        <span className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                                                            {r?.almt_pj || "-"}
+                                                <td className="px-3 sm:px-4 py-3 align-top">
+                                                    <div className="flex flex-col gap-0.5">
+                                                        {r?.no_rawat ? (
+                                                            <motion.a
+                                                                href={`/akutansi/billing?no_rawat=${encodeURIComponent(
+                                                                    r.no_rawat || ""
+                                                                )}`}
+                                                                className="font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                                                                whileHover={{ scale: 1.02 }}
+                                                                whileTap={{ scale: 0.98 }}
+                                                            >
+                                                                {r?.pasien?.nm_pasien || "-"}
+                                                            </motion.a>
+                                                        ) : (
+                                                            <span className="font-semibold text-gray-900 dark:text-white">
+                                                                {r?.pasien?.nm_pasien || "-"}
+                                                            </span>
+                                                        )}
+                                                        <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                                                            Status: {r?.stts || "-"}
                                                         </span>
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-gray-900 dark:text-gray-100">
-                                                            {r?.penjab
-                                                                ?.png_jawab ||
-                                                                r?.kd_pj ||
-                                                                "-"}
+                                                <td className="px-3 sm:px-4 py-3 align-top">
+                                                    <span className="text-sm text-gray-800 dark:text-gray-200">
+                                                        {r?.poliklinik?.nm_poli || "-"}
+                                                    </span>
+                                                </td>
+                                                <td className="px-3 sm:px-4 py-3 align-top">
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <span className="text-sm text-gray-800 dark:text-gray-200">
+                                                            {r?.penjab?.png_jawab || r?.kd_pj || "-"}
                                                         </span>
-                                                        <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 mt-0.5">
+                                                        <span className="text-[11px] text-blue-600 dark:text-blue-400">
                                                             {currency.format(
-                                                                Number(
-                                                                    r?.biaya_reg ||
-                                                                        0
-                                                                )
+                                                                Number(r?.biaya_reg || 0)
                                                             )}
                                                         </span>
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3">
-                                                    <motion.span
-                                                        className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold ${statusBadgeClass}`}
-                                                        whileHover={{
-                                                            scale: 1.05,
-                                                        }}
+                                                <td className="px-3 sm:px-4 py-3 align-top">
+                                                    <span
+                                                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusBadgeClass}`}
                                                     >
-                                                        {r?.stts || "-"}
-                                                    </motion.span>
+                                                        {r?.status_bayar || "-"}
+                                                    </span>
                                                 </td>
-                                                <td className="px-4 py-3 font-medium">
-                                                    <div className="flex flex-col">
-                                                        <span className="font-mono text-xs text-gray-900 dark:text-gray-100">
-                                                            {formatShortDateId(r?.tgl_registrasi)}{" "}
-                                                            {String(r?.jam_reg || "").slice(0, 5)}
-                                                        </span>
-                                                        <span className="font-mono text-xs font-bold text-gray-900 dark:text-gray-100 mt-0.5">
-                                                            {r?.no_rawat || "-"}
-                                                        </span>
-                                                        <span className="text-[11px] truncate text-gray-900 dark:text-white mt-0.5">
-                                                            {r?.dokter?.nm_dokter ? `dr. ${r.dokter.nm_dokter}` : "-"}
-                                                        </span>
-                                                        <span className="text-xs text-gray-600 dark:text-gray-400 font-normal mt-0.5">
-                                                            {r?.no_reg || "-"}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
-                                                    {r?.tgl_registrasi || "-"}
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
-                                                    {r?.jam_reg || "-"}
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <div className="flex flex-col">
-                                                        <motion.span
-                                                            className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold w-fit ${statusBadgeClass}`}
-                                                            whileHover={{
-                                                                scale: 1.05,
-                                                            }}
-                                                        >
-                                                            {r?.status_bayar ||
-                                                                "-"}
-                                                        </motion.span>
-                                                        <span className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                                                            {r?.status_poli ||
-                                                                "-"}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-gray-900 dark:text-gray-100">
-                                                            {r?.pasien
-                                                                ?.no_tlp || "-"}
-                                                        </span>
-                                                        <span className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                                                            {r?.keputusan ||
-                                                                "-"}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <div className="flex gap-2">
-                                                        <motion.a
-                                                            href={`/akutansi/billing?no_rawat=${encodeURIComponent(
-                                                                r.no_rawat || ""
-                                                            )}`}
-                                                            className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-slate-600 to-gray-700 hover:from-slate-700 hover:to-gray-800 text-white text-xs font-semibold shadow-md shadow-slate-500/25 hover:shadow-lg hover:shadow-slate-500/30 transition-all duration-200"
-                                                            whileHover={{
-                                                                scale: 1.05,
-                                                            }}
-                                                            whileTap={{
-                                                                scale: 0.95,
-                                                            }}
-                                                        >
-                                                            Billing
-                                                        </motion.a>
+                                                <td className="px-3 sm:px-4 py-3 align-top">
+                                                    <div className="flex flex-col gap-0.5 text-[11px] text-gray-700 dark:text-gray-300">
+                                                        <span>{r?.tgl_registrasi || "-"}</span>
+                                                        <span>{String(r?.jam_reg || "").slice(0, 5) || "-"}</span>
                                                     </div>
                                                 </td>
                                             </motion.tr>
@@ -833,7 +740,7 @@ export default function KasirRalanPage() {
                             {!loading && filtered.length === 0 && (
                                 <tr>
                                     <td
-                                        colSpan={12}
+                                        colSpan={6}
                                         className="px-4 py-12 text-center"
                                     >
                                         <motion.div
