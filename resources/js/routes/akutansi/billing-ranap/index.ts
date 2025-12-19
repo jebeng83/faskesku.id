@@ -1,8 +1,8 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::page
-* @see app/Http/Controllers/Akutansi/BillingController.php:18
-* @route '/akutansi/billing'
+* @see app/Http/Controllers/Akutansi/BillingController.php:50
+* @route '/akutansi/billing-ranap'
 */
 export const page = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: page.url(options),
@@ -11,13 +11,13 @@ export const page = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 page.definition = {
     methods: ["get","head"],
-    url: '/akutansi/billing',
+    url: '/akutansi/billing-ranap',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::page
-* @see app/Http/Controllers/Akutansi/BillingController.php:18
-* @route '/akutansi/billing'
+* @see app/Http/Controllers/Akutansi/BillingController.php:50
+* @route '/akutansi/billing-ranap'
 */
 page.url = (options?: RouteQueryOptions) => {
     return page.definition.url + queryParams(options)
@@ -25,8 +25,8 @@ page.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::page
-* @see app/Http/Controllers/Akutansi/BillingController.php:18
-* @route '/akutansi/billing'
+* @see app/Http/Controllers/Akutansi/BillingController.php:50
+* @route '/akutansi/billing-ranap'
 */
 page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: page.url(options),
@@ -35,16 +35,16 @@ page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::page
-* @see app/Http/Controllers/Akutansi/BillingController.php:18
-* @route '/akutansi/billing'
+* @see app/Http/Controllers/Akutansi/BillingController.php:50
+* @route '/akutansi/billing-ranap'
 */
 page.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: page.url(options),
     method: 'head',
 })
 
-const billing = {
+const billingRanap = {
     page: Object.assign(page, page),
 }
 
-export default billing
+export default billingRanap

@@ -173,9 +173,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/akutansi/cashflow', [CashFlowController::class, 'page'])
         ->name('akutansi.cashflow.page');
 
-    // Akutansi: Billing page (Inertia)
     Route::get('/akutansi/billing', [BillingController::class, 'page'])
         ->name('akutansi.billing.page');
+    Route::get('/akutansi/billing-ranap', [BillingController::class, 'ranapPage'])
+        ->name('akutansi.billing-ranap.page');
 
     // Akutansi: Nota Jalan page (Inertia)
     Route::get('/akutansi/nota-jalan', [\App\Http\Controllers\Akutansi\NotaJalanController::class, 'page'])
@@ -232,6 +233,7 @@ Route::middleware('auth')->group(function () {
 
         // Billing CRUD
         Route::get('/billing', [BillingController::class, 'index'])->name('api.akutansi.billing.index');
+        Route::get('/billing-ranap', [BillingController::class, 'indexRanap'])->name('api.akutansi.billing-ranap.index');
         Route::post('/billing', [BillingController::class, 'store'])->name('api.akutansi.billing.store');
         Route::put('/billing/{noindex}', [BillingController::class, 'update'])->name('api.akutansi.billing.update');
         Route::delete('/billing/{noindex}', [BillingController::class, 'destroy'])->name('api.akutansi.billing.destroy');

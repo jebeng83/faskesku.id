@@ -12,7 +12,6 @@ import {
     ChevronDown,
     ChevronRight,
     Calendar,
-    Scale,
     Home,
 } from "lucide-react";
 
@@ -166,49 +165,14 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
                 icon: <Receipt className="w-4 h-4" />,
                 children: [
                     {
-                        label: "Kasir Ralan",
+                        label: "Kasir Rawat Jalan",
                         href: "/akutansi/kasir-ralan",
                         icon: <Receipt className="w-4 h-4" />,
                     },
                     {
-                        label: "Billing",
-                        href: "/akutansi/billing",
+                        label: "Kasir Rawat Inap",
+                        href: "/pembayaran/ranap",
                         icon: <Receipt className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Nota Jalan",
-                        href: "/akutansi/nota-jalan",
-                        icon: <Receipt className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Nota Inap",
-                        href: "/akutansi/nota-inap",
-                        icon: <Receipt className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Cash Flow",
-                        href: "/akutansi/cashflow",
-                        icon: <Wallet className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Neraca",
-                        href: "/akutansi/neraca",
-                        icon: <Scale className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Mutasi Rekening",
-                        href: "/akutansi/mutasi-rekening",
-                        icon: <Banknote className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Mutasi Kas",
-                        href: "/akutansi/mutasi-kas",
-                        icon: <Wallet className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Setoran Bank",
-                        href: "/akutansi/setoran-bank",
-                        icon: <Banknote className="w-4 h-4" />,
                     },
                 ],
             },
