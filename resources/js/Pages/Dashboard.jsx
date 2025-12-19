@@ -1467,8 +1467,16 @@ function ChartPoliMonthly({ data }) {
         series.reduce((acc, s) => acc + (s.data?.[mi] ?? 0), 0)
     );
 
-    // Warna untuk masing-masing seri poli (kelas Tailwind)
-    const palette = [
+    const lineColors = [
+        "#2563eb",
+        "#4f46e5",
+        "#7c3aed",
+        "#059669",
+        "#f59e0b",
+        "#f97316",
+        "#06b6d4",
+    ];
+    const colors = [
         "from-blue-500 to-blue-600",
         "from-indigo-500 to-indigo-600",
         "from-purple-500 to-purple-600",
@@ -1477,7 +1485,7 @@ function ChartPoliMonthly({ data }) {
         "from-rose-500 to-rose-600",
         "from-cyan-500 to-cyan-600",
     ];
-    const borderPalette = [
+    const borders = [
         "border-blue-600/40",
         "border-indigo-600/40",
         "border-purple-600/40",
@@ -1486,24 +1494,46 @@ function ChartPoliMonthly({ data }) {
         "border-rose-600/40",
         "border-cyan-600/40",
     ];
-    const colors = series.map((_, idx) => palette[idx % palette.length]);
-    const borders = series.map(
-        (_, idx) => borderPalette[idx % borderPalette.length]
-    );
 
-    // Ukuran chart
-    const chartHeight = 240; // px
-    const groupWidth = 54; // px untuk tiap bulan
-    const barWidth = Math.max(
-        7,
-        Math.min(12, Math.floor(30 / Math.max(1, series.length)))
-    );
-    const barGap = 4; // px antar bar dalam grup
+    const chartHeight = 260;
+    const chartWidth = Math.max(months.length * 56, 480);
+    const paddingLeft = 44;
+    const paddingRight = 16;
+    const paddingTop = 10;
+    const paddingBottom = 30;
+    const innerWidth = chartWidth - paddingLeft - paddingRight;
+    const innerHeight = chartHeight - paddingTop - paddingBottom;
 
-    // Axis labels (4 garis + 0)
     const axisSteps = [0, 0.25, 0.5, 0.75, 1];
 
-    const [hover, setHover] = React.useState(null); // { mi, si, val }
+    const buildSmoothPath = (points) => {
+        if (!points.length) return "";
+        if (points.length === 1) {
+            const p = points[0];
+            return `M ${p.x} ${p.y}`;
+        }
+        if (points.length === 2) {
+            const a = points[0];
+            const b = points[1];
+            return `M ${a.x} ${a.y} L ${b.x} ${b.y}`;
+        }
+        const tension = 0.5;
+        let d = `M ${points[0].x} ${points[0].y}`;
+        for (let i = 0; i < points.length - 1; i++) {
+            const p0 = points[i - 1] || points[i];
+            const p1 = points[i];
+            const p2 = points[i + 1];
+            const p3 = points[i + 2] || p2;
+            const cp1x = p1.x + ((p2.x - p0.x) * tension) / 6;
+            const cp1y = p1.y + ((p2.y - p0.y) * tension) / 6;
+            const cp2x = p2.x - ((p3.x - p1.x) * tension) / 6;
+            const cp2y = p2.y - ((p3.y - p1.y) * tension) / 6;
+            d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+        }
+        return d;
+    };
+
+    const [hover, setHover] = React.useState(null);
     const [mounted, setMounted] = React.useState(false);
     React.useEffect(() => {
         const t = setTimeout(() => setMounted(true), 10);
@@ -1519,22 +1549,44 @@ function ChartPoliMonthly({ data }) {
                         Tidak ada data poli
                     </span>
                 ) : (
-                    series.map((s, idx) => (
-                        <div
-                            key={s.kd_poli}
-                            className="inline-flex items-center gap-2"
-                        >
-                            <span
-                                className={`inline-block w-3 h-3 rounded bg-gradient-to-br ${colors[idx]} ring-1 ${borders[idx]}`}
-                            />
-                            <span className="font-medium">{s.nm_poli}</span>
-                        </div>
-                    ))
+                    series.map((s, idx) => {
+                        const isSeriesHovered = hover && hover.si === idx;
+                        const isSeriesDimmed = hover && hover.si !== idx;
+                        return (
+                            <button
+                                key={s.kd_poli}
+                                type="button"
+                                onMouseEnter={() =>
+                                    setHover({
+                                        mi: null,
+                                        si: idx,
+                                        val: null,
+                                        x: null,
+                                    })
+                                }
+                                onMouseLeave={() => setHover(null)}
+                                className={`inline-flex items-center gap-2 rounded-full px-2 py-1 transition ${
+                                    isSeriesHovered
+                                        ? "bg-white/60 dark:bg-white/10 shadow-sm"
+                                        : isSeriesDimmed
+                                        ? "opacity-60"
+                                        : ""
+                                }`}
+                            >
+                                <span
+                                    className={`inline-block w-3 h-3 rounded bg-gradient-to-br ${colors[idx]} ring-1 ${borders[idx]}`}
+                                />
+                                <span className="font-medium">
+                                    {s.nm_poli}
+                                </span>
+                            </button>
+                        );
+                    })
                 )}
             </div>
 
             {/* Tooltip */}
-            {hover && (
+            {hover && hover.mi != null && (
                 <div className="absolute left-1/2 -translate-x-1/2 -top-2 z-10">
                     <div className="px-3 py-2 rounded-lg bg-white/95 dark:bg-gray-900/95 backdrop-blur border border-gray-200 dark:border-gray-800 shadow text-xs text-gray-700 dark:text-gray-200">
                         <div className="font-semibold text-gray-900 dark:text-white">
@@ -1558,112 +1610,191 @@ function ChartPoliMonthly({ data }) {
                             )}
                         </div>
                     </div>
-                </div>
+            </div>
             )}
 
-            {/* Chart grid + bars */}
             <div className="mt-4">
-                <div className="relative">
-                    {/* Axis labels (left) */}
-                    {axisSteps.map((step, i) => (
-                        <div
-                            key={i}
-                            className="absolute -left-12 text-[10px] text-gray-500 dark:text-gray-400"
-                            style={{ top: (1 - step) * chartHeight - 6 }}
-                        >
-                            {Math.round(maxVal * step)}
-                        </div>
-                    ))}
-                    {/* Y-grid dashed */}
-                    {axisSteps.map((step, i) => (
-                        <div
-                            key={`g-${i}`}
-                            className="absolute left-0 right-0"
-                            style={{ top: (1 - step) * chartHeight }}
-                        >
-                            <div className="border-t border-dashed border-gray-200 dark:border-gray-800" />
-                        </div>
-                    ))}
-
-                    {/* Bars container */}
-                    <div className="overflow-x-auto">
-                        <div className="min-w-full">
-                            <div
-                                className="flex items-end gap-4"
-                                style={{ height: chartHeight }}
-                            >
-                                {months.map((m, mi) => (
-                                    <div
-                                        key={m + mi}
-                                        className="flex items-end"
-                                        style={{ width: groupWidth }}
+                <div className="relative overflow-x-auto">
+                    <svg
+                        width={chartWidth}
+                        height={chartHeight}
+                        className="text-gray-500 dark:text-gray-400"
+                    >
+                        {axisSteps.map((step, i) => {
+                            const y =
+                                paddingTop +
+                                innerHeight * (1 - step);
+                            return (
+                                <g key={i}>
+                                    <line
+                                        x1={paddingLeft}
+                                        x2={chartWidth - paddingRight}
+                                        y1={y}
+                                        y2={y}
+                                        stroke="#e5e7eb"
+                                        strokeDasharray="4 4"
+                                        className="dark:stroke-gray-800"
+                                    />
+                                    <text
+                                        x={paddingLeft - 6}
+                                        y={y + 3}
+                                        textAnchor="end"
+                                        fontSize="10"
+                                        fill="#6b7280"
+                                        className="dark:fill-gray-400"
                                     >
-                                        {/* Bars per poli */}
-                                        <div
-                                            className="flex items-end"
-                                            style={{ gap: barGap }}
-                                        >
-                                            {series.map((s, si) => {
-                                                const val = s.data?.[mi] ?? 0;
-                                                const h = Math.round(
-                                                    (val / maxVal) * chartHeight
-                                                );
+                                        {Math.round(maxVal * step)}
+                                    </text>
+                                </g>
+                            );
+                        })}
+
+                        {series.map((s, si) => {
+                            const color =
+                                lineColors[si % lineColors.length];
+                            const isSeriesHovered =
+                                hover && hover.si === si;
+                            const isSeriesDimmed =
+                                hover && hover.si !== si;
+                            const pts = months.map((m, mi) => {
+                                const val = s.data?.[mi] ?? 0;
+                                const x =
+                                    paddingLeft +
+                                    (months.length > 1
+                                        ? (innerWidth * mi) /
+                                          (months.length - 1)
+                                        : innerWidth / 2);
+                                const y =
+                                    paddingTop +
+                                    innerHeight *
+                                        (1 - val / maxVal);
+                                return { x, y, val, mi };
+                            });
+
+                            const d = buildSmoothPath(pts);
+
+                            return (
+                                <g key={s.kd_poli}>
+                                    <path
+                                        d={d}
+                                        fill="none"
+                                        stroke={color}
+                                        strokeWidth={isSeriesHovered ? 4.2 : 3.2}
+                                        strokeOpacity={isSeriesDimmed ? 0.18 : 0.4}
+                                        filter="url(#lineShadowMonthly)"
+                                        pathLength={1}
+                                        style={{
+                                            transition:
+                                                "stroke-dashoffset 900ms cubic-bezier(0.22, 1, 0.36, 1)",
+                                            strokeDasharray: 1,
+                                            strokeDashoffset: mounted ? 0 : 1,
+                                        }}
+                                    />
+                                    <path
+                                        d={d}
+                                        fill="none"
+                                        stroke={color}
+                                        strokeWidth={isSeriesHovered ? 2.6 : 2.1}
+                                        opacity={
+                                            mounted
+                                                ? isSeriesDimmed
+                                                    ? 0.45
+                                                    : 0.98
+                                                : 0
+                                        }
+                                        pathLength={1}
+                                        style={{
+                                            transition:
+                                                "opacity 500ms cubic-bezier(0.22, 1, 0.36, 1), stroke-dashoffset 900ms cubic-bezier(0.22, 1, 0.36, 1)",
+                                            strokeDasharray: 1,
+                                            strokeDashoffset: mounted ? 0 : 1,
+                                        }}
+                                    />
+                                    {pts.map((p) => (
+                                        <g key={`${s.kd_poli}-${p.mi}`}>
+                                            {(() => {
+                                                const isPointHovered =
+                                                    hover &&
+                                                    hover.si === si &&
+                                                    hover.mi === p.mi;
+                                                const outerR = isPointHovered
+                                                    ? 9
+                                                    : isSeriesHovered
+                                                    ? 7
+                                                    : 5.5;
+                                                const innerR = isPointHovered
+                                                    ? 5
+                                                    : isSeriesHovered
+                                                    ? 3.8
+                                                    : 3.1;
+                                                const outerOpacity = isSeriesDimmed
+                                                    ? 0.08
+                                                    : 0.18;
+
                                                 return (
-                                                    <div
-                                                        key={s.kd_poli + mi}
-                                                        className="flex flex-col items-center"
-                                                        style={{
-                                                            width: barWidth,
-                                                        }}
-                                                    >
-                                                        <div
-                                                            className={`w-full bg-gradient-to-t ${colors[si]} rounded-md shadow-sm ring-1 ${borders[si]}`}
-                                                            style={{
-                                                                height: mounted
-                                                                    ? h
-                                                                    : 0,
-                                                                transition:
-                                                                    "height 600ms cubic-bezier(0.22, 1, 0.36, 1)",
-                                                            }}
+                                                    <>
+                                                        <circle
+                                                            cx={p.x}
+                                                            cy={p.y}
+                                                            r={outerR}
+                                                            fill={color}
+                                                            fillOpacity={outerOpacity}
+                                                            stroke="none"
+                                                        />
+                                                        <circle
+                                                            cx={p.x}
+                                                            cy={p.y}
+                                                            r={innerR}
+                                                            fill="#0b1120"
+                                                            stroke={color}
+                                                            strokeWidth={2}
                                                             onMouseEnter={() =>
                                                                 setHover({
-                                                                    mi,
+                                                                    mi: p.mi,
                                                                     si,
-                                                                    val,
+                                                                    val: p.val,
+                                                                    x: p.x,
                                                                 })
                                                             }
                                                             onMouseLeave={() =>
                                                                 setHover(null)
                                                             }
-                                                            aria-label={`${s.nm_poli} ${m}: ${val}`}
                                                         />
-                                                        {h > 22 && (
-                                                            <div className="mt-1 text-[10px] text-gray-600 dark:text-gray-300 font-mono">
-                                                                {val}
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                                    </>
                                                 );
-                                            })}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
+                                            })()}
+                                        </g>
+                                    ))}
+                                </g>
+                            );
+                        })}
 
-                    {/* X-axis labels */}
-                    <div className="mt-2 flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-                        {months.map((m) => (
-                            <div
-                                key={m + "lbl"}
-                                style={{ width: groupWidth }}
-                                className="text-center"
-                            >
-                                {m}
-                            </div>
-                        ))}
-                    </div>
+                        {months.map((m, mi) => {
+                            const x =
+                                paddingLeft +
+                                (months.length > 1
+                                    ? (innerWidth * mi) /
+                                      (months.length - 1)
+                                    : innerWidth / 2);
+                            const y =
+                                chartHeight -
+                                paddingBottom +
+                                16;
+                            return (
+                                <text
+                                    key={m + "lbl"}
+                                    x={x}
+                                    y={y}
+                                    textAnchor="middle"
+                                    fontSize="11"
+                                    fill="#6b7280"
+                                    className="dark:fill-gray-400"
+                                >
+                                    {m}
+                                </text>
+                            );
+                        })}
+                    </svg>
                 </div>
             </div>
         </div>
