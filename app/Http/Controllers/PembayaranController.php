@@ -10,6 +10,7 @@ use App\Models\RegPeriksa;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -330,20 +331,67 @@ class PembayaranController extends Controller
 
     public function ranap(Request $request): Response|JsonResponse
     {
-        // Sediakan JSON sederhana agar bisa ditampilkan dari tab Index
-        // Catatan: Jangan gunakan wantsJson agar tidak mengganggu permintaan Inertia (X-Inertia)
         if ($request->boolean('json')) {
-            $summary = [
-                ['label' => 'Pasien Dirawat', 'value' => 54, 'desc' => 'Dengan tagihan aktif'],
-                ['label' => 'Butuh Verifikasi', 'value' => 12, 'desc' => 'Menunggu konfirmasi penjamin'],
-                ['label' => 'Siap Discharge', 'value' => 7, 'desc' => 'Menunggu proses kasir'],
-                ['label' => 'Lunas Minggu Ini', 'value' => 39, 'desc' => 'Sudah diterbitkan kwitansi'],
-            ];
+            $search = trim((string) $request->query('search', ''));
+            $perPage = (int) ($request->query('per_page', 200));
 
-            $rows = [
-                ['pasien' => 'Arum Setyani', 'ranjang' => 'VIP-102', 'penjamin' => 'BPJS', 'total' => 'Rp 12.450.000', 'status' => 'Menunggu Penjamin'],
-                ['pasien' => 'Bagus Priyanto', 'ranjang' => 'Kelas 1-14B', 'penjamin' => 'Umum', 'total' => 'Rp 6.820.000', 'status' => 'Kasir'],
-                ['pasien' => 'Clara Hapsari', 'ranjang' => 'Kelas 2-21C', 'penjamin' => 'Perusahaan', 'total' => 'Rp 9.120.000', 'status' => 'Resume'],
+            $query = RegPeriksa::query()
+                ->with([
+                    'penjab:kd_pj,png_jawab',
+                ])
+                ->join('kamar_inap', 'kamar_inap.no_rawat', '=', 'reg_periksa.no_rawat')
+                ->leftJoin('pasien', 'pasien.no_rkm_medis', '=', 'reg_periksa.no_rkm_medis')
+                ->where('reg_periksa.status_lanjut', 'Ranap')
+                ->where('kamar_inap.stts_pulang', '-')
+                ->select([
+                    'reg_periksa.no_rawat',
+                    'reg_periksa.no_rkm_medis',
+                    'reg_periksa.kd_pj',
+                    'reg_periksa.status_bayar',
+                    'reg_periksa.stts',
+                    DB::raw('kamar_inap.kd_kamar as kamar'),
+                    'kamar_inap.tgl_masuk',
+                    'kamar_inap.jam_masuk',
+                    'pasien.nm_pasien',
+                ]);
+
+            if ($search !== '') {
+                $like = '%'.str_replace(' ', '%', $search).'%';
+                $query->where(function ($w) use ($like) {
+                    $w->where('reg_periksa.no_rawat', 'like', $like)
+                        ->orWhere('reg_periksa.no_rkm_medis', 'like', $like)
+                        ->orWhere('pasien.nm_pasien', 'like', $like)
+                        ->orWhere('kamar_inap.kd_kamar', 'like', $like);
+                });
+            }
+
+            $rows = $query
+                ->orderByDesc('kamar_inap.tgl_masuk')
+                ->orderByDesc('kamar_inap.jam_masuk')
+                ->limit($perPage)
+                ->get()
+                ->map(function (RegPeriksa $reg) {
+                    return [
+                        'no_rawat' => $reg->no_rawat,
+                        'no_rkm_medis' => $reg->no_rkm_medis,
+                        'pasien' => $reg->nm_pasien ?? '-',
+                        'ranjang' => $reg->kamar,
+                        'penjamin' => $reg->penjab->png_jawab ?? $reg->kd_pj,
+                        'status_bayar' => $reg->status_bayar ?? '-',
+                        'status' => $reg->stts ?? 'Dirawat',
+                        'tgl_masuk' => $reg->tgl_masuk,
+                        'jam_masuk' => $reg->jam_masuk,
+                        'total' => 0,
+                    ];
+                })
+                ->values();
+
+            $summary = [
+                [
+                    'label' => 'Pasien Dirawat',
+                    'value' => $rows->count(),
+                    'desc' => 'Dengan status pulang "-"',
+                ],
             ];
 
             return response()->json([

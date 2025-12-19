@@ -17,7 +17,7 @@ import {
     ChevronDown,
     ChevronUp,
 } from "lucide-react";
-import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
+import SidebarKasir from "@/Layouts/SidebarKasir";
 import { todayDateString, getAppTimeZone } from "@/tools/datetime";
 
 const containerVariants = {
@@ -519,7 +519,7 @@ export default function KasirRalanPage() {
                                         ))}
                                     </select>
                                 </Field>
-                                <Field label="Status Bayar" icon={CreditCard}>
+                                <Field label="Status Bayar">
                                     <select
                                         className="w-full rounded-lg border border-gray-300/50 dark:border-gray-600/50 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
                                         value={statusBayar}
@@ -672,7 +672,7 @@ export default function KasirRalanPage() {
                                     {filtered.map((r, index) => {
                                         const statusBadgeClass =
                                             r?.status_bayar === "Sudah Bayar"
-                                                ? "bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 text-green-700 dark:text-green-300 ring-1 ring-green-200 dark:ring-green-800"
+                                                ? "bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 text-blue-700 dark:text-blue-300 ring-1 ring-blue-200 dark:ring-blue-800"
                                                 : "bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/30 dark:to-amber-900/30 text-yellow-700 dark:text-yellow-300 ring-1 ring-yellow-200 dark:ring-yellow-800";
 
                                         return (
@@ -859,5 +859,5 @@ export default function KasirRalanPage() {
 }
 
 KasirRalanPage.layout = (page) => (
-    <SidebarKeuangan title="Keuangan">{page}</SidebarKeuangan>
+    <SidebarKasir title="Kasir">{page}</SidebarKasir>
 );

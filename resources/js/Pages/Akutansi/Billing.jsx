@@ -417,7 +417,12 @@ function Modal({ title, children, onClose }) {
     );
 }
 
-export default function BillingPage({ statusOptions = [], initialNoRawat }) {
+export default function BillingPage({
+    statusOptions = [],
+    initialNoRawat,
+    dataKasirRouteName = "akutansi.kasir-ralan.page",
+    billingApiPath = "/api/akutansi/billing",
+}) {
     const [noRawat, setNoRawat] = React.useState(initialNoRawat || "");
     const [invoice, setInvoice] = React.useState(null);
     const [items, setItems] = React.useState([]);
@@ -426,6 +431,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         grand_total: 0,
     });
     const [loading, setLoading] = React.useState(false);
+    const [selectedRow, setSelectedRow] = React.useState(null);
     const [error, setError] = React.useState(null);
     const [showCreate, setShowCreate] = React.useState(false);
     const [editItem, setEditItem] = React.useState(null);
@@ -533,7 +539,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             // Items untuk CRUD (butuh noindex)
             // Tambahkan filter tanggal hari ini untuk memastikan hanya data hari ini yang ditampilkan
             const today = todayDateString();
-            const apiUrl = buildUrl("/api/akutansi/billing", {
+            const apiUrl = buildUrl(billingApiPath, {
                 no_rawat: noRawat,
                 q,
                 status: statusFilter,
@@ -1413,6 +1419,10 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         }
     };
 
+    const handleRowClick = (row) => {
+        setSelectedRow(row);
+    };
+
     // Recalculate summary setiap kali items berubah untuk memastikan Grand Total selalu akurat
     React.useEffect(() => {
         if (items.length === 0) {
@@ -1529,18 +1539,20 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                             />
                             <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                         </div>
-                        <motion.div
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                        >
-                            <Link
-                                href={route("akutansi.kasir-ralan.page")}
-                                className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 hover:from-green-700 hover:via-emerald-700 hover:to-teal-700 shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30 transition-all duration-300 text-white font-semibold text-sm"
+                        {dataKasirRouteName && (
+                            <motion.div
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
                             >
-                                <CreditCard className="w-4 h-4" />
-                                Data Kasir
-                            </Link>
-                        </motion.div>
+                                <Link
+                                    href={route(dataKasirRouteName)}
+                                    className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 hover:from-green-700 hover:via-emerald-700 hover:to-teal-700 shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30 transition-all duration-300 text-white font-semibold text-sm"
+                                >
+                                    <CreditCard className="w-4 h-4" />
+                                    Data Kasir
+                                </Link>
+                            </motion.div>
+                        )}
                         <motion.button
                             onClick={loadData}
                             disabled={loading}
@@ -1877,21 +1889,12 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                 <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     Total
                                 </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Kategori
-                                </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Aksi
-                                </th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
                                 <tr>
-                                    <td
-                                        colSpan={8}
-                                        className="px-4 py-12 text-center"
-                                    >
+                                    <td colSpan={6} className="px-4 py-12 text-center">
                                         <motion.div
                                             className="flex flex-col items-center justify-center gap-3"
                                             initial={{ opacity: 0 }}
@@ -1906,7 +1909,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                 </tr>
                             ) : items.length === 0 ? (
                                 <tr>
-                                    <td colSpan={9} className="px-4 py-12">
+                                    <td colSpan={6} className="px-4 py-12">
                                         <motion.div
                                             className="flex flex-col items-center justify-center gap-3"
                                             initial={{ opacity: 0, y: 10 }}
@@ -1922,168 +1925,203 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                 </tr>
                             ) : (
                                 <AnimatePresence>
-                                    {items
-                                        .filter((row) => {
-                                            // Normalisasi untuk perbandingan
-                                            const normalizedNoRawat =
-                                                decodeURIComponent(
-                                                    noRawat || ""
-                                                ).trim();
-                                            const rowNoRawat = (
-                                                row.no_rawat || ""
+                                    {(() => {
+                                        const normalizedNoRawat =
+                                            decodeURIComponent(
+                                                noRawat || ""
                                             ).trim();
+                                        const visibleItems = items.filter(
+                                            (row) => {
+                                                const rowNoRawat = (
+                                                    row.no_rawat || ""
+                                                ).trim();
+                                                if (
+                                                    rowNoRawat !==
+                                                    normalizedNoRawat
+                                                ) {
+                                                    console.warn(
+                                                        "Item dengan no_rawat tidak sesuai diabaikan di tabel:",
+                                                        {
+                                                            expected:
+                                                                normalizedNoRawat,
+                                                            actual: rowNoRawat,
+                                                            item: row,
+                                                        }
+                                                    );
+                                                    return false;
+                                                }
+                                                return true;
+                                            }
+                                        );
 
-                                            // Filter ketat: hanya tampilkan item dengan no_rawat yang sesuai
-                                            if (
-                                                rowNoRawat !== normalizedNoRawat
-                                            ) {
-                                                console.warn(
-                                                    "Item dengan no_rawat tidak sesuai diabaikan di tabel:",
-                                                    {
-                                                        expected:
-                                                            normalizedNoRawat,
-                                                        actual: rowNoRawat,
-                                                        item: row,
-                                                    }
-                                                );
-                                                return false;
+                                        const groups = [];
+                                        const usedIndexes = new Set();
+
+                                        CATEGORY_MAP.forEach((cat) => {
+                                            const rows = [];
+                                            visibleItems.forEach((row, idx) => {
+                                                if (
+                                                    cat.keys.includes(
+                                                        row.status
+                                                    )
+                                                ) {
+                                                    rows.push({
+                                                        row,
+                                                        idx,
+                                                    });
+                                                    usedIndexes.add(idx);
+                                                }
+                                            });
+                                            if (rows.length > 0) {
+                                                groups.push({
+                                                    label: cat.label,
+                                                    rows,
+                                                });
                                             }
-                                            return true;
-                                        })
-                                        .map((row, idx) => {
-                                            // Buat key unik untuk React
-                                            let reactKey;
-                                            if (row.noindex) {
-                                                reactKey = `noindex-${row.noindex}`;
-                                            } else {
-                                                // Gunakan kombinasi field untuk key unik jika tidak ada noindex
-                                                const tglByr =
-                                                    row.tgl_byr || "";
-                                                const no = row.no || "";
-                                                const status = row.status || "";
-                                                const nmPerawatan =
-                                                    row.nm_perawatan || "";
-                                                const biaya = row.biaya || 0;
-                                                const jumlah = row.jumlah || 0;
-                                                reactKey = `temp-${no}-${status}-${tglByr}-${nmPerawatan}-${biaya}-${jumlah}-${idx}`;
+                                        });
+
+                                        const otherRows = [];
+                                        visibleItems.forEach((row, idx) => {
+                                            if (!usedIndexes.has(idx)) {
+                                                otherRows.push({ row, idx });
                                             }
-                                            return (
-                                                <motion.tr
-                                                    key={reactKey}
-                                                    className="border-b border-gray-100/50 dark:border-gray-700/30 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 dark:hover:from-gray-700/50 dark:hover:to-gray-800/50 transition-all duration-200 group"
-                                                    initial={{
-                                                        opacity: 0,
-                                                        x: -20,
-                                                    }}
-                                                    animate={{
-                                                        opacity: 1,
-                                                        x: 0,
-                                                    }}
-                                                    exit={{ opacity: 0, x: 20 }}
-                                                    transition={{
-                                                        delay: idx * 0.02,
-                                                    }}
-                                                    whileHover={{ scale: 1.01 }}
+                                        });
+                                        if (otherRows.length > 0) {
+                                            groups.push({
+                                                label: "Lain-lain",
+                                                rows: otherRows,
+                                            });
+                                        }
+
+                                        groups.sort((a, b) => {
+                                            const aLabel = String(
+                                                a.label || "",
+                                            ).toLocaleLowerCase();
+                                            const bLabel = String(
+                                                b.label || "",
+                                            ).toLocaleLowerCase();
+
+                                            if (aLabel === "lain-lain") {
+                                                if (bLabel === "lain-lain") {
+                                                    return 0;
+                                                }
+
+                                                return 1;
+                                            }
+
+                                            if (bLabel === "lain-lain") {
+                                                return -1;
+                                            }
+
+                                            return aLabel.localeCompare(bLabel);
+                                        });
+
+                                        return groups.flatMap((group, gIndex) => {
+                                            const headerRow = (
+                                                <tr
+                                                    key={`group-${group.label}-${gIndex}`}
+                                                    className="bg-gray-50/80 dark:bg-gray-900/60 border-t border-gray-200/60 dark:border-gray-700/60"
                                                 >
-                                                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
-                                                        {formatTanggal(
-                                                            row.tgl_byr
-                                                        )}
+                                                    <td
+                                                        colSpan={6}
+                                                        className="px-4 py-2 text-xs font-bold text-gray-700 dark:text-gray-200 tracking-widest uppercase"
+                                                    >
+                                                        {group.label}
                                                     </td>
-                                                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
-                                                        {row.nm_perawatan}
-                                                    </td>
-                                                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
-                                                        {currency.format(
-                                                            row.biaya || 0
-                                                        )}
-                                                    </td>
-                                                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
-                                                        {number.format(
-                                                            row.jumlah || 0
-                                                        )}
-                                                    </td>
-                                                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
-                                                        {currency.format(
-                                                            row.tambahan || 0
-                                                        )}
-                                                    </td>
-                                                    <td className="px-4 py-3 font-semibold text-blue-600 dark:text-blue-400">
-                                                        {currency.format(
-                                                            row.totalbiaya || 0
-                                                        )}
-                                                    </td>
-                                                    <td className="px-4 py-3">
-                                                        <motion.span
-                                                            className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 text-gray-700 dark:text-gray-300 ring-1 ring-gray-200 dark:ring-gray-700"
-                                                            whileHover={{
-                                                                scale: 1.05,
-                                                            }}
-                                                        >
-                                                            {row.status}
-                                                        </motion.span>
-                                                    </td>
-                                                    <td className="px-4 py-3">
-                                                        <div className="flex items-center gap-2">
-                                                            <motion.button
-                                                                onClick={() =>
-                                                                    setEditItem(
-                                                                        row
-                                                                    )
-                                                                }
-                                                                disabled={
-                                                                    row?.source !==
-                                                                    "billing"
-                                                                }
-                                                                title={
-                                                                    row?.source !==
-                                                                    "billing"
-                                                                        ? "Tidak bisa edit: item preview (belum snapshot billing)"
-                                                                        : "Edit"
-                                                                }
-                                                                className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                                                whileHover={{
-                                                                    scale: 1.1,
-                                                                }}
-                                                                whileTap={{
-                                                                    scale: 0.9,
-                                                                }}
-                                                                aria-label="Edit"
-                                                            >
-                                                                <Pencil className="w-4 h-4" />
-                                                            </motion.button>
-                                                            <motion.button
-                                                                onClick={() =>
-                                                                    handleDelete(
-                                                                        row
-                                                                    )
-                                                                }
-                                                                disabled={
-                                                                    row?.source !==
-                                                                    "billing"
-                                                                }
-                                                                title={
-                                                                    row?.source !==
-                                                                    "billing"
-                                                                        ? "Tidak bisa hapus: item preview (belum snapshot billing)"
-                                                                        : "Hapus"
-                                                                }
-                                                                className="p-2 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                                                whileHover={{
-                                                                    scale: 1.1,
-                                                                }}
-                                                                whileTap={{
-                                                                    scale: 0.9,
-                                                                }}
-                                                                aria-label="Delete"
-                                                            >
-                                                                <Trash2 className="w-4 h-4" />
-                                                            </motion.button>
-                                                        </div>
-                                                    </td>
-                                                </motion.tr>
+                                                </tr>
                                             );
-                                        })}
+
+                                            const itemRows = group.rows.map(
+                                                ({ row, idx }) => {
+                                                    let reactKey;
+                                                    if (row.noindex) {
+                                                        reactKey = `noindex-${row.noindex}`;
+                                                    } else {
+                                                        const tglByr =
+                                                            row.tgl_byr || "";
+                                                        const no =
+                                                            row.no || "";
+                                                        const status =
+                                                            row.status || "";
+                                                        const nmPerawatan =
+                                                            row.nm_perawatan ||
+                                                            "";
+                                                        const biaya =
+                                                            row.biaya || 0;
+                                                        const jumlah =
+                                                            row.jumlah || 0;
+                                                        reactKey = `temp-${no}-${status}-${tglByr}-${nmPerawatan}-${biaya}-${jumlah}-${idx}`;
+                                                    }
+
+                                                    return (
+                                                        <motion.tr
+                                                            key={reactKey}
+                                                            className="border-b border-gray-100/50 dark:border-gray-700/30 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 dark:hover:from-gray-700/50 dark:hover:to-gray-800/50 transition-all duration-200 group cursor-pointer"
+                                                            initial={{
+                                                                opacity: 0,
+                                                                x: -20,
+                                                            }}
+                                                            animate={{
+                                                                opacity: 1,
+                                                                x: 0,
+                                                            }}
+                                                            exit={{
+                                                                opacity: 0,
+                                                                x: 20,
+                                                            }}
+                                                            transition={{
+                                                                delay:
+                                                                    idx * 0.02,
+                                                            }}
+                                                            whileHover={{
+                                                                scale: 1.01,
+                                                            }}
+                                                            onClick={() =>
+                                                                handleRowClick(
+                                                                    row
+                                                                )
+                                                            }
+                                                        >
+                                                            <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                                                                {formatTanggal(
+                                                                    row.tgl_byr
+                                                                )}
+                                                            </td>
+                                                            <td className="px-4 py-3 pl-10 font-medium text-gray-900 dark:text-white">
+                                                                {row.nm_perawatan}
+                                                            </td>
+                                                            <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                                                                {currency.format(
+                                                                    row.biaya ||
+                                                                        0
+                                                                )}
+                                                            </td>
+                                                            <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                                                                {number.format(
+                                                                    row.jumlah ||
+                                                                        0
+                                                                )}
+                                                            </td>
+                                                            <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                                                                {currency.format(
+                                                                    row.tambahan ||
+                                                                        0
+                                                                )}
+                                                            </td>
+                                                            <td className="px-4 py-3 font-semibold text-blue-600 dark:text-blue-400">
+                                                                {currency.format(
+                                                                    row.totalbiaya ||
+                                                                        0
+                                                                )}
+                                                            </td>
+                                                        </motion.tr>
+                                                    );
+                                                }
+                                            );
+
+                                            return [headerRow, ...itemRows];
+                                        });
+                                    })()}
                                 </AnimatePresence>
                             )}
                         </tbody>
@@ -2121,6 +2159,113 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                     )}
                 </motion.div>
             )}
+
+            <AnimatePresence>
+                {selectedRow && (
+                    <Modal
+                        title="Detail Item Billing"
+                        onClose={() => setSelectedRow(null)}
+                    >
+                        <div className="space-y-3 mb-6">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-600 dark:text-gray-400">
+                                    Tanggal
+                                </span>
+                                <span className="font-medium">
+                                    {formatTanggal(selectedRow.tgl_byr)}
+                                </span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-600 dark:text-gray-400">
+                                    Deskripsi
+                                </span>
+                                <span className="font-medium text-right">
+                                    {selectedRow.nm_perawatan}
+                                </span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-600 dark:text-gray-400">
+                                    Biaya
+                                </span>
+                                <span className="font-medium">
+                                    {currency.format(selectedRow.biaya || 0)}
+                                </span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-600 dark:text-gray-400">
+                                    Jumlah
+                                </span>
+                                <span className="font-medium">
+                                    {number.format(selectedRow.jumlah || 0)}
+                                </span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-600 dark:text-gray-400">
+                                    Tambahan
+                                </span>
+                                <span className="font-medium">
+                                    {currency.format(selectedRow.tambahan || 0)}
+                                </span>
+                            </div>
+                            <div className="flex justify-between text-sm border-t border-gray-200 dark:border-gray-700 pt-3 mt-2">
+                                <span className="text-gray-700 dark:text-gray-300 font-semibold">
+                                    Total
+                                </span>
+                                <span className="font-bold text-blue-600 dark:text-blue-400">
+                                    {currency.format(
+                                        selectedRow.totalbiaya || 0
+                                    )}
+                                </span>
+                            </div>
+                        </div>
+                        <div className="flex gap-2">
+                            <motion.button
+                                onClick={() => {
+                                    if (
+                                        !selectedRow ||
+                                        selectedRow.source !== "billing" ||
+                                        !selectedRow.noindex
+                                    ) {
+                                        notifyInfo(
+                                            "Item ini berasal dari preview otomatis (belum ada snapshot billing). Silakan lakukan Posting Billing di kasir untuk membuat snapshot sebelum bisa edit/hapus di sini."
+                                        );
+                                        return;
+                                    }
+                                    setEditItem(selectedRow);
+                                    setSelectedRow(null);
+                                }}
+                                disabled={
+                                    !selectedRow ||
+                                    selectedRow.source !== "billing" ||
+                                    !selectedRow.noindex
+                                }
+                                className="flex-1 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                            >
+                                Edit
+                            </motion.button>
+                            <motion.button
+                                onClick={async () => {
+                                    if (!selectedRow) return;
+                                    await handleDelete(selectedRow);
+                                    setSelectedRow(null);
+                                }}
+                                disabled={
+                                    !selectedRow ||
+                                    selectedRow.source !== "billing" ||
+                                    !selectedRow.noindex
+                                }
+                                className="flex-1 px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                            >
+                                Hapus
+                            </motion.button>
+                        </div>
+                    </Modal>
+                )}
+            </AnimatePresence>
 
             <AnimatePresence>
                 {showCreate && (
@@ -2610,7 +2755,7 @@ function StatusPermintaanTab({
                                     key={`lab-${p.noorder}`}
                                     className={`rounded-xl border p-3 ${
                                         isSudahDilayani
-                                            ? "border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-900/20"
+                                            ? "border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/20"
                                             : "border-gray-200 dark:border-gray-700"
                                     }`}
                                 >
@@ -2637,7 +2782,7 @@ function StatusPermintaanTab({
                                         <div
                                             className={`text-xs font-semibold px-2 py-1 rounded ${
                                                 isSudahDilayani
-                                                    ? "text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/50"
+                                                    ? "text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/50"
                                                     : "text-gray-500 bg-gray-100 dark:bg-gray-800"
                                             }`}
                                         >
