@@ -72,8 +72,8 @@ export default function Login() {
                     <p className="text-emerald-50/95 text-xs md:text-sm font-medium">
                         Faskesku Indonesia Siap Menjadi Solusi Faskes Anda
                     </p>
-                    <h2 className="mt-2 text-white drop-shadow-lg text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight">
-                        Faskesku.id Solution for Public Health
+                    <h2 className="mt-2 text-white/70 drop-shadow-lg text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight">
+                        Faskesku.id
                     </h2>
                 </div>
             </div>
