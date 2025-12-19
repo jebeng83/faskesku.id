@@ -55,18 +55,18 @@ const tabs = [
         label: "Pengaturan Aplikasi",
         items: [
             {
-                title: "Setting Aplikasi",
-                description: "CRUD konfigurasi inti aplikasi",
-                href: route("setting.index"),
-                icon: Cog6ToothIcon,
-                accent: "from-sky-500 to-blue-500",
-            },
-            {
                 title: "App Settings",
                 description: "Pengaturan branding dan aset",
                 href: route("setting.app.index"),
                 icon: ClipboardDocumentListIcon,
                 accent: "from-indigo-500 to-purple-500",
+            },
+            {
+                title: "Highlight & Prioritas",
+                description: "Pengaturan highlight tim dan tindakan prioritas",
+                href: route("setting.dashboard.index"),
+                icon: Cog6ToothIcon,
+                accent: "from-amber-500 to-orange-500",
             },
         ],
     },

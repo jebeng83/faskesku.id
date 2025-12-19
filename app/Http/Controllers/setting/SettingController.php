@@ -413,6 +413,163 @@ class SettingController extends Controller
         return back()->with('success', 'Setting aplikasi berhasil dihapus');
     }
 
+    public function dashboardIndex(Request $request)
+    {
+        $config = $this->buildDashboardConfig();
+
+        if ($request->wantsJson()) {
+            return response()->json($config);
+        }
+
+        return Inertia::render('Setting/DashboardHighlight', $config);
+    }
+
+    public function dashboardStore(Request $request)
+    {
+        $data = $request->validate([
+            'highlights' => 'array',
+            'highlights.*.label' => 'nullable|string|max:100',
+            'highlights.*.text' => 'nullable|string|max:500',
+            'priorities' => 'array',
+            'priorities.*.text' => 'nullable|string|max:500',
+        ]);
+
+        $table = $this->resolveTable();
+
+        $highlights = array_values(array_filter($data['highlights'] ?? [], function ($item) {
+            return is_array($item)
+                && isset($item['label'], $item['text'])
+                && trim((string) $item['label']) !== ''
+                && trim((string) $item['text']) !== '';
+        }));
+
+        $priorities = array_values(array_filter($data['priorities'] ?? [], function ($item) {
+            if (is_string($item)) {
+                return trim($item) !== '';
+            }
+
+            return is_array($item)
+                && isset($item['text'])
+                && trim((string) $item['text']) !== '';
+        }));
+
+        $priorities = array_map(function ($item) {
+            if (is_string($item)) {
+                return ['text' => trim($item)];
+            }
+
+            return [
+                'text' => trim((string) ($item['text'] ?? '')),
+            ];
+        }, $priorities);
+
+        $typeExists = Schema::hasColumn($table, 'type');
+        $groupExists = Schema::hasColumn($table, 'group');
+        $descriptionExists = Schema::hasColumn($table, 'description');
+
+        $common = [];
+        if ($typeExists) {
+            $common['type'] = 'json';
+        }
+        if ($groupExists) {
+            $common['group'] = 'dashboard';
+        }
+
+        $records = [
+            [
+                'key' => 'dashboard_highlights',
+                'value' => json_encode($highlights, JSON_UNESCAPED_UNICODE),
+                'description' => 'Highlight tim pada dashboard',
+            ],
+            [
+                'key' => 'dashboard_priorities',
+                'value' => json_encode($priorities, JSON_UNESCAPED_UNICODE),
+                'description' => 'Tindakan prioritas pada dashboard',
+            ],
+        ];
+
+        foreach ($records as $record) {
+            $payload = [
+                'key' => $record['key'],
+                'value' => $record['value'],
+                'updated_at' => now(),
+            ];
+
+            if ($typeExists) {
+                $payload['type'] = $common['type'];
+            }
+            if ($groupExists) {
+                $payload['group'] = $common['group'];
+            }
+            if ($descriptionExists) {
+                $payload['description'] = $record['description'];
+            }
+
+            $exists = DB::table($table)->where('key', $record['key'])->exists();
+
+            if ($exists) {
+                DB::table($table)->where('key', $record['key'])->update($payload);
+            } else {
+                $payload['created_at'] = now();
+                DB::table($table)->insert($payload);
+            }
+        }
+
+        return back()->with('success', 'Konfigurasi dashboard berhasil disimpan');
+    }
+
+    protected function buildDashboardConfig(): array
+    {
+        $table = $this->resolveTable();
+
+        $highlightRow = DB::table($table)->where('key', 'dashboard_highlights')->first();
+        $priorityRow = DB::table($table)->where('key', 'dashboard_priorities')->first();
+
+        $highlights = [];
+        if ($highlightRow && $highlightRow->value) {
+            $decoded = json_decode($highlightRow->value, true);
+            if (is_array($decoded)) {
+                $highlights = array_values(array_filter($decoded, function ($item) {
+                    return is_array($item)
+                        && isset($item['label'], $item['text'])
+                        && $item['label'] !== ''
+                        && $item['text'] !== '';
+                }));
+            }
+        }
+
+        $priorities = [];
+        if ($priorityRow && $priorityRow->value) {
+            $decoded = json_decode($priorityRow->value, true);
+            if (is_array($decoded)) {
+                $priorities = array_values(array_filter($decoded, function ($item) {
+                    if (is_string($item)) {
+                        return trim($item) !== '';
+                    }
+
+                    return is_array($item)
+                        && isset($item['text'])
+                        && trim($item['text']) !== '';
+                }));
+            }
+        }
+
+        $priorities = array_map(function ($item) {
+            if (is_string($item)) {
+                return ['text' => $item];
+            }
+
+            return [
+                'text' => $item['text'] ?? '',
+            ];
+        }, $priorities);
+
+        return [
+            'highlights' => $highlights,
+            'priorities' => $priorities,
+        ];
+    }
+
     /**
      * Stream wallpaper image (longblob) untuk sebuah nama_instansi.
      */

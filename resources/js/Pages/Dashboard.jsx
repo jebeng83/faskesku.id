@@ -39,23 +39,6 @@ const MonthlyInfoPanelLazy = React.lazy(() =>
     import("./DashboardComponents/MonthlyInfoPanel")
 );
 
-// Stats akan dibuat dinamis di dalam komponen menggunakan data dari endpoint
-
-const updates = [
-    {
-        label: "IGD",
-        text: "Flow triase baru mulai 08:00 - pastikan form SOAP terisi lengkap.",
-    },
-    {
-        label: "Farmasi",
-        text: "Resep favorit & stok kritikal kini tersedia di panel farmasi.",
-    },
-    {
-        label: "Keuangan",
-        text: "Laporan tarif baru dapat di-export di Pengaturan > Tarif.",
-    },
-];
-
 function AutoScrollRow({ items, renderItem, speed = 40 }) {
     const containerRef = useRef(null);
     const trackRef = useRef(null);
@@ -568,6 +551,99 @@ export default function Dashboard() {
             active = false;
         };
     }, [wallpaperUrl]);
+
+    const [highlightItems, setHighlightItems] = useState(
+        Array.isArray(props.dashboardHighlights) &&
+            props.dashboardHighlights.length > 0
+            ? props.dashboardHighlights
+            : []
+    );
+
+    const [priorityItems, setPriorityItems] = useState(
+        Array.isArray(props.dashboardPriorities) &&
+            props.dashboardPriorities.length > 0
+            ? props.dashboardPriorities
+            : []
+    );
+
+    useEffect(() => {
+        if (Array.isArray(props.dashboardHighlights)) {
+            setHighlightItems(props.dashboardHighlights);
+        } else {
+            setHighlightItems([]);
+        }
+        if (Array.isArray(props.dashboardPriorities)) {
+            const mapped = props.dashboardPriorities
+                .map((p) => ({
+                    text:
+                        typeof p === "string"
+                            ? p
+                            : p?.text || "",
+                }))
+                .filter((p) => p.text && p.text.trim() !== "");
+            setPriorityItems(mapped);
+        } else {
+            setPriorityItems([]);
+        }
+    }, [props.dashboardHighlights, props.dashboardPriorities]);
+
+    useEffect(() => {
+        const hasServerConfig =
+            (Array.isArray(props.dashboardHighlights) &&
+                props.dashboardHighlights.length > 0) ||
+            (Array.isArray(props.dashboardPriorities) &&
+                props.dashboardPriorities.length > 0);
+
+        if (hasServerConfig) {
+            return;
+        }
+
+        let cancelled = false;
+
+        const loadConfig = async () => {
+            try {
+                const url = route("setting.dashboard.index", [], false);
+                const res = await fetch(url, {
+                    headers: {
+                        Accept: "application/json",
+                    },
+                    credentials: "same-origin",
+                });
+                if (!res.ok) return;
+                const json = await res.json();
+                if (!json || cancelled) return;
+
+                if (
+                    Array.isArray(json.highlights) &&
+                    json.highlights.length > 0
+                ) {
+                    setHighlightItems(json.highlights);
+                }
+                if (
+                    Array.isArray(json.priorities) &&
+                    json.priorities.length > 0
+                ) {
+                    const mapped = json.priorities
+                        .map((p) => ({
+                            text:
+                                typeof p === "string"
+                                    ? p
+                                    : p?.text || "",
+                        }))
+                        .filter((p) => p.text && p.text.trim() !== "");
+                    if (mapped.length > 0) {
+                        setPriorityItems(mapped);
+                    }
+                }
+            } catch (_) {}
+        };
+
+        loadConfig();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [props.dashboardHighlights, props.dashboardPriorities]);
 
     const [pasienHariIniCount, setPasienHariIniCount] = useState(null);
     // State untuk jumlah registrasi/pasien kemarin
@@ -1306,7 +1382,7 @@ export default function Dashboard() {
                                 Update cepat dari unit operasional
                             </p>
                             <div className="space-y-4">
-                                {updates.map((item, idx) => (
+                                {highlightItems.map((item, idx) => (
                                     <div
                                         key={idx}
                                         className="p-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-slate-50/90 dark:bg-gray-800/80 text-sm"
@@ -1333,26 +1409,15 @@ export default function Dashboard() {
                                 Hal yang perlu perhatian hari ini
                             </p>
                             <ul className="space-y-3 text-sm">
-                                <li className="flex items-start gap-3">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-1" />
-                                    <span>
-                                        Review 6 mapping lokasi baru sebelum
-                                        dikirim ke SATUSEHAT.
-                                    </span>
-                                </li>
-                                <li className="flex items-start gap-3">
-                                    <ShieldCheck className="w-4 h-4 text-blue-500 mt-1" />
-                                    <span>
-                                        Verifikasi 2 Encounter yang pending
-                                        validasi.
-                                    </span>
-                                </li>
-                                <li className="flex items-start gap-3">
-                                    <UserPlus className="w-4 h-4 text-purple-500 mt-1" />
-                                    <span>
-                                        Tambahkan NIK untuk 4 dokter baru.
-                                    </span>
-                                </li>
+                                {priorityItems.map((item, idx) => (
+                                    <li
+                                        key={idx}
+                                        className="flex items-start gap-3"
+                                    >
+                                        <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-1" />
+                                        <span>{item.text}</span>
+                                    </li>
+                                ))}
                             </ul>
                         </motion.div>
                     </section>
