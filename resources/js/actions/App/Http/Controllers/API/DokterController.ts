@@ -2,6 +2,50 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefa
 /**
 * @see \App\Http\Controllers\API\DokterController::index
 * @see app/Http/Controllers/API/DokterController.php:14
+* @route '/api/public/dokter'
+*/
+const index2ac57bcbeb1d17d3cfbfb60e6e1ea923 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index2ac57bcbeb1d17d3cfbfb60e6e1ea923.url(options),
+    method: 'get',
+})
+
+index2ac57bcbeb1d17d3cfbfb60e6e1ea923.definition = {
+    methods: ["get","head"],
+    url: '/api/public/dokter',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\API\DokterController::index
+* @see app/Http/Controllers/API/DokterController.php:14
+* @route '/api/public/dokter'
+*/
+index2ac57bcbeb1d17d3cfbfb60e6e1ea923.url = (options?: RouteQueryOptions) => {
+    return index2ac57bcbeb1d17d3cfbfb60e6e1ea923.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\API\DokterController::index
+* @see app/Http/Controllers/API/DokterController.php:14
+* @route '/api/public/dokter'
+*/
+index2ac57bcbeb1d17d3cfbfb60e6e1ea923.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index2ac57bcbeb1d17d3cfbfb60e6e1ea923.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\API\DokterController::index
+* @see app/Http/Controllers/API/DokterController.php:14
+* @route '/api/public/dokter'
+*/
+index2ac57bcbeb1d17d3cfbfb60e6e1ea923.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: index2ac57bcbeb1d17d3cfbfb60e6e1ea923.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\API\DokterController::index
+* @see app/Http/Controllers/API/DokterController.php:14
 * @route '/api/dokter'
 */
 const index2d187505c9fce4532e881abbe2b885ae = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -88,6 +132,7 @@ index0dcbc8d7ccddf8ed28e5f7c2b15f980f.head = (options?: RouteQueryOptions): Rout
 })
 
 export const index = {
+    '/api/public/dokter': index2ac57bcbeb1d17d3cfbfb60e6e1ea923,
     '/api/dokter': index2d187505c9fce4532e881abbe2b885ae,
     '/rawat-jalan/dokter': index0dcbc8d7ccddf8ed28e5f7c2b15f980f,
 }

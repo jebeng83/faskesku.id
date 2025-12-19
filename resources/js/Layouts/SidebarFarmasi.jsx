@@ -424,6 +424,11 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                         href: sisaStokUrl,
                         icon: <Boxes className="w-4 h-4" />,
                     },
+                    {
+                        label: "Darurat Stok",
+                        href: route("farmasi.darurat-stok", {}, false),
+                        icon: <ClipboardList className="w-4 h-4" />,
+                    },
                 ],
             },
         ];

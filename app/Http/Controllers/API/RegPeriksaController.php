@@ -336,6 +336,89 @@ class RegPeriksaController extends Controller
         }
     }
 
+    public function updateKeputusan(Request $request, string $regPeriksa): JsonResponse
+    {
+        try {
+            $noRawat = urldecode($regPeriksa);
+            $request->validate([
+                'keputusan' => 'required|in:-,RUJUKAN,PRIORITAS,HIJAU,KUNING,MERAH,HITAM,MJKN,CHECK-IN',
+            ]);
+
+            $model = RegPeriksa::where('no_rawat', $noRawat)->first();
+
+            if (! $model) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data registrasi periksa tidak ditemukan untuk nomor rawat yang diberikan',
+                ], 404);
+            }
+
+            $model->update([
+                'keputusan' => $request->keputusan,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data' => $model,
+                'message' => 'Keputusan berhasil diperbarui menjadi: '.$request->keputusan,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui keputusan: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Update keputusan by explicit no_rawat in payload (safe for values with '/')
+     */
+    public function updateKeputusanByRawat(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'no_rawat' => 'required|string',
+                'keputusan' => 'required|in:-,RUJUKAN,PRIORITAS,HIJAU,KUNING,MERAH,HITAM,MJKN,CHECK-IN',
+            ]);
+
+            $model = RegPeriksa::where('no_rawat', $request->no_rawat)->first();
+
+            if (! $model) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data registrasi periksa tidak ditemukan untuk nomor rawat yang diberikan',
+                ], 404);
+            }
+
+            $model->update([
+                'keputusan' => $request->keputusan,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data' => $model,
+                'message' => 'Keputusan berhasil diperbarui menjadi: '.$request->keputusan,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui keputusan: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
     /**
      * Delete registrasi periksa
      */

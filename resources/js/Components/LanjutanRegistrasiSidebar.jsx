@@ -143,6 +143,15 @@ export default function LanjutanRegistrasiSidebar({
           active: menuConfig.activeTab === "keg_kelompok_pcare",
           colorScheme: "blue",
         },
+        {
+          id: "cek_peserta_bpjs",
+          name: "Cek Peserta BPJS",
+          icon: "document-text",
+          description: "Cek peserta BPJS via PCare",
+          route: "pcare.layanan.cek-peserta-nik",
+          active: menuConfig.activeTab === "cek_peserta_bpjs",
+          colorScheme: "blue",
+        },
       ],
     },
   ];

@@ -2,6 +2,7 @@ import PembelianController from './PembelianController'
 import PemesananController from './PemesananController'
 import SisaStokController from './SisaStokController'
 import SirkulasiObatController from './SirkulasiObatController'
+import DaruratStokController from './DaruratStokController'
 import SetHargaObatController from './SetHargaObatController'
 import RiwayatBarangMedisController from './RiwayatBarangMedisController'
 import DataBarangController from './DataBarangController'
@@ -19,6 +20,7 @@ const Farmasi = {
     PemesananController: Object.assign(PemesananController, PemesananController),
     SisaStokController: Object.assign(SisaStokController, SisaStokController),
     SirkulasiObatController: Object.assign(SirkulasiObatController, SirkulasiObatController),
+    DaruratStokController: Object.assign(DaruratStokController, DaruratStokController),
     SetHargaObatController: Object.assign(SetHargaObatController, SetHargaObatController),
     RiwayatBarangMedisController: Object.assign(RiwayatBarangMedisController, RiwayatBarangMedisController),
     DataBarangController: Object.assign(DataBarangController, DataBarangController),

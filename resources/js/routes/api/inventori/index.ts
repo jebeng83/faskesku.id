@@ -87,9 +87,54 @@ sirkulasiBarang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
     method: 'head',
 })
 
+/**
+* @see \App\Http\Controllers\Farmasi\DaruratStokController::daruratStok
+* @see app/Http/Controllers/Farmasi/DaruratStokController.php:10
+* @route '/api/inventori/darurat-stok'
+*/
+export const daruratStok = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: daruratStok.url(options),
+    method: 'get',
+})
+
+daruratStok.definition = {
+    methods: ["get","head"],
+    url: '/api/inventori/darurat-stok',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Farmasi\DaruratStokController::daruratStok
+* @see app/Http/Controllers/Farmasi/DaruratStokController.php:10
+* @route '/api/inventori/darurat-stok'
+*/
+daruratStok.url = (options?: RouteQueryOptions) => {
+    return daruratStok.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Farmasi\DaruratStokController::daruratStok
+* @see app/Http/Controllers/Farmasi/DaruratStokController.php:10
+* @route '/api/inventori/darurat-stok'
+*/
+daruratStok.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: daruratStok.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Farmasi\DaruratStokController::daruratStok
+* @see app/Http/Controllers/Farmasi/DaruratStokController.php:10
+* @route '/api/inventori/darurat-stok'
+*/
+daruratStok.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: daruratStok.url(options),
+    method: 'head',
+})
+
 const inventori = {
     sisaStok: Object.assign(sisaStok, sisaStok),
     sirkulasiBarang: Object.assign(sirkulasiBarang, sirkulasiBarang),
+    daruratStok: Object.assign(daruratStok, daruratStok),
 }
 
 export default inventori
