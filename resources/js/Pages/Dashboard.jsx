@@ -921,50 +921,6 @@ export default function Dashboard() {
         [permissionNames]
     );
 
-    // Stats dinamis yang menggunakan hasil dari endpoint
-    const trendReady = pasienHariIniCount != null && pasienKemarinCount != null;
-    const displayTrend = (() => {
-        if (!trendReady) return "Memuat…";
-        if (pasienKemarinCount === 0) {
-            if (pasienHariIniCount === 0) return "0%";
-            return "+∞%"; // tidak terdefinisi (kenaikan dari 0)
-        }
-        const diff = pasienHariIniCount - pasienKemarinCount;
-        const pct = (diff / pasienKemarinCount) * 100;
-        const sign = pct > 0 ? "+" : "";
-        return `${sign}${pct.toFixed(1)}%`;
-    })();
-
-    const stats = [
-        {
-            label: "Pasien Hari Ini",
-            value: pasienHariIniCount ?? "—",
-            change: displayTrend,
-            accent: "from-emerald-600 to-green-700",
-            icon: Activity,
-        },
-        {
-            label: "Kunjungan Terjadwal",
-            value: "342",
-            change: "+12%",
-            accent: "from-teal-600 to-teal-700",
-            icon: ClipboardList,
-        },
-        {
-            label: "Integrasi SATUSEHAT",
-            value: "Aktif",
-            change: "98% sukses",
-            accent: "from-green-600 to-emerald-700",
-            icon: ShieldCheck,
-        },
-        {
-            label: "Notifikasi Penting",
-            value: "6",
-            change: "Perlu tindakan",
-            accent: "from-amber-600 to-orange-600",
-            icon: Bell,
-        },
-    ];
     const [notes, setNotes] = useState([]);
     const [newNote, setNewNote] = useState("");
     useEffect(() => {
@@ -1420,36 +1376,6 @@ export default function Dashboard() {
                                 ))}
                             </ul>
                         </motion.div>
-                    </section>
-                    {/* Panel statistik diletakkan di atas footer sesuai permintaan */}
-                    <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
-                        {stats.map((item) => (
-                            <motion.div
-                                key={item.label}
-                                variants={itemVariants}
-                                whileHover={{ scale: 1.01, y: -4 }}
-                                className={`relative overflow-hidden rounded-2xl p-6 text-white shadow-xl shadow-blue-500/10 bg-gradient-to-br ${item.accent}`}
-                            >
-                                {/* Accent top line tipis untuk efek premium */}
-                                <div className="absolute top-0 left-0 right-0 h-0.5 bg-white/30" />
-                                <div className="flex items-start justify-between gap-4">
-                                    <div>
-                                        <p className="text-xs uppercase tracking-wide text-white/70">
-                                            {item.label}
-                                        </p>
-                                        <p className="text-4xl font-extrabold mt-2">
-                                            {item.value}
-                                        </p>
-                                        <p className="text-sm text-white/85 mt-1">
-                                            {item.change}
-                                        </p>
-                                    </div>
-                                    <div className="p-3 rounded-xl bg-white/20">
-                                        <item.icon className="w-5 h-5" />
-                                    </div>
-                                </div>
-                            </motion.div>
-                        ))}
                     </section>
                     <Footer />
                 </motion.div>
