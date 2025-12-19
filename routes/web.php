@@ -756,6 +756,10 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('farmasi/PenjualanObat');
         })->name('penjualan-obat');
 
+        Route::get('/hutang-obat', function () {
+            return Inertia::render('farmasi/HutangObat');
+        })->name('hutang-obat');
+
         Route::get('/resep-obat', function () {
             return Inertia::render('farmasi/ResepObat');
         })->name('resep-obat');
@@ -781,6 +785,19 @@ Route::middleware('auth')->group(function () {
         Route::get('/stok-opname', function () {
             return Inertia::render('farmasi/StokOpname');
         })->name('stok-opname');
+
+        // Laporan & utility stok farmasi
+        Route::get('/sisa-stok', function () {
+            return Inertia::render('farmasi/SisaStok');
+        })->name('sisa-stok');
+
+        Route::get('/sirkulasi-obat', function () {
+            return Inertia::render('farmasi/SirkulasiObat');
+        })->name('sirkulasi-obat');
+
+        Route::get('/cek-stok-obat', function () {
+            return Inertia::render('farmasi/CekStok');
+        })->name('cek-stok-obat');
 
         // Farmasi - Data Opname (laporan/daftar hasil opname)
         Route::get('/data-opname', function () {
