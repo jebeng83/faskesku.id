@@ -65,6 +65,11 @@ class Patient extends Model
         'tgl_daftar' => 'date',
     ];
 
+    public function getRouteKeyName()
+    {
+        return 'no_rkm_medis';
+    }
+
     // Accessor untuk format tanggal lahir
     public function getTanggalLahirFormattedAttribute()
     {

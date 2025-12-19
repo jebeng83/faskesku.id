@@ -102,26 +102,39 @@ Route::get('/public/dokter', [DokterController::class, 'index'])->name('api.publ
     });
 
     // Registrasi Periksa Routes
-    Route::prefix('reg-periksa')->group(function () {
-        Route::get('/', [RegPeriksaController::class, 'index'])->name('api.reg-periksa.index');
-        Route::post('/', [RegPeriksaController::class, 'store'])->name('api.reg-periksa.store');
-        // Endpoint aman untuk ambil data berdasarkan no_rawat (mendukung karakter '/')
-        Route::get('/by-rawat', [RegPeriksaController::class, 'findByNoRawat'])->name('api.reg-periksa.by-rawat');
-        // Endpoint khusus untuk update status_bayar saja (harus didefinisikan sebelum route umum)
-        Route::put('/{regPeriksa}/status-bayar', [RegPeriksaController::class, 'updateStatusBayar'])
-            ->where('regPeriksa', '.*')
-            ->name('api.reg-periksa.update-status-bayar');
+        Route::prefix('reg-periksa')->group(function () {
+            Route::get('/', [RegPeriksaController::class, 'index'])->name('api.reg-periksa.index');
+            Route::post('/', [RegPeriksaController::class, 'store'])->name('api.reg-periksa.store');
+            // Endpoint aman untuk ambil data berdasarkan no_rawat (mendukung karakter '/')
+            Route::get('/by-rawat', [RegPeriksaController::class, 'findByNoRawat'])->name('api.reg-periksa.by-rawat');
+            // Endpoint alternatif: update keputusan berdasarkan no_rawat di payload (menghindari '/' di path)
+            // Disambiguation: gunakan endpoint aksi terpisah di luar wildcard agar tidak bentrok
+            // dengan route dinamis '/{regPeriksa}'
+            // (lihat definisi di bawah, di luar prefix 'reg-periksa')
+            // Endpoint khusus untuk update status_bayar saja (harus didefinisikan sebelum route umum)
+            Route::put('/{regPeriksa}/status-bayar', [RegPeriksaController::class, 'updateStatusBayar'])
+                ->where('regPeriksa', '.*')
+                ->name('api.reg-periksa.update-status-bayar');
+            Route::put('/{regPeriksa}/keputusan', [RegPeriksaController::class, 'updateKeputusan'])
+                ->where('regPeriksa', '.*')
+                ->name('api.reg-periksa.update-keputusan');
         Route::get('/{regPeriksa}', [RegPeriksaController::class, 'show'])
-            ->where('regPeriksa', '^(?!by-rawat$).*')
+            ->where('regPeriksa', '^(?!by-rawat$)(?!keputusan$)(?!status-bayar$)[^/]+$')
             ->name('api.reg-periksa.show');
         Route::put('/{regPeriksa}', [RegPeriksaController::class, 'update'])
-            ->where('regPeriksa', '^(?!.*status-bayar$).*')
+            ->where('regPeriksa', '^(?!by-rawat$)(?!keputusan$)(?!status-bayar$)[^/]+$')
             ->name('api.reg-periksa.update');
-        Route::delete('/{regPeriksa}', [RegPeriksaController::class, 'destroy'])->name('api.reg-periksa.destroy');
-        Route::post('/hitung-umur', [RegPeriksaController::class, 'hitungUmur'])->name('api.reg-periksa.hitung-umur');
-        Route::get('/statistik', [RegPeriksaController::class, 'getStatistik'])->name('api.reg-periksa.statistik');
-        Route::get('/filter-data', [RegPeriksaController::class, 'getFilterData'])->name('api.reg-periksa.filter-data');
-    });
+            Route::delete('/{regPeriksa}', [RegPeriksaController::class, 'destroy'])
+                ->where('regPeriksa', '^(?!by-rawat$)(?!keputusan$)(?!status-bayar$)[^/]+$')
+                ->name('api.reg-periksa.destroy');
+            Route::post('/hitung-umur', [RegPeriksaController::class, 'hitungUmur'])->name('api.reg-periksa.hitung-umur');
+            Route::get('/statistik', [RegPeriksaController::class, 'getStatistik'])->name('api.reg-periksa.statistik');
+            Route::get('/filter-data', [RegPeriksaController::class, 'getFilterData'])->name('api.reg-periksa.filter-data');
+        });
+
+        // Endpoint aman (query-style) untuk update keputusan dengan payload no_rawat
+        Route::match(['put', 'post'], '/reg-periksa-actions/update-keputusan', [RegPeriksaController::class, 'updateKeputusanByRawat'])
+            ->name('api.reg-periksa.actions.update-keputusan');
 
     // User Management Routes
     Route::prefix('users')->group(function () {
@@ -297,6 +310,8 @@ Route::get('/public/dokter', [DokterController::class, 'index'])->name('api.publ
                 'days_remaining' => $days,
             ];
         });
+
+    // Endpoint aksi terpisah untuk update keputusan (menghindari konflik wildcard)
 
         return response()->json([
             'success' => true,

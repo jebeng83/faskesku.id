@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import SidebarBriding from '@/Layouts/SidebarBriding';
+import LanjutanRegistrasiLayout from '@/Layouts/LanjutanRegistrasiLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowPathIcon,
@@ -272,5 +272,9 @@ export default function CekPesertaPcareNik() {
   );
 }
 
-// Render dalam AppLayout
-CekPesertaPcareNik.layout = (page) => <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>;
+// Render dalam LanjutanRegistrasiLayout
+CekPesertaPcareNik.layout = (page) => (
+  <LanjutanRegistrasiLayout title="Layanan PCare" menuConfig={{ activeTab: 'cek_peserta_bpjs' }}>
+    {page}
+  </LanjutanRegistrasiLayout>
+);

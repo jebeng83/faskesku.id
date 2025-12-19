@@ -284,6 +284,48 @@ export default function Registration({
         }
     };
 
+    const handleCheckIn = async (reg) => {
+        try {
+            if (!reg || !reg.no_rawat) return;
+            const res = await axios.put('/api/reg-periksa-actions/update-keputusan', { no_rawat: reg.no_rawat, keputusan: 'CHECK-IN' }, {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                withCredentials: true,
+            });
+            if (res?.data?.success) {
+                setRegistrationData((prev) => {
+                    if (!prev || !prev.data) return prev;
+                    const next = { ...prev };
+                    next.data = prev.data.map((r) => r.no_rawat === reg.no_rawat ? { ...r, keputusan: 'CHECK-IN' } : r);
+                    return next;
+                });
+                return;
+            }
+        } catch (e) {
+            if (e?.response?.status === 405) {
+                try {
+                    const form = new FormData();
+                    form.append('no_rawat', reg.no_rawat);
+                    form.append('keputusan', 'CHECK-IN');
+                    form.append('_method', 'PUT');
+                    const spoofRes = await axios.post('/api/reg-periksa-actions/update-keputusan', form, {
+                        headers: { 'Accept': 'application/json' },
+                        withCredentials: true,
+                    });
+                    if (spoofRes?.data?.success) {
+                        setRegistrationData((prev) => {
+                            if (!prev || !prev.data) return prev;
+                            const next = { ...prev };
+                            next.data = prev.data.map((r) => r.no_rawat === reg.no_rawat ? { ...r, keputusan: 'CHECK-IN' } : r);
+                            return next;
+                        });
+                        return;
+                    }
+                } catch (_) {}
+            }
+            alert(e?.response?.data?.message || 'Gagal melakukan check-in');
+        }
+    };
+
     const fetchBpjsByNik = async (nikOverride) => {
         const n = sanitizeNik(nikOverride ?? bpjsNik);
         setBpjsNik(n);
@@ -2169,6 +2211,9 @@ export default function Registration({
                                                 Status Poli
                                             </th>
                                             <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                                Cara Daftar
+                                            </th>
+                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
                                                 Jam
                                             </th>
                                             <th className="px-3 py-2 text-right text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
@@ -2247,6 +2292,9 @@ export default function Registration({
                                                     </span>
                                                 </td>
                                                 <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                    {reg.keputusan ?? "-"}
+                                                </td>
+                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
                                                     {reg.jam_reg?.slice(0, 5)}
                                                 </td>
                                                 <td className="px-3 py-2 text-right text-xs lg:text-sm text-gray-700 dark:text-gray-300">
@@ -2314,6 +2362,24 @@ export default function Registration({
                                                                             />
                                                                         </svg>
                                                                         Detail
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            handleCheckIn(reg);
+                                                                            setOpenDropdown(null);
+                                                                        }}
+                                                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                                                                    >
+                                                                        <svg
+                                                                            className="w-4 h-4"
+                                                                            fill="none"
+                                                                            stroke="currentColor"
+                                                                            viewBox="0 0 24 24"
+                                                                        >
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                                        </svg>
+                                                                        Check-In
                                                                     </button>
                                                                     <button
                                                                         onClick={(e) => {

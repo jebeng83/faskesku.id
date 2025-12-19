@@ -184,14 +184,6 @@ export default function HutangObat() {
                             <h1 className="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
                                 Hutang Obat
                             </h1>
-                            <p className="text-sm text-gray-700 dark:text-gray-300">
-                                Daftar pemesanan belum dibayar dan proses
-                                pelunasan dengan posting jurnal.
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            {badge("GET", "bg-blue-600/10 text-blue-700")}
-                            {badge("POST", "bg-indigo-600/10 text-indigo-700")}
                         </div>
                     </div>
                 </div>

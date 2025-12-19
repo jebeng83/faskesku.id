@@ -3,13 +3,17 @@ import { Head } from "@inertiajs/react";
 import axios from "axios";
 import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
 import SearchableSelect from "@/Components/SearchableSelect";
+import { motion } from "motion/react";
 
 export default function DaruratStok() {
     const [jenis, setJenis] = useState("");
     const [kategori, setKategori] = useState("");
     const [golongan, setGolongan] = useState("");
     const [q, setQ] = useState("");
+    const [kdBangsal, setKdBangsal] = useState("");
+    const [nmBangsal, setNmBangsal] = useState("");
     const [batchOn, setBatchOn] = useState(false);
+    const [gudangs, setGudangs] = useState([]);
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
@@ -36,6 +40,7 @@ export default function DaruratStok() {
                     kategori,
                     golongan,
                     q,
+                    kd_bangsal: kdBangsal,
                     batch: batchOn ? "on" : "off",
                     page: opts && opts.page ? opts.page : page,
                     per_page: opts && opts.per_page ? opts.per_page : perPage,
@@ -45,10 +50,13 @@ export default function DaruratStok() {
                 signal: ac.signal,
             });
             if (id !== requestIdRef.current) return;
+            const gs = Array.isArray(data?.gudangs) ? data.gudangs : [];
             const it = data?.items ?? [];
+            setGudangs(gs);
             setItems(it);
         } catch (e) {
             if (id !== requestIdRef.current) return;
+            setGudangs([]);
             setItems([]);
         } finally {
             if (id === requestIdRef.current) setLoading(false);
@@ -58,6 +66,11 @@ export default function DaruratStok() {
     useEffect(() => {
         fetchData();
     }, []);
+
+    useEffect(() => {
+        setPage(1);
+        fetchData({ page: 1 });
+    }, [kdBangsal]);
 
     const triggerSearch = () => {
         setPage(1);
@@ -69,20 +82,41 @@ export default function DaruratStok() {
         setKategori("");
         setGolongan("");
         setQ("");
+        setKdBangsal("");
+        setNmBangsal("");
         setPage(1);
         fetchData({ jenis: "", kategori: "", golongan: "", q: "", page: 1 });
     };
 
     const cols = useMemo(() => {
-        return [
+        const awal = [
             { key: "kode_brng", label: "Kode Barang" },
             { key: "nama_brng", label: "Nama Barang" },
+            { key: "lokasi", label: "Lokasi" },
+        ];
+        const akhir = [
             { key: "satuan", label: "Satuan" },
             { key: "jenis", label: "Jenis" },
             { key: "stok_minimal", label: "Minimal" },
+        ];
+        if (kdBangsal) {
+            return [
+                ...awal,
+                ...akhir,
+                { key: "stok_saat_ini", label: "Saat Ini" },
+            ];
+        }
+        const dynamic = (gudangs || []).map((g) => ({
+            key: `gd_${g.kd_bangsal}`,
+            label: g.nm_bangsal,
+        }));
+        return [
+            ...awal,
+            ...akhir,
+            ...dynamic,
             { key: "stok_saat_ini", label: "Saat Ini" },
         ];
-    }, []);
+    }, [gudangs, kdBangsal]);
 
     const rows = useMemo(() => {
         const base = Array.isArray(items)
@@ -142,8 +176,15 @@ export default function DaruratStok() {
                     <div className="flex items-center justify-between gap-3">
                         <div className="min-w-0">
                             <h1 className="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                                Darurat Stok Obat, Alkes & BHP Medis
+                                :: Data Obat Kurang Dari Stok Minimal ::
                             </h1>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                                <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-200 border border-blue-100 dark:border-blue-900">
+                                    {kdBangsal
+                                        ? `${kdBangsal}${nmBangsal ? " — " + nmBangsal : ""}`
+                                        : "Lokasi belum dipilih"}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -153,7 +194,7 @@ export default function DaruratStok() {
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white">Filter</h3>
                     </div>
                     <div className="relative p-6">
-                        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Jenis</label>
                                 <SearchableSelect
@@ -185,6 +226,22 @@ export default function DaruratStok() {
                                 />
                             </div>
                             <div>
+                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Lokasi</label>
+                                <SearchableSelect
+                                    source="bangsal"
+                                    value={kdBangsal}
+                                    onChange={setKdBangsal}
+                                    onSelect={(opt) => {
+                                        const label = typeof opt === "string" ? opt : opt?.label || "";
+                                        const parts = label.split(" — ");
+                                        setNmBangsal(parts.length > 1 ? parts[1] : "");
+                                    }}
+                                    placeholder="Pilih lokasi gudang/depo"
+                                    searchPlaceholder="Ketik nama lokasi"
+                                    defaultDisplay={kdBangsal && nmBangsal ? `${kdBangsal} — ${nmBangsal}` : null}
+                                />
+                            </div>
+                            <div>
                                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Kata Kunci</label>
                                 <input
                                     type="text"
@@ -195,32 +252,7 @@ export default function DaruratStok() {
                                     aria-label="Cari barang"
                                 />
                             </div>
-                            <div className="flex items-end gap-2">
-                                <label className="inline-flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                    <input
-                                        type="checkbox"
-                                        checked={batchOn}
-                                        onChange={(e) => setBatchOn(e.target.checked)}
-                                    />
-                                    Mode Batch
-                                </label>
-                                <div className="ml-auto">
-                                    <label className="block text-xs font-medium text-gray-600">Baris per halaman</label>
-                                    <select
-                                        value={perPage}
-                                        onChange={(e) => {
-                                            const val = Number(e.target.value);
-                                            setPerPage(val);
-                                            setPage(1);
-                                            fetchData({ per_page: val, page: 1 });
-                                        }}
-                                        className="mt-1 rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-indigo-300 dark:border-gray-600"
-                                    >
-                                        {[10, 20, 50].map((n) => (
-                                            <option key={n} value={n}>{n}</option>
-                                        ))}
-                                    </select>
-                                </div>
+                            <div className="flex flex-wrap items-end justify-end gap-2">
                                 <button
                                     onClick={triggerSearch}
                                     className="rounded-lg px-4 py-2.5 text-sm font-semibold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white"
@@ -263,14 +295,26 @@ export default function DaruratStok() {
                                 </tr>
                             )}
                             {!loading && rows.map((row, idx) => (
-                                <tr key={`${row.kode_brng || idx}_${idx}`} className="border-b border-gray-100/50 dark:border-gray-700/30">
+                                <motion.tr
+                                    key={`${row.kode_brng || idx}_${idx}`}
+                                    initial={{ opacity: 0, y: -6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ type: "spring", bounce: 0.15, visualDuration: 0.35, delay: Math.min(idx * 0.02, 0.2) }}
+                                    className="border-b border-gray-100/50 dark:border-gray-700/30"
+                                >
                                     <td className="px-3 py-2">{row.kode_brng}</td>
                                     <td className="px-3 py-2">{row.nama_brng}</td>
+                                    <td className="px-3 py-2">{kdBangsal ? `${kdBangsal}${nmBangsal ? " — " + nmBangsal : ""}` : "Semua Lokasi"}</td>
                                     <td className="px-3 py-2">{row.satuan}</td>
                                     <td className="px-3 py-2">{row.jenis}</td>
                                     <td className="px-3 py-2">{Number(row.stok_minimal || 0).toLocaleString()}</td>
+                                    {!kdBangsal && gudangs.map((g) => (
+                                        <td key={`gd_${g.kd_bangsal}`} className="px-3 py-2">
+                                            {Number((row.stok_per_gudang || {})[g.kd_bangsal] || 0).toLocaleString()}
+                                        </td>
+                                    ))}
                                     <td className="px-3 py-2">{Number(row.stok_saat_ini || 0).toLocaleString()}</td>
-                                </tr>
+                                </motion.tr>
                             ))}
                         </tbody>
                     </table>
@@ -278,7 +322,34 @@ export default function DaruratStok() {
 
                 {paginator && pageLinks.length > 0 && (
                     <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-                        <p className="text-xs text-gray-600">Menampilkan {items?.from ?? 0}-{items?.to ?? 0} dari {items?.total ?? 0} data</p>
+                        <div className="flex flex-wrap items-center gap-3">
+                            <label className="inline-flex items-center gap-2 text-xs font-medium text-gray-700 dark:text-gray-300">
+                                <input
+                                    type="checkbox"
+                                    checked={batchOn}
+                                    onChange={(e) => setBatchOn(e.target.checked)}
+                                />
+                                Mode Batch
+                            </label>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs font-medium text-gray-600">Baris per halaman</span>
+                                <select
+                                    value={perPage}
+                                    onChange={(e) => {
+                                        const val = Number(e.target.value);
+                                        setPerPage(val);
+                                        setPage(1);
+                                        fetchData({ per_page: val, page: 1 });
+                                    }}
+                                    className="rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-indigo-300 dark:border-gray-600"
+                                >
+                                    {[10, 20, 50].map((n) => (
+                                        <option key={n} value={n}>{n}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <p className="text-xs text-gray-600">Menampilkan {items?.from ?? 0}-{items?.to ?? 0} dari {items?.total ?? 0} data</p>
+                        </div>
                         <div className="flex flex-wrap gap-2">
                             {pageLinks.map((link, idx) => (
                                 <button
