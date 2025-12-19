@@ -41,81 +41,6 @@ const MonthlyInfoPanelLazy = React.lazy(() =>
 
 // Stats akan dibuat dinamis di dalam komponen menggunakan data dari endpoint
 
-const quickLinksConfig = [
-    {
-        title: "Pengaturan",
-        description: "Kelola konfigurasi aplikasi & bridging",
-        href: route("profile.home"),
-        requiredPermission: "group.pengaturan.access",
-    },
-    {
-        title: "Pendaftaran Pasien",
-        description: "Registrasi cepat atau tambah pasien baru",
-        href: "/registration/lanjutan",
-        requiredPermission: "group.registrasi.access",
-    },
-    {
-        title: "Monitoring Satusehat",
-        description: "Pantau status FHIR & Encounter",
-        href: "/satusehat/monitoring",
-        requiredPermission: "group.satusehat.access",
-    },
-    {
-        title: "Briding",
-        description: "Akses modul bridging",
-        href: "/pcare",
-        requiredPermission: "group.pcare.access",
-    },
-    {
-        title: "PCare & Rujukan",
-        description: "Sinkron data PCare dan status rujukan",
-        href: "/pcare",
-        requiredPermission: "group.pcare.access",
-    },
-    {
-        title: "Rawat Jalan",
-        description: "Kelola pemeriksaan & SOAP RME",
-        href: "/rawat-jalan",
-        requiredPermission: "group.rawatjalan.access",
-    },
-    {
-        title: "Laboratorium",
-        description: "Kelola pemeriksaan laboratorium & data hasil",
-        href: route("laboratorium.permintaan-lab.index"),
-        requiredPermission: "group.laboratorium.access",
-    },
-    {
-        title: "Pembayaran",
-        description: "Kelola pembayaran Ralan & Ranap",
-        href: "/pembayaran",
-        requiredPermission: "group.keuangan.access",
-    },
-    {
-        title: "Keuangan",
-        description: "Kelola Rekening, Jurnal, dan Nota",
-        href: "/akutansi/home",
-        requiredPermission: "group.keuangan.access",
-    },
-];
-
-const timeline = [
-    {
-        title: "Kunjungan diterima SATUSEHAT",
-        meta: "09:42 WIB • Dr. Sita Anindya",
-        status: "success",
-    },
-    {
-        title: "Bundle Rajal diproses",
-        meta: "09:10 WIB • IGD 01",
-        status: "info",
-    },
-    {
-        title: "Token SATUSEHAT diperbarui",
-        meta: "08:55 WIB • Otomatis",
-        status: "neutral",
-    },
-];
-
 const updates = [
     {
         label: "IGD",
@@ -605,14 +530,6 @@ export default function Dashboard() {
         : [];
     const hasPermission = (permission) =>
         !permission || permissionNames.includes(permission);
-    const quickLinks = useMemo(
-        () =>
-            quickLinksConfig.filter((item) =>
-                hasPermission(item.requiredPermission)
-            ),
-        [permissionNames]
-    );
-
     const [enableMotion, setEnableMotion] = useState(true);
     useEffect(() => {
         try {
@@ -1027,28 +944,6 @@ export default function Dashboard() {
             controller.abort();
         };
     }, []);
-    const mapLat = Number(props?.map_coords?.latitude);
-    const mapLng = Number(props?.map_coords?.longitude);
-    const finalLat = Number.isFinite(mapLat) ? mapLat : -7.535561951939349;
-    const finalLng = Number.isFinite(mapLng) ? mapLng : 111.05827946682133;
-    const embedKey = String(
-        import.meta?.env?.VITE_GOOGLE_MAPS_EMBED_KEY || ""
-    ).trim();
-    const staticOnly =
-        String(
-            import.meta?.env?.VITE_GOOGLE_MAPS_STATIC_ONLY || ""
-        ).toLowerCase() === "true";
-    const staticUrl =
-        embedKey && staticOnly
-            ? `https://maps.googleapis.com/maps/api/staticmap?center=${finalLat},${finalLng}&zoom=17&size=800x480&maptype=roadmap&markers=color:red%7C${finalLat},${finalLng}&key=${encodeURIComponent(
-                  embedKey
-              )}`
-            : "";
-    const mapUrl = embedKey
-        ? `https://www.google.com/maps/embed/v1/view?key=${encodeURIComponent(
-              embedKey
-          )}&center=${finalLat},${finalLng}&zoom=17&maptype=roadmap`
-        : `https://maps.google.com/maps?ll=${finalLat},${finalLng}&z=17&t=m&hl=id&output=embed`;
     return (
         <>
             <Head title="Faskesku · Selamat Datang">
@@ -1398,103 +1293,6 @@ export default function Dashboard() {
                         </motion.div>
                     </section>
 
-                    <section className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                        <div className="xl:col-span-2 space-y-5">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {quickLinks.map((item) => (
-                                    <motion.div
-                                        key={item.title}
-                                        variants={itemVariants}
-                                        whileHover={{ scale: 1.01, y: -3 }}
-                                        className="relative overflow-hidden rounded-2xl shadow-xl shadow-blue-500/5 hover:shadow-2xl transition-all"
-                                    >
-                                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-                                        <Link
-                                            href={item.href}
-                                            className="rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/85 backdrop-blur-xl p-5 flex flex-col gap-3"
-                                        >
-                                            <h3 className="text-base font-semibold text-gray-900 dark:text-white">
-                                                {item.title}
-                                            </h3>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400 flex-1">
-                                                {item.description}
-                                            </p>
-                                            <span className="text-sm font-medium text-blue-600 dark:text-blue-400 inline-flex items-center gap-1">
-                                                Buka modul{" "}
-                                                <ArrowRight className="w-4 h-4" />
-                                            </span>
-                                        </Link>
-                                    </motion.div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <motion.div
-                                variants={itemVariants}
-                                className="relative overflow-hidden rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/85 backdrop-blur-sm p-6 shadow-xl shadow-blue-500/5"
-                            >
-                                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-                                <div className="flex items-center gap-2 mb-4">
-                                    <Clock4 className="w-4 h-4 text-blue-500" />
-                                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                                        Aktivitas terkini
-                                    </h3>
-                                </div>
-                                <div className="space-y-4">
-                                    {timeline.map((item, idx) => (
-                                        <div
-                                            key={idx}
-                                            className="flex items-start gap-3"
-                                        >
-                                            <span
-                                                className={`mt-1 w-2 h-2 rounded-full ${
-                                                    item.status === "success"
-                                                        ? "bg-emerald-500"
-                                                        : item.status === "info"
-                                                        ? "bg-blue-500"
-                                                        : "bg-gray-400"
-                                                }`}
-                                            />
-                                            <div className="flex-1">
-                                                <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                                    {item.title}
-                                                </p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                    {item.meta}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </motion.div>
-
-                            <motion.div
-                                variants={itemVariants}
-                                className="relative overflow-hidden rounded-2xl border border-emerald-700/40 bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 text-white p-6 shadow-lg shadow-emerald-900/30"
-                            >
-                                <div className="absolute top-0 left-0 right-0 h-0.5 bg-white/30" />
-                                <div className="flex items-center gap-3 mb-3">
-                                    <CheckCircle2 className="w-5 h-5" />
-                                    <p className="text-sm font-medium">
-                                        Integrasi berjalan mulus
-                                    </p>
-                                </div>
-                                <p className="text-sm text-white/85 mb-3">
-                                    29 bundle RME rawat jalan berhasil dikirim
-                                    dalam 24 jam terakhir tanpa error validasi.
-                                </p>
-                                <Link
-                                    href="/satusehat/monitoring"
-                                    className="inline-flex items-center gap-1 text-sm font-semibold"
-                                >
-                                    Lihat detail
-                                    <ArrowRight className="w-4 h-4" />
-                                </Link>
-                            </motion.div>
-                        </div>
-                    </section>
-
                     <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <motion.div
                             variants={itemVariants}
@@ -1587,43 +1385,6 @@ export default function Dashboard() {
                                 </div>
                             </motion.div>
                         ))}
-                    </section>
-                    <section className="relative overflow-hidden rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/85 backdrop-blur-xl p-6 shadow-xl shadow-blue-500/5">
-                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                            Lokasi UPT Puskesmas Kerjo
-                        </h3>
-                        <div className="rounded-xl overflow-hidden">
-                            {staticUrl ? (
-                                <a
-                                    href={`https://www.google.com/maps/search/?api=1&query=${finalLat},${finalLng}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    <img
-                                        src={staticUrl}
-                                        alt="Lokasi UPT Puskesmas Kerjo"
-                                        style={{
-                                            width: "100%",
-                                            height: 480,
-                                            border: 0,
-                                            display: "block",
-                                        }}
-                                    />
-                                </a>
-                            ) : (
-                                <iframe
-                                    title="Lokasi UPT Puskesmas Kerjo"
-                                    src={mapUrl}
-                                    width="100%"
-                                    height="480"
-                                    loading="lazy"
-                                    referrerPolicy="strict-origin-when-cross-origin"
-                                    style={{ border: 0 }}
-                                    allowFullScreen
-                                />
-                            )}
-                        </div>
                     </section>
                     <Footer />
                 </motion.div>
