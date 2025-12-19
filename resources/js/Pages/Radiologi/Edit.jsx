@@ -80,7 +80,7 @@ export default function Edit({ title, permintaan, has_hasil }) {
                                         setData("tgl_sampel", e.target.value)
                                     }
                                     disabled={locked}
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-rose-500/70 focus:border-rose-500 disabled:bg-gray-100 dark:disabled:bg-gray-800/60"
+                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:border-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-800/60"
                                 />
                                 {errors.tgl_sampel && (
                                     <p className="mt-1 text-xs text-red-600">
@@ -187,7 +187,7 @@ export default function Edit({ title, permintaan, has_hasil }) {
                             <button
                                 type="submit"
                                 disabled={processing || locked}
-                                className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
                             >
                                 Simpan Perubahan
                             </button>
@@ -198,4 +198,3 @@ export default function Edit({ title, permintaan, has_hasil }) {
         </SidebarRadiologi>
     );
 }
-

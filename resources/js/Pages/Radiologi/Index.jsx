@@ -444,7 +444,7 @@ export default function Index({
                                 <button
                                     type="button"
                                     onClick={handleSearch}
-                                    className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 shadow-sm"
+                                    className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 shadow-sm"
                                 >
                                     <Search className="w-4 h-4 mr-2" />
                                     Terapkan Filter
@@ -475,7 +475,7 @@ export default function Index({
                                     }}
                                     className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors ${
                                         activeTab === "ralan"
-                                            ? "border-rose-500 text-rose-600 dark:text-rose-400 bg-rose-50/40 dark:bg-gray-900"
+                                            ? "border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-50/40 dark:bg-gray-900"
                                             : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
                                     }`}
                                 >
@@ -502,7 +502,7 @@ export default function Index({
                                     }}
                                     className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors ${
                                         activeTab === "ranap"
-                                            ? "border-rose-500 text-rose-600 dark:text-rose-400 bg-rose-50/40 dark:bg-gray-900"
+                                            ? "border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-50/40 dark:bg-gray-900"
                                             : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
                                     }`}
                                 >
@@ -746,7 +746,7 @@ export default function Index({
                             type="time"
                             value={sampleTime}
                             onChange={(e) => setSampleTime(e.target.value)}
-                            className="w-full px-4 py-2.5 border border-gray-300/70 dark:border-gray-600/70 rounded-lg focus:ring-2 focus:ring-rose-500/60 focus:border-rose-500 dark:bg-gray-800/80 dark:text-white"
+                            className="w-full px-4 py-2.5 border border-gray-300/70 dark:border-gray-600/70 rounded-lg focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500 dark:bg-gray-800/80 dark:text-white"
                         />
                     </div>
                     <div className="flex justify-end gap-3 pt-4">
@@ -760,7 +760,7 @@ export default function Index({
                         <button
                             type="button"
                             onClick={submitSample}
-                            className="px-6 py-2.5 bg-gradient-to-r from-rose-600 via-red-600 to-orange-500 hover:from-rose-700 hover:via-red-700 hover:to-orange-600 text-white font-semibold rounded-lg shadow-md shadow-rose-500/30 hover:shadow-lg hover:shadow-rose-500/40 transition-all duration-200"
+                            className="px-6 py-2.5 bg-gradient-to-r from-blue-600 via-sky-600 to-cyan-500 hover:from-blue-700 hover:via-sky-700 hover:to-cyan-600 text-white font-semibold rounded-lg shadow-md shadow-blue-500/30 hover:shadow-lg hover:shadow-blue-500/40 transition-all duration-200"
                         >
                             Simpan
                         </button>

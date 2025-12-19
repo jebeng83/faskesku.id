@@ -123,7 +123,7 @@ export default function SidebarRadiologi({ title = "Radiologi", children }) {
     return (
         <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
             <aside
-                className={`fixed top-0 left-0 h-full bg-gradient-to-b from-rose-600 via-red-700 to-red-800 dark:from-rose-900 dark:via-red-950 dark:to-black shadow-2xl border-r border-red-500/20 dark:border-red-800 z-40 transition-all duration-300 ${
+                className={`fixed top-0 left-0 h-full bg-gradient-to-b from-blue-600 via-sky-700 to-cyan-800 dark:from-blue-900 dark:via-slate-950 dark:to-black shadow-2xl border-r border-blue-500/20 dark:border-blue-800 z-40 transition-all duration-300 ${
                     isSidebarOpen
                         ? "w-64 translate-x-0"
                         : isSidebarCollapsed
@@ -290,7 +290,7 @@ export default function SidebarRadiologi({ title = "Radiologi", children }) {
                         <nav className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
                             <Link
                                 href={route("dashboard")}
-                                className="hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+                                className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                             >
                                 Dashboard
                             </Link>
@@ -309,7 +309,7 @@ export default function SidebarRadiologi({ title = "Radiologi", children }) {
                             </svg>
                             <Link
                                 href={route("radiologi.index")}
-                                className="hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+                                className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                             >
                                 Radiologi
                             </Link>
@@ -352,7 +352,7 @@ export default function SidebarRadiologi({ title = "Radiologi", children }) {
                                 }
                                 className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                             >
-                                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-rose-500 to-amber-500 flex items-center justify-center">
+                                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
                                     <span className="text-white font-bold text-sm">
                                         {auth?.user?.name
                                             ?.charAt(0)
