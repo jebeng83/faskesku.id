@@ -40,6 +40,8 @@ class PembayaranController extends Controller
             $registrations = RegPeriksa::with([
                 'patient:no_rkm_medis,nm_pasien,alamat,no_tlp',
                 'penjab:kd_pj,png_jawab',
+                'dokter:kd_dokter,nm_dokter',
+                'poliklinik:kd_poli,nm_poli',
             ])
                 ->where('status_lanjut', 'Ralan')
                 ->whereBetween('tgl_registrasi', [$startDate->toDateString(), $endDate->toDateString()])
@@ -78,6 +80,12 @@ class PembayaranController extends Controller
                                 'status' => $reg->stts ?? '-',
                                 'jam_reg' => $reg->jam_reg,
                                 'tanggal' => $date,
+                                'kd_dokter' => $reg->kd_dokter,
+                                'nm_dokter' => optional($reg->dokter)->nm_dokter,
+                                'nm_poli' => optional($reg->poliklinik)->nm_poli,
+                                'p_jawab' => $reg->p_jawab,
+                                'almt_pj' => $reg->almt_pj,
+                                'no_tlp' => optional($reg->patient)->no_tlp,
                             ];
                         })->values(),
                     ];
@@ -121,6 +129,8 @@ class PembayaranController extends Controller
         $registrations = RegPeriksa::with([
             'patient:no_rkm_medis,nm_pasien,alamat,no_tlp',
             'penjab:kd_pj,png_jawab',
+            'dokter:kd_dokter,nm_dokter',
+            'poliklinik:kd_poli,nm_poli',
         ])
             ->where('status_lanjut', 'Ralan')
             ->whereBetween('tgl_registrasi', [$startDate->toDateString(), $endDate->toDateString()])
@@ -148,6 +158,12 @@ class PembayaranController extends Controller
                             'status' => $reg->stts ?? '-',
                             'jam_reg' => $reg->jam_reg,
                             'tanggal' => $date,
+                            'kd_dokter' => $reg->kd_dokter,
+                            'nm_dokter' => optional($reg->dokter)->nm_dokter,
+                            'nm_poli' => optional($reg->poliklinik)->nm_poli,
+                            'p_jawab' => $reg->p_jawab,
+                            'almt_pj' => $reg->almt_pj,
+                            'no_tlp' => optional($reg->patient)->no_tlp,
                         ];
                     })->values(),
                 ];

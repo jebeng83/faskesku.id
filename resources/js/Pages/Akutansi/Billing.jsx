@@ -24,7 +24,7 @@ import {
     RefreshCw,
     CreditCard,
 } from "lucide-react";
-import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
+import SidebarKasir from "@/Layouts/SidebarKasir";
 import SearchableSelect from "@/Components/SearchableSelect";
 import {
     todayDateString,
@@ -2315,7 +2315,7 @@ export default function BillingPage({
 }
 
 BillingPage.layout = (page) => (
-    <SidebarKeuangan title="Keuangan">{page}</SidebarKeuangan>
+    <SidebarKasir title="Billing Rawat Jalan">{page}</SidebarKasir>
 );
 
 /**

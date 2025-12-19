@@ -89,7 +89,7 @@ ralan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\PembayaranController::ralanDetail
-* @see app/Http/Controllers/PembayaranController.php:180
+* @see app/Http/Controllers/PembayaranController.php:196
 * @route '/pembayaran/ralan/{no_rawat}'
 */
 export const ralanDetail = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -104,7 +104,7 @@ ralanDetail.definition = {
 
 /**
 * @see \App\Http\Controllers\PembayaranController::ralanDetail
-* @see app/Http/Controllers/PembayaranController.php:180
+* @see app/Http/Controllers/PembayaranController.php:196
 * @route '/pembayaran/ralan/{no_rawat}'
 */
 ralanDetail.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -131,7 +131,7 @@ ralanDetail.url = (args: { no_rawat: string | number } | [no_rawat: string | num
 
 /**
 * @see \App\Http\Controllers\PembayaranController::ralanDetail
-* @see app/Http/Controllers/PembayaranController.php:180
+* @see app/Http/Controllers/PembayaranController.php:196
 * @route '/pembayaran/ralan/{no_rawat}'
 */
 ralanDetail.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -141,7 +141,7 @@ ralanDetail.get = (args: { no_rawat: string | number } | [no_rawat: string | num
 
 /**
 * @see \App\Http\Controllers\PembayaranController::ralanDetail
-* @see app/Http/Controllers/PembayaranController.php:180
+* @see app/Http/Controllers/PembayaranController.php:196
 * @route '/pembayaran/ralan/{no_rawat}'
 */
 ralanDetail.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -151,7 +151,7 @@ ralanDetail.head = (args: { no_rawat: string | number } | [no_rawat: string | nu
 
 /**
 * @see \App\Http\Controllers\PembayaranController::ranap
-* @see app/Http/Controllers/PembayaranController.php:332
+* @see app/Http/Controllers/PembayaranController.php:348
 * @route '/pembayaran/ranap'
 */
 export const ranap = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -166,7 +166,7 @@ ranap.definition = {
 
 /**
 * @see \App\Http\Controllers\PembayaranController::ranap
-* @see app/Http/Controllers/PembayaranController.php:332
+* @see app/Http/Controllers/PembayaranController.php:348
 * @route '/pembayaran/ranap'
 */
 ranap.url = (options?: RouteQueryOptions) => {
@@ -175,7 +175,7 @@ ranap.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PembayaranController::ranap
-* @see app/Http/Controllers/PembayaranController.php:332
+* @see app/Http/Controllers/PembayaranController.php:348
 * @route '/pembayaran/ranap'
 */
 ranap.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -185,7 +185,7 @@ ranap.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PembayaranController::ranap
-* @see app/Http/Controllers/PembayaranController.php:332
+* @see app/Http/Controllers/PembayaranController.php:348
 * @route '/pembayaran/ranap'
 */
 ranap.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
