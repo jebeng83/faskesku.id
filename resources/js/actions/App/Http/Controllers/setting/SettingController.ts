@@ -409,7 +409,7 @@ appDestroy.delete = (args: { nama_instansi: string | number } | [nama_instansi: 
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appWallpaper
-* @see app/Http/Controllers/setting/SettingController.php:419
+* @see app/Http/Controllers/setting/SettingController.php:576
 * @route '/setting/app/{nama_instansi}/wallpaper'
 */
 export const appWallpaper = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -424,7 +424,7 @@ appWallpaper.definition = {
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appWallpaper
-* @see app/Http/Controllers/setting/SettingController.php:419
+* @see app/Http/Controllers/setting/SettingController.php:576
 * @route '/setting/app/{nama_instansi}/wallpaper'
 */
 appWallpaper.url = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -451,7 +451,7 @@ appWallpaper.url = (args: { nama_instansi: string | number } | [nama_instansi: s
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appWallpaper
-* @see app/Http/Controllers/setting/SettingController.php:419
+* @see app/Http/Controllers/setting/SettingController.php:576
 * @route '/setting/app/{nama_instansi}/wallpaper'
 */
 appWallpaper.get = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -461,7 +461,7 @@ appWallpaper.get = (args: { nama_instansi: string | number } | [nama_instansi: s
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appWallpaper
-* @see app/Http/Controllers/setting/SettingController.php:419
+* @see app/Http/Controllers/setting/SettingController.php:576
 * @route '/setting/app/{nama_instansi}/wallpaper'
 */
 appWallpaper.head = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -471,7 +471,7 @@ appWallpaper.head = (args: { nama_instansi: string | number } | [nama_instansi: 
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appLogo
-* @see app/Http/Controllers/setting/SettingController.php:449
+* @see app/Http/Controllers/setting/SettingController.php:606
 * @route '/setting/app/{nama_instansi}/logo'
 */
 export const appLogo = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -486,7 +486,7 @@ appLogo.definition = {
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appLogo
-* @see app/Http/Controllers/setting/SettingController.php:449
+* @see app/Http/Controllers/setting/SettingController.php:606
 * @route '/setting/app/{nama_instansi}/logo'
 */
 appLogo.url = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -513,7 +513,7 @@ appLogo.url = (args: { nama_instansi: string | number } | [nama_instansi: string
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appLogo
-* @see app/Http/Controllers/setting/SettingController.php:449
+* @see app/Http/Controllers/setting/SettingController.php:606
 * @route '/setting/app/{nama_instansi}/logo'
 */
 appLogo.get = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -523,7 +523,7 @@ appLogo.get = (args: { nama_instansi: string | number } | [nama_instansi: string
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appLogo
-* @see app/Http/Controllers/setting/SettingController.php:449
+* @see app/Http/Controllers/setting/SettingController.php:606
 * @route '/setting/app/{nama_instansi}/logo'
 */
 appLogo.head = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -531,6 +531,84 @@ appLogo.head = (args: { nama_instansi: string | number } | [nama_instansi: strin
     method: 'head',
 })
 
-const SettingController = { index, describe, store, update, destroy, appIndex, appStore, appUpdate, appDestroy, appWallpaper, appLogo }
+/**
+* @see \App\Http\Controllers\setting\SettingController::dashboardIndex
+* @see app/Http/Controllers/setting/SettingController.php:416
+* @route '/setting/dashboard'
+*/
+export const dashboardIndex = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: dashboardIndex.url(options),
+    method: 'get',
+})
+
+dashboardIndex.definition = {
+    methods: ["get","head"],
+    url: '/setting/dashboard',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\setting\SettingController::dashboardIndex
+* @see app/Http/Controllers/setting/SettingController.php:416
+* @route '/setting/dashboard'
+*/
+dashboardIndex.url = (options?: RouteQueryOptions) => {
+    return dashboardIndex.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\setting\SettingController::dashboardIndex
+* @see app/Http/Controllers/setting/SettingController.php:416
+* @route '/setting/dashboard'
+*/
+dashboardIndex.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: dashboardIndex.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\setting\SettingController::dashboardIndex
+* @see app/Http/Controllers/setting/SettingController.php:416
+* @route '/setting/dashboard'
+*/
+dashboardIndex.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: dashboardIndex.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\setting\SettingController::dashboardStore
+* @see app/Http/Controllers/setting/SettingController.php:427
+* @route '/setting/dashboard'
+*/
+export const dashboardStore = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: dashboardStore.url(options),
+    method: 'post',
+})
+
+dashboardStore.definition = {
+    methods: ["post"],
+    url: '/setting/dashboard',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\setting\SettingController::dashboardStore
+* @see app/Http/Controllers/setting/SettingController.php:427
+* @route '/setting/dashboard'
+*/
+dashboardStore.url = (options?: RouteQueryOptions) => {
+    return dashboardStore.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\setting\SettingController::dashboardStore
+* @see app/Http/Controllers/setting/SettingController.php:427
+* @route '/setting/dashboard'
+*/
+dashboardStore.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: dashboardStore.url(options),
+    method: 'post',
+})
+
+const SettingController = { index, describe, store, update, destroy, appIndex, appStore, appUpdate, appDestroy, appWallpaper, appLogo, dashboardIndex, dashboardStore }
 
 export default SettingController

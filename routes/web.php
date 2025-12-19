@@ -90,7 +90,66 @@ Route::middleware('auth')->prefix('api')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
+        $table = null;
+
+        $hasSetting = Schema::hasTable('setting') && Schema::hasColumn('setting', 'key') && Schema::hasColumn('setting', 'value');
+        $hasSettings = Schema::hasTable('settings') && Schema::hasColumn('settings', 'key') && Schema::hasColumn('settings', 'value');
+
+        if ($hasSetting) {
+            $table = 'setting';
+        } elseif ($hasSettings) {
+            $table = 'settings';
+        }
+
+        $highlights = [];
+        $priorities = [];
+
+        if ($table) {
+            $highlightRow = DB::table($table)->where('key', 'dashboard_highlights')->first();
+            $priorityRow = DB::table($table)->where('key', 'dashboard_priorities')->first();
+
+            if ($highlightRow && $highlightRow->value) {
+                $decoded = json_decode($highlightRow->value, true);
+                if (is_array($decoded)) {
+                    $highlights = array_values(array_filter($decoded, function ($item) {
+                        return is_array($item)
+                            && isset($item['label'], $item['text'])
+                            && $item['label'] !== ''
+                            && $item['text'] !== '';
+                    }));
+                }
+            }
+
+            if ($priorityRow && $priorityRow->value) {
+                $decoded = json_decode($priorityRow->value, true);
+                if (is_array($decoded)) {
+                    $priorities = array_values(array_filter($decoded, function ($item) {
+                        if (is_string($item)) {
+                            return trim($item) !== '';
+                        }
+
+                        return is_array($item)
+                            && isset($item['text'])
+                            && trim($item['text']) !== '';
+                    }));
+                }
+            }
+
+            $priorities = array_map(function ($item) {
+                if (is_string($item)) {
+                    return ['text' => $item];
+                }
+
+                return [
+                    'text' => $item['text'] ?? '',
+                ];
+            }, $priorities);
+        }
+
+        return Inertia::render('Dashboard', [
+            'dashboardHighlights' => $highlights,
+            'dashboardPriorities' => $priorities,
+        ]);
     })->name('dashboard');
 
     Route::get('/docs/{section?}', function ($section = null) {
@@ -585,6 +644,9 @@ Route::middleware('auth')->group(function () {
         // Stream blob untuk preview
         Route::get('/app/{nama_instansi}/wallpaper', [SettingController::class, 'appWallpaper'])->name('app.wallpaper');
         Route::get('/app/{nama_instansi}/logo', [SettingController::class, 'appLogo'])->name('app.logo');
+
+        Route::get('/dashboard', [SettingController::class, 'dashboardIndex'])->name('dashboard.index');
+        Route::post('/dashboard', [SettingController::class, 'dashboardStore'])->name('dashboard.store');
     });
 
     // Menu Management routes
