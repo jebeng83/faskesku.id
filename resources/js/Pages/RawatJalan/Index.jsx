@@ -625,23 +625,23 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
 
                     {/* Enhanced Pagination */}
                     {rawatJalan.links && (
-                        <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-                            <div className="flex items-center justify-between">
-                                <div className="text-sm text-gray-600 dark:text-gray-400">
+                        <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 dark:border-gray-700">
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
+                                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                                     Menampilkan <span className="font-semibold text-blue-600 dark:text-blue-400">{rawatJalan.from}</span> sampai{' '}
                                     <span className="font-semibold text-blue-600 dark:text-blue-400">{rawatJalan.to}</span> dari{' '}
                                     <span className="font-semibold text-blue-600 dark:text-blue-400">{rawatJalan.total}</span> data
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="w-full sm:w-auto flex flex-wrap items-center justify-center sm:justify-end gap-1.5 sm:gap-2">
                                     {rawatJalan.links.map((link, index) => (
                                         <Link
                                             key={index}
                                             href={link.url || '#'}
-                                            className={`px-4 py-2 text-sm rounded-lg font-medium transition-all duration-200 ${
+                                            className={`px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg font-medium transition-all duration-200 ${
                                                 link.active
-                                                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg transform scale-105'
+                                                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
                                                     : 'bg-white text-gray-700 hover:bg-blue-50 hover:text-blue-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-600'
-                                            } ${!link.url ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md hover:scale-105'}`}
+                                            } ${!link.url ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-sm'}`}
                                             dangerouslySetInnerHTML={{ __html: link.label }}
                                         />
                                     ))}
