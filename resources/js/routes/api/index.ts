@@ -1,6 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 import wilayah from './wilayah'
 import publicMethod from './public'
+import queue from './queue'
 import employees from './employees'
 import penjab from './penjab'
 import pasien from './pasien'
@@ -169,6 +170,7 @@ setHargaObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 const api = {
     wilayah: Object.assign(wilayah, wilayah),
     public: Object.assign(publicMethod, publicMethod),
+    queue: Object.assign(queue, queue),
     employees: Object.assign(employees, employees),
     penjab: Object.assign(penjab, penjab),
     pasien: Object.assign(pasien, pasien),

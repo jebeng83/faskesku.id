@@ -34,6 +34,7 @@ use App\Http\Controllers\RawatJalan\RawatJalanController;
 use App\Http\Controllers\RawatJalan\ResepController;
 use App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController;
 use App\Http\Controllers\SatuSehat\SatuSehatController;
+use App\Http\Controllers\QueueController;
 use Illuminate\Support\Facades\Route;
 
 // Public endpoints (tidak memerlukan authentication)
@@ -59,6 +60,16 @@ Route::get('/bahasa-pasien', [ReferenceController::class, 'bahasaPasien'])->name
 Route::get('/cacat-fisik', [ReferenceController::class, 'cacatFisik'])->name('api.public.cacat-fisik.index');
 // Public endpoint for doctors list (minimal fields) for dev preview dropdowns
 Route::get('/public/dokter', [DokterController::class, 'index'])->name('api.public.dokter');
+
+// Public endpoints for Queue (Kiosk)
+Route::prefix('queue')->group(function () {
+    Route::post('/tickets', [QueueController::class, 'create'])->name('api.queue.tickets.create');
+    Route::get('/current', [QueueController::class, 'current'])->name('api.queue.current');
+    Route::get('/today', [QueueController::class, 'today'])->name('api.queue.today');
+    Route::post('/call', [QueueController::class, 'call'])->name('api.queue.call');
+    Route::post('/finish', [QueueController::class, 'finish'])->name('api.queue.finish');
+    Route::post('/cancel', [QueueController::class, 'cancel'])->name('api.queue.cancel');
+});
 
 // Protected API endpoints (memerlukan authentication)
 // Menggunakan 'auth:sanctum' untuk Inertia.js SPA authentication

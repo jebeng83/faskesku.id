@@ -48,32 +48,35 @@ export default defineConfig(() => ({
             'Access-Control-Allow-Headers': '*',
         },
         // Do not hardcode HMR port; let Vite use the actual dev server port to avoid mismatches
-        proxy: {
-            '/farmasi': {
-                target: 'http://127.0.0.1:8000',
-                changeOrigin: true,
-                secure: false,
-            },
-            '/api': {
-                target: 'http://127.0.0.1:8000',
-                changeOrigin: true,
-                secure: false,
-            },
-            '/_boost': {
-                target: 'http://127.0.0.1:8000',
-                changeOrigin: true,
-                secure: false,
-            },
-            '/sanctum': {
-                target: 'http://127.0.0.1:8000',
-                changeOrigin: true,
-                secure: false,
-            },
-            '/favicon.ico': {
-                target: 'http://127.0.0.1:8000',
-                changeOrigin: true,
-                secure: false,
-            },
-        },
+        proxy: (() => {
+            const backendUrl = process.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000';
+            return {
+                '/farmasi': {
+                    target: backendUrl,
+                    changeOrigin: true,
+                    secure: false,
+                },
+                '/api': {
+                    target: backendUrl,
+                    changeOrigin: true,
+                    secure: false,
+                },
+                '/_boost': {
+                    target: backendUrl,
+                    changeOrigin: true,
+                    secure: false,
+                },
+                '/sanctum': {
+                    target: backendUrl,
+                    changeOrigin: true,
+                    secure: false,
+                },
+                '/favicon.ico': {
+                    target: backendUrl,
+                    changeOrigin: true,
+                    secure: false,
+                },
+            };
+        })(),
     },
 }));
