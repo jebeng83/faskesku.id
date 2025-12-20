@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "@inertiajs/react";
-import AppLayout from "@/Layouts/AppLayout";
+import SidebarKasir from "@/Layouts/SidebarKasir";
 import { route } from "ziggy-js";
 
 const statCards = {

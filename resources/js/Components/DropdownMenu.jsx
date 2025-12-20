@@ -1,62 +1,104 @@
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 export default function DropdownMenu({
-	trigger,
-	children,
-	className = "",
-	position = "right",
-	align = "end",
+    trigger,
+    children,
+    className = "",
+    position = "bottom",
+    align = "end",
 }) {
-	const [isOpen, setIsOpen] = useState(false);
-	const dropdownRef = useRef(null);
+    const [isOpen, setIsOpen] = useState(false);
+    const triggerRef = useRef(null);
+    const menuRef = useRef(null);
+    const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
 
-	useEffect(() => {
-		function handleClickOutside(event) {
-			if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-				setIsOpen(false);
-			}
-		}
+    useEffect(() => {
+        function handleClickOutside(event) {
+            const triggerEl = triggerRef.current;
+            const menuEl = menuRef.current;
+            if (
+                isOpen &&
+                triggerEl &&
+                !triggerEl.contains(event.target) &&
+                menuEl &&
+                !menuEl.contains(event.target)
+            ) {
+                setIsOpen(false);
+            }
+        }
 
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
-		};
-	}, []);
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [isOpen]);
 
-    const getPositionClasses = () => {
-        const baseClasses =
-            "absolute z-[1000] mt-1 w-48 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none";
+    const updateMenuPosition = () => {
+        const triggerEl = triggerRef.current;
+        if (!triggerEl) return;
 
-		// Position (top/bottom)
-		const positionClasses =
-			position === "top" ? "bottom-full mb-1" : "top-full";
+        const rect = triggerEl.getBoundingClientRect();
 
-		// Alignment (left/right/center)
-		const alignClasses = {
-			start: "left-0",
-			center: "left-1/2 transform -translate-x-1/2",
-			end: "right-0",
-		};
+        let top = position === "top" ? rect.top : rect.bottom;
+        let left;
 
-		return `${baseClasses} ${positionClasses} ${alignClasses[align]}`;
-	};
+        if (align === "start") {
+            left = rect.left;
+        } else if (align === "center") {
+            left = rect.left + rect.width / 2;
+        } else {
+            left = rect.right;
+        }
+
+        setMenuPosition({ top, left });
+    };
+
+    useEffect(() => {
+        if (isOpen) {
+            updateMenuPosition();
+        }
+    }, [isOpen, position, align]);
+
+    const getAlignClasses = () => {
+        if (align === "start") {
+            return "";
+        }
+        if (align === "center") {
+            return "transform -translate-x-1/2";
+        }
+        return "transform -translate-x-full";
+    };
 
     return (
-        <div
-            className={`relative inline-block text-left ${isOpen ? 'z-[2000]' : 'z-50'} ${className}`}
-            ref={dropdownRef}
-        >
-            <div onClick={() => setIsOpen(!isOpen)}>{trigger}</div>
+        <>
+            <div
+                className={`inline-block text-left ${className}`}
+                ref={triggerRef}
+                onClick={() => setIsOpen((prev) => !prev)}
+            >
+                {trigger}
+            </div>
 
-			{isOpen && (
-				<div className={getPositionClasses()}>
-					<div className="py-1 bg-white dark:bg-gray-800 rounded-md shadow-xs">
-						{children}
-					</div>
-				</div>
-			)}
-		</div>
-	);
+            {isOpen &&
+                typeof document !== "undefined" &&
+                createPortal(
+                    <div
+                        ref={menuRef}
+                        style={{
+                            top: menuPosition.top,
+                            left: menuPosition.left,
+                        }}
+                        className={`fixed z-[2000] mt-1 w-48 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none ${getAlignClasses()}`}
+                    >
+                        <div className="py-1 bg-white dark:bg-gray-800 rounded-md shadow-xs">
+                            {children}
+                        </div>
+                    </div>,
+                    document.body
+                )}
+        </>
+    );
 }
 
 export function DropdownItem({

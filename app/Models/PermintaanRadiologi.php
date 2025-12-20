@@ -139,4 +139,57 @@ class PermintaanRadiologi extends Model
     {
         return $query->where('dokter_perujuk', $kdDokter);
     }
+
+    public function hasHasilTersedia(): bool
+    {
+        if (! $this->tgl_hasil || $this->tgl_hasil === '0000-00-00') {
+            return false;
+        }
+
+        $tglHasilStr = is_string($this->tgl_hasil) ? $this->tgl_hasil : (string) $this->tgl_hasil;
+        $invalidDates = ['0000-00-00', '0000-00-00 00:00:00', '-0001-11-30', '-0001-11-29', '1970-01-01'];
+
+        foreach ($invalidDates as $invalid) {
+            if (str_contains($tglHasilStr, $invalid)) {
+                return false;
+            }
+        }
+
+        if (str_starts_with(trim($tglHasilStr), '-')) {
+            return false;
+        }
+
+        $noRawat = $this->no_rawat;
+
+        if (! $noRawat) {
+            return false;
+        }
+
+        $query = \Illuminate\Support\Facades\DB::table('hasil_radiologi')
+            ->where('no_rawat', $noRawat);
+
+        if ($this->tgl_permintaan) {
+            $query->whereDate('tgl_periksa', '>=', $this->tgl_permintaan);
+        }
+
+        $hasResult = $query->exists();
+
+        if (! $hasResult) {
+            $query = \Illuminate\Support\Facades\DB::table('periksa_radiologi')
+                ->where('no_rawat', $noRawat);
+
+            if ($this->tgl_permintaan) {
+                $query->whereDate('tgl_periksa', '>=', $this->tgl_permintaan);
+            }
+
+            $hasResult = $query->exists();
+        }
+
+        return $hasResult;
+    }
+
+    public function getHasHasilTersediaAttribute(): bool
+    {
+        return $this->hasHasilTersedia();
+    }
 }

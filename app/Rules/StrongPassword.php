@@ -14,13 +14,8 @@ class StrongPassword implements ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        // Password harus minimal 8 karakter dan mengandung:
-        // - Minimal satu huruf kecil
-        // - Minimal satu huruf besar
-        // - Minimal satu angka
-        // - Minimal satu simbol khusus
-        if (! preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/', $value)) {
-            $fail('Password harus minimal 8 karakter dan mengandung huruf besar, huruf kecil, angka, dan simbol khusus (@$!%*?&).');
+        if (! preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/', $value)) {
+            $fail('Password harus minimal 8 karakter dan mengandung huruf besar, huruf kecil, angka, dan simbol.');
         }
     }
 }
