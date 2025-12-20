@@ -78,50 +78,6 @@ storeDiagnosaPasien.post = (options?: RouteQueryOptions): RouteDefinition<'post'
 })
 
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::searchPenyakit
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:375
-* @route '/api/penyakit'
-*/
-export const searchPenyakit = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: searchPenyakit.url(options),
-    method: 'get',
-})
-
-searchPenyakit.definition = {
-    methods: ["get","head"],
-    url: '/api/penyakit',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::searchPenyakit
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:375
-* @route '/api/penyakit'
-*/
-searchPenyakit.url = (options?: RouteQueryOptions) => {
-    return searchPenyakit.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::searchPenyakit
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:375
-* @route '/api/penyakit'
-*/
-searchPenyakit.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: searchPenyakit.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::searchPenyakit
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:375
-* @route '/api/penyakit'
-*/
-searchPenyakit.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: searchPenyakit.url(options),
-    method: 'head',
-})
-
-/**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::lanjutan
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:217
 * @route '/rawat-jalan/lanjutan'
@@ -1225,6 +1181,6 @@ destroy.delete = (args: { rawat_jalan: string | number } | [rawat_jalan: string 
     method: 'delete',
 })
 
-const RawatJalanController = { getDiagnosaPasien, storeDiagnosaPasien, searchPenyakit, lanjutan, index, riwayat, getRiwayatPemeriksaan, pemeriksaanRalan, storePemeriksaanRalan, deletePemeriksaanRalan, updatePemeriksaanRalan, getobatRalanPublic, getPemeriksaanLabPublic, getRadiologiPublic, searchPegawai, getStatistics, suratSehat, storeSuratSehat, suratSakit, storeSuratSakit, create, store, show, edit, update, destroy }
+const RawatJalanController = { getDiagnosaPasien, storeDiagnosaPasien, lanjutan, index, riwayat, getRiwayatPemeriksaan, pemeriksaanRalan, storePemeriksaanRalan, deletePemeriksaanRalan, updatePemeriksaanRalan, getobatRalanPublic, getPemeriksaanLabPublic, getRadiologiPublic, searchPegawai, getStatistics, suratSehat, storeSuratSehat, suratSakit, storeSuratSakit, create, store, show, edit, update, destroy }
 
 export default RawatJalanController
