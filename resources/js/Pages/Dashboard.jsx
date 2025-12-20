@@ -377,8 +377,39 @@ const Footer = React.memo(function Footer() {
     const kodePPK = appSetting?.kode_ppk || null;
     // Hapus logo instansi di footer sesuai permintaan; hanya tampilkan nama instansi
 
-    // Quick links untuk footer (mirip contoh Unpas)
+    const resolveLoketUrl = () => {
+        try {
+            if (typeof route === 'function') {
+                return route('antrian.loket');
+            }
+        } catch (_) {}
+        try {
+            const { protocol, hostname, port } = window.location;
+            if (port === '5173') {
+                return `${protocol}//${hostname}:8000/antrian/loket`;
+            }
+            return `${protocol}//${hostname}${port ? ':' + port : ''}/antrian/loket`;
+        } catch (_) {
+            return '/antrian/loket';
+        }
+    };
+
+    const resolveDisplayUrl = () => {
+        try {
+            const { protocol, hostname, port } = window.location;
+            const base = `${protocol}//${hostname}`;
+            if (port === '5173') {
+                return `${base}:8000/antrian/display`;
+            }
+            return `${base}${port ? ':' + port : ''}/antrian/display`;
+        } catch (_) {
+            return '/antrian/display';
+        }
+    };
+
     const footerLinks = [
+        { label: "Loket Antrian", href: resolveLoketUrl(), target: "_blank" },
+        { label: "Display TV Loket", href: resolveDisplayUrl(), target: "_blank" },
         { label: "Pendaftaran Pasien", href: "/registration/lanjutan" },
         { label: "Perpustakaan (Dokumen)", href: "/docs" },
         { label: "Berita Sistem", href: "/news" },
@@ -465,13 +496,25 @@ const Footer = React.memo(function Footer() {
                                 <ul className="space-y-2 text-sm">
                                     {footerLinks.map((l) => (
                                         <li key={l.label}>
-                                            <Link
-                                                href={l.href}
-                                                className="inline-flex items-center gap-2 text-slate-700 dark:text-slate-200 hover:text-blue-600"
-                                            >
-                                                <ArrowRight className="w-4 h-4" />
-                                                <span>{l.label}</span>
-                                            </Link>
+                                            {l.target ? (
+                                                <a
+                                                    href={l.href}
+                                                    target={l.target}
+                                                    rel={l.target === "_blank" ? "noopener noreferrer" : undefined}
+                                                    className="inline-flex items-center gap-2 text-slate-700 dark:text-slate-200 hover:text-blue-600"
+                                                >
+                                                    <ArrowRight className="w-4 h-4" />
+                                                    <span>{l.label}</span>
+                                                </a>
+                                            ) : (
+                                                <Link
+                                                    href={l.href}
+                                                    className="inline-flex items-center gap-2 text-slate-700 dark:text-slate-200 hover:text-blue-600"
+                                                >
+                                                    <ArrowRight className="w-4 h-4" />
+                                                    <span>{l.label}</span>
+                                                </Link>
+                                            )}
                                         </li>
                                     ))}
                                 </ul>

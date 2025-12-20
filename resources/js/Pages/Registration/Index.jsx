@@ -33,6 +33,13 @@ export default function Registration({
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedRegistration, setSelectedRegistration] = useState(null);
+    const [selectedRegForQueue, setSelectedRegForQueue] = useState(null);
+    const [queueCurrent, setQueueCurrent] = useState(null);
+    const [queueCallStatus, setQueueCallStatus] = useState("");
+    const [queueLastCalledAt, setQueueLastCalledAt] = useState("");
+    const [queueLastCalledNumber, setQueueLastCalledNumber] = useState(null);
+    const [queueStatusCode, setQueueStatusCode] = useState(null);
+    const [queueTodayList, setQueueTodayList] = useState([]);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [isPatientModalOpen, setIsPatientModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -168,6 +175,124 @@ export default function Registration({
         }
     };
 
+    const formatQueueLabel = (nomor, prefix) => {
+        if (!nomor) return "-";
+        const padded = String(nomor).padStart(3, "0");
+        return prefix ? `${prefix}-${padded}` : padded;
+    };
+
+    const getApiBaseCandidates = () => {
+        const c = [];
+        try {
+            const envUrl = import.meta?.env?.VITE_BACKEND_URL;
+            if (envUrl) c.push(envUrl);
+        } catch (_) {}
+        c.push(window.location.origin);
+        c.push("http://127.0.0.1:8000");
+        c.push("http://localhost:8000");
+        return c;
+    };
+
+    const httpGet = async (path) => {
+        const bases = getApiBaseCandidates();
+        let lastErr = null;
+        for (const base of bases) {
+            try {
+                const url = new URL(path, base).href;
+                const res = await axios.get(url, { headers: { Accept: "application/json" } });
+                return res;
+            } catch (e) {
+                lastErr = e;
+                const status = e?.response?.status;
+                if (status && status !== 404) throw e;
+            }
+        }
+        throw lastErr || new Error("API not reachable");
+    };
+
+    const httpPost = async (path, data) => {
+        const bases = getApiBaseCandidates();
+        let lastErr = null;
+        for (const base of bases) {
+            try {
+                const url = new URL(path, base).href;
+                const res = await axios.post(url, data, { headers: { Accept: "application/json" } });
+                return res;
+            } catch (e) {
+                lastErr = e;
+                const status = e?.response?.status;
+                if (status && status !== 404) throw e;
+            }
+        }
+        throw lastErr || new Error("API not reachable");
+    };
+
+    const fetchQueueCurrent = async () => {
+        try {
+            const res = await httpGet("/api/queue/today");
+            const d = res?.data || {};
+            const list = Array.isArray(d.data) ? d.data : [];
+            setQueueTodayList(list);
+            const firstNew = list.find((row) => String(row.status || "").toLowerCase() === "baru");
+            const candidate = firstNew || (list.length ? list[0] : null);
+            if (candidate) {
+                const n = candidate.nomor ?? candidate.number ?? candidate.antrian;
+                setQueueCurrent({ nomor: n, prefix: candidate.prefix || "" });
+                const s = String(candidate.status || "").toLowerCase();
+                setQueueStatusCode(s === "dipanggil" ? 1 : 0);
+            } else {
+                setQueueCurrent(null);
+                setQueueStatusCode(null);
+            }
+        } catch (_) {
+            setQueueCurrent(null);
+            setQueueStatusCode(null);
+        }
+    };
+
+    useEffect(() => {
+        fetchQueueCurrent();
+    }, []);
+
+    const handleCallLoketQueue = async (repeat = false) => {
+        if (!queueCurrent?.nomor && !queueLastCalledNumber) return;
+        try {
+            const targetNomor = repeat ? (queueLastCalledNumber ?? queueCurrent?.nomor) : queueCurrent.nomor;
+            const res = await httpPost("/api/queue/call", { nomor: targetNomor, loket: 1 });
+            const data = res?.data || {};
+            if (repeat) {
+                // Ulang: panggil kembali nomor terakhir dipanggil tanpa mengubah panel
+                // Panel tetap menampilkan kandidat berikutnya berstatus "baru"
+                // Pertahankan queueStatusCode apa adanya (umumnya 0 untuk kandidat baru)
+            } else {
+                setQueueStatusCode(1);
+                // Simpan nomor terakhir yang dipanggil
+                setQueueLastCalledNumber(queueCurrent.nomor);
+                const cur = parseInt(String(queueCurrent.nomor || "0"), 10);
+                const updated = Array.isArray(queueTodayList) ? queueTodayList.map((row) => {
+                    const rn = parseInt(String((row.nomor ?? row.number ?? row.antrian) || "0"), 10);
+                    if (rn === cur) {
+                        return { ...row, status: "dipanggil" };
+                    }
+                    return row;
+                }) : [];
+                setQueueTodayList(updated);
+                const val = (row) => parseInt(String((row.nomor ?? row.number ?? row.antrian ?? "0")), 10);
+                const nextCandidate = updated
+                    .filter((r) => String(r.status || "").toLowerCase() === "baru")
+                    .sort((a, b) => (val(a) - val(b)))[0] || null;
+                if (nextCandidate) {
+                    const nn = nextCandidate.nomor ?? nextCandidate.number ?? nextCandidate.antrian;
+                    setQueueCurrent({ nomor: nn, prefix: nextCandidate.prefix || "" });
+                    setQueueStatusCode(0);
+                } else {
+                    await fetchQueueCurrent();
+                }
+            }
+        } catch (_) {
+        }
+    };
+
     const goToLanjutan = (no_rawat, no_rkm_medis) => {
         const token = toBase64Url({ no_rawat, no_rkm_medis });
         // Gunakan Ziggy route jika tersedia; fallback ke path hardcode jika tidak
@@ -281,6 +406,34 @@ export default function Registration({
                 "Error saat panggil antrean dan buka Rawat Jalan:",
                 e
             );
+        }
+    };
+
+    const handleRepeatCallAntrean = async (reg) => {
+        if (!reg) return;
+        try {
+            if (isRegistrationAllowedForAntrean(reg)) {
+                const payload = {
+                    no_rkm_medis: reg.no_rkm_medis,
+                    kd_poli: reg.kd_poli || reg?.poliklinik?.kd_poli,
+                    status: 1,
+                    tanggalperiksa: reg.tgl_registrasi,
+                };
+                try {
+                    await axios.post("/api/mobilejkn/antrean/panggil", payload);
+                    alert("Nomor dipanggil ulang");
+                } catch (err) {
+                    console.warn(
+                        "Gagal memanggil ulang antrean:",
+                        err?.response?.data || err?.message
+                    );
+                    alert("Gagal memanggil ulang antrean");
+                }
+            } else {
+                alert("Jenis bayar bukan BPJ/PBI, panggilan antrean tidak tersedia");
+            }
+        } catch (e) {
+            console.error("Error saat memanggil ulang antrean:", e);
         }
     };
 
@@ -1113,33 +1266,45 @@ export default function Registration({
                                     <h3 className="text-base lg:text-lg font-semibold text-gray-900 dark:text-white">
                                         Cari Pasien
                                     </h3>
-                                    <motion.button
-                                        onClick={openPatientModal}
-                                        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 text-xs rounded-md flex items-center gap-1 transition-colors shadow-sm"
-                                        whileHover={{ scale: 1.05, y: -1 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        initial={{ opacity: 0, scale: 0.8 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        transition={{
-                                            duration: 0.3,
-                                            delay: 0.6,
-                                        }}
-                                    >
-                                        <svg
-                                            className="w-3 h-3"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2">
+                                            <div className="px-2 py-1 rounded-md bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="text-base font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">{formatQueueLabel(queueCurrent?.nomor, queueCurrent?.prefix)}</div>
+                                                    <span className="text-[11px] font-semibold text-gray-600 dark:text-gray-300">{queueStatusCode ?? '-'}</span>
+                                                </div>
+                                            </div>
+                                            <motion.button disabled={!queueCurrent?.nomor} onClick={() => handleCallLoketQueue(false)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Panggil</motion.button>
+                                            <motion.button disabled={!queueCurrent?.nomor && !queueLastCalledNumber} onClick={() => handleCallLoketQueue(true)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Ulang</motion.button>
+                                        </div>
+                                        <motion.button
+                                            onClick={openPatientModal}
+                                            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 text-xs rounded-md flex items-center gap-1 transition-colors shadow-sm"
+                                            whileHover={{ scale: 1.05, y: -1 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            transition={{
+                                                duration: 0.3,
+                                                delay: 0.6,
+                                            }}
                                         >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                            />
-                                        </svg>
-                                        Tambah
-                                    </motion.button>
+                                            <svg
+                                                className="w-3 h-3"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                                />
+                                            </svg>
+                                            Tambah
+                                        </motion.button>
+                                    </div>
                                 </div>
 
                                 {/* Search Input */}
@@ -1198,6 +1363,8 @@ export default function Registration({
                                     )}
                                 </motion.div>
                             </motion.div>
+
+                            
 
                             {/* Search Results */}
                             <div className="flex-1 overflow-y-auto max-h-[450px]">
@@ -2149,7 +2316,7 @@ export default function Registration({
                         </AnimatePresence>
                     </motion.div>
 
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto max-h-80 sm:max-h-96 md:max-h-[28rem] overflow-y-auto">
                         {isLoading && (
                             <div className="flex items-center justify-center py-10">
                                 <svg
@@ -2228,7 +2395,13 @@ export default function Registration({
                                         {registrationData.data.map((reg) => (
                                             <tr
                                                 key={reg.no_rawat}
-                                                className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                                                onClick={() => setSelectedRegForQueue(reg)}
+                                                className={
+                                                    "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 " +
+                                                    (selectedRegForQueue?.no_rawat === reg.no_rawat
+                                                        ? "bg-blue-50 dark:bg-blue-900/20"
+                                                        : "")
+                                                }
                                             >
                                                 <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
                                                     {reg.no_reg}
@@ -2445,6 +2618,7 @@ export default function Registration({
                                 </div>
                             ))}
                     </div>
+
 
                     {/* Pagination (datatable) */}
                     {!isLoading &&

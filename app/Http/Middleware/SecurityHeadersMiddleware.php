@@ -45,6 +45,9 @@ class SecurityHeadersMiddleware
                 'http://127.0.0.1:5178',
                 'http://localhost:5178',
                 'http://127.0.0.1:8000',
+                'http://localhost:8000',
+                'http://127.0.0.1:8080',
+                'http://localhost:8080',
             ], $viteHttp));
             $wsAllowed = array_unique(array_merge([
                 'ws://127.0.0.1:5177',
@@ -52,6 +55,9 @@ class SecurityHeadersMiddleware
                 'ws://127.0.0.1:5178',
                 'ws://localhost:5178',
                 'ws://127.0.0.1:8000',
+                'ws://localhost:8000',
+                'ws://127.0.0.1:8080',
+                'ws://localhost:8080',
             ], $viteWs));
 
             $csp = "default-src 'self'; ".

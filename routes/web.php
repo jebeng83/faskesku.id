@@ -79,6 +79,96 @@ Route::get('/landing', function () {
     return redirect()->route('dashboard');
 })->name('landing');
 
+Route::get('/antrian/loket', function () {
+    $setting = null;
+    $todayPoli = [];
+    if (Schema::hasTable('setting')) {
+        $fields = [];
+        foreach (['nama_instansi','alamat_instansi','kabupaten','propinsi','kontak','email','kode_ppk'] as $col) {
+            if (Schema::hasColumn('setting', $col)) {
+                $fields[] = $col;
+            }
+        }
+        if (!empty($fields)) {
+            $query = DB::table('setting')->select($fields);
+            if (Schema::hasColumn('setting', 'aktifkan')) {
+                $query->where('aktifkan', 'Yes');
+            }
+            $row = $query->orderBy('nama_instansi')->first();
+            if ($row) {
+                $setting = [];
+                foreach ($fields as $f) {
+                    $v = $row->{$f} ?? null;
+                    if (is_string($v)) {
+                        $v = preg_replace('/[\x00-\x1F\x7F]/u', '', $v);
+                    }
+                    $setting[$f] = $v;
+                }
+            }
+        }
+    }
+    // Poliklinik dengan jadwal pada hari ini
+    if (Schema::hasTable('jadwal') && Schema::hasTable('poliklinik')) {
+        $hariMap = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+        $hari = $hariMap[(int) date('w')] ?? date('l');
+        $hasHari = Schema::hasColumn('jadwal', 'hari_kerja');
+        $hasKdPoliJ = Schema::hasColumn('jadwal', 'kd_poli');
+        $hasKdPoliP = Schema::hasColumn('poliklinik', 'kd_poli');
+        $hasNmPoli = Schema::hasColumn('poliklinik', 'nm_poli');
+        if ($hasHari && $hasKdPoliJ && $hasKdPoliP && $hasNmPoli) {
+            $rows = DB::table('jadwal')
+                ->join('poliklinik', 'poliklinik.kd_poli', '=', 'jadwal.kd_poli')
+                ->where('jadwal.hari_kerja', $hari)
+                ->select('jadwal.kd_poli', 'poliklinik.nm_poli')
+                ->distinct()
+                ->orderBy('poliklinik.nm_poli')
+                ->get();
+            $todayPoli = collect($rows)->map(function ($r) {
+                return [
+                    'kd_poli' => $r->kd_poli,
+                    'nm_poli' => preg_replace('/[\x00-\x1F\x7F]/u', '', (string) $r->nm_poli),
+                ];
+            })->all();
+        }
+    }
+    return Inertia::render('Antrian/AntrialLoket', [
+        'setting' => $setting,
+        'today_poli' => $todayPoli,
+    ]);
+})->name('antrian.loket');
+
+Route::get('/antrian/display', function () {
+    $setting = null;
+    if (Schema::hasTable('setting')) {
+        $fields = [];
+        foreach (['nama_instansi','alamat_instansi','kabupaten','propinsi','kontak','email','kode_ppk'] as $col) {
+            if (Schema::hasColumn('setting', $col)) {
+                $fields[] = $col;
+            }
+        }
+        if (!empty($fields)) {
+            $query = DB::table('setting')->select($fields);
+            if (Schema::hasColumn('setting', 'aktifkan')) {
+                $query->where('aktifkan', 'Yes');
+            }
+            $row = $query->orderBy('nama_instansi')->first();
+            if ($row) {
+                $setting = [];
+                foreach ($fields as $f) {
+                    $v = $row->{$f} ?? null;
+                    if (is_string($v)) {
+                        $v = preg_replace('/[\x00-\x1F\x7F]/u', '', $v);
+                    }
+                    $setting[$f] = $v;
+                }
+            }
+        }
+    }
+    return Inertia::render('Antrian/DisplayLoket', [
+        'setting' => $setting,
+    ]);
+})->name('antrian.display');
+
 // API routes that don't require authentication
 Route::get('/api/lab-tests', [PermintaanLabController::class, 'getLabTests'])->name('api.lab-tests');
 
