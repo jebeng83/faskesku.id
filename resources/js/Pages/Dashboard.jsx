@@ -1014,6 +1014,14 @@ export default function Dashboard() {
         [permissionNames]
     );
 
+    const filteredShortcuts = useMemo(() => {
+        const t = query.trim().toLowerCase();
+        if (!t) return shortcuts;
+        return shortcuts.filter((item) =>
+            item.label.toLowerCase().includes(t)
+        );
+    }, [shortcuts, query]);
+
     const [showMoreMenu, setShowMoreMenu] = useState(false);
 
     const bottomNavItems = useMemo(() => {
@@ -1303,72 +1311,11 @@ export default function Dashboard() {
                                                 className="w-full bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none"
                                             />
                                         </div>
-
-                                        {query.trim().length > 0 &&
-                                            results.length > 0 && (
-                                                <div className="absolute left-0 right-0 mt-2 rounded-2xl bg-white/95 backdrop-blur border border-slate-200 shadow-2xl overflow-hidden z-50 pointer-events-auto">
-                                                    <ul className="divide-y divide-slate-100">
-                                                        {results.map((item) => {
-                                                            const href =
-                                                                getMenuHref(
-                                                                    item
-                                                                );
-                                                            return (
-                                                                <li
-                                                                    key={
-                                                                        item.id
-                                                                    }
-                                                                    className="hover:bg-slate-50"
-                                                                >
-                                                                    <Link
-                                                                        href={
-                                                                            href
-                                                                        }
-                                                                        className="flex items-center gap-3 px-4 py-3 text-slate-800"
-                                                                    >
-                                                                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100">
-                                                                            <svg
-                                                                                viewBox="0 0 24 24"
-                                                                                className="w-4 h-4"
-                                                                                fill="none"
-                                                                                stroke="currentColor"
-                                                                                strokeWidth="2"
-                                                                            >
-                                                                                <path d="M4 12h16M4 6h16M4 18h16" />
-                                                                            </svg>
-                                                                        </span>
-                                                                        <div className="flex-1">
-                                                                            <div className="font-medium">
-                                                                                {
-                                                                                    item.name
-                                                                                }
-                                                                            </div>
-                                                                            {item.breadcrumb && (
-                                                                                <div className="text-xs text-slate-500">
-                                                                                    {
-                                                                                        item.breadcrumb
-                                                                                    }
-                                                                                </div>
-                                                                            )}
-                                                                        </div>
-                                                                    </Link>
-                                                                </li>
-                                                            );
-                                                        })}
-                                                    </ul>
-                                                    {loading && (
-                                                        <div className="px-4 py-3 text-xs text-slate-500">
-                                                            Memuat…
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
                                     </div>
                                 </div>
 
-                                {/* Navigasi cepat di bawahnya—ukuran tombol diperkecil agar jarak antar tombol lebih terlihat */}
                                 <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-5 justify-items-center">
-                                    {shortcuts.map((s) => (
+                                    {filteredShortcuts.map((s) => (
                                         <Link
                                             key={s.key}
                                             href={s.href}
