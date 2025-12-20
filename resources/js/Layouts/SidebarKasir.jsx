@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Link, usePage } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import { Receipt } from "lucide-react";
+import MobileBottomNav from "@/Components/MobileBottomNav";
 
 export default function SidebarKasir({ title = "Kasir", children }) {
     const { props } = usePage();
@@ -292,10 +293,11 @@ export default function SidebarKasir({ title = "Kasir", children }) {
                         : "ml-0 lg:ml-64"
                 }`}
             >
-                <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
+                <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 pb-24">
                     {children}
                 </div>
             </main>
+            <MobileBottomNav />
         </div>
     );
 }
