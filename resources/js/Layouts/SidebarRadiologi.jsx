@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Link, usePage } from "@inertiajs/react";
+import { Link, usePage, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
+import MobileBottomNav from "@/Components/MobileBottomNav";
 import {
     Gauge,
     Hospital,
@@ -449,10 +450,11 @@ export default function SidebarRadiologi({ title = "Radiologi", children }) {
                         : "lg:ml-64"
                 }`}
             >
-                <div className="min-h-[calc(100vh-3.5rem)] px-4 sm:px-6 lg:px-8 py-6">
+                <div className="min-h-[calc(100vh-3.5rem)] px-4 sm:px-6 lg:px-8 pt-6 pb-24">
                     {children}
                 </div>
             </main>
+            <MobileBottomNav />
         </div>
     );
 }

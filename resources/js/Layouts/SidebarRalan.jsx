@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { Stethoscope, Hospital, Gauge, HeartPulse, ChevronDown, ChevronRight, Receipt } from 'lucide-react';
+import MobileBottomNav from "@/Components/MobileBottomNav";
 
 // Sidebar khusus modul Rawat Jalan dengan pola tampilan seperti LanjutanRalanLayout
 export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
@@ -274,10 +275,11 @@ export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
 
       {/* Main Content */}
       <main className={`pt-14 transition-all duration-300 ${isSidebarOpen ? 'lg:ml-64' : isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'}`}>
-        <div className="min-h-[calc(100vh-3.5rem)] px-4 sm:px-6 lg:px-8 py-6">
+        <div className="min-h-[calc(100vh-3.5rem)] px-4 sm:px-6 lg:px-8 pt-6 pb-24">
           {children}
         </div>
       </main>
+      <MobileBottomNav />
     </div>
   );
 }

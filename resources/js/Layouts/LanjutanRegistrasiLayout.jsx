@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { router, usePage } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import LanjutanRegistrasiSidebar from "@/Components/LanjutanRegistrasiSidebar";
+import MobileBottomNav from "@/Components/MobileBottomNav";
 
 function LanjutanRegistrasiLayout({
   title = "Registrasi Pasien",
@@ -381,7 +382,7 @@ function LanjutanRegistrasiLayout({
         }`}
       >
         {/* Tambahkan padding horizontal agar ada jarak kanan-kiri antara konten dan sidebar */}
-        <div className="min-h-[calc(100vh-3.5rem)] px-4 sm:px-6 lg:px-8 pb-6">
+        <div className="min-h-[calc(100vh-3.5rem)] px-4 sm:px-6 lg:px-8 pt-4 pb-24">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={currentUrl}
@@ -395,6 +396,7 @@ function LanjutanRegistrasiLayout({
           </AnimatePresence>
         </div>
       </main>
+      <MobileBottomNav />
     </div>
   );
 }

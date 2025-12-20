@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "@inertiajs/react";
 import { route } from "ziggy-js";
+import MobileBottomNav from "@/Components/MobileBottomNav";
 import { HomeIcon, Squares2X2Icon } from "@heroicons/react/24/outline";
 import {
   Link as LucideLink,
@@ -201,8 +202,9 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
           isSidebarOpen ? "lg:ml-64" : isSidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
         }`}
       >
-        <div className={`${wide ? "px-2 sm:px-4" : "max-w-7xl mx-auto px-2 sm:px-4"} py-6`}>{children}</div>
+        <div className={`${wide ? "px-2 sm:px-4" : "max-w-7xl mx-auto px-2 sm:px-4"} pt-6 pb-24`}>{children}</div>
       </main>
+      <MobileBottomNav />
     </div>
   );
 }

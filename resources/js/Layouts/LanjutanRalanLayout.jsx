@@ -4,6 +4,7 @@ import { router, usePage } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import LanjutanRalanSidebar from "@/Components/LanjutanRalanSidebar";
 import Breadcrumb from "@/Components/Breadcrumb";
+import MobileBottomNav from "@/Components/MobileBottomNav";
 
 export default function LanjutanRalanLayout({
     title = "Lanjutan Rawat Jalan",
@@ -287,10 +288,11 @@ export default function LanjutanRalanLayout({
 						: "lg:ml-64"
 				}`}
 			>
-				<div className="min-h-[calc(100vh-3.5rem)]">
+				<div className="min-h-[calc(100vh-3.5rem)] pb-24">
 					{children}
 				</div>
 			</main>
+			<MobileBottomNav />
 		</div>
 	);
 }
