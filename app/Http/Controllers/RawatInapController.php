@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use App\Models\RegPeriksa;
 use Inertia\Inertia;
 
@@ -291,6 +292,141 @@ class RawatInapController extends Controller
                 'no_rkm_medis' => $noRkmMedis,
             ],
         ]);
+    }
+
+    public function getDiagnosaRanap(Request $request)
+    {
+        $validated = $request->validate([
+            'no_rawat' => 'required|string|max:17',
+        ]);
+
+        $query = DB::table('diagnosa_pasien')
+            ->join('penyakit', 'diagnosa_pasien.kd_penyakit', '=', 'penyakit.kd_penyakit')
+            ->where('diagnosa_pasien.no_rawat', $validated['no_rawat']);
+
+        if (Schema::hasColumn('diagnosa_pasien', 'status')) {
+            $query->where('diagnosa_pasien.status', 'Ranap');
+        }
+
+        $rows = $query
+            ->orderBy('diagnosa_pasien.prioritas')
+            ->get([
+                'diagnosa_pasien.kd_penyakit',
+                'penyakit.nm_penyakit',
+                'diagnosa_pasien.prioritas',
+                'diagnosa_pasien.status_penyakit',
+            ]);
+
+        $data = $rows->map(function ($row) {
+            $type = ((string) $row->prioritas === '1') ? 'utama' : 'sekunder';
+
+            return [
+                'kode' => $row->kd_penyakit,
+                'nama' => $row->nm_penyakit,
+                'prioritas' => (string) $row->prioritas,
+                'type' => $type,
+                'status_penyakit' => $row->status_penyakit,
+            ];
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function storeDiagnosaRanap(Request $request)
+    {
+        $validated = $request->validate([
+            'no_rawat' => 'required|string|max:17',
+            'list' => 'required|array|min:1|max:3',
+            'list.*.kode' => 'required|string|max:10',
+            'list.*.type' => 'required|in:utama,sekunder',
+            'list.*.status_penyakit' => 'nullable|in:Lama,Baru',
+        ]);
+
+        $no_rawat = $validated['no_rawat'];
+        $list = collect($validated['list']);
+
+        $hasPrimary = false;
+        $normalized = collect();
+        foreach ($list as $item) {
+            $itemType = $item['type'] ?? 'sekunder';
+            if ($itemType === 'utama' && ! $hasPrimary) {
+                $normalized->push(array_merge($item, ['type' => 'utama']));
+                $hasPrimary = true;
+            } else {
+                $normalized->push(array_merge($item, ['type' => 'sekunder']));
+            }
+        }
+
+        $ordered = $normalized->take(3)->values();
+
+        DB::beginTransaction();
+        try {
+            if (Schema::hasColumn('diagnosa_pasien', 'status')) {
+                DB::table('diagnosa_pasien')
+                    ->where('no_rawat', $no_rawat)
+                    ->where('status', 'Ranap')
+                    ->delete();
+            } else {
+                DB::table('diagnosa_pasien')
+                    ->where('no_rawat', $no_rawat)
+                    ->delete();
+            }
+
+            $prioritas = 1;
+            foreach ($ordered as $item) {
+                $row = [
+                    'no_rawat' => $no_rawat,
+                    'kd_penyakit' => $item['kode'],
+                    'prioritas' => (string) $prioritas,
+                    'status_penyakit' => $item['status_penyakit'] ?? null,
+                ];
+
+                try {
+                    DB::table('diagnosa_pasien')->insert(array_merge($row, ['status' => 'Ranap']));
+                } catch (\Throwable $e) {
+                    DB::table('diagnosa_pasien')->insert($row);
+                }
+
+                $prioritas++;
+            }
+
+            DB::commit();
+
+            $query = DB::table('diagnosa_pasien')
+                ->join('penyakit', 'diagnosa_pasien.kd_penyakit', '=', 'penyakit.kd_penyakit')
+                ->where('diagnosa_pasien.no_rawat', $no_rawat);
+
+            if (Schema::hasColumn('diagnosa_pasien', 'status')) {
+                $query->where('diagnosa_pasien.status', 'Ranap');
+            }
+
+            $rows = $query
+                ->orderBy('diagnosa_pasien.prioritas')
+                ->get([
+                    'diagnosa_pasien.kd_penyakit',
+                    'penyakit.nm_penyakit',
+                    'diagnosa_pasien.prioritas',
+                    'diagnosa_pasien.status_penyakit',
+                ]);
+
+            $data = $rows->map(function ($row) {
+                $type = ((string) $row->prioritas === '1') ? 'utama' : 'sekunder';
+
+                return [
+                    'kode' => $row->kd_penyakit,
+                    'nama' => $row->nm_penyakit,
+                    'prioritas' => (string) $row->prioritas,
+                    'type' => $type,
+                    'status_penyakit' => $row->status_penyakit,
+                ];
+            });
+
+            return response()->json(['message' => 'Diagnosa ranap tersimpan', 'data' => $data]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json(['message' => 'Gagal menyimpan diagnosa ranap', 'error' => $e->getMessage()], 500);
+        }
     }
 
     /**

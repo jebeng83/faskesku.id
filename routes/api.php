@@ -34,6 +34,7 @@ use App\Http\Controllers\RawatJalan\RawatJalanController;
 use App\Http\Controllers\RawatJalan\ResepController;
 use App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController;
 use App\Http\Controllers\SatuSehat\SatuSehatController;
+use App\Http\Controllers\RawatInapController;
 use Illuminate\Support\Facades\Route;
 
 // Public endpoints (tidak memerlukan authentication)
@@ -165,6 +166,10 @@ Route::get('/cacat-fisik', [ReferenceController::class, 'cacatFisik'])->name('ap
     // API routes untuk diagnosa pasien (Rawat Jalan)
     Route::get('/rawat-jalan/diagnosa', [RawatJalanController::class, 'getDiagnosaPasien'])->name('api.rawat-jalan.diagnosa.index');
     Route::post('/rawat-jalan/diagnosa', [RawatJalanController::class, 'storeDiagnosaPasien'])->name('api.rawat-jalan.diagnosa.store');
+    // API routes untuk diagnosa pasien (Rawat Inap)
+    Route::get('/rawat-inap/diagnosa', [RawatInapController::class, 'getDiagnosaRanap'])->name('api.rawat-inap.diagnosa.index');
+    Route::post('/rawat-inap/diagnosa', [RawatInapController::class, 'storeDiagnosaRanap'])->name('api.rawat-inap.diagnosa.store');
+    Route::get('/penyakit', [RawatJalanController::class, 'searchPenyakit'])->name('api.penyakit.index');
 
     // API routes untuk dokter
     Route::get('/dokter', [DokterController::class, 'index'])->name('api.dokter.index');

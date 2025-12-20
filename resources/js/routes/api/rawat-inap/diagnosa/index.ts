@@ -1,8 +1,8 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:762
-* @route '/api/rawat-jalan/diagnosa'
+* @see \App\Http\Controllers\RawatInapController::index
+* @see app/Http/Controllers/RawatInapController.php:297
+* @route '/api/rawat-inap/diagnosa'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
@@ -11,22 +11,22 @@ export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 index.definition = {
     methods: ["get","head"],
-    url: '/api/rawat-jalan/diagnosa',
+    url: '/api/rawat-inap/diagnosa',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:762
-* @route '/api/rawat-jalan/diagnosa'
+* @see \App\Http\Controllers\RawatInapController::index
+* @see app/Http/Controllers/RawatInapController.php:297
+* @route '/api/rawat-inap/diagnosa'
 */
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:762
-* @route '/api/rawat-jalan/diagnosa'
+* @see \App\Http\Controllers\RawatInapController::index
+* @see app/Http/Controllers/RawatInapController.php:297
+* @route '/api/rawat-inap/diagnosa'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
@@ -34,9 +34,9 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:762
-* @route '/api/rawat-jalan/diagnosa'
+* @see \App\Http\Controllers\RawatInapController::index
+* @see app/Http/Controllers/RawatInapController.php:297
+* @route '/api/rawat-inap/diagnosa'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
@@ -44,9 +44,9 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:801
-* @route '/api/rawat-jalan/diagnosa'
+* @see \App\Http\Controllers\RawatInapController::store
+* @see app/Http/Controllers/RawatInapController.php:335
+* @route '/api/rawat-inap/diagnosa'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
@@ -55,22 +55,22 @@ export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
 store.definition = {
     methods: ["post"],
-    url: '/api/rawat-jalan/diagnosa',
+    url: '/api/rawat-inap/diagnosa',
 } satisfies RouteDefinition<["post"]>
 
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:801
-* @route '/api/rawat-jalan/diagnosa'
+* @see \App\Http\Controllers\RawatInapController::store
+* @see app/Http/Controllers/RawatInapController.php:335
+* @route '/api/rawat-inap/diagnosa'
 */
 store.url = (options?: RouteQueryOptions) => {
     return store.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:801
-* @route '/api/rawat-jalan/diagnosa'
+* @see \App\Http\Controllers\RawatInapController::store
+* @see app/Http/Controllers/RawatInapController.php:335
+* @route '/api/rawat-inap/diagnosa'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
