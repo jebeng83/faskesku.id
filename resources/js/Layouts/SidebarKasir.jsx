@@ -71,7 +71,7 @@ export default function SidebarKasir({ title = "Kasir", children }) {
             },
             {
                 label: "Kasir Rawat Jalan",
-                href: "/akutansi/kasir-ralan",
+                href: "/pembayaran/ralan",
                 icon: <Receipt className="w-4 h-4" />,
             },
             {

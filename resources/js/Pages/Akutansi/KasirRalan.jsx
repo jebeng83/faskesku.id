@@ -83,27 +83,8 @@ function Field({ label, children, icon: Icon }) {
 }
 
 function useDateRangeDefaults() {
-    // Gunakan timezone aplikasi (Asia/Jakarta) untuk konsistensi
-    const today = todayDateString(); // Tanggal hari ini dengan timezone Asia/Jakarta
-
-    // Hitung tanggal 7 hari yang lalu dengan timezone yang sama
-    const tz = getAppTimeZone();
-    const todayDate = new Date();
-    const sevenDaysAgoDate = new Date();
-    sevenDaysAgoDate.setDate(todayDate.getDate() - 7);
-
-    // Format tanggal 7 hari yang lalu dengan timezone aplikasi
-    let sevenDaysAgo;
-    try {
-        sevenDaysAgo = sevenDaysAgoDate.toLocaleDateString("en-CA", {
-            timeZone: tz,
-        });
-    } catch (e) {
-        // Fallback ke ISO jika parsing gagal
-        sevenDaysAgo = sevenDaysAgoDate.toISOString().slice(0, 10);
-    }
-
-    return { start: sevenDaysAgo, end: today };
+    const today = todayDateString();
+    return { start: today, end: today };
 }
 
 export default function KasirRalanPage() {
@@ -123,24 +104,22 @@ export default function KasirRalanPage() {
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState("");
 
-    // Buat daftar tanggal di antara startDate dan endDate (inklusif)
-    // Menggunakan timezone aplikasi (Asia/Jakarta) untuk konsistensi
     const makeDateList = React.useCallback((start, end) => {
         const tz = getAppTimeZone();
-        const s = new Date(start + "T00:00:00"); // Parse sebagai tanggal lokal
-        const e = new Date(end + "T23:59:59"); // Parse sebagai tanggal lokal
+        if (!start || !end) return [];
+        const s = new Date(start + "T00:00:00");
+        const e = new Date(end + "T23:59:59");
+        if (isNaN(s.getTime()) || isNaN(e.getTime())) return [];
         const days = [];
         const cur = new Date(s);
 
         while (cur <= e) {
             try {
-                // Format tanggal dengan timezone aplikasi
                 const dateStr = cur.toLocaleDateString("en-CA", {
                     timeZone: tz,
                 });
                 days.push(dateStr);
             } catch (e) {
-                // Fallback ke ISO jika parsing gagal
                 days.push(cur.toISOString().slice(0, 10));
             }
             cur.setDate(cur.getDate() + 1);
@@ -153,6 +132,11 @@ export default function KasirRalanPage() {
         setError("");
         try {
             const days = makeDateList(startDate, endDate);
+            if (days.length === 0) {
+                setRows([]);
+                setError("Rentang tanggal tidak valid. Silakan periksa tanggal awal dan akhir.");
+                return;
+            }
             // Batasi maksimal 14 hari agar tidak terlalu berat
             if (days.length > 14) {
                 throw new Error(
@@ -183,38 +167,20 @@ export default function KasirRalanPage() {
             );
 
             const responses = await Promise.all(requests);
-            // Flatten semua item dari pagination: response.data.data.data
             const items = responses.flatMap((res) => {
                 const payload = res?.data?.data;
                 if (!payload) return [];
                 return Array.isArray(payload?.data) ? payload.data : [];
             });
 
-            // Debug: Log sample data untuk memastikan field stts ada
-            if (items.length > 0) {
-                console.log("KasirRalan: Sample data dari API:", {
-                    sample: items[0],
-                    total_items: items.length,
-                    sample_stts: items[0]?.stts,
-                    sample_status_bayar: items[0]?.status_bayar,
-                });
-            }
+            const ralanOnly = items.filter((it) => {
+                const v = String(it?.status_lanjut || "")
+                    .trim()
+                    .toLowerCase();
+                return v === "ralan";
+            });
 
-            // Filter client-side: hanya Ralan
-            const ralanOnly = items.filter(
-                (it) => (it?.status_lanjut || it?.status_lanjut) === "Ralan"
-            );
-
-            // Debug: Log setelah filter Ralan
-            if (ralanOnly.length > 0) {
-                console.log("KasirRalan: Setelah filter Ralan:", {
-                    total_ralan: ralanOnly.length,
-                    sample_ralan: ralanOnly[0],
-                    sample_ralan_stts: ralanOnly[0]?.stts,
-                });
-            }
-
-            setRows(ralanOnly);
+            setRows(ralanOnly.length > 0 ? ralanOnly : items);
         } catch (e) {
             setError(e?.message || "Gagal memuat data");
         } finally {
