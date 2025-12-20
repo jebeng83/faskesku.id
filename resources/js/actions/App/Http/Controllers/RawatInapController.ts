@@ -1,83 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
-* @see \App\Http\Controllers\RawatInapController::getDiagnosaRanap
-* @see app/Http/Controllers/RawatInapController.php:297
-* @route '/api/rawat-inap/diagnosa'
-*/
-export const getDiagnosaRanap = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: getDiagnosaRanap.url(options),
-    method: 'get',
-})
-
-getDiagnosaRanap.definition = {
-    methods: ["get","head"],
-    url: '/api/rawat-inap/diagnosa',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\RawatInapController::getDiagnosaRanap
-* @see app/Http/Controllers/RawatInapController.php:297
-* @route '/api/rawat-inap/diagnosa'
-*/
-getDiagnosaRanap.url = (options?: RouteQueryOptions) => {
-    return getDiagnosaRanap.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\RawatInapController::getDiagnosaRanap
-* @see app/Http/Controllers/RawatInapController.php:297
-* @route '/api/rawat-inap/diagnosa'
-*/
-getDiagnosaRanap.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: getDiagnosaRanap.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\RawatInapController::getDiagnosaRanap
-* @see app/Http/Controllers/RawatInapController.php:297
-* @route '/api/rawat-inap/diagnosa'
-*/
-getDiagnosaRanap.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: getDiagnosaRanap.url(options),
-    method: 'head',
-})
-
-/**
-* @see \App\Http\Controllers\RawatInapController::storeDiagnosaRanap
-* @see app/Http/Controllers/RawatInapController.php:335
-* @route '/api/rawat-inap/diagnosa'
-*/
-export const storeDiagnosaRanap = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: storeDiagnosaRanap.url(options),
-    method: 'post',
-})
-
-storeDiagnosaRanap.definition = {
-    methods: ["post"],
-    url: '/api/rawat-inap/diagnosa',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \App\Http\Controllers\RawatInapController::storeDiagnosaRanap
-* @see app/Http/Controllers/RawatInapController.php:335
-* @route '/api/rawat-inap/diagnosa'
-*/
-storeDiagnosaRanap.url = (options?: RouteQueryOptions) => {
-    return storeDiagnosaRanap.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\RawatInapController::storeDiagnosaRanap
-* @see app/Http/Controllers/RawatInapController.php:335
-* @route '/api/rawat-inap/diagnosa'
-*/
-storeDiagnosaRanap.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: storeDiagnosaRanap.url(options),
-    method: 'post',
-})
-
-/**
 * @see \App\Http\Controllers\RawatInapController::pemeriksaanRanap
 * @see app/Http/Controllers/RawatInapController.php:455
 * @route '/rawat-inap/pemeriksaan-ranap'
@@ -857,6 +779,6 @@ destroy.delete = (args: { rawat_inap: string | number } | [rawat_inap: string | 
     method: 'delete',
 })
 
-const RawatInapController = { getDiagnosaRanap, storeDiagnosaRanap, pemeriksaanRanap, storePemeriksaanRanap, deletePemeriksaanRanap, updatePemeriksaanRanap, getObatRanapPublic, getPemeriksaanLabPublic, getRadiologiPublic, riwayat, lanjutan, index, create, store, show, edit, update, destroy }
+const RawatInapController = { pemeriksaanRanap, storePemeriksaanRanap, deletePemeriksaanRanap, updatePemeriksaanRanap, getObatRanapPublic, getPemeriksaanLabPublic, getRadiologiPublic, riwayat, lanjutan, index, create, store, show, edit, update, destroy }
 
 export default RawatInapController

@@ -3,7 +3,6 @@ import QueueController from './QueueController'
 import PermintaanLabController from './PermintaanLabController'
 import MenuController from './MenuController'
 import RawatJalan from './RawatJalan'
-import RawatInapController from './RawatInapController'
 import PermintaanRadiologiController from './PermintaanRadiologiController'
 import OpnameController from './OpnameController'
 import Farmasi from './Farmasi'
@@ -25,6 +24,7 @@ import DoctorController from './DoctorController'
 import SpesialisController from './SpesialisController'
 import RegPeriksaController from './RegPeriksaController'
 import PembayaranController from './PembayaranController'
+import RawatInapController from './RawatInapController'
 import ProfileController from './ProfileController'
 import setting from './setting'
 import IGDController from './IGDController'
@@ -43,7 +43,6 @@ const Controllers = {
     PermintaanLabController: Object.assign(PermintaanLabController, PermintaanLabController),
     MenuController: Object.assign(MenuController, MenuController),
     RawatJalan: Object.assign(RawatJalan, RawatJalan),
-    RawatInapController: Object.assign(RawatInapController, RawatInapController),
     PermintaanRadiologiController: Object.assign(PermintaanRadiologiController, PermintaanRadiologiController),
     OpnameController: Object.assign(OpnameController, OpnameController),
     Farmasi: Object.assign(Farmasi, Farmasi),
@@ -65,6 +64,7 @@ const Controllers = {
     SpesialisController: Object.assign(SpesialisController, SpesialisController),
     RegPeriksaController: Object.assign(RegPeriksaController, RegPeriksaController),
     PembayaranController: Object.assign(PembayaranController, PembayaranController),
+    RawatInapController: Object.assign(RawatInapController, RawatInapController),
     ProfileController: Object.assign(ProfileController, ProfileController),
     setting: Object.assign(setting, setting),
     IGDController: Object.assign(IGDController, IGDController),

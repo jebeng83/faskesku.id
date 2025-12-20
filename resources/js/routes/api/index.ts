@@ -12,8 +12,6 @@ import menus from './menus'
 import obat from './obat'
 import resep from './resep'
 import rawatJalan from './rawat-jalan'
-import rawatInap from './rawat-inap'
-import penyakit from './penyakit'
 import dokter from './dokter'
 import permintaanLab from './permintaan-lab'
 import radiologiTests from './radiologi-tests'
@@ -184,8 +182,6 @@ const api = {
     obat: Object.assign(obat, obat),
     resep: Object.assign(resep, resep),
     rawatJalan: Object.assign(rawatJalan, rawatJalan),
-    rawatInap: Object.assign(rawatInap, rawatInap),
-    penyakit: Object.assign(penyakit, penyakit),
     dokter: Object.assign(dokter, dokter),
     labTests: Object.assign(labTests, labTests),
     permintaanLab: Object.assign(permintaanLab, permintaanLab),
