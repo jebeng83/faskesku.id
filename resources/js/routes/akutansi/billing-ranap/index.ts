@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::page
-* @see app/Http/Controllers/Akutansi/BillingController.php:50
+* @see app/Http/Controllers/Akutansi/BillingController.php:39
 * @route '/akutansi/billing-ranap'
 */
 export const page = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ page.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::page
-* @see app/Http/Controllers/Akutansi/BillingController.php:50
+* @see app/Http/Controllers/Akutansi/BillingController.php:39
 * @route '/akutansi/billing-ranap'
 */
 page.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ page.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::page
-* @see app/Http/Controllers/Akutansi/BillingController.php:50
+* @see app/Http/Controllers/Akutansi/BillingController.php:39
 * @route '/akutansi/billing-ranap'
 */
 page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::page
-* @see app/Http/Controllers/Akutansi/BillingController.php:50
+* @see app/Http/Controllers/Akutansi/BillingController.php:39
 * @route '/akutansi/billing-ranap'
 */
 page.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

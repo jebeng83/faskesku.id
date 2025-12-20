@@ -45,7 +45,7 @@ page.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::ranapPage
-* @see app/Http/Controllers/Akutansi/BillingController.php:50
+* @see app/Http/Controllers/Akutansi/BillingController.php:39
 * @route '/akutansi/billing-ranap'
 */
 export const ranapPage = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,7 +60,7 @@ ranapPage.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::ranapPage
-* @see app/Http/Controllers/Akutansi/BillingController.php:50
+* @see app/Http/Controllers/Akutansi/BillingController.php:39
 * @route '/akutansi/billing-ranap'
 */
 ranapPage.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ ranapPage.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::ranapPage
-* @see app/Http/Controllers/Akutansi/BillingController.php:50
+* @see app/Http/Controllers/Akutansi/BillingController.php:39
 * @route '/akutansi/billing-ranap'
 */
 ranapPage.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -79,7 +79,7 @@ ranapPage.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::ranapPage
-* @see app/Http/Controllers/Akutansi/BillingController.php:50
+* @see app/Http/Controllers/Akutansi/BillingController.php:39
 * @route '/akutansi/billing-ranap'
 */
 ranapPage.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -133,7 +133,7 @@ kasirRalanPage.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => 
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::index
-* @see app/Http/Controllers/Akutansi/BillingController.php:67
+* @see app/Http/Controllers/Akutansi/BillingController.php:56
 * @route '/api/akutansi/billing'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -148,7 +148,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::index
-* @see app/Http/Controllers/Akutansi/BillingController.php:67
+* @see app/Http/Controllers/Akutansi/BillingController.php:56
 * @route '/api/akutansi/billing'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -157,7 +157,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::index
-* @see app/Http/Controllers/Akutansi/BillingController.php:67
+* @see app/Http/Controllers/Akutansi/BillingController.php:56
 * @route '/api/akutansi/billing'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -167,7 +167,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::index
-* @see app/Http/Controllers/Akutansi/BillingController.php:67
+* @see app/Http/Controllers/Akutansi/BillingController.php:56
 * @route '/api/akutansi/billing'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -177,7 +177,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::indexRanap
-* @see app/Http/Controllers/Akutansi/BillingController.php:564
+* @see app/Http/Controllers/Akutansi/BillingController.php:553
 * @route '/api/akutansi/billing-ranap'
 */
 export const indexRanap = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -192,7 +192,7 @@ indexRanap.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::indexRanap
-* @see app/Http/Controllers/Akutansi/BillingController.php:564
+* @see app/Http/Controllers/Akutansi/BillingController.php:553
 * @route '/api/akutansi/billing-ranap'
 */
 indexRanap.url = (options?: RouteQueryOptions) => {
@@ -201,7 +201,7 @@ indexRanap.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::indexRanap
-* @see app/Http/Controllers/Akutansi/BillingController.php:564
+* @see app/Http/Controllers/Akutansi/BillingController.php:553
 * @route '/api/akutansi/billing-ranap'
 */
 indexRanap.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -211,7 +211,7 @@ indexRanap.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::indexRanap
-* @see app/Http/Controllers/Akutansi/BillingController.php:564
+* @see app/Http/Controllers/Akutansi/BillingController.php:553
 * @route '/api/akutansi/billing-ranap'
 */
 indexRanap.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -221,7 +221,7 @@ indexRanap.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::store
-* @see app/Http/Controllers/Akutansi/BillingController.php:1037
+* @see app/Http/Controllers/Akutansi/BillingController.php:1026
 * @route '/api/akutansi/billing'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -236,7 +236,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::store
-* @see app/Http/Controllers/Akutansi/BillingController.php:1037
+* @see app/Http/Controllers/Akutansi/BillingController.php:1026
 * @route '/api/akutansi/billing'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -245,7 +245,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::store
-* @see app/Http/Controllers/Akutansi/BillingController.php:1037
+* @see app/Http/Controllers/Akutansi/BillingController.php:1026
 * @route '/api/akutansi/billing'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -255,7 +255,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::update
-* @see app/Http/Controllers/Akutansi/BillingController.php:1091
+* @see app/Http/Controllers/Akutansi/BillingController.php:1080
 * @route '/api/akutansi/billing/{noindex}'
 */
 export const update = (args: { noindex: string | number } | [noindex: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -270,7 +270,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::update
-* @see app/Http/Controllers/Akutansi/BillingController.php:1091
+* @see app/Http/Controllers/Akutansi/BillingController.php:1080
 * @route '/api/akutansi/billing/{noindex}'
 */
 update.url = (args: { noindex: string | number } | [noindex: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -297,7 +297,7 @@ update.url = (args: { noindex: string | number } | [noindex: string | number ] |
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::update
-* @see app/Http/Controllers/Akutansi/BillingController.php:1091
+* @see app/Http/Controllers/Akutansi/BillingController.php:1080
 * @route '/api/akutansi/billing/{noindex}'
 */
 update.put = (args: { noindex: string | number } | [noindex: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -307,7 +307,7 @@ update.put = (args: { noindex: string | number } | [noindex: string | number ] |
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::destroy
-* @see app/Http/Controllers/Akutansi/BillingController.php:1137
+* @see app/Http/Controllers/Akutansi/BillingController.php:1126
 * @route '/api/akutansi/billing/{noindex}'
 */
 export const destroy = (args: { noindex: string | number } | [noindex: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -322,7 +322,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::destroy
-* @see app/Http/Controllers/Akutansi/BillingController.php:1137
+* @see app/Http/Controllers/Akutansi/BillingController.php:1126
 * @route '/api/akutansi/billing/{noindex}'
 */
 destroy.url = (args: { noindex: string | number } | [noindex: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -349,7 +349,7 @@ destroy.url = (args: { noindex: string | number } | [noindex: string | number ] 
 
 /**
 * @see \App\Http\Controllers\Akutansi\BillingController::destroy
-* @see app/Http/Controllers/Akutansi/BillingController.php:1137
+* @see app/Http/Controllers/Akutansi/BillingController.php:1126
 * @route '/api/akutansi/billing/{noindex}'
 */
 destroy.delete = (args: { noindex: string | number } | [noindex: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
