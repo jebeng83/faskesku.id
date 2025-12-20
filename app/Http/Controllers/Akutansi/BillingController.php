@@ -15,12 +15,8 @@ use Illuminate\Support\Facades\Log;
 
 class BillingController extends Controller
 {
-    /**
-     * Render halaman Inertia untuk CRUD Billing.
-     */
     public function page(Request $request)
     {
-        // Enumerasi status berdasarkan schema_dump untuk validasi & pilihan di UI
         $statusOptions = [
             'Laborat', 'Radiologi', 'Operasi', 'Obat', 'Ranap Dokter', 'Ranap Dokter Paramedis', 'Ranap Paramedis',
             'Ralan Dokter', 'Ralan Dokter Paramedis', 'Ralan Paramedis', 'Tambahan', 'Potongan', 'Administrasi', 'Kamar', '-',
@@ -35,10 +31,12 @@ class BillingController extends Controller
         ]);
     }
 
-    /**
-     * Render halaman Inertia untuk Kasir Ralan (UI serupa Billing, sesuai DlgKasirRalan).
-     */
     public function kasirRalanPage(Request $request)
+    {
+        return redirect('/pembayaran/ralan');
+    }
+
+    public function ranapPage(Request $request)
     {
         $statusOptions = [
             'Laborat', 'Radiologi', 'Operasi', 'Obat', 'Ranap Dokter', 'Ranap Dokter Paramedis', 'Ranap Paramedis',
@@ -48,15 +46,13 @@ class BillingController extends Controller
             'TtlResep Pulang', 'TtlPotongan', 'TtlLaborat', 'TtlOperasi', 'TtlRadiologi', 'Tagihan',
         ];
 
-        return inertia('Akutansi/KasirRalan', [
+        return inertia('Akutansi/BillingRanap', [
             'statusOptions' => $statusOptions,
             'initialNoRawat' => $request->query('no_rawat'),
+            'dataKasirRouteName' => 'pembayaran.ranap',
         ]);
     }
 
-    /**
-     * Listing billing per no_rawat, dengan filter opsional.
-     */
     public function index(Request $request)
     {
         $request->validate([
@@ -530,6 +526,476 @@ class BillingController extends Controller
             return ($item['status'] ?? '') === 'Obat';
         });
         Log::info('BillingController: Final response items obat', [
+            'no_rawat' => $noRawat,
+            'total_obat_items' => $obatItemsFinal->count(),
+            'obat_items' => $obatItemsFinal->map(function ($item) {
+                return [
+                    'no' => $item['no'],
+                    'kode_brng' => $item['kode_brng'] ?? 'N/A',
+                    'nm_perawatan' => $item['nm_perawatan'],
+                    'no_faktur' => $item['no_faktur'] ?? 'N/A',
+                    'source' => $item['source'] ?? 'N/A',
+                ];
+            })->toArray(),
+            'total_all_items' => $filteredItems->count(),
+            'summary_by_status' => $summaryByStatus->toArray(),
+        ]);
+
+        return response()->json([
+            'items' => $filteredItems->all(),
+            'summary' => [
+                'by_status' => $summaryByStatus,
+                'grand_total' => round($filteredItems->sum('totalbiaya'), 2),
+            ],
+        ]);
+    }
+
+    public function indexRanap(Request $request)
+    {
+        $request->validate([
+            'no_rawat' => ['required', 'string'],
+            'q' => ['nullable', 'string'],
+            'status' => ['nullable', 'string'],
+            'start_date' => ['nullable', 'date'],
+            'end_date' => ['nullable', 'date'],
+        ]);
+
+        $noRawat = $request->string('no_rawat');
+        $noRawat = trim(urldecode($noRawat));
+
+        $regPeriksa = RegPeriksa::where('no_rawat', $noRawat)->first();
+
+        if (! $regPeriksa) {
+            return response()->json([
+                'items' => [],
+                'summary' => [
+                    'by_status' => [],
+                    'grand_total' => 0,
+                ],
+            ]);
+        }
+
+        $query = Billing::query()->where('no_rawat', '=', $noRawat);
+
+        if ($request->filled('q')) {
+            $q = '%'.$request->string('q').'%';
+            $query->where(function ($sub) use ($q) {
+                $sub->where('nm_perawatan', 'like', $q)
+                    ->orWhere('no', 'like', $q);
+            });
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->string('status'));
+        }
+        if ($request->filled('start_date')) {
+            $query->whereDate('tgl_byr', '>=', $request->date('start_date'));
+        }
+        if ($request->filled('end_date')) {
+            $query->whereDate('tgl_byr', '<=', $request->date('end_date'));
+        }
+
+        $existing = $query->orderBy('noindex')->get();
+
+        if ($existing->isEmpty()) {
+            $previewItems = collect();
+
+            $reg = $regPeriksa;
+            if ($reg && (float) ($reg->biaya_reg ?? 0) > 0) {
+                $previewItems->push([
+                    'noindex' => null,
+                    'no_rawat' => $noRawat,
+                    'tgl_byr' => $reg->tgl_registrasi,
+                    'no' => 'REG',
+                    'nm_perawatan' => 'Registrasi',
+                    'pemisah' => '-',
+                    'biaya' => (float) ($reg->biaya_reg ?? 0),
+                    'jumlah' => 1,
+                    'tambahan' => 0,
+                    'totalbiaya' => (float) ($reg->biaya_reg ?? 0),
+                    'status' => 'Registrasi',
+                    'source' => 'preview',
+                ]);
+            }
+
+            $ranapDr = DB::table('rawat_inap_dr')
+                ->join('jns_perawatan_inap', 'rawat_inap_dr.kd_jenis_prw', '=', 'jns_perawatan_inap.kd_jenis_prw')
+                ->where('rawat_inap_dr.no_rawat', $noRawat)
+                ->orderBy('rawat_inap_dr.tgl_perawatan')
+                ->orderBy('rawat_inap_dr.jam_rawat')
+                ->select(
+                    'rawat_inap_dr.no_rawat',
+                    'rawat_inap_dr.tgl_perawatan',
+                    'rawat_inap_dr.jam_rawat',
+                    'rawat_inap_dr.kd_jenis_prw',
+                    'rawat_inap_dr.biaya_rawat',
+                    'jns_perawatan_inap.nm_perawatan'
+                )
+                ->get()
+                ->map(function ($r) {
+                    $biaya = (float) ($r->biaya_rawat ?? 0);
+
+                    return [
+                        'noindex' => null,
+                        'no_rawat' => $r->no_rawat,
+                        'tgl_byr' => $r->tgl_perawatan,
+                        'no' => $r->kd_jenis_prw,
+                        'nm_perawatan' => $r->nm_perawatan ?? $r->kd_jenis_prw,
+                        'pemisah' => '-',
+                        'biaya' => $biaya,
+                        'jumlah' => 1,
+                        'tambahan' => 0,
+                        'totalbiaya' => $biaya,
+                        'status' => 'Ranap Dokter',
+                        'source' => 'preview',
+                    ];
+                });
+
+            $ranapPr = DB::table('rawat_inap_pr')
+                ->join('jns_perawatan_inap', 'rawat_inap_pr.kd_jenis_prw', '=', 'jns_perawatan_inap.kd_jenis_prw')
+                ->where('rawat_inap_pr.no_rawat', $noRawat)
+                ->orderBy('rawat_inap_pr.tgl_perawatan')
+                ->orderBy('rawat_inap_pr.jam_rawat')
+                ->select(
+                    'rawat_inap_pr.no_rawat',
+                    'rawat_inap_pr.tgl_perawatan',
+                    'rawat_inap_pr.jam_rawat',
+                    'rawat_inap_pr.kd_jenis_prw',
+                    'rawat_inap_pr.biaya_rawat',
+                    'jns_perawatan_inap.nm_perawatan'
+                )
+                ->get()
+                ->map(function ($r) {
+                    $biaya = (float) ($r->biaya_rawat ?? 0);
+
+                    return [
+                        'noindex' => null,
+                        'no_rawat' => $r->no_rawat,
+                        'tgl_byr' => $r->tgl_perawatan,
+                        'no' => $r->kd_jenis_prw,
+                        'nm_perawatan' => $r->nm_perawatan ?? $r->kd_jenis_prw,
+                        'pemisah' => '-',
+                        'biaya' => $biaya,
+                        'jumlah' => 1,
+                        'tambahan' => 0,
+                        'totalbiaya' => $biaya,
+                        'status' => 'Ranap Paramedis',
+                        'source' => 'preview',
+                    ];
+                });
+
+            $ranapDrpr = DB::table('rawat_inap_drpr')
+                ->join('jns_perawatan_inap', 'rawat_inap_drpr.kd_jenis_prw', '=', 'jns_perawatan_inap.kd_jenis_prw')
+                ->where('rawat_inap_drpr.no_rawat', $noRawat)
+                ->orderBy('rawat_inap_drpr.tgl_perawatan')
+                ->orderBy('rawat_inap_drpr.jam_rawat')
+                ->select(
+                    'rawat_inap_drpr.no_rawat',
+                    'rawat_inap_drpr.tgl_perawatan',
+                    'rawat_inap_drpr.jam_rawat',
+                    'rawat_inap_drpr.kd_jenis_prw',
+                    'rawat_inap_drpr.biaya_rawat',
+                    'jns_perawatan_inap.nm_perawatan'
+                )
+                ->get()
+                ->map(function ($r) {
+                    $biaya = (float) ($r->biaya_rawat ?? 0);
+
+                    return [
+                        'noindex' => null,
+                        'no_rawat' => $r->no_rawat,
+                        'tgl_byr' => $r->tgl_perawatan,
+                        'no' => $r->kd_jenis_prw,
+                        'nm_perawatan' => $r->nm_perawatan ?? $r->kd_jenis_prw,
+                        'pemisah' => '-',
+                        'biaya' => $biaya,
+                        'jumlah' => 1,
+                        'tambahan' => 0,
+                        'totalbiaya' => $biaya,
+                        'status' => 'Ranap Dokter Paramedis',
+                        'source' => 'preview',
+                    ];
+                });
+
+            $laboratDetails = DB::table('periksa_lab')
+                ->join('jns_perawatan_lab', 'periksa_lab.kd_jenis_prw', '=', 'jns_perawatan_lab.kd_jenis_prw')
+                ->where('periksa_lab.no_rawat', $noRawat)
+                ->select(
+                    'periksa_lab.no_rawat',
+                    'periksa_lab.kd_jenis_prw',
+                    'periksa_lab.tgl_periksa',
+                    'periksa_lab.jam',
+                    'periksa_lab.biaya',
+                    'jns_perawatan_lab.nm_perawatan',
+                    'jns_perawatan_lab.total_byr'
+                )
+                ->orderBy('periksa_lab.tgl_periksa')
+                ->orderBy('periksa_lab.jam')
+                ->get();
+
+            $laboratItems = $laboratDetails
+                ->groupBy(function ($item) {
+                    try {
+                        $tglPeriksa = Carbon::parse($item->tgl_periksa)->format('Y-m-d');
+                    } catch (\Exception $e) {
+                        $tglPeriksa = is_string($item->tgl_periksa) ? substr($item->tgl_periksa, 0, 10) : '';
+                    }
+
+                    try {
+                        $jam = Carbon::parse($item->jam)->format('H:i:s');
+                    } catch (\Exception $e) {
+                        $jam = is_string($item->jam) ? $item->jam : '';
+                    }
+
+                    return sprintf(
+                        '%s|%s|%s|%s',
+                        $item->no_rawat ?? '',
+                        $item->kd_jenis_prw ?? '',
+                        $tglPeriksa,
+                        $jam
+                    );
+                })
+                ->map(function ($group) use ($noRawat) {
+                    $first = $group->first();
+
+                    $biayaPerJenis = (float) ($first->biaya ?? $first->total_byr ?? 0);
+
+                    $jumlah = 1;
+
+                    $totalBiaya = $biayaPerJenis;
+
+                    try {
+                        $tglByr = Carbon::parse($first->tgl_periksa)->format('Y-m-d');
+                    } catch (\Exception $e) {
+                        $tglByr = is_string($first->tgl_periksa) ? substr($first->tgl_periksa, 0, 10) : '';
+                    }
+
+                    return [
+                        'noindex' => null,
+                        'no_rawat' => $noRawat,
+                        'tgl_byr' => $tglByr,
+                        'no' => $first->kd_jenis_prw ?? '',
+                        'nm_perawatan' => $first->nm_perawatan ?? $first->kd_jenis_prw ?? '',
+                        'pemisah' => '-',
+                        'biaya' => $biayaPerJenis,
+                        'jumlah' => $jumlah,
+                        'tambahan' => 0,
+                        'totalbiaya' => $totalBiaya,
+                        'status' => 'Laborat',
+                        'source' => 'preview',
+                    ];
+                })
+                ->values();
+
+            $obatDetails = DB::table('detail_pemberian_obat')
+                ->join('databarang', 'detail_pemberian_obat.kode_brng', '=', 'databarang.kode_brng')
+                ->leftJoin('jenis', 'databarang.kdjns', '=', 'jenis.kdjns')
+                ->where('detail_pemberian_obat.no_rawat', $noRawat)
+                ->where('detail_pemberian_obat.status', 'Ranap')
+                ->whereDate('detail_pemberian_obat.tgl_perawatan', '>=', $regPeriksa->tgl_registrasi)
+                ->select(
+                    'detail_pemberian_obat.kode_brng',
+                    'databarang.nama_brng',
+                    'jenis.nama as nama_jenis',
+                    'detail_pemberian_obat.biaya_obat',
+                    'detail_pemberian_obat.tgl_perawatan',
+                    'detail_pemberian_obat.jam',
+                    'detail_pemberian_obat.no_faktur',
+                    'detail_pemberian_obat.no_batch',
+                    'detail_pemberian_obat.jml',
+                    'detail_pemberian_obat.embalase',
+                    'detail_pemberian_obat.tuslah',
+                    'detail_pemberian_obat.total',
+                    'detail_pemberian_obat.h_beli'
+                )
+                ->orderBy('detail_pemberian_obat.tgl_perawatan')
+                ->orderBy('detail_pemberian_obat.jam')
+                ->orderBy('detail_pemberian_obat.no_faktur')
+                ->orderBy('detail_pemberian_obat.kode_brng')
+                ->orderBy('jenis.nama')
+                ->get();
+
+            Log::info('BillingController Ranap: Data obat dari detail_pemberian_obat', [
+                'no_rawat' => $noRawat,
+                'total_rows' => $obatDetails->count(),
+                'items' => $obatDetails->map(function ($item) {
+                    return [
+                        'kode_brng' => $item->kode_brng,
+                        'nama_brng' => $item->nama_brng,
+                        'no_faktur' => $item->no_faktur,
+                        'no_batch' => $item->no_batch,
+                        'tgl_perawatan' => $item->tgl_perawatan,
+                        'jam' => $item->jam,
+                        'jml' => $item->jml,
+                    ];
+                })->toArray(),
+            ]);
+
+            $obatItems = $obatDetails->map(function ($item) use ($noRawat) {
+                $biayaObat = (float) ($item->biaya_obat ?? 0);
+                $jml = (float) ($item->jml ?? 0);
+                $embalase = (float) ($item->embalase ?? 0);
+                $tuslah = (float) ($item->tuslah ?? 0);
+                $tambahan = $embalase + $tuslah;
+                $total = (float) ($item->total ?? 0);
+                $totalBiaya = round(($biayaObat * $jml) + $tambahan, 2);
+
+                $nmPerawatan = $item->nama_brng ?? $item->kode_brng ?? '';
+                if ($item->nama_jenis) {
+                    $nmPerawatan .= ' ('.$item->nama_jenis.')';
+                }
+
+                $noIdentifier = ! empty($item->no_faktur)
+                    ? $item->no_faktur
+                    : ($item->tgl_perawatan ?? '').'_'.($item->jam ?? '').'_'.($item->kode_brng ?? '').'_'.($item->no_batch ?? '').'_'.$noRawat;
+
+                return [
+                    'noindex' => null,
+                    'no_rawat' => $noRawat,
+                    'tgl_byr' => $item->tgl_perawatan ?? '',
+                    'no' => $noIdentifier,
+                    'nm_perawatan' => $nmPerawatan,
+                    'pemisah' => '-',
+                    'biaya' => $biayaObat,
+                    'jumlah' => $jml,
+                    'tambahan' => $tambahan,
+                    'totalbiaya' => $totalBiaya,
+                    'status' => 'Obat',
+                    'source' => 'preview',
+                    'kode_brng' => $item->kode_brng ?? '',
+                    'no_faktur' => $item->no_faktur ?? '',
+                    'jam' => $item->jam ?? '',
+                ];
+            });
+
+            Log::info('BillingController Ranap: Item obat setelah mapping', [
+                'no_rawat' => $noRawat,
+                'total_items' => $obatItems->count(),
+                'items' => $obatItems->map(function ($item) {
+                    return [
+                        'no' => $item['no'],
+                        'kode_brng' => $item['kode_brng'],
+                        'nm_perawatan' => $item['nm_perawatan'],
+                        'no_faktur' => $item['no_faktur'],
+                        'tgl_byr' => $item['tgl_byr'],
+                        'jam' => $item['jam'],
+                        'jumlah' => $item['jumlah'],
+                        'totalbiaya' => $item['totalbiaya'],
+                    ];
+                })->toArray(),
+            ]);
+
+            $allPreviewItems = $previewItems
+                ->concat($ranapDr)
+                ->concat($ranapDrpr)
+                ->concat($ranapPr)
+                ->concat($laboratItems)
+                ->concat($obatItems);
+
+            $items = $allPreviewItems->filter(function ($item) use ($noRawat, $regPeriksa) {
+                if (($item['no_rawat'] ?? '') !== $noRawat) {
+                    return false;
+                }
+
+                if (isset($item['tgl_byr']) && $item['tgl_byr']) {
+                    try {
+                        $tglByr = Carbon::parse($item['tgl_byr']);
+                        $tglReg = Carbon::parse($regPeriksa->tgl_registrasi);
+                        if ($tglByr->lt($tglReg)) {
+                            Log::warning('Preview ranap item dengan tgl_byr lebih lama dari tgl_registrasi diabaikan', [
+                                'no_rawat' => $noRawat,
+                                'tgl_byr' => $item['tgl_byr'],
+                                'tgl_registrasi' => $regPeriksa->tgl_registrasi,
+                                'item' => $item,
+                            ]);
+
+                            return false;
+                        }
+                    } catch (\Exception $e) {
+                        Log::warning('Gagal parsing tanggal untuk preview ranap item', [
+                            'no_rawat' => $noRawat,
+                            'tgl_byr' => $item['tgl_byr'] ?? null,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
+
+                return true;
+            })->values();
+        } else {
+            $items = $existing->filter(function ($b) use ($noRawat, $regPeriksa) {
+                if ($b->no_rawat !== $noRawat) {
+                    Log::warning('Item billing ranap dengan no_rawat tidak sesuai ditemukan', [
+                        'expected' => $noRawat,
+                        'actual' => $b->no_rawat,
+                        'noindex' => $b->noindex,
+                    ]);
+
+                    return false;
+                }
+
+                $tglByr = Carbon::parse($b->tgl_byr);
+                $tglReg = Carbon::parse($regPeriksa->tgl_registrasi);
+
+                if ($tglByr->lt($tglReg)) {
+                    Log::warning('Item billing ranap dengan tgl_byr lebih lama dari tgl_registrasi diabaikan', [
+                        'no_rawat' => $noRawat,
+                        'noindex' => $b->noindex,
+                        'tgl_byr' => $b->tgl_byr,
+                        'tgl_registrasi' => $regPeriksa->tgl_registrasi,
+                    ]);
+
+                    return false;
+                }
+
+                return true;
+            })->map(function ($b) {
+                return [
+                    'noindex' => $b->noindex,
+                    'no_rawat' => $b->no_rawat,
+                    'tgl_byr' => $b->tgl_byr,
+                    'no' => $b->no,
+                    'nm_perawatan' => $b->nm_perawatan,
+                    'pemisah' => $b->pemisah,
+                    'biaya' => (float) $b->biaya,
+                    'jumlah' => (float) $b->jumlah,
+                    'tambahan' => (float) $b->tambahan,
+                    'totalbiaya' => (float) $b->totalbiaya,
+                    'status' => $b->status,
+                    'source' => 'billing',
+                ];
+            });
+        }
+
+        $filteredItems = collect($items)->filter(function ($item) use ($noRawat, $regPeriksa) {
+            if (($item['no_rawat'] ?? '') !== $noRawat) {
+                return false;
+            }
+
+            if (isset($item['tgl_byr']) && $item['tgl_byr']) {
+                try {
+                    $tglByr = Carbon::parse($item['tgl_byr']);
+                    $tglReg = Carbon::parse($regPeriksa->tgl_registrasi);
+                    if ($tglByr->lt($tglReg)) {
+                        return false;
+                    }
+                } catch (\Exception $e) {
+                }
+            }
+
+            return true;
+        })->values();
+
+        $summaryByStatus = $filteredItems->groupBy('status')->map(function ($rows) {
+            return [
+                'count' => $rows->count(),
+                'total' => round(collect($rows)->sum('totalbiaya'), 2),
+            ];
+        });
+
+        $obatItemsFinal = $filteredItems->filter(function ($item) {
+            return ($item['status'] ?? '') === 'Obat';
+        });
+        Log::info('BillingController Ranap: Final response items obat', [
             'no_rawat' => $noRawat,
             'total_obat_items' => $obatItemsFinal->count(),
             'obat_items' => $obatItemsFinal->map(function ($item) {

@@ -18,24 +18,9 @@ export default defineConfig(() => ({
         react(),
         ...(wayfinderPluginFactory ? [wayfinderPluginFactory()] : []),
     ],
-	build: {
-		// Increase warning threshold and split vendor libraries into separate chunks
-		chunkSizeWarningLimit: 1024,
-		rollupOptions: {
-			output: {
-				manualChunks: {
-					react: ['react', 'react-dom'],
-					inertia: ['@inertiajs/react'],
-					vendor: [
-						'axios', 'ziggy-js', 'date-fns',
-						'framer-motion', 'motion',
-						'@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities',
-						'recharts', 'lucide-react', '@heroicons/react'
-					],
-				},
-			},
-		},
-	},
+    build: {
+        chunkSizeWarningLimit: 1024,
+    },
     server: {
         host: 'localhost',
         port: Number(process.env.VITE_PORT || process.env.PORT || 5177),

@@ -98,8 +98,8 @@ Berikut rangkuman fungsi inti di Java dan padanan/implikasi di web (React/Larave
   - Padanan web: Informasi serupa tampil di header invoice dan tabel Kasir Ralan (melalui `get-registrations`).
 
 - `prosesCariRwJlDr()` / `prosesCariRwJlPr()` / `prosesCariRwJlDrPr()`
-  - Tujuan: Mengagregasi tindakan Ralan (dokter, paramedis, gabungan) dari tabel `rawat_jl_*` dan `jns_perawatan` untuk menghitung jumlah, biaya, tambahan (material, manajemen, KSO), dan total.
-  - Padanan web: Pada mode preview, API `billing` menyiapkan agregasi kategori “Ralan Dokter”, “Ralan Paramedis”, dan “Ralan Dokter + Paramedis” agar tampil di UI.
+  - Tujuan: Mengagregasi tindakan Rawat Jalan (Ralan) dari tabel `rawat_jl_*` dan `jns_perawatan`, serta tindakan Rawat Inap (Ranap) dari tabel `rawat_inap_*` dan `jns_perawatan_inap`, untuk menghitung jumlah, biaya, tambahan (material, manajemen, KSO), dan total.
+  - Padanan web: Pada mode preview, API `billing` menyiapkan agregasi kategori “Ralan Dokter”, “Ralan Paramedis”, dan “Ralan Dokter + Paramedis” untuk Ralan, dan kelak kategori “Ranap Dokter”, “Ranap Paramedis”, dan “Ranap Dokter + Paramedis” untuk Ranap, agar tampil di UI.
 
 - `prosesCariPeriksaLab()` / `prosesCariRadiologi()`
   - Tujuan: Mengagregasi item lab/radiologi (jumlah, biaya, total dokter/petugas, KSO, BHP) berdasarkan `periksa_lab`/`periksa_radiologi` dan jenis perawatan.

@@ -49,7 +49,7 @@ class PermintaanLab extends Model
     public static function generateNoOrder()
     {
         $date = now()->format('Ymd');
-        $lastOrder = self::where('noorder', 'like', 'PL'.$date.'%')
+        $lastOrder = self::where('noorder', 'like', 'PK'.$date.'%')
             ->orderBy('noorder', 'desc')
             ->first();
 
@@ -60,7 +60,7 @@ class PermintaanLab extends Model
             $newNumber = '0001';
         }
 
-        return 'PL'.$date.$newNumber;
+        return 'PK'.$date.$newNumber;
     }
 
     /**

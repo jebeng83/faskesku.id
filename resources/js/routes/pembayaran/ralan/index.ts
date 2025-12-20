@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\PembayaranController::detail
-* @see app/Http/Controllers/PembayaranController.php:179
+* @see app/Http/Controllers/PembayaranController.php:196
 * @route '/pembayaran/ralan/{no_rawat}'
 */
 export const detail = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ detail.definition = {
 
 /**
 * @see \App\Http\Controllers\PembayaranController::detail
-* @see app/Http/Controllers/PembayaranController.php:179
+* @see app/Http/Controllers/PembayaranController.php:196
 * @route '/pembayaran/ralan/{no_rawat}'
 */
 detail.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ detail.url = (args: { no_rawat: string | number } | [no_rawat: string | number ]
 
 /**
 * @see \App\Http\Controllers\PembayaranController::detail
-* @see app/Http/Controllers/PembayaranController.php:179
+* @see app/Http/Controllers/PembayaranController.php:196
 * @route '/pembayaran/ralan/{no_rawat}'
 */
 detail.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ detail.get = (args: { no_rawat: string | number } | [no_rawat: string | number ]
 
 /**
 * @see \App\Http\Controllers\PembayaranController::detail
-* @see app/Http/Controllers/PembayaranController.php:179
+* @see app/Http/Controllers/PembayaranController.php:196
 * @route '/pembayaran/ralan/{no_rawat}'
 */
 detail.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

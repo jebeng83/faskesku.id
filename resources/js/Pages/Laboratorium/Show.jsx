@@ -46,6 +46,7 @@ const cardHoverVariants = {
 
 export default function Show({ 
 	periksaLab, 
+	periksaGroup,
 	permintaanLab, 
 	groupedDetails, 
 	petugas, 
@@ -53,7 +54,8 @@ export default function Show({
 	usiaTahun, 
 	mode = 'periksa-lab',
 	flash,
-	errors: pageErrors 
+	errors: pageErrors,
+	permintaanNoorder,
 }) {
 	const [showAlert, setShowAlert] = useState(false);
 	const [alertConfig, setAlertConfig] = useState({
@@ -902,77 +904,33 @@ export default function Show({
 										Input Hasil
 									</Link>
 								)}
-								{!isPermintaanMode && periksaLab?.status === "Selesai" && (
-									<motion.button
-										onClick={handlePrint}
-										whileHover={{ scale: 1.02 }}
-										whileTap={{ scale: 0.98 }}
-										className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 hover:from-green-700 hover:via-emerald-700 hover:to-teal-700 shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30 transition-all duration-300 text-white font-semibold rounded-lg"
-									>
-										<Printer className="w-4 h-4" />
-										Cetak
-									</motion.button>
+								{!isPermintaanMode && (
+									permintaanNoorder ? (
+										<a
+											href={route("laboratorium.permintaan-lab.preview", permintaanNoorder)}
+											target="_blank"
+											rel="noopener noreferrer"
+											className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 hover:from-green-700 hover:via-emerald-700 hover:to-teal-700 shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30 transition-all duration-300 text-white font-semibold rounded-lg"
+										>
+											<Printer className="w-4 h-4" />
+											Cetak
+										</a>
+									) : (
+										<motion.button
+											onClick={handlePrint}
+											whileHover={{ scale: 1.02 }}
+											whileTap={{ scale: 0.98 }}
+											className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 hover:from-green-700 hover:via-emerald-700 hover:to-teal-700 shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30 transition-all duration-300 text-white font-semibold rounded-lg"
+										>
+											<Printer className="w-4 h-4" />
+											Cetak
+										</motion.button>
+									)
 								)}
 							</motion.div>
 						</div>
 					</div>
 				</motion.div>
-
-				{/* Patient Information Card */}
-				<motion.div
-					variants={itemVariants}
-					className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 mb-8"
-				>
-					{/* Top border gradient */}
-					<div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-					
-					<div className="relative px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
-						<h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2.5">
-							<motion.div
-								className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
-								whileHover={{ rotate: 90, scale: 1.1 }}
-								transition={{ duration: 0.3 }}
-							>
-								<ClipboardList className="w-4 h-4 text-white" />
-							</motion.div>
-							<span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-								Informasi Pasien
-							</span>
-						</h2>
-					</div>
-					<div className="relative p-8">
-						<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-							<div>
-									<label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-										Nama Pasien
-									</label>
-									<p className="mt-1 text-sm text-gray-900 dark:text-white font-medium">
-										{(isPermintaanMode ? permintaanLab.reg_periksa?.patient?.nm_pasien : periksaLab?.reg_periksa?.patient?.nm_pasien) || "-"}
-									</p>
-								</div>
-								<div>
-									<label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-										No. RM
-									</label>
-									<p className="mt-1 text-sm text-gray-900 dark:text-white font-medium">
-										{(isPermintaanMode ? permintaanLab.reg_periksa?.patient?.no_rkm_medis : periksaLab?.reg_periksa?.patient?.no_rkm_medis) || "-"}
-									</p>
-								</div>
-								<div>
-									<label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-										Jenis Kelamin
-									</label>
-									<p className="mt-1 text-sm text-gray-900 dark:text-white font-medium">
-										{(isPermintaanMode ? permintaanLab.reg_periksa?.patient?.jk : periksaLab?.reg_periksa?.patient?.jk) === "L"
-											? "Laki-laki"
-											: (isPermintaanMode ? permintaanLab.reg_periksa?.patient?.jk : periksaLab?.reg_periksa?.patient?.jk) === "P"
-											? "Perempuan"
-											: "-"}
-									</p>
-								</div>
-							</div>
-						</div>
-					</motion.div>
 
 				{/* Detail Permintaan atau Pemeriksaan */}
 					{isPermintaanMode ? (
@@ -1176,8 +1134,8 @@ export default function Show({
 								{/* Top border gradient */}
 								<div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
 								
-								<div className="relative px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-indigo-50/80 via-purple-50/80 to-pink-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
-									<h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2.5">
+								<div className="relative px-4 py-3 sm:px-6 sm:py-3 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-indigo-50/80 via-purple-50/80 to-pink-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
+									<h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2.5 mb-2">
 										<motion.div
 											className="p-1.5 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 shadow-md"
 											whileHover={{ rotate: 90, scale: 1.1 }}
@@ -1189,62 +1147,67 @@ export default function Show({
 											Informasi Pemeriksaan
 										</span>
 									</h2>
-								</div>
-								<div className="relative p-8">
-									<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-										<div>
-											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-												Jenis Pemeriksaan
-											</label>
-											<p className="mt-1 text-sm text-gray-900 dark:text-white font-medium">
-												{periksaLab?.jenis_perawatan?.nm_perawatan || "-"}
-											</p>
+									<div className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 space-y-1">
+										<div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+											<span className="font-semibold text-gray-900 dark:text-white truncate max-w-full sm:max-w-xs">
+												{periksaLab?.reg_periksa?.patient?.nm_pasien || "-"}
+											</span>
+											<span>
+												RM{" "}
+												<span className="font-medium text-gray-900 dark:text-white">
+													{periksaLab?.reg_periksa?.patient?.no_rkm_medis || "-"}
+												</span>
+											</span>
+											<span>
+												JK{" "}
+												<span className="font-medium text-gray-900 dark:text-white">
+													{periksaLab?.reg_periksa?.patient?.jk === "L"
+														? "Laki-laki"
+														: periksaLab?.reg_periksa?.patient?.jk === "P"
+														? "Perempuan"
+														: "-"}
+												</span>
+											</span>
 										</div>
-										<div>
-											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-												Tanggal Periksa
-											</label>
-											<p className="mt-1 text-sm text-gray-900 dark:text-white font-medium">
-												{periksaLab?.tgl_periksa
-													? new Date(periksaLab.tgl_periksa).toLocaleDateString("id-ID", {
-															weekday: "long",
-															year: "numeric",
-															month: "long",
-															day: "numeric",
-														})
-													: "-"}
-											</p>
-										</div>
-										<div>
-											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-												Jam
-											</label>
-											<p className="mt-1 text-sm text-gray-900 dark:text-white font-medium">
-												{periksaLab?.jam || "-"}
-											</p>
-										</div>
-										<div>
-											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-												Petugas
-											</label>
-											<p className="mt-1 text-sm text-gray-900 dark:text-white font-medium">
-												{periksaLab?.petugas?.nama || "-"}
-											</p>
-										</div>
-										<div>
-											<label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-												Status
-											</label>
-											<div className="mt-1">
-												{periksaLab?.status ? getStatusBadge(periksaLab.status) : "-"}
-											</div>
+										<div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+											<span>
+												Tgl{" "}
+												<span className="font-medium text-gray-900 dark:text-white">
+													{periksaLab?.tgl_periksa
+														? new Date(periksaLab.tgl_periksa).toLocaleDateString("id-ID", {
+																day: "2-digit",
+																month: "2-digit",
+																year: "numeric",
+															})
+														: "-"}
+												</span>
+											</span>
+											<span>
+												Jam{" "}
+												<span className="font-medium text-gray-900 dark:text-white">
+													{periksaLab?.jam || "-"}
+												</span>
+											</span>
+											<span>
+												Petugas{" "}
+												<span className="font-medium text-gray-900 dark:text-white">
+													{periksaLab?.petugas?.nama || "-"}
+												</span>
+											</span>
+											<span className="flex items-center gap-1">
+												{periksaLab?.status ? (
+													getStatusBadge(periksaLab.status)
+												) : (
+													<span className="font-medium text-gray-900 dark:text-white">-</span>
+												)}
+											</span>
 										</div>
 									</div>
 								</div>
 							</motion.div>
 
 							{/* Examination Results */}
-							{periksaLab?.detail_pemeriksaan && periksaLab.detail_pemeriksaan.length > 0 && (
+							{periksaLab && (
 								<motion.div
 									variants={itemVariants}
 									className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5"
@@ -1272,6 +1235,9 @@ export default function Show({
 												<thead className="bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">
 													<tr>
 														<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+															Jenis Pemeriksaan
+														</th>
+														<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
 															Item Pemeriksaan
 														</th>
 														<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -1289,35 +1255,80 @@ export default function Show({
 													</tr>
 												</thead>
 												<tbody className="bg-white/50 dark:bg-gray-800/50 divide-y divide-gray-200/50 dark:divide-gray-700/30">
-													<AnimatePresence>
-														{periksaLab.detail_pemeriksaan.map((detail, index) => (
-															<motion.tr
-																key={index}
-																className="border-b border-gray-100/50 dark:border-gray-700/30 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 dark:hover:from-gray-700/50 dark:hover:to-gray-800/50 transition-all duration-200 group"
-																initial={{ opacity: 0, x: -20 }}
-																animate={{ opacity: 1, x: 0 }}
-																exit={{ opacity: 0, x: 20 }}
-																transition={{ delay: index * 0.02 }}
-																whileHover={{ scale: 1.01 }}
+													{Array.isArray(periksaGroup) && periksaGroup.length > 0 ? (
+														<AnimatePresence>
+															{periksaGroup.flatMap((pemeriksaan, parentIndex) => {
+																const jenisNama = pemeriksaan?.jenis_perawatan?.nm_perawatan || "-";
+																const details = Array.isArray(pemeriksaan?.detail_pemeriksaan) ? pemeriksaan.detail_pemeriksaan : [];
+																if (details.length === 0) {
+																	return [
+																		<motion.tr
+																			key={`empty-${parentIndex}`}
+																			className="border-b border-gray-100/50 dark:border-gray-700/30"
+																			initial={{ opacity: 0, x: -20 }}
+																			animate={{ opacity: 1, x: 0 }}
+																			exit={{ opacity: 0, x: 20 }}
+																			transition={{ delay: parentIndex * 0.02 }}
+																		>
+																			<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+																				{jenisNama}
+																			</td>
+																			<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400" colSpan={4}>
+																				Tidak ada item pemeriksaan.
+																			</td>
+																		</motion.tr>
+																	];
+																}
+																return details.map((detail, index) => {
+																	const isFirstRow = index === 0;
+																	return (
+																		<motion.tr
+																			key={`${parentIndex}-${index}`}
+																			className="border-b border-gray-100/50 dark:border-gray-700/30 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 dark:hover:from-gray-700/50 dark:hover:to-gray-800/50 transition-all duration-200 group"
+																			initial={{ opacity: 0, x: -20 }}
+																			animate={{ opacity: 1, x: 0 }}
+																			exit={{ opacity: 0, x: 20 }}
+																			transition={{ delay: (parentIndex * 0.02) + (index * 0.01) }}
+																			whileHover={{ scale: 1.01 }}
+																		>
+																			{isFirstRow && (
+																				<td
+																					rowSpan={details.length}
+																					className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white align-top"
+																				>
+																					{jenisNama}
+																				</td>
+																			)}
+																			<td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+																				{detail.item_pemeriksaan || detail.template?.Pemeriksaan || "-"}
+																			</td>
+																			<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+																				{detail.nilai || "-"}
+																			</td>
+																			<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+																				{detail.nilai_rujukan || "-"}
+																			</td>
+																			<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+																				{detail.satuan || detail.template?.satuan || "-"}
+																			</td>
+																			<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+																				{detail.keterangan || "-"}
+																			</td>
+																		</motion.tr>
+																	);
+																});
+															})}
+														</AnimatePresence>
+													) : (
+														<tr>
+															<td
+																colSpan={6}
+																className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500 dark:text-gray-400"
 															>
-															<td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-																{detail.item_pemeriksaan || detail.template?.Pemeriksaan || "-"}
+																Tidak ada detail pemeriksaan.
 															</td>
-															<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-																{detail.nilai || "-"}
-															</td>
-															<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-																{detail.nilai_rujukan || "-"}
-															</td>
-															<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-																{detail.satuan || detail.template?.satuan || "-"}
-															</td>
-															<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-																{detail.keterangan || "-"}
-																</td>
-															</motion.tr>
-														))}
-													</AnimatePresence>
+														</tr>
+													)}
 												</tbody>
 											</table>
 										</div>

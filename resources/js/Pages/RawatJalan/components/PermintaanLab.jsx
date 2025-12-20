@@ -24,6 +24,7 @@ export default function PermintaanLab({ token = '', noRkmMedis = '', noRawat = '
     const [selectedTemplates, setSelectedTemplates] = useState({}); // { kd_jenis_prw: [id_template1, id_template2] }
     const [templatesData, setTemplatesData] = useState({}); // { kd_jenis_prw: [template objects] }
     const [loadingTemplates, setLoadingTemplates] = useState({}); // { kd_jenis_prw: true/false }
+    const [riwayatRefreshKey, setRiwayatRefreshKey] = useState(0);
     
     const [formData, setFormData] = useState({
         tgl_permintaan: todayDateString(),
@@ -313,6 +314,7 @@ export default function PermintaanLab({ token = '', noRkmMedis = '', noRawat = '
                     setDokterSearch('');
                     setSelectedTemplates({});
                     setTemplatesData({});
+                    setRiwayatRefreshKey((prev) => prev + 1);
                     
                     // Extract noorder from success message
                     let noorder = null;
@@ -844,7 +846,7 @@ export default function PermintaanLab({ token = '', noRkmMedis = '', noRawat = '
             </form>
             
             {/* Riwayat Permintaan Lab */}
-            <RiwayatPermintaanLab noRawat={noRawat} />
+            <RiwayatPermintaanLab noRawat={noRawat} refreshKey={riwayatRefreshKey} />
         </div>
     );
 }
@@ -934,7 +936,7 @@ function PermintaanLabGroups({ permintaan }) {
     );
 }
 
-export function RiwayatPermintaanLab({ noRawat = '' }) {
+export function RiwayatPermintaanLab({ noRawat = '', refreshKey = 0 }) {
     const [riwayatPermintaan, setRiwayatPermintaan] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [expandedItems, setExpandedItems] = useState(new Set());
@@ -944,7 +946,7 @@ export function RiwayatPermintaanLab({ noRawat = '' }) {
         if (noRawat) {
             fetchRiwayatPermintaan();
         }
-    }, [noRawat]);
+    }, [noRawat, refreshKey]);
 
     const fetchRiwayatPermintaan = async () => {
         setIsLoading(true);
@@ -1190,4 +1192,3 @@ export function RiwayatPermintaanLab({ noRawat = '' }) {
         </div>
     );
 }
-

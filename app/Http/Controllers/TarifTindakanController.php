@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Dokter;
 use App\Models\JnsPerawatan;
+use App\Models\JnsPerawatanInap;
 use App\Models\RawatJlDr;
 use App\Models\RawatJlDrpr;
 use App\Models\RawatJlPr;
@@ -76,6 +77,269 @@ class TarifTindakanController extends Controller
             ],
             'message' => 'Data jenis perawatan berhasil diambil',
         ]);
+    }
+
+    public function indexRanap(Request $request)
+    {
+        $query = JnsPerawatanInap::with(['kategoriPerawatan', 'bangsal', 'penjab'])->aktif();
+        if ($request->filled('kd_bangsal')) {
+            $query->where('kd_bangsal', $request->kd_bangsal);
+        }
+        if ($request->filled('kd_pj')) {
+            $query->where('kd_pj', $request->kd_pj);
+        }
+        if ($request->filled('search')) {
+            $query->where('nm_perawatan', 'like', '%'.$request->search.'%');
+        }
+        if ($request->filled('jenis_tarif')) {
+            switch ($request->jenis_tarif) {
+                case 'dokter':
+                    $query->where('tarif_tindakandr', '>', 0);
+                    break;
+                case 'perawat':
+                    $query->where('tarif_tindakanpr', '>', 0);
+                    break;
+                case 'dokter_perawat':
+                    $query->where('tarif_tindakandr', '>', 0)->where('tarif_tindakanpr', '>', 0);
+                    break;
+            }
+        }
+        if ($request->filled('jenis_tarif')) {
+            $jenisPerawatan = $query->get();
+            return response()->json([
+                'data' => $jenisPerawatan,
+                'message' => 'Data jenis perawatan ranap berhasil diambil',
+            ]);
+        }
+        $jenisPerawatan = $query->paginate(15);
+        return response()->json([
+            'data' => $jenisPerawatan->items(),
+            'pagination' => [
+                'current_page' => $jenisPerawatan->currentPage(),
+                'last_page' => $jenisPerawatan->lastPage(),
+                'per_page' => $jenisPerawatan->perPage(),
+                'total' => $jenisPerawatan->total(),
+            ],
+            'message' => 'Data jenis perawatan ranap berhasil diambil',
+        ]);
+    }
+
+    public function storeRanapDokter(Request $request)
+    {
+        $request->validate([
+            'no_rawat' => 'required|string',
+            'kd_jenis_prw' => 'required|string',
+            'kd_dokter' => 'required|string',
+            'tgl_perawatan' => 'required|date',
+            'jam_rawat' => 'required',
+            'token' => 'nullable|string',
+        ]);
+        try {
+            DB::beginTransaction();
+            $jenis = JnsPerawatanInap::findOrFail($request->kd_jenis_prw);
+            DB::table('rawat_inap_dr')->insert([
+                'no_rawat' => $request->no_rawat,
+                'kd_jenis_prw' => $request->kd_jenis_prw,
+                'kd_dokter' => $request->kd_dokter,
+                'tgl_perawatan' => Carbon::parse($request->tgl_perawatan)->format('Y-m-d'),
+                'jam_rawat' => preg_match('/^\\d{2}:\\d{2}$/', (string) $request->jam_rawat) ? $request->jam_rawat.':00' : ($request->jam_rawat ?? Carbon::now()->format('H:i:s')),
+                'material' => $jenis->material ?? 0,
+                'bhp' => $jenis->bhp ?? 0,
+                'tarif_tindakandr' => $jenis->tarif_tindakandr ?? 0,
+                'kso' => $jenis->kso ?? 0,
+                'menejemen' => $jenis->menejemen ?? 0,
+                'biaya_rawat' => $jenis->total_byrdr ?? 0,
+            ]);
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => 'Tindakan ranap dokter berhasil disimpan',
+            ], 201);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan tindakan ranap dokter: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function storeRanapPerawat(Request $request)
+    {
+        $request->validate([
+            'no_rawat' => 'required|string',
+            'kd_jenis_prw' => 'required|string',
+            'nip' => 'required|string',
+            'tgl_perawatan' => 'required|date',
+            'jam_rawat' => 'required',
+            'token' => 'nullable|string',
+        ]);
+        try {
+            DB::beginTransaction();
+            $jenis = JnsPerawatanInap::findOrFail($request->kd_jenis_prw);
+            DB::table('rawat_inap_pr')->insert([
+                'no_rawat' => $request->no_rawat,
+                'kd_jenis_prw' => $request->kd_jenis_prw,
+                'nip' => $request->nip,
+                'tgl_perawatan' => Carbon::parse($request->tgl_perawatan)->format('Y-m-d'),
+                'jam_rawat' => preg_match('/^\\d{2}:\\d{2}$/', (string) $request->jam_rawat) ? $request->jam_rawat.':00' : ($request->jam_rawat ?? Carbon::now()->format('H:i:s')),
+                'material' => $jenis->material ?? 0,
+                'bhp' => $jenis->bhp ?? 0,
+                'tarif_tindakanpr' => $jenis->tarif_tindakanpr ?? 0,
+                'kso' => $jenis->kso ?? 0,
+                'menejemen' => $jenis->menejemen ?? 0,
+                'biaya_rawat' => $jenis->total_byrpr ?? 0,
+            ]);
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => 'Tindakan ranap perawat berhasil disimpan',
+            ], 201);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan tindakan ranap perawat: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function storeRanapDokterPerawat(Request $request)
+    {
+        $request->validate([
+            'no_rawat' => 'required|string',
+            'kd_jenis_prw' => 'required|string',
+            'kd_dokter' => 'required|string',
+            'nip' => 'required|string',
+            'tgl_perawatan' => 'required|date',
+            'jam_rawat' => 'required',
+            'token' => 'nullable|string',
+        ]);
+        try {
+            DB::beginTransaction();
+            $jenis = JnsPerawatanInap::findOrFail($request->kd_jenis_prw);
+            DB::table('rawat_inap_drpr')->insert([
+                'no_rawat' => $request->no_rawat,
+                'kd_jenis_prw' => $request->kd_jenis_prw,
+                'kd_dokter' => $request->kd_dokter,
+                'nip' => $request->nip,
+                'tgl_perawatan' => Carbon::parse($request->tgl_perawatan)->format('Y-m-d'),
+                'jam_rawat' => preg_match('/^\\d{2}:\\d{2}$/', (string) $request->jam_rawat) ? $request->jam_rawat.':00' : ($request->jam_rawat ?? Carbon::now()->format('H:i:s')),
+                'material' => $jenis->material ?? 0,
+                'bhp' => $jenis->bhp ?? 0,
+                'tarif_tindakandr' => $jenis->tarif_tindakandr ?? 0,
+                'tarif_tindakanpr' => $jenis->tarif_tindakanpr ?? 0,
+                'kso' => $jenis->kso ?? 0,
+                'menejemen' => $jenis->menejemen ?? 0,
+                'biaya_rawat' => $jenis->total_byrdrpr ?? 0,
+            ]);
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => 'Tindakan ranap dokter+perawat berhasil disimpan',
+            ], 201);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan tindakan ranap dokter+perawat: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function getRiwayatTindakanRanap(Request $request, $noRawat)
+    {
+        try {
+            $decodedNoRawat = urldecode($noRawat);
+            $tindakanDokter = DB::table('rawat_inap_dr')
+                ->join('jns_perawatan_inap', 'rawat_inap_dr.kd_jenis_prw', '=', 'jns_perawatan_inap.kd_jenis_prw')
+                ->leftJoin('dokter', 'rawat_inap_dr.kd_dokter', '=', 'dokter.kd_dokter')
+                ->where('rawat_inap_dr.no_rawat', $decodedNoRawat)
+                ->orderBy('rawat_inap_dr.tgl_perawatan', 'desc')
+                ->orderBy('rawat_inap_dr.jam_rawat', 'desc')
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'id' => $item->no_rawat.'_'.$item->kd_jenis_prw.'_'.$item->kd_dokter.'_'.$item->tgl_perawatan.'_'.$item->jam_rawat,
+                        'no_rawat' => $item->no_rawat,
+                        'kd_jenis_prw' => $item->kd_jenis_prw,
+                        'nm_perawatan' => $item->nm_perawatan ?? '',
+                        'tgl_perawatan' => $item->tgl_perawatan,
+                        'jam_rawat' => $item->jam_rawat,
+                        'biaya_rawat' => $item->biaya_rawat,
+                        'dokter' => $item->kd_dokter ? [
+                            'kd_dokter' => $item->kd_dokter,
+                            'nm_dokter' => $item->nm_dokter ?? '',
+                        ] : null,
+                        'jenis_tindakan' => 'dokter',
+                    ];
+                });
+            $tindakanPerawat = DB::table('rawat_inap_pr')
+                ->join('jns_perawatan_inap', 'rawat_inap_pr.kd_jenis_prw', '=', 'jns_perawatan_inap.kd_jenis_prw')
+                ->leftJoin('petugas', 'rawat_inap_pr.nip', '=', 'petugas.nip')
+                ->where('rawat_inap_pr.no_rawat', $decodedNoRawat)
+                ->orderBy('rawat_inap_pr.tgl_perawatan', 'desc')
+                ->orderBy('rawat_inap_pr.jam_rawat', 'desc')
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'id' => $item->no_rawat.'_'.$item->kd_jenis_prw.'_'.$item->nip.'_'.$item->tgl_perawatan.'_'.$item->jam_rawat,
+                        'no_rawat' => $item->no_rawat,
+                        'kd_jenis_prw' => $item->kd_jenis_prw,
+                        'nm_perawatan' => $item->nm_perawatan ?? '',
+                        'tgl_perawatan' => $item->tgl_perawatan,
+                        'jam_rawat' => $item->jam_rawat,
+                        'biaya_rawat' => $item->biaya_rawat,
+                        'perawat' => $item->nip ? [
+                            'nip' => $item->nip,
+                            'nama' => $item->nama ?? '',
+                        ] : null,
+                        'jenis_tindakan' => 'perawat',
+                    ];
+                });
+            $tindakanDokterPerawat = DB::table('rawat_inap_drpr')
+                ->join('jns_perawatan_inap', 'rawat_inap_drpr.kd_jenis_prw', '=', 'jns_perawatan_inap.kd_jenis_prw')
+                ->leftJoin('dokter', 'rawat_inap_drpr.kd_dokter', '=', 'dokter.kd_dokter')
+                ->leftJoin('petugas', 'rawat_inap_drpr.nip', '=', 'petugas.nip')
+                ->where('rawat_inap_drpr.no_rawat', $decodedNoRawat)
+                ->orderBy('rawat_inap_drpr.tgl_perawatan', 'desc')
+                ->orderBy('rawat_inap_drpr.jam_rawat', 'desc')
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'id' => $item->no_rawat.'_'.$item->kd_jenis_prw.'_'.$item->kd_dokter.'_'.$item->nip.'_'.$item->tgl_perawatan.'_'.$item->jam_rawat,
+                        'no_rawat' => $item->no_rawat,
+                        'kd_jenis_prw' => $item->kd_jenis_prw,
+                        'nm_perawatan' => $item->nm_perawatan ?? '',
+                        'tgl_perawatan' => $item->tgl_perawatan,
+                        'jam_rawat' => $item->jam_rawat,
+                        'biaya_rawat' => $item->biaya_rawat,
+                        'dokter' => $item->kd_dokter ? [
+                            'kd_dokter' => $item->kd_dokter,
+                            'nm_dokter' => $item->nm_dokter ?? '',
+                        ] : null,
+                        'perawat' => $item->nip ? [
+                            'nip' => $item->nip,
+                            'nama' => $item->nama ?? '',
+                        ] : null,
+                        'jenis_tindakan' => 'dokter_perawat',
+                    ];
+                });
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'tindakan_dokter' => $tindakanDokter,
+                    'tindakan_perawat' => $tindakanPerawat,
+                    'tindakan_dokter_perawat' => $tindakanDokterPerawat,
+                ],
+                'message' => 'Riwayat tindakan ranap berhasil diambil',
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil riwayat tindakan ranap: '.$e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
