@@ -1,28 +1,31 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) {
     const [query, setQuery] = useState('');
-    const [type, setType] = useState('utama'); // utama | sekunder
     const [selected, setSelected] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Data hasil pencarian dari endpoint PCare
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
     const [saveStatus, setSaveStatus] = useState(null); // { type: 'success'|'error', message: string }
 
-    // Fetch diagnosa dari API PCare saat mengetik (debounce sederhana)
     useEffect(() => {
         const handle = setTimeout(async () => {
             try {
+                const trimmed = query.trim();
+                if (trimmed === '') {
+                    setResults([]);
+                    setErrorMsg('');
+                    return;
+                }
                 setLoading(true);
                 setErrorMsg('');
-                const params = new URLSearchParams({ q: query, start: 0, limit: 25 });
-                const res = await fetch(`/api/pcare/diagnosa?${params.toString()}`, { headers: { Accept: 'application/json' } });
+                const params = new URLSearchParams({ q: trimmed, limit: 25 });
+                const res = await fetch(`/api/penyakit?${params.toString()}`, { headers: { Accept: 'application/json' } });
                 const json = await res.json();
-                const list = json?.response?.list || json?.list || json?.data || [];
-                const mapped = list.map((it) => ({ kode: it?.kdDiag || it?.kode || '', nama: it?.nmDiag || it?.nama || '' }));
+                const list = json?.data || [];
+                const mapped = list.map((it) => ({ kode: it.kode || '', nama: it.nama || '' }));
                 setResults(mapped);
             } catch (e) {
                 setErrorMsg(e?.message || 'Gagal memuat data diagnosa');
@@ -35,7 +38,6 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) 
         return () => clearTimeout(handle);
     }, [query]);
 
-    // Load diagnosa yang sudah tersimpan dari backend saat komponen mount atau noRawat berubah
     useEffect(() => {
         const loadSavedDiagnosa = async () => {
             if (!noRawat) return;
@@ -45,8 +47,11 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) 
                 const res = await fetch(`/api/rawat-jalan/diagnosa?${params.toString()}`, { headers: { Accept: 'application/json' } });
                 const json = await res.json();
                 const list = json?.data || [];
-                // Map ke struktur lokal: { kode, nama, type }
-                const mapped = list.map((it) => ({ kode: it.kode, nama: it.nama, type: it.type }));
+                const mapped = list.map((it) => ({
+                    kode: it.kode,
+                    nama: it.nama,
+                    status_penyakit: it.status_penyakit || null,
+                }));
                 setSelected(mapped);
             } catch (e) {
                 // Abaikan error muat awal; tampilkan daftar kosong
@@ -60,11 +65,17 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) 
     const addDiagnosis = (diag) => {
         if (!diag?.kode) return;
         if (selected.find((s) => s.kode === diag.kode)) return;
-        setSelected((prev) => [...prev, { ...diag, type }]);
+        setSelected((prev) => [...prev, { ...diag, status_penyakit: 'Baru' }]);
     };
 
     const removeDiagnosis = (kode) => {
         setSelected((prev) => prev.filter((s) => s.kode !== kode));
+    };
+
+    const updateStatusPenyakit = (kode, value) => {
+        setSelected((prev) =>
+            prev.map((s) => (s.kode === kode ? { ...s, status_penyakit: value } : s))
+        );
     };
 
     const handleSubmit = async (e) => {
@@ -72,18 +83,27 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) 
         setIsSubmitting(true);
         try {
             setSaveStatus(null);
-            // Kirim ke endpoint API untuk menyimpan diagnosa pasien
+            const payloadList = selected.map((item, index) => ({
+                kode: item.kode,
+                type: index === 0 ? 'utama' : 'sekunder',
+                status_penyakit: item.status_penyakit || null,
+            }));
+
             const res = await fetch('/api/rawat-jalan/diagnosa', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-                body: JSON.stringify({ no_rawat: noRawat, list: selected }),
+                body: JSON.stringify({ no_rawat: noRawat, list: payloadList }),
             });
             const json = await res.json();
             if (!res.ok) {
                 throw new Error(json?.message || 'Gagal menyimpan diagnosa');
             }
             const list = json?.data || [];
-            const mapped = list.map((it) => ({ kode: it.kode, nama: it.nama, type: it.type }));
+            const mapped = list.map((it) => ({
+                kode: it.kode,
+                nama: it.nama,
+                status_penyakit: it.status_penyakit || null,
+            }));
             setSelected(mapped);
             setSaveStatus({ type: 'success', message: 'Diagnosa berhasil disimpan' });
         } catch (e) {
@@ -92,6 +112,8 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) 
             setIsSubmitting(false);
         }
     };
+
+    const nextType = selected.length === 0 ? 'utama' : 'sekunder';
 
     return (
         <div className="space-y-6 p-4 md:p-6">
@@ -136,8 +158,8 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) 
                             Jenis Diagnosa
                         </label>
                         <select 
-                            value={type} 
-                            onChange={(e) => setType(e.target.value)} 
+                            value={nextType}
+                            disabled
                             className="w-full py-2.5 px-3 rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                         >
                             <option value="utama">🎯 Diagnosa Utama</option>
@@ -231,43 +253,59 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) 
                         </div>
                     ) : (
                         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
-                            {selected.map((s, index) => (
-                                <div key={s.kode} className="flex items-center justify-between px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                                    <div className="flex items-center space-x-3 flex-1">
-                                        <div className="flex-shrink-0">
-                                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 text-sm font-medium">
-                                                {index + 1}
-                                            </span>
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center space-x-2 mb-1">
-                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                                                    {s.kode}
-                                                </span>
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                                    s.type === 'utama' 
-                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
-                                                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
-                                                }`}>
-                                                    {s.type === 'utama' ? '🎯 Utama' : '📋 Sekunder'}
+                            {selected.map((s, index) => {
+                                const isPrimary = index === 0;
+                                return (
+                                    <div key={s.kode} className="flex items-center justify-between px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                        <div className="flex items-center space-x-3 flex-1">
+                                            <div className="flex-shrink-0">
+                                                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 text-sm font-medium">
+                                                    {index + 1}
                                                 </span>
                                             </div>
-                                            <p className="text-sm text-gray-900 dark:text-white font-medium truncate">{s.nama}</p>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center space-x-2 mb-1">
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                                        {s.kode}
+                                                    </span>
+                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                                        isPrimary
+                                                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                                                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                                                    }`}>
+                                                        {isPrimary ? '🎯 Utama' : '📋 Sekunder'}
+                                                    </span>
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700/60 dark:text-gray-200">
+                                                        {s.status_penyakit || 'Baru'}
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm text-gray-900 dark:text-white font-medium truncate">{s.nama}</p>
+                                                <div className="mt-2">
+                                                    <select
+                                                        value={s.status_penyakit || 'Baru'}
+                                                        onChange={(e) => updateStatusPenyakit(s.kode, e.target.value)}
+                                                        className="w-32 py-1.5 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-xs focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                                                    >
+                                                        <option value="Baru">Baru</option>
+                                                        <option value="Lama">Lama</option>
+                                                    </select>
+                                                </div>
+                                            </div>
                                         </div>
+                                        <button 
+                                            type="button" 
+                                            onClick={() => removeDiagnosis(s.kode)} 
+                                            className="ml-4 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50 transition-colors"
+                                            title="Hapus diagnosa"
+                                        >
+                                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                            Hapus
+                                        </button>
                                     </div>
-                                    <button 
-                                        type="button" 
-                                        onClick={() => removeDiagnosis(s.kode)} 
-                                        className="ml-4 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50 transition-colors"
-                                        title="Hapus diagnosa"
-                                    >
-                                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                        Hapus
-                                    </button>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
@@ -319,5 +357,3 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) 
         </div>
     );
 }
-
-

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RawatInapController::store
-* @see app/Http/Controllers/RawatInapController.php:351
+* @see app/Http/Controllers/RawatInapController.php:487
 * @route '/rawat-inap/pemeriksaan-ranap'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::store
-* @see app/Http/Controllers/RawatInapController.php:351
+* @see app/Http/Controllers/RawatInapController.php:487
 * @route '/rawat-inap/pemeriksaan-ranap'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::store
-* @see app/Http/Controllers/RawatInapController.php:351
+* @see app/Http/Controllers/RawatInapController.php:487
 * @route '/rawat-inap/pemeriksaan-ranap'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatInapController::deleteMethod
-* @see app/Http/Controllers/RawatInapController.php:417
+* @see app/Http/Controllers/RawatInapController.php:553
 * @route '/rawat-inap/pemeriksaan-ranap'
 */
 export const deleteMethod = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -50,7 +50,7 @@ deleteMethod.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::deleteMethod
-* @see app/Http/Controllers/RawatInapController.php:417
+* @see app/Http/Controllers/RawatInapController.php:553
 * @route '/rawat-inap/pemeriksaan-ranap'
 */
 deleteMethod.url = (options?: RouteQueryOptions) => {
@@ -59,7 +59,7 @@ deleteMethod.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::deleteMethod
-* @see app/Http/Controllers/RawatInapController.php:417
+* @see app/Http/Controllers/RawatInapController.php:553
 * @route '/rawat-inap/pemeriksaan-ranap'
 */
 deleteMethod.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -69,7 +69,7 @@ deleteMethod.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> =
 
 /**
 * @see \App\Http\Controllers\RawatInapController::update
-* @see app/Http/Controllers/RawatInapController.php:441
+* @see app/Http/Controllers/RawatInapController.php:577
 * @route '/rawat-inap/pemeriksaan-ranap'
 */
 export const update = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -84,7 +84,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::update
-* @see app/Http/Controllers/RawatInapController.php:441
+* @see app/Http/Controllers/RawatInapController.php:577
 * @route '/rawat-inap/pemeriksaan-ranap'
 */
 update.url = (options?: RouteQueryOptions) => {
@@ -93,7 +93,7 @@ update.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::update
-* @see app/Http/Controllers/RawatInapController.php:441
+* @see app/Http/Controllers/RawatInapController.php:577
 * @route '/rawat-inap/pemeriksaan-ranap'
 */
 update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
