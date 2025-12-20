@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import AppLayout from "@/Layouts/AppLayout";
+import SidebarKasir from "@/Layouts/SidebarKasir";
 
 const currencyFormatter = new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -37,8 +37,8 @@ export default function PembayaranRalan({ groups = [], stats = {}, filters = {} 
     ];
 
     return (
-        <AppLayout title="Pembayaran Ralan">
-            <div className="-mt-6 -mx-6 p-6 space-y-6">
+        <SidebarKasir title="Kasir Rawat Jalan">
+            <div className="p-6 space-y-6">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
                         <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">Pembayaran</p>
@@ -205,6 +205,6 @@ export default function PembayaranRalan({ groups = [], stats = {}, filters = {} 
                     </div>
                 )}
             </div>
-        </AppLayout>
+        </SidebarKasir>
     );
 }

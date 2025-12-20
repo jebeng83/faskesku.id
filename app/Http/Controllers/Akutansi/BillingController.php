@@ -33,18 +33,7 @@ class BillingController extends Controller
 
     public function kasirRalanPage(Request $request)
     {
-        $statusOptions = [
-            'Laborat', 'Radiologi', 'Operasi', 'Obat', 'Ranap Dokter', 'Ranap Dokter Paramedis', 'Ranap Paramedis',
-            'Ralan Dokter', 'Ralan Dokter Paramedis', 'Ralan Paramedis', 'Tambahan', 'Potongan', 'Administrasi', 'Kamar', '-',
-            'Registrasi', 'Harian', 'Service', 'TtlObat', 'TtlRanap Dokter', 'TtlRanap Paramedis', 'TtlRalan Dokter',
-            'TtlRalan Paramedis', 'TtlKamar', 'Dokter', 'Perawat', 'TtlTambahan', 'Retur Obat', 'TtlRetur Obat', 'Resep Pulang',
-            'TtlResep Pulang', 'TtlPotongan', 'TtlLaborat', 'TtlOperasi', 'TtlRadiologi', 'Tagihan',
-        ];
-
-        return inertia('Akutansi/KasirRalan', [
-            'statusOptions' => $statusOptions,
-            'initialNoRawat' => $request->query('no_rawat'),
-        ]);
+        return redirect('/pembayaran/ralan');
     }
 
     public function ranapPage(Request $request)
