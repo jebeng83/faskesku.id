@@ -739,11 +739,7 @@ export default function Dashboard() {
     }, [props.dashboardHighlights, props.dashboardPriorities]);
 
     const [pasienHariIniCount, setPasienHariIniCount] = useState(null);
-    // State untuk jumlah registrasi/pasien kemarin
     const [pasienKemarinCount, setPasienKemarinCount] = useState(null);
-
-    // Ref untuk caching hasil pencarian menu
-    const cacheRef = useRef(new Map());
 
     // Observasi panel chart untuk menunda fetch sampai terlihat di viewport
     const chartSectionRef = useRef(null);
@@ -847,93 +843,14 @@ export default function Dashboard() {
         };
     }, [shouldLoadChart]);
 
-    // Pencarian menu (mengadopsi logic dari Landing.jsx)
     const [query, setQuery] = useState("");
-    const [results, setResults] = useState([]);
-    const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        let active = true;
-        const controller = new AbortController();
-
-        const fetchMenus = async () => {
-            setLoading(true);
-            try {
-                const trimmed = query?.trim() ?? "";
-                const key = trimmed ? `search:${trimmed}` : `popular:8`;
-                const cached = cacheRef.current.get(key);
-                if (cached) {
-                    if (active) setResults(cached);
-                    if (active) setLoading(false);
-                    return;
-                }
-                const url = trimmed
-                    ? route("api.menu.search", { q: trimmed })
-                    : route("api.menu.popular", { limit: 8 });
-                const res = await fetch(url, { signal: controller.signal });
-                const json = await res.json();
-                const data = json.data || [];
-                cacheRef.current.set(key, data);
-                if (active) setResults(data);
-            } catch (e) {
-                if (active) setResults([]);
-            } finally {
-                if (active) setLoading(false);
-            }
-        };
-
-        const t = setTimeout(fetchMenus, 250);
-        return () => {
-            active = false;
-            controller.abort();
-            clearTimeout(t);
-        };
-    }, [query]);
-
-    // Helper seperti di Landing.jsx
     const safeRoute = (name, params = {}) => {
         try {
             return route(name, params, false);
         } catch (e) {
             return "#";
         }
-    };
-
-    const aliasRoute = (raw) => {
-        const slug = String(raw || "")
-            .trim()
-            .toLowerCase();
-        const map = {
-            "rawat-jalan": "rawat-jalan.index",
-            "rawat inap": "rawat-inap.index",
-            "rawat-inap": "rawat-inap.index",
-            laboratorium: "laboratorium.index",
-            radiologi: "radiologi.index",
-            igd: "igd.index",
-            farmasi: "farmasi.index",
-            registration: "registration.index",
-            "reg-periksa": "reg-periksa.index",
-            dashboard: "dashboard",
-        };
-        return map[slug] || raw;
-    };
-
-    const getMenuHref = (item) => {
-        if (item?.url) {
-            try {
-                const currentOrigin = window.location?.origin || "";
-                const u = new URL(item.url, currentOrigin);
-                return u.pathname + u.search + u.hash;
-            } catch (_) {
-                if (String(item.url).startsWith("/")) return item.url;
-                return "/" + String(item.url).replace(/^https?:\/\/[^/]+/, "");
-            }
-        }
-        if (item?.route) {
-            const normalized = aliasRoute(item.route);
-            return safeRoute(normalized);
-        }
-        return "#";
     };
 
     const shortcuts = useMemo(
