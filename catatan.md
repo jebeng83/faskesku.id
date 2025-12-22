@@ -37,12 +37,12 @@ Belum/tahap berikutnya:
 - Breakdown batch di modal konfirmasi penyerahan:
   - Sumber data: endpoint `GET /api/resep/stok-info?kode_brng={kode}&kd_poli={kd_poli}` yang sudah tersedia, memuat `batch_detail` (kd_bangsal, no_batch, no_faktur, stok) dan `total_stok`.
   - Per item non‑racikan: lakukan simulasi konsumsi FIFO di frontend berdasarkan `jml` dan `batch_detail` untuk menampilkan rencana (no_batch, no_faktur, qty diambil). Catatan: ini hanya visual; konsumsi sebenarnya tetap dilakukan di backend.
-  - Tambahkan tombol “Konfirmasi Penyerahan” dengan ringkasan total item, total biaya, serta breakdown batch.
+  - Tambahkan tombol "Konfirmasi Penyerahan" dengan ringkasan total item, total biaya, serta breakdown batch.
 - Validasi stok di UI:
   - Jika `total_stok < jml` pada item, blok penyerahan dan tampilkan pesan error yang ramah beserta saran kontak depo terkait.
   - Opsional: highlight item yang bermasalah dalam daftar.
 - Payload penyerahan:
-  - Tetap kirim `embalase_tuslah.non_racikan` sesuai perubahan; racikan tetap “belum didukung” untuk sekarang.
+  - Tetap kirim `embalase_tuslah.non_racikan` sesuai perubahan; racikan tetap "belum didukung" untuk sekarang.
   - Sertakan konfirmasi pengguna (checkbox atau dialog) sebelum submit.
 - Error handling & UX:
   - Tampilkan hasil penyerahan yang sukses (tgl/jam penyerahan) dan ringkasan total.

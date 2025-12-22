@@ -953,16 +953,18 @@ export default function Dashboard() {
         setNotes((n) => n.filter((i) => i.id !== id));
     };
     const [sipExpiring, setSipExpiring] = useState([]);
+    const { props: pageProps } = usePage();
     useEffect(() => {
         let active = true;
         const controller = new AbortController();
         (async () => {
             try {
-                const res = await fetch("/api/sip-pegawai/expiring", {
+                const res = await window.axios.get("/api/public/sip-pegawai/expiring", {
                     signal: controller.signal,
+                    withCredentials: true,
                     headers: { Accept: "application/json" },
                 });
-                const json = await res.json();
+                const json = res?.data || {};
                 if (!active) return;
                 const list = Array.isArray(json?.data) ? json.data : [];
                 const seen = new Set();

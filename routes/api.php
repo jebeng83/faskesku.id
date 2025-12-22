@@ -13,9 +13,11 @@ use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\WilayahController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\DataBarangController;
+use App\Http\Controllers\Farmasi\PembelianController as FarmasiPembelianController;
+use App\Http\Controllers\Farmasi\PemesananController as FarmasiPemesananController;
 use App\Http\Controllers\Farmasi\SetHargaObatController;
-use App\Http\Controllers\Farmasi\SisaStokController;
 use App\Http\Controllers\Farmasi\SirkulasiObatController;
+use App\Http\Controllers\Farmasi\SisaStokController;
 use App\Http\Controllers\GudangBarangController;
 use App\Http\Controllers\JadwalController;
 use App\Http\Controllers\Kepegawaian\DepartemenController;
@@ -24,17 +26,15 @@ use App\Http\Controllers\OpnameController;
 use App\Http\Controllers\Pcare\MobileJknController;
 use App\Http\Controllers\Pcare\PcareController;
 use App\Http\Controllers\Pcare\PcareKunjunganController;
-use App\Http\Controllers\Farmasi\PembelianController as FarmasiPembelianController;
-use App\Http\Controllers\Farmasi\PemesananController as FarmasiPemesananController;
 use App\Http\Controllers\PermintaanLabController;
 use App\Http\Controllers\PermintaanRadiologiController;
 use App\Http\Controllers\PoliklinikController;
+use App\Http\Controllers\QueueController;
 use App\Http\Controllers\RawatJalan\ObatController;
 use App\Http\Controllers\RawatJalan\RawatJalanController;
 use App\Http\Controllers\RawatJalan\ResepController;
 use App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController;
 use App\Http\Controllers\SatuSehat\SatuSehatController;
-use App\Http\Controllers\QueueController;
 use Illuminate\Support\Facades\Route;
 
 // Public endpoints (tidak memerlukan authentication)
@@ -61,6 +61,40 @@ Route::get('/cacat-fisik', [ReferenceController::class, 'cacatFisik'])->name('ap
 // Public endpoint for doctors list (minimal fields) for dev preview dropdowns
 Route::get('/public/dokter', [DokterController::class, 'index'])->name('api.public.dokter');
 
+// Public endpoint: SIP Pegawai yang akan habis dalam 30 hari (sanitized fields)
+Route::get('/public/sip-pegawai/expiring', function () {
+    $now = now()->startOfDay();
+    $limit = now()->addDays(30)->endOfDay();
+
+    $rows = \App\Models\Kepegawaian\SipPegawai::where('status', '1')
+        ->whereNotNull('masa_berlaku')
+        ->whereBetween('masa_berlaku', [$now, $limit])
+        ->with(['employee' => function ($q) {
+            // Sertakan 'nik' agar eager loading mapping tidak kehilangan key relasi
+            $q->select('nik', 'nama', 'jbtn');
+        }])
+        ->orderBy('masa_berlaku')
+        ->get();
+
+    $data = $rows->map(function ($r) use ($now) {
+        $days = $r->masa_berlaku ? $now->diffInDays($r->masa_berlaku, false) : null;
+
+        return [
+            'nik' => $r->nik,
+            'nama' => $r->employee->nama ?? '',
+            'jabatan' => $r->employee->jbtn ?? '',
+            'masa_berlaku' => optional($r->masa_berlaku)->format('Y-m-d'),
+            'days_remaining' => $days,
+        ];
+    });
+
+    return response()->json([
+        'success' => true,
+        'count' => $data->count(),
+        'data' => $data,
+    ]);
+})->name('api.public.sip-pegawai.expiring');
+
 // Public endpoints for Queue (Kiosk)
 Route::prefix('queue')->group(function () {
     Route::post('/tickets', [QueueController::class, 'create'])->name('api.queue.tickets.create');
@@ -75,7 +109,7 @@ Route::prefix('queue')->group(function () {
 // Menggunakan 'auth:sanctum' untuk Inertia.js SPA authentication
 // Sanctum akan otomatis menggunakan session-based auth untuk requests dari stateful domains
 // (localhost, 127.0.0.1:8000, dll) dan token-based auth untuk external API
-    Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
     Route::post('/employees', [EmployeeController::class, 'store'])->name('api.employees.store');
     Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('api.employees.destroy');
 
@@ -86,7 +120,7 @@ Route::prefix('queue')->group(function () {
     Route::get('/pasien/describe', [ApiPatientController::class, 'describe'])->name('api.pasien.describe');
 
     // Reference lookup endpoints - moved to public
-    
+
     // Wilayah routes (protected version)
     Route::get('/wilayah/provinces', [WilayahController::class, 'provinces'])->name('api.wilayah.provinces');
     Route::get('/wilayah/regencies/{provinceCode}', [WilayahController::class, 'regencies'])->name('api.wilayah.regencies');
@@ -113,39 +147,39 @@ Route::prefix('queue')->group(function () {
     });
 
     // Registrasi Periksa Routes
-        Route::prefix('reg-periksa')->group(function () {
-            Route::get('/', [RegPeriksaController::class, 'index'])->name('api.reg-periksa.index');
-            Route::post('/', [RegPeriksaController::class, 'store'])->name('api.reg-periksa.store');
-            // Endpoint aman untuk ambil data berdasarkan no_rawat (mendukung karakter '/')
-            Route::get('/by-rawat', [RegPeriksaController::class, 'findByNoRawat'])->name('api.reg-periksa.by-rawat');
-            // Endpoint alternatif: update keputusan berdasarkan no_rawat di payload (menghindari '/' di path)
-            // Disambiguation: gunakan endpoint aksi terpisah di luar wildcard agar tidak bentrok
-            // dengan route dinamis '/{regPeriksa}'
-            // (lihat definisi di bawah, di luar prefix 'reg-periksa')
-            // Endpoint khusus untuk update status_bayar saja (harus didefinisikan sebelum route umum)
-            Route::put('/{regPeriksa}/status-bayar', [RegPeriksaController::class, 'updateStatusBayar'])
-                ->where('regPeriksa', '.*')
-                ->name('api.reg-periksa.update-status-bayar');
-            Route::put('/{regPeriksa}/keputusan', [RegPeriksaController::class, 'updateKeputusan'])
-                ->where('regPeriksa', '.*')
-                ->name('api.reg-periksa.update-keputusan');
+    Route::prefix('reg-periksa')->group(function () {
+        Route::get('/', [RegPeriksaController::class, 'index'])->name('api.reg-periksa.index');
+        Route::post('/', [RegPeriksaController::class, 'store'])->name('api.reg-periksa.store');
+        // Endpoint aman untuk ambil data berdasarkan no_rawat (mendukung karakter '/')
+        Route::get('/by-rawat', [RegPeriksaController::class, 'findByNoRawat'])->name('api.reg-periksa.by-rawat');
+        // Endpoint alternatif: update keputusan berdasarkan no_rawat di payload (menghindari '/' di path)
+        // Disambiguation: gunakan endpoint aksi terpisah di luar wildcard agar tidak bentrok
+        // dengan route dinamis '/{regPeriksa}'
+        // (lihat definisi di bawah, di luar prefix 'reg-periksa')
+        // Endpoint khusus untuk update status_bayar saja (harus didefinisikan sebelum route umum)
+        Route::put('/{regPeriksa}/status-bayar', [RegPeriksaController::class, 'updateStatusBayar'])
+            ->where('regPeriksa', '.*')
+            ->name('api.reg-periksa.update-status-bayar');
+        Route::put('/{regPeriksa}/keputusan', [RegPeriksaController::class, 'updateKeputusan'])
+            ->where('regPeriksa', '.*')
+            ->name('api.reg-periksa.update-keputusan');
         Route::get('/{regPeriksa}', [RegPeriksaController::class, 'show'])
             ->where('regPeriksa', '^(?!by-rawat$)(?!keputusan$)(?!status-bayar$)[^/]+$')
             ->name('api.reg-periksa.show');
         Route::put('/{regPeriksa}', [RegPeriksaController::class, 'update'])
             ->where('regPeriksa', '^(?!by-rawat$)(?!keputusan$)(?!status-bayar$)[^/]+$')
             ->name('api.reg-periksa.update');
-            Route::delete('/{regPeriksa}', [RegPeriksaController::class, 'destroy'])
-                ->where('regPeriksa', '^(?!by-rawat$)(?!keputusan$)(?!status-bayar$)[^/]+$')
-                ->name('api.reg-periksa.destroy');
-            Route::post('/hitung-umur', [RegPeriksaController::class, 'hitungUmur'])->name('api.reg-periksa.hitung-umur');
-            Route::get('/statistik', [RegPeriksaController::class, 'getStatistik'])->name('api.reg-periksa.statistik');
-            Route::get('/filter-data', [RegPeriksaController::class, 'getFilterData'])->name('api.reg-periksa.filter-data');
-        });
+        Route::delete('/{regPeriksa}', [RegPeriksaController::class, 'destroy'])
+            ->where('regPeriksa', '^(?!by-rawat$)(?!keputusan$)(?!status-bayar$)[^/]+$')
+            ->name('api.reg-periksa.destroy');
+        Route::post('/hitung-umur', [RegPeriksaController::class, 'hitungUmur'])->name('api.reg-periksa.hitung-umur');
+        Route::get('/statistik', [RegPeriksaController::class, 'getStatistik'])->name('api.reg-periksa.statistik');
+        Route::get('/filter-data', [RegPeriksaController::class, 'getFilterData'])->name('api.reg-periksa.filter-data');
+    });
 
-        // Endpoint aman (query-style) untuk update keputusan dengan payload no_rawat
-        Route::match(['put', 'post'], '/reg-periksa-actions/update-keputusan', [RegPeriksaController::class, 'updateKeputusanByRawat'])
-            ->name('api.reg-periksa.actions.update-keputusan');
+    // Endpoint aman (query-style) untuk update keputusan dengan payload no_rawat
+    Route::match(['put', 'post'], '/reg-periksa-actions/update-keputusan', [RegPeriksaController::class, 'updateKeputusanByRawat'])
+        ->name('api.reg-periksa.actions.update-keputusan');
 
     // User Management Routes
     Route::prefix('users')->group(function () {
@@ -322,7 +356,7 @@ Route::prefix('queue')->group(function () {
             ];
         });
 
-    // Endpoint aksi terpisah untuk update keputusan (menghindari konflik wildcard)
+        // Endpoint aksi terpisah untuk update keputusan (menghindari konflik wildcard)
 
         return response()->json([
             'success' => true,

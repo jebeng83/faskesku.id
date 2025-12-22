@@ -19,7 +19,14 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) 
                 setLoading(true);
                 setErrorMsg('');
                 const params = new URLSearchParams({ q: query, start: 0, limit: 25 });
-                const res = await fetch(`/api/pcare/diagnosa?${params.toString()}`, { headers: { Accept: 'application/json' } });
+                const res = await fetch(`/api/pcare/diagnosa?${params.toString()}`, {
+                    headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    credentials: 'include',
+                });
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.message || `HTTP ${res.status}: ${res.statusText}`);
+                }
                 const json = await res.json();
                 const list = json?.response?.list || json?.list || json?.data || [];
                 const mapped = list.map((it) => ({ kode: it?.kdDiag || it?.kode || '', nama: it?.nmDiag || it?.nama || '' }));
@@ -42,14 +49,19 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) 
             try {
                 setSaveStatus(null);
                 const params = new URLSearchParams({ no_rawat: noRawat });
-                const res = await fetch(`/api/rawat-jalan/diagnosa?${params.toString()}`, { headers: { Accept: 'application/json' } });
+                const res = await fetch(`/api/rawat-jalan/diagnosa?${params.toString()}`, {
+                    headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    credentials: 'include',
+                });
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.message || `HTTP ${res.status}: ${res.statusText}`);
+                }
                 const json = await res.json();
                 const list = json?.data || [];
-                // Map ke struktur lokal: { kode, nama, type }
                 const mapped = list.map((it) => ({ kode: it.kode, nama: it.nama, type: it.type }));
                 setSelected(mapped);
             } catch (e) {
-                // Abaikan error muat awal; tampilkan daftar kosong
                 console.warn('Gagal memuat diagnosa tersimpan:', e?.message);
             }
         };
@@ -319,5 +331,4 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) 
         </div>
     );
 }
-
 

@@ -62,7 +62,7 @@ export default function SirkulasiObat() {
         setLoading(true);
         try {
             const { data } = await axios.get(
-                "/api/inventori/sirkulasi-barang",
+                "/farmasi/sirkulasi-obat/data",
                 {
                     params: {
                         jenis,

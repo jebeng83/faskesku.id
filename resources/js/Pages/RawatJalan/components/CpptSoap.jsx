@@ -514,8 +514,9 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     // Bridging PCare states
     const [showBridging, setShowBridging] = useState(false); // Default hidden, tampil saat pendaftaran berhasil
     const [bridgingOpen, setBridgingOpen] = useState(false); // kontrol popup modal
-    const [pcarePendaftaran, setPcarePendaftaran] = useState(null); // data dari tabel pcare_pendaftaran
-    const [pcareRujukanSubspesialis, setPcareRujukanSubspesialis] = useState(null); // data dari tabel pcare_rujuk_subspesialis
+    const [pcarePendaftaran, setPcarePendaftaran] = useState(null);
+    const [pcareRujukanSubspesialis, setPcareRujukanSubspesialis] = useState(null);
+    const [isUnauthorized, setIsUnauthorized] = useState(false);
     // Status cetak rujukan: aktif setelah rujukan berhasil dikirim ke BPJS & lokal atau ada data di tabel
     const [rujukanBerhasil, setRujukanBerhasil] = useState(false);
     // Menyimpan nomor kunjungan terakhir (pengganti no rujukan bila belum tersedia)
@@ -720,7 +721,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                         'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     },
-                    credentials: 'same-origin',
+                    credentials: 'include',
                     body: JSON.stringify(pcarePayload),
                 });
                 const pcareText = await pcareRes.text();
@@ -771,32 +772,50 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     const openBridgingModal = async () => {
         setBridgingOpen(true);
         setKunjunganResult(null);
+        setIsUnauthorized(false);
         // Secara default, buka Kunjungan dan muat preview
         try { await toggleKunjungan(true); } catch (_) {}
         // Ambil data pendaftaran dari tabel pcare_pendaftaran
         try {
-            const res = await fetch(`/api/pcare/pendaftaran/rawat/${encodeURIComponent(noRawat)}`, { headers: { 'Accept': 'application/json' } });
-            const json = await res.json();
-            setPcarePendaftaran(json.data || null);
+            const res = await fetch(`/api/pcare/pendaftaran/rawat/${encodeURIComponent(noRawat)}`, {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'include',
+            });
+            if (res.status === 401) {
+                setIsUnauthorized(true);
+                setPcarePendaftaran(null);
+            } else {
+                setIsUnauthorized(false);
+                const json = await res.json();
+                setPcarePendaftaran(json.data || null);
+            }
         } catch (_) {
             setPcarePendaftaran(null);
         }
         // Ambil data rujukan subspesialis dari tabel pcare_rujuk_subspesialis
         try {
-            const rujukRes = await fetch(`/api/pcare/rujuk-subspesialis/rawat/${encodeURIComponent(noRawat)}`, { headers: { 'Accept': 'application/json' } });
-            const rujukJson = await rujukRes.json();
-            const rujukData = rujukJson.data || null;
-            
-            // Jika response OK dan ada data, set state rujukan
-            if (rujukRes.ok && rujukData) {
-                setPcareRujukanSubspesialis(rujukData);
-                setRujukanBerhasil(true);
-                if (rujukData.noKunjungan) {
-                    setLastNoKunjungan(rujukData.noKunjungan);
-                }
-            } else {
+            const rujukRes = await fetch(`/api/pcare/rujuk-subspesialis/rawat/${encodeURIComponent(noRawat)}`, {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'include',
+            });
+            if (rujukRes.status === 401) {
+                setIsUnauthorized(true);
                 setPcareRujukanSubspesialis(null);
                 setRujukanBerhasil(false);
+            } else {
+                setIsUnauthorized(false);
+                const rujukJson = await rujukRes.json();
+                const rujukData = rujukJson.data || null;
+                if (rujukRes.ok && rujukData) {
+                    setPcareRujukanSubspesialis(rujukData);
+                    setRujukanBerhasil(true);
+                    if (rujukData.noKunjungan) {
+                        setLastNoKunjungan(rujukData.noKunjungan);
+                    }
+                } else {
+                    setPcareRujukanSubspesialis(null);
+                    setRujukanBerhasil(false);
+                }
             }
         } catch (_) {
             setPcareRujukanSubspesialis(null);
@@ -806,7 +825,10 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         try {
             const params = new URLSearchParams({ start: 0, limit: 200 });
             // Gunakan endpoint PCare yang benar: /api/pcare/poli
-            const poRes = await fetch(`/api/pcare/poli?${params.toString()}`, { headers: { 'Accept': 'application/json' } });
+            const poRes = await fetch(`/api/pcare/poli?${params.toString()}`, {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'include',
+            });
             const poJson = await poRes.json();
             const poList = poJson?.response?.list || poJson?.list || poJson?.data || [];
             setPoliOptions(poList.map((row) => ({ value: row?.kdPoli || row?.kode || '', label: row?.nmPoli || row?.nama || '' })));
@@ -816,7 +838,10 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         try {
             const params = new URLSearchParams({ start: 0, limit: 200 });
             // Gunakan endpoint PCare yang benar: /api/pcare/dokter
-            const dkRes = await fetch(`/api/pcare/dokter?${params.toString()}`, { headers: { 'Accept': 'application/json' } });
+            const dkRes = await fetch(`/api/pcare/dokter?${params.toString()}`, {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'include',
+            });
             const dkJson = await dkRes.json();
             const dkList = dkJson?.response?.list || dkJson?.list || dkJson?.data || [];
             setDokterOptions(dkList.map((row) => ({ value: row?.kdDokter || row?.kdProvider || row?.kdDok || row?.kode || '', label: row?.nmDokter || row?.nmProvider || row?.nama || '' })));
@@ -828,7 +853,10 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         setProviderOptions([]);
         try {
             // Spesialis
-            const spRes = await fetch(`/api/pcare/spesialis`, { headers: { 'Accept': 'application/json' } });
+            const spRes = await fetch(`/api/pcare/spesialis`, {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'include',
+            });
             const spJson = await spRes.json();
             const spList = spJson?.response?.list || [];
             setSpesialisOptions(spList.map((row) => ({ value: row.kdSpesialis, label: `${row.kdSpesialis || ''} — ${row.nmSpesialis || ''}` })));
@@ -837,7 +865,10 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         }
         try {
             // Sarana
-            const saRes = await fetch(`/api/pcare/spesialis/sarana`, { headers: { 'Accept': 'application/json' } });
+            const saRes = await fetch(`/api/pcare/spesialis/sarana`, {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'include',
+            });
             const saJson = await saRes.json();
             const saList = saJson?.response?.list || [];
             setSaranaOptions(saList.map((row) => ({ value: row.kdSarana, label: `${row.kdSarana || ''} — ${row.nmSarana || ''}` })));
@@ -848,6 +879,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
 
     const closeBridgingModal = () => {
         setBridgingOpen(false);
+        setIsUnauthorized(false);
         setRujukanActive(false);
         setKunjunganPreview(null);
         setKunjunganResult(null);
@@ -860,7 +892,17 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         if (checked) {
             try {
                 // Gunakan endpoint PCare yang benar: /api/pcare/kunjungan/preview/{no_rawat}
-                const res = await fetch(`/api/pcare/kunjungan/preview/${encodeURIComponent(noRawat)}`, { headers: { 'Accept': 'application/json' } });
+                const res = await fetch(`/api/pcare/kunjungan/preview/${encodeURIComponent(noRawat)}`, {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    credentials: 'include',
+                });
+                if (res.status === 401) {
+                    setIsUnauthorized(true);
+                    setKunjunganPreview(null);
+                    return;
+                } else {
+                    setIsUnauthorized(false);
+                }
                 const json = await res.json();
                 if (json && json.success) {
                     const payload = json.payload || {};
@@ -904,7 +946,10 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             try {
                 const params = new URLSearchParams({ kdSpesialis: selectedSpesialis });
                 // Gunakan endpoint PCare yang benar: /api/pcare/spesialis/subspesialis
-                const ssRes = await fetch(`/api/pcare/spesialis/subspesialis?${params.toString()}`, { headers: { 'Accept': 'application/json' } });
+                const ssRes = await fetch(`/api/pcare/spesialis/subspesialis?${params.toString()}`, {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    credentials: 'include',
+                });
                 const ssJson = await ssRes.json();
                 const ssList = ssJson?.response?.list || [];
                 setSubSpesialisOptions(ssList.map((row) => ({ value: row.kdSubSpesialis, label: `${row.kdSubSpesialis || ''} — ${row.nmSubSpesialis || ''}` })));
@@ -937,7 +982,10 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             try {
                 // Gunakan endpoint PCare yang benar: /api/pcare/spesialis/rujuk/subspesialis/{kdSub}/sarana/{kdSa}/tglEstRujuk/{tgl}
                 const url = `/api/pcare/spesialis/rujuk/subspesialis/${encodeURIComponent(kdSub)}/sarana/${encodeURIComponent(kdSa)}/tglEstRujuk/${encodeURIComponent(tglParam)}`;
-                const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                const res = await fetch(url, {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    credentials: 'include',
+                });
                 const json = await res.json();
                 const list = json?.response?.list || [];
                 // Simpan kdppk dan nmppk sebagai value/label, serta lampirkan jadwal/kapasitas/telepon untuk ditampilkan
@@ -1197,7 +1245,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                     'X-Requested-With': 'XMLHttpRequest',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                 },
-                credentials: 'same-origin',
+                credentials: 'include',
                 body: JSON.stringify(payload),
             });
             const text = await res.text();
@@ -1213,7 +1261,8 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 if (payload.rujukLanjut && noRawat) {
                     try {
                         const rujukRes = await fetch(`/api/pcare/rujuk-subspesialis/rawat/${encodeURIComponent(noRawat)}`, {
-                            headers: { 'Accept': 'application/json' }
+                            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                            credentials: 'include',
                         });
                         const rujukJson = await rujukRes.json();
                         const rujukData = rujukJson.data || null;
@@ -1705,10 +1754,12 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                         </button>
                     )}
                     {/* Debug: Log state rujukanBerhasil saat render */}
-                    {(() => {
-                        console.log('[CpptSoap] Render: rujukanBerhasil =', rujukanBerhasil, ', pcareRujukanSubspesialis =', pcareRujukanSubspesialis ? 'exists' : 'null');
-                        return null;
-                    })()}
+                    {isUnauthorized && (
+                        <div className="mt-2 flex items-center justify-between rounded-md border border-red-200 bg-red-50 p-2 text-xs text-red-700">
+                            <span>Anda belum login. Silakan login untuk mengakses PCare.</span>
+                            <a href="/login" className="inline-flex items-center rounded bg-red-600 px-2 py-1 text-white">Login</a>
+                        </div>
+                    )}
                     {/* Tombol Cetak Rujukan - tampil jika ada data di tabel pcare_rujuk_subspesialis */}
                     {rujukanBerhasil && (
                         <button
@@ -1746,7 +1797,10 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                     let fktpData = null;
                                     if (kdPPK && (!rujukanData.nmPPK || rujukanData.nmPPK.trim() === '' || rujukanData.nmPPK === '-')) {
                                         fetchPromises.push(
-                                            fetch(`/api/pcare/provider?start=0&limit=200`, { headers: { 'Accept': 'application/json' } })
+                                            fetch(`/api/pcare/provider?start=0&limit=200`, {
+                                                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                                                credentials: 'include',
+                                            })
                                                 .then(res => res.ok ? res.json() : null)
                                                 .then(json => {
                                                     if (json?.response?.list) {
@@ -1764,7 +1818,10 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                     // Ambil kabupaten/kota dari config - fetch cepat
                                     let kabupatenKota = '';
                                     fetchPromises.push(
-                                        fetch('/api/pcare/config/kabupaten', { headers: { 'Accept': 'application/json' } })
+                                        fetch('/api/pcare/config/kabupaten', {
+                                            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                                            credentials: 'include',
+                                        })
                                             .then(res => res.ok ? res.json() : null)
                                             .then(json => {
                                                 kabupatenKota = json?.kabupaten || '';

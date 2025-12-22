@@ -623,55 +623,350 @@ export default function Registration({
         setIsSubmitting(true);
 
         try {
+            if (!selectedPatient || !selectedPatient.no_rkm_medis) {
+                setIsSubmitting(false);
+                alert('Silakan pilih pasien terlebih dahulu');
+                return;
+            }
+            
+            // Validasi frontend
+            const requiredFields = ['kd_dokter','kd_poli','kd_pj','p_jawab','almt_pj','hubunganpj'];
+            const missing = requiredFields.filter((k) => !formData[k] || String(formData[k]).trim() === '');
+            if (missing.length) {
+                setIsSubmitting(false);
+                const missingLabels = {
+                    kd_dokter: 'Dokter',
+                    kd_poli: 'Poliklinik',
+                    kd_pj: 'Cara Bayar',
+                    p_jawab: 'Nama Penanggung Jawab',
+                    almt_pj: 'Alamat Penanggung Jawab',
+                    hubunganpj: 'Hubungan',
+                };
+                const missingList = missing.map(f => missingLabels[f] || f).join(', ');
+                alert(`Lengkapi data registrasi: ${missingList}`);
+                return;
+            }
             // Pastikan URL benar. Gunakan fallback eksplisit dan hanya terima hasil Ziggy jika valid.
             let url = `/registration/${encodeURIComponent(selectedPatient.no_rkm_medis)}/register`;
             try {
                 const ziggyUrl = route("registration.register-patient", selectedPatient.no_rkm_medis);
-                // Validasi: harus mengandung segment /registration/ dan diakhiri dengan /register
-                if (typeof ziggyUrl === "string" && /\/registration\/.+\/register$/.test(ziggyUrl)) {
-                    url = ziggyUrl;
-                } else {
-                    console.warn("Ziggy route malformed for register-patient, using fallback:", ziggyUrl);
+                if (typeof ziggyUrl === "string") {
+                    const m = ziggyUrl.match(/\/registration\/(.+)\/register$/);
+                    if (m && m[0]) {
+                        url = m[0];
+                    }
                 }
-            } catch (err) {
-                console.warn("Ziggy route() unavailable, using fallback URL.");
-            }
-            // Log URL yang dipakai agar mudah ditelusuri di console/network
-            try { console.debug("RegisterPatient POST URL:", url); } catch (_) {}
+            } catch (_) {}
 
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+            // Refresh CSRF token sebelum request - ini akan memastikan token sesuai dengan session aktif
+            try {
+                await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+                // Tunggu lebih lama untuk memastikan cookie sudah ter-set dan session masih valid
+                await new Promise(resolve => setTimeout(resolve, 200));
+            } catch (csrfError) {
+                alert('Session expired. Silakan refresh halaman dan coba lagi.');
+                window.location.reload();
+                return;
+            }
+            
+            // Ambil token dari cookie (prioritas) atau meta tag
+            const cookieStr = '; ' + document.cookie;
+            const xsrfPart = cookieStr.split('; XSRF-TOKEN=');
+            let xsrfToken = xsrfPart.length === 2 ? decodeURIComponent(xsrfPart.pop().split(';').shift()) : '';
+            
+            // Jika tidak ada di cookie, ambil dari meta tag
+            const metaToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+            if (!xsrfToken && metaToken) {
+                xsrfToken = metaToken;
+            }
+            
+            // Jika masih tidak ada token, kemungkinan session expired
+            if (!xsrfToken) {
+                alert('Session expired. Silakan refresh halaman dan coba lagi.');
+                window.location.reload();
+                return;
+            }
+
+            // Siapkan payload
             const payload = { ...formData };
+            
+            // Pastikan almt_pj tidak kosong (required by backend)
+            if (!payload.almt_pj || String(payload.almt_pj).trim() === '') {
+                payload.almt_pj = selectedPatient.alamat || 'Alamat tidak diketahui';
+            }
+            
+            // Pastikan p_jawab tidak kosong (required by backend)
+            if (!payload.p_jawab || String(payload.p_jawab).trim() === '') {
+                payload.p_jawab = selectedPatient.namakeluarga || selectedPatient.nm_pasien || 'Pasien';
+            }
+            
+            // Format jam_reg jika perlu
             if (typeof payload.jam_reg === "string" && /^\d{2}:\d{2}$/.test(payload.jam_reg)) {
                 payload.jam_reg = `${payload.jam_reg}:00`;
             }
-            const response = await axios.post(
-                url,
-                payload,
-                {
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json',
-                    },
-                    withCredentials: true,
-                }
-            );
 
-            if (response.data.success) {
-                alert(response.data.message);
+            let response;
+            // Axios akan otomatis mengirim X-XSRF-TOKEN dari cookie XSRF-TOKEN
+            // Kita hanya perlu memastikan cookie ter-set dengan benar
+            // Jangan kirim X-CSRF-TOKEN secara manual jika sudah ada X-XSRF-TOKEN
+            const config = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    // Hanya kirim X-CSRF-TOKEN jika X-XSRF-TOKEN tidak tersedia (fallback)
+                    // Axios akan otomatis mengirim X-XSRF-TOKEN dari cookie
+                },
+                withCredentials: true,
+                // Force axios to treat response as JSON, not HTML
+                responseType: 'json',
+                // Ensure axios doesn't follow redirects
+                maxRedirects: 0,
+                validateStatus: function (status) {
+                    // Accept all status codes so we can handle them manually
+                    return status >= 200 && status < 600;
+                },
+            };
+
+            const doPost = async () => {
+                try {
+                    // Pastikan URL adalah absolute atau relative yang benar
+                    const finalUrl = url.startsWith('http') ? url : url.startsWith('/') ? url : `/${url}`;
+                    
+                    const res = await axios.post(finalUrl, payload, config);
+                    
+                    // Cek apakah response adalah error 419 (CSRF token expired)
+                    if (res?.status === 419) {
+                        const error = new Error('CSRF token expired');
+                        error.response = {
+                            status: 419,
+                            statusText: 'CSRF Token Expired',
+                            data: res?.data,
+                            headers: res?.headers,
+                        };
+                        throw error;
+                    }
+                    
+                    // Cek apakah response adalah HTML (bukan JSON)
+                    const contentType = res?.headers?.['content-type'] || res?.headers?.['Content-Type'] || '';
+                    const isHtml = contentType.includes('text/html') || 
+                                  (typeof res?.data === 'string' && (
+                                      res.data.trim().startsWith('<!DOCTYPE') ||
+                                      res.data.trim().startsWith('<html') ||
+                                      res.data.trim().startsWith('<HTML')
+                                  ));
+                    
+                    if (isHtml) {
+                        // Buat error object yang mirip dengan axios error
+                        const error = new Error('Server mengembalikan HTML bukan JSON. Kemungkinan route tidak ditemukan atau redirect.');
+                        error.response = {
+                            status: res?.status || 500,
+                            statusText: 'HTML Response',
+                            data: res?.data,
+                            headers: res?.headers,
+                        };
+                        throw error;
+                    }
+                    
+                    // Pastikan response.data adalah object, bukan string
+                    if (typeof res?.data === 'string') {
+                        try {
+                            res.data = JSON.parse(res.data);
+                        } catch (parseErr) {
+                            const error = new Error('Response data tidak dapat di-parse sebagai JSON');
+                            error.response = {
+                                status: res?.status || 500,
+                                statusText: 'Invalid JSON',
+                                data: res?.data,
+                            };
+                            throw error;
+                        }
+                    }
+                    
+                    return res;
+                } catch (err) {
+                    throw err;
+                }
+            };
+
+            try {
+                response = await doPost();
+                
+                // Hanya retry jika benar-benar ada masalah:
+                // 1. Status bukan 2xx (success)
+                // 2. Atau status 200 tapi tidak ada data sama sekali
+                // 3. Atau status 200 tapi success === false (explicit failure)
+                const isSuccessStatus = response?.status >= 200 && response?.status < 300;
+                const hasNoData = !response?.data;
+                const isExplicitFailure = response?.data?.success === false;
+                
+                if (isSuccessStatus && !hasNoData && !isExplicitFailure) {
+                    // Response sudah berhasil, tidak perlu retry
+                } else if (response?.status === 419) {
+                    // CSRF token expired - refresh dan retry
+                    // Refresh CSRF token
+                    await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    // Update CSRF token di config
+                    const cookieStr = '; ' + document.cookie;
+                    const xsrfPart = cookieStr.split('; XSRF-TOKEN=');
+                    let newXsrfToken = xsrfPart.length === 2 ? decodeURIComponent(xsrfPart.pop().split(';').shift()) : '';
+                    const newMetaToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                    
+                    if (!newXsrfToken && newMetaToken) {
+                        newXsrfToken = newMetaToken;
+                    }
+                    
+                    // Update meta tag jika perlu
+                    const metaTag = document.querySelector('meta[name="csrf-token"]');
+                    if (metaTag && newXsrfToken) {
+                        metaTag.setAttribute('content', newXsrfToken);
+                    }
+                    
+                    config.headers['X-CSRF-TOKEN'] = newXsrfToken;
+                    config.headers['X-XSRF-TOKEN'] = newXsrfToken;
+                    
+                    response = await doPost();
+                }
+                // Jika status bukan 2xx, akan masuk ke catch block
+            } catch (err) {
+                // Handle CSRF token expired (419) atau Unauthorized (401)
+                if (err?.response?.status === 419 || err?.response?.status === 401) {
+                    // Cek apakah ini retry kedua (sudah pernah retry sebelumnya)
+                    const isRetry = config.headers['X-CSRF-RETRY'] === '1';
+                    
+                    if (isRetry) {
+                        // Sudah pernah retry, kemungkinan session benar-benar expired
+                        const sessionError = new Error('Session expired. Silakan refresh halaman dan coba lagi.');
+                        sessionError.response = err?.response;
+                        throw sessionError;
+                    }
+                    
+                    // Mark bahwa ini adalah retry
+                    config.headers['X-CSRF-RETRY'] = '1';
+                    
+                    // Refresh CSRF token dan session - hanya sekali retry
+                    try {
+                        // Refresh CSRF cookie untuk mendapatkan token baru
+                        await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+                        await new Promise(resolve => setTimeout(resolve, 300)); // Delay untuk memastikan cookie ter-set
+                        
+                        // Update CSRF token di config
+                        const cookieStr = '; ' + document.cookie;
+                        const xsrfPart = cookieStr.split('; XSRF-TOKEN=');
+                        let newXsrfToken = xsrfPart.length === 2 ? decodeURIComponent(xsrfPart.pop().split(';').shift()) : '';
+                        const newMetaToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                        
+                        if (!newXsrfToken && newMetaToken) {
+                            newXsrfToken = newMetaToken;
+                        }
+                        
+                        // Jika masih tidak ada token setelah refresh, session mungkin expired
+                        if (!newXsrfToken) {
+                            const sessionError = new Error('Session expired. Silakan refresh halaman dan coba lagi.');
+                            sessionError.response = err?.response;
+                            throw sessionError;
+                        }
+                        
+                        // Update meta tag jika perlu
+                        const metaTag = document.querySelector('meta[name="csrf-token"]');
+                        if (metaTag && newXsrfToken) {
+                            metaTag.setAttribute('content', newXsrfToken);
+                        }
+                        
+                        // Update config headers dengan token baru
+                        config.headers['X-CSRF-TOKEN'] = newXsrfToken;
+                        config.headers['X-XSRF-TOKEN'] = newXsrfToken;
+                        
+                        // Retry request dengan token baru - hanya sekali
+                        response = await doPost();
+                    } catch (retryErr) {
+                        // Jika retry masih gagal dengan 419, session pasti expired - langsung refresh halaman
+                        if (retryErr?.response?.status === 419 || retryErr?.message?.includes('Session expired')) {
+                            const sessionError = new Error('Session expired. Silakan refresh halaman dan coba lagi.');
+                            sessionError.response = retryErr?.response || err?.response;
+                            throw sessionError;
+                        }
+                        throw retryErr;
+                    }
+                } else {
+                    throw err;
+                }
+            }
+
+            // Cek apakah response adalah HTML (bukan JSON) - ini biasanya berarti error atau redirect
+            const contentType = response?.headers?.['content-type'] || '';
+            const isHtmlResponse = typeof response?.data === 'string' && (
+                response.data.trim().startsWith('<!DOCTYPE') ||
+                response.data.trim().startsWith('<html') ||
+                contentType.includes('text/html')
+            );
+            
+            if (isHtmlResponse) {
+                // Cek apakah ini halaman login redirect
+                const isLoginPage = typeof response?.data === 'string' && (
+                    response.data.includes('login') ||
+                    response.data.includes('Login') ||
+                    response.data.includes('authentication')
+                );
+                
+                if (isLoginPage) {
+                    alert('Session expired. Silakan login ulang.');
+                    window.location.reload();
+                    return;
+                }
+                
+                // Cek apakah ini error page 404
+                const is404Error = typeof response?.data === 'string' && (
+                    response.data.includes('404') ||
+                    response.data.includes('Not Found') ||
+                    response.status === 404
+                );
+                
+                if (is404Error) {
+                    const errorMsg = `Route tidak ditemukan (404).\n\nURL: ${url}\nPasien: ${selectedPatient?.no_rkm_medis}\n\nPastikan route sudah benar dan pasien ada di database.`;
+                    alert(errorMsg);
+                    throw new Error('Route tidak ditemukan (404)');
+                }
+                
+                // Cek apakah ini error page 500
+                const is500Error = typeof response?.data === 'string' && (
+                    response.data.includes('500') ||
+                    response.data.includes('Server Error') ||
+                    response.status === 500
+                );
+                
+                if (is500Error) {
+                    alert('Terjadi kesalahan pada server (500). Silakan cek log Laravel untuk detail.');
+                    throw new Error('Server error (500)');
+                }
+                
+                // Generic HTML response error
+                const errorMsg = `Server mengembalikan HTML bukan JSON.\n\nKemungkinan:\n1. Route tidak ditemukan\n2. Middleware memblokir request\n3. CSRF token invalid\n\nURL: ${url}\nStatus: ${response?.status}\n\nSilakan cek log untuk detail.`;
+                alert(errorMsg);
+                throw new Error('Response adalah HTML, bukan JSON');
+            }
+
+            // Validasi response sebelum proses lebih lanjut
+            if (!response || !response.data) {
+                throw new Error('Response tidak valid dari server');
+            }
+            
+            // Pastikan response.data adalah object (bukan string HTML)
+            if (typeof response.data === 'string') {
+                throw new Error('Response data adalah string, bukan object JSON');
+            }
+
+            if (response.data.success === true || response.data.success === 'true' || response.data.success === 1) {
+                alert(response.data.message || 'Registrasi berhasil!');
+                // Simpan tanggal registrasi yang baru dibuat untuk filter
+                const newRegDate = response.data.data?.tgl_registrasi || formData.tgl_registrasi || todayDateString();
+                
                 // Setelah registrasi lokal berhasil, kirim antrean ke Mobile JKN hanya jika jenis bayar diizinkan (BPJ/PBI/NON)
                 try {
                     if (!isJenisBayarAllowedForAntrean(formData.kd_pj)) {
                         // Jenis bayar selain BPJ/PBI: hanya simpan lokal, tidak kirim antrean dan tidak tampilkan popup
-                        console.info(
-                            "Jenis bayar bukan BPJ/PBI, melewati pengiriman antrean Mobile JKN.",
-                            {
-                                kd_pj: formData.kd_pj,
-                                jenis: resolveJenisBayarFromKdPj(
-                                    formData.kd_pj
-                                ),
-                            }
-                        );
                     } else {
                         const reg = response.data.data || {};
                         const mjRes = await axios.post(
@@ -729,19 +1024,10 @@ export default function Registration({
                                                   2
                                               ),
                                 });
-                            } else {
-                                // Beri informasi sukses ringan; respons detail ditangani di backend
-                                console.log(
-                                    "Antrean Mobile JKN berhasil dikirim"
-                                );
                             }
                         }
                     }
                 } catch (err) {
-                    console.warn(
-                        "Gagal mengirim antrean Mobile JKN:",
-                        err?.response?.data || err?.message
-                    );
                     // Tampilkan popup respon BPJS dengan detail error
                     openBpjsPopup({
                         status: err?.response?.status ?? null,
@@ -763,17 +1049,87 @@ export default function Registration({
                                   ),
                     });
                 }
+
+                // Reset form dan modal terlebih dahulu
                 setIsModalOpen(false);
                 resetForm();
-                // Refresh registrations
-                loadRegistrations();
+                
+                // Set filter ke tanggal registrasi yang baru dibuat agar data baru langsung muncul
+                // Reset filter lainnya agar data baru pasti terlihat
+                const newFilters = {
+                    ...filters,
+                    date: newRegDate,
+                    start_date: "",
+                    end_date: "",
+                    kd_poli: "",
+                    kd_dokter: "",
+                    search: "",
+                    status: "",
+                    status_poli: "",
+                    per_page: filters.per_page || 50,
+                };
+                
+                // Update state filter
+                setFilters(newFilters);
+                
+                // Refresh registrations dengan filter baru dan reset ke halaman 1
+                // Langsung pass filter baru agar tidak perlu menunggu state update
+                // Tambahkan sedikit delay untuk memastikan state sudah ter-update
+                setTimeout(() => {
+                    loadRegistrations(1, newFilters);
+                }, 100);
+            } else {
+                // Response tidak sukses
+                const errorMsg = response.data.message || 'Registrasi gagal. Silakan coba lagi.';
+                alert(errorMsg);
             }
         } catch (error) {
-            console.error("Error registering patient:", error);
-            if (error.response?.data?.message) {
+            // Handle validation errors dari backend
+            if (error?.response?.status === 422) {
+                const validationErrors = error?.response?.data?.errors || {};
+                const errorMessages = Object.entries(validationErrors)
+                    .map(([field, messages]) => {
+                        const fieldLabels = {
+                            kd_dokter: 'Dokter',
+                            kd_poli: 'Poliklinik',
+                            kd_pj: 'Cara Bayar',
+                            p_jawab: 'Nama Penanggung Jawab',
+                            almt_pj: 'Alamat Penanggung Jawab',
+                            hubunganpj: 'Hubungan',
+                            tgl_registrasi: 'Tanggal Registrasi',
+                            jam_reg: 'Jam Registrasi',
+                        };
+                        const label = fieldLabels[field] || field;
+                        const msg = Array.isArray(messages) ? messages.join(', ') : messages;
+                        return `${label}: ${msg}`;
+                    })
+                    .join('\n');
+                
+                alert(`Validasi gagal:\n${errorMessages}`);
+            } else if (error?.response?.status === 404) {
+                alert('Endpoint tidak ditemukan. Pastikan URL benar.');
+            } else if (error?.response?.status === 403) {
+                alert('Anda tidak memiliki izin untuk melakukan aksi ini.');
+            } else if (error?.response?.status === 419 || error?.message?.includes('Session expired')) {
+                const errorMessage = error?.response?.data?.message || error?.message || 'Session expired. Silakan refresh halaman dan coba lagi.';
+                alert(errorMessage);
+                // Refresh halaman untuk mendapatkan session baru
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+                return;
+            } else if (error?.response?.status === 500) {
+                alert('Terjadi kesalahan pada server. Silakan cek log untuk detail.');
+            } else if (error?.response?.data?.message) {
+                // Error message dari backend
                 alert(error.response.data.message);
+            } else if (error?.code === 'NETWORK_ERROR' || error?.message?.includes('Network Error')) {
+                alert('Gagal terhubung ke server. Periksa koneksi internet Anda.');
+            } else if (error?.message) {
+                // Network atau error lainnya
+                alert(`Gagal mendaftarkan pasien: ${error.message}`);
             } else {
-                alert("Gagal mendaftarkan pasien");
+                alert('Gagal mendaftarkan pasien. Silakan coba lagi atau hubungi administrator.');
             }
         } finally {
             setIsSubmitting(false);
@@ -921,11 +1277,13 @@ export default function Registration({
     };
 
     // Load registrations with filters
-    const loadRegistrations = async (page = 1) => {
+    const loadRegistrations = async (page = 1, customFilters = null) => {
         setIsLoading(true);
         try {
+            // Gunakan customFilters jika disediakan, jika tidak gunakan state filters
+            const activeFilters = customFilters !== null ? customFilters : filters;
             // Hindari mengirim parameter kosong agar backend memakai default
-            const params = { ...filters, page };
+            const params = { ...activeFilters, page };
             Object.keys(params).forEach((key) => {
                 if (params[key] === "" || params[key] === null)
                     delete params[key];
@@ -1457,6 +1815,7 @@ export default function Registration({
                                                                       </div>
                                                                       <div className="flex flex-col gap-1">
                                                                           <motion.button
+                                                                              onClick={() => selectPatient(patient)}
                                                                               className="px-2 py-1 bg-blue-600 text-white text-[10px] rounded hover:bg-blue-700 transition-colors flex-shrink-0 w-full text-center"
                                                                               whileHover={{
                                                                                   scale: 1.05,
@@ -1634,6 +1993,7 @@ export default function Registration({
                                         {/* Form Registrasi */}
                                         <motion.form
                                             onSubmit={handleSubmitRegister}
+                                            noValidate
                                             className="space-y-2"
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
@@ -2827,6 +3187,7 @@ export default function Registration({
 
                                 <motion.form
                                     onSubmit={handleSubmitRegister}
+                                    noValidate
                                     className="space-y-3 lg:space-y-4"
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}

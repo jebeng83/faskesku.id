@@ -15,12 +15,12 @@ export default function CekStok() {
     const [loading, setLoading] = useState(false);
     const [mounted, setMounted] = useState(false);
 
-    const cekStokDataUrl = "/api/inventori/sisa-stok";
+    const cekStokDataUrl = "/farmasi/sisa-stok/data";
 
     useEffect(() => {
         const fetchLokasi = async () => {
             try {
-                const { data } = await axios.get("/api/pembelian/lokasi", {
+                const { data } = await axios.get("/farmasi/pembelian/lokasi", {
                     headers: { Accept: "application/json" },
                     withCredentials: true,
                 });
