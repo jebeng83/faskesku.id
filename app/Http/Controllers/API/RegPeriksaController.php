@@ -86,7 +86,7 @@ class RegPeriksaController extends Controller
                 });
             }
 
-            $perPage = $request->get('per_page', 15);
+            $perPage = (int) ($request->query('per_page', 15));
             $regPeriksas = $query->orderBy('tgl_registrasi', 'desc')
                 ->orderBy('jam_reg', 'desc')
                 ->paginate($perPage);
@@ -480,8 +480,8 @@ class RegPeriksaController extends Controller
     public function getStatistik(Request $request): JsonResponse
     {
         try {
-            $tanggalAwal = $request->get('tanggal_awal', Carbon::now()->startOfMonth());
-            $tanggalAkhir = $request->get('tanggal_akhir', Carbon::now()->endOfMonth());
+            $tanggalAwal = $request->query('tanggal_awal', Carbon::now()->startOfMonth());
+            $tanggalAkhir = $request->query('tanggal_akhir', Carbon::now()->endOfMonth());
 
             $query = RegPeriksa::byRangeTanggal($tanggalAwal, $tanggalAkhir);
 

@@ -7,6 +7,8 @@ window.axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 window.axios.defaults.withCredentials = true;
 // Set Accept header untuk Sanctum stateful API authentication
 window.axios.defaults.headers.common["Accept"] = "application/json";
+window.axios.defaults.xsrfCookieName = "XSRF-TOKEN";
+window.axios.defaults.xsrfHeaderName = "X-XSRF-TOKEN";
 
 // --- Ziggy URL/Port Auto-Sync ---
 // Beberapa environment lokal sering berpindah port (mis. 8000, 8016, dsb.).
@@ -104,16 +106,24 @@ if (token) {
 // Jika terjadi 419 (Page Expired / CSRF mismatch), coba refresh token terlebih dahulu
 // lalu ulangi 1x request yang gagal. Ini membantu saat token berubah akibat rotasi session.
 const refreshCsrfToken = async () => {
-    // Ambil ulang token dari meta tag dan set ke axios default
     try {
-        const mt = document.head.querySelector('meta[name="csrf-token"]');
-        const newToken = mt?.content || "";
-        if (newToken) {
-            window.axios.defaults.headers.common["X-CSRF-TOKEN"] = newToken;
+        await window.axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+        const p = '; ' + document.cookie;
+        const r = p.split('; XSRF-TOKEN=');
+        const c = r.length === 2 ? decodeURIComponent(r.pop().split(';').shift()) : '';
+        if (c) {
+            window.axios.defaults.headers.common['X-CSRF-TOKEN'] = c;
+            window.axios.defaults.headers.common['X-XSRF-TOKEN'] = c;
+            return c;
         }
-        return newToken;
+        const mt = document.head.querySelector('meta[name="csrf-token"]');
+        const t = mt?.content || '';
+        if (t) {
+            window.axios.defaults.headers.common['X-CSRF-TOKEN'] = t;
+        }
+        return t;
     } catch (_) {
-        return "";
+        return '';
     }
 };
 
@@ -123,30 +133,53 @@ window.axios.interceptors.response.use(
         const status = error?.response?.status;
         const is419 = status === 419;
         const is401 = status === 401;
-        const isCsrfMismatch =
-            typeof error?.response?.data === "string" &&
-            /CSRF|Page Expired/i.test(error.response.data);
+        
+        // Cek CSRF mismatch dari string response atau JSON response
+        const responseData = error?.response?.data;
+        const isCsrfMismatchString =
+            typeof responseData === "string" &&
+            /CSRF|Page Expired/i.test(responseData);
+        const isCsrfMismatchJson =
+            typeof responseData === "object" &&
+            responseData !== null &&
+            (responseData.error_code === "CSRF_TOKEN_EXPIRED" ||
+             /CSRF|Page Expired/i.test(responseData.message || ""));
 
         // Hindari loop retry tak terbatas
         const alreadyRetried = error?.config?.headers?.["X-CSRF-RETRY"] === "1";
 
-        if ((is419 || isCsrfMismatch) && !alreadyRetried) {
+        if ((is419 || isCsrfMismatchString || isCsrfMismatchJson) && !alreadyRetried) {
             try {
-                await refreshCsrfToken();
+                console.log('[Axios Interceptor] 🔄 CSRF token expired, refreshing and retrying...');
+                const newToken = await refreshCsrfToken();
+                
+                // Update meta tag jika ada
+                const metaToken = document.head.querySelector('meta[name="csrf-token"]');
+                if (metaToken && newToken) {
+                    metaToken.setAttribute('content', newToken);
+                }
+                
                 const retryConfig = {
                     ...error.config,
                     headers: {
                         ...(error.config?.headers || {}),
                         "X-CSRF-RETRY": "1",
-                        // Perbarui header token saat ini
-                        "X-CSRF-TOKEN":
+                        // Perbarui header token dengan token yang baru
+                        "X-CSRF-TOKEN": newToken || 
                             document.head.querySelector('meta[name="csrf-token"]')?.content ||
                             window.axios.defaults.headers.common["X-CSRF-TOKEN"] ||
                             "",
+                        "X-XSRF-TOKEN": newToken || 
+                            document.head.querySelector('meta[name="csrf-token"]')?.content ||
+                            window.axios.defaults.headers.common["X-XSRF-TOKEN"] ||
+                            "",
                     },
                 };
+                
+                console.log('[Axios Interceptor] ✅ Retrying request with new CSRF token');
                 return window.axios.request(retryConfig);
             } catch (e) {
+                console.error('[Axios Interceptor] ❌ Failed to refresh CSRF token and retry:', e);
                 // Jika refresh+retry gagal, teruskan error aslinya
                 return Promise.reject(error);
             }

@@ -84,12 +84,12 @@ Route::get('/antrian/loket', function () {
     $todayPoli = [];
     if (Schema::hasTable('setting')) {
         $fields = [];
-        foreach (['nama_instansi','alamat_instansi','kabupaten','propinsi','kontak','email','kode_ppk'] as $col) {
+        foreach (['nama_instansi', 'alamat_instansi', 'kabupaten', 'propinsi', 'kontak', 'email', 'kode_ppk'] as $col) {
             if (Schema::hasColumn('setting', $col)) {
                 $fields[] = $col;
             }
         }
-        if (!empty($fields)) {
+        if (! empty($fields)) {
             $query = DB::table('setting')->select($fields);
             if (Schema::hasColumn('setting', 'aktifkan')) {
                 $query->where('aktifkan', 'Yes');
@@ -109,7 +109,7 @@ Route::get('/antrian/loket', function () {
     }
     // Poliklinik dengan jadwal pada hari ini
     if (Schema::hasTable('jadwal') && Schema::hasTable('poliklinik')) {
-        $hariMap = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+        $hariMap = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
         $hari = $hariMap[(int) date('w')] ?? date('l');
         $hasHari = Schema::hasColumn('jadwal', 'hari_kerja');
         $hasKdPoliJ = Schema::hasColumn('jadwal', 'kd_poli');
@@ -131,6 +131,7 @@ Route::get('/antrian/loket', function () {
             })->all();
         }
     }
+
     return Inertia::render('Antrian/AntrialLoket', [
         'setting' => $setting,
         'today_poli' => $todayPoli,
@@ -141,12 +142,12 @@ Route::get('/antrian/display', function () {
     $setting = null;
     if (Schema::hasTable('setting')) {
         $fields = [];
-        foreach (['nama_instansi','alamat_instansi','kabupaten','propinsi','kontak','email','kode_ppk'] as $col) {
+        foreach (['nama_instansi', 'alamat_instansi', 'kabupaten', 'propinsi', 'kontak', 'email', 'kode_ppk'] as $col) {
             if (Schema::hasColumn('setting', $col)) {
                 $fields[] = $col;
             }
         }
-        if (!empty($fields)) {
+        if (! empty($fields)) {
             $query = DB::table('setting')->select($fields);
             if (Schema::hasColumn('setting', 'aktifkan')) {
                 $query->where('aktifkan', 'Yes');
@@ -164,6 +165,7 @@ Route::get('/antrian/display', function () {
             }
         }
     }
+
     return Inertia::render('Antrian/DisplayLoket', [
         'setting' => $setting,
     ]);
@@ -460,7 +462,8 @@ Route::middleware('auth')->group(function () {
         ->name('registration.lanjutan')
         ->middleware('menu.permission');
     Route::get('/registration/search-patients', [RegistrationController::class, 'searchPatients'])->name('registration.search-patients');
-    Route::post('/registration/{patient}/register', [RegistrationController::class, 'registerPatient'])->name('registration.register-patient');
+    Route::post('/registration/{patient}/register', [RegistrationController::class, 'registerPatient'])
+        ->name('registration.register-patient');
     Route::get('/registration/{patient}/check-poli-status', [RegistrationController::class, 'checkPatientPoliStatus'])->name('registration.check-poli-status');
     Route::get('/registration/get-registrations', [RegistrationController::class, 'getRegistrations'])->name('registration.get-registrations');
     // Statistik kunjungan poli per bulan (untuk Dashboard)
@@ -759,6 +762,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/hutang-obat', function () {
             return Inertia::render('farmasi/HutangObat');
         })->name('hutang-obat');
+        Route::get('/hutang-obat/data', [\App\Http\Controllers\Farmasi\PemesananController::class, 'listHutang'])
+            ->name('hutang-obat.data');
 
         Route::get('/penjualan-obat', function () {
             return Inertia::render('farmasi/PenjualanObat');
@@ -777,6 +782,9 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('farmasi/RiwayatTransaksiGudang');
         })->name('riwayat-transaksi-gudang');
 
+        Route::get('/riwayat-transaksi-gudang/data', [\App\Http\Controllers\Farmasi\RiwayatTransaksiGudangController::class, 'data'])
+            ->name('riwayat-transaksi-gudang.data');
+
         // Riwayat Barang Medis (Inertia page + JSON data endpoint)
         Route::get('/riwayat-barang-medis', [\App\Http\Controllers\Farmasi\RiwayatBarangMedisController::class, 'index'])
             ->name('riwayat-barang-medis');
@@ -792,15 +800,23 @@ Route::middleware('auth')->group(function () {
         Route::get('/darurat-stok', function () {
             return Inertia::render('farmasi/DaruratStok');
         })->name('darurat-stok');
+        Route::get('/darurat-stok/data', [\App\Http\Controllers\Farmasi\DaruratStokController::class, 'index'])
+            ->name('darurat-stok.data');
         Route::get('/sirkulasi-obat', function () {
             return Inertia::render('farmasi/SirkulasiObat');
         })->name('sirkulasi-obat');
+        Route::get('/sirkulasi-obat/data', [\App\Http\Controllers\Farmasi\SirkulasiObatController::class, 'index'])
+            ->name('sirkulasi-obat.data');
         Route::get('/cek-stok-obat', function () {
             return Inertia::render('farmasi/CekStok');
         })->name('cek-stok-obat');
+        Route::get('/pembelian/lokasi', [\App\Http\Controllers\Farmasi\PembelianController::class, 'getLokasi']);
+        Route::get('/akun-bayar', [\App\Http\Controllers\Farmasi\PembelianController::class, 'getAkunBayar']);
         Route::get('/sisa-stok', function () {
             return Inertia::render('farmasi/SisaStok');
         })->name('sisa-stok');
+        Route::get('/sisa-stok/data', [\App\Http\Controllers\Farmasi\SisaStokController::class, 'index'])
+            ->name('sisa-stok.data');
 
         // Farmasi - Data Opname (laporan/daftar hasil opname)
         Route::get('/data-opname', function () {
