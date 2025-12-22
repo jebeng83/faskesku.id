@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, usePage } from "@inertiajs/react";
 import { route } from "ziggy-js";
+import MobileBottomNav from "@/Components/MobileBottomNav";
 import {
     LayoutDashboard,
     Settings,
@@ -454,11 +455,12 @@ export default function SidebarPengaturan({
                 <div
                     className={`${
                         wide ? "max-w-[120rem]" : "max-w-7xl"
-                    } mx-auto px-2 sm:px-4 py-6`}
+                    } mx-auto px-2 sm:px-4 pt-6 pb-24`}
                 >
                     {children}
                 </div>
             </main>
+            <MobileBottomNav />
         </div>
     );
 }

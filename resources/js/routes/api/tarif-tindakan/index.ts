@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\TarifTindakanController::index
-* @see app/Http/Controllers/TarifTindakanController.php:21
+* @see app/Http/Controllers/TarifTindakanController.php:22
 * @route '/api/tarif-tindakan'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::index
-* @see app/Http/Controllers/TarifTindakanController.php:21
+* @see app/Http/Controllers/TarifTindakanController.php:22
 * @route '/api/tarif-tindakan'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::index
-* @see app/Http/Controllers/TarifTindakanController.php:21
+* @see app/Http/Controllers/TarifTindakanController.php:22
 * @route '/api/tarif-tindakan'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::index
-* @see app/Http/Controllers/TarifTindakanController.php:21
+* @see app/Http/Controllers/TarifTindakanController.php:22
 * @route '/api/tarif-tindakan'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::getDokter
-* @see app/Http/Controllers/TarifTindakanController.php:556
+* @see app/Http/Controllers/TarifTindakanController.php:820
 * @route '/api/tarif-tindakan/dokter'
 */
 export const getDokter = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,7 +60,7 @@ getDokter.definition = {
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::getDokter
-* @see app/Http/Controllers/TarifTindakanController.php:556
+* @see app/Http/Controllers/TarifTindakanController.php:820
 * @route '/api/tarif-tindakan/dokter'
 */
 getDokter.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ getDokter.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::getDokter
-* @see app/Http/Controllers/TarifTindakanController.php:556
+* @see app/Http/Controllers/TarifTindakanController.php:820
 * @route '/api/tarif-tindakan/dokter'
 */
 getDokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -79,7 +79,7 @@ getDokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::getDokter
-* @see app/Http/Controllers/TarifTindakanController.php:556
+* @see app/Http/Controllers/TarifTindakanController.php:820
 * @route '/api/tarif-tindakan/dokter'
 */
 getDokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -89,7 +89,7 @@ getDokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::getPetugas
-* @see app/Http/Controllers/TarifTindakanController.php:577
+* @see app/Http/Controllers/TarifTindakanController.php:841
 * @route '/api/tarif-tindakan/petugas'
 */
 export const getPetugas = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -104,7 +104,7 @@ getPetugas.definition = {
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::getPetugas
-* @see app/Http/Controllers/TarifTindakanController.php:577
+* @see app/Http/Controllers/TarifTindakanController.php:841
 * @route '/api/tarif-tindakan/petugas'
 */
 getPetugas.url = (options?: RouteQueryOptions) => {
@@ -113,7 +113,7 @@ getPetugas.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::getPetugas
-* @see app/Http/Controllers/TarifTindakanController.php:577
+* @see app/Http/Controllers/TarifTindakanController.php:841
 * @route '/api/tarif-tindakan/petugas'
 */
 getPetugas.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -123,7 +123,7 @@ getPetugas.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::getPetugas
-* @see app/Http/Controllers/TarifTindakanController.php:577
+* @see app/Http/Controllers/TarifTindakanController.php:841
 * @route '/api/tarif-tindakan/petugas'
 */
 getPetugas.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -133,7 +133,7 @@ getPetugas.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::storeDokter
-* @see app/Http/Controllers/TarifTindakanController.php:142
+* @see app/Http/Controllers/TarifTindakanController.php:406
 * @route '/api/tarif-tindakan/dokter'
 */
 export const storeDokter = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -148,7 +148,7 @@ storeDokter.definition = {
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::storeDokter
-* @see app/Http/Controllers/TarifTindakanController.php:142
+* @see app/Http/Controllers/TarifTindakanController.php:406
 * @route '/api/tarif-tindakan/dokter'
 */
 storeDokter.url = (options?: RouteQueryOptions) => {
@@ -157,7 +157,7 @@ storeDokter.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::storeDokter
-* @see app/Http/Controllers/TarifTindakanController.php:142
+* @see app/Http/Controllers/TarifTindakanController.php:406
 * @route '/api/tarif-tindakan/dokter'
 */
 storeDokter.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -167,7 +167,7 @@ storeDokter.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::storePerawat
-* @see app/Http/Controllers/TarifTindakanController.php:195
+* @see app/Http/Controllers/TarifTindakanController.php:459
 * @route '/api/tarif-tindakan/perawat'
 */
 export const storePerawat = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -182,7 +182,7 @@ storePerawat.definition = {
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::storePerawat
-* @see app/Http/Controllers/TarifTindakanController.php:195
+* @see app/Http/Controllers/TarifTindakanController.php:459
 * @route '/api/tarif-tindakan/perawat'
 */
 storePerawat.url = (options?: RouteQueryOptions) => {
@@ -191,7 +191,7 @@ storePerawat.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::storePerawat
-* @see app/Http/Controllers/TarifTindakanController.php:195
+* @see app/Http/Controllers/TarifTindakanController.php:459
 * @route '/api/tarif-tindakan/perawat'
 */
 storePerawat.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -201,7 +201,7 @@ storePerawat.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::storeDokterPerawat
-* @see app/Http/Controllers/TarifTindakanController.php:248
+* @see app/Http/Controllers/TarifTindakanController.php:512
 * @route '/api/tarif-tindakan/dokter-perawat'
 */
 export const storeDokterPerawat = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -216,7 +216,7 @@ storeDokterPerawat.definition = {
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::storeDokterPerawat
-* @see app/Http/Controllers/TarifTindakanController.php:248
+* @see app/Http/Controllers/TarifTindakanController.php:512
 * @route '/api/tarif-tindakan/dokter-perawat'
 */
 storeDokterPerawat.url = (options?: RouteQueryOptions) => {
@@ -225,7 +225,7 @@ storeDokterPerawat.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::storeDokterPerawat
-* @see app/Http/Controllers/TarifTindakanController.php:248
+* @see app/Http/Controllers/TarifTindakanController.php:512
 * @route '/api/tarif-tindakan/dokter-perawat'
 */
 storeDokterPerawat.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -235,7 +235,7 @@ storeDokterPerawat.post = (options?: RouteQueryOptions): RouteDefinition<'post'>
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::stageRalan
-* @see app/Http/Controllers/TarifTindakanController.php:85
+* @see app/Http/Controllers/TarifTindakanController.php:349
 * @route '/api/tarif-tindakan/stage-ralan'
 */
 export const stageRalan = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -250,7 +250,7 @@ stageRalan.definition = {
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::stageRalan
-* @see app/Http/Controllers/TarifTindakanController.php:85
+* @see app/Http/Controllers/TarifTindakanController.php:349
 * @route '/api/tarif-tindakan/stage-ralan'
 */
 stageRalan.url = (options?: RouteQueryOptions) => {
@@ -259,7 +259,7 @@ stageRalan.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::stageRalan
-* @see app/Http/Controllers/TarifTindakanController.php:85
+* @see app/Http/Controllers/TarifTindakanController.php:349
 * @route '/api/tarif-tindakan/stage-ralan'
 */
 stageRalan.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -269,7 +269,7 @@ stageRalan.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::riwayat
-* @see app/Http/Controllers/TarifTindakanController.php:304
+* @see app/Http/Controllers/TarifTindakanController.php:568
 * @route '/api/tarif-tindakan/riwayat/{noRawat}'
 */
 export const riwayat = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -284,7 +284,7 @@ riwayat.definition = {
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::riwayat
-* @see app/Http/Controllers/TarifTindakanController.php:304
+* @see app/Http/Controllers/TarifTindakanController.php:568
 * @route '/api/tarif-tindakan/riwayat/{noRawat}'
 */
 riwayat.url = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -311,7 +311,7 @@ riwayat.url = (args: { noRawat: string | number } | [noRawat: string | number ] 
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::riwayat
-* @see app/Http/Controllers/TarifTindakanController.php:304
+* @see app/Http/Controllers/TarifTindakanController.php:568
 * @route '/api/tarif-tindakan/riwayat/{noRawat}'
 */
 riwayat.get = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -321,7 +321,7 @@ riwayat.get = (args: { noRawat: string | number } | [noRawat: string | number ] 
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::riwayat
-* @see app/Http/Controllers/TarifTindakanController.php:304
+* @see app/Http/Controllers/TarifTindakanController.php:568
 * @route '/api/tarif-tindakan/riwayat/{noRawat}'
 */
 riwayat.head = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -331,7 +331,7 @@ riwayat.head = (args: { noRawat: string | number } | [noRawat: string | number ]
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::deleteMethod
-* @see app/Http/Controllers/TarifTindakanController.php:404
+* @see app/Http/Controllers/TarifTindakanController.php:668
 * @route '/api/tarif-tindakan'
 */
 export const deleteMethod = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -346,7 +346,7 @@ deleteMethod.definition = {
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::deleteMethod
-* @see app/Http/Controllers/TarifTindakanController.php:404
+* @see app/Http/Controllers/TarifTindakanController.php:668
 * @route '/api/tarif-tindakan'
 */
 deleteMethod.url = (options?: RouteQueryOptions) => {
@@ -355,7 +355,7 @@ deleteMethod.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::deleteMethod
-* @see app/Http/Controllers/TarifTindakanController.php:404
+* @see app/Http/Controllers/TarifTindakanController.php:668
 * @route '/api/tarif-tindakan'
 */
 deleteMethod.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -365,7 +365,7 @@ deleteMethod.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> =
 
 /**
 * @see \App\Http\Controllers\TarifTindakanController::deleteMethod
-* @see app/Http/Controllers/TarifTindakanController.php:404
+* @see app/Http/Controllers/TarifTindakanController.php:668
 * @route '/api/tarif-tindakan'
 */
 deleteMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

@@ -1,12 +1,102 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Head, Link } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
+import axios from "axios";
 
 export default function Lanjutan() {
   // Set tab aktif ke "registrasi" agar item sidebar "Registrasi" disorot pada halaman ini
   const [activeTab, setActiveTab] = useState("registrasi");
+  const [queueCurrent, setQueueCurrent] = useState(null);
+  const [queueLastCalledNumber, setQueueLastCalledNumber] = useState(null);
+  const [queueStatusCode, setQueueStatusCode] = useState(null);
+
+  const formatQueueLabel = (nomor, prefix) => {
+    if (!nomor) return "-";
+    const padded = String(nomor).padStart(3, "0");
+    return prefix ? `${prefix}-${padded}` : padded;
+  };
+
+  const getApiBaseCandidates = () => {
+    const c = [];
+    try {
+      const envUrl = import.meta?.env?.VITE_BACKEND_URL;
+      if (envUrl) c.push(envUrl);
+    } catch (_) {}
+    c.push(window.location.origin);
+    c.push("http://127.0.0.1:8000");
+    c.push("http://localhost:8000");
+    return c;
+  };
+
+  const httpGet = async (path) => {
+    const bases = getApiBaseCandidates();
+    let lastErr = null;
+    for (const base of bases) {
+      try {
+        const url = new URL(path, base).href;
+        const res = await axios.get(url, { headers: { Accept: "application/json" } });
+        return res;
+      } catch (e) {
+        lastErr = e;
+        const status = e?.response?.status;
+        if (status && status !== 404) throw e;
+      }
+    }
+    throw lastErr || new Error("API not reachable");
+  };
+
+  const httpPost = async (path, data) => {
+    const bases = getApiBaseCandidates();
+    let lastErr = null;
+    for (const base of bases) {
+      try {
+        const url = new URL(path, base).href;
+        const res = await axios.post(url, data, { headers: { Accept: "application/json" } });
+        return res;
+      } catch (e) {
+        lastErr = e;
+        const status = e?.response?.status;
+        if (status && status !== 404) throw e;
+      }
+    }
+    throw lastErr || new Error("API not reachable");
+  };
+
+  const fetchQueueCurrent = async () => {
+    try {
+      const res = await httpGet("/api/queue/current");
+      const d = res?.data || {};
+      const n = d.nomor ?? d.number;
+      if (n) {
+        setQueueCurrent({ nomor: n, prefix: d.prefix || "" });
+        const s = String(d.status || "").toLowerCase();
+        setQueueStatusCode(s === "dipanggil" ? 1 : 0);
+      } else {
+        setQueueCurrent(null);
+        setQueueStatusCode(null);
+      }
+    } catch (_) {
+      setQueueCurrent(null);
+      setQueueStatusCode(null);
+    }
+  };
+
+  useEffect(() => { fetchQueueCurrent(); }, []);
+
+  const handleCallLoketQueue = async (repeat = false) => {
+    if (!queueCurrent?.nomor && !queueLastCalledNumber) return;
+    try {
+      const targetNomor = repeat ? (queueLastCalledNumber ?? queueCurrent?.nomor) : queueCurrent.nomor;
+      await httpPost("/api/queue/call", { nomor: targetNomor, loket: 1 });
+      if (!repeat) {
+        setQueueLastCalledNumber(queueCurrent.nomor);
+        setQueueStatusCode(1);
+      }
+    } catch (_) {
+    }
+  };
 
   const menuTabs = [
     {
@@ -173,6 +263,17 @@ export default function Lanjutan() {
                   <h1 className="text-3xl font-bold mb-2">Registrasi Pasien</h1>
                   <p className="text-sm text-blue-100">Kelola pendaftaran pasien, dokter, dan poliklinik</p>
                 </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="px-2 py-1 rounded-md bg-white/10 border border-white/20">
+                  <span className="text-[11px] font-semibold text-blue-100">Nomor Antrean</span>
+                  <div className="flex items-center gap-2">
+                    <div className="text-base font-extrabold tracking-tight">{formatQueueLabel(queueCurrent?.nomor, queueCurrent?.prefix)}</div>
+                    <span className="text-[11px] font-semibold text-blue-100">{queueStatusCode ?? '-'}</span>
+                  </div>
+                </div>
+                <motion.button disabled={!queueCurrent?.nomor} onClick={() => handleCallLoketQueue(false)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-white/20 text-white hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Panggil</motion.button>
+                <motion.button disabled={!queueCurrent?.nomor && !queueLastCalledNumber} onClick={() => handleCallLoketQueue(true)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Ulang</motion.button>
               </div>
             </div>
           </div>

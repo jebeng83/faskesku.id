@@ -1,5 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
 import app from './app'
+import dashboard from './dashboard'
 /**
 * @see \App\Http\Controllers\setting\SettingController::index
 * @see app/Http/Controllers/setting/SettingController.php:57
@@ -233,6 +234,7 @@ const setting = {
     update: Object.assign(update, update),
     destroy: Object.assign(destroy, destroy),
     app: Object.assign(app, app),
+    dashboard: Object.assign(dashboard, dashboard),
 }
 
 export default setting

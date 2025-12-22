@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Head, Link } from '@inertiajs/react';
-import { route } from 'ziggy-js';
+import { Head } from '@inertiajs/react';
 import LanjutanRalanLayout from '@/Layouts/LanjutanRalanLayout';
-import RiwayatPemeriksaan from './components/RiwayatPemeriksaan';
-import CpptSoap from '../RawatJalan/components/CpptSoap';
-import Resep from './components/Resep';
+import RiwayatKunjunganRanap from './components/RiwayatKunjungan';
+import CpptSoap from './components/CpptSoap';
 import Diagnosa from './components/Diagnosa';
 import PermintaanLab from './components/PermintaanLab';
 import PermintaanRadiologi from './components/PermintaanRadiologi';
 import TarifTindakan from './components/TarifTindakan';
 import Operasi from './components/Operasi';
 import Konsultasi from './components/Konsultasi';
+import Resep from './components/Resep';
 
 export default function Lanjutan({ rawatInap, params }) {
     const [activeTab, setActiveTab] = useState('cppt');
-    const [openAcc, setOpenAcc] = useState({ pemeriksaan: true });
+    const [openAcc, setOpenAcc] = useState({ riwayatKunjungan: true });
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const isRanap = String(rawatInap?.status_lanjut || '').toLowerCase() === 'ranap';
 
     const handleTabChange = (tab) => setActiveTab(tab);
     const toggle = (section) => setOpenAcc(prev => ({ ...prev, [section]: !prev[section] }));
@@ -54,19 +54,35 @@ export default function Lanjutan({ rawatInap, params }) {
         const commonProps = {
             token: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('t') : '',
             noRkmMedis: params?.no_rkm_medis || rawatInap?.patient?.no_rkm_medis,
-            noRawat: params?.no_rawat || rawatInap?.no_rawat
+            noRawat: params?.no_rawat || rawatInap?.no_rawat,
+            kdBangsal: rawatInap?.kd_bangsal || '',
+            kdPj: rawatInap?.kd_pj || '',
         };
 
         switch (activeTab) {
-            case 'cppt': return <CpptSoap {...commonProps} onOpenResep={() => handleTabChange('resep')} />;
-            case 'operasi': return <Operasi {...commonProps} />;
-            case 'konsultasi': return <Konsultasi {...commonProps} />;
-            case 'tarifTindakan': return <TarifTindakan {...commonProps} />;
-            case 'resep': return <Resep {...commonProps} kdPoli={rawatInap?.kd_poli || ''} />;
-            case 'diagnosa': return <Diagnosa {...commonProps} />;
-            case 'lab': return <PermintaanLab {...commonProps} />;
-            case 'radiologi': return <PermintaanRadiologi {...commonProps} />;
-            default: return <CpptSoap {...commonProps} />;
+            case 'cppt':
+                return <CpptSoap {...commonProps} />;
+            case 'operasi':
+                return <Operasi {...commonProps} />;
+            case 'konsultasi':
+                return <Konsultasi {...commonProps} />;
+            case 'tarifTindakan':
+                return <TarifTindakan {...commonProps} />;
+            case 'resep':
+                return (
+                    <Resep
+                        {...commonProps}
+                        kdPoli={rawatInap?.kd_poli || params?.kd_poli || ''}
+                    />
+                );
+            case 'diagnosa':
+                return <Diagnosa {...commonProps} />;
+            case 'lab':
+                return <PermintaanLab {...commonProps} />;
+            case 'radiologi':
+                return <PermintaanRadiologi {...commonProps} />;
+            default:
+                return <CpptSoap {...commonProps} />;
         }
     };
 
@@ -134,62 +150,38 @@ export default function Lanjutan({ rawatInap, params }) {
                     </div>
                 </div>
 
-                {/* Tab Navigation */}
-                <div className="bg-white rounded-2xl border shadow-sm mb-6">
-                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b">
-                        <h3 className="text-lg font-semibold">Menu Perawatan Inap</h3>
-                        <p className="text-sm text-gray-500 mt-1">Pilih menu untuk mengelola perawatan pasien</p>
-                    </div>
-                    <div className="px-6 py-4 bg-gray-50 border-b">
-                        <div className="flex flex-wrap gap-2">
-                            {menuTabs.map((tab) => {
-                                const isActive = activeTab === tab.key;
-                                return (
-                                    <button
-                                        key={tab.key}
-                                        onClick={() => handleTabChange(tab.key)}
-                                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg border-2 transition-all duration-200 font-medium text-sm ${getTabColorClasses(tab.color, isActive)} ${isActive ? 'border-current shadow-sm' : 'border-transparent'}`}
-                                    >
-                                        {tab.icon}
-                                        <span>{tab.title}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </div>
 
                 {/* Content Area */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Left - Medical History */}
+                <div className={`grid grid-cols-1 ${isRanap ? 'lg:grid-cols-2' : 'lg:grid-cols-1'} gap-6`}>
+                    {/* Left - Riwayat Kunjungan (hanya Ranap) */}
+                    {isRanap && (
                     <div className="bg-white rounded-2xl border shadow-sm overflow-hidden sticky top-6">
                         <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-3 border-b">
-                            <button onClick={() => toggle('pemeriksaan')} className="w-full flex items-center justify-between text-left group rounded-lg p-2 transition-all duration-200">
+                            <button onClick={() => toggle('riwayatKunjungan')} className="w-full flex items-center justify-between text-left group rounded-lg p-2 transition-all duration-200">
                                 <div className="flex items-center gap-3">
-                                    <div className={`w-3 h-3 rounded-full transition-colors ${openAcc.pemeriksaan ? 'bg-indigo-500' : 'bg-gray-400'}`}></div>
+                                    <div className={`w-3 h-3 rounded-full transition-colors ${openAcc.riwayatKunjungan ? 'bg-indigo-500' : 'bg-gray-400'}`}></div>
                                     <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                                     </svg>
                                     <div>
-                                        <h3 className="text-sm font-semibold">Riwayat Perawatan</h3>
-                                        <p className="text-xs text-gray-500">History pemeriksaan rawat inap</p>
+                                        <h3 className="text-sm font-semibold">Riwayat Kunjungan</h3>
                                     </div>
                                 </div>
-                                <svg className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${openAcc.pemeriksaan ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${openAcc.riwayatKunjungan ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
                         </div>
-                        {openAcc.pemeriksaan && (
+                        {openAcc.riwayatKunjungan && (
                             <div className="p-4 max-h-[700px] overflow-y-auto">
-                                <RiwayatPemeriksaan
+                                <RiwayatKunjunganRanap
                                     token={typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('t') : ''}
-                                    noRawat={params?.no_rawat || rawatInap?.no_rawat}
                                     noRkmMedis={params?.no_rkm_medis || rawatInap?.patient?.no_rkm_medis}
                                 />
                             </div>
                         )}
                     </div>
+                    )}
 
                     {/* Right - Active Tab Content */}
                     <div className="space-y-4">

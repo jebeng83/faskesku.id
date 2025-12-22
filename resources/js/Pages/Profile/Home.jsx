@@ -55,18 +55,18 @@ const tabs = [
         label: "Pengaturan Aplikasi",
         items: [
             {
-                title: "Setting Aplikasi",
-                description: "CRUD konfigurasi inti aplikasi",
-                href: route("setting.index"),
-                icon: Cog6ToothIcon,
-                accent: "from-sky-500 to-blue-500",
-            },
-            {
                 title: "App Settings",
                 description: "Pengaturan branding dan aset",
                 href: route("setting.app.index"),
                 icon: ClipboardDocumentListIcon,
                 accent: "from-indigo-500 to-purple-500",
+            },
+            {
+                title: "Highlight & Prioritas",
+                description: "Pengaturan highlight tim dan tindakan prioritas",
+                href: route("setting.dashboard.index"),
+                icon: Cog6ToothIcon,
+                accent: "from-amber-500 to-orange-500",
             },
         ],
     },
@@ -221,33 +221,35 @@ export default function ProfileHome() {
                 </div>
 
                 <motion.div className="relative" layout>
-                    <div className="flex gap-8 border-b border-gray-200 dark:border-gray-800">
-                        {tabs.map((tab) => (
-                            <motion.button
-                                key={tab.key}
-                                layout
-                                onClick={() => setActiveTab(tab.key)}
-                                className={`relative -mb-px pb-3 text-sm font-medium transition-colors ${
-                                    activeTab === tab.key
-                                        ? "text-blue-600 dark:text-blue-400"
-                                        : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                                }`}
-                                whileTap={{ scale: 0.98 }}
-                            >
-                                {tab.label}
-                                {activeTab === tab.key && (
-                                    <motion.div
-                                        layoutId="profileTabIndicator"
-                                        transition={{
-                                            type: "spring",
-                                            stiffness: 300,
-                                            damping: 30,
-                                        }}
-                                        className="absolute left-0 right-0 -bottom-[1px] h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"
-                                    />
-                                )}
-                            </motion.button>
-                        ))}
+                    <div className="-mx-4 sm:mx-0 overflow-x-auto scrollbar-hide">
+                        <div className="flex min-w-max gap-4 sm:gap-8 border-b border-gray-200 dark:border-gray-800 px-4 sm:px-0">
+                            {tabs.map((tab) => (
+                                <motion.button
+                                    key={tab.key}
+                                    layout
+                                    onClick={() => setActiveTab(tab.key)}
+                                    className={`relative -mb-px pb-3 text-sm font-medium whitespace-nowrap transition-colors ${
+                                        activeTab === tab.key
+                                            ? "text-blue-600 dark:text-blue-400"
+                                            : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                    }`}
+                                    whileTap={{ scale: 0.98 }}
+                                >
+                                    {tab.label}
+                                    {activeTab === tab.key && (
+                                        <motion.div
+                                            layoutId="profileTabIndicator"
+                                            transition={{
+                                                type: "spring",
+                                                stiffness: 300,
+                                                damping: 30,
+                                            }}
+                                            className="absolute left-0 right-0 -bottom-[1px] h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"
+                                        />
+                                    )}
+                                </motion.button>
+                            ))}
+                        </div>
                     </div>
                 </motion.div>
 

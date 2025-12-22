@@ -9,6 +9,7 @@ export default function RoleForm({ role, permissions, onSubmit, onCancel }) {
 	});
 	const [errors, setErrors] = useState({});
 	const [loading, setLoading] = useState(false);
+	const [permissionSearch, setPermissionSearch] = useState("");
 
 	useEffect(() => {
 		if (role) {
@@ -48,7 +49,16 @@ export default function RoleForm({ role, permissions, onSubmit, onCancel }) {
 	const handleSelectAll = () => {
 		setFormData((prev) => ({
 			...prev,
-			permissions: permissions.map((p) => p.id),
+			permissions: permissions.reduce((ids, permission) => {
+				if (
+					permission.name
+						.toLowerCase()
+						.includes(permissionSearch.toLowerCase())
+				) {
+					ids.push(permission.id);
+				}
+				return ids;
+			}, []),
 		}));
 	};
 
@@ -73,8 +83,11 @@ export default function RoleForm({ role, permissions, onSubmit, onCancel }) {
 		}
 	};
 
-	// Group permissions by category
-	const groupedPermissions = permissions.reduce((groups, permission) => {
+	const filteredPermissions = permissions.filter((permission) =>
+		permission.name.toLowerCase().includes(permissionSearch.toLowerCase())
+	);
+
+	const groupedPermissions = filteredPermissions.reduce((groups, permission) => {
 		const category = permission.name.split("-")[0];
 		if (!groups[category]) {
 			groups[category] = [];
@@ -138,7 +151,14 @@ export default function RoleForm({ role, permissions, onSubmit, onCancel }) {
 					<label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
 						Permissions
 					</label>
-					<div className="flex gap-2">
+					<div className="flex items-center gap-2">
+						<input
+							type="text"
+							value={permissionSearch}
+							onChange={(e) => setPermissionSearch(e.target.value)}
+							placeholder="Cari permission..."
+							className="w-48 px-2 py-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+						/>
 						<button
 							type="button"
 							onClick={handleSelectAll}

@@ -70,6 +70,43 @@ class SettingSeeder extends Seeder
                 'group' => 'ui',
                 'description' => 'Apakah sidebar dalam kondisi collapsed',
             ],
+            [
+                'key' => 'dashboard_highlights',
+                'value' => json_encode([
+                    [
+                        'label' => 'IGD',
+                        'text' => 'Flow triase baru mulai 08:00 - pastikan form SOAP terisi lengkap.',
+                    ],
+                    [
+                        'label' => 'Farmasi',
+                        'text' => 'Resep favorit & stok kritikal kini tersedia di panel farmasi.',
+                    ],
+                    [
+                        'label' => 'Keuangan',
+                        'text' => 'Laporan tarif baru dapat di-export di Pengaturan > Tarif.',
+                    ],
+                ], JSON_UNESCAPED_UNICODE),
+                'type' => 'json',
+                'group' => 'dashboard',
+                'description' => 'Highlight tim untuk dashboard',
+            ],
+            [
+                'key' => 'dashboard_priorities',
+                'value' => json_encode([
+                    [
+                        'text' => 'Review mapping lokasi baru sebelum dikirim ke SATUSEHAT.',
+                    ],
+                    [
+                        'text' => 'Verifikasi Encounter yang pending validasi.',
+                    ],
+                    [
+                        'text' => 'Lengkapi data dokter (NIK/SIP) yang belum terisi.',
+                    ],
+                ], JSON_UNESCAPED_UNICODE),
+                'type' => 'json',
+                'group' => 'dashboard',
+                'description' => 'Tindakan prioritas untuk dashboard',
+            ],
         ];
 
         foreach ($defaults as $item) {
