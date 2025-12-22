@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Link, usePage, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
+import MobileBottomNav from "@/Components/MobileBottomNav";
 import {
     Gauge,
     Wallet,
@@ -12,7 +13,6 @@ import {
     ChevronDown,
     ChevronRight,
     Calendar,
-    Scale,
     Home,
 } from "lucide-react";
 
@@ -166,49 +166,14 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
                 icon: <Receipt className="w-4 h-4" />,
                 children: [
                     {
-                        label: "Kasir Ralan",
+                        label: "Kasir Rawat Jalan",
                         href: "/akutansi/kasir-ralan",
                         icon: <Receipt className="w-4 h-4" />,
                     },
                     {
-                        label: "Billing",
-                        href: "/akutansi/billing",
+                        label: "Kasir Rawat Inap",
+                        href: "/pembayaran/ranap",
                         icon: <Receipt className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Nota Jalan",
-                        href: "/akutansi/nota-jalan",
-                        icon: <Receipt className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Nota Inap",
-                        href: "/akutansi/nota-inap",
-                        icon: <Receipt className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Cash Flow",
-                        href: "/akutansi/cashflow",
-                        icon: <Wallet className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Neraca",
-                        href: "/akutansi/neraca",
-                        icon: <Scale className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Mutasi Rekening",
-                        href: "/akutansi/mutasi-rekening",
-                        icon: <Banknote className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Mutasi Kas",
-                        href: "/akutansi/mutasi-kas",
-                        icon: <Wallet className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Setoran Bank",
-                        href: "/akutansi/setoran-bank",
-                        icon: <Banknote className="w-4 h-4" />,
                     },
                 ],
             },
@@ -553,10 +518,11 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
                         : "lg:ml-64"
                 }`}
             >
-                <div className="min-h-[calc(100vh-3.5rem)] px-4 sm:px-6 lg:px-8 py-6">
+                <div className="min-h-[calc(100vh-3.5rem)] px-4 sm:px-6 lg:px-8 pt-6 pb-24">
                     {children}
                 </div>
             </main>
+            <MobileBottomNav />
         </div>
     );
 }

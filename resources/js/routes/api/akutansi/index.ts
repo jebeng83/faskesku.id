@@ -7,6 +7,7 @@ import rekeningtahun from './rekeningtahun'
 import cashflow from './cashflow'
 import bukuBesar from './buku-besar'
 import billing from './billing'
+import billingRanap from './billing-ranap'
 import akunBayar from './akun-bayar'
 import akunPiutang from './akun-piutang'
 import setoranBank from './setoran-bank'
@@ -25,6 +26,7 @@ const akutansi = {
     cashflow: Object.assign(cashflow, cashflow),
     bukuBesar: Object.assign(bukuBesar, bukuBesar),
     billing: Object.assign(billing, billing),
+    billingRanap: Object.assign(billingRanap, billingRanap),
     akunBayar: Object.assign(akunBayar, akunBayar),
     akunPiutang: Object.assign(akunPiutang, akunPiutang),
     setoranBank: Object.assign(setoranBank, setoranBank),

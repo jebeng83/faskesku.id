@@ -42,22 +42,28 @@ class PermintaanLabController extends Controller
             'detailPermintaan.jnsPerawatanLab',
         ]);
 
+        $start = $request->get('start_date');
+        $end = $request->get('end_date');
+        $tanggal = $request->get('tanggal');
+
         // Filter berdasarkan tanggal
-        if ($request->filled('tanggal')) {
-            $query->byTanggalPermintaan($request->tanggal);
+        if ($tanggal) {
+            $query->byTanggalPermintaan($tanggal);
         }
 
         // Filter berdasarkan rentang tanggal (start_date, end_date)
-        if ($request->filled('start_date') || $request->filled('end_date')) {
-            $start = $request->get('start_date');
-            $end = $request->get('end_date');
-            if ($start && $end) {
-                $query->whereBetween('tgl_permintaan', [$start, $end]);
-            } elseif ($start) {
-                $query->whereDate('tgl_permintaan', '>=', $start);
-            } elseif ($end) {
-                $query->whereDate('tgl_permintaan', '<=', $end);
-            }
+        if (! $tanggal && ! $start && ! $end) {
+            $today = Carbon::today()->toDateString();
+            $start = $today;
+            $end = $today;
+        }
+
+        if ($start && $end) {
+            $query->whereBetween('tgl_permintaan', [$start, $end]);
+        } elseif ($start) {
+            $query->whereDate('tgl_permintaan', '>=', $start);
+        } elseif ($end) {
+            $query->whereDate('tgl_permintaan', '<=', $end);
         }
 
         // Filter berdasarkan status
@@ -84,7 +90,8 @@ class PermintaanLabController extends Controller
 
         $permintaanLab = $query->orderBy('tgl_permintaan', 'desc')
             ->orderBy('jam_permintaan', 'desc')
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
         // Tambahkan informasi has_hasil untuk setiap permintaan
         // Pastikan detailPermintaan sudah dimuat untuk setiap item
@@ -106,7 +113,14 @@ class PermintaanLabController extends Controller
         return Inertia::render('Laboratorium/Index', [
             'permintaanLab' => $permintaanLab,
             'dokters' => $dokters,
-            'filters' => $request->only(['tanggal', 'start_date', 'end_date', 'status', 'dokter', 'search']),
+            'filters' => [
+                'tanggal' => $tanggal,
+                'start_date' => $start,
+                'end_date' => $end,
+                'status' => $request->get('status'),
+                'dokter' => $request->get('dokter'),
+                'search' => $request->get('search'),
+            ],
         ]);
     }
 
@@ -1098,6 +1112,13 @@ class PermintaanLabController extends Controller
                             // Gunakan kombinasi tgl_periksa dan jam terbaru untuk setiap id_template
                             $hasilPemeriksaan = DB::table('detail_periksa_lab')
                                 ->join('template_laboratorium', 'detail_periksa_lab.id_template', '=', 'template_laboratorium.id_template')
+                                ->join('jns_perawatan_lab', 'detail_periksa_lab.kd_jenis_prw', '=', 'jns_perawatan_lab.kd_jenis_prw')
+                                ->join('periksa_lab', function ($join) {
+                                    $join->on('detail_periksa_lab.no_rawat', '=', 'periksa_lab.no_rawat')
+                                        ->on('detail_periksa_lab.kd_jenis_prw', '=', 'periksa_lab.kd_jenis_prw')
+                                        ->on('detail_periksa_lab.tgl_periksa', '=', 'periksa_lab.tgl_periksa')
+                                        ->on('detail_periksa_lab.jam', '=', 'periksa_lab.jam');
+                                })
                                 ->where('detail_periksa_lab.no_rawat', $permintaan->no_rawat)
                                 ->where('detail_periksa_lab.kd_jenis_prw', $detail->kd_jenis_prw)
                                 ->whereNotNull('detail_periksa_lab.nilai')
@@ -1110,7 +1131,10 @@ class PermintaanLabController extends Controller
                                     'detail_periksa_lab.tgl_periksa',
                                     'detail_periksa_lab.jam',
                                     'template_laboratorium.Pemeriksaan as pemeriksaan',
-                                    'template_laboratorium.satuan'
+                                    'template_laboratorium.satuan',
+                                    'jns_perawatan_lab.nm_perawatan as jenis_pemeriksaan',
+                                    'periksa_lab.status as status_rawat',
+                                    'periksa_lab.kategori as kategori_pemeriksaan'
                                 )
                                 ->orderBy('detail_periksa_lab.tgl_periksa', 'desc')
                                 ->orderBy('detail_periksa_lab.jam', 'desc')
@@ -1123,6 +1147,9 @@ class PermintaanLabController extends Controller
                                 ->values()
                                 ->map(function ($hasil) {
                                     return [
+                                        'jenis_pemeriksaan' => $hasil->jenis_pemeriksaan ?? '',
+                                        'status_rawat' => $hasil->status_rawat ?? null,
+                                        'kategori_pemeriksaan' => $hasil->kategori_pemeriksaan ?? null,
                                         'id_template' => $hasil->id_template,
                                         'pemeriksaan' => $hasil->pemeriksaan ?? '',
                                         'nilai' => $hasil->nilai ?? '',

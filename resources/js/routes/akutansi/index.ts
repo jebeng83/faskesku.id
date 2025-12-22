@@ -16,6 +16,7 @@ import mutasiRekening from './mutasi-rekening'
 import mutasiKas from './mutasi-kas'
 import cashflow from './cashflow'
 import billing from './billing'
+import billingRanap from './billing-ranap'
 import notaJalan from './nota-jalan'
 import kasirRalan from './kasir-ralan'
 /**
@@ -99,6 +100,7 @@ const akutansi = {
     mutasiKas: Object.assign(mutasiKas, mutasiKas),
     cashflow: Object.assign(cashflow, cashflow),
     billing: Object.assign(billing, billing),
+    billingRanap: Object.assign(billingRanap, billingRanap),
     notaJalan: Object.assign(notaJalan, notaJalan),
     kasirRalan: Object.assign(kasirRalan, kasirRalan),
 }

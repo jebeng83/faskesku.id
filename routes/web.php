@@ -79,6 +79,96 @@ Route::get('/landing', function () {
     return redirect()->route('dashboard');
 })->name('landing');
 
+Route::get('/antrian/loket', function () {
+    $setting = null;
+    $todayPoli = [];
+    if (Schema::hasTable('setting')) {
+        $fields = [];
+        foreach (['nama_instansi','alamat_instansi','kabupaten','propinsi','kontak','email','kode_ppk'] as $col) {
+            if (Schema::hasColumn('setting', $col)) {
+                $fields[] = $col;
+            }
+        }
+        if (!empty($fields)) {
+            $query = DB::table('setting')->select($fields);
+            if (Schema::hasColumn('setting', 'aktifkan')) {
+                $query->where('aktifkan', 'Yes');
+            }
+            $row = $query->orderBy('nama_instansi')->first();
+            if ($row) {
+                $setting = [];
+                foreach ($fields as $f) {
+                    $v = $row->{$f} ?? null;
+                    if (is_string($v)) {
+                        $v = preg_replace('/[\x00-\x1F\x7F]/u', '', $v);
+                    }
+                    $setting[$f] = $v;
+                }
+            }
+        }
+    }
+    // Poliklinik dengan jadwal pada hari ini
+    if (Schema::hasTable('jadwal') && Schema::hasTable('poliklinik')) {
+        $hariMap = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+        $hari = $hariMap[(int) date('w')] ?? date('l');
+        $hasHari = Schema::hasColumn('jadwal', 'hari_kerja');
+        $hasKdPoliJ = Schema::hasColumn('jadwal', 'kd_poli');
+        $hasKdPoliP = Schema::hasColumn('poliklinik', 'kd_poli');
+        $hasNmPoli = Schema::hasColumn('poliklinik', 'nm_poli');
+        if ($hasHari && $hasKdPoliJ && $hasKdPoliP && $hasNmPoli) {
+            $rows = DB::table('jadwal')
+                ->join('poliklinik', 'poliklinik.kd_poli', '=', 'jadwal.kd_poli')
+                ->where('jadwal.hari_kerja', $hari)
+                ->select('jadwal.kd_poli', 'poliklinik.nm_poli')
+                ->distinct()
+                ->orderBy('poliklinik.nm_poli')
+                ->get();
+            $todayPoli = collect($rows)->map(function ($r) {
+                return [
+                    'kd_poli' => $r->kd_poli,
+                    'nm_poli' => preg_replace('/[\x00-\x1F\x7F]/u', '', (string) $r->nm_poli),
+                ];
+            })->all();
+        }
+    }
+    return Inertia::render('Antrian/AntrialLoket', [
+        'setting' => $setting,
+        'today_poli' => $todayPoli,
+    ]);
+})->name('antrian.loket');
+
+Route::get('/antrian/display', function () {
+    $setting = null;
+    if (Schema::hasTable('setting')) {
+        $fields = [];
+        foreach (['nama_instansi','alamat_instansi','kabupaten','propinsi','kontak','email','kode_ppk'] as $col) {
+            if (Schema::hasColumn('setting', $col)) {
+                $fields[] = $col;
+            }
+        }
+        if (!empty($fields)) {
+            $query = DB::table('setting')->select($fields);
+            if (Schema::hasColumn('setting', 'aktifkan')) {
+                $query->where('aktifkan', 'Yes');
+            }
+            $row = $query->orderBy('nama_instansi')->first();
+            if ($row) {
+                $setting = [];
+                foreach ($fields as $f) {
+                    $v = $row->{$f} ?? null;
+                    if (is_string($v)) {
+                        $v = preg_replace('/[\x00-\x1F\x7F]/u', '', $v);
+                    }
+                    $setting[$f] = $v;
+                }
+            }
+        }
+    }
+    return Inertia::render('Antrian/DisplayLoket', [
+        'setting' => $setting,
+    ]);
+})->name('antrian.display');
+
 // API routes that don't require authentication
 Route::get('/api/lab-tests', [PermintaanLabController::class, 'getLabTests'])->name('api.lab-tests');
 
@@ -90,7 +180,66 @@ Route::middleware('auth')->prefix('api')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
+        $table = null;
+
+        $hasSetting = Schema::hasTable('setting') && Schema::hasColumn('setting', 'key') && Schema::hasColumn('setting', 'value');
+        $hasSettings = Schema::hasTable('settings') && Schema::hasColumn('settings', 'key') && Schema::hasColumn('settings', 'value');
+
+        if ($hasSetting) {
+            $table = 'setting';
+        } elseif ($hasSettings) {
+            $table = 'settings';
+        }
+
+        $highlights = [];
+        $priorities = [];
+
+        if ($table) {
+            $highlightRow = DB::table($table)->where('key', 'dashboard_highlights')->first();
+            $priorityRow = DB::table($table)->where('key', 'dashboard_priorities')->first();
+
+            if ($highlightRow && $highlightRow->value) {
+                $decoded = json_decode($highlightRow->value, true);
+                if (is_array($decoded)) {
+                    $highlights = array_values(array_filter($decoded, function ($item) {
+                        return is_array($item)
+                            && isset($item['label'], $item['text'])
+                            && $item['label'] !== ''
+                            && $item['text'] !== '';
+                    }));
+                }
+            }
+
+            if ($priorityRow && $priorityRow->value) {
+                $decoded = json_decode($priorityRow->value, true);
+                if (is_array($decoded)) {
+                    $priorities = array_values(array_filter($decoded, function ($item) {
+                        if (is_string($item)) {
+                            return trim($item) !== '';
+                        }
+
+                        return is_array($item)
+                            && isset($item['text'])
+                            && trim($item['text']) !== '';
+                    }));
+                }
+            }
+
+            $priorities = array_map(function ($item) {
+                if (is_string($item)) {
+                    return ['text' => $item];
+                }
+
+                return [
+                    'text' => $item['text'] ?? '',
+                ];
+            }, $priorities);
+        }
+
+        return Inertia::render('Dashboard', [
+            'dashboardHighlights' => $highlights,
+            'dashboardPriorities' => $priorities,
+        ]);
     })->name('dashboard');
 
     Route::get('/docs/{section?}', function ($section = null) {
@@ -173,9 +322,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/akutansi/cashflow', [CashFlowController::class, 'page'])
         ->name('akutansi.cashflow.page');
 
-    // Akutansi: Billing page (Inertia)
     Route::get('/akutansi/billing', [BillingController::class, 'page'])
         ->name('akutansi.billing.page');
+    Route::get('/akutansi/billing-ranap', [BillingController::class, 'ranapPage'])
+        ->name('akutansi.billing-ranap.page');
 
     // Akutansi: Nota Jalan page (Inertia)
     Route::get('/akutansi/nota-jalan', [\App\Http\Controllers\Akutansi\NotaJalanController::class, 'page'])
@@ -232,6 +382,7 @@ Route::middleware('auth')->group(function () {
 
         // Billing CRUD
         Route::get('/billing', [BillingController::class, 'index'])->name('api.akutansi.billing.index');
+        Route::get('/billing-ranap', [BillingController::class, 'indexRanap'])->name('api.akutansi.billing-ranap.index');
         Route::post('/billing', [BillingController::class, 'store'])->name('api.akutansi.billing.store');
         Route::put('/billing/{noindex}', [BillingController::class, 'update'])->name('api.akutansi.billing.update');
         Route::delete('/billing/{noindex}', [BillingController::class, 'destroy'])->name('api.akutansi.billing.destroy');
@@ -518,6 +669,22 @@ Route::middleware('auth')->group(function () {
     Route::get('pegawai/search', [RawatJalanController::class, 'searchPegawai'])->name('pegawai.search');
     Route::get('rawat-jalan-statistics', [RawatJalanController::class, 'getStatistics'])->name('rawat-jalan.statistics');
 
+    // Rawat Inap: CPPT/Pemeriksaan (pemeriksaan_ranap)
+    Route::get('rawat-inap/pemeriksaan-ranap', [RawatInapController::class, 'pemeriksaanRanap'])->name('rawat-inap.pemeriksaan-ranap');
+    Route::post('rawat-inap/pemeriksaan-ranap', [RawatInapController::class, 'storePemeriksaanRanap'])->name('rawat-inap.pemeriksaan-ranap.store');
+    Route::delete('rawat-inap/pemeriksaan-ranap', [RawatInapController::class, 'deletePemeriksaanRanap'])->name('rawat-inap.pemeriksaan-ranap.delete');
+    Route::put('rawat-inap/pemeriksaan-ranap', [RawatInapController::class, 'updatePemeriksaanRanap'])->name('rawat-inap.pemeriksaan-ranap.update');
+    Route::get('rawat-inap/obat-ranap/{no_rawat}', [RawatInapController::class, 'getObatRanapPublic'])
+        ->name('rawat-inap.obat-ranap')
+        ->where('no_rawat', '.*');
+    Route::get('rawat-inap/lab/{no_rawat}', [RawatInapController::class, 'getPemeriksaanLabPublic'])
+        ->name('rawat-inap.lab')
+        ->where('no_rawat', '.*');
+    Route::get('rawat-inap/radiologi/{no_rawat}', [RawatInapController::class, 'getRadiologiPublic'])
+        ->name('rawat-inap.radiologi')
+        ->where('no_rawat', '.*');
+    Route::get('rawat-inap/riwayat', [RawatInapController::class, 'riwayat'])->name('rawat-inap.riwayat');
+
     // Surat Sehat dan Surat Sakit routes
     Route::get('rawat-jalan/surat-sehat/{no_rawat}', [RawatJalanController::class, 'suratSehat'])
         ->where('no_rawat', '.*')
@@ -570,6 +737,9 @@ Route::middleware('auth')->group(function () {
         // Stream blob untuk preview
         Route::get('/app/{nama_instansi}/wallpaper', [SettingController::class, 'appWallpaper'])->name('app.wallpaper');
         Route::get('/app/{nama_instansi}/logo', [SettingController::class, 'appLogo'])->name('app.logo');
+
+        Route::get('/dashboard', [SettingController::class, 'dashboardIndex'])->name('dashboard.index');
+        Route::post('/dashboard', [SettingController::class, 'dashboardStore'])->name('dashboard.store');
     });
 
     // Menu Management routes
@@ -650,6 +820,15 @@ Route::middleware('auth')->group(function () {
         Route::match(['delete', 'post'], '/', [TarifTindakanController::class, 'deleteTindakan'])->name('delete');
     });
 
+    // Tarif Tindakan Rawat Inap API routes
+    Route::prefix('api/tarif-tindakan-ranap')->name('api.tarif-tindakan-ranap.')->group(function () {
+        Route::get('/', [TarifTindakanController::class, 'indexRanap'])->name('index');
+        Route::post('/dokter', [TarifTindakanController::class, 'storeRanapDokter'])->name('store-dokter');
+        Route::post('/perawat', [TarifTindakanController::class, 'storeRanapPerawat'])->name('store-perawat');
+        Route::post('/dokter-perawat', [TarifTindakanController::class, 'storeRanapDokterPerawat'])->name('store-dokter-perawat');
+        Route::get('/riwayat/{noRawat}', [TarifTindakanController::class, 'getRiwayatTindakanRanap'])->name('riwayat')->where('noRawat', '.*');
+    });
+
     // Farmasi routes
     Route::prefix('farmasi')->name('farmasi.')->group(function () {
         // Landing page for Farmasi module
@@ -673,6 +852,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/penjualan-obat', function () {
             return Inertia::render('farmasi/PenjualanObat');
         })->name('penjualan-obat');
+
+        Route::get('/hutang-obat', function () {
+            return Inertia::render('farmasi/HutangObat');
+        })->name('hutang-obat');
 
         Route::get('/resep-obat', function () {
             return Inertia::render('farmasi/ResepObat');
@@ -711,6 +894,19 @@ Route::middleware('auth')->group(function () {
         Route::get('/sisa-stok', function () {
             return Inertia::render('farmasi/SisaStok');
         })->name('sisa-stok');
+
+        // Laporan & utility stok farmasi
+        Route::get('/sisa-stok', function () {
+            return Inertia::render('farmasi/SisaStok');
+        })->name('sisa-stok');
+
+        Route::get('/sirkulasi-obat', function () {
+            return Inertia::render('farmasi/SirkulasiObat');
+        })->name('sirkulasi-obat');
+
+        Route::get('/cek-stok-obat', function () {
+            return Inertia::render('farmasi/CekStok');
+        })->name('cek-stok-obat');
 
         // Farmasi - Data Opname (laporan/daftar hasil opname)
         Route::get('/data-opname', function () {

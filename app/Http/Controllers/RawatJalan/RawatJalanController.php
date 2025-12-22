@@ -372,6 +372,31 @@ class RawatJalanController extends Controller
         return response()->json(['data' => $data]);
     }
 
+    public function searchPenyakit(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+
+        $rows = DB::table('penyakit')
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($sub) use ($q) {
+                    $sub->where('kd_penyakit', 'like', $q.'%')
+                        ->orWhere('nm_penyakit', 'like', '%'.$q.'%');
+                });
+            })
+            ->orderBy('kd_penyakit')
+            ->limit(25)
+            ->get(['kd_penyakit', 'nm_penyakit']);
+
+        $data = $rows->map(function ($row) {
+            return [
+                'kode' => $row->kd_penyakit,
+                'nama' => $row->nm_penyakit,
+            ];
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
     /**
      * Daftar pemeriksaan_ralan untuk no_rawat tertentu (JSON)
      */
@@ -744,7 +769,12 @@ class RawatJalanController extends Controller
             ->join('penyakit', 'diagnosa_pasien.kd_penyakit', '=', 'penyakit.kd_penyakit')
             ->where('diagnosa_pasien.no_rawat', $validated['no_rawat'])
             ->orderBy('diagnosa_pasien.prioritas')
-            ->get(['diagnosa_pasien.kd_penyakit', 'penyakit.nm_penyakit', 'diagnosa_pasien.prioritas']);
+            ->get([
+                'diagnosa_pasien.kd_penyakit',
+                'penyakit.nm_penyakit',
+                'diagnosa_pasien.prioritas',
+                'diagnosa_pasien.status_penyakit',
+            ]);
 
         $data = $rows->map(function ($row) {
             $type = ((string) $row->prioritas === '1') ? 'utama' : 'sekunder';
@@ -754,6 +784,7 @@ class RawatJalanController extends Controller
                 'nama' => $row->nm_penyakit,
                 'prioritas' => (string) $row->prioritas,
                 'type' => $type,
+                'status_penyakit' => $row->status_penyakit,
             ];
         });
 
@@ -774,24 +805,27 @@ class RawatJalanController extends Controller
             'list' => 'required|array|min:1|max:3',
             'list.*.kode' => 'required|string|max:10',
             'list.*.type' => 'required|in:utama,sekunder',
+            'list.*.status_penyakit' => 'nullable|in:Lama,Baru',
         ]);
 
         $no_rawat = $validated['no_rawat'];
         $list = collect($validated['list']);
 
-        // Susun ulang: pastikan utama di posisi pertama, sisanya sekunder urut sesuai input
-        $utama = $list->firstWhere('type', 'utama');
-        $sekunder = $list->filter(fn ($it) => ($it['type'] ?? '') === 'sekunder');
-        $ordered = collect([]);
-        if ($utama) {
-            $ordered->push($utama);
-        }
-        foreach ($sekunder as $it) {
-            $ordered->push($it);
+        // Normalisasi: hanya satu diagnosa utama, sisanya diperlakukan sebagai sekunder
+        $hasPrimary = false;
+        $normalized = collect();
+        foreach ($list as $item) {
+            $itemType = $item['type'] ?? 'sekunder';
+            if ($itemType === 'utama' && ! $hasPrimary) {
+                $normalized->push(array_merge($item, ['type' => 'utama']));
+                $hasPrimary = true;
+            } else {
+                $normalized->push(array_merge($item, ['type' => 'sekunder']));
+            }
         }
 
-        // Batasi maksimal 3 diagnosa
-        $ordered = $ordered->take(3)->values();
+        // Batasi maksimal 3 diagnosa, urutan list = urutan prioritas
+        $ordered = $normalized->take(3)->values();
 
         DB::beginTransaction();
         try {
@@ -805,6 +839,7 @@ class RawatJalanController extends Controller
                     'no_rawat' => $no_rawat,
                     'kd_penyakit' => $item['kode'],
                     'prioritas' => (string) $prioritas,
+                    'status_penyakit' => $item['status_penyakit'] ?? null,
                 ];
 
                 // Beberapa skema memiliki kolom 'status' (Ralan/Ranap). Sertakan bila ada.
@@ -825,7 +860,12 @@ class RawatJalanController extends Controller
                 ->join('penyakit', 'diagnosa_pasien.kd_penyakit', '=', 'penyakit.kd_penyakit')
                 ->where('diagnosa_pasien.no_rawat', $no_rawat)
                 ->orderBy('diagnosa_pasien.prioritas')
-                ->get(['diagnosa_pasien.kd_penyakit', 'penyakit.nm_penyakit', 'diagnosa_pasien.prioritas']);
+                ->get([
+                    'diagnosa_pasien.kd_penyakit',
+                    'penyakit.nm_penyakit',
+                    'diagnosa_pasien.prioritas',
+                    'diagnosa_pasien.status_penyakit',
+                ]);
 
             $data = $rows->map(function ($row) {
                 $type = ((string) $row->prioritas === '1') ? 'utama' : 'sekunder';
@@ -835,6 +875,7 @@ class RawatJalanController extends Controller
                     'nama' => $row->nm_penyakit,
                     'prioritas' => (string) $row->prioritas,
                     'type' => $type,
+                    'status_penyakit' => $row->status_penyakit,
                 ];
             });
 

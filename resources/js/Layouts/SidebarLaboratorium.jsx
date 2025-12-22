@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Link, usePage } from "@inertiajs/react";
+import { Link, usePage, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
+import MobileBottomNav from "@/Components/MobileBottomNav";
 import {
     Gauge,
     FlaskConical,
@@ -22,7 +23,7 @@ export default function SidebarLaboratorium({
 
     // State tampilan
     const [openPemeriksaan, setOpenPemeriksaan] = useState(true);
-    const [openMaster, setOpenMaster] = useState(true);
+    const [openMaster, setOpenMaster] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isDark, setIsDark] = useState(false);
@@ -102,7 +103,7 @@ export default function SidebarLaboratorium({
         () => [
             {
                 label: "Dashboard",
-                href: route("dashboard"), // global dashboard sesuai permintaan
+                href: route("dashboard"),
                 icon: <Gauge className="w-4 h-4" />,
             },
             {
@@ -113,6 +114,11 @@ export default function SidebarLaboratorium({
                         label: "Permintaan Lab",
                         href: route("laboratorium.permintaan-lab.index"),
                         icon: <ClipboardList className="w-4 h-4" />,
+                    },
+                    {
+                        label: "Periksa Lab",
+                        href: route("laboratorium.index"),
+                        icon: <TestTube className="w-4 h-4" />,
                     },
                 ],
             },
@@ -482,10 +488,11 @@ export default function SidebarLaboratorium({
                         : "lg:ml-64"
                 }`}
             >
-                <div className="min-h-[calc(100vh-3.5rem)] px-4 sm:px-6 lg:px-8 py-6">
+                <div className="min-h-[calc(100vh-3.5rem)] px-4 sm:px-6 lg:px-8 pt-6 pb-24">
                     {children}
                 </div>
             </main>
+            <MobileBottomNav />
         </div>
     );
 }
