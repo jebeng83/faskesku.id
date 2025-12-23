@@ -2,9 +2,9 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefa
 import update603324 from './update'
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::index
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:18
-* @route '/sip-pegawai'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:18
+ * @route '/sip-pegawai'
+ */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
@@ -17,28 +17,27 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::index
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:18
-* @route '/sip-pegawai'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:18
+ * @route '/sip-pegawai'
+ */
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::index
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:18
-* @route '/sip-pegawai'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:18
+ * @route '/sip-pegawai'
+ */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::index
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:18
-* @route '/sip-pegawai'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:18
+ * @route '/sip-pegawai'
+ */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
@@ -46,9 +45,9 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::create
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:48
-* @route '/sip-pegawai/create'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:48
+ * @route '/sip-pegawai/create'
+ */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: create.url(options),
     method: 'get',
@@ -61,28 +60,27 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::create
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:48
-* @route '/sip-pegawai/create'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:48
+ * @route '/sip-pegawai/create'
+ */
 create.url = (options?: RouteQueryOptions) => {
     return create.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::create
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:48
-* @route '/sip-pegawai/create'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:48
+ * @route '/sip-pegawai/create'
+ */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: create.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::create
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:48
-* @route '/sip-pegawai/create'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:48
+ * @route '/sip-pegawai/create'
+ */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: create.url(options),
     method: 'head',
@@ -90,9 +88,9 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::store
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:72
-* @route '/sip-pegawai'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:72
+ * @route '/sip-pegawai'
+ */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -105,18 +103,18 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::store
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:72
-* @route '/sip-pegawai'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:72
+ * @route '/sip-pegawai'
+ */
 store.url = (options?: RouteQueryOptions) => {
     return store.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::store
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:72
-* @route '/sip-pegawai'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:72
+ * @route '/sip-pegawai'
+ */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -124,9 +122,9 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::show
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:108
-* @route '/sip-pegawai/{nik}'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:108
+ * @route '/sip-pegawai/{nik}'
+ */
 export const show = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
@@ -139,25 +137,26 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::show
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:108
-* @route '/sip-pegawai/{nik}'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:108
+ * @route '/sip-pegawai/{nik}'
+ */
 show.url = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { nik: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            nik: args[0],
-        }
+                    nik: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        nik: args.nik,
-    }
+                        nik: args.nik,
+                }
 
     return show.definition.url
             .replace('{nik}', parsedArgs.nik.toString())
@@ -166,19 +165,18 @@ show.url = (args: { nik: string | number } | [nik: string | number ] | string | 
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::show
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:108
-* @route '/sip-pegawai/{nik}'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:108
+ * @route '/sip-pegawai/{nik}'
+ */
 show.get = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::show
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:108
-* @route '/sip-pegawai/{nik}'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:108
+ * @route '/sip-pegawai/{nik}'
+ */
 show.head = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
@@ -186,9 +184,9 @@ show.head = (args: { nik: string | number } | [nik: string | number ] | string |
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::edit
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:121
-* @route '/sip-pegawai/{nik}/edit'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:121
+ * @route '/sip-pegawai/{nik}/edit'
+ */
 export const edit = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
@@ -201,25 +199,26 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::edit
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:121
-* @route '/sip-pegawai/{nik}/edit'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:121
+ * @route '/sip-pegawai/{nik}/edit'
+ */
 edit.url = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { nik: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            nik: args[0],
-        }
+                    nik: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        nik: args.nik,
-    }
+                        nik: args.nik,
+                }
 
     return edit.definition.url
             .replace('{nik}', parsedArgs.nik.toString())
@@ -228,19 +227,18 @@ edit.url = (args: { nik: string | number } | [nik: string | number ] | string | 
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::edit
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:121
-* @route '/sip-pegawai/{nik}/edit'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:121
+ * @route '/sip-pegawai/{nik}/edit'
+ */
 edit.get = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::edit
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:121
-* @route '/sip-pegawai/{nik}/edit'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:121
+ * @route '/sip-pegawai/{nik}/edit'
+ */
 edit.head = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: edit.url(args, options),
     method: 'head',
@@ -248,9 +246,9 @@ edit.head = (args: { nik: string | number } | [nik: string | number ] | string |
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::update
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:148
-* @route '/sip-pegawai/{nik}'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:148
+ * @route '/sip-pegawai/{nik}'
+ */
 export const update = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
@@ -263,25 +261,26 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::update
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:148
-* @route '/sip-pegawai/{nik}'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:148
+ * @route '/sip-pegawai/{nik}'
+ */
 update.url = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { nik: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            nik: args[0],
-        }
+                    nik: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        nik: args.nik,
-    }
+                        nik: args.nik,
+                }
 
     return update.definition.url
             .replace('{nik}', parsedArgs.nik.toString())
@@ -290,9 +289,9 @@ update.url = (args: { nik: string | number } | [nik: string | number ] | string 
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::update
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:148
-* @route '/sip-pegawai/{nik}'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:148
+ * @route '/sip-pegawai/{nik}'
+ */
 update.put = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
@@ -300,9 +299,9 @@ update.put = (args: { nik: string | number } | [nik: string | number ] | string 
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::destroy
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:186
-* @route '/sip-pegawai/{nik}'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:186
+ * @route '/sip-pegawai/{nik}'
+ */
 export const destroy = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
@@ -315,25 +314,26 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::destroy
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:186
-* @route '/sip-pegawai/{nik}'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:186
+ * @route '/sip-pegawai/{nik}'
+ */
 destroy.url = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { nik: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            nik: args[0],
-        }
+                    nik: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        nik: args.nik,
-    }
+                        nik: args.nik,
+                }
 
     return destroy.definition.url
             .replace('{nik}', parsedArgs.nik.toString())
@@ -342,22 +342,21 @@ destroy.url = (args: { nik: string | number } | [nik: string | number ] | string
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\SipPegawaiController::destroy
-* @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:186
-* @route '/sip-pegawai/{nik}'
-*/
+ * @see app/Http/Controllers/Kepegawaian/SipPegawaiController.php:186
+ * @route '/sip-pegawai/{nik}'
+ */
 destroy.delete = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
-
 const sipPegawai = {
     index: Object.assign(index, index),
-    create: Object.assign(create, create),
-    store: Object.assign(store, store),
-    show: Object.assign(show, show),
-    edit: Object.assign(edit, edit),
-    update: Object.assign(update, update603324),
-    destroy: Object.assign(destroy, destroy),
+create: Object.assign(create, create),
+store: Object.assign(store, store),
+show: Object.assign(show, show),
+edit: Object.assign(edit, edit),
+update: Object.assign(update, update603324),
+destroy: Object.assign(destroy, destroy),
 }
 
 export default sipPegawai

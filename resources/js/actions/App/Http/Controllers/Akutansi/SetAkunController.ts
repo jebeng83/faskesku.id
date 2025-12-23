@@ -1,9 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Akutansi\SetAkunController::index
-* @see app/Http/Controllers/Akutansi/SetAkunController.php:30
-* @route '/api/akutansi/pengaturan-rekening'
-*/
+ * @see app/Http/Controllers/Akutansi/SetAkunController.php:30
+ * @route '/api/akutansi/pengaturan-rekening'
+ */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
@@ -16,28 +16,27 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\SetAkunController::index
-* @see app/Http/Controllers/Akutansi/SetAkunController.php:30
-* @route '/api/akutansi/pengaturan-rekening'
-*/
+ * @see app/Http/Controllers/Akutansi/SetAkunController.php:30
+ * @route '/api/akutansi/pengaturan-rekening'
+ */
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\Akutansi\SetAkunController::index
-* @see app/Http/Controllers/Akutansi/SetAkunController.php:30
-* @route '/api/akutansi/pengaturan-rekening'
-*/
+ * @see app/Http/Controllers/Akutansi/SetAkunController.php:30
+ * @route '/api/akutansi/pengaturan-rekening'
+ */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\Akutansi\SetAkunController::index
-* @see app/Http/Controllers/Akutansi/SetAkunController.php:30
-* @route '/api/akutansi/pengaturan-rekening'
-*/
+ * @see app/Http/Controllers/Akutansi/SetAkunController.php:30
+ * @route '/api/akutansi/pengaturan-rekening'
+ */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
@@ -45,9 +44,9 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\SetAkunController::rekening
-* @see app/Http/Controllers/Akutansi/SetAkunController.php:153
-* @route '/api/akutansi/pengaturan-rekening/rekening'
-*/
+ * @see app/Http/Controllers/Akutansi/SetAkunController.php:153
+ * @route '/api/akutansi/pengaturan-rekening/rekening'
+ */
 export const rekening = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: rekening.url(options),
     method: 'get',
@@ -60,28 +59,27 @@ rekening.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\SetAkunController::rekening
-* @see app/Http/Controllers/Akutansi/SetAkunController.php:153
-* @route '/api/akutansi/pengaturan-rekening/rekening'
-*/
+ * @see app/Http/Controllers/Akutansi/SetAkunController.php:153
+ * @route '/api/akutansi/pengaturan-rekening/rekening'
+ */
 rekening.url = (options?: RouteQueryOptions) => {
     return rekening.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\Akutansi\SetAkunController::rekening
-* @see app/Http/Controllers/Akutansi/SetAkunController.php:153
-* @route '/api/akutansi/pengaturan-rekening/rekening'
-*/
+ * @see app/Http/Controllers/Akutansi/SetAkunController.php:153
+ * @route '/api/akutansi/pengaturan-rekening/rekening'
+ */
 rekening.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: rekening.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\Akutansi\SetAkunController::rekening
-* @see app/Http/Controllers/Akutansi/SetAkunController.php:153
-* @route '/api/akutansi/pengaturan-rekening/rekening'
-*/
+ * @see app/Http/Controllers/Akutansi/SetAkunController.php:153
+ * @route '/api/akutansi/pengaturan-rekening/rekening'
+ */
 rekening.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: rekening.url(options),
     method: 'head',
@@ -89,9 +87,9 @@ rekening.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Akutansi\SetAkunController::show
-* @see app/Http/Controllers/Akutansi/SetAkunController.php:71
-* @route '/api/akutansi/pengaturan-rekening/{section}'
-*/
+ * @see app/Http/Controllers/Akutansi/SetAkunController.php:71
+ * @route '/api/akutansi/pengaturan-rekening/{section}'
+ */
 export const show = (args: { section: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
@@ -104,25 +102,26 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\SetAkunController::show
-* @see app/Http/Controllers/Akutansi/SetAkunController.php:71
-* @route '/api/akutansi/pengaturan-rekening/{section}'
-*/
+ * @see app/Http/Controllers/Akutansi/SetAkunController.php:71
+ * @route '/api/akutansi/pengaturan-rekening/{section}'
+ */
 show.url = (args: { section: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { section: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            section: args[0],
-        }
+                    section: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        section: args.section,
-    }
+                        section: args.section,
+                }
 
     return show.definition.url
             .replace('{section}', parsedArgs.section.toString())
@@ -131,19 +130,18 @@ show.url = (args: { section: string | number } | [section: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\Akutansi\SetAkunController::show
-* @see app/Http/Controllers/Akutansi/SetAkunController.php:71
-* @route '/api/akutansi/pengaturan-rekening/{section}'
-*/
+ * @see app/Http/Controllers/Akutansi/SetAkunController.php:71
+ * @route '/api/akutansi/pengaturan-rekening/{section}'
+ */
 show.get = (args: { section: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\Akutansi\SetAkunController::show
-* @see app/Http/Controllers/Akutansi/SetAkunController.php:71
-* @route '/api/akutansi/pengaturan-rekening/{section}'
-*/
+ * @see app/Http/Controllers/Akutansi/SetAkunController.php:71
+ * @route '/api/akutansi/pengaturan-rekening/{section}'
+ */
 show.head = (args: { section: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
@@ -151,9 +149,9 @@ show.head = (args: { section: string | number } | [section: string | number ] | 
 
 /**
 * @see \App\Http\Controllers\Akutansi\SetAkunController::update
-* @see app/Http/Controllers/Akutansi/SetAkunController.php:94
-* @route '/api/akutansi/pengaturan-rekening/{section}'
-*/
+ * @see app/Http/Controllers/Akutansi/SetAkunController.php:94
+ * @route '/api/akutansi/pengaturan-rekening/{section}'
+ */
 export const update = (args: { section: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
@@ -166,25 +164,26 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Akutansi\SetAkunController::update
-* @see app/Http/Controllers/Akutansi/SetAkunController.php:94
-* @route '/api/akutansi/pengaturan-rekening/{section}'
-*/
+ * @see app/Http/Controllers/Akutansi/SetAkunController.php:94
+ * @route '/api/akutansi/pengaturan-rekening/{section}'
+ */
 update.url = (args: { section: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { section: args }
     }
 
+    
     if (Array.isArray(args)) {
         args = {
-            section: args[0],
-        }
+                    section: args[0],
+                }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        section: args.section,
-    }
+                        section: args.section,
+                }
 
     return update.definition.url
             .replace('{section}', parsedArgs.section.toString())
@@ -193,14 +192,13 @@ update.url = (args: { section: string | number } | [section: string | number ] |
 
 /**
 * @see \App\Http\Controllers\Akutansi\SetAkunController::update
-* @see app/Http/Controllers/Akutansi/SetAkunController.php:94
-* @route '/api/akutansi/pengaturan-rekening/{section}'
-*/
+ * @see app/Http/Controllers/Akutansi/SetAkunController.php:94
+ * @route '/api/akutansi/pengaturan-rekening/{section}'
+ */
 update.put = (args: { section: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
-
 const SetAkunController = { index, rekening, show, update }
 
 export default SetAkunController

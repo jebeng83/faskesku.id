@@ -15,25 +15,24 @@ import DetailNotaJalanController from './DetailNotaJalanController'
 import PiutangPasienController from './PiutangPasienController'
 import DetailPiutangPasienController from './DetailPiutangPasienController'
 import SetAkunController from './SetAkunController'
-
 const Akutansi = {
     NotaJalanController: Object.assign(NotaJalanController, NotaJalanController),
-    JurnalController: Object.assign(JurnalController, JurnalController),
-    TagihanSadewaController: Object.assign(TagihanSadewaController, TagihanSadewaController),
-    BayarPiutangController: Object.assign(BayarPiutangController, BayarPiutangController),
-    AkutansiController: Object.assign(AkutansiController, AkutansiController),
-    RekeningController: Object.assign(RekeningController, RekeningController),
-    AkunBayarController: Object.assign(AkunBayarController, AkunBayarController),
-    AkunPiutangController: Object.assign(AkunPiutangController, AkunPiutangController),
-    BukuBesarController: Object.assign(BukuBesarController, BukuBesarController),
-    CashFlowController: Object.assign(CashFlowController, CashFlowController),
-    BillingController: Object.assign(BillingController, BillingController),
-    RekeningTahunController: Object.assign(RekeningTahunController, RekeningTahunController),
-    SetoranBankController: Object.assign(SetoranBankController, SetoranBankController),
-    DetailNotaJalanController: Object.assign(DetailNotaJalanController, DetailNotaJalanController),
-    PiutangPasienController: Object.assign(PiutangPasienController, PiutangPasienController),
-    DetailPiutangPasienController: Object.assign(DetailPiutangPasienController, DetailPiutangPasienController),
-    SetAkunController: Object.assign(SetAkunController, SetAkunController),
+JurnalController: Object.assign(JurnalController, JurnalController),
+TagihanSadewaController: Object.assign(TagihanSadewaController, TagihanSadewaController),
+BayarPiutangController: Object.assign(BayarPiutangController, BayarPiutangController),
+AkutansiController: Object.assign(AkutansiController, AkutansiController),
+RekeningController: Object.assign(RekeningController, RekeningController),
+AkunBayarController: Object.assign(AkunBayarController, AkunBayarController),
+AkunPiutangController: Object.assign(AkunPiutangController, AkunPiutangController),
+BukuBesarController: Object.assign(BukuBesarController, BukuBesarController),
+CashFlowController: Object.assign(CashFlowController, CashFlowController),
+BillingController: Object.assign(BillingController, BillingController),
+RekeningTahunController: Object.assign(RekeningTahunController, RekeningTahunController),
+SetoranBankController: Object.assign(SetoranBankController, SetoranBankController),
+DetailNotaJalanController: Object.assign(DetailNotaJalanController, DetailNotaJalanController),
+PiutangPasienController: Object.assign(PiutangPasienController, PiutangPasienController),
+DetailPiutangPasienController: Object.assign(DetailPiutangPasienController, DetailPiutangPasienController),
+SetAkunController: Object.assign(SetAkunController, SetAkunController),
 }
 
 export default Akutansi
