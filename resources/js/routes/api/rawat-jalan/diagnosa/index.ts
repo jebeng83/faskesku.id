@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
- * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:762
+ * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:778
  * @route '/api/rawat-jalan/diagnosa'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
- * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:762
+ * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:778
  * @route '/api/rawat-jalan/diagnosa'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
- * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:762
+ * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:778
  * @route '/api/rawat-jalan/diagnosa'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
- * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:762
+ * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:778
  * @route '/api/rawat-jalan/diagnosa'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
- * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:801
+ * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:817
  * @route '/api/rawat-jalan/diagnosa'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -59,7 +59,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
- * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:801
+ * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:817
  * @route '/api/rawat-jalan/diagnosa'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -68,7 +68,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
- * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:801
+ * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:817
  * @route '/api/rawat-jalan/diagnosa'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

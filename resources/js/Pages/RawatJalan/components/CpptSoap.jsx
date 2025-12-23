@@ -1580,39 +1580,39 @@ export default function CpptSoap({
                         <div className="relative p-4 md:p-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
                             <div>
                                 <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Suhu (°C)</label>
-                                <input type="text" name="suhu_tubuh" value={formData.suhu_tubuh} onChange={handleChange} placeholder="36.8" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                <input type="text" name="suhu_tubuh" value={formData.suhu_tubuh} onChange={handleChange} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                             </div>
                             <div>
                                 <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Tensi (mmHg)</label>
-                                <input type="text" name="tensi" value={formData.tensi} onChange={handleChange} placeholder="120/80" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                <input type="text" name="tensi" value={formData.tensi} onChange={handleChange} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                             </div>
                             <div>
                                 <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Nadi (/menit)</label>
-                                <input type="text" name="nadi" value={formData.nadi} onChange={handleChange} placeholder="80" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                <input type="text" name="nadi" value={formData.nadi} onChange={handleChange} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                             </div>
                             <div>
                                 <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Respirasi (/menit)</label>
-                                <input type="text" name="respirasi" value={formData.respirasi} onChange={handleChange} placeholder="20" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                <input type="text" name="respirasi" value={formData.respirasi} onChange={handleChange} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                             </div>
                             <div>
                                 <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">SpO2 (%)</label>
-                                <input type="text" name="spo2" value={formData.spo2} onChange={handleChange} placeholder="98" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                <input type="text" name="spo2" value={formData.spo2} onChange={handleChange} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                             </div>
                             <div>
                                 <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Tinggi (cm)</label>
-                                <input type="text" name="tinggi" value={formData.tinggi} onChange={handleChange} placeholder="165" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                <input type="text" name="tinggi" value={formData.tinggi} onChange={handleChange} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                             </div>
                             <div>
                                 <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Berat (kg)</label>
-                                <input type="text" name="berat" value={formData.berat} onChange={handleChange} placeholder="60" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                <input type="text" name="berat" value={formData.berat} onChange={handleChange} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                             </div>
                             <div>
                                 <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">GCS</label>
-                                <input type="text" name="gcs" value={formData.gcs} onChange={handleChange} placeholder="E4V5M6" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                <input type="text" name="gcs" value={formData.gcs} onChange={handleChange} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                             </div>
                             <div>
                                 <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Lingkar Perut (cm)</label>
-                                <input type="text" name="lingkar_perut" value={formData.lingkar_perut} onChange={handleChange} placeholder="80" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                <input type="text" name="lingkar_perut" value={formData.lingkar_perut} onChange={handleChange} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                             </div>
                         </div>
                     </motion.div>
@@ -2858,7 +2858,7 @@ export default function CpptSoap({
                     </div>
                 </div>
             )}
-            <div className="relative z-20 -mx-4 sm:-mx-6 lg:-mx-8 pb-4 md:pb-6 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
+            <div className="relative z-20 px-4 pb-4 md:px-6 md:pb-6 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
                 {(message || error) && (
                     <div className={`mb-4 text-sm px-4 py-3 rounded-lg border flex items-start ${error ? 'bg-red-50 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800' : 'bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800'}`}>
                         <svg className={`w-5 h-5 mr-2 mt-0.5 flex-shrink-0 ${error ? 'text-red-500' : 'text-green-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2927,27 +2927,16 @@ export default function CpptSoap({
                             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Mulai dengan menambahkan pemeriksaan pertama.</p>
                         </div>
                     ) : (
-                        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden w-full">
-                            <div className="overflow-x-auto w-full max-w-full">
-                                <table className="w-full text-sm table-fixed">
-                                    <thead className="bg-gray-50 dark:bg-gray-700/50">
-                                        <tr className="text-left text-gray-600 dark:text-gray-300">
-                                            <th className="px-4 py-3 font-medium w-28">Tanggal</th>
-                                            <th className="px-4 py-3 font-medium w-20">Jam</th>
-                                            {viewMode === 'all' && (
-                                                <th className="px-4 py-3 font-medium w-36">No. Rawat</th>
-                                            )}
-                                            <th className="px-4 py-3 font-medium w-36">TTV</th>
-                                            <th className="px-4 py-3 font-medium w-64">Keluhan</th>
-                                            <th className="px-4 py-3 font-medium w-64">Pemeriksaan</th>
-                                            <th className="px-4 py-3 font-medium w-48">Penilaian</th>
-                                            <th className="px-4 py-3 font-medium text-center w-28">Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                        {list.map((row, idx) => (
-                                            <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                                                <td className="px-4 py-3 text-gray-900 dark:text-white font-medium w-28 whitespace-nowrap">
+                        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg w-full">
+                            <div className="space-y-3 p-3 md:p-4">
+                                {list.map((row, idx) => (
+                                    <div
+                                        key={idx}
+                                        className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900/40 shadow-sm p-4 md:p-5"
+                                    >
+                                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 text-sm">
+                                            <div className="flex flex-wrap items-center gap-3 text-gray-900 dark:text-white">
+                                                <div className="font-medium">
                                                     {(() => {
                                                         const v = row.tgl_perawatan;
                                                         if (!v) return '-';
@@ -2959,150 +2948,256 @@ export default function CpptSoap({
                                                                 timeZone: tz,
                                                                 day: '2-digit',
                                                                 month: 'short',
-                                                                year: 'numeric'
+                                                                year: 'numeric',
                                                             });
                                                         } catch (_) {
                                                             return '-';
                                                         }
                                                     })()}
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-900 dark:text-white font-mono w-20 whitespace-nowrap">{row.jam_rawat ? String(row.jam_rawat).substring(0,5) : '-'}</td>
+                                                </div>
+                                                <div className="font-mono">
+                                                    {row.jam_rawat ? String(row.jam_rawat).substring(0, 5) : '-'}
+                                                </div>
                                                 {viewMode === 'all' && (
-                                                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300 w-36">
-                                                        <div className="truncate whitespace-nowrap" title={row.no_rawat || ''}>
-                                                            {row.no_rawat || '-'}
-                                                        </div>
-                                                    </td>
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                        No. Rawat:{' '}
+                                                        <span className="font-mono">{row.no_rawat || '-'}</span>
+                                                    </div>
                                                 )}
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 w-36">
-                                                    <div className="space-y-1 text-xs">
-                                                        <div className="flex justify-between">
-                                                            <span className="text-gray-500">Suhu:</span>
-                                                            <span className="font-medium">{row.suhu_tubuh || '-'}°C</span>
-                                                        </div>
-                                                        <div className="flex justify-between">
-                                                            <span className="text-gray-500">Tensi:</span>
-                                                            <span className="font-medium">{row.tensi || '-'}</span>
-                                                        </div>
-                                                        <div className="flex justify-between">
-                                                            <span className="text-gray-500">Nadi:</span>
-                                                            <span className="font-medium">{row.nadi || '-'}/min</span>
-                                                        </div>
-                                                        <div className="flex justify-between">
-                                                            <span className="text-gray-500">SpO2:</span>
-                                                            <span className="font-medium">{row.spo2 || '-'}%</span>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top w-64">
-                                                    <div className="whitespace-normal break-words">
-                                                        {row.keluhan || <span className="text-gray-400 italic">Tidak ada keluhan</span>}
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top w-64">
-                                                    <div className="whitespace-normal break-words">
-                                                        {row.pemeriksaan || <span className="text-gray-400 italic">Belum diperiksa</span>}
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top w-48">
-                                                    <div className="whitespace-normal break-words">
-                                                        {row.penilaian || <span className="text-gray-400 italic">Belum dinilai</span>}
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3 w-28">
-                                                    <div className="flex items-center justify-center space-x-2">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                setFormData({
-                                                                    tgl_perawatan: row.tgl_perawatan,
-                                                                    jam_rawat: String(row.jam_rawat).substring(0,5),
-                                                                    suhu_tubuh: row.suhu_tubuh || '',
-                                                                    tensi: row.tensi || '',
-                                                                    nadi: row.nadi || '',
-                                                                    respirasi: row.respirasi || '',
-                                                                    tinggi: row.tinggi || '',
-                                                                    berat: row.berat || '',
-                                                                    spo2: row.spo2 || '',
-                                                                    gcs: row.gcs || '',
-                                                                    kesadaran: row.kesadaran || 'Compos Mentis',
-                                                                    keluhan: row.keluhan || '',
-                                                                    pemeriksaan: row.pemeriksaan || '',
-                                                                    alergi: row.alergi || '',
-                                                                    lingkar_perut: row.lingkar_perut || '',
-                                                                    rtl: row.rtl || '',
-                                                                    penilaian: row.penilaian || '',
-                                                                    instruksi: row.instruksi || '',
-                                                                    evaluasi: row.evaluasi || '',
-                                                                    nip: row.nip || '',
-                                                                });
-                                                                setPegawaiQuery('');
-                                                                setEditKey({
+                                            </div>
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                {row.nip && (
+                                                    <span className="px-2 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200 text-xs border border-indigo-100 dark:border-indigo-700">
+                                                        NIP: {row.nip}
+                                                    </span>
+                                                )}
+                                                {row.kesadaran && (
+                                                    <span className="px-2 py-1 rounded-full bg-purple-50 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 text-xs border border-purple-100 dark:border-purple-700">
+                                                        {row.kesadaran}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs text-gray-700 dark:text-gray-200">
+                                            <div className="bg-gray-50 dark:bg-gray-800/60 rounded-md px-3 py-2">
+                                                <div className="text-gray-500 dark:text-gray-400">Suhu</div>
+                                                <div className="font-semibold">
+                                                    {row.suhu_tubuh ? `${row.suhu_tubuh}°C` : '-'}
+                                                </div>
+                                            </div>
+                                            <div className="bg-gray-50 dark:bg-gray-800/60 rounded-md px-3 py-2">
+                                                <div className="text-gray-500 dark:text-gray-400">Tensi</div>
+                                                <div className="font-semibold">{row.tensi || '-'}</div>
+                                            </div>
+                                            <div className="bg-gray-50 dark:bg-gray-800/60 rounded-md px-3 py-2">
+                                                <div className="text-gray-500 dark:text-gray-400">Nadi</div>
+                                                <div className="font-semibold">
+                                                    {row.nadi ? `${row.nadi}/min` : '-'}
+                                                </div>
+                                            </div>
+                                            <div className="bg-gray-50 dark:bg-gray-800/60 rounded-md px-3 py-2">
+                                                <div className="text-gray-500 dark:text-gray-400">SpO2</div>
+                                                <div className="font-semibold">
+                                                    {row.spo2 ? `${row.spo2}%` : '-'}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            <div className="bg-gray-50 dark:bg-gray-800/60 rounded-md px-3 py-2">
+                                                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Keluhan</div>
+                                                <div className="text-sm text-gray-800 dark:text-gray-100 whitespace-pre-wrap break-words">
+                                                    {row.keluhan || (
+                                                        <span className="text-gray-400 dark:text-gray-500 italic">
+                                                            Tidak ada keluhan
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="bg-gray-50 dark:bg-gray-800/60 rounded-md px-3 py-2">
+                                                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Pemeriksaan</div>
+                                                <div className="text-sm text-gray-800 dark:text-gray-100 whitespace-pre-wrap break-words">
+                                                    {row.pemeriksaan || (
+                                                        <span className="text-gray-400 dark:text-gray-500 italic">
+                                                            Belum diperiksa
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            <div className="bg-gray-50 dark:bg-gray-800/60 rounded-md px-3 py-2">
+                                                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Penilaian</div>
+                                                <div className="text-sm text-gray-800 dark:text-gray-100 whitespace-pre-wrap break-words">
+                                                    {row.penilaian || (
+                                                        <span className="text-gray-400 dark:text-gray-500 italic">
+                                                            Belum dinilai
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="bg-gray-50 dark:bg-gray-800/60 rounded-md px-3 py-2">
+                                                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Rencana</div>
+                                                <div className="text-sm text-gray-800 dark:text-gray-100 whitespace-pre-wrap break-words">
+                                                    {row.rtl || (
+                                                        <span className="text-gray-400 dark:text-gray-500 italic">
+                                                            Belum diisi
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+                                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                No. Rawat:{' '}
+                                                <span className="font-mono">{row.no_rawat || '-'}</span>
+                                            </div>
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setFormData({
+                                                            tgl_perawatan: row.tgl_perawatan,
+                                                            jam_rawat: String(row.jam_rawat).substring(0, 5),
+                                                            suhu_tubuh: row.suhu_tubuh || '',
+                                                            tensi: row.tensi || '',
+                                                            nadi: row.nadi || '',
+                                                            respirasi: row.respirasi || '',
+                                                            tinggi: row.tinggi || '',
+                                                            berat: row.berat || '',
+                                                            spo2: row.spo2 || '',
+                                                            gcs: row.gcs || '',
+                                                            kesadaran: row.kesadaran || 'Compos Mentis',
+                                                            keluhan: row.keluhan || '',
+                                                            pemeriksaan: row.pemeriksaan || '',
+                                                            alergi: row.alergi || '',
+                                                            lingkar_perut: row.lingkar_perut || '',
+                                                            rtl: row.rtl || '',
+                                                            penilaian: row.penilaian || '',
+                                                            instruksi: row.instruksi || '',
+                                                            evaluasi: row.evaluasi || '',
+                                                            nip: row.nip || '',
+                                                        });
+                                                        setPegawaiQuery('');
+                                                        setEditKey({
+                                                            no_rawat: row.no_rawat,
+                                                            tgl_perawatan: row.tgl_perawatan,
+                                                            jam_rawat:
+                                                                String(row.jam_rawat).length === 5
+                                                                    ? row.jam_rawat + ':00'
+                                                                    : row.jam_rawat,
+                                                        });
+                                                        setMessage(null);
+                                                        setError(null);
+                                                    }}
+                                                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-amber-700 bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:hover:bg-amber-900/50 transition-colors"
+                                                    title="Edit pemeriksaan"
+                                                >
+                                                    <svg
+                                                        className="w-3 h-3 mr-1"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                                        />
+                                                    </svg>
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={async () => {
+                                                        if (
+                                                            !confirm(
+                                                                'Yakin ingin menghapus pemeriksaan ini?\n\nData yang dihapus tidak dapat dikembalikan.',
+                                                            )
+                                                        )
+                                                            return;
+                                                        try {
+                                                            const url = route(
+                                                                'rawat-jalan.pemeriksaan-ralan.delete',
+                                                            );
+                                                            const res = await fetch(url, {
+                                                                method: 'DELETE',
+                                                                headers: {
+                                                                    'Content-Type': 'application/json',
+                                                                    Accept: 'application/json',
+                                                                    'X-Requested-With': 'XMLHttpRequest',
+                                                                    'X-CSRF-TOKEN':
+                                                                        document
+                                                                            .querySelector(
+                                                                                'meta[name="csrf-token"]',
+                                                                            )
+                                                                            .getAttribute('content'),
+                                                                },
+                                                                credentials: 'same-origin',
+                                                                body: JSON.stringify({
                                                                     no_rawat: row.no_rawat,
                                                                     tgl_perawatan: row.tgl_perawatan,
-                                                                    jam_rawat: String(row.jam_rawat).length === 5 ? row.jam_rawat + ':00' : row.jam_rawat,
-                                                                });
+                                                                    jam_rawat:
+                                                                        String(row.jam_rawat).length === 5
+                                                                            ? row.jam_rawat + ':00'
+                                                                            : row.jam_rawat,
+                                                                }),
+                                                            });
+                                                            const text = await res.text();
+                                                            let json;
+                                                            try {
+                                                                json = text ? JSON.parse(text) : {};
+                                                            } catch (_) {
+                                                                json = {};
+                                                            }
+                                                            if (!res.ok) {
+                                                                setError(
+                                                                    json.message ||
+                                                                        'Gagal menghapus pemeriksaan',
+                                                                );
                                                                 setMessage(null);
-                                                                setError(null);
-                                                            }}
-                                                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-amber-700 bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:hover:bg-amber-900/50 transition-colors"
-                                                            title="Edit pemeriksaan"
-                                                        >
-                                                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                            </svg>
-                                                            Edit
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={async () => {
-                                                                if (!confirm('Yakin ingin menghapus pemeriksaan ini?\n\nData yang dihapus tidak dapat dikembalikan.')) return;
-                                                                try {
-                                                                    const url = route('rawat-jalan.pemeriksaan-ralan.delete');
-                                                                    const res = await fetch(url, {
-                                                                        method: 'DELETE',
-                                                                        headers: {
-                                                                            'Content-Type': 'application/json',
-                                                                            'Accept': 'application/json',
-                                                                            'X-Requested-With': 'XMLHttpRequest',
-                                                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                                                        },
-                                                                        credentials: 'same-origin',
-                                                                        body: JSON.stringify({
-                                                                            no_rawat: row.no_rawat,
-                                                                            tgl_perawatan: row.tgl_perawatan,
-                                                                            jam_rawat: String(row.jam_rawat).length === 5 ? row.jam_rawat + ':00' : row.jam_rawat,
-                                                                        }),
-                                                                    });
-                                                                    const text = await res.text();
-                                                                    let json; try { json = text ? JSON.parse(text) : {}; } catch (_) { json = {}; }
-                                                                    if (!res.ok) {
-                                                                        setError(json.message || 'Gagal menghapus pemeriksaan');
-                                                                        setMessage(null);
-                                                                        return;
-                                                                    }
-                                                                    setError(null);
-                                                                    setMessage(json.message || 'Pemeriksaan berhasil dihapus');
-                                                                    await fetchList();
-                                                                } catch (e) {
-                                                                    setError(e.message || 'Terjadi kesalahan saat menghapus');
-                                                                    setMessage(null);
-                                                                }
-                                                            }}
-                                                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50 transition-colors"
-                                                            title="Hapus pemeriksaan"
-                                                        >
-                                                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                            </svg>
-                                                            Hapus
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                                                return;
+                                                            }
+                                                            setError(null);
+                                                            setMessage(
+                                                                json.message ||
+                                                                    'Pemeriksaan berhasil dihapus',
+                                                            );
+                                                            await fetchList();
+                                                        } catch (e) {
+                                                            setError(
+                                                                e.message ||
+                                                                    'Terjadi kesalahan saat menghapus',
+                                                            );
+                                                            setMessage(null);
+                                                        }
+                                                    }}
+                                                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50 transition-colors"
+                                                    title="Hapus pemeriksaan"
+                                                >
+                                                    <svg
+                                                        className="w-3 h-3 mr-1"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                        />
+                                                    </svg>
+                                                    Hapus
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     )}

@@ -502,12 +502,16 @@ class RawatInapController extends Controller
             'keluhan' => 'nullable|string|max:2000',
             'pemeriksaan' => 'nullable|string|max:2000',
             'alergi' => 'nullable|string|max:80',
-            'rtl' => 'required|string|max:2000',
-            'penilaian' => 'required|string|max:2000',
-            'instruksi' => 'required|string|max:2000',
-            'evaluasi' => 'required|string|max:2000',
+            'rtl' => 'nullable|string|max:2000',
+            'penilaian' => 'nullable|string|max:2000',
+            'instruksi' => 'nullable|string|max:2000',
+            'evaluasi' => 'nullable|string|max:2000',
             'nip' => 'required|string|max:20',
         ]);
+
+        foreach (['rtl', 'penilaian', 'instruksi', 'evaluasi'] as $field) {
+            $validated[$field] = $validated[$field] ?? '';
+        }
 
         // Pastikan format jam menjadi H:i:s
         $validated['jam_rawat'] = sprintf('%s:00', $validated['jam_rawat']);
@@ -593,15 +597,27 @@ class RawatInapController extends Controller
             'keluhan' => 'nullable|string|max:2000',
             'pemeriksaan' => 'nullable|string|max:2000',
             'alergi' => 'nullable|string|max:80',
-            'rtl' => 'required|string|max:2000',
-            'penilaian' => 'required|string|max:2000',
-            'instruksi' => 'required|string|max:2000',
-            'evaluasi' => 'required|string|max:2000',
+            'rtl' => 'nullable|string|max:2000',
+            'penilaian' => 'nullable|string|max:2000',
+            'instruksi' => 'nullable|string|max:2000',
+            'evaluasi' => 'nullable|string|max:2000',
             'nip' => 'required|string|max:20',
         ]);
 
+        foreach (['rtl', 'penilaian', 'instruksi', 'evaluasi'] as $field) {
+            if (array_key_exists($field, $validated) && $validated[$field] === null) {
+                $validated[$field] = '';
+            }
+        }
+
         $key = $validated['key'];
         $data = $request->only(['suhu_tubuh', 'tensi', 'nadi', 'respirasi', 'tinggi', 'berat', 'spo2', 'gcs', 'kesadaran', 'keluhan', 'pemeriksaan', 'alergi', 'rtl', 'penilaian', 'instruksi', 'evaluasi', 'nip']);
+
+        foreach (['rtl', 'penilaian', 'instruksi', 'evaluasi'] as $field) {
+            if (array_key_exists($field, $data) && $data[$field] === null) {
+                $data[$field] = '';
+            }
+        }
 
         $updated = DB::table('pemeriksaan_ranap')
             ->where('no_rawat', $key['no_rawat'])
