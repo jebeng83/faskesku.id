@@ -17,7 +17,6 @@ return new class extends Migration
             return;
         }
 
-        // Cek apakah tabel sudah ada (untuk development yang sudah berjalan)
         if (! Schema::hasTable('sip_pegawai')) {
             Schema::create('sip_pegawai', function (Blueprint $table) {
                 $table->string('nik', 20)->primary();
@@ -25,15 +24,6 @@ return new class extends Migration
                 $table->string('no_sip', 100);
                 $table->date('masa_berlaku');
                 $table->enum('status', ['0', '1']);
-
-                // Foreign key constraint ke tabel pegawai
-                $table->foreign('nik')
-                    ->references('nik')
-                    ->on('pegawai')
-                    ->onDelete('restrict')
-                    ->onUpdate('cascade');
-
-                // Index untuk performa query
                 $table->index('masa_berlaku');
                 $table->index('status');
             });
