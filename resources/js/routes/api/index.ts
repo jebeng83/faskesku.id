@@ -38,9 +38,9 @@ import tarifTindakan from './tarif-tindakan'
 import tarifTindakanRanap from './tarif-tindakan-ranap'
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
-* @see app/Http/Controllers/PermintaanLabController.php:936
-* @route '/api/reg-periksa'
-*/
+ * @see app/Http/Controllers/PermintaanLabController.php:936
+ * @route '/api/reg-periksa'
+ */
 export const regPeriksa = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: regPeriksa.url(options),
     method: 'get',
@@ -53,28 +53,27 @@ regPeriksa.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
-* @see app/Http/Controllers/PermintaanLabController.php:936
-* @route '/api/reg-periksa'
-*/
+ * @see app/Http/Controllers/PermintaanLabController.php:936
+ * @route '/api/reg-periksa'
+ */
 regPeriksa.url = (options?: RouteQueryOptions) => {
     return regPeriksa.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
-* @see app/Http/Controllers/PermintaanLabController.php:936
-* @route '/api/reg-periksa'
-*/
+ * @see app/Http/Controllers/PermintaanLabController.php:936
+ * @route '/api/reg-periksa'
+ */
 regPeriksa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: regPeriksa.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
-* @see app/Http/Controllers/PermintaanLabController.php:936
-* @route '/api/reg-periksa'
-*/
+ * @see app/Http/Controllers/PermintaanLabController.php:936
+ * @route '/api/reg-periksa'
+ */
 regPeriksa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: regPeriksa.url(options),
     method: 'head',
@@ -82,9 +81,9 @@ regPeriksa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:1199
-* @route '/api/lab-tests'
-*/
+ * @see app/Http/Controllers/PermintaanLabController.php:1199
+ * @route '/api/lab-tests'
+ */
 export const labTests = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: labTests.url(options),
     method: 'get',
@@ -97,28 +96,27 @@ labTests.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:1199
-* @route '/api/lab-tests'
-*/
+ * @see app/Http/Controllers/PermintaanLabController.php:1199
+ * @route '/api/lab-tests'
+ */
 labTests.url = (options?: RouteQueryOptions) => {
     return labTests.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:1199
-* @route '/api/lab-tests'
-*/
+ * @see app/Http/Controllers/PermintaanLabController.php:1199
+ * @route '/api/lab-tests'
+ */
 labTests.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: labTests.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:1199
-* @route '/api/lab-tests'
-*/
+ * @see app/Http/Controllers/PermintaanLabController.php:1199
+ * @route '/api/lab-tests'
+ */
 labTests.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: labTests.url(options),
     method: 'head',
@@ -126,9 +124,9 @@ labTests.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::setHargaObat
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
-* @route '/api/set-harga-obat'
-*/
+ * @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
+ * @route '/api/set-harga-obat'
+ */
 export const setHargaObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: setHargaObat.url(options),
     method: 'get',
@@ -141,73 +139,71 @@ setHargaObat.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::setHargaObat
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
-* @route '/api/set-harga-obat'
-*/
+ * @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
+ * @route '/api/set-harga-obat'
+ */
 setHargaObat.url = (options?: RouteQueryOptions) => {
     return setHargaObat.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::setHargaObat
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
-* @route '/api/set-harga-obat'
-*/
+ * @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
+ * @route '/api/set-harga-obat'
+ */
 setHargaObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: setHargaObat.url(options),
     method: 'get',
 })
-
 /**
 * @see \App\Http\Controllers\Farmasi\SetHargaObatController::setHargaObat
-* @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
-* @route '/api/set-harga-obat'
-*/
+ * @see app/Http/Controllers/Farmasi/SetHargaObatController.php:508
+ * @route '/api/set-harga-obat'
+ */
 setHargaObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: setHargaObat.url(options),
     method: 'head',
 })
-
 const api = {
     wilayah: Object.assign(wilayah, wilayah),
-    public: Object.assign(publicMethod, publicMethod),
-    queue: Object.assign(queue, queue),
-    employees: Object.assign(employees, employees),
-    penjab: Object.assign(penjab, penjab),
-    pasien: Object.assign(pasien, pasien),
-    permissions: Object.assign(permissions, permissions),
-    regPeriksa: Object.assign(regPeriksa, regPeriksaD17f92),
-    users: Object.assign(users, users),
-    menus: Object.assign(menus, menus),
-    obat: Object.assign(obat, obat),
-    resep: Object.assign(resep, resep),
-    rawatJalan: Object.assign(rawatJalan, rawatJalan),
-    dokter: Object.assign(dokter, dokter),
-    labTests: Object.assign(labTests, labTests),
-    permintaanLab: Object.assign(permintaanLab, permintaanLab),
-    radiologiTests: Object.assign(radiologiTests, radiologiTests),
-    permintaanRadiologi: Object.assign(permintaanRadiologi, permintaanRadiologi),
-    opname: Object.assign(opname, opname),
-    pembelian: Object.assign(pembelian, pembelian),
-    pemesanan: Object.assign(pemesanan, pemesanan),
-    farmasi: Object.assign(farmasi, farmasi),
-    barang: Object.assign(barang, barang),
-    inventori: Object.assign(inventori, inventori),
-    databarang: Object.assign(databarang, databarang),
-    setHargaObat: Object.assign(setHargaObat, setHargaObat),
-    gudangbarang: Object.assign(gudangbarang, gudangbarang),
-    departemen: Object.assign(departemen, departemen),
-    sipPegawai: Object.assign(sipPegawai, sipPegawai),
-    pcare: Object.assign(pcare, pcare),
-    satusehat: Object.assign(satusehat, satusehat),
-    mobilejkn: Object.assign(mobilejkn, mobilejkn),
-    jadwal: Object.assign(jadwal, jadwal),
-    v1: Object.assign(v1, v1),
-    poliklinik: Object.assign(poliklinik, poliklinik),
-    akutansi: Object.assign(akutansi, akutansi),
-    menu: Object.assign(menu, menu),
-    tarifTindakan: Object.assign(tarifTindakan, tarifTindakan),
-    tarifTindakanRanap: Object.assign(tarifTindakanRanap, tarifTindakanRanap),
+public: Object.assign(publicMethod, publicMethod),
+queue: Object.assign(queue, queue),
+employees: Object.assign(employees, employees),
+penjab: Object.assign(penjab, penjab),
+pasien: Object.assign(pasien, pasien),
+permissions: Object.assign(permissions, permissions),
+regPeriksa: Object.assign(regPeriksa, regPeriksaD17f92),
+users: Object.assign(users, users),
+menus: Object.assign(menus, menus),
+obat: Object.assign(obat, obat),
+resep: Object.assign(resep, resep),
+rawatJalan: Object.assign(rawatJalan, rawatJalan),
+dokter: Object.assign(dokter, dokter),
+labTests: Object.assign(labTests, labTests),
+permintaanLab: Object.assign(permintaanLab, permintaanLab),
+radiologiTests: Object.assign(radiologiTests, radiologiTests),
+permintaanRadiologi: Object.assign(permintaanRadiologi, permintaanRadiologi),
+opname: Object.assign(opname, opname),
+pembelian: Object.assign(pembelian, pembelian),
+pemesanan: Object.assign(pemesanan, pemesanan),
+farmasi: Object.assign(farmasi, farmasi),
+barang: Object.assign(barang, barang),
+inventori: Object.assign(inventori, inventori),
+databarang: Object.assign(databarang, databarang),
+setHargaObat: Object.assign(setHargaObat, setHargaObat),
+gudangbarang: Object.assign(gudangbarang, gudangbarang),
+departemen: Object.assign(departemen, departemen),
+sipPegawai: Object.assign(sipPegawai, sipPegawai),
+pcare: Object.assign(pcare, pcare),
+satusehat: Object.assign(satusehat, satusehat),
+mobilejkn: Object.assign(mobilejkn, mobilejkn),
+jadwal: Object.assign(jadwal, jadwal),
+v1: Object.assign(v1, v1),
+poliklinik: Object.assign(poliklinik, poliklinik),
+akutansi: Object.assign(akutansi, akutansi),
+menu: Object.assign(menu, menu),
+tarifTindakan: Object.assign(tarifTindakan, tarifTindakan),
+tarifTindakanRanap: Object.assign(tarifTindakanRanap, tarifTindakanRanap),
 }
 
 export default api

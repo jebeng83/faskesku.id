@@ -20,9 +20,9 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
-        // Run seeders
         $this->call([
             SeedAllTablesSeeder::class,
+            WilayahSeeder::class,
             RoleSeeder::class,
             PermissionSeeder::class,
             MenuSeeder::class,
