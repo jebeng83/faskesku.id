@@ -73,7 +73,13 @@ class Wilayah extends Model
             ->orderBy('nama');
 
         if ($filter) {
-            $query->where('nama', 'LIKE', '%'.$filter.'%');
+            $like = '%'.$filter.'%';
+            $query->where(function ($q) use ($like) {
+                $q->where('nama', 'LIKE', $like)
+                  ->orWhereRaw("EXISTS (SELECT 1 FROM wilayah d WHERE LENGTH(d.kode) = 8 AND d.kode = SUBSTR(wilayah.kode, 1, 8) AND d.nama LIKE ?)", [$like])
+                  ->orWhereRaw("EXISTS (SELECT 1 FROM wilayah r WHERE LENGTH(r.kode) = 5 AND r.kode = SUBSTR(wilayah.kode, 1, 5) AND r.nama LIKE ?)", [$like])
+                  ->orWhereRaw("EXISTS (SELECT 1 FROM wilayah p WHERE LENGTH(p.kode) = 2 AND p.kode = SUBSTR(wilayah.kode, 1, 2) AND p.nama LIKE ?)", [$like]);
+            });
         }
 
         return $query->limit($limit)->get();

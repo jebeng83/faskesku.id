@@ -122,7 +122,7 @@ export default function WilayahSearchableSelect({
 	};
 
 	const handleSearch = async (term) => {
-		if (!term || term.length < 2) {
+		if (!term || term.length < 1) {
 			setFilteredOptions(options);
 			return;
 		}
@@ -385,7 +385,9 @@ export default function WilayahSearchableSelect({
 									{searchLoading ? "Mencari..." : noOptionsText}
 									{level === "village" && !searchLoading && (
 										<div className="mt-1 text-xs">
-											Ketik minimal 2 karakter untuk mencari kelurahan/desa
+											{searchTerm.length < 1
+												? "Ketik minimal 1 karakter untuk mencari kelurahan/desa"
+												: "Tidak ada kecocokan untuk kata kunci yang dimasukkan"}
 										</div>
 									)}
 								</div>
