@@ -35,7 +35,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatInapController::deleteMethod
- * @see app/Http/Controllers/RawatInapController.php:553
+ * @see app/Http/Controllers/RawatInapController.php:557
  * @route '/rawat-inap/pemeriksaan-ranap'
  */
 export const deleteMethod = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -50,7 +50,7 @@ deleteMethod.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::deleteMethod
- * @see app/Http/Controllers/RawatInapController.php:553
+ * @see app/Http/Controllers/RawatInapController.php:557
  * @route '/rawat-inap/pemeriksaan-ranap'
  */
 deleteMethod.url = (options?: RouteQueryOptions) => {
@@ -59,7 +59,7 @@ deleteMethod.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::deleteMethod
- * @see app/Http/Controllers/RawatInapController.php:553
+ * @see app/Http/Controllers/RawatInapController.php:557
  * @route '/rawat-inap/pemeriksaan-ranap'
  */
 deleteMethod.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -69,7 +69,7 @@ deleteMethod.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> =
 
 /**
 * @see \App\Http\Controllers\RawatInapController::update
- * @see app/Http/Controllers/RawatInapController.php:577
+ * @see app/Http/Controllers/RawatInapController.php:581
  * @route '/rawat-inap/pemeriksaan-ranap'
  */
 export const update = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -84,7 +84,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::update
- * @see app/Http/Controllers/RawatInapController.php:577
+ * @see app/Http/Controllers/RawatInapController.php:581
  * @route '/rawat-inap/pemeriksaan-ranap'
  */
 update.url = (options?: RouteQueryOptions) => {
@@ -93,7 +93,7 @@ update.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::update
- * @see app/Http/Controllers/RawatInapController.php:577
+ * @see app/Http/Controllers/RawatInapController.php:581
  * @route '/rawat-inap/pemeriksaan-ranap'
  */
 update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
