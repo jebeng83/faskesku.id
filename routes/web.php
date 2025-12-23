@@ -46,6 +46,7 @@ use App\Http\Controllers\RawatInapController;
 use App\Http\Controllers\RawatJalan\ObatController;
 use App\Http\Controllers\RawatJalan\RawatJalanController;
 use App\Http\Controllers\RawatJalan\ResepController;
+use App\Http\Controllers\SkriningVisualController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\RegPeriksaController;
 use App\Http\Controllers\RehabilitasiMedikController;
@@ -137,6 +138,66 @@ Route::get('/antrian/loket', function () {
         'today_poli' => $todayPoli,
     ]);
 })->name('antrian.loket');
+
+Route::get('/anjungan/pasien-mandiri', function () {
+    $setting = null;
+    $todayPoli = [];
+    if (Schema::hasTable('setting')) {
+        $fields = [];
+        foreach (['logo', 'nama_instansi', 'alamat_instansi', 'kabupaten', 'propinsi', 'kontak', 'email', 'kode_ppk'] as $col) {
+            if (Schema::hasColumn('setting', $col)) {
+                $fields[] = $col;
+            }
+        }
+        if (! empty($fields)) {
+            $query = DB::table('setting')->select($fields);
+            if (Schema::hasColumn('setting', 'aktifkan')) {
+                $query->where('aktifkan', 'Yes');
+            }
+            $row = $query->orderBy('nama_instansi')->first();
+            if ($row) {
+                $setting = [];
+                foreach ($fields as $f) {
+                    $v = $row->{$f} ?? null;
+                    if (is_string($v)) {
+                        $v = preg_replace('/[\x00-\x1F\x7F]/u', '', $v);
+                    }
+                    $setting[$f] = $v;
+                }
+            }
+        }
+    }
+    if (Schema::hasTable('jadwal')) {
+        $hariMap = [
+            0 => 'AKHAD',
+            1 => 'SENIN',
+            2 => 'SELASA',
+            3 => 'RABU',
+            4 => 'KAMIS',
+            5 => 'JUMAT',
+            6 => 'SABTU',
+        ];
+        $hari = $hariMap[(int) now()->dayOfWeek] ?? 'SENIN';
+        $rows = DB::table('jadwal')
+            ->join('poliklinik', 'poliklinik.kd_poli', '=', 'jadwal.kd_poli')
+            ->where('jadwal.hari_kerja', $hari)
+            ->select('jadwal.kd_poli', 'poliklinik.nm_poli')
+            ->distinct()
+            ->orderBy('poliklinik.nm_poli')
+            ->get();
+        $todayPoli = collect($rows)->map(function ($r) {
+            return [
+                'kd_poli' => $r->kd_poli,
+                'nm_poli' => preg_replace('/[\x00-\x1F\x7F]/u', '', (string) $r->nm_poli),
+            ];
+        })->all();
+    }
+
+    return Inertia::render('Anjungan/PasienMandiri', [
+        'setting' => $setting,
+        'today_poli' => $todayPoli,
+    ]);
+})->name('anjungan.pasien-mandiri');
 
 Route::get('/antrian/display', function () {
     $setting = null;
@@ -470,6 +531,21 @@ Route::middleware('auth')->group(function () {
     Route::get('/registration/poli-monthly-stats', [RegistrationController::class, 'poliMonthlyStats'])->name('registration.poli-monthly-stats');
     Route::post('/registration/cancel', [RegistrationController::class, 'cancelRegistration'])->name('registration.cancel');
     Route::get('/registration/{no_rawat}/print', [RegistrationController::class, 'print'])->name('registration.print')->where('no_rawat', '.*');
+
+    // Skrining Visual routes (CRUD)
+    Route::prefix('skrining-visual')->name('skrining-visual.')->group(function () {
+        Route::get('/', [SkriningVisualController::class, 'index'])->name('index');
+        Route::post('/', [SkriningVisualController::class, 'store'])->name('store');
+        Route::get('/{no_rkm_medis}/{tanggal}', [SkriningVisualController::class, 'show'])
+            ->name('show')
+            ->where(['no_rkm_medis' => '.*', 'tanggal' => '.*']);
+        Route::put('/{no_rkm_medis}/{tanggal}', [SkriningVisualController::class, 'update'])
+            ->name('update')
+            ->where(['no_rkm_medis' => '.*', 'tanggal' => '.*']);
+        Route::delete('/{no_rkm_medis}/{tanggal}', [SkriningVisualController::class, 'destroy'])
+            ->name('destroy')
+            ->where(['no_rkm_medis' => '.*', 'tanggal' => '.*']);
+    });
 
     // Employee routes
     Route::resource('employees', EmployeeController::class);

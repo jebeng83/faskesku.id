@@ -1,0 +1,46 @@
+import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
+/**
+* @see routes/web.php:142
+* @route '/anjungan/pasien-mandiri'
+*/
+export const pasienMandiri = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: pasienMandiri.url(options),
+    method: 'get',
+})
+
+pasienMandiri.definition = {
+    methods: ["get","head"],
+    url: '/anjungan/pasien-mandiri',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:142
+* @route '/anjungan/pasien-mandiri'
+*/
+pasienMandiri.url = (options?: RouteQueryOptions) => {
+    return pasienMandiri.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:142
+* @route '/anjungan/pasien-mandiri'
+*/
+pasienMandiri.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: pasienMandiri.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:142
+* @route '/anjungan/pasien-mandiri'
+*/
+pasienMandiri.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: pasienMandiri.url(options),
+    method: 'head',
+})
+
+const anjungan = {
+    pasienMandiri: Object.assign(pasienMandiri, pasienMandiri),
+}
+
+export default anjungan
