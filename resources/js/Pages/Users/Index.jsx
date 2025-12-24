@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Head } from "@inertiajs/react";
-import AppLayout from "@/Layouts/AppLayout";
+import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
 import axios from "axios";
 
 export default function Index() {
@@ -274,7 +274,7 @@ export default function Index() {
     };
 
     return (
-        <AppLayout>
+        <SidebarPengaturan>
             <Head title="Manajemen User" />
 
             <div className="space-y-6 -mt-6 -mx-6 p-6">
@@ -1170,6 +1170,6 @@ export default function Index() {
                     </div>
                 )}
             </div>
-        </AppLayout>
+        </SidebarPengaturan>
     );
 }

@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
-import SidebarLaboratorium from '@/Layouts/SidebarLaboratorium';
-import SidebarRalan from '@/Layouts/SidebarRalan';
+import SidebarPengaturan from '@/Layouts/SidebarPengaturan';
 import laboratoriumRoutes from '@/routes/daftar-tarif/laboratorium';
 
 // Simple Badge component
@@ -3122,16 +3121,8 @@ export default function Index({ title, data, category, search, filters, poliklin
         { id: 'kamar', name: 'Kamar', render: renderKamarTable }
     ];
 
-    // Tentukan layout berdasarkan category
-    const useLaboratoriumLayout = category === 'laboratorium' || activeTab === 'laboratorium';
-    const useRalanLayout = category === 'rawat-jalan' || activeTab === 'rawat-jalan';
-    
-    let Layout = AppLayout;
-    if (useLaboratoriumLayout) {
-        Layout = SidebarLaboratorium;
-    } else if (useRalanLayout) {
-        Layout = SidebarRalan;
-    }
+    // Gunakan layout SidebarPengaturan untuk seluruh modul tarif
+    const Layout = SidebarPengaturan;
 
     const content = (
         <>

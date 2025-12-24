@@ -73,11 +73,6 @@ export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
           icon: <Hospital className="w-4 h-4" />,
         },
         {
-          label: 'Tarif Ralan',
-          href: route('daftar-tarif.index', { category: 'rawat-jalan', search: '', status: '1' }),
-          icon: <Receipt className="w-4 h-4" />,
-        },
-        {
           label: 'Satu Sehat',
           href: route('satusehat.interoperabilitas.rajal.encounter'),
           icon: <HeartPulse className="w-4 h-4" />,
