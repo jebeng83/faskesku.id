@@ -143,96 +143,250 @@ export default function CpptSoap({ token = '', noRawat = '', noRkmMedis = '' }) 
               </button>
             </div>
           )}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-xs font-medium mb-1">Tanggal</label>
-              <input type="date" value={formData.tgl_perawatan} onChange={(e) => updateField('tgl_perawatan', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" required />
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2">
+              <label className="text-xs md:text-sm font-medium text-gray-700 mb-0">
+                Tanggal Perawatan
+              </label>
+              <input
+                type="date"
+                value={formData.tgl_perawatan}
+                onChange={(e) => updateField('tgl_perawatan', e.target.value)}
+                className="text-sm h-9 md:h-10 px-2.5 rounded-lg bg-white border border-gray-300 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                required
+              />
             </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">Jam</label>
-              <input type="time" value={formData.jam_rawat} onChange={(e) => updateField('jam_rawat', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" required />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">Suhu</label>
-              <input type="text" value={formData.suhu_tubuh} onChange={(e) => updateField('suhu_tubuh', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">Tensi</label>
-              <input type="text" value={formData.tensi} onChange={(e) => updateField('tensi', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" required />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">Nadi</label>
-              <input type="text" value={formData.nadi} onChange={(e) => updateField('nadi', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">Respirasi</label>
-              <input type="text" value={formData.respirasi} onChange={(e) => updateField('respirasi', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">Tinggi</label>
-              <input type="text" value={formData.tinggi} onChange={(e) => updateField('tinggi', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">Berat</label>
-              <input type="text" value={formData.berat} onChange={(e) => updateField('berat', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">SpO2</label>
-              <input type="text" value={formData.spo2} onChange={(e) => updateField('spo2', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" required />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">GCS</label>
-              <input type="text" value={formData.gcs} onChange={(e) => updateField('gcs', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">Kesadaran</label>
-              <select value={formData.kesadaran} onChange={(e) => updateField('kesadaran', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" required>
-                <option value="">Pilih Kesadaran</option>
-                {kesadaranOptions.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">Petugas (NIP)</label>
-              <SearchableSelect
-                source="petugas"
-                value={formData.nip}
-                onChange={(val) => updateField('nip', val)}
-                placeholder="Cari petugas"
-                searchPlaceholder="Cari nama atau NIP…"
+            <div className="flex items-center gap-2">
+              <label className="text-xs md:text-sm font-medium text-gray-700 mb-0">
+                Jam Rawat
+              </label>
+              <input
+                type="time"
+                value={formData.jam_rawat}
+                onChange={(e) => updateField('jam_rawat', e.target.value)}
+                className="text-sm h-9 md:h-10 px-2.5 rounded-lg bg-white border border-gray-300 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                required
               />
             </div>
           </div>
-          <div>
-            <label className="block text-xs font-medium mb-1">Keluhan</label>
-            <textarea value={formData.keluhan} onChange={(e) => updateField('keluhan', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" rows={3} />
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-1">Pemeriksaan</label>
-            <textarea value={formData.pemeriksaan} onChange={(e) => updateField('pemeriksaan', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" rows={3} />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium mb-1">Alergi</label>
-              <input type="text" value={formData.alergi} onChange={(e) => updateField('alergi', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" />
+          <div className="grid grid-cols-1 gap-2 md:gap-3">
+            <div className="space-y-px bg-gray-50 border border-gray-100 rounded-md p-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div className="min-w-0 flex flex-row items-center gap-1">
+                  <label className="text-xs md:text-sm font-bold text-gray-800 md:w-24 whitespace-nowrap">
+                    Kesadaran :
+                  </label>
+                  <select
+                    value={formData.kesadaran}
+                    onChange={(e) => updateField('kesadaran', e.target.value)}
+                    className="w-full md:flex-1 text-sm h-7 px-2 rounded-md bg-white border border-gray-300 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                    required
+                  >
+                    <option value="">Pilih Kesadaran</option>
+                    {kesadaranOptions.map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="min-w-0 flex flex-col gap-1">
+                  <label className="text-xs md:text-sm font-bold text-gray-800">
+                    Petugas (NIP)
+                  </label>
+                  <SearchableSelect
+                    source="petugas"
+                    value={formData.nip}
+                    onChange={(val) => updateField('nip', val)}
+                    placeholder="Cari petugas"
+                    searchPlaceholder="Cari nama atau NIP…"
+                  />
+                </div>
+                <div className="min-w-0 flex flex-row items-center gap-1 md:col-span-2">
+                  <label className="text-xs md:text-sm font-bold text-gray-800 md:w-24 whitespace-nowrap">
+                    Alergi :
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.alergi}
+                    onChange={(e) => updateField('alergi', e.target.value)}
+                    className="w-full md:flex-1 text-sm h-7 px-2 rounded-md bg-white border border-gray-300 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  />
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">Penilaian</label>
-              <input type="text" value={formData.penilaian} onChange={(e) => updateField('penilaian', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" />
+            <div className="space-y-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-stretch">
+                <div className="flex flex-col h-full">
+                  <label className="block text-xs md:text-sm font-bold text-gray-700 mb-1">
+                    Keluhan Utama (Subjektif)
+                  </label>
+                  <textarea
+                    value={formData.keluhan}
+                    onChange={(e) => updateField('keluhan', e.target.value)}
+                    rows={4}
+                    className="w-full text-sm rounded-md border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24"
+                  />
+                </div>
+                <div className="flex flex-col h-full">
+                  <label className="block text-xs md:text-sm font-bold text-gray-700 mb-1">
+                    Pemeriksaan Fisik (Objektif)
+                  </label>
+                  <textarea
+                    value={formData.pemeriksaan}
+                    onChange={(e) => updateField('pemeriksaan', e.target.value)}
+                    rows={4}
+                    className="w-full text-sm rounded-md border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24"
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium mb-1">Rencana</label>
-              <textarea value={formData.rtl} onChange={(e) => updateField('rtl', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" rows={2} />
+            <div className="space-y-px">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1">
+                <div>
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-px">
+                    Suhu (°C)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.suhu_tubuh}
+                    onChange={(e) => updateField('suhu_tubuh', e.target.value)}
+                    placeholder="36.8"
+                    className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-px">
+                    Tensi (mmHg)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.tensi}
+                    onChange={(e) => updateField('tensi', e.target.value)}
+                    placeholder="120/80"
+                    className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-px">
+                    Nadi (/menit)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.nadi}
+                    onChange={(e) => updateField('nadi', e.target.value)}
+                    placeholder="80"
+                    className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-px">
+                    Respirasi (/menit)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.respirasi}
+                    onChange={(e) => updateField('respirasi', e.target.value)}
+                    placeholder="20"
+                    className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-px">
+                    SpO2 (%)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.spo2}
+                    onChange={(e) => updateField('spo2', e.target.value)}
+                    placeholder="98"
+                    className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-px">
+                    Tinggi (cm)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.tinggi}
+                    onChange={(e) => updateField('tinggi', e.target.value)}
+                    placeholder="165"
+                    className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-px">
+                    Berat (kg)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.berat}
+                    onChange={(e) => updateField('berat', e.target.value)}
+                    placeholder="60"
+                    className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-px">
+                    GCS
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.gcs}
+                    onChange={(e) => updateField('gcs', e.target.value)}
+                    placeholder="E4V5M6"
+                    className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  />
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">Instruksi</label>
-              <textarea value={formData.instruksi} onChange={(e) => updateField('instruksi', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" rows={2} />
+            <div className="space-y-px">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-1 items-stretch">
+                <div className="flex flex-col h-full">
+                  <label className="block text-xs md:text-sm font-bold text-gray-700 mb-px">
+                    Penilaian (Assessment)
+                  </label>
+                  <textarea
+                    value={formData.penilaian}
+                    onChange={(e) => updateField('penilaian', e.target.value)}
+                    rows={3}
+                    className="w-full text-sm rounded-md border bg-white border-gray-300 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24"
+                  />
+                </div>
+                <div className="flex flex-col h-full">
+                  <label className="block text-xs md:text-sm font-bold text-gray-700 mb-px">
+                    Rencana Tindak Lanjut (Planning)
+                  </label>
+                  <textarea
+                    value={formData.rtl}
+                    onChange={(e) => updateField('rtl', e.target.value)}
+                    rows={3}
+                    className="w-full text-sm rounded-md border bg-white border-gray-300 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24"
+                  />
+                </div>
+                <div className="flex flex-col h-full">
+                  <label className="block text-xs md:text-sm font-bold text-gray-700 mb-px">
+                    Instruksi Medis
+                  </label>
+                  <textarea
+                    value={formData.instruksi}
+                    onChange={(e) => updateField('instruksi', e.target.value)}
+                    rows={2}
+                    className="w-full text-sm rounded-md border bg-white border-gray-300 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none"
+                  />
+                </div>
+                <div className="flex flex-col h-full">
+                  <label className="block text-xs md:text-sm font-bold text-gray-700 mb-px">
+                    Evaluasi
+                  </label>
+                  <textarea
+                    value={formData.evaluasi}
+                    onChange={(e) => updateField('evaluasi', e.target.value)}
+                    rows={2}
+                    className="w-full text-sm rounded-md border bg-white border-gray-300 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none"
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-1">Evaluasi</label>
-            <textarea value={formData.evaluasi} onChange={(e) => updateField('evaluasi', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" rows={2} />
           </div>
           <div className="flex items-center gap-3">
                 <button type="submit" disabled={isSubmitting} className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm">
@@ -246,8 +400,11 @@ export default function CpptSoap({ token = '', noRawat = '', noRkmMedis = '' }) 
       </div>
 
       <div className="bg-white rounded-xl border shadow-sm">
-        <div className="px-6 py-4 border-b bg-gradient-to-r from-gray-50 to-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900">Riwayat Pemeriksaan</h3>
+        <div className="px-6 py-4 border-b bg-gradient-to-r from-indigo-50 to-purple-50 flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-900">Riwayat CPPT / SOAP Ranap</h3>
+          <span className="text-xs inline-flex items-center px-2.5 py-1 rounded-full bg-white/70 text-gray-700 border border-indigo-100">
+            {list.length} record
+          </span>
         </div>
         <div className="p-6">
           {loadingList ? (
