@@ -10,6 +10,7 @@ import regPeriksaD17f92 from './reg-periksa'
 import users from './users'
 import menus from './menus'
 import obat from './obat'
+import penyakit from './penyakit'
 import resep from './resep'
 import rawatJalan from './rawat-jalan'
 import dokter from './dokter'
@@ -180,6 +181,7 @@ const api = {
     users: Object.assign(users, users),
     menus: Object.assign(menus, menus),
     obat: Object.assign(obat, obat),
+    penyakit: Object.assign(penyakit, penyakit),
     resep: Object.assign(resep, resep),
     rawatJalan: Object.assign(rawatJalan, rawatJalan),
     dokter: Object.assign(dokter, dokter),
