@@ -22,6 +22,25 @@ const REFERENSI_CONFIG = {
             });
         },
     },
+    penyakit: {
+        supportsSearch: true,
+        defaultParams: { q: "" },
+        buildUrl: ({ q = "" } = {}) => {
+            const params = new URLSearchParams({ q });
+            return `/api/penyakit?${params.toString()}`;
+        },
+        parse: (json) => {
+            const list = json?.data || [];
+            return list.map((it) => {
+                const kode = it?.kode || "";
+                const nama = it?.nama || "";
+                return {
+                    value: kode,
+                    label: `${kode}${nama ? " — " + nama : ""}`.trim(),
+                };
+            });
+        },
+    },
     diagnosa: {
         supportsSearch: true,
         // Selaraskan dengan ReferensiDiagnosa.jsx: gunakan q kosong untuk load awal

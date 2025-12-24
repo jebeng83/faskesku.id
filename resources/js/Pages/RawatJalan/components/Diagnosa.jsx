@@ -21,8 +21,8 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) 
                 }
                 setLoading(true);
                 setErrorMsg('');
-                const params = new URLSearchParams({ q: query, start: 0, limit: 25 });
-                const res = await fetch(`/api/pcare/diagnosa?${params.toString()}`, {
+                const params = new URLSearchParams({ q: query });
+                const res = await fetch(`/api/penyakit?${params.toString()}`, {
                     headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                     credentials: 'include',
                 });
@@ -34,6 +34,7 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) 
                 const list = json?.data || [];
                 const mapped = list.map((it) => ({ kode: it.kode || '', nama: it.nama || '' }));
                 setResults(mapped);
+                setErrorMsg('');
             } catch (e) {
                 setErrorMsg(e?.message || 'Gagal memuat data diagnosa');
                 setResults([]);
@@ -366,4 +367,3 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) 
         </div>
     );
 }
-

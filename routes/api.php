@@ -206,6 +206,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/obat', [ObatController::class, 'getObatByPoli'])->name('api.obat.index');
     Route::get('/obat/{kode_barang}', [ObatController::class, 'getDetailObat'])->name('api.obat.detail');
     Route::post('/obat/cek-stok', [ObatController::class, 'cekStokObat'])->name('api.obat.cek-stok');
+    // Pencarian penyakit (ICD-10) dari tabel lokal `penyakit`
+    Route::get('/penyakit', [RawatJalanController::class, 'searchPenyakit'])->name('api.penyakit.index');
 
     // API routes untuk resep
     Route::post('/resep', [ResepController::class, 'store'])->name('api.resep.store');
