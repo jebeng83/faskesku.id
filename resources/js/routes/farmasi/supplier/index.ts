@@ -1,10 +1,14 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1147
 =======
 * @see routes/web.php:1370
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1217
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/supplier'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -19,10 +23,14 @@ index.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1147
 =======
 * @see routes/web.php:1370
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1217
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/supplier'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -31,10 +39,14 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1147
 =======
 * @see routes/web.php:1370
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1217
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/supplier'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -44,10 +56,14 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1147
 =======
 * @see routes/web.php:1370
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1217
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/supplier'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

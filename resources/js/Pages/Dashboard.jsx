@@ -401,10 +401,28 @@ const Footer = React.memo(function Footer() {
         }
     };
 
+    const resolveDisplayPoliUrl = () => {
+        try {
+            const { protocol, hostname, port } = window.location;
+            const base = `${protocol}//${hostname}`;
+            if (port === '5173') {
+                return `${base}:8000/antrian/poli`;
+            }
+            return `${base}${port ? ':' + port : ''}/antrian/poli`;
+        } catch (_) {
+            return '/antrian/poli';
+        }
+    };
+
     const footerLinks = [
         { label: "Loket Antrian", href: resolveLoketUrl(), target: "_blank" },
         { label: "Display TV Loket", href: resolveDisplayUrl(), target: "_blank" },
+<<<<<<< HEAD
         { label: "APM", href: resolveApmUrl() },
+=======
+        { label: "Display TV Poli", href: resolveDisplayPoliUrl(), target: "_blank" },
+        { label: "APM", href: route("anjungan.pasien-mandiri") },
+>>>>>>> 697e42ab (BelumFixTVPoli)
         { label: "Pendaftaran Pasien", href: "/registration/lanjutan" },
         { label: "Perpustakaan (Dokumen)", href: "/docs" },
         { label: "Berita Sistem", href: "/news" },

@@ -175,6 +175,46 @@ setHargaObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+/**
+* @see routes/web.php:392
+* @route '/api/antrian-poli'
+*/
+export const antrianPoli = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: antrianPoli.url(options),
+    method: 'get',
+})
+
+antrianPoli.definition = {
+    methods: ["get","head"],
+    url: '/api/antrian-poli',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:392
+* @route '/api/antrian-poli'
+*/
+antrianPoli.url = (options?: RouteQueryOptions) => {
+    return antrianPoli.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:392
+* @route '/api/antrian-poli'
+*/
+antrianPoli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: antrianPoli.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:392
+* @route '/api/antrian-poli'
+*/
+antrianPoli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: antrianPoli.url(options),
+    method: 'head',
+})
+
 const api = {
     wilayah: Object.assign(wilayah, wilayah),
     public: Object.assign(publicMethod, publicMethod),
@@ -219,6 +259,7 @@ const api = {
     v1: Object.assign(v1, v1),
     poliklinik: Object.assign(poliklinik, poliklinik),
     akutansi: Object.assign(akutansi, akutansi),
+    antrianPoli: Object.assign(antrianPoli, antrianPoli),
     menu: Object.assign(menu, menu),
     tarifTindakan: Object.assign(tarifTindakan, tarifTindakan),
     tarifTindakanRanap: Object.assign(tarifTindakanRanap, tarifTindakanRanap),

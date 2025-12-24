@@ -1,6 +1,10 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
+<<<<<<< HEAD
 * @see routes/web.php:440
+=======
+* @see routes/web.php:562
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/akutansi/detail-jurnal'
 */
 export const page = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +18,11 @@ page.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:440
+=======
+* @see routes/web.php:562
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/akutansi/detail-jurnal'
 */
 page.url = (options?: RouteQueryOptions) => {
@@ -22,7 +30,11 @@ page.url = (options?: RouteQueryOptions) => {
 }
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:440
+=======
+* @see routes/web.php:562
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/akutansi/detail-jurnal'
 */
 page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +43,11 @@ page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:440
+=======
+* @see routes/web.php:562
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/akutansi/detail-jurnal'
 */
 page.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

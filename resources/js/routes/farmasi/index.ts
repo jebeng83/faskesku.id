@@ -22,10 +22,14 @@ import konversiSatuan from './konversi-satuan'
 import jenisObat from './jenis-obat'
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:989
 =======
 * @see routes/web.php:1229
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1076
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -40,10 +44,14 @@ index.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:989
 =======
 * @see routes/web.php:1229
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1076
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -52,10 +60,14 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:989
 =======
 * @see routes/web.php:1229
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1076
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -65,10 +77,14 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:989
 =======
 * @see routes/web.php:1229
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1076
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -78,10 +94,14 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:994
 =======
 * @see routes/web.php:1234
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1081
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/dashboard'
 */
 export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -96,10 +116,14 @@ dashboard.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:994
 =======
 * @see routes/web.php:1234
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1081
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/dashboard'
 */
 dashboard.url = (options?: RouteQueryOptions) => {
@@ -108,10 +132,14 @@ dashboard.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:994
 =======
 * @see routes/web.php:1234
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1081
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/dashboard'
 */
 dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -121,10 +149,14 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:994
 =======
 * @see routes/web.php:1234
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1081
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/dashboard'
 */
 dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -134,10 +166,14 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:998
 =======
 * @see routes/web.php:1238
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1085
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/pembelian-obat'
 */
 export const pembelianObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -152,10 +188,14 @@ pembelianObat.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:998
 =======
 * @see routes/web.php:1238
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1085
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/pembelian-obat'
 */
 pembelianObat.url = (options?: RouteQueryOptions) => {
@@ -164,10 +204,14 @@ pembelianObat.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:998
 =======
 * @see routes/web.php:1238
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1085
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/pembelian-obat'
 */
 pembelianObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -177,10 +221,14 @@ pembelianObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:998
 =======
 * @see routes/web.php:1238
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1085
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/pembelian-obat'
 */
 pembelianObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -190,10 +238,14 @@ pembelianObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1012
 =======
 * @see routes/web.php:1242
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1089
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/hutang-obat'
 */
 export const hutangObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -208,10 +260,14 @@ hutangObat.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1012
 =======
 * @see routes/web.php:1242
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1089
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/hutang-obat'
 */
 hutangObat.url = (options?: RouteQueryOptions) => {
@@ -220,10 +276,14 @@ hutangObat.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1012
 =======
 * @see routes/web.php:1242
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1089
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/hutang-obat'
 */
 hutangObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -233,10 +293,14 @@ hutangObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1012
 =======
 * @see routes/web.php:1242
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1089
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/hutang-obat'
 */
 hutangObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -246,10 +310,14 @@ hutangObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1008
 =======
 * @see routes/web.php:1248
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1095
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/penjualan-obat'
 */
 export const penjualanObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -264,10 +332,14 @@ penjualanObat.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1008
 =======
 * @see routes/web.php:1248
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1095
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/penjualan-obat'
 */
 penjualanObat.url = (options?: RouteQueryOptions) => {
@@ -276,10 +348,14 @@ penjualanObat.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1008
 =======
 * @see routes/web.php:1248
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1095
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/penjualan-obat'
 */
 penjualanObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -289,10 +365,14 @@ penjualanObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1008
 =======
 * @see routes/web.php:1248
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1095
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/penjualan-obat'
 */
 penjualanObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -302,10 +382,14 @@ penjualanObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1016
 =======
 * @see routes/web.php:1252
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1099
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/resep-obat'
 */
 export const resepObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -320,10 +404,14 @@ resepObat.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1016
 =======
 * @see routes/web.php:1252
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1099
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/resep-obat'
 */
 resepObat.url = (options?: RouteQueryOptions) => {
@@ -332,10 +420,14 @@ resepObat.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1016
 =======
 * @see routes/web.php:1252
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1099
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/resep-obat'
 */
 resepObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -345,10 +437,14 @@ resepObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1016
 =======
 * @see routes/web.php:1252
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1099
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/resep-obat'
 */
 resepObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -358,10 +454,14 @@ resepObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1021
 =======
 * @see routes/web.php:1257
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1104
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/permintaan-resep'
 */
 export const permintaanResep = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -376,10 +476,14 @@ permintaanResep.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1021
 =======
 * @see routes/web.php:1257
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1104
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/permintaan-resep'
 */
 permintaanResep.url = (options?: RouteQueryOptions) => {
@@ -388,10 +492,14 @@ permintaanResep.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1021
 =======
 * @see routes/web.php:1257
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1104
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/permintaan-resep'
 */
 permintaanResep.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -401,10 +509,14 @@ permintaanResep.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1021
 =======
 * @see routes/web.php:1257
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1104
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/permintaan-resep'
 */
 permintaanResep.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -414,10 +526,14 @@ permintaanResep.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1025
 =======
 * @see routes/web.php:1261
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1108
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/riwayat-transaksi-gudang'
 */
 export const riwayatTransaksiGudang = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -432,10 +548,14 @@ riwayatTransaksiGudang.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1025
 =======
 * @see routes/web.php:1261
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1108
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/riwayat-transaksi-gudang'
 */
 riwayatTransaksiGudang.url = (options?: RouteQueryOptions) => {
@@ -444,10 +564,14 @@ riwayatTransaksiGudang.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1025
 =======
 * @see routes/web.php:1261
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1108
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/riwayat-transaksi-gudang'
 */
 riwayatTransaksiGudang.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -457,10 +581,14 @@ riwayatTransaksiGudang.get = (options?: RouteQueryOptions): RouteDefinition<'get
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1025
 =======
 * @see routes/web.php:1261
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1108
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/riwayat-transaksi-gudang'
 */
 riwayatTransaksiGudang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -514,10 +642,14 @@ riwayatBarangMedis.head = (options?: RouteQueryOptions): RouteDefinition<'head'>
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1038
 =======
 * @see routes/web.php:1274
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1121
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/stok-obat'
 */
 export const stokObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -532,10 +664,14 @@ stokObat.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1038
 =======
 * @see routes/web.php:1274
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1121
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/stok-obat'
 */
 stokObat.url = (options?: RouteQueryOptions) => {
@@ -544,10 +680,14 @@ stokObat.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1038
 =======
 * @see routes/web.php:1274
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1121
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/stok-obat'
 */
 stokObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -557,10 +697,14 @@ stokObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1038
 =======
 * @see routes/web.php:1274
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1121
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/stok-obat'
 */
 stokObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -570,10 +714,14 @@ stokObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1041
 =======
 * @see routes/web.php:1277
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1124
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/stok-opname'
 */
 export const stokOpname = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -588,10 +736,14 @@ stokOpname.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1041
 =======
 * @see routes/web.php:1277
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1124
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/stok-opname'
 */
 stokOpname.url = (options?: RouteQueryOptions) => {
@@ -600,10 +752,14 @@ stokOpname.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1041
 =======
 * @see routes/web.php:1277
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1124
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/stok-opname'
 */
 stokOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -613,10 +769,14 @@ stokOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1041
 =======
 * @see routes/web.php:1277
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1124
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/stok-opname'
 */
 stokOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -626,10 +786,14 @@ stokOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1044
 =======
 * @see routes/web.php:1280
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1127
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/darurat-stok'
 */
 export const daruratStok = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -644,10 +808,14 @@ daruratStok.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1044
 =======
 * @see routes/web.php:1280
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1127
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/darurat-stok'
 */
 daruratStok.url = (options?: RouteQueryOptions) => {
@@ -656,10 +824,14 @@ daruratStok.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1044
 =======
 * @see routes/web.php:1280
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1127
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/darurat-stok'
 */
 daruratStok.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -669,10 +841,14 @@ daruratStok.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1044
 =======
 * @see routes/web.php:1280
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1127
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/darurat-stok'
 */
 daruratStok.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -682,10 +858,14 @@ daruratStok.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1070
 =======
 * @see routes/web.php:1285
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1132
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/sirkulasi-obat'
 */
 export const sirkulasiObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -700,10 +880,14 @@ sirkulasiObat.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1070
 =======
 * @see routes/web.php:1285
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1132
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/sirkulasi-obat'
 */
 sirkulasiObat.url = (options?: RouteQueryOptions) => {
@@ -712,10 +896,14 @@ sirkulasiObat.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1070
 =======
 * @see routes/web.php:1285
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1132
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/sirkulasi-obat'
 */
 sirkulasiObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -725,10 +913,14 @@ sirkulasiObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1070
 =======
 * @see routes/web.php:1285
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1132
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/sirkulasi-obat'
 */
 sirkulasiObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -738,10 +930,14 @@ sirkulasiObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1074
 =======
 * @see routes/web.php:1290
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1137
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/cek-stok-obat'
 */
 export const cekStokObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -756,10 +952,14 @@ cekStokObat.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1074
 =======
 * @see routes/web.php:1290
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1137
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/cek-stok-obat'
 */
 cekStokObat.url = (options?: RouteQueryOptions) => {
@@ -768,10 +968,14 @@ cekStokObat.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1074
 =======
 * @see routes/web.php:1290
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1137
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/cek-stok-obat'
 */
 cekStokObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -781,10 +985,14 @@ cekStokObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1074
 =======
 * @see routes/web.php:1290
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1137
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/cek-stok-obat'
 */
 cekStokObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -794,10 +1002,14 @@ cekStokObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1066
 =======
 * @see routes/web.php:1295
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1142
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/sisa-stok'
 */
 export const sisaStok = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -812,10 +1024,14 @@ sisaStok.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1066
 =======
 * @see routes/web.php:1295
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1142
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/sisa-stok'
 */
 sisaStok.url = (options?: RouteQueryOptions) => {
@@ -824,10 +1040,14 @@ sisaStok.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1066
 =======
 * @see routes/web.php:1295
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1142
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/sisa-stok'
 */
 sisaStok.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -837,10 +1057,14 @@ sisaStok.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1066
 =======
 * @see routes/web.php:1295
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1142
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/sisa-stok'
 */
 sisaStok.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -850,10 +1074,14 @@ sisaStok.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1079
 =======
 * @see routes/web.php:1302
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1149
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/data-opname'
 */
 export const dataOpname = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -868,10 +1096,14 @@ dataOpname.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1079
 =======
 * @see routes/web.php:1302
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1149
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/data-opname'
 */
 dataOpname.url = (options?: RouteQueryOptions) => {
@@ -880,10 +1112,14 @@ dataOpname.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1079
 =======
 * @see routes/web.php:1302
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1149
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/data-opname'
 */
 dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -893,10 +1129,14 @@ dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1079
 =======
 * @see routes/web.php:1302
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1149
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/farmasi/data-opname'
 */
 dataOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

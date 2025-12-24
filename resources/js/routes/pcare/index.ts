@@ -18,10 +18,14 @@ import massSend from './mass-send'
 import setting from './setting'
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1187
 =======
 * @see routes/web.php:1410
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1257
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/pcare'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -36,10 +40,14 @@ index.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1187
 =======
 * @see routes/web.php:1410
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1257
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/pcare'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -48,10 +56,14 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1187
 =======
 * @see routes/web.php:1410
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1257
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/pcare'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -61,10 +73,14 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1187
 =======
 * @see routes/web.php:1410
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1257
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/pcare'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -74,10 +90,14 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1206
 =======
 * @see routes/web.php:1429
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1276
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/pcare/monitoring'
 */
 export const monitoring = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -92,10 +112,14 @@ monitoring.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1206
 =======
 * @see routes/web.php:1429
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1276
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/pcare/monitoring'
 */
 monitoring.url = (options?: RouteQueryOptions) => {
@@ -104,10 +128,14 @@ monitoring.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1206
 =======
 * @see routes/web.php:1429
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1276
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/pcare/monitoring'
 */
 monitoring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -117,10 +145,14 @@ monitoring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1206
 =======
 * @see routes/web.php:1429
 >>>>>>> d469a398 (Odontogram)
+=======
+* @see routes/web.php:1276
+>>>>>>> 697e42ab (BelumFixTVPoli)
 * @route '/pcare/monitoring'
 */
 monitoring.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

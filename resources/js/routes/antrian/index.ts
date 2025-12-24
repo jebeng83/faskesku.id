@@ -79,9 +79,50 @@ display.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+/**
+* @see routes/web.php:267
+* @route '/antrian/poli'
+*/
+export const poli = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: poli.url(options),
+    method: 'get',
+})
+
+poli.definition = {
+    methods: ["get","head"],
+    url: '/antrian/poli',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:267
+* @route '/antrian/poli'
+*/
+poli.url = (options?: RouteQueryOptions) => {
+    return poli.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:267
+* @route '/antrian/poli'
+*/
+poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: poli.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:267
+* @route '/antrian/poli'
+*/
+poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: poli.url(options),
+    method: 'head',
+})
+
 const antrian = {
     loket: Object.assign(loket, loket),
     display: Object.assign(display, display),
+    poli: Object.assign(poli, poli),
 }
 
 export default antrian
