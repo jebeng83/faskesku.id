@@ -3,9 +3,9 @@ import summary from './summary'
 import attempts from './attempts'
 import raw from './raw'
 /**
- * @see routes/web.php:1043
- * @route '/pcare/monitoring-status'
- */
+* @see routes/web.php:1061
+* @route '/pcare/monitoring-status'
+*/
 export const status = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: status.url(options),
     method: 'get',
@@ -17,25 +17,25 @@ status.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:1043
- * @route '/pcare/monitoring-status'
- */
+* @see routes/web.php:1061
+* @route '/pcare/monitoring-status'
+*/
 status.url = (options?: RouteQueryOptions) => {
     return status.definition.url + queryParams(options)
 }
 
 /**
- * @see routes/web.php:1043
- * @route '/pcare/monitoring-status'
- */
+* @see routes/web.php:1061
+* @route '/pcare/monitoring-status'
+*/
 status.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: status.url(options),
     method: 'get',
 })
 /**
- * @see routes/web.php:1043
- * @route '/pcare/monitoring-status'
- */
+* @see routes/web.php:1061
+* @route '/pcare/monitoring-status'
+*/
 status.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: status.url(options),
     method: 'head',

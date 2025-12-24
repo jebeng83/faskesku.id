@@ -1,8 +1,8 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
- * @see routes/web.php:474
- * @route '/master-data'
- */
+* @see routes/web.php:508
+* @route '/master-data'
+*/
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
@@ -14,25 +14,25 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:474
- * @route '/master-data'
- */
+* @see routes/web.php:508
+* @route '/master-data'
+*/
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
 }
 
 /**
- * @see routes/web.php:474
- * @route '/master-data'
- */
+* @see routes/web.php:508
+* @route '/master-data'
+*/
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
 /**
- * @see routes/web.php:474
- * @route '/master-data'
- */
+* @see routes/web.php:508
+* @route '/master-data'
+*/
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',

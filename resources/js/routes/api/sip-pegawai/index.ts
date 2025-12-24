@@ -1,8 +1,8 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
- * @see routes/api.php:275
- * @route '/api/sip-pegawai/apoteker'
- */
+* @see routes/api.php:309
+* @route '/api/sip-pegawai/apoteker'
+*/
 export const apoteker = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: apoteker.url(options),
     method: 'get',
@@ -14,34 +14,34 @@ apoteker.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/api.php:275
- * @route '/api/sip-pegawai/apoteker'
- */
+* @see routes/api.php:309
+* @route '/api/sip-pegawai/apoteker'
+*/
 apoteker.url = (options?: RouteQueryOptions) => {
     return apoteker.definition.url + queryParams(options)
 }
 
 /**
- * @see routes/api.php:275
- * @route '/api/sip-pegawai/apoteker'
- */
+* @see routes/api.php:309
+* @route '/api/sip-pegawai/apoteker'
+*/
 apoteker.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: apoteker.url(options),
     method: 'get',
 })
 /**
- * @see routes/api.php:275
- * @route '/api/sip-pegawai/apoteker'
- */
+* @see routes/api.php:309
+* @route '/api/sip-pegawai/apoteker'
+*/
 apoteker.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: apoteker.url(options),
     method: 'head',
 })
 
 /**
- * @see routes/api.php:300
- * @route '/api/sip-pegawai/expiring'
- */
+* @see routes/api.php:334
+* @route '/api/sip-pegawai/expiring'
+*/
 export const expiring = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: expiring.url(options),
     method: 'get',
@@ -53,25 +53,25 @@ expiring.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/api.php:300
- * @route '/api/sip-pegawai/expiring'
- */
+* @see routes/api.php:334
+* @route '/api/sip-pegawai/expiring'
+*/
 expiring.url = (options?: RouteQueryOptions) => {
     return expiring.definition.url + queryParams(options)
 }
 
 /**
- * @see routes/api.php:300
- * @route '/api/sip-pegawai/expiring'
- */
+* @see routes/api.php:334
+* @route '/api/sip-pegawai/expiring'
+*/
 expiring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: expiring.url(options),
     method: 'get',
 })
 /**
- * @see routes/api.php:300
- * @route '/api/sip-pegawai/expiring'
- */
+* @see routes/api.php:334
+* @route '/api/sip-pegawai/expiring'
+*/
 expiring.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: expiring.url(options),
     method: 'head',

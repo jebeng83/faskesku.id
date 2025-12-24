@@ -15,7 +15,30 @@ class SecurityHeadersMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Log registration POST requests untuk debugging
+        if ($request->is('registration*') && $request->isMethod('POST')) {
+            \Illuminate\Support\Facades\Log::info('[SECURITY HEADERS MIDDLEWARE] Registration POST request', [
+                'path' => $request->path(),
+                'full_url' => $request->fullUrl(),
+                'method' => $request->method(),
+                'route_name' => $request->route()?->getName(),
+                'route_params' => $request->route()?->parameters(),
+                'accept_header' => $request->header('Accept'),
+                'content_type' => $request->header('Content-Type'),
+            ]);
+        }
+
         $response = $next($request);
+
+        // Log response untuk registration POST requests
+        if ($request->is('registration*') && $request->isMethod('POST')) {
+            \Illuminate\Support\Facades\Log::info('[SECURITY HEADERS MIDDLEWARE] Registration POST response', [
+                'path' => $request->path(),
+                'status' => $response->getStatusCode(),
+                'content_type' => $response->headers->get('Content-Type'),
+                'route_name' => $request->route()?->getName(),
+            ]);
+        }
 
         // Force HTTPS di production
         if (config('app.env') === 'production') {
@@ -61,11 +84,11 @@ class SecurityHeadersMiddleware
             ], $viteWs));
 
             $csp = "default-src 'self'; ".
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' ".implode(' ', $httpAllowed)."; ".
-                "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com ".implode(' ', $httpAllowed)."; ".
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com ".implode(' ', $httpAllowed).'; '.
+                "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com ".implode(' ', $httpAllowed).'; '.
                 "img-src 'self' data: https: http:; ".
                 "font-src 'self' data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.gstatic.com https://fonts.googleapis.com; ".
-                "connect-src 'self' ".implode(' ', array_merge($httpAllowed, $wsAllowed))."; ".
+                "connect-src 'self' https://cloudflareinsights.com ".implode(' ', array_merge($httpAllowed, $wsAllowed)).'; '.
                 "worker-src 'self' blob:; ".
                 "frame-src 'self' https://www.google.com https://maps.google.com";
         } else {
@@ -74,11 +97,11 @@ class SecurityHeadersMiddleware
             if (! empty($viteHttp)) {
                 $style .= ' '.implode(' ', $viteHttp);
             }
-            $script = "script-src 'self' 'unsafe-inline'";
+            $script = "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com";
             if (! empty($viteHttp) || ! empty($viteWs)) {
                 $script .= ' '.implode(' ', array_merge($viteHttp, $viteWs));
             }
-            $connect = "connect-src 'self'";
+            $connect = "connect-src 'self' https://cloudflareinsights.com";
             if (! empty($viteHttp) || ! empty($viteWs)) {
                 $connect .= ' '.implode(' ', array_merge($viteHttp, $viteWs));
             }

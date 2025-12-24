@@ -1,8 +1,8 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
- * @see routes/web.php:1133
- * @route '/pcare/data-peserta-by-nik'
- */
+* @see routes/web.php:1151
+* @route '/pcare/data-peserta-by-nik'
+*/
 export const cekPesertaNik = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: cekPesertaNik.url(options),
     method: 'get',
@@ -14,34 +14,34 @@ cekPesertaNik.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:1133
- * @route '/pcare/data-peserta-by-nik'
- */
+* @see routes/web.php:1151
+* @route '/pcare/data-peserta-by-nik'
+*/
 cekPesertaNik.url = (options?: RouteQueryOptions) => {
     return cekPesertaNik.definition.url + queryParams(options)
 }
 
 /**
- * @see routes/web.php:1133
- * @route '/pcare/data-peserta-by-nik'
- */
+* @see routes/web.php:1151
+* @route '/pcare/data-peserta-by-nik'
+*/
 cekPesertaNik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: cekPesertaNik.url(options),
     method: 'get',
 })
 /**
- * @see routes/web.php:1133
- * @route '/pcare/data-peserta-by-nik'
- */
+* @see routes/web.php:1151
+* @route '/pcare/data-peserta-by-nik'
+*/
 cekPesertaNik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: cekPesertaNik.url(options),
     method: 'head',
 })
 
 /**
- * @see routes/web.php:1138
- * @route '/pcare/layanan'
- */
+* @see routes/web.php:1156
+* @route '/pcare/layanan'
+*/
 export const pcare = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: pcare.url(options),
     method: 'get',
@@ -53,25 +53,25 @@ pcare.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:1138
- * @route '/pcare/layanan'
- */
+* @see routes/web.php:1156
+* @route '/pcare/layanan'
+*/
 pcare.url = (options?: RouteQueryOptions) => {
     return pcare.definition.url + queryParams(options)
 }
 
 /**
- * @see routes/web.php:1138
- * @route '/pcare/layanan'
- */
+* @see routes/web.php:1156
+* @route '/pcare/layanan'
+*/
 pcare.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: pcare.url(options),
     method: 'get',
 })
 /**
- * @see routes/web.php:1138
- * @route '/pcare/layanan'
- */
+* @see routes/web.php:1156
+* @route '/pcare/layanan'
+*/
 pcare.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: pcare.url(options),
     method: 'head',

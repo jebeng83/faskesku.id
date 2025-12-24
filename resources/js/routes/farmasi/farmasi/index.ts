@@ -1,9 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 import cetak from './cetak'
 /**
- * @see routes/web.php:917
- * @route '/farmasi/farmasi/data-opname'
- */
+* @see routes/web.php:935
+* @route '/farmasi/farmasi/data-opname'
+*/
 export const dataOpname = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: dataOpname.url(options),
     method: 'get',
@@ -15,25 +15,25 @@ dataOpname.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:917
- * @route '/farmasi/farmasi/data-opname'
- */
+* @see routes/web.php:935
+* @route '/farmasi/farmasi/data-opname'
+*/
 dataOpname.url = (options?: RouteQueryOptions) => {
     return dataOpname.definition.url + queryParams(options)
 }
 
 /**
- * @see routes/web.php:917
- * @route '/farmasi/farmasi/data-opname'
- */
+* @see routes/web.php:935
+* @route '/farmasi/farmasi/data-opname'
+*/
 dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: dataOpname.url(options),
     method: 'get',
 })
 /**
- * @see routes/web.php:917
- * @route '/farmasi/farmasi/data-opname'
- */
+* @see routes/web.php:935
+* @route '/farmasi/farmasi/data-opname'
+*/
 dataOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: dataOpname.url(options),
     method: 'head',

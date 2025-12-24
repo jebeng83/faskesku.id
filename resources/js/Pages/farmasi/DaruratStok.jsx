@@ -34,7 +34,7 @@ export default function DaruratStok() {
         controllerRef.current = ac;
         setLoading(true);
         try {
-            const { data } = await axios.get("/api/inventori/darurat-stok", {
+            const { data } = await axios.get("/farmasi/darurat-stok/data", {
                 params: {
                     jenis,
                     kategori,

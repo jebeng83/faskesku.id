@@ -77,9 +77,9 @@ logout.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
- * @see routes/web.php:78
- * @route '/landing'
- */
+* @see routes/web.php:79
+* @route '/landing'
+*/
 export const landing = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: landing.url(options),
     method: 'get',
@@ -91,34 +91,34 @@ landing.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:78
- * @route '/landing'
- */
+* @see routes/web.php:79
+* @route '/landing'
+*/
 landing.url = (options?: RouteQueryOptions) => {
     return landing.definition.url + queryParams(options)
 }
 
 /**
- * @see routes/web.php:78
- * @route '/landing'
- */
+* @see routes/web.php:79
+* @route '/landing'
+*/
 landing.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: landing.url(options),
     method: 'get',
 })
 /**
- * @see routes/web.php:78
- * @route '/landing'
- */
+* @see routes/web.php:79
+* @route '/landing'
+*/
 landing.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: landing.url(options),
     method: 'head',
 })
 
 /**
- * @see routes/web.php:182
- * @route '/dashboard'
- */
+* @see routes/web.php:277
+* @route '/dashboard'
+*/
 export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: dashboard.url(options),
     method: 'get',
@@ -130,34 +130,34 @@ dashboard.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:182
- * @route '/dashboard'
- */
+* @see routes/web.php:277
+* @route '/dashboard'
+*/
 dashboard.url = (options?: RouteQueryOptions) => {
     return dashboard.definition.url + queryParams(options)
 }
 
 /**
- * @see routes/web.php:182
- * @route '/dashboard'
- */
+* @see routes/web.php:277
+* @route '/dashboard'
+*/
 dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: dashboard.url(options),
     method: 'get',
 })
 /**
- * @see routes/web.php:182
- * @route '/dashboard'
- */
+* @see routes/web.php:277
+* @route '/dashboard'
+*/
 dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: dashboard.url(options),
     method: 'head',
 })
 
 /**
- * @see routes/web.php:245
- * @route '/docs/{section?}'
- */
+* @see routes/web.php:281
+* @route '/docs/{section?}'
+*/
 export const docs = (args?: { section?: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: docs.url(args, options),
     method: 'get',
@@ -169,9 +169,9 @@ docs.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:245
- * @route '/docs/{section?}'
- */
+* @see routes/web.php:281
+* @route '/docs/{section?}'
+*/
 docs.url = (args?: { section?: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { section: args }
@@ -200,17 +200,17 @@ docs.url = (args?: { section?: string | number } | [section: string | number ] |
 }
 
 /**
- * @see routes/web.php:245
- * @route '/docs/{section?}'
- */
+* @see routes/web.php:281
+* @route '/docs/{section?}'
+*/
 docs.get = (args?: { section?: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: docs.url(args, options),
     method: 'get',
 })
 /**
- * @see routes/web.php:245
- * @route '/docs/{section?}'
- */
+* @see routes/web.php:281
+* @route '/docs/{section?}'
+*/
 docs.head = (args?: { section?: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: docs.url(args, options),
     method: 'head',

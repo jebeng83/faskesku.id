@@ -444,6 +444,77 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
         }
     };
 
+    const MobileBottomNav = React.memo(function MobileBottomNav() {
+        const navItems = [
+            {
+                href: (() => {
+                    try {
+                        return route("farmasi.index", {}, false);
+                    } catch (_) {
+                        return "/farmasi";
+                    }
+                })(),
+                icon: Home,
+            },
+            {
+                href: (() => {
+                    try {
+                        return route("farmasi.penjualan-obat", {}, false);
+                    } catch (_) {
+                        return "/farmasi/penjualan-obat";
+                    }
+                })(),
+                icon: ShoppingCart,
+            },
+            {
+                href: (() => {
+                    try {
+                        return route("farmasi.permintaan-resep", {}, false);
+                    } catch (_) {
+                        return "/farmasi/permintaan-resep";
+                    }
+                })(),
+                icon: Package,
+            },
+            {
+                href: (() => {
+                    try {
+                        return route("farmasi.pembelian-obat", {}, false);
+                    } catch (_) {
+                        return "/farmasi/pembelian-obat";
+                    }
+                })(),
+                icon: Truck,
+            },
+            {
+                href: cekStokObatUrl,
+                icon: Boxes,
+            },
+        ];
+
+        return (
+            <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/80 dark:bg-gray-900/85 backdrop-blur border-t border-slate-200/70 dark:border-gray-800">
+                <div className="h-16 px-4 pb-[env(safe-area-inset-bottom)]">
+                    <div className="grid grid-cols-5 gap-2 h-full">
+                        {navItems.map((item) => (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className={`group flex items-center justify-center rounded-lg transition-all duration-200 ${
+                                    isActive(item.href)
+                                        ? "text-blue-600 dark:text-blue-400"
+                                        : "text-slate-700 dark:text-gray-300"
+                                } hover:bg-blue-50 dark:hover:bg-blue-900/20`}
+                            >
+                                <item.icon className="w-5 h-5 transition-transform group-hover:scale-110" />
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            </nav>
+        );
+    });
+
     return (
         <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
             {/* Sidebar */}
@@ -802,6 +873,7 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                     </div>
                 </div>
             </header>
+            <MobileBottomNav />
 
             {/* Main Content */}
             <main
@@ -813,7 +885,7 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                         : "lg:ml-64"
                 }`}
             >
-                <div className="min-h-[calc(100vh-3.5rem)] px-4 sm:px-6 lg:px-8 pt-6 pb-24">
+                <div className="min-h-[calc(100vh-3.5rem)] px-4 sm:px-6 lg:px-8 pt-6 pb-24 md:pb-6">
                     {children}
                 </div>
             </main>
