@@ -1,9 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults, validateParameters } from './../wayfinder'
 /**
 * @see \App\Http\Controllers\AuthController::login
- * @see app/Http/Controllers/AuthController.php:15
- * @route '/login'
- */
+* @see app/Http/Controllers/AuthController.php:15
+* @route '/login'
+*/
 export const login = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: login.url(options),
     method: 'get',
@@ -16,27 +16,28 @@ login.definition = {
 
 /**
 * @see \App\Http\Controllers\AuthController::login
- * @see app/Http/Controllers/AuthController.php:15
- * @route '/login'
- */
+* @see app/Http/Controllers/AuthController.php:15
+* @route '/login'
+*/
 login.url = (options?: RouteQueryOptions) => {
     return login.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\AuthController::login
- * @see app/Http/Controllers/AuthController.php:15
- * @route '/login'
- */
+* @see app/Http/Controllers/AuthController.php:15
+* @route '/login'
+*/
 login.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: login.url(options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\AuthController::login
- * @see app/Http/Controllers/AuthController.php:15
- * @route '/login'
- */
+* @see app/Http/Controllers/AuthController.php:15
+* @route '/login'
+*/
 login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: login.url(options),
     method: 'head',
@@ -44,9 +45,9 @@ login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\AuthController::logout
- * @see app/Http/Controllers/AuthController.php:125
- * @route '/logout'
- */
+* @see app/Http/Controllers/AuthController.php:125
+* @route '/logout'
+*/
 export const logout = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: logout.url(options),
     method: 'post',
@@ -59,18 +60,18 @@ logout.definition = {
 
 /**
 * @see \App\Http\Controllers\AuthController::logout
- * @see app/Http/Controllers/AuthController.php:125
- * @route '/logout'
- */
+* @see app/Http/Controllers/AuthController.php:125
+* @route '/logout'
+*/
 logout.url = (options?: RouteQueryOptions) => {
     return logout.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\AuthController::logout
- * @see app/Http/Controllers/AuthController.php:125
- * @route '/logout'
- */
+* @see app/Http/Controllers/AuthController.php:125
+* @route '/logout'
+*/
 logout.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: logout.url(options),
     method: 'post',
@@ -106,6 +107,7 @@ landing.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: landing.url(options),
     method: 'get',
 })
+
 /**
 * @see routes/web.php:79
 * @route '/landing'
@@ -145,6 +147,7 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: dashboard.url(options),
     method: 'get',
 })
+
 /**
 * @see routes/web.php:277
 * @route '/dashboard'
@@ -155,7 +158,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:281
+* @see routes/web.php:340
 * @route '/docs/{section?}'
 */
 export const docs = (args?: { section?: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -169,7 +172,7 @@ docs.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:281
+* @see routes/web.php:340
 * @route '/docs/{section?}'
 */
 docs.url = (args?: { section?: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -177,22 +180,21 @@ docs.url = (args?: { section?: string | number } | [section: string | number ] |
         args = { section: args }
     }
 
-    
     if (Array.isArray(args)) {
         args = {
-                    section: args[0],
-                }
+            section: args[0],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     validateParameters(args, [
-            "section",
-        ])
+        "section",
+    ])
 
     const parsedArgs = {
-                        section: args?.section,
-                }
+        section: args?.section,
+    }
 
     return docs.definition.url
             .replace('{section?}', parsedArgs.section?.toString() ?? '')
@@ -200,18 +202,20 @@ docs.url = (args?: { section?: string | number } | [section: string | number ] |
 }
 
 /**
-* @see routes/web.php:281
+* @see routes/web.php:340
 * @route '/docs/{section?}'
 */
 docs.get = (args?: { section?: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: docs.url(args, options),
     method: 'get',
 })
+
 /**
-* @see routes/web.php:281
+* @see routes/web.php:340
 * @route '/docs/{section?}'
 */
 docs.head = (args?: { section?: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: docs.url(args, options),
     method: 'head',
 })
+

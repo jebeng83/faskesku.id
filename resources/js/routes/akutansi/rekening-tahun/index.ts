@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
-* @see routes/web.php:300
+* @see routes/web.php:359
 * @route '/akutansi/rekening-tahun'
 */
 export const page = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ page.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:300
+* @see routes/web.php:359
 * @route '/akutansi/rekening-tahun'
 */
 page.url = (options?: RouteQueryOptions) => {
@@ -22,21 +22,23 @@ page.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:300
+* @see routes/web.php:359
 * @route '/akutansi/rekening-tahun'
 */
 page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: page.url(options),
     method: 'get',
 })
+
 /**
-* @see routes/web.php:300
+* @see routes/web.php:359
 * @route '/akutansi/rekening-tahun'
 */
 page.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: page.url(options),
     method: 'head',
 })
+
 const rekeningTahun = {
     page: Object.assign(page, page),
 }

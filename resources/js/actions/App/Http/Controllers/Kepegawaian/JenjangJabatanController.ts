@@ -1,9 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::index
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:16
- * @route '/jenjang-jabatan'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:16
+* @route '/jenjang-jabatan'
+*/
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
@@ -16,27 +16,28 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::index
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:16
- * @route '/jenjang-jabatan'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:16
+* @route '/jenjang-jabatan'
+*/
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::index
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:16
- * @route '/jenjang-jabatan'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:16
+* @route '/jenjang-jabatan'
+*/
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::index
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:16
- * @route '/jenjang-jabatan'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:16
+* @route '/jenjang-jabatan'
+*/
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
@@ -44,9 +45,9 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::create
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:43
- * @route '/jenjang-jabatan/create'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:43
+* @route '/jenjang-jabatan/create'
+*/
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: create.url(options),
     method: 'get',
@@ -59,27 +60,28 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::create
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:43
- * @route '/jenjang-jabatan/create'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:43
+* @route '/jenjang-jabatan/create'
+*/
 create.url = (options?: RouteQueryOptions) => {
     return create.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::create
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:43
- * @route '/jenjang-jabatan/create'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:43
+* @route '/jenjang-jabatan/create'
+*/
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: create.url(options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::create
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:43
- * @route '/jenjang-jabatan/create'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:43
+* @route '/jenjang-jabatan/create'
+*/
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: create.url(options),
     method: 'head',
@@ -87,9 +89,9 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::store
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:51
- * @route '/jenjang-jabatan'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:51
+* @route '/jenjang-jabatan'
+*/
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -102,18 +104,18 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::store
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:51
- * @route '/jenjang-jabatan'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:51
+* @route '/jenjang-jabatan'
+*/
 store.url = (options?: RouteQueryOptions) => {
     return store.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::store
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:51
- * @route '/jenjang-jabatan'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:51
+* @route '/jenjang-jabatan'
+*/
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -121,9 +123,9 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::show
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:118
- * @route '/jenjang-jabatan/{kode}'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:118
+* @route '/jenjang-jabatan/{kode}'
+*/
 export const show = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
@@ -136,26 +138,25 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::show
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:118
- * @route '/jenjang-jabatan/{kode}'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:118
+* @route '/jenjang-jabatan/{kode}'
+*/
 show.url = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { kode: args }
     }
 
-    
     if (Array.isArray(args)) {
         args = {
-                    kode: args[0],
-                }
+            kode: args[0],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        kode: args.kode,
-                }
+        kode: args.kode,
+    }
 
     return show.definition.url
             .replace('{kode}', parsedArgs.kode.toString())
@@ -164,18 +165,19 @@ show.url = (args: { kode: string | number } | [kode: string | number ] | string 
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::show
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:118
- * @route '/jenjang-jabatan/{kode}'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:118
+* @route '/jenjang-jabatan/{kode}'
+*/
 show.get = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::show
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:118
- * @route '/jenjang-jabatan/{kode}'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:118
+* @route '/jenjang-jabatan/{kode}'
+*/
 show.head = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
@@ -183,9 +185,9 @@ show.head = (args: { kode: string | number } | [kode: string | number ] | string
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::edit
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:130
- * @route '/jenjang-jabatan/{kode}/edit'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:130
+* @route '/jenjang-jabatan/{kode}/edit'
+*/
 export const edit = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
@@ -198,26 +200,25 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::edit
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:130
- * @route '/jenjang-jabatan/{kode}/edit'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:130
+* @route '/jenjang-jabatan/{kode}/edit'
+*/
 edit.url = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { kode: args }
     }
 
-    
     if (Array.isArray(args)) {
         args = {
-                    kode: args[0],
-                }
+            kode: args[0],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        kode: args.kode,
-                }
+        kode: args.kode,
+    }
 
     return edit.definition.url
             .replace('{kode}', parsedArgs.kode.toString())
@@ -226,18 +227,19 @@ edit.url = (args: { kode: string | number } | [kode: string | number ] | string 
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::edit
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:130
- * @route '/jenjang-jabatan/{kode}/edit'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:130
+* @route '/jenjang-jabatan/{kode}/edit'
+*/
 edit.get = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::edit
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:130
- * @route '/jenjang-jabatan/{kode}/edit'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:130
+* @route '/jenjang-jabatan/{kode}/edit'
+*/
 edit.head = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: edit.url(args, options),
     method: 'head',
@@ -245,9 +247,9 @@ edit.head = (args: { kode: string | number } | [kode: string | number ] | string
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::update
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:142
- * @route '/jenjang-jabatan/{kode}'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:142
+* @route '/jenjang-jabatan/{kode}'
+*/
 const updatefeadef26ad3302212ac2fd55bcae3628 = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: updatefeadef26ad3302212ac2fd55bcae3628.url(args, options),
     method: 'put',
@@ -260,26 +262,25 @@ updatefeadef26ad3302212ac2fd55bcae3628.definition = {
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::update
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:142
- * @route '/jenjang-jabatan/{kode}'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:142
+* @route '/jenjang-jabatan/{kode}'
+*/
 updatefeadef26ad3302212ac2fd55bcae3628.url = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { kode: args }
     }
 
-    
     if (Array.isArray(args)) {
         args = {
-                    kode: args[0],
-                }
+            kode: args[0],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        kode: args.kode,
-                }
+        kode: args.kode,
+    }
 
     return updatefeadef26ad3302212ac2fd55bcae3628.definition.url
             .replace('{kode}', parsedArgs.kode.toString())
@@ -288,19 +289,19 @@ updatefeadef26ad3302212ac2fd55bcae3628.url = (args: { kode: string | number } | 
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::update
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:142
- * @route '/jenjang-jabatan/{kode}'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:142
+* @route '/jenjang-jabatan/{kode}'
+*/
 updatefeadef26ad3302212ac2fd55bcae3628.put = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: updatefeadef26ad3302212ac2fd55bcae3628.url(args, options),
     method: 'put',
 })
 
-    /**
+/**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::update
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:142
- * @route '/jenjang-jabatan/{kode}'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:142
+* @route '/jenjang-jabatan/{kode}'
+*/
 const updatefeadef26ad3302212ac2fd55bcae3628 = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: updatefeadef26ad3302212ac2fd55bcae3628.url(args, options),
     method: 'patch',
@@ -313,26 +314,25 @@ updatefeadef26ad3302212ac2fd55bcae3628.definition = {
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::update
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:142
- * @route '/jenjang-jabatan/{kode}'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:142
+* @route '/jenjang-jabatan/{kode}'
+*/
 updatefeadef26ad3302212ac2fd55bcae3628.url = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { kode: args }
     }
 
-    
     if (Array.isArray(args)) {
         args = {
-                    kode: args[0],
-                }
+            kode: args[0],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        kode: args.kode,
-                }
+        kode: args.kode,
+    }
 
     return updatefeadef26ad3302212ac2fd55bcae3628.definition.url
             .replace('{kode}', parsedArgs.kode.toString())
@@ -341,9 +341,9 @@ updatefeadef26ad3302212ac2fd55bcae3628.url = (args: { kode: string | number } | 
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::update
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:142
- * @route '/jenjang-jabatan/{kode}'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:142
+* @route '/jenjang-jabatan/{kode}'
+*/
 updatefeadef26ad3302212ac2fd55bcae3628.patch = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: updatefeadef26ad3302212ac2fd55bcae3628.url(args, options),
     method: 'patch',
@@ -356,9 +356,9 @@ export const update = {
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::destroy
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:179
- * @route '/jenjang-jabatan/{kode}'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:179
+* @route '/jenjang-jabatan/{kode}'
+*/
 export const destroy = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
@@ -371,26 +371,25 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::destroy
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:179
- * @route '/jenjang-jabatan/{kode}'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:179
+* @route '/jenjang-jabatan/{kode}'
+*/
 destroy.url = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { kode: args }
     }
 
-    
     if (Array.isArray(args)) {
         args = {
-                    kode: args[0],
-                }
+            kode: args[0],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        kode: args.kode,
-                }
+        kode: args.kode,
+    }
 
     return destroy.definition.url
             .replace('{kode}', parsedArgs.kode.toString())
@@ -399,13 +398,14 @@ destroy.url = (args: { kode: string | number } | [kode: string | number ] | stri
 
 /**
 * @see \App\Http\Controllers\Kepegawaian\JenjangJabatanController::destroy
- * @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:179
- * @route '/jenjang-jabatan/{kode}'
- */
+* @see app/Http/Controllers/Kepegawaian/JenjangJabatanController.php:179
+* @route '/jenjang-jabatan/{kode}'
+*/
 destroy.delete = (args: { kode: string | number } | [kode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
+
 const JenjangJabatanController = { index, create, store, show, edit, update, destroy }
 
 export default JenjangJabatanController

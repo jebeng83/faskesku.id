@@ -37,6 +37,7 @@ import KategoriPerawatanController from './KategoriPerawatanController'
 import DaftarTarifController from './DaftarTarifController'
 import TarifTindakanController from './TarifTindakanController'
 import PenjabController from './PenjabController'
+
 const Controllers = {
     API: Object.assign(API, API),
     QueueController: Object.assign(QueueController, QueueController),
@@ -65,9 +66,9 @@ const Controllers = {
     SpesialisController: Object.assign(SpesialisController, SpesialisController),
     RegPeriksaController: Object.assign(RegPeriksaController, RegPeriksaController),
     PembayaranController: Object.assign(PembayaranController, PembayaranController),
+    RawatInapController: Object.assign(RawatInapController, RawatInapController),
     ProfileController: Object.assign(ProfileController, ProfileController),
     setting: Object.assign(setting, setting),
-    RawatInapController: Object.assign(RawatInapController, RawatInapController),
     IGDController: Object.assign(IGDController, IGDController),
     KamarOperasiController: Object.assign(KamarOperasiController, KamarOperasiController),
     LaboratoriumController: Object.assign(LaboratoriumController, LaboratoriumController),

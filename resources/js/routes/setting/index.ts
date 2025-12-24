@@ -3,9 +3,9 @@ import app from './app'
 import dashboard from './dashboard'
 /**
 * @see \App\Http\Controllers\setting\SettingController::index
- * @see app/Http/Controllers/setting/SettingController.php:57
- * @route '/setting'
- */
+* @see app/Http/Controllers/setting/SettingController.php:57
+* @route '/setting'
+*/
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
@@ -18,27 +18,28 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::index
- * @see app/Http/Controllers/setting/SettingController.php:57
- * @route '/setting'
- */
+* @see app/Http/Controllers/setting/SettingController.php:57
+* @route '/setting'
+*/
 index.url = (options?: RouteQueryOptions) => {
     return index.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::index
- * @see app/Http/Controllers/setting/SettingController.php:57
- * @route '/setting'
- */
+* @see app/Http/Controllers/setting/SettingController.php:57
+* @route '/setting'
+*/
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\setting\SettingController::index
- * @see app/Http/Controllers/setting/SettingController.php:57
- * @route '/setting'
- */
+* @see app/Http/Controllers/setting/SettingController.php:57
+* @route '/setting'
+*/
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
@@ -46,9 +47,9 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::describe
- * @see app/Http/Controllers/setting/SettingController.php:102
- * @route '/setting/describe'
- */
+* @see app/Http/Controllers/setting/SettingController.php:102
+* @route '/setting/describe'
+*/
 export const describe = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: describe.url(options),
     method: 'get',
@@ -61,27 +62,28 @@ describe.definition = {
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::describe
- * @see app/Http/Controllers/setting/SettingController.php:102
- * @route '/setting/describe'
- */
+* @see app/Http/Controllers/setting/SettingController.php:102
+* @route '/setting/describe'
+*/
 describe.url = (options?: RouteQueryOptions) => {
     return describe.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::describe
- * @see app/Http/Controllers/setting/SettingController.php:102
- * @route '/setting/describe'
- */
+* @see app/Http/Controllers/setting/SettingController.php:102
+* @route '/setting/describe'
+*/
 describe.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: describe.url(options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\setting\SettingController::describe
- * @see app/Http/Controllers/setting/SettingController.php:102
- * @route '/setting/describe'
- */
+* @see app/Http/Controllers/setting/SettingController.php:102
+* @route '/setting/describe'
+*/
 describe.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: describe.url(options),
     method: 'head',
@@ -89,9 +91,9 @@ describe.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::store
- * @see app/Http/Controllers/setting/SettingController.php:117
- * @route '/setting'
- */
+* @see app/Http/Controllers/setting/SettingController.php:117
+* @route '/setting'
+*/
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -104,18 +106,18 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::store
- * @see app/Http/Controllers/setting/SettingController.php:117
- * @route '/setting'
- */
+* @see app/Http/Controllers/setting/SettingController.php:117
+* @route '/setting'
+*/
 store.url = (options?: RouteQueryOptions) => {
     return store.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::store
- * @see app/Http/Controllers/setting/SettingController.php:117
- * @route '/setting'
- */
+* @see app/Http/Controllers/setting/SettingController.php:117
+* @route '/setting'
+*/
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(options),
     method: 'post',
@@ -123,9 +125,9 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::update
- * @see app/Http/Controllers/setting/SettingController.php:147
- * @route '/setting/{id}'
- */
+* @see app/Http/Controllers/setting/SettingController.php:147
+* @route '/setting/{id}'
+*/
 export const update = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
@@ -138,26 +140,25 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::update
- * @see app/Http/Controllers/setting/SettingController.php:147
- * @route '/setting/{id}'
- */
+* @see app/Http/Controllers/setting/SettingController.php:147
+* @route '/setting/{id}'
+*/
 update.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { id: args }
     }
 
-    
     if (Array.isArray(args)) {
         args = {
-                    id: args[0],
-                }
+            id: args[0],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        id: args.id,
-                }
+        id: args.id,
+    }
 
     return update.definition.url
             .replace('{id}', parsedArgs.id.toString())
@@ -166,9 +167,9 @@ update.url = (args: { id: string | number } | [id: string | number ] | string | 
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::update
- * @see app/Http/Controllers/setting/SettingController.php:147
- * @route '/setting/{id}'
- */
+* @see app/Http/Controllers/setting/SettingController.php:147
+* @route '/setting/{id}'
+*/
 update.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
@@ -176,9 +177,9 @@ update.put = (args: { id: string | number } | [id: string | number ] | string | 
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::destroy
- * @see app/Http/Controllers/setting/SettingController.php:166
- * @route '/setting/{id}'
- */
+* @see app/Http/Controllers/setting/SettingController.php:166
+* @route '/setting/{id}'
+*/
 export const destroy = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
@@ -191,26 +192,25 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::destroy
- * @see app/Http/Controllers/setting/SettingController.php:166
- * @route '/setting/{id}'
- */
+* @see app/Http/Controllers/setting/SettingController.php:166
+* @route '/setting/{id}'
+*/
 destroy.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { id: args }
     }
 
-    
     if (Array.isArray(args)) {
         args = {
-                    id: args[0],
-                }
+            id: args[0],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        id: args.id,
-                }
+        id: args.id,
+    }
 
     return destroy.definition.url
             .replace('{id}', parsedArgs.id.toString())
@@ -219,21 +219,22 @@ destroy.url = (args: { id: string | number } | [id: string | number ] | string |
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::destroy
- * @see app/Http/Controllers/setting/SettingController.php:166
- * @route '/setting/{id}'
- */
+* @see app/Http/Controllers/setting/SettingController.php:166
+* @route '/setting/{id}'
+*/
 destroy.delete = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
+
 const setting = {
     index: Object.assign(index, index),
-describe: Object.assign(describe, describe),
-store: Object.assign(store, store),
-update: Object.assign(update, update),
-destroy: Object.assign(destroy, destroy),
-app: Object.assign(app, app),
-dashboard: Object.assign(dashboard, dashboard),
+    describe: Object.assign(describe, describe),
+    store: Object.assign(store, store),
+    update: Object.assign(update, update),
+    destroy: Object.assign(destroy, destroy),
+    app: Object.assign(app, app),
+    dashboard: Object.assign(dashboard, dashboard),
 }
 
 export default setting

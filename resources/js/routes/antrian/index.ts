@@ -29,6 +29,7 @@ loket.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: loket.url(options),
     method: 'get',
 })
+
 /**
 * @see routes/web.php:83
 * @route '/antrian/loket'
@@ -68,6 +69,7 @@ display.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: display.url(options),
     method: 'get',
 })
+
 /**
 * @see routes/web.php:234
 * @route '/antrian/display'
@@ -76,9 +78,10 @@ display.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: display.url(options),
     method: 'head',
 })
+
 const antrian = {
     loket: Object.assign(loket, loket),
-display: Object.assign(display, display),
+    display: Object.assign(display, display),
 }
 
 export default antrian
