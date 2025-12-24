@@ -370,7 +370,7 @@ export default function Registration({
             const data = res?.data || {};
             try {
                 const bc = new BroadcastChannel("queue-call");
-                bc.postMessage({ nomor: targetNomor, loket: selectedLoket, prefix: queueCurrent?.prefix || "" });
+                bc.postMessage({ nomor: targetNomor, loket: selectedLoket, prefix: queueCurrent?.prefix || "", repeat });
                 bc.close();
             } catch (_) {}
             if (repeat) {

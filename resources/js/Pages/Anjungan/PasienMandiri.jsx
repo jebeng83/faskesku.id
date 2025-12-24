@@ -288,7 +288,7 @@ export default function PasienMandiri() {
           jam: new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", hour12: false }),
         });
         try {
-          window.open(`${printUrl}?${params.toString()}`, "_blank", "noopener,noreferrer");
+          window.location.assign(`${printUrl}?${params.toString()}`);
         } catch (_) {}
         setTimeout(() => {
           resetForm();
