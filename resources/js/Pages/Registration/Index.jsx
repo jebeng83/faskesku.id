@@ -368,6 +368,11 @@ export default function Registration({
             const targetNomor = repeat ? (queueLastCalledNumber ?? queueCurrent?.nomor) : queueCurrent.nomor;
             const res = await httpPost("/api/queue/call", { nomor: targetNomor, loket: selectedLoket });
             const data = res?.data || {};
+            try {
+                const bc = new BroadcastChannel("queue-call");
+                bc.postMessage({ nomor: targetNomor, loket: selectedLoket, prefix: queueCurrent?.prefix || "" });
+                bc.close();
+            } catch (_) {}
             if (repeat) {
                 // Ulang: panggil kembali nomor terakhir dipanggil tanpa mengubah panel
                 // Panel tetap menampilkan kandidat berikutnya berstatus "baru"
