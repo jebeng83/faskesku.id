@@ -32,6 +32,7 @@ index3a388aa6bd235ae7eac332fd4d6d4868.get = (options?: RouteQueryOptions): Route
     url: index3a388aa6bd235ae7eac332fd4d6d4868.url(options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\Farmasi\SisaStokController::index
 * @see app/Http/Controllers/Farmasi/SisaStokController.php:10

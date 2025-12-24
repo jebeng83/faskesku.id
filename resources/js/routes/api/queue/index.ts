@@ -2,9 +2,9 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 import tickets from './tickets'
 /**
 * @see \App\Http\Controllers\QueueController::current
- * @see app/Http/Controllers/QueueController.php:79
- * @route '/api/queue/current'
- */
+* @see app/Http/Controllers/QueueController.php:79
+* @route '/api/queue/current'
+*/
 export const current = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: current.url(options),
     method: 'get',
@@ -17,27 +17,28 @@ current.definition = {
 
 /**
 * @see \App\Http\Controllers\QueueController::current
- * @see app/Http/Controllers/QueueController.php:79
- * @route '/api/queue/current'
- */
+* @see app/Http/Controllers/QueueController.php:79
+* @route '/api/queue/current'
+*/
 current.url = (options?: RouteQueryOptions) => {
     return current.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\QueueController::current
- * @see app/Http/Controllers/QueueController.php:79
- * @route '/api/queue/current'
- */
+* @see app/Http/Controllers/QueueController.php:79
+* @route '/api/queue/current'
+*/
 current.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: current.url(options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\QueueController::current
- * @see app/Http/Controllers/QueueController.php:79
- * @route '/api/queue/current'
- */
+* @see app/Http/Controllers/QueueController.php:79
+* @route '/api/queue/current'
+*/
 current.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: current.url(options),
     method: 'head',
@@ -45,9 +46,9 @@ current.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\QueueController::today
- * @see app/Http/Controllers/QueueController.php:114
- * @route '/api/queue/today'
- */
+* @see app/Http/Controllers/QueueController.php:114
+* @route '/api/queue/today'
+*/
 export const today = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: today.url(options),
     method: 'get',
@@ -60,27 +61,28 @@ today.definition = {
 
 /**
 * @see \App\Http\Controllers\QueueController::today
- * @see app/Http/Controllers/QueueController.php:114
- * @route '/api/queue/today'
- */
+* @see app/Http/Controllers/QueueController.php:114
+* @route '/api/queue/today'
+*/
 today.url = (options?: RouteQueryOptions) => {
     return today.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\QueueController::today
- * @see app/Http/Controllers/QueueController.php:114
- * @route '/api/queue/today'
- */
+* @see app/Http/Controllers/QueueController.php:114
+* @route '/api/queue/today'
+*/
 today.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: today.url(options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\QueueController::today
- * @see app/Http/Controllers/QueueController.php:114
- * @route '/api/queue/today'
- */
+* @see app/Http/Controllers/QueueController.php:114
+* @route '/api/queue/today'
+*/
 today.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: today.url(options),
     method: 'head',
@@ -187,13 +189,14 @@ cancel.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: cancel.url(options),
     method: 'post',
 })
+
 const queue = {
     tickets: Object.assign(tickets, tickets),
-current: Object.assign(current, current),
-today: Object.assign(today, today),
-call: Object.assign(call, call),
-finish: Object.assign(finish, finish),
-cancel: Object.assign(cancel, cancel),
+    current: Object.assign(current, current),
+    today: Object.assign(today, today),
+    call: Object.assign(call, call),
+    finish: Object.assign(finish, finish),
+    cancel: Object.assign(cancel, cancel),
 }
 
 export default queue

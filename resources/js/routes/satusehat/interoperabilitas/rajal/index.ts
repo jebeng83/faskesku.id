@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
-* @see routes/web.php:1368
+* @see routes/web.php:1474
 * @route '/satusehat/interoperabilitas/rajal/encounter'
 */
 export const encounter = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ encounter.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1368
+* @see routes/web.php:1474
 * @route '/satusehat/interoperabilitas/rajal/encounter'
 */
 encounter.url = (options?: RouteQueryOptions) => {
@@ -22,21 +22,23 @@ encounter.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1368
+* @see routes/web.php:1474
 * @route '/satusehat/interoperabilitas/rajal/encounter'
 */
 encounter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: encounter.url(options),
     method: 'get',
 })
+
 /**
-* @see routes/web.php:1368
+* @see routes/web.php:1474
 * @route '/satusehat/interoperabilitas/rajal/encounter'
 */
 encounter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: encounter.url(options),
     method: 'head',
 })
+
 const rajal = {
     encounter: Object.assign(encounter, encounter),
 }

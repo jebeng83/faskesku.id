@@ -32,6 +32,7 @@ indexf3b28efd4b294efe5b1d82909a0020a1.get = (options?: RouteQueryOptions): Route
     url: indexf3b28efd4b294efe5b1d82909a0020a1.url(options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\Farmasi\SirkulasiObatController::index
 * @see app/Http/Controllers/Farmasi/SirkulasiObatController.php:11

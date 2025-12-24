@@ -32,6 +32,7 @@ index04e0ff33e185267996310af6fba9489e.get = (options?: RouteQueryOptions): Route
     url: index04e0ff33e185267996310af6fba9489e.url(options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\Farmasi\DaruratStokController::index
 * @see app/Http/Controllers/Farmasi/DaruratStokController.php:10

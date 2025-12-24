@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 import prerequisites from './prerequisites'
 import interoperabilitas from './interoperabilitas'
 /**
-* @see routes/web.php:1344
+* @see routes/web.php:1450
 * @route '/satusehat'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1344
+* @see routes/web.php:1450
 * @route '/satusehat'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -24,25 +24,27 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1344
+* @see routes/web.php:1450
 * @route '/satusehat'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
+
 /**
-* @see routes/web.php:1344
+* @see routes/web.php:1450
 * @route '/satusehat'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
 })
+
 const satusehat = {
     index: Object.assign(index, index),
-prerequisites: Object.assign(prerequisites, prerequisites),
-interoperabilitas: Object.assign(interoperabilitas, interoperabilitas),
+    prerequisites: Object.assign(prerequisites, prerequisites),
+    interoperabilitas: Object.assign(interoperabilitas, interoperabilitas),
 }
 
 export default satusehat

@@ -15,6 +15,7 @@ import SatuanBarangController from './SatuanBarangController'
 import MetodeRacikController from './MetodeRacikController'
 import KonversiSatuanController from './KonversiSatuanController'
 import JenisObatController from './JenisObatController'
+
 const Farmasi = {
     PembelianController: Object.assign(PembelianController, PembelianController),
     PemesananController: Object.assign(PemesananController, PemesananController),

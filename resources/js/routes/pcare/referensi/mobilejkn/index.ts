@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
-* @see routes/web.php:1141
+* @see routes/web.php:1247
 * @route '/pcare/referensi-mobilejkn/poli'
 */
 export const poli = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ poli.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1141
+* @see routes/web.php:1247
 * @route '/pcare/referensi-mobilejkn/poli'
 */
 poli.url = (options?: RouteQueryOptions) => {
@@ -22,15 +22,16 @@ poli.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1141
+* @see routes/web.php:1247
 * @route '/pcare/referensi-mobilejkn/poli'
 */
 poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: poli.url(options),
     method: 'get',
 })
+
 /**
-* @see routes/web.php:1141
+* @see routes/web.php:1247
 * @route '/pcare/referensi-mobilejkn/poli'
 */
 poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -39,7 +40,7 @@ poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1146
+* @see routes/web.php:1252
 * @route '/pcare/referensi-mobilejkn/dokter'
 */
 export const dokter = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +54,7 @@ dokter.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1146
+* @see routes/web.php:1252
 * @route '/pcare/referensi-mobilejkn/dokter'
 */
 dokter.url = (options?: RouteQueryOptions) => {
@@ -61,24 +62,26 @@ dokter.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1146
+* @see routes/web.php:1252
 * @route '/pcare/referensi-mobilejkn/dokter'
 */
 dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: dokter.url(options),
     method: 'get',
 })
+
 /**
-* @see routes/web.php:1146
+* @see routes/web.php:1252
 * @route '/pcare/referensi-mobilejkn/dokter'
 */
 dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: dokter.url(options),
     method: 'head',
 })
+
 const mobilejkn = {
     poli: Object.assign(poli, poli),
-dokter: Object.assign(dokter, dokter),
+    dokter: Object.assign(dokter, dokter),
 }
 
 export default mobilejkn

@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
-* @see routes/web.php:938
+* @see routes/web.php:1044
 * @route '/farmasi/cetak/data-opname'
 */
 export const dataOpname = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ dataOpname.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:938
+* @see routes/web.php:1044
 * @route '/farmasi/cetak/data-opname'
 */
 dataOpname.url = (options?: RouteQueryOptions) => {
@@ -22,21 +22,23 @@ dataOpname.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:938
+* @see routes/web.php:1044
 * @route '/farmasi/cetak/data-opname'
 */
 dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: dataOpname.url(options),
     method: 'get',
 })
+
 /**
-* @see routes/web.php:938
+* @see routes/web.php:1044
 * @route '/farmasi/cetak/data-opname'
 */
 dataOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: dataOpname.url(options),
     method: 'head',
 })
+
 const cetak = {
     dataOpname: Object.assign(dataOpname, dataOpname),
 }

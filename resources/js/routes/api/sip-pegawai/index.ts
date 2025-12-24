@@ -29,6 +29,7 @@ apoteker.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: apoteker.url(options),
     method: 'get',
 })
+
 /**
 * @see routes/api.php:309
 * @route '/api/sip-pegawai/apoteker'
@@ -68,6 +69,7 @@ expiring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: expiring.url(options),
     method: 'get',
 })
+
 /**
 * @see routes/api.php:334
 * @route '/api/sip-pegawai/expiring'
@@ -76,9 +78,10 @@ expiring.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: expiring.url(options),
     method: 'head',
 })
+
 const sipPegawai = {
     apoteker: Object.assign(apoteker, apoteker),
-expiring: Object.assign(expiring, expiring),
+    expiring: Object.assign(expiring, expiring),
 }
 
 export default sipPegawai

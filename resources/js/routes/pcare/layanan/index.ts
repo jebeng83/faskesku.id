@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
-* @see routes/web.php:1151
+* @see routes/web.php:1257
 * @route '/pcare/data-peserta-by-nik'
 */
 export const cekPesertaNik = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ cekPesertaNik.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1151
+* @see routes/web.php:1257
 * @route '/pcare/data-peserta-by-nik'
 */
 cekPesertaNik.url = (options?: RouteQueryOptions) => {
@@ -22,15 +22,16 @@ cekPesertaNik.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1151
+* @see routes/web.php:1257
 * @route '/pcare/data-peserta-by-nik'
 */
 cekPesertaNik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: cekPesertaNik.url(options),
     method: 'get',
 })
+
 /**
-* @see routes/web.php:1151
+* @see routes/web.php:1257
 * @route '/pcare/data-peserta-by-nik'
 */
 cekPesertaNik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -39,7 +40,7 @@ cekPesertaNik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 })
 
 /**
-* @see routes/web.php:1156
+* @see routes/web.php:1262
 * @route '/pcare/layanan'
 */
 export const pcare = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +54,7 @@ pcare.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1156
+* @see routes/web.php:1262
 * @route '/pcare/layanan'
 */
 pcare.url = (options?: RouteQueryOptions) => {
@@ -61,24 +62,26 @@ pcare.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1156
+* @see routes/web.php:1262
 * @route '/pcare/layanan'
 */
 pcare.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: pcare.url(options),
     method: 'get',
 })
+
 /**
-* @see routes/web.php:1156
+* @see routes/web.php:1262
 * @route '/pcare/layanan'
 */
 pcare.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: pcare.url(options),
     method: 'head',
 })
+
 const layanan = {
     cekPesertaNik: Object.assign(cekPesertaNik, cekPesertaNik),
-pcare: Object.assign(pcare, pcare),
+    pcare: Object.assign(pcare, pcare),
 }
 
 export default layanan

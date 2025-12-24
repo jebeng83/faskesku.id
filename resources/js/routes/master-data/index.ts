@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
-* @see routes/web.php:508
+* @see routes/web.php:569
 * @route '/master-data'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:508
+* @see routes/web.php:569
 * @route '/master-data'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -22,21 +22,23 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:508
+* @see routes/web.php:569
 * @route '/master-data'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
+
 /**
-* @see routes/web.php:508
+* @see routes/web.php:569
 * @route '/master-data'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
 })
+
 const masterData = {
     index: Object.assign(index, index),
 }
