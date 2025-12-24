@@ -57,7 +57,7 @@ const tabs = [
             {
                 title: "App Settings",
                 description: "Pengaturan branding dan aset",
-                href: route("setting.app.index"),
+                href: route("setting.index"),
                 icon: ClipboardDocumentListIcon,
                 accent: "from-indigo-500 to-purple-500",
             },
