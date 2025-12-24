@@ -636,13 +636,10 @@ export default function Dashboard() {
         props?.settings?.nama_instansi ||
         props?.setting?.nama_instansi ||
         props?.nama_instansi;
-    // Gunakan wallpaper dari tabel setting via route streaming; fallback ke file default
 
-    const wallpaperUrl = "/img/wallpaper.png";
-    // const wallpaperUrl = namaInstansi
-    //     ? route("setting.app.wallpaper", namaInstansi, false)
-    //     : "/img/wallpaper.png";
-    // Nama faskes akan diambil langsung saat render, tanpa variabel terpisah
+    const wallpaperUrl = namaInstansi
+        ? route("setting.app.wallpaper", namaInstansi, false)
+        : "/img/wallpaper.png";
 
     const permissionNames = Array.isArray(props?.auth?.permissions)
         ? props.auth.permissions
