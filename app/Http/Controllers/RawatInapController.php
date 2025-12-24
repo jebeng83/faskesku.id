@@ -294,6 +294,91 @@ class RawatInapController extends Controller
         ]);
     }
 
+    public function catatanKeperawatanPage(Request $request)
+    {
+        $token = $request->query('t');
+        if ($token) {
+            $padded = str_replace(['-', '_'], ['+', '/'], $token);
+            $paddingNeeded = 4 - (strlen($padded) % 4);
+            if ($paddingNeeded < 4) {
+                $padded .= str_repeat('=', $paddingNeeded);
+            }
+            $decoded = json_decode(base64_decode($padded), true);
+            $noRawat = $decoded['no_rawat'] ?? null;
+            $noRkmMedis = $decoded['no_rkm_medis'] ?? null;
+        } else {
+            $noRawat = $request->query('no_rawat');
+            $noRkmMedis = $request->query('no_rkm_medis');
+        }
+
+        $rawat = null;
+        if ($noRawat) {
+            $rawat = RegPeriksa::query()
+                ->with(['patient', 'dokter'])
+                ->join('kamar_inap', 'kamar_inap.no_rawat', '=', 'reg_periksa.no_rawat')
+                ->join('kamar', 'kamar_inap.kd_kamar', '=', 'kamar.kd_kamar')
+                ->leftJoin('poliklinik', 'poliklinik.kd_poli', '=', 'reg_periksa.kd_poli')
+                ->leftJoin('bangsal', 'bangsal.kd_bangsal', '=', 'kamar.kd_bangsal')
+                ->leftJoin('pasien', 'pasien.no_rkm_medis', '=', 'reg_periksa.no_rkm_medis')
+                ->select([
+                    'reg_periksa.*',
+                    DB::raw('kamar_inap.kd_kamar as kamar'),
+                    'kamar_inap.tgl_masuk',
+                    'kamar_inap.jam_masuk',
+                    'kamar_inap.tgl_keluar',
+                    'kamar_inap.jam_keluar',
+                    'kamar_inap.stts_pulang',
+                    'reg_periksa.kd_pj',
+                    'kamar.kd_bangsal',
+                    'kamar.kelas',
+                    DB::raw('poliklinik.nm_poli as nm_poli'),
+                    DB::raw('bangsal.nm_bangsal as nm_bangsal'),
+                ])
+                ->when($noRkmMedis, fn ($q) => $q->where('reg_periksa.no_rkm_medis', $noRkmMedis))
+                ->where('reg_periksa.no_rawat', $noRawat)
+                ->orderByDesc('kamar_inap.tgl_masuk')
+                ->orderByDesc('kamar_inap.jam_masuk')
+                ->first();
+        } elseif ($noRkmMedis) {
+            $rawat = RegPeriksa::query()
+                ->with(['patient', 'dokter'])
+                ->join('kamar_inap', 'kamar_inap.no_rawat', '=', 'reg_periksa.no_rawat')
+                ->join('kamar', 'kamar_inap.kd_kamar', '=', 'kamar.kd_kamar')
+                ->leftJoin('poliklinik', 'poliklinik.kd_poli', '=', 'reg_periksa.kd_poli')
+                ->leftJoin('bangsal', 'bangsal.kd_bangsal', '=', 'kamar.kd_bangsal')
+                ->leftJoin('pasien', 'pasien.no_rkm_medis', '=', 'reg_periksa.no_rkm_medis')
+                ->where('reg_periksa.status_lanjut', 'Ranap')
+                ->select([
+                    'reg_periksa.*',
+                    DB::raw('kamar_inap.kd_kamar as kamar'),
+                    'kamar_inap.tgl_masuk',
+                    'kamar_inap.jam_masuk',
+                    'kamar_inap.tgl_keluar',
+                    'kamar_inap.jam_keluar',
+                    'kamar_inap.stts_pulang',
+                    'reg_periksa.kd_pj',
+                    'kamar.kd_bangsal',
+                    'kamar.kelas',
+                    DB::raw('poliklinik.nm_poli as nm_poli'),
+                    DB::raw('bangsal.nm_bangsal as nm_bangsal'),
+                ])
+                ->where('reg_periksa.no_rkm_medis', $noRkmMedis)
+                ->orderByDesc('reg_periksa.tgl_registrasi')
+                ->orderByDesc('reg_periksa.jam_reg')
+                ->orderByDesc('kamar_inap.tgl_masuk')
+                ->orderByDesc('kamar_inap.jam_masuk')
+                ->first();
+        }
+
+        return Inertia::render('RawatInap/CatatanKeperawatan', [
+            'rawatInap' => $rawat,
+            'params' => [
+                'no_rawat' => $noRawat,
+                'no_rkm_medis' => $noRkmMedis,
+            ],
+        ]);
+    }
+
     public function getDiagnosaRanap(Request $request)
     {
         $validated = $request->validate([
@@ -660,6 +745,81 @@ class RawatInapController extends Controller
         }
 
         return response()->json(['message' => 'Pemeriksaan diperbarui']);
+    }
+
+    public function catatanKeperawatanRanap(Request $request)
+    {
+        $token = $request->query('t');
+        $noRawat = $request->query('no_rawat');
+        if ($token) {
+            $padded = str_replace(['-', '_'], ['+', '/'], $token);
+            $paddingNeeded = 4 - (strlen($padded) % 4);
+            if ($paddingNeeded < 4) {
+                $padded .= str_repeat('=', $paddingNeeded);
+            }
+            $decoded = json_decode(base64_decode($padded), true);
+            $noRawat = $decoded['no_rawat'] ?? $noRawat;
+        }
+
+        if (! $noRawat) {
+            return response()->json(['data' => []]);
+        }
+
+        $rows = DB::table('catatan_keperawatan_ranap')
+            ->where('no_rawat', $noRawat)
+            ->orderByDesc('tanggal')
+            ->orderByDesc('jam')
+            ->get([
+                'tanggal',
+                'jam',
+                'no_rawat',
+                'uraian',
+                'nip',
+            ]);
+
+        return response()->json(['data' => $rows]);
+    }
+
+    public function storeCatatanKeperawatanRanap(Request $request)
+    {
+        $validated = $request->validate([
+            'no_rawat' => 'required|string|max:17',
+            'tanggal' => 'required|date',
+            'jam' => 'required|date_format:H:i',
+            'uraian' => 'nullable|string|max:1000',
+            'nip' => 'required|string|max:20',
+        ]);
+
+        if (! array_key_exists('uraian', $validated) || $validated['uraian'] === null) {
+            $validated['uraian'] = '';
+        }
+
+        $validated['jam'] = sprintf('%s:00', $validated['jam']);
+
+        DB::table('catatan_keperawatan_ranap')->insert($validated);
+
+        return response()->json(['message' => 'Catatan keperawatan tersimpan'], 201);
+    }
+
+    public function deleteCatatanKeperawatanRanap(Request $request)
+    {
+        $validated = $request->validate([
+            'no_rawat' => 'required|string|max:17',
+            'tanggal' => 'required|date',
+            'jam' => 'required|date_format:H:i:s',
+        ]);
+
+        $deleted = DB::table('catatan_keperawatan_ranap')
+            ->where('no_rawat', $validated['no_rawat'])
+            ->where('tanggal', $validated['tanggal'])
+            ->where('jam', $validated['jam'])
+            ->delete();
+
+        if ($deleted === 0) {
+            return response()->json(['message' => 'Data tidak ditemukan'], 404);
+        }
+
+        return response()->json(['message' => 'Catatan keperawatan dihapus']);
     }
 
     public function getObatRanapPublic(Request $request, $no_rawat)

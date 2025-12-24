@@ -3,7 +3,7 @@ import kegiatan90f170 from './kegiatan'
 import club from './club'
 import peserta from './peserta'
 /**
-* @see routes/web.php:1267
+* @see routes/web.php:1271
 * @route '/pcare/kelompok/club-prolanis'
 */
 export const clubProlanis = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,7 +17,7 @@ clubProlanis.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1267
+* @see routes/web.php:1271
 * @route '/pcare/kelompok/club-prolanis'
 */
 clubProlanis.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ clubProlanis.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1267
+* @see routes/web.php:1271
 * @route '/pcare/kelompok/club-prolanis'
 */
 clubProlanis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ clubProlanis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1267
+* @see routes/web.php:1271
 * @route '/pcare/kelompok/club-prolanis'
 */
 clubProlanis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -43,7 +43,7 @@ clubProlanis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1272
+* @see routes/web.php:1276
 * @route '/pcare/kelompok/kegiatan'
 */
 export const kegiatan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -57,7 +57,7 @@ kegiatan.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1272
+* @see routes/web.php:1276
 * @route '/pcare/kelompok/kegiatan'
 */
 kegiatan.url = (options?: RouteQueryOptions) => {
@@ -65,7 +65,7 @@ kegiatan.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1272
+* @see routes/web.php:1276
 * @route '/pcare/kelompok/kegiatan'
 */
 kegiatan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -74,7 +74,7 @@ kegiatan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1272
+* @see routes/web.php:1276
 * @route '/pcare/kelompok/kegiatan'
 */
 kegiatan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -83,7 +83,7 @@ kegiatan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1277
+* @see routes/web.php:1281
 * @route '/pcare/kelompok/entri'
 */
 export const entri = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -97,7 +97,7 @@ entri.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1277
+* @see routes/web.php:1281
 * @route '/pcare/kelompok/entri'
 */
 entri.url = (options?: RouteQueryOptions) => {
@@ -105,7 +105,7 @@ entri.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1277
+* @see routes/web.php:1281
 * @route '/pcare/kelompok/entri'
 */
 entri.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -114,7 +114,7 @@ entri.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1277
+* @see routes/web.php:1281
 * @route '/pcare/kelompok/entri'
 */
 entri.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -123,7 +123,7 @@ entri.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1282
+* @see routes/web.php:1286
 * @route '/pcare/kelompok/peserta-kegiatan'
 */
 export const pesertaKegiatan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -137,7 +137,7 @@ pesertaKegiatan.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1282
+* @see routes/web.php:1286
 * @route '/pcare/kelompok/peserta-kegiatan'
 */
 pesertaKegiatan.url = (options?: RouteQueryOptions) => {
@@ -145,7 +145,7 @@ pesertaKegiatan.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1282
+* @see routes/web.php:1286
 * @route '/pcare/kelompok/peserta-kegiatan'
 */
 pesertaKegiatan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -154,7 +154,7 @@ pesertaKegiatan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 })
 
 /**
-* @see routes/web.php:1282
+* @see routes/web.php:1286
 * @route '/pcare/kelompok/peserta-kegiatan'
 */
 pesertaKegiatan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

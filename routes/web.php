@@ -780,11 +780,15 @@ Route::middleware('auth')->group(function () {
     Route::get('pegawai/search', [RawatJalanController::class, 'searchPegawai'])->name('pegawai.search');
     Route::get('rawat-jalan-statistics', [RawatJalanController::class, 'getStatistics'])->name('rawat-jalan.statistics');
 
-    // Rawat Inap: CPPT/Pemeriksaan (pemeriksaan_ranap)
+    // Rawat Inap
     Route::get('rawat-inap/pemeriksaan-ranap', [RawatInapController::class, 'pemeriksaanRanap'])->name('rawat-inap.pemeriksaan-ranap');
     Route::post('rawat-inap/pemeriksaan-ranap', [RawatInapController::class, 'storePemeriksaanRanap'])->name('rawat-inap.pemeriksaan-ranap.store');
     Route::delete('rawat-inap/pemeriksaan-ranap', [RawatInapController::class, 'deletePemeriksaanRanap'])->name('rawat-inap.pemeriksaan-ranap.delete');
     Route::put('rawat-inap/pemeriksaan-ranap', [RawatInapController::class, 'updatePemeriksaanRanap'])->name('rawat-inap.pemeriksaan-ranap.update');
+    Route::get('rawat-inap/catatan-keperawatan', [RawatInapController::class, 'catatanKeperawatanPage'])->name('rawat-inap.catatan-keperawatan');
+    Route::get('rawat-inap/catatan-keperawatan-ranap', [RawatInapController::class, 'catatanKeperawatanRanap'])->name('rawat-inap.catatan-keperawatan-ranap');
+    Route::post('rawat-inap/catatan-keperawatan-ranap', [RawatInapController::class, 'storeCatatanKeperawatanRanap'])->name('rawat-inap.catatan-keperawatan-ranap.store');
+    Route::delete('rawat-inap/catatan-keperawatan-ranap', [RawatInapController::class, 'deleteCatatanKeperawatanRanap'])->name('rawat-inap.catatan-keperawatan-ranap.delete');
     Route::get('rawat-inap/obat-ranap/{no_rawat}', [RawatInapController::class, 'getObatRanapPublic'])
         ->name('rawat-inap.obat-ranap')
         ->where('no_rawat', '.*');

@@ -133,6 +133,75 @@ export default function LanjutanRalanSidebar({
         colorScheme: 'slate'
     };
 
+    const pemeriksaanChildren = [
+        {
+            id: 'cppt',
+            name: 'CPPT / SOAP',
+            icon: 'document-text',
+            description: 'Catatan Perkembangan Pasien',
+            active: menuConfig.activeTab === 'cppt',
+            colorScheme: 'blue',
+            route: isRanap ? 'rawat-inap.lanjutan' : undefined
+        },
+        {
+            id: 'tarif-tindakan',
+            name: 'Tarif Tindakan',
+            icon: 'calculator',
+            description: 'Input Tarif Tindakan Medis',
+            active: menuConfig.activeTab === 'tarifTindakan',
+            colorScheme: 'orange',
+            route: isRanap ? 'rawat-inap.lanjutan' : undefined
+        },
+        {
+            id: 'resep',
+            name: 'Resep',
+            icon: 'beaker',
+            description: 'Resep Obat & Farmasi',
+            active: menuConfig.activeTab === 'resep',
+            colorScheme: 'green',
+            route: isRanap ? 'rawat-inap.lanjutan' : undefined
+        },
+        {
+            id: 'diagnosa',
+            name: 'Diagnosa',
+            icon: 'heart',
+            description: 'Diagnosis & Kode ICD',
+            active: menuConfig.activeTab === 'diagnosa',
+            colorScheme: 'red',
+            route: isRanap ? 'rawat-inap.lanjutan' : undefined
+        },
+        {
+            id: 'lab',
+            name: 'Permintaan Lab',
+            icon: 'beaker',
+            description: 'Laboratorium & Pemeriksaan',
+            active: menuConfig.activeTab === 'lab',
+            colorScheme: 'purple',
+            route: isRanap ? 'rawat-inap.lanjutan' : undefined
+        },
+        {
+            id: 'radiologi',
+            name: 'Permintaan Radiologi',
+            icon: 'camera',
+            description: 'Radiologi & Imaging',
+            active: menuConfig.activeTab === 'radiologi',
+            colorScheme: 'indigo',
+            route: isRanap ? 'rawat-inap.lanjutan' : undefined
+        }
+    ];
+
+    if (isRanap) {
+        pemeriksaanChildren.push({
+            id: 'catatan-keperawatan-ranap',
+            name: 'Catatan Keperawatan',
+            icon: 'document',
+            description: 'Catatan harian perawat',
+            active: menuConfig.activeTab === 'catatanKeperawatan',
+            colorScheme: 'blue',
+            route: 'rawat-inap.catatan-keperawatan'
+        });
+    }
+
     const lanjutanMenus = [
         dashboardMenu,
         listMenu,
@@ -142,56 +211,7 @@ export default function LanjutanRalanSidebar({
             icon: 'clipboard-document-list',
             active: false,
             colorScheme: 'primary',
-            children: [
-                {
-                    id: 'cppt',
-                    name: 'CPPT / SOAP',
-                    icon: 'document-text',
-                    description: 'Catatan Perkembangan Pasien',
-                    active: menuConfig.activeTab === 'cppt',
-                    colorScheme: 'blue'
-                },
-                {
-                    id: 'tarif-tindakan',
-                    name: 'Tarif Tindakan',
-                    icon: 'calculator',
-                    description: 'Input Tarif Tindakan Medis',
-                    active: menuConfig.activeTab === 'tarifTindakan',
-                    colorScheme: 'orange'
-                },
-                {
-                    id: 'resep',
-                    name: 'Resep',
-                    icon: 'beaker',
-                    description: 'Resep Obat & Farmasi',
-                    active: menuConfig.activeTab === 'resep',
-                    colorScheme: 'green'
-                },
-                {
-                    id: 'diagnosa',
-                    name: 'Diagnosa',
-                    icon: 'heart',
-                    description: 'Diagnosis & Kode ICD',
-                    active: menuConfig.activeTab === 'diagnosa',
-                    colorScheme: 'red'
-                },
-                {
-                    id: 'lab',
-                    name: 'Permintaan Lab',
-                    icon: 'beaker',
-                    description: 'Laboratorium & Pemeriksaan',
-                    active: menuConfig.activeTab === 'lab',
-                    colorScheme: 'purple'
-                },
-                {
-                    id: 'radiologi',
-                    name: 'Permintaan Radiologi',
-                    icon: 'camera',
-                    description: 'Radiologi & Imaging',
-                    active: menuConfig.activeTab === 'radiologi',
-                    colorScheme: 'indigo'
-                }
-            ]
+            children: pemeriksaanChildren
         }
     ];
 
@@ -251,7 +271,6 @@ export default function LanjutanRalanSidebar({
         if (menu.id === 'rawat-jalan-list' || (menu.name && menu.name.toLowerCase().includes('rawat jalan'))) {
             let basePath = '/rawat-jalan';
             try {
-                // Gunakan path relatif agar konsisten dengan origin aktif
                 basePath = route('rawat-jalan.index', {}, false);
             } catch (_) {}
 
@@ -267,6 +286,7 @@ export default function LanjutanRalanSidebar({
 				if (kd_dokter) qs.push(`kd_dokter=${encodeURIComponent(kd_dokter)}`);
 				if (kd_poli) qs.push(`kd_poli=${encodeURIComponent(kd_poli)}`);
 				return basePath + (qs.length ? `?${qs.join('&')}` : '');
+			}
         }
 
         if (menu.id === 'rawat-inap-list' || (menu.name && menu.name.toLowerCase().includes('rawat inap'))) {
@@ -276,11 +296,32 @@ export default function LanjutanRalanSidebar({
             } catch (_) {}
             return basePath;
         }
-		}
+
+        if (menu.id === 'catatan-keperawatan-ranap') {
+            let basePath = '/rawat-inap/catatan-keperawatan';
+            try {
+                basePath = route('rawat-inap.catatan-keperawatan', {}, false);
+            } catch (_) {}
+            try {
+                const search = typeof window !== 'undefined' ? window.location.search || '' : '';
+                return basePath + search;
+            } catch (_) {
+                return basePath;
+            }
+        }
 
 		if (menu.url) return menu.url;
 		if (menu.route) {
 			try {
+                if (menu.route === 'rawat-inap.lanjutan') {
+                    let basePath = route(menu.route, {}, false);
+                    try {
+                        const search = typeof window !== 'undefined' ? window.location.search || '' : '';
+                        return basePath + search;
+                    } catch (_) {
+                        return basePath;
+                    }
+                }
 				return route(menu.route);
 			} catch (error) {
 				console.warn(`Route ${menu.route} not found for menu ${menu.name}`);
