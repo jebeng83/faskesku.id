@@ -42,6 +42,20 @@ export default function Registration({
     const [queueLastCalledNumber, setQueueLastCalledNumber] = useState(null);
     const [queueStatusCode, setQueueStatusCode] = useState(null);
     const [queueTodayList, setQueueTodayList] = useState([]);
+    const [selectedLoket, setSelectedLoket] = useState(1);
+
+    useEffect(() => {
+        try {
+            const v = parseInt(String(localStorage.getItem("selectedLoket") || ""), 10);
+            if ([1,2,3,4].includes(v)) setSelectedLoket(v);
+        } catch (_) {}
+    }, []);
+
+    useEffect(() => {
+        try {
+            localStorage.setItem("selectedLoket", String(selectedLoket));
+        } catch (_) {}
+    }, [selectedLoket]);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [isPatientModalOpen, setIsPatientModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -352,7 +366,7 @@ export default function Registration({
         if (!queueCurrent?.nomor && !queueLastCalledNumber) return;
         try {
             const targetNomor = repeat ? (queueLastCalledNumber ?? queueCurrent?.nomor) : queueCurrent.nomor;
-            const res = await httpPost("/api/queue/call", { nomor: targetNomor, loket: 1 });
+            const res = await httpPost("/api/queue/call", { nomor: targetNomor, loket: selectedLoket });
             const data = res?.data || {};
             if (repeat) {
                 // Ulang: panggil kembali nomor terakhir dipanggil tanpa mengubah panel
@@ -1856,7 +1870,20 @@ export default function Registration({
                                         Cari Pasien
                                     </h3>
                                     <div className="flex items-center gap-2">
-                                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <label className="text-xs font-semibold text-slate-700 dark:text-gray-300">Loket</label>
+                                                <select
+                                                    value={selectedLoket}
+                                                    onChange={(e) => setSelectedLoket(parseInt(e.target.value, 10))}
+                                                    className="px-2 py-1 text-xs rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200"
+                                                >
+                                                    <option value={1}>Loket 1</option>
+                                                    <option value={2}>Loket 2</option>
+                                                    <option value={3}>Loket 3</option>
+                                                    <option value={4}>Loket 4</option>
+                                                </select>
+                                            </div>
                                             <div className="px-2 py-1 rounded-md bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800">
                                                 <div className="flex items-center gap-2">
                                                     <div className="text-base font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">{formatQueueLabel(queueCurrent?.nomor, queueCurrent?.prefix)}</div>

@@ -40,7 +40,7 @@ loket.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:202
+* @see routes/web.php:234
 * @route '/antrian/display'
 */
 export const display = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -54,7 +54,7 @@ display.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:202
+* @see routes/web.php:234
 * @route '/antrian/display'
 */
 display.url = (options?: RouteQueryOptions) => {
@@ -62,7 +62,7 @@ display.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:202
+* @see routes/web.php:234
 * @route '/antrian/display'
 */
 display.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -71,7 +71,7 @@ display.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:202
+* @see routes/web.php:234
 * @route '/antrian/display'
 */
 display.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

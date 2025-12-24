@@ -199,6 +199,38 @@ Route::get('/anjungan/pasien-mandiri', function () {
     ]);
 })->name('anjungan.pasien-mandiri');
 
+Route::get('/anjungan/cetak-label', function () {
+    $setting = null;
+    if (Schema::hasTable('setting')) {
+        $fields = [];
+        foreach (['logo', 'nama_instansi', 'alamat_instansi', 'kabupaten', 'propinsi', 'kontak', 'email', 'kode_ppk'] as $col) {
+            if (Schema::hasColumn('setting', $col)) {
+                $fields[] = $col;
+            }
+        }
+        if (! empty($fields)) {
+            $query = DB::table('setting')->select($fields);
+            if (Schema::hasColumn('setting', 'aktifkan')) {
+                $query->where('aktifkan', 'Yes');
+            }
+            $row = $query->orderBy('nama_instansi')->first();
+            if ($row) {
+                $setting = [];
+                foreach ($fields as $f) {
+                    $v = $row->{$f} ?? null;
+                    if (is_string($v)) {
+                        $v = preg_replace('/[\x00-\x1F\x7F]/u', '', $v);
+                    }
+                    $setting[$f] = $v;
+                }
+            }
+        }
+    }
+    return Inertia::render('Anjungan/CetakLabel', [
+        'setting' => $setting,
+    ]);
+})->name('anjungan.cetak-label');
+
 Route::get('/antrian/display', function () {
     $setting = null;
     if (Schema::hasTable('setting')) {
