@@ -10,13 +10,15 @@ import {
     IdentificationIcon,
     MagnifyingGlassIcon,
     ClipboardDocumentCheckIcon,
+    ChevronDownIcon,
+    ChevronRightIcon,
     XMarkIcon,
 } from "@heroicons/react/24/outline";
 import axios from "axios";
 import PatientCreateModal from "@/Components/PatientCreateModal";
 import PatientEditModal from "@/Components/PatientEditModal";
 import PenjabQuickCreateModal from "@/Components/PenjabQuickCreateModal";
-import { todayDateString, nowDateTimeString } from "@/tools/datetime";
+import { todayDateString, nowDateTimeString, getAppTimeZone } from "@/tools/datetime";
 
 export default function Registration({
     auth,
@@ -44,6 +46,96 @@ export default function Registration({
     const [isPatientModalOpen, setIsPatientModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editPatient, setEditPatient] = useState(null);
+    const [isSkriningVisualOpen, setIsSkriningVisualOpen] = useState(false);
+    const [skriningVisualRecords, setSkriningVisualRecords] = useState([]);
+    const [resikoSelections, setResikoSelections] = useState([]);
+    const [isIdentityCollapsed, setIsIdentityCollapsed] = useState(false);
+    const resikoOptions = [
+        "Tidak Ada",
+        "Alat Bantu Jalan",
+        "Gangguan Pola Jalan",
+        "Ada Penutup Mata",
+    ];
+    const formatBirthDate = (value) => {
+        if (!value) return "-";
+        const s = String(value);
+        const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
+        if (m) return m[1];
+        try {
+            return new Date(s).toLocaleDateString("en-CA");
+        } catch (_) {
+            return s;
+        }
+    };
+    const formatSkriningTanggal = (value) => {
+        if (!value) return "-";
+        const s = String(value);
+        const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
+        if (m) return m[1];
+        try {
+            const tz = getAppTimeZone();
+            return new Date(s).toLocaleDateString("en-CA", { timeZone: tz });
+        } catch (_) {
+            const p = s.split("T")[0];
+            return p || s;
+        }
+    };
+    const hasilBadgeClasses = (v) => {
+        if (v === "Merah") return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300";
+        if (v === "Oranye") return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300";
+        if (v === "Kuning") return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300";
+        if (v === "Hijau") return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300";
+        return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
+    };
+    const keputusanBadgeClasses = (v) => {
+        if (v === "UGD") return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300";
+        if (v === "Prioritas") return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300";
+        if (v === "Sesuai Antrian") return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300";
+        return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
+    };
+    const skriningInfo = {
+        Merah: [
+            "Tidak Sadar/Pingsan",
+            "Kesulitan/Tdk Bernafas",
+            "Nadi/Jantung tidak berdetak",
+            "Kejang Lama/Berulang",
+        ],
+        Oranye: [
+            "Nyeri Hebat",
+            "Nyeri Dada",
+        ],
+        Kuning: [
+            "Pucat",
+            "lemas",
+            "Sempoyongan",
+        ],
+        Hijau: [
+            "Kondisi Stabil",
+        ],
+    };
+    const infoAccentBg = (v) => {
+        if (v === "Merah") return "from-red-500 to-rose-600";
+        if (v === "Oranye") return "from-amber-500 to-orange-600";
+        if (v === "Kuning") return "from-yellow-400 to-amber-500";
+        if (v === "Hijau") return "from-green-500 to-emerald-600";
+        return "from-gray-500 to-gray-700";
+    };
+    const dotBg = (v) => {
+        if (v === "Merah") return "bg-red-500";
+        if (v === "Oranye") return "bg-amber-500";
+        if (v === "Kuning") return "bg-yellow-500";
+        if (v === "Hijau") return "bg-green-500";
+        return "bg-gray-500";
+    };
+    const [skriningVisualForm, setSkriningVisualForm] = useState({
+        no_rkm_medis: "",
+        tanggal: todayDateString(),
+        jam: nowDateTimeString().split(" ")[1].substring(0, 5),
+        hasil_skrining: "Hijau",
+        skrining_resiko_jatuh: "",
+        skor_resiko_jatuh: "",
+        keputusan: "Sesuai Antrian",
+    });
     const [registrationData, setRegistrationData] = useState(registrations);
     const [currentPage, setCurrentPage] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
@@ -199,7 +291,9 @@ export default function Registration({
         for (const base of bases) {
             try {
                 const url = new URL(path, base).href;
-                const res = await axios.get(url, { headers: { Accept: "application/json" } });
+                const res = await axios.get(url, { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }, withCredentials: true });
+                const ct = String(res?.headers?.['content-type'] || res?.headers?.['Content-Type'] || '');
+                if (!ct.includes('application/json')) throw new Error('Non-JSON response');
                 return res;
             } catch (e) {
                 lastErr = e;
@@ -623,55 +717,350 @@ export default function Registration({
         setIsSubmitting(true);
 
         try {
+            if (!selectedPatient || !selectedPatient.no_rkm_medis) {
+                setIsSubmitting(false);
+                alert('Silakan pilih pasien terlebih dahulu');
+                return;
+            }
+            
+            // Validasi frontend
+            const requiredFields = ['kd_dokter','kd_poli','kd_pj','p_jawab','almt_pj','hubunganpj'];
+            const missing = requiredFields.filter((k) => !formData[k] || String(formData[k]).trim() === '');
+            if (missing.length) {
+                setIsSubmitting(false);
+                const missingLabels = {
+                    kd_dokter: 'Dokter',
+                    kd_poli: 'Poliklinik',
+                    kd_pj: 'Cara Bayar',
+                    p_jawab: 'Nama Penanggung Jawab',
+                    almt_pj: 'Alamat Penanggung Jawab',
+                    hubunganpj: 'Hubungan',
+                };
+                const missingList = missing.map(f => missingLabels[f] || f).join(', ');
+                alert(`Lengkapi data registrasi: ${missingList}`);
+                return;
+            }
             // Pastikan URL benar. Gunakan fallback eksplisit dan hanya terima hasil Ziggy jika valid.
             let url = `/registration/${encodeURIComponent(selectedPatient.no_rkm_medis)}/register`;
             try {
                 const ziggyUrl = route("registration.register-patient", selectedPatient.no_rkm_medis);
-                // Validasi: harus mengandung segment /registration/ dan diakhiri dengan /register
-                if (typeof ziggyUrl === "string" && /\/registration\/.+\/register$/.test(ziggyUrl)) {
-                    url = ziggyUrl;
-                } else {
-                    console.warn("Ziggy route malformed for register-patient, using fallback:", ziggyUrl);
+                if (typeof ziggyUrl === "string") {
+                    const m = ziggyUrl.match(/\/registration\/(.+)\/register$/);
+                    if (m && m[0]) {
+                        url = m[0];
+                    }
                 }
-            } catch (err) {
-                console.warn("Ziggy route() unavailable, using fallback URL.");
-            }
-            // Log URL yang dipakai agar mudah ditelusuri di console/network
-            try { console.debug("RegisterPatient POST URL:", url); } catch (_) {}
+            } catch (_) {}
 
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+            // Refresh CSRF token sebelum request - ini akan memastikan token sesuai dengan session aktif
+            try {
+                await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+                // Tunggu lebih lama untuk memastikan cookie sudah ter-set dan session masih valid
+                await new Promise(resolve => setTimeout(resolve, 200));
+            } catch (csrfError) {
+                alert('Session expired. Silakan refresh halaman dan coba lagi.');
+                window.location.reload();
+                return;
+            }
+            
+            // Ambil token dari cookie (prioritas) atau meta tag
+            const cookieStr = '; ' + document.cookie;
+            const xsrfPart = cookieStr.split('; XSRF-TOKEN=');
+            let xsrfToken = xsrfPart.length === 2 ? decodeURIComponent(xsrfPart.pop().split(';').shift()) : '';
+            
+            // Jika tidak ada di cookie, ambil dari meta tag
+            const metaToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+            if (!xsrfToken && metaToken) {
+                xsrfToken = metaToken;
+            }
+            
+            // Jika masih tidak ada token, kemungkinan session expired
+            if (!xsrfToken) {
+                alert('Session expired. Silakan refresh halaman dan coba lagi.');
+                window.location.reload();
+                return;
+            }
+
+            // Siapkan payload
             const payload = { ...formData };
+            
+            // Pastikan almt_pj tidak kosong (required by backend)
+            if (!payload.almt_pj || String(payload.almt_pj).trim() === '') {
+                payload.almt_pj = selectedPatient.alamat || 'Alamat tidak diketahui';
+            }
+            
+            // Pastikan p_jawab tidak kosong (required by backend)
+            if (!payload.p_jawab || String(payload.p_jawab).trim() === '') {
+                payload.p_jawab = selectedPatient.namakeluarga || selectedPatient.nm_pasien || 'Pasien';
+            }
+            
+            // Format jam_reg jika perlu
             if (typeof payload.jam_reg === "string" && /^\d{2}:\d{2}$/.test(payload.jam_reg)) {
                 payload.jam_reg = `${payload.jam_reg}:00`;
             }
-            const response = await axios.post(
-                url,
-                payload,
-                {
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json',
-                    },
-                    withCredentials: true,
-                }
-            );
 
-            if (response.data.success) {
-                alert(response.data.message);
+            let response;
+            // Axios akan otomatis mengirim X-XSRF-TOKEN dari cookie XSRF-TOKEN
+            // Kita hanya perlu memastikan cookie ter-set dengan benar
+            // Jangan kirim X-CSRF-TOKEN secara manual jika sudah ada X-XSRF-TOKEN
+            const config = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    // Hanya kirim X-CSRF-TOKEN jika X-XSRF-TOKEN tidak tersedia (fallback)
+                    // Axios akan otomatis mengirim X-XSRF-TOKEN dari cookie
+                },
+                withCredentials: true,
+                // Force axios to treat response as JSON, not HTML
+                responseType: 'json',
+                // Ensure axios doesn't follow redirects
+                maxRedirects: 0,
+                validateStatus: function (status) {
+                    // Accept all status codes so we can handle them manually
+                    return status >= 200 && status < 600;
+                },
+            };
+
+            const doPost = async () => {
+                try {
+                    // Pastikan URL adalah absolute atau relative yang benar
+                    const finalUrl = url.startsWith('http') ? url : url.startsWith('/') ? url : `/${url}`;
+                    
+                    const res = await axios.post(finalUrl, payload, config);
+                    
+                    // Cek apakah response adalah error 419 (CSRF token expired)
+                    if (res?.status === 419) {
+                        const error = new Error('CSRF token expired');
+                        error.response = {
+                            status: 419,
+                            statusText: 'CSRF Token Expired',
+                            data: res?.data,
+                            headers: res?.headers,
+                        };
+                        throw error;
+                    }
+                    
+                    // Cek apakah response adalah HTML (bukan JSON)
+                    const contentType = res?.headers?.['content-type'] || res?.headers?.['Content-Type'] || '';
+                    const isHtml = contentType.includes('text/html') || 
+                                  (typeof res?.data === 'string' && (
+                                      res.data.trim().startsWith('<!DOCTYPE') ||
+                                      res.data.trim().startsWith('<html') ||
+                                      res.data.trim().startsWith('<HTML')
+                                  ));
+                    
+                    if (isHtml) {
+                        // Buat error object yang mirip dengan axios error
+                        const error = new Error('Server mengembalikan HTML bukan JSON. Kemungkinan route tidak ditemukan atau redirect.');
+                        error.response = {
+                            status: res?.status || 500,
+                            statusText: 'HTML Response',
+                            data: res?.data,
+                            headers: res?.headers,
+                        };
+                        throw error;
+                    }
+                    
+                    // Pastikan response.data adalah object, bukan string
+                    if (typeof res?.data === 'string') {
+                        try {
+                            res.data = JSON.parse(res.data);
+                        } catch (parseErr) {
+                            const error = new Error('Response data tidak dapat di-parse sebagai JSON');
+                            error.response = {
+                                status: res?.status || 500,
+                                statusText: 'Invalid JSON',
+                                data: res?.data,
+                            };
+                            throw error;
+                        }
+                    }
+                    
+                    return res;
+                } catch (err) {
+                    throw err;
+                }
+            };
+
+            try {
+                response = await doPost();
+                
+                // Hanya retry jika benar-benar ada masalah:
+                // 1. Status bukan 2xx (success)
+                // 2. Atau status 200 tapi tidak ada data sama sekali
+                // 3. Atau status 200 tapi success === false (explicit failure)
+                const isSuccessStatus = response?.status >= 200 && response?.status < 300;
+                const hasNoData = !response?.data;
+                const isExplicitFailure = response?.data?.success === false;
+                
+                if (isSuccessStatus && !hasNoData && !isExplicitFailure) {
+                    // Response sudah berhasil, tidak perlu retry
+                } else if (response?.status === 419) {
+                    // CSRF token expired - refresh dan retry
+                    // Refresh CSRF token
+                    await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    // Update CSRF token di config
+                    const cookieStr = '; ' + document.cookie;
+                    const xsrfPart = cookieStr.split('; XSRF-TOKEN=');
+                    let newXsrfToken = xsrfPart.length === 2 ? decodeURIComponent(xsrfPart.pop().split(';').shift()) : '';
+                    const newMetaToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                    
+                    if (!newXsrfToken && newMetaToken) {
+                        newXsrfToken = newMetaToken;
+                    }
+                    
+                    // Update meta tag jika perlu
+                    const metaTag = document.querySelector('meta[name="csrf-token"]');
+                    if (metaTag && newXsrfToken) {
+                        metaTag.setAttribute('content', newXsrfToken);
+                    }
+                    
+                    config.headers['X-CSRF-TOKEN'] = newXsrfToken;
+                    config.headers['X-XSRF-TOKEN'] = newXsrfToken;
+                    
+                    response = await doPost();
+                }
+                // Jika status bukan 2xx, akan masuk ke catch block
+            } catch (err) {
+                // Handle CSRF token expired (419) atau Unauthorized (401)
+                if (err?.response?.status === 419 || err?.response?.status === 401) {
+                    // Cek apakah ini retry kedua (sudah pernah retry sebelumnya)
+                    const isRetry = config.headers['X-CSRF-RETRY'] === '1';
+                    
+                    if (isRetry) {
+                        // Sudah pernah retry, kemungkinan session benar-benar expired
+                        const sessionError = new Error('Session expired. Silakan refresh halaman dan coba lagi.');
+                        sessionError.response = err?.response;
+                        throw sessionError;
+                    }
+                    
+                    // Mark bahwa ini adalah retry
+                    config.headers['X-CSRF-RETRY'] = '1';
+                    
+                    // Refresh CSRF token dan session - hanya sekali retry
+                    try {
+                        // Refresh CSRF cookie untuk mendapatkan token baru
+                        await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+                        await new Promise(resolve => setTimeout(resolve, 300)); // Delay untuk memastikan cookie ter-set
+                        
+                        // Update CSRF token di config
+                        const cookieStr = '; ' + document.cookie;
+                        const xsrfPart = cookieStr.split('; XSRF-TOKEN=');
+                        let newXsrfToken = xsrfPart.length === 2 ? decodeURIComponent(xsrfPart.pop().split(';').shift()) : '';
+                        const newMetaToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                        
+                        if (!newXsrfToken && newMetaToken) {
+                            newXsrfToken = newMetaToken;
+                        }
+                        
+                        // Jika masih tidak ada token setelah refresh, session mungkin expired
+                        if (!newXsrfToken) {
+                            const sessionError = new Error('Session expired. Silakan refresh halaman dan coba lagi.');
+                            sessionError.response = err?.response;
+                            throw sessionError;
+                        }
+                        
+                        // Update meta tag jika perlu
+                        const metaTag = document.querySelector('meta[name="csrf-token"]');
+                        if (metaTag && newXsrfToken) {
+                            metaTag.setAttribute('content', newXsrfToken);
+                        }
+                        
+                        // Update config headers dengan token baru
+                        config.headers['X-CSRF-TOKEN'] = newXsrfToken;
+                        config.headers['X-XSRF-TOKEN'] = newXsrfToken;
+                        
+                        // Retry request dengan token baru - hanya sekali
+                        response = await doPost();
+                    } catch (retryErr) {
+                        // Jika retry masih gagal dengan 419, session pasti expired - langsung refresh halaman
+                        if (retryErr?.response?.status === 419 || retryErr?.message?.includes('Session expired')) {
+                            const sessionError = new Error('Session expired. Silakan refresh halaman dan coba lagi.');
+                            sessionError.response = retryErr?.response || err?.response;
+                            throw sessionError;
+                        }
+                        throw retryErr;
+                    }
+                } else {
+                    throw err;
+                }
+            }
+
+            // Cek apakah response adalah HTML (bukan JSON) - ini biasanya berarti error atau redirect
+            const contentType = response?.headers?.['content-type'] || '';
+            const isHtmlResponse = typeof response?.data === 'string' && (
+                response.data.trim().startsWith('<!DOCTYPE') ||
+                response.data.trim().startsWith('<html') ||
+                contentType.includes('text/html')
+            );
+            
+            if (isHtmlResponse) {
+                // Cek apakah ini halaman login redirect
+                const isLoginPage = typeof response?.data === 'string' && (
+                    response.data.includes('login') ||
+                    response.data.includes('Login') ||
+                    response.data.includes('authentication')
+                );
+                
+                if (isLoginPage) {
+                    alert('Session expired. Silakan login ulang.');
+                    window.location.reload();
+                    return;
+                }
+                
+                // Cek apakah ini error page 404
+                const is404Error = typeof response?.data === 'string' && (
+                    response.data.includes('404') ||
+                    response.data.includes('Not Found') ||
+                    response.status === 404
+                );
+                
+                if (is404Error) {
+                    const errorMsg = `Route tidak ditemukan (404).\n\nURL: ${url}\nPasien: ${selectedPatient?.no_rkm_medis}\n\nPastikan route sudah benar dan pasien ada di database.`;
+                    alert(errorMsg);
+                    throw new Error('Route tidak ditemukan (404)');
+                }
+                
+                // Cek apakah ini error page 500
+                const is500Error = typeof response?.data === 'string' && (
+                    response.data.includes('500') ||
+                    response.data.includes('Server Error') ||
+                    response.status === 500
+                );
+                
+                if (is500Error) {
+                    alert('Terjadi kesalahan pada server (500). Silakan cek log Laravel untuk detail.');
+                    throw new Error('Server error (500)');
+                }
+                
+                // Generic HTML response error
+                const errorMsg = `Server mengembalikan HTML bukan JSON.\n\nKemungkinan:\n1. Route tidak ditemukan\n2. Middleware memblokir request\n3. CSRF token invalid\n\nURL: ${url}\nStatus: ${response?.status}\n\nSilakan cek log untuk detail.`;
+                alert(errorMsg);
+                throw new Error('Response adalah HTML, bukan JSON');
+            }
+
+            // Validasi response sebelum proses lebih lanjut
+            if (!response || !response.data) {
+                throw new Error('Response tidak valid dari server');
+            }
+            
+            // Pastikan response.data adalah object (bukan string HTML)
+            if (typeof response.data === 'string') {
+                throw new Error('Response data adalah string, bukan object JSON');
+            }
+
+            if (response.data.success === true || response.data.success === 'true' || response.data.success === 1) {
+                alert(response.data.message || 'Registrasi berhasil!');
+                // Simpan tanggal registrasi yang baru dibuat untuk filter
+                const newRegDate = response.data.data?.tgl_registrasi || formData.tgl_registrasi || todayDateString();
+                
                 // Setelah registrasi lokal berhasil, kirim antrean ke Mobile JKN hanya jika jenis bayar diizinkan (BPJ/PBI/NON)
                 try {
                     if (!isJenisBayarAllowedForAntrean(formData.kd_pj)) {
                         // Jenis bayar selain BPJ/PBI: hanya simpan lokal, tidak kirim antrean dan tidak tampilkan popup
-                        console.info(
-                            "Jenis bayar bukan BPJ/PBI, melewati pengiriman antrean Mobile JKN.",
-                            {
-                                kd_pj: formData.kd_pj,
-                                jenis: resolveJenisBayarFromKdPj(
-                                    formData.kd_pj
-                                ),
-                            }
-                        );
                     } else {
                         const reg = response.data.data || {};
                         const mjRes = await axios.post(
@@ -729,19 +1118,10 @@ export default function Registration({
                                                   2
                                               ),
                                 });
-                            } else {
-                                // Beri informasi sukses ringan; respons detail ditangani di backend
-                                console.log(
-                                    "Antrean Mobile JKN berhasil dikirim"
-                                );
                             }
                         }
                     }
                 } catch (err) {
-                    console.warn(
-                        "Gagal mengirim antrean Mobile JKN:",
-                        err?.response?.data || err?.message
-                    );
                     // Tampilkan popup respon BPJS dengan detail error
                     openBpjsPopup({
                         status: err?.response?.status ?? null,
@@ -763,17 +1143,87 @@ export default function Registration({
                                   ),
                     });
                 }
+
+                // Reset form dan modal terlebih dahulu
                 setIsModalOpen(false);
                 resetForm();
-                // Refresh registrations
-                loadRegistrations();
+                
+                // Set filter ke tanggal registrasi yang baru dibuat agar data baru langsung muncul
+                // Reset filter lainnya agar data baru pasti terlihat
+                const newFilters = {
+                    ...filters,
+                    date: newRegDate,
+                    start_date: "",
+                    end_date: "",
+                    kd_poli: "",
+                    kd_dokter: "",
+                    search: "",
+                    status: "",
+                    status_poli: "",
+                    per_page: filters.per_page || 50,
+                };
+                
+                // Update state filter
+                setFilters(newFilters);
+                
+                // Refresh registrations dengan filter baru dan reset ke halaman 1
+                // Langsung pass filter baru agar tidak perlu menunggu state update
+                // Tambahkan sedikit delay untuk memastikan state sudah ter-update
+                setTimeout(() => {
+                    loadRegistrations(1, newFilters);
+                }, 100);
+            } else {
+                // Response tidak sukses
+                const errorMsg = response.data.message || 'Registrasi gagal. Silakan coba lagi.';
+                alert(errorMsg);
             }
         } catch (error) {
-            console.error("Error registering patient:", error);
-            if (error.response?.data?.message) {
+            // Handle validation errors dari backend
+            if (error?.response?.status === 422) {
+                const validationErrors = error?.response?.data?.errors || {};
+                const errorMessages = Object.entries(validationErrors)
+                    .map(([field, messages]) => {
+                        const fieldLabels = {
+                            kd_dokter: 'Dokter',
+                            kd_poli: 'Poliklinik',
+                            kd_pj: 'Cara Bayar',
+                            p_jawab: 'Nama Penanggung Jawab',
+                            almt_pj: 'Alamat Penanggung Jawab',
+                            hubunganpj: 'Hubungan',
+                            tgl_registrasi: 'Tanggal Registrasi',
+                            jam_reg: 'Jam Registrasi',
+                        };
+                        const label = fieldLabels[field] || field;
+                        const msg = Array.isArray(messages) ? messages.join(', ') : messages;
+                        return `${label}: ${msg}`;
+                    })
+                    .join('\n');
+                
+                alert(`Validasi gagal:\n${errorMessages}`);
+            } else if (error?.response?.status === 404) {
+                alert('Endpoint tidak ditemukan. Pastikan URL benar.');
+            } else if (error?.response?.status === 403) {
+                alert('Anda tidak memiliki izin untuk melakukan aksi ini.');
+            } else if (error?.response?.status === 419 || error?.message?.includes('Session expired')) {
+                const errorMessage = error?.response?.data?.message || error?.message || 'Session expired. Silakan refresh halaman dan coba lagi.';
+                alert(errorMessage);
+                // Refresh halaman untuk mendapatkan session baru
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+                return;
+            } else if (error?.response?.status === 500) {
+                alert('Terjadi kesalahan pada server. Silakan cek log untuk detail.');
+            } else if (error?.response?.data?.message) {
+                // Error message dari backend
                 alert(error.response.data.message);
+            } else if (error?.code === 'NETWORK_ERROR' || error?.message?.includes('Network Error')) {
+                alert('Gagal terhubung ke server. Periksa koneksi internet Anda.');
+            } else if (error?.message) {
+                // Network atau error lainnya
+                alert(`Gagal mendaftarkan pasien: ${error.message}`);
             } else {
-                alert("Gagal mendaftarkan pasien");
+                alert('Gagal mendaftarkan pasien. Silakan coba lagi atau hubungi administrator.');
             }
         } finally {
             setIsSubmitting(false);
@@ -832,6 +1282,143 @@ export default function Registration({
     const closeEditModal = () => {
         setIsEditModalOpen(false);
         setEditPatient(null);
+    };
+
+    const openSkriningVisualModal = async (patient) => {
+        const p = patient || selectedPatient;
+        setSkriningVisualForm((prev) => ({
+            ...prev,
+            no_rkm_medis: String(p?.no_rkm_medis || ""),
+            tanggal: todayDateString(),
+            jam: nowDateTimeString().split(" ")[1].substring(0, 5),
+            hasil_skrining: "Hijau",
+            skrining_resiko_jatuh: "",
+            skor_resiko_jatuh: "",
+            keputusan: "Sesuai Antrian",
+        }));
+        setResikoSelections([]);
+        setIsSkriningVisualOpen(true);
+        try {
+            const url = route("skrining-visual.index", {}, false);
+            const { data } = await axios.get(url, {
+                params: { no_rkm_medis: p?.no_rkm_medis },
+            });
+            setSkriningVisualRecords(Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : []);
+        } catch (_) {
+            setSkriningVisualRecords([]);
+        }
+    };
+
+    const closeSkriningVisualModal = () => {
+        setIsSkriningVisualOpen(false);
+    };
+
+    const handleSkriningVisualChange = (e) => {
+        const { name, value } = e.target;
+        setSkriningVisualForm((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const toggleResikoSelection = (opt) => {
+        setResikoSelections((prev) => {
+            let next = [];
+            if (opt === "Tidak Ada") {
+                next = prev.includes("Tidak Ada") ? [] : ["Tidak Ada"];
+            } else {
+                const exists = prev.includes(opt);
+                const withoutNone = prev.filter((o) => o !== "Tidak Ada");
+                next = exists ? withoutNone.filter((o) => o !== opt) : [...withoutNone, opt];
+            }
+            const calculateResikoJatuhScore = (selected) => {
+                if (!Array.isArray(selected) || selected.length === 0) return "";
+                if (selected.includes("Tidak Ada")) return "0";
+                const weights = {
+                    "Alat Bantu Jalan": 4,
+                    "Gangguan Pola Jalan": 3,
+                    "Ada Penutup Mata": 3,
+                };
+                let score = selected.reduce((sum, s) => sum + (weights[s] || 0), 0);
+                if (score > 10) score = 10;
+                return String(score);
+            };
+            setSkriningVisualForm((f) => ({
+                ...f,
+                skrining_resiko_jatuh: next.join(", "),
+                skor_resiko_jatuh: calculateResikoJatuhScore(next),
+            }));
+            return next;
+        });
+    };
+
+    const handleSubmitSkriningVisual = async (e) => {
+        e.preventDefault();
+        const payload = { ...skriningVisualForm };
+        if (typeof payload.jam === "string" && /^\d{2}:\d{2}$/.test(payload.jam)) {
+            payload.jam = `${payload.jam}:00`;
+        }
+        try {
+            const existing = skriningVisualRecords.find(
+                (r) => String(r.tanggal) === String(payload.tanggal)
+            );
+            if (existing) {
+                const url = route(
+                    "skrining-visual.update",
+                    { no_rkm_medis: payload.no_rkm_medis, tanggal: payload.tanggal },
+                    false
+                );
+                const { data } = await axios.put(url, payload);
+                const updated = data?.data || data;
+                setSkriningVisualRecords((prev) =>
+                    prev.map((r) =>
+                        String(r.no_rkm_medis) === String(updated.no_rkm_medis) &&
+                        String(r.tanggal) === String(updated.tanggal)
+                            ? updated
+                            : r
+                    )
+                );
+            } else {
+                const url = route("skrining-visual.store", {}, false);
+                const { data } = await axios.post(url, payload);
+                const created = data?.data || data;
+                setSkriningVisualRecords((prev) => [created, ...prev]);
+            }
+            setIsSkriningVisualOpen(false);
+        } catch (_) {}
+    };
+
+    const handleEditSkriningRecord = (rec) => {
+        setSkriningVisualForm({
+            no_rkm_medis: String(rec.no_rkm_medis || selectedPatient?.no_rkm_medis || ""),
+            tanggal: String(rec.tanggal || todayDateString()),
+            jam: String(rec.jam || nowDateTimeString().split(" ")[1].substring(0, 5)).slice(0, 5),
+            hasil_skrining: String(rec.hasil_skrining || "Hijau"),
+            skrining_resiko_jatuh: String(rec.skrining_resiko_jatuh || ""),
+            skor_resiko_jatuh: String(rec.skor_resiko_jatuh || ""),
+            keputusan: String(rec.keputusan || "Sesuai Antrian"),
+        });
+        const parts = String(rec.skrining_resiko_jatuh || "")
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
+        setResikoSelections(parts);
+        setIsSkriningVisualOpen(true);
+    };
+
+    const handleDeleteSkriningRecord = async (rec) => {
+        try {
+            const url = route(
+                "skrining-visual.destroy",
+                { no_rkm_medis: rec.no_rkm_medis, tanggal: rec.tanggal },
+                false
+            );
+            await axios.delete(url);
+            setSkriningVisualRecords((prev) =>
+                prev.filter(
+                    (r) =>
+                        !(String(r.no_rkm_medis) === String(rec.no_rkm_medis) &&
+                          String(r.tanggal) === String(rec.tanggal))
+                )
+            );
+        } catch (_) {}
     };
 
     // After successful edit, refresh search results and selected patient data
@@ -921,11 +1508,13 @@ export default function Registration({
     };
 
     // Load registrations with filters
-    const loadRegistrations = async (page = 1) => {
+    const loadRegistrations = async (page = 1, customFilters = null) => {
         setIsLoading(true);
         try {
+            // Gunakan customFilters jika disediakan, jika tidak gunakan state filters
+            const activeFilters = customFilters !== null ? customFilters : filters;
             // Hindari mengirim parameter kosong agar backend memakai default
-            const params = { ...filters, page };
+            const params = { ...activeFilters, page };
             Object.keys(params).forEach((key) => {
                 if (params[key] === "" || params[key] === null)
                     delete params[key];
@@ -1457,6 +2046,7 @@ export default function Registration({
                                                                       </div>
                                                                       <div className="flex flex-col gap-1">
                                                                           <motion.button
+                                                                              onClick={() => selectPatient(patient)}
                                                                               className="px-2 py-1 bg-blue-600 text-white text-[10px] rounded hover:bg-blue-700 transition-colors flex-shrink-0 w-full text-center"
                                                                               whileHover={{
                                                                                   scale: 1.05,
@@ -1606,7 +2196,7 @@ export default function Registration({
                                             </h3>
                                             <div className="flex items-center gap-2">
                                                 <motion.button
-                                                    onClick={() => openEditModal(selectedPatient)}
+                                                    onClick={() => openSkriningVisualModal(selectedPatient)}
                                                     className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 text-xs rounded-md flex items-center gap-1 transition-colors shadow-sm"
                                                     whileHover={{ scale: 1.05, y: -1 }}
                                                     whileTap={{ scale: 0.95 }}
@@ -1617,7 +2207,7 @@ export default function Registration({
                                                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5h2m-6 6h6m-3 6h6M7 7l10 10" />
                                                     </svg>
-                                                    Edit Data Pasien
+                                                    Skrining Visual
                                                 </motion.button>
                                                 <motion.button
                                                     onClick={resetForm}
@@ -1634,6 +2224,7 @@ export default function Registration({
                                         {/* Form Registrasi */}
                                         <motion.form
                                             onSubmit={handleSubmitRegister}
+                                            noValidate
                                             className="space-y-2"
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
@@ -2769,7 +3360,9 @@ export default function Registration({
                                     <div className="flex items-center gap-2">
                                         <motion.button
                                             onClick={() =>
-                                                openEditModal(selectedPatient)
+                                                openSkriningVisualModal(
+                                                    selectedPatient
+                                                )
                                             }
                                             className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 text-xs rounded-md flex items-center gap-1 transition-colors shadow-sm"
                                             whileHover={{ scale: 1.05, y: -1 }}
@@ -2794,7 +3387,7 @@ export default function Registration({
                                                     d="M11 5h2m-6 6h6m-3 6h6M7 7l10 10"
                                                 />
                                             </svg>
-                                            Edit Data Pasien
+                                            Skrining Visual
                                         </motion.button>
                                         <motion.button
                                             onClick={closeModal}
@@ -2827,6 +3420,7 @@ export default function Registration({
 
                                 <motion.form
                                     onSubmit={handleSubmitRegister}
+                                    noValidate
                                     className="space-y-3 lg:space-y-4"
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -3560,6 +4154,283 @@ export default function Registration({
                                     >
                                         Tutup
                                     </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {isSkriningVisualOpen && selectedPatient && (
+                    <motion.div
+                        className="fixed inset-0 bg-black/20 backdrop-blur-md flex items-center justify-center z-[9998] p-4 overflow-y-auto"
+                        initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+                        animate={{ opacity: 1, backdropFilter: "blur(12px)" }}
+                        exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
+                        onClick={closeSkriningVisualModal}
+                    >
+                        <motion.div
+                            className="relative overflow-hidden rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 w-full max-h-[90vh] max-w-xl sm:max-w-2xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl"
+                            initial={{ scale: 0.85, opacity: 0, y: 40 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.85, opacity: 0, y: 40 }}
+                            transition={{ duration: 0.35, type: "spring", stiffness: 110, damping: 18 }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-purple-500/10" />
+                            <div className="relative p-6">
+                                <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-6">
+                                    <div className="flex items-center gap-4">
+                                        <motion.div
+                                            className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/25"
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ duration: 0.4, delay: 0.1 }}
+                                        >
+                                            <ClipboardDocumentCheckIcon className="w-5 h-5 text-white" />
+                                        </motion.div>
+                                        <div>
+                                            <h3 className="text-lg font-semibold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-gray-900 to-gray-700 dark:from-white dark:via-white dark:to-gray-300">
+                                                Skrining Visual
+                                            </h3>
+                                            <div className="text-xs text-gray-600 dark:text-gray-400">{selectedPatient?.nm_pasien}</div>
+                                        </div>
+                                    </div>
+                                    <motion.button
+                                        onClick={closeSkriningVisualModal}
+                                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0"
+                                        whileHover={{ scale: 1.1, rotate: 90 }}
+                                        whileTap={{ scale: 0.9 }}
+                                        transition={{ duration: 0.2 }}
+                                    >
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </motion.button>
+                                </div>
+
+                                <div className="mb-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-stretch">
+                                        <div className="rounded-xl border border-white/30 dark:border-gray-700/50 bg-white/60 dark:bg-gray-900/30 p-4 h-full">
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsIdentityCollapsed((v) => !v)}
+                                                className="w-full flex items-center justify-between"
+                                            >
+                                                <div className="text-[10px] font-medium text-gray-700 dark:text-gray-300">Identitas Pasien</div>
+                                                <span className="text-gray-500">
+                                                    {isIdentityCollapsed ? (
+                                                        <ChevronRightIcon className="h-4 w-4" />
+                                                    ) : (
+                                                        <ChevronDownIcon className="h-4 w-4" />
+                                                    )}
+                                                </span>
+                                            </button>
+                                            <AnimatePresence>
+                                                {!isIdentityCollapsed && (
+                                                    <motion.div
+                                                        initial={{ height: 0, opacity: 0 }}
+                                                        animate={{ height: "auto", opacity: 1 }}
+                                                        exit={{ height: 0, opacity: 0 }}
+                                                        transition={{ duration: 0.3 }}
+                                                        className="overflow-hidden mt-2 space-y-3"
+                                                    >
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                                            <div className="space-y-1">
+                                                                <div className="text-[11px] text-gray-900 dark:text-gray-100">No. RM: {selectedPatient?.no_rkm_medis}</div>
+                                                                <div className="text-[11px] text-gray-900 dark:text-gray-100">Nama: {selectedPatient?.nm_pasien}</div>
+                                                                <div className="text-[11px] text-gray-900 dark:text-gray-100">JK: {selectedPatient?.jk || '-'}</div>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <div className="text-[11px] text-gray-900 dark:text-gray-100">Tgl Lahir: {formatBirthDate(selectedPatient?.tgl_lahir)}</div>
+                                                                <div className="text-[11px] text-gray-900 dark:text-gray-100">Alamat: {selectedPatient?.alamat || '-'}</div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                                            <div>
+                                                                <label className="block text-[10px] font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal Skrining</label>
+                                                                <input
+                                                                    type="date"
+                                                                    name="tanggal"
+                                                                    value={skriningVisualForm.tanggal}
+                                                                    onChange={handleSkriningVisualChange}
+                                                                    className="w-full px-2 py-1.5 text-[11px] rounded-lg border border-gray-300 dark:border-gray-600 bg-white/80 dark:bg-gray-800/80 focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white"
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-[10px] font-medium text-gray-700 dark:text-gray-300 mb-1">Jam Skrining</label>
+                                                                <input
+                                                                    type="time"
+                                                                    name="jam"
+                                                                    value={String(skriningVisualForm.jam || "").slice(0,5)}
+                                                                    onChange={handleSkriningVisualChange}
+                                                                    className="w-full px-2 py-1.5 text-[11px] rounded-lg border border-gray-300 dark:border-gray-600 bg-white/80 dark:bg-gray-800/80 focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
+
+                                        {skriningVisualForm.hasil_skrining && (
+                                            <div className="rounded-2xl border border-white/30 dark:border-gray-700/50 bg-white/60 dark:bg-gray-900/30 p-4 h-full overflow-y-auto">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`p-2.5 rounded-xl bg-gradient-to-br ${infoAccentBg(skriningVisualForm.hasil_skrining)} shadow-lg shadow-blue-500/25`}>
+                                                            <ClipboardDocumentCheckIcon className="w-5 h-5 text-white" />
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-sm font-medium text-gray-800 dark:text-gray-100">Informasi {skriningVisualForm.hasil_skrining}</div>
+                                                            <div className="text-xs text-gray-600 dark:text-gray-400">Pedoman cepat kondisi skrining</div>
+                                                        </div>
+                                                    </div>
+                                                    <span className={hasilBadgeClasses(skriningVisualForm.hasil_skrining)}>{skriningVisualForm.hasil_skrining}</span>
+                                                </div>
+                                                <ul className="mt-2 space-y-1">
+                                                    {(skriningInfo[skriningVisualForm.hasil_skrining] || []).map((it) => (
+                                                        <li key={it} className="flex items-center gap-2 text-xs text-gray-800 dark:text-gray-200">
+                                                            <span className={`inline-block w-1.5 h-1.5 rounded-full ${dotBg(skriningVisualForm.hasil_skrining)}`} />
+                                                            <span>{it}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <form onSubmit={handleSubmitSkriningVisual} className="space-y-4">
+
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
+                                        <div className="flex items-center gap-3">
+                                            <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Hasil Skrining : </label>
+                                            <select
+                                                name="hasil_skrining"
+                                                value={skriningVisualForm.hasil_skrining}
+                                                onChange={handleSkriningVisualChange}
+                                                className="flex-1 px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-white/80 dark:bg-gray-800/80 focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white"
+                                            >
+                                                <option value="">Pilih</option>
+                                                <option value="Merah">Merah</option>
+                                                <option value="Oranye">Oranye</option>
+                                                <option value="Kuning">Kuning</option>
+                                                <option value="Hijau">Hijau</option>
+                                            </select>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <label className="text-xs font-medium text-gray-700 dark:text-gray-300">Keputusan :</label>
+                                            <select
+                                                name="keputusan"
+                                                value={skriningVisualForm.keputusan}
+                                                onChange={handleSkriningVisualChange}
+                                                className="flex-1 px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-white/80 dark:bg-gray-800/80 focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white"
+                                            >
+                                                <option value="">Pilih</option>
+                                                <option value="Sesuai Antrian">Sesuai Antrian</option>
+                                                <option value="Prioritas">Prioritas</option>
+                                                <option value="UGD">UGD</option>
+                                            </select>
+                                        </div>
+                                        
+                                    </div>
+
+                                    <div>
+                                        <div className="flex flex-col md:flex-row md:items-start md:gap-3">
+                                            <div className="md:basis-[45%]">
+                                                <div className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Resiko Jatuh</div>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {resikoOptions.map((opt) => {
+                                                        const active = resikoSelections.includes(opt);
+                                                        const cls = active
+                                                            ? "inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 ring-2 ring-blue-200"
+                                                            : "inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 text-xs text-gray-700 dark:text-gray-300";
+                                                        return (
+                                                            <button
+                                                                key={opt}
+                                                                type="button"
+                                                                className={cls}
+                                                                onClick={() => toggleResikoSelection(opt)}
+                                                                aria-pressed={active}
+                                                            >
+                                                                <span className="text-[11px]">{opt}</span>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+
+                                            <div className="md:basis-[40%] min-w-0">
+                                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Rangkuman Resiko</label>
+                                                <input
+                                                    type="text"
+                                                    name="skrining_resiko_jatuh"
+                                                    value={skriningVisualForm.skrining_resiko_jatuh}
+                                                    onChange={handleSkriningVisualChange}
+                                                    className="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-white/80 dark:bg-gray-800/80 focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white"
+                                                />
+                                            </div>
+
+                                            <div className="md:basis-[15%]">
+                                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Skor</label>
+                                                <input
+                                                    type="text"
+                                                    name="skor_resiko_jatuh"
+                                                    value={skriningVisualForm.skor_resiko_jatuh}
+                                                    onChange={handleSkriningVisualChange}
+                                                    maxLength={2}
+                                                    className="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-white/80 dark:bg-gray-800/80 focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-end gap-2 pt-2">
+                                        <motion.button
+                                            type="submit"
+                                            className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-sm shadow-sm"
+                                            whileHover={{ scale: 1.03 }}
+                                            whileTap={{ scale: 0.97 }}
+                                        >
+                                            Simpan
+                                        </motion.button>
+                                        <button
+                                            type="button"
+                                            onClick={closeSkriningVisualModal}
+                                            className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 text-sm"
+                                        >
+                                            Batal
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <div className="mt-6">
+                                    <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Riwayat Skrining</div>
+                                    <div className="space-y-2">
+                                        {skriningVisualRecords.map((r) => (
+                                            <div key={`${r.no_rkm_medis}-${r.tanggal}-${r.jam}`} className="rounded-xl border border-white/30 dark:border-gray-700/50 bg-white/70 dark:bg-gray-900/30 px-4 py-3 flex items-center justify-between">
+                                                <div className="text-xs text-gray-800 dark:text-gray-200 space-y-1">
+                                                    <div className="font-medium">{formatSkriningTanggal(r.tanggal)} • {String(r.jam || '').slice(0,5)}</div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={hasilBadgeClasses(r.hasil_skrining)}>{r.hasil_skrining}</span>
+                                                        <span className={keputusanBadgeClasses(r.keputusan)}>{r.keputusan}</span>
+                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">Skor {r.skor_resiko_jatuh}</span>
+                                                    </div>
+                                                    <div className="text-gray-600 dark:text-gray-400">{r.skrining_resiko_jatuh}</div>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <button onClick={() => handleEditSkriningRecord(r)} className="px-3 py-1.5 text-xs rounded-md bg-blue-600 hover:bg-blue-700 text-white">Edit</button>
+                                                    <button onClick={() => handleDeleteSkriningRecord(r)} className="px-3 py-1.5 text-xs rounded-md bg-red-600 hover:bg-red-700 text-white">Hapus</button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {skriningVisualRecords.length === 0 && (
+                                            <div className="text-xs text-gray-600 dark:text-gray-400">Belum ada data skrining untuk pasien ini.</div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </motion.div>
