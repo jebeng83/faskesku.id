@@ -17,6 +17,7 @@ import {
     Users,
     FileText,
     Home,
+    Receipt,
 } from "lucide-react";
 
 // Theme toggle terkontrol, state diangkat ke parent agar sinkron di semua instance
@@ -58,23 +59,39 @@ function NavItem({ href, icon: Icon, label, active, collapsed }) {
     );
 }
 
-function Section({ title, children, collapsed }) {
+function Section({ title, children, collapsed, open = true, onToggle }) {
+    const showChildren = collapsed || open;
     return (
         <div className="mb-4">
             {!collapsed && (
-                <div className="px-3 py-2 text-[12px] uppercase tracking-wide text-white/80">
-                    {title}
-                </div>
+                <button
+                    type="button"
+                    onClick={onToggle}
+                    className="w-full flex items-center justify-between px-3 py-2 text-[12px] uppercase tracking-wide text-white/80 hover:bg-white/5 rounded"
+                >
+                    <span>{title}</span>
+                    {onToggle && (
+                        <span
+                            className={`transform transition-transform ${
+                                open ? "rotate-0" : "-rotate-90"
+                            }`}
+                        >
+                            ▸
+                        </span>
+                    )}
+                </button>
             )}
-            <div className="flex flex-col gap-1">{children}</div>
+            {showChildren && (
+                <div className="flex flex-col gap-1">{children}</div>
+            )}
         </div>
     );
 }
 
 // Helper to safely resolve Ziggy route names with a fallback path
-function safeRoute(name, fallback) {
+function safeRoute(name, fallback, params) {
     try {
-        return route(name);
+        return params ? route(name, params) : route(name);
     } catch (_) {
         return fallback;
     }
@@ -109,6 +126,30 @@ export default function SidebarPengaturan({
         );
     });
 
+    const [openSections, setOpenSections] = useState(() => {
+        const base = {
+            main: true,
+            app: true,
+            tarif: true,
+            user: true,
+            hr: true,
+            ss: true,
+        };
+        if (typeof window === "undefined") {
+            return base;
+        }
+        try {
+            const saved = localStorage.getItem("pengaturanSidebarSections");
+            if (saved) {
+                return {
+                    ...base,
+                    ...JSON.parse(saved),
+                };
+            }
+        } catch (_) {}
+        return base;
+    });
+
     useEffect(() => {
         try {
             localStorage.setItem(
@@ -133,6 +174,22 @@ export default function SidebarPengaturan({
             localStorage.setItem("theme", isDark ? "dark" : "light");
         } catch (_) {}
     }, [isDark]);
+
+    useEffect(() => {
+        try {
+            localStorage.setItem(
+                "pengaturanSidebarSections",
+                JSON.stringify(openSections)
+            );
+        } catch (_) {}
+    }, [openSections]);
+
+    const toggleSection = (key) => {
+        setOpenSections((prev) => ({
+            ...prev,
+            [key]: !prev[key],
+        }));
+    };
 
     const paths = useMemo(
         () => ({
@@ -175,7 +232,6 @@ export default function SidebarPengaturan({
             ),
             // Setting User
             userIndex: safeRoute("users.index", "/users"),
-            userLogin: safeRoute("login", "/login"),
             userMapping: safeRoute("permissions.index", "/permissions"),
             // Kepegawaian
             employeesIndex: safeRoute("employees.index", "/employees"),
@@ -249,7 +305,12 @@ export default function SidebarPengaturan({
                 </div>
 
                 <nav className="px-2 py-2 text-white">
-                    <Section title="Menu Utama" collapsed={isSidebarCollapsed}>
+                    <Section
+                        title="Menu Utama"
+                        collapsed={isSidebarCollapsed}
+                        open={openSections.main}
+                        onToggle={() => toggleSection("main")}
+                    >
                         <NavItem
                             collapsed={isSidebarCollapsed}
                             href={paths.dashboard}
@@ -269,6 +330,8 @@ export default function SidebarPengaturan({
                     <Section
                         title="Pengaturan Aplikasi"
                         collapsed={isSidebarCollapsed}
+                        open={openSections.app}
+                        onToggle={() => toggleSection("app")}
                     >
                         <NavItem
                             collapsed={isSidebarCollapsed}
@@ -279,10 +342,45 @@ export default function SidebarPengaturan({
                         />
                     </Section>
 
+                    <Section
+                        title="Setting Tarif"
+                        collapsed={isSidebarCollapsed}
+                        open={openSections.tarif}
+                        onToggle={() => toggleSection("tarif")}
+                    >
+                        <NavItem
+                            collapsed={isSidebarCollapsed}
+                            href={safeRoute(
+                                "daftar-tarif.index",
+                                "/daftar-tarif",
+                                {
+                                    category: "rawat-jalan",
+                                    search: "",
+                                    status: "1",
+                                }
+                            )}
+                            icon={Receipt}
+                            label="Setting Tarif"
+                            active={isActive(
+                                safeRoute(
+                                    "daftar-tarif.index",
+                                    "/daftar-tarif",
+                                    {
+                                        category: "rawat-jalan",
+                                        search: "",
+                                        status: "1",
+                                    }
+                                )
+                            )}
+                        />
+                    </Section>
+
                     {/* Setting User */}
                     <Section
                         title="Setting User"
                         collapsed={isSidebarCollapsed}
+                        open={openSections.user}
+                        onToggle={() => toggleSection("user")}
                     >
                         <NavItem
                             collapsed={isSidebarCollapsed}
@@ -293,22 +391,20 @@ export default function SidebarPengaturan({
                         />
                         <NavItem
                             collapsed={isSidebarCollapsed}
-                            href={paths.userLogin}
-                            icon={LogIn}
-                            label="User Login"
-                            active={isActive(paths.userLogin)}
-                        />
-                        <NavItem
-                            collapsed={isSidebarCollapsed}
                             href={paths.userMapping}
                             icon={NotebookTabs}
-                            label="Mapping"
+                            label="Manajemen Permission"
                             active={isActive(paths.userMapping)}
                         />
                     </Section>
 
                     {/* Kepegawaian */}
-                    <Section title="Kepegawaian" collapsed={isSidebarCollapsed}>
+                    <Section
+                        title="Kepegawaian"
+                        collapsed={isSidebarCollapsed}
+                        open={openSections.hr}
+                        onToggle={() => toggleSection("hr")}
+                    >
                         <NavItem
                             collapsed={isSidebarCollapsed}
                             href={paths.employeesIndex}
@@ -330,6 +426,8 @@ export default function SidebarPengaturan({
                     <Section
                         title="Bridging Satu Sehat"
                         collapsed={isSidebarCollapsed}
+                        open={openSections.ss}
+                        onToggle={() => toggleSection("ss")}
                     >
                         <NavItem
                             collapsed={isSidebarCollapsed}
