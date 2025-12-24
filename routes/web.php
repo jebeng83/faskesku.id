@@ -264,8 +264,227 @@ Route::get('/antrian/display', function () {
     ]);
 })->name('antrian.display');
 
+Route::get('/antrian/poli', function () {
+    $setting = null;
+    if (Schema::hasTable('setting')) {
+        $fields = [];
+        foreach (['nama_instansi', 'alamat_instansi', 'kabupaten', 'propinsi', 'kontak', 'email', 'kode_ppk'] as $col) {
+            if (Schema::hasColumn('setting', $col)) {
+                $fields[] = $col;
+            }
+        }
+        if (! empty($fields)) {
+            $query = DB::table('setting')->select($fields);
+            if (Schema::hasColumn('setting', 'aktifkan')) {
+                $query->where('aktifkan', 'Yes');
+            }
+            $row = $query->orderBy('nama_instansi')->first();
+            if ($row) {
+                $setting = [];
+                foreach ($fields as $f) {
+                    $v = $row->{$f} ?? null;
+                    if (is_string($v)) {
+                        $v = preg_replace('/[\x00-\x1F\x7F]/u', '', $v);
+                    }
+                    $setting[$f] = $v;
+                }
+            }
+        }
+    }
+
+    $cards = [];
+    $highlight = null;
+    $today = date('Y-m-d');
+    if (Schema::hasTable('reg_periksa')) {
+        $kdPolis = DB::table('reg_periksa')
+            ->whereDate('tgl_registrasi', $today)
+            ->pluck('kd_poli')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        foreach ($kdPolis as $kd) {
+            $nm_poli = $kd;
+            if (Schema::hasTable('poliklinik')) {
+                $nm_poli = DB::table('poliklinik')->where('kd_poli', $kd)->value('nm_poli') ?: $kd;
+                if (is_string($nm_poli)) {
+                    $nm_poli = preg_replace('/[\x00-\x1F\x7F]/u', '', $nm_poli);
+                }
+            }
+            $lastCalled = DB::table('reg_periksa')
+                ->whereDate('tgl_registrasi', $today)
+                ->where('kd_poli', $kd)
+                ->where('stts', 'Sudah')
+                ->orderBy('jam_reg', 'desc')
+                ->value('no_reg');
+
+            $rows = DB::table('reg_periksa')
+                ->whereDate('tgl_registrasi', $today)
+                ->where('kd_poli', $kd)
+                ->where('stts', 'Belum')
+                ->orderBy('jam_reg')
+                ->limit(3)
+                ->get();
+            $upcoming = [];
+            foreach ($rows as $r) {
+                $nm_pasien = null;
+                if (Schema::hasTable('pasien')) {
+                    $nm_pasien = DB::table('pasien')->where('no_rkm_medis', $r->no_rkm_medis)->value('nm_pasien');
+                    if (is_string($nm_pasien)) {
+                        $nm_pasien = preg_replace('/[\x00-\x1F\x7F]/u', '', $nm_pasien);
+                    }
+                }
+                $upcoming[] = [
+                    'no_reg' => $r->no_reg,
+                    'no_rawat' => $r->no_rawat,
+                    'nm_pasien' => $nm_pasien,
+                    'nm_poli' => $nm_poli,
+                    'stts' => $r->stts,
+                    'jam_reg' => $r->jam_reg,
+                ];
+            }
+            $cards[] = [
+                'kd_poli' => $kd,
+                'nm_poli' => $nm_poli,
+                'last_called' => $lastCalled,
+                'upcoming' => $upcoming,
+            ];
+        }
+
+        $first = DB::table('reg_periksa')
+            ->whereDate('tgl_registrasi', $today)
+            ->where('stts', 'Belum')
+            ->orderBy('jam_reg')
+            ->first();
+        if ($first) {
+            $nm_pasien = null;
+            if (Schema::hasTable('pasien')) {
+                $nm_pasien = DB::table('pasien')->where('no_rkm_medis', $first->no_rkm_medis)->value('nm_pasien');
+                if (is_string($nm_pasien)) {
+                    $nm_pasien = preg_replace('/[\x00-\x1F\x7F]/u', '', $nm_pasien);
+                }
+            }
+            $nm_poli_h = $first->kd_poli;
+            if (Schema::hasTable('poliklinik')) {
+                $nm_poli_h = DB::table('poliklinik')->where('kd_poli', $first->kd_poli)->value('nm_poli') ?: $first->kd_poli;
+                if (is_string($nm_poli_h)) {
+                    $nm_poli_h = preg_replace('/[\x00-\x1F\x7F]/u', '', $nm_poli_h);
+                }
+            }
+            $highlight = [
+                'no_reg' => $first->no_reg,
+                'nm_poli' => $nm_poli_h,
+                'nm_pasien' => $nm_pasien,
+            ];
+        }
+    }
+
+    return Inertia::render('Antrian/DisplayPoli', [
+        'setting' => $setting,
+        'cards' => $cards,
+        'highlight' => $highlight,
+    ]);
+})->name('antrian.poli');
+
 // API routes that don't require authentication
 Route::get('/api/lab-tests', [PermintaanLabController::class, 'getLabTests'])->name('api.lab-tests');
+Route::get('/api/antrian-poli', function () {
+    $today = date('Y-m-d');
+    $cards = [];
+    $highlight = null;
+    if (Schema::hasTable('reg_periksa')) {
+        $kdPolis = DB::table('reg_periksa')
+            ->whereDate('tgl_registrasi', $today)
+            ->pluck('kd_poli')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        foreach ($kdPolis as $kd) {
+            $nm_poli = $kd;
+            if (Schema::hasTable('poliklinik')) {
+                $nm_poli = DB::table('poliklinik')->where('kd_poli', $kd)->value('nm_poli') ?: $kd;
+                if (is_string($nm_poli)) {
+                    $nm_poli = preg_replace('/[\x00-\x1F\x7F]/u', '', $nm_poli);
+                }
+            }
+            $lastCalled = DB::table('reg_periksa')
+                ->whereDate('tgl_registrasi', $today)
+                ->where('kd_poli', $kd)
+                ->where('stts', 'Sudah')
+                ->orderBy('jam_reg', 'desc')
+                ->value('no_reg');
+
+            $rows = DB::table('reg_periksa')
+                ->whereDate('tgl_registrasi', $today)
+                ->where('kd_poli', $kd)
+                ->where('stts', 'Belum')
+                ->orderBy('jam_reg')
+                ->limit(3)
+                ->get();
+            $upcoming = [];
+            foreach ($rows as $r) {
+                $nm_pasien = null;
+                if (Schema::hasTable('pasien')) {
+                    $nm_pasien = DB::table('pasien')->where('no_rkm_medis', $r->no_rkm_medis)->value('nm_pasien');
+                    if (is_string($nm_pasien)) {
+                        $nm_pasien = preg_replace('/[\x00-\x1F\x7F]/u', '', $nm_pasien);
+                    }
+                }
+                $upcoming[] = [
+                    'no_reg' => $r->no_reg,
+                    'no_rawat' => $r->no_rawat,
+                    'nm_pasien' => $nm_pasien,
+                    'nm_poli' => $nm_poli,
+                    'stts' => $r->stts,
+                    'jam_reg' => $r->jam_reg,
+                ];
+            }
+            $cards[] = [
+                'kd_poli' => $kd,
+                'nm_poli' => $nm_poli,
+                'last_called' => $lastCalled,
+                'upcoming' => $upcoming,
+            ];
+        }
+
+        $first = DB::table('reg_periksa')
+            ->whereDate('tgl_registrasi', $today)
+            ->where('stts', 'Belum')
+            ->orderBy('jam_reg')
+            ->first();
+        if ($first) {
+            $nm_pasien = null;
+            if (Schema::hasTable('pasien')) {
+                $nm_pasien = DB::table('pasien')->where('no_rkm_medis', $first->no_rkm_medis)->value('nm_pasien');
+                if (is_string($nm_pasien)) {
+                    $nm_pasien = preg_replace('/[\x00-\x1F\x7F]/u', '', $nm_pasien);
+                }
+            }
+            $nm_poli_h = $first->kd_poli;
+            if (Schema::hasTable('poliklinik')) {
+                $nm_poli_h = DB::table('poliklinik')->where('kd_poli', $first->kd_poli)->value('nm_poli') ?: $first->kd_poli;
+                if (is_string($nm_poli_h)) {
+                    $nm_poli_h = preg_replace('/[\x00-\x1F\x7F]/u', '', $nm_poli_h);
+                }
+            }
+            $highlight = [
+                'no_reg' => $first->no_reg,
+                'nm_poli' => $nm_poli_h,
+                'nm_pasien' => $nm_pasien,
+            ];
+        }
+    }
+
+    return response()->json([
+        'cards' => $cards,
+        'highlight' => $highlight,
+        'date' => $today,
+        'status' => 'ok',
+    ]);
+})->name('api.antrian-poli');
 
 // API routes that require authentication
 Route::middleware('auth')->prefix('api')->group(function () {

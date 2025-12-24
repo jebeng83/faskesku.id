@@ -99,12 +99,32 @@ export default function CetakLabel() {
   };
 
   useEffect(() => {
-    const t = setTimeout(() => {
+    const goBack = () => {
       try {
-        window.print();
+        window.location.replace('/anjungan/pasien-mandiri');
       } catch (_) {}
-    }, 300);
-    return () => clearTimeout(t);
+    };
+    const onAfterPrint = () => {
+      try {
+        if (window.opener) {
+          window.close();
+        } else {
+          goBack();
+        }
+      } catch (_) {
+        goBack();
+      }
+    };
+    window.addEventListener('afterprint', onAfterPrint);
+    const t = setTimeout(() => {
+      try { window.print(); } catch (_) {}
+    }, 200);
+    const f = setTimeout(onAfterPrint, 3000);
+    return () => {
+      window.removeEventListener('afterprint', onAfterPrint);
+      clearTimeout(t);
+      clearTimeout(f);
+    };
   }, []);
 
   return (
