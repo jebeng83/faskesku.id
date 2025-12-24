@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { Head, usePage } from "@inertiajs/react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/Components/ui/Card";
 import { Loader2, AlertCircle, CheckCircle2, Building2, Search, Delete, IdCard, User2, Stethoscope } from "lucide-react";
 import { todayDateString } from "@/tools/datetime";
 import SearchableSelect from "@/Components/SearchableSelect";
+import { route } from "ziggy-js";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -24,6 +25,21 @@ const hariKerjaToday = () => {
   const d = new Date();
   const idx = d.getDay();
   return map[idx] || "SENIN";
+};
+
+const tryEnterFullscreen = async () => {
+  if (typeof document === "undefined") return false;
+  const doc = document;
+  if (doc.fullscreenElement) return true;
+  const el = doc.documentElement;
+  const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+  if (!fn) return false;
+  try {
+    await fn.call(el);
+    return true;
+  } catch (_) {
+    return false;
+  }
 };
 
 function NumericKeypad({ disabled, onDigit, onBackspace, onSearch }) {
@@ -93,6 +109,28 @@ export default function PasienMandiri() {
   const [regSaving, setRegSaving] = useState(false);
   const [regError, setRegError] = useState("");
   const [regSuccess, setRegSuccess] = useState(null);
+  const nikInputRef = useRef(null);
+  const [loketProcessing, setLoketProcessing] = useState(false);
+  const [loketError, setLoketError] = useState("");
+  const [loketTicket, setLoketTicket] = useState(null);
+
+  const resetForm = () => {
+    setNik("");
+    setIsSearching(false);
+    setSelectedPatient(null);
+    setBpjsLoading(false);
+    setBpjsError(null);
+    setBpjsData(null);
+    setSelectedPoli(null);
+    setSelectedDokter(null);
+    setKdPenjab("BPJ");
+    setRegSaving(false);
+    setRegError("");
+    setRegSuccess(null);
+    try {
+      if (nikInputRef?.current) nikInputRef.current.focus();
+    } catch (_) {}
+  };
 
   useEffect(() => {
     const hari = hariKerjaToday();
@@ -104,6 +142,21 @@ export default function PasienMandiri() {
         setJadwalToday([]);
       }
     })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      await tryEnterFullscreen();
+    })();
+    const handler = async () => {
+      await tryEnterFullscreen();
+    };
+    window.addEventListener("click", handler, { once: true });
+    window.addEventListener("touchstart", handler, { once: true });
+    return () => {
+      window.removeEventListener("click", handler);
+      window.removeEventListener("touchstart", handler);
+    };
   }, []);
 
   useEffect(() => {
@@ -215,10 +268,31 @@ export default function PasienMandiri() {
       const data = res?.data?.data || {};
       if (ok && data?.no_rawat) {
         setRegSuccess({ no_rawat: data.no_rawat, no_reg: data.no_reg });
-        const url = `/registration/${encodeURIComponent(data.no_rawat)}/print`;
+        let printUrl = "/anjungan/cetak-label";
         try {
-          window.open(url, "_blank", "noopener,noreferrer");
+          printUrl = route("anjungan.cetak-label", {}, false);
         } catch (_) {}
+        const jenisLabel = (penjabMap[kdPenjab]?.png_jawab) || kdPenjab;
+        const params = new URLSearchParams({
+          instansi: s?.nama_instansi || s?.nama || "",
+          alamat: s?.alamat_instansi || s?.alamat || "",
+          jenis: jenisLabel || "",
+          no_reg: data?.no_reg || "",
+          no_rkm_medis: selectedPatient?.no_rkm_medis || "",
+          nm_pasien: selectedPatient?.nm_pasien || "",
+          no_peserta: (bpjsData?.response?.noKartu) || selectedPatient?.no_peserta || "",
+          no_ktp: selectedPatient?.no_ktp || "",
+          tgl_lahir: selectedPatient?.tgl_lahir || "",
+          alamatpj: selectedPatient?.alamat || "",
+          tanggal: todayDateString(),
+          jam: new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", hour12: false }),
+        });
+        try {
+          window.open(`${printUrl}?${params.toString()}`, "_blank", "noopener,noreferrer");
+        } catch (_) {}
+        setTimeout(() => {
+          resetForm();
+        }, 500);
       } else {
         const msg = res?.data?.message || "Gagal menyimpan registrasi";
         setRegError(msg);
@@ -231,62 +305,112 @@ export default function PasienMandiri() {
     }
   };
 
+  const formatQueueLabel = (n, prefix) => {
+    const num = typeof n === "number" ? n : parseInt(String(n || "0"), 10);
+    const pad = String(Math.max(1, num)).padStart(3, "0");
+    return prefix ? `${prefix}-${pad}` : pad;
+  };
+
+  const formatTanggalIndonesia = (d) => {
+    const s = String(d || todayDateString());
+    const parts = s.split(/[-/]/);
+    if (parts.length < 3) return s;
+    const yyyy = parts[0];
+    const mm = parseInt(parts[1], 10);
+    const dd = parts[2];
+    const bulan = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"][Math.max(0, Math.min(11, (isNaN(mm) ? 1 : mm) - 1))];
+    return `${parseInt(dd, 10)} ${bulan} ${yyyy}`;
+  };
+
+  const formatJam = (dt) => {
+    const s = String(dt || new Date().toLocaleTimeString("id-ID", { hour12: false }));
+    const m = s.match(/\b(\d{2}):(\d{2}):(\d{2})\b/);
+    if (!m) return s;
+    return `${m[1]}:${m[2]}:${m[3]}`;
+  };
+
+  const handleTakeLoketNumber = async () => {
+    if (loketProcessing) return;
+    setLoketProcessing(true);
+    setLoketError("");
+    try {
+      const key = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+      const res = await axios.post(`/api/queue/tickets?channel=kiosk`, {}, {
+        headers: { Accept: "application/json", "Idempotency-Key": key },
+      });
+      const data = res?.data || {};
+      const nomor = data?.number ?? data?.nomor ?? null;
+      const prefix = data?.prefix ?? null;
+      const kode_tiket = data?.kode_tiket ?? null;
+      const tanggal = data?.tanggal ?? null;
+      const created_at = data?.created_at ?? null;
+      setLoketTicket({ nomor, prefix, kode_tiket, tanggal, created_at });
+      requestAnimationFrame(() => {
+        try { window.print(); } catch (_) {}
+      });
+    } catch (e) {
+      const msg = e?.response?.data?.message || e?.message || "Gagal mengambil nomor antrian loket";
+      setLoketError(msg);
+    } finally {
+      setLoketProcessing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen min-h-dvh w-full bg-gradient-to-b from-slate-950 via-slate-900 to-black">
       <Head title={"Anjungan Pasien Mandiri"} />
       <motion.div variants={containerVariants} initial="hidden" animate="visible" className="w-full min-h-screen min-h-dvh px-0 py-4 sm:py-6 md:py-8 lg:py-10 flex flex-col">
 
         <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-[3fr_7fr] gap-4 md:gap-6 print:hidden flex-1">
-          <Card className="md:col-span-1 h-full rounded-3xl border border-white/10 dark:border-gray-700/40 bg-white/10 dark:bg-gray-900/50 shadow-2xl backdrop-blur-xl">
+          <Card className="md:col-span-1 h-full rounded-3xl border border-white/10 dark:border-gray-700/40 bg-white/10 dark:bg-gray-900/50 shadow-2xl backdrop-blur-xl flex flex-col">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-            <CardContent className="h-full">
-              <div className="h-full min-h-[420px] flex flex-col items-center justify-center gap-4">
-                <div className="flex flex-col items-center gap-2">
-                  {logoUrl && showLogo ? (
-                    <img src={logoUrl} alt="Logo" className="h-12 w-12 rounded bg-white/90" onError={() => setShowLogo(false)} />
-                  ) : (
-                    <Building2 className="w-12 h-12 text-indigo-600" />
-                  )}
-                  <div className="text-base sm:text-lg font-semibold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent text-center">{kopTitle}</div>
+            <CardContent className="flex-1 flex flex-col p-0">
+              <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4">
+                <div className="h-full min-h-[420px] flex flex-col items-center justify-center gap-4">
+                  <div className="flex flex-col items-center gap-2">
+                    {logoUrl && showLogo ? (
+                      <img src={logoUrl} alt="Logo" className="h-12 w-12 rounded bg-white/90" onError={() => setShowLogo(false)} />
+                    ) : (
+                      <Building2 className="w-12 h-12 text-indigo-600" />
+                    )}
+                    <div className="text-base sm:text-lg font-semibold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent text-center">{kopTitle}</div>
+                  </div>
+                  <div className="w-full mx-auto flex flex-col items-center gap-3">
+                    <input
+                      ref={nikInputRef}
+                      type="text"
+                      inputMode="numeric"
+                      value={nik}
+                      onChange={(e) => setNik(sanitizeNik(e.target.value))}
+                      placeholder="Masukkan NIK"
+                      className="w-[13.5rem] sm:w-[17rem] md:w-[20rem] rounded-2xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-base sm:text-lg tracking-normal text-center focus:outline-none focus:ring-4 focus:ring-indigo-500/30 focus:border-indigo-600 transition"
+                    />
+                    <NumericKeypad disabled={isSearching} onDigit={handleDigit} onBackspace={handleBackspace} onSearch={handleSearchPatient} />
+                  </div>
                 </div>
-                <div className="w-full mx-auto flex flex-col items-center gap-3">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={nik}
-                    onChange={(e) => setNik(sanitizeNik(e.target.value))}
-                    placeholder="Masukkan NIK"
-                    className="w-[13.5rem] sm:w-[17rem] md:w-[20rem] rounded-2xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-base sm:text-lg tracking-normal text-center focus:outline-none focus:ring-4 focus:ring-indigo-500/30 focus:border-indigo-600 transition"
-                  />
-                  <NumericKeypad disabled={isSearching} onDigit={handleDigit} onBackspace={handleBackspace} onSearch={handleSearchPatient} />
-                  <div className="mt-3 w-full text-xs sm:text-sm text-slate-800 dark:text-gray-200 bg-white/90 dark:bg-gray-800/90 border border-gray-200 dark:border-gray-700 rounded-2xl p-3">
-                    <div className="font-semibold mb-2">Alur Anjungan Pasien Mandiri</div>
-                    <ol className="list-decimal pl-4 space-y-1">
-                      <li>Ketik NIK kemudian Klik Tanda Cari</li>
-                      <li>Cek data Informasi</li>
-                      <li>
-                        Pilih Jenis Pasien
-                        <ul className="list-disc pl-4 mt-1 space-y-1">
-                          <li>BPJS = Untuk pasien Peserta BPJS Aktif</li>
-                          <li>Umum = Untuk Pasien Umum</li>
-                          <li>Kir Nikah = Untuk Pasien Mencari Kir Nikah</li>
-                          <li>Kir Kerja = Untuk Pasien Mencari Kir Kerja</li>
-                          <li>Kir Sekolah = Untuk Pasien Anak Sekolah dengan Buku UKS</li>
-                          <li>Lain - Lian = Untuk Keperluan Lainnya</li>
-                        </ul>
-                      </li>
-                      <li>Klik dokter sesuai Poli Layanan</li>
-                      <li>Selesai</li>
-                    </ol>
+              </div>
+              <div className="basis-[15%] shrink-0 px-6 py-4 border-t border-white">
+                <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/90 p-4 shadow-sm h-full">
+                  <div className="w-full h-full overflow-y-auto">
+                    <div className="w-full text-xs sm:text-sm text-slate-800 dark:text-gray-200 bg-white/90 dark:bg-gray-800/90 border border-gray-200 dark:border-gray-700 rounded-2xl p-3">
+                      <div className="font-semibold mb-2">Alur Anjungan Pasien Mandiri</div>
+                      <ol className="list-decimal pl-4 space-y-1">
+                        <li>Ketik NIK kemudian Klik Tanda Cari ( Warna Hijau )</li>
+                        <li>Cek data Informasi</li>
+                        <li>Pilih Jenis Pasien</li>
+                        <li>Klik dokter sesuai Poli Layanan</li>
+                        <li>Selesai</li>
+                      </ol>
+                    </div>
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="md:col-span-1 h-full rounded-3xl border border-white/10 dark:border-gray-700/40 bg-white/5 dark:bg-gray-900/40 shadow-xl backdrop-blur-lg">
+          <Card className="md:col-span-1 h-full rounded-3xl border border-white/10 dark:border-gray-700/40 bg-white/5 dark:bg-gray-900/40 shadow-xl backdrop-blur-lg flex flex-col">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500" />
-            <CardHeader className="px-6 pt-6">
+            <CardHeader className="px-6 pt-6 basis-[5%] border-b border-gray-200 dark:border-gray-700">
               <CardTitle>
                 <div className="flex items-center gap-2 w-full">
                   <User2 className="w-4 h-4 text-emerald-500" />
@@ -294,8 +418,8 @@ export default function PasienMandiri() {
                 </div>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
+            <CardContent className="flex-1 flex flex-col p-0">
+              <div className="basis-[75%] min-h-0 overflow-y-auto px-6 py-4 space-y-6">
                 <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/90 p-4 shadow-sm">
                   {selectedPatient ? (
                     <>
@@ -443,10 +567,53 @@ export default function PasienMandiri() {
                     </div>
                   </div>
                 </div>
+
+              </div>
+              <div className="basis-[20%] shrink-0 px-6 py-4 border-t border-white">
+                <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/90 p-4 shadow-sm h-full flex items-center">
+                  <div className="flex flex-row items-center w-full gap-2 md:gap-3">
+                    <div className="basis-[15%] shrink-0 text-xl md:text-2xl font-bold text-slate-800 whitespace-nowrap">Pasien Baru :</div>
+                    <div className="basis-[70%] min-w-0">
+                      <button
+                        type="button"
+                        onClick={handleTakeLoketNumber}
+                        disabled={loketProcessing}
+                        className={`inline-flex items-center justify-center gap-3 w-full px-6 md:px-8 py-7 md:py-9 text-xl md:text-2xl font-bold rounded-2xl border-2 ${loketProcessing ? "border-gray-300 bg-gray-200 text-gray-600 cursor-not-allowed" : "border-indigo-600 bg-indigo-600 text-white hover:brightness-110"} shadow-lg transition focus:outline-none focus:ring-4 focus:ring-indigo-500/30`}
+                      >
+                        {loketProcessing ? (<><Loader2 className="w-4 h-4 animate-spin" /><span>Memproses…</span></>) : (<><span>Ambil Nomor Antrian Loket</span></>)}
+                      </button>
+                    </div>
+                    <div className="basis-[15%] shrink-0 flex items-center justify-end">
+                      {loketError ? (
+                        <div className="inline-flex items-center gap-2 text-red-700 whitespace-nowrap"><AlertCircle className="w-4 h-4" /><span className="text-sm">{loketError}</span></div>
+                      ) : (
+                        <div className={`inline-flex items-center gap-2 ${loketTicket?.nomor ? "text-emerald-700" : "text-slate-700"} whitespace-nowrap`}>
+                          <CheckCircle2 className="w-5 h-5" />
+                          <span className="text-2xl md:text-3xl lg:text-4xl font-extrabold font-mono tracking-widest">{formatQueueLabel(loketTicket?.nomor, loketTicket?.prefix) || "-"}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
         </motion.div>
+        <div className="hidden print:block">
+          <div className="w-full px-6">
+            <div className="mx-auto w-[58mm] border-2 border-black rounded-md p-3 bg-white">
+              <div className="text-center">
+                <div className="mt-0.5 text-[11px] font-semibold">{kopTitle}</div>
+                <div className="mt-1 text-[10px]">==================</div>
+                <div className="mt-1 font-mono text-5xl font-extrabold tracking-widest">{formatQueueLabel(loketTicket?.nomor, loketTicket?.prefix)}</div>
+                <div className="mt-1 text-[10px]">==================</div>
+                <div className="mt-1 text-xs">{formatTanggalIndonesia(loketTicket?.tanggal)}</div>
+                <div className="text-[11px] font-semibold">{formatJam(loketTicket?.created_at)}</div>
+                {loketTicket?.kode_tiket ? (<div className="mt-1 text-[10px]">Kode: {loketTicket?.kode_tiket}</div>) : null}
+              </div>
+            </div>
+          </div>
+        </div>
       </motion.div>
     </div>
   );

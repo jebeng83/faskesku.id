@@ -39,8 +39,49 @@ pasienMandiri.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
     method: 'head',
 })
 
+/**
+* @see routes/web.php:202
+* @route '/anjungan/cetak-label'
+*/
+export const cetakLabel = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: cetakLabel.url(options),
+    method: 'get',
+})
+
+cetakLabel.definition = {
+    methods: ["get","head"],
+    url: '/anjungan/cetak-label',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:202
+* @route '/anjungan/cetak-label'
+*/
+cetakLabel.url = (options?: RouteQueryOptions) => {
+    return cetakLabel.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:202
+* @route '/anjungan/cetak-label'
+*/
+cetakLabel.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: cetakLabel.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:202
+* @route '/anjungan/cetak-label'
+*/
+cetakLabel.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: cetakLabel.url(options),
+    method: 'head',
+})
+
 const anjungan = {
     pasienMandiri: Object.assign(pasienMandiri, pasienMandiri),
+    cetakLabel: Object.assign(cetakLabel, cetakLabel),
 }
 
 export default anjungan
