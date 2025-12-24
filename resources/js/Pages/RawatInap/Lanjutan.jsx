@@ -111,94 +111,139 @@ export default function Lanjutan({ rawatInap, params }) {
                     </div>
                 </div>
 
-                {/* Patient Info */}
-                <div className="bg-white rounded-2xl border shadow-sm mb-8 overflow-hidden">
-                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b">
-                        <h3 className="text-lg font-semibold flex items-center gap-2">
-                            <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                            Informasi Pasien
-                        </h3>
-                    </div>
-                    <div className="p-6">
-                        {rawatInap?.patient ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                                <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-200">
-                                    <p className="text-xs font-medium text-indigo-600 uppercase">Nama Pasien</p>
-                                    <p className="text-sm font-semibold mt-1">{rawatInap.patient.nm_pasien || '-'}</p>
-                                </div>
-                                <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
-                                    <p className="text-xs font-medium text-purple-600 uppercase">No. RM</p>
-                                    <p className="text-sm font-semibold mt-1 font-mono">{rawatInap.patient.no_rkm_medis || '-'}</p>
-                                </div>
-                                <div className="bg-pink-50 rounded-xl p-4 border border-pink-200">
-                                    <p className="text-xs font-medium text-pink-600 uppercase">No. Rawat</p>
-                                    <p className="text-sm font-semibold mt-1 font-mono">{rawatInap.no_rawat || '-'}</p>
-                                </div>
-                                <div className="bg-orange-50 rounded-xl p-4 border border-orange-200">
-                                    <p className="text-xs font-medium text-orange-600 uppercase">Tanggal Masuk</p>
-                                    <p className="text-sm font-semibold mt-1">{rawatInap.tgl_registrasi ? new Date(rawatInap.tgl_registrasi).toLocaleDateString('id-ID') : '-'}</p>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="bg-yellow-50 rounded-xl p-6 border border-yellow-200">
-                                <h4 className="text-lg font-semibold text-yellow-800">Data Pasien Tidak Ditemukan</h4>
-                                <p className="text-sm text-yellow-600 mt-1">No. Rawat: {params?.no_rawat || '-'}</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
+                
 
 
-                {/* Content Area */}
-                <div className={`grid grid-cols-1 ${isRanap ? 'lg:grid-cols-2' : 'lg:grid-cols-1'} gap-6`}>
-                    {/* Left - Riwayat Kunjungan (hanya Ranap) */}
+                <div className={`grid grid-cols-1 ${openAcc.riwayatKunjungan ? 'lg:grid-cols-12' : 'lg:grid-cols-1'} gap-6 w-full max-w-full overflow-x-hidden items-stretch`}>
                     {isRanap && (
-                    <div className="bg-white rounded-2xl border shadow-sm overflow-hidden sticky top-6">
+                        <div className={`transition-all duration-300 w-full lg:overflow-auto self-start ${openAcc.riwayatKunjungan ? 'lg:col-span-4' : 'hidden lg:hidden'}`}>
+                            <div className="bg-white rounded-2xl border shadow-sm overflow-hidden sticky top-6">
                         <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-3 border-b">
-                            <button onClick={() => toggle('riwayatKunjungan')} className="w-full flex items-center justify-between text-left group rounded-lg p-2 transition-all duration-200">
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-3 h-3 rounded-full transition-colors ${openAcc.riwayatKunjungan ? 'bg-indigo-500' : 'bg-gray-400'}`}></div>
-                                    <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                                    </svg>
-                                    <div>
-                                        <h3 className="text-sm font-semibold">Riwayat Kunjungan</h3>
+                            <button
+                                onClick={() => toggle('riwayatKunjungan')}
+                                className="w-full flex items-center justify-between text-left group rounded-lg p-2 transition-all duration-200"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-3 h-3 rounded-full transition-colors ${openAcc.riwayatKunjungan ? 'bg-indigo-500' : 'bg-gray-400'}`}></div>
+                                            <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                            </svg>
+                                            <div>
+                                                <h3 className="text-sm font-semibold">Riwayat Kunjungan</h3>
+                                            </div>
+                                        </div>
+                                        <svg
+                                            className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${openAcc.riwayatKunjungan ? 'rotate-180' : ''}`}
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div className="hidden lg:block px-2 py-0.5 border-t border-gray-200">
+                                    <div className="text-[11px] font-medium text-gray-800 mb-1">Identitas Pasien</div>
+                                    <div className="space-y-0 text-[12px] leading-tight">
+                                        <div className="grid grid-cols-[7.5rem_0.75rem_1fr] items-baseline gap-x-0.5">
+                                            <span className="text-left text-gray-700">Nama</span>
+                                            <span className="text-gray-400 text-center">:</span>
+                                            <span className="text-gray-900 font-semibold">
+                                                {rawatInap?.patient?.nm_pasien || '-'}
+                                            </span>
+                                        </div>
+                                        <div className="grid grid-cols-[7.5rem_0.75rem_1fr] items-baseline gap-x-0.5">
+                                            <span className="text-left text-gray-700">No RM (rekamedis)</span>
+                                            <span className="text-gray-400 text-center">:</span>
+                                            <span className="text-gray-900 font-mono">
+                                                {rawatInap?.patient?.no_rkm_medis || params?.no_rkm_medis || '-'}
+                                            </span>
+                                        </div>
+                                        <div className="grid grid-cols-[7.5rem_0.75rem_1fr] items-baseline gap-x-0.5">
+                                            <span className="text-left text-gray-700">Umur</span>
+                                            <span className="text-gray-400 text-center">:</span>
+                                            <span className="text-gray-900">
+                                                {(rawatInap?.patient?.umur || rawatInap?.umurdaftar)
+                                                    ? `${rawatInap?.patient?.umur || rawatInap?.umurdaftar} ${rawatInap?.sttsumur || 'Th'}`
+                                                    : '-'}
+                                            </span>
+                                        </div>
+                                        <div className="grid grid-cols-[7.5rem_0.75rem_1fr] items-baseline gap-x-0.5">
+                                            <span className="text-left text-gray-700">JK</span>
+                                            <span className="text-gray-400 text-center">:</span>
+                                            <span className="text-gray-900">
+                                                {rawatInap?.patient?.jk || '-'}
+                                            </span>
+                                        </div>
+                                        <div className="grid grid-cols-[7.5rem_0.75rem_1fr] items-baseline gap-x-0.5">
+                                            <span className="text-left text-gray-700">Alamat</span>
+                                            <span className="text-gray-400 text-center">:</span>
+                                            <span className="text-gray-900 break-words">
+                                                {[
+                                                    rawatInap?.patient?.alamat,
+                                                    rawatInap?.patient?.kelurahan?.nm_kel || rawatInap?.patient?.kd_kel,
+                                                    rawatInap?.patient?.kecamatan?.nm_kec || rawatInap?.patient?.kd_kec,
+                                                    rawatInap?.patient?.kabupaten?.nm_kab || rawatInap?.patient?.kd_kab,
+                                                ].filter(Boolean).join(', ') || '-'}
+                                            </span>
+                                        </div>
+                                        <div className="grid grid-cols-[7.5rem_0.75rem_1fr] items-baseline gap-x-0.5">
+                                            <span className="text-left text-gray-700">Cara bayar</span>
+                                            <span className="text-gray-400 text-center">:</span>
+                                            <span className="text-gray-900">
+                                                {rawatInap?.penjab?.png_jawab || rawatInap?.cara_bayar || '-'}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                                <svg className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${openAcc.riwayatKunjungan ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
+                                {openAcc.riwayatKunjungan && (
+                                    <div className="p-4 max-h-[700px] overflow-y-auto">
+                                        <RiwayatKunjunganRanap
+                                            token={typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('t') : ''}
+                                            noRkmMedis={params?.no_rkm_medis || rawatInap?.patient?.no_rkm_medis}
+                                        />
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                        {openAcc.riwayatKunjungan && (
-                            <div className="p-4 max-h-[700px] overflow-y-auto">
-                                <RiwayatKunjunganRanap
-                                    token={typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('t') : ''}
-                                    noRkmMedis={params?.no_rkm_medis || rawatInap?.patient?.no_rkm_medis}
-                                />
+                    )}
+                    <div className={`transition-all duration-300 w-full max-w-full overflow-x-hidden min-w-0 ${openAcc.riwayatKunjungan && isRanap ? 'lg:col-span-8' : ''} flex flex-col h-full`}>
+                        {isRanap && !openAcc.riwayatKunjungan && (
+                            <div className="flex justify-end mb-2">
+                                <button
+                                    onClick={() => toggle('riwayatKunjungan')}
+                                    className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded border border-gray-200 flex items-center gap-2"
+                                >
+                                    <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                    Tampilkan Riwayat
+                                </button>
                             </div>
                         )}
-                    </div>
-                    )}
-
-                    {/* Right - Active Tab Content */}
-                    <div className="space-y-4">
-                        <div className="bg-white rounded-2xl border shadow-sm">
-                            <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-indigo-100 rounded-lg">
-                                        {menuTabs.find(tab => tab.key === activeTab)?.icon}
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-semibold">{menuTabs.find(tab => tab.key === activeTab)?.title}</h3>
-                                        <p className="text-sm text-gray-500">{menuTabs.find(tab => tab.key === activeTab)?.subtitle}</p>
+                        <div className="space-y-4 w-full max-w-full overflow-x-hidden h-full">
+                            {activeTab !== 'cppt' && (
+                                <div className="bg-white rounded-2xl border shadow-sm">
+                                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-indigo-100 rounded-lg">
+                                                {menuTabs.find(tab => tab.key === activeTab)?.icon}
+                                            </div>
+                                            <div>
+                                                <h3 className="text-lg font-semibold">{menuTabs.find(tab => tab.key === activeTab)?.title}</h3>
+                                                <p className="text-sm text-gray-500">{menuTabs.find(tab => tab.key === activeTab)?.subtitle}</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
+                            <div>{renderActiveTabContent()}</div>
                         </div>
-                        <div>{renderActiveTabContent()}</div>
                     </div>
                 </div>
             </div>
