@@ -16,17 +16,17 @@ class RiwayatBarangMedisController extends Controller
 
     public function data(Request $request)
     {
-        $perPage = (int) ($request->get('perPage', 25));
-        $page = (int) ($request->get('page', 1));
-        $from = $request->get('from');
-        $to = $request->get('to');
-        $q = $request->get('q');
-        $kode = $request->get('kode_brng');
-        $bangsal = $request->get('kd_bangsal');
-        $namaBrng = $request->get('nama_brng');
-        $nmBangsal = $request->get('nm_bangsal');
-        $posisi = $request->get('posisi');
-        $status = $request->get('status');
+        $perPage = (int) ($request->query('perPage', 25));
+        $page = (int) ($request->query('page', 1));
+        $from = $request->query('from');
+        $to = $request->query('to');
+        $q = $request->query('q');
+        $kode = $request->query('kode_brng');
+        $bangsal = $request->query('kd_bangsal');
+        $namaBrng = $request->query('nama_brng');
+        $nmBangsal = $request->query('nm_bangsal');
+        $posisi = $request->query('posisi');
+        $status = $request->query('status');
 
         $query = DB::table('riwayat_barang_medis')
             ->join('databarang', 'riwayat_barang_medis.kode_brng', '=', 'databarang.kode_brng')
@@ -111,8 +111,8 @@ class RiwayatBarangMedisController extends Controller
         $kdBangsal = $request->input('kd_bangsal');
         $noBatch = (string) $request->input('no_batch', '');
         $noFaktur = (string) $request->input('no_faktur', '');
-        $masuk = (double) $request->input('masuk', 0);
-        $keluar = (double) $request->input('keluar', 0);
+        $masuk = (float) $request->input('masuk', 0);
+        $keluar = (float) $request->input('keluar', 0);
         $posisi = $request->input('posisi');
         $petugas = (string) $request->input('petugas', '');
         $status = (string) $request->input('status', '');
@@ -124,7 +124,7 @@ class RiwayatBarangMedisController extends Controller
             ->orderBy('tanggal', 'desc')
             ->orderBy('jam', 'desc')
             ->first();
-        $stokAwal = (double) ($prev->stok_akhir ?? 0);
+        $stokAwal = (float) ($prev->stok_akhir ?? 0);
 
         if ($posisi === 'Opname') {
             $keluar = 0;

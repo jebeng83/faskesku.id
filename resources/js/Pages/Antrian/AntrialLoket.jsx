@@ -190,9 +190,9 @@ export default function AntrialLoket() {
   return (
     <div className="min-h-screen min-h-dvh w-full bg-black">
       <Head title={"Antrian Loket"} />
-      <motion.div variants={containerVariants} initial="hidden" animate="visible" className="w-full min-h-screen min-h-dvh px-6 py-6 flex flex-col">
-        <motion.div variants={itemVariants} className="relative px-6 py-5 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm rounded-lg mb-6 print:hidden">
-          <div className="grid grid-cols-3 items-center">
+      <motion.div variants={containerVariants} initial="hidden" animate="visible" className="w-full min-h-screen min-h-dvh px-6 py-6 md:px-8 md:py-8 lg:px-10 lg:py-10 flex flex-col">
+        <motion.div variants={itemVariants} className="relative px-6 py-5 md:px-8 md:py-6 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm rounded-lg mb-6 print:hidden">
+          <div className="grid grid-cols-1 md:grid-cols-3 items-center">
             <div className="text-left">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/70 dark:bg-gray-800/70 border border-gray-200/60 dark:border-gray-700/60">
                 <Ticket className="w-4 h-4 text-indigo-600" />
@@ -200,12 +200,12 @@ export default function AntrialLoket() {
               </div>
             </div>
             <div className="text-center">
-              <motion.h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
+              <motion.h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
                 {kopTitle}
               </motion.h1>
-              <div className="mt-0.5 text-[11px] sm:text-xs text-gray-600 dark:text-gray-300">{kopSubtitle || "Kiosk Self-Service"}</div>
+              <div className="mt-0.5 text-[11px] sm:text-xs md:text-sm lg:text-base text-gray-600 dark:text-gray-300">{kopSubtitle || "Kiosk Self-Service"}</div>
             </div>
-            <div className="text-right text-xs sm:text-sm text-gray-700 dark:text-gray-300">
+            <div className="text-right text-xs sm:text-sm md:text-base lg:text-lg text-gray-700 dark:text-gray-300">
               <div>{clock.date}</div>
               <div>{clock.time}</div>
             </div>
@@ -213,7 +213,7 @@ export default function AntrialLoket() {
         </motion.div>
 
         <motion.div variants={itemVariants} className="print:hidden flex-1 flex items-center justify-center">
-          <div className="w-full max-w-6xl mx-auto">
+          <div className="w-full max-w-screen-xl mx-auto">
           <Card>
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
             <CardHeader>
@@ -227,15 +227,15 @@ export default function AntrialLoket() {
             <CardContent>
               <div className="space-y-8">
                 <div className="flex items-center justify-center">
-                  <div className="flex flex-row items-center justify-center gap-8">
-                    <div className="w-64 h-48 sm:w-72 sm:h-56 rounded-[2rem] border-2 border-gray-300/70 dark:border-gray-600/60 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl shadow-inner flex flex-col items-center justify-center gap-3">
-                      <div className="text-7xl sm:text-8xl font-extrabold tracking-widest text-gray-900 dark:text-white">
+                  <div className="flex flex-row items-center justify-center gap-8 md:gap-10 lg:gap-12">
+                    <div className="w-64 h-48 sm:w-72 sm:h-56 md:w-80 md:h-64 lg:w-96 lg:h-72 xl:w-[28rem] xl:h-[18rem] rounded-[2rem] border-2 border-gray-300/70 dark:border-gray-600/60 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl shadow-inner flex flex-col items-center justify-center gap-3">
+                      <div className="text-7xl sm:text-8xl md:text-9xl lg:text-[10rem] xl:text-[12rem] font-extrabold tracking-widest text-gray-900 dark:text-white">
                         {ticket?.nomor ? formatNomor(ticket.nomor, ticket.prefix) : (lastNumber ? formatNomor(lastNumber) : "NO ANTRIAN")}
                       </div>
                     </div>
-                    <div className="text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-200">Nomor Selanjutnya</div>
-                    <div className="w-64 h-48 sm:w-72 sm:h-56 rounded-[2rem] border-2 border-gray-300/70 dark:border-gray-600/60 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl shadow-inner flex flex-col items-center justify-center gap-3">
-                      <div className="text-7xl sm:text-8xl font-extrabold tracking-widest text-gray-900 dark:text-white">
+                    <div className="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-gray-700 dark:text-gray-200">Nomor Selanjutnya</div>
+                    <div className="w-64 h-48 sm:w-72 sm:h-56 md:w-80 md:h-64 lg:w-96 lg:h-72 xl:w-[28rem] xl:h-[18rem] rounded-[2rem] border-2 border-gray-300/70 dark:border-gray-600/60 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl shadow-inner flex flex-col items-center justify-center gap-3">
+                      <div className="text-7xl sm:text-8xl md:text-9xl lg:text-[10rem] xl:text-[12rem] font-extrabold tracking-widest text-gray-900 dark:text-white">
                         {formatNomor(nextNumber)}
                       </div>
                     </div>
@@ -244,7 +244,7 @@ export default function AntrialLoket() {
 
                 
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 md:gap-8">
                   {todayPoli.map((p, idx) => {
                     const palette = [
                       "from-violet-500 to-fuchsia-600",
@@ -262,10 +262,10 @@ export default function AntrialLoket() {
                         whileHover={{ scale: processing || cooldown ? 1 : 1.02 }}
                         whileTap={{ scale: processing || cooldown ? 1 : 0.98 }}
                         disabled={processing || cooldown}
-                        className={`relative rounded-2xl px-6 py-8 text-center shadow-lg border border-white/20 dark:border-gray-700/30`}
+                        className={`relative rounded-2xl px-6 py-8 md:px-8 md:py-10 lg:px-10 lg:py-12 text-center shadow-lg border border-white/20 dark:border-gray-700/30`}
                       >
                         <span className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${grad} opacity-90`} />
-                        <span className="relative block text-white font-extrabold text-base sm:text-lg tracking-wide">
+                        <span className="relative block text-white font-extrabold text-base sm:text-lg md:text-xl lg:text-2xl tracking-wide">
                           {String(p.nm_poli || p.kd_poli).toUpperCase()}
                         </span>
                       </motion.button>
@@ -305,7 +305,7 @@ export default function AntrialLoket() {
         <motion.div variants={itemVariants} className="mt-6 print:hidden">
           <div className="border-t border-b border-gray-200/60 dark:border-gray-700/60 py-2">
             <div className="overflow-hidden">
-              <motion.div initial={{ x: "100%" }} animate={{ x: ["100%", "-100%"] }} transition={{ repeat: Infinity, duration: 18, ease: "linear" }} className="whitespace-nowrap text-center font-semibold text-lg text-white dark:text-white">
+              <motion.div initial={{ x: "100%" }} animate={{ x: ["100%", "-100%"] }} transition={{ repeat: Infinity, duration: 18, ease: "linear" }} className="whitespace-nowrap text-center font-semibold text-lg md:text-xl lg:text-2xl text-white dark:text-white">
                 Marqueeee — Selamat datang di Loket Antrian • Ambil nomor dan tunggu panggilan • Terima kasih
               </motion.div>
             </div>

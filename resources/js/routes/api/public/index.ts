@@ -6,6 +6,7 @@ import perusahaanPasien from './perusahaan-pasien'
 import sukuBangsa from './suku-bangsa'
 import bahasaPasien from './bahasa-pasien'
 import cacatFisik from './cacat-fisik'
+import sipPegawai from './sip-pegawai'
 /**
 * @see \App\Http\Controllers\API\DokterController::dokter
  * @see app/Http/Controllers/API/DokterController.php:14
@@ -50,13 +51,14 @@ dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 const publicMethod = {
     wilayah: Object.assign(wilayah, wilayah),
-pasien: Object.assign(pasien, pasien),
-penjab: Object.assign(penjab, penjab),
-perusahaanPasien: Object.assign(perusahaanPasien, perusahaanPasien),
-sukuBangsa: Object.assign(sukuBangsa, sukuBangsa),
-bahasaPasien: Object.assign(bahasaPasien, bahasaPasien),
-cacatFisik: Object.assign(cacatFisik, cacatFisik),
-dokter: Object.assign(dokter, dokter),
+    pasien: Object.assign(pasien, pasien),
+    penjab: Object.assign(penjab, penjab),
+    perusahaanPasien: Object.assign(perusahaanPasien, perusahaanPasien),
+    sukuBangsa: Object.assign(sukuBangsa, sukuBangsa),
+    bahasaPasien: Object.assign(bahasaPasien, bahasaPasien),
+    cacatFisik: Object.assign(cacatFisik, cacatFisik),
+    dokter: Object.assign(dokter, dokter),
+    sipPegawai: Object.assign(sipPegawai, sipPegawai),
 }
 
 export default publicMethod

@@ -44,7 +44,7 @@ export default function HutangObat() {
         setLoading(true);
         setError("");
         try {
-            const url = route("api.farmasi.hutang.index");
+            const url = "/farmasi/hutang-obat/data";
             const { data } = await axios.get(url, {
                 params: { ...filters, page },
             });
@@ -65,7 +65,7 @@ export default function HutangObat() {
 
     const loadAkunBayar = async () => {
         try {
-            const url = route("api.pembelian.akun-bayar");
+            const url = "/farmasi/akun-bayar";
             const { data } = await axios.get(url);
             setAkunBayar(Array.isArray(data.data) ? data.data : []);
         } catch (_) {}

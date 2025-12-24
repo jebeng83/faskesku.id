@@ -26,9 +26,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Force HTTPS di production
         if (config('app.env') === 'production') {
             URL::forceScheme('https');
+            $hotFile = public_path('hot');
+            if (File::exists($hotFile)) {
+                try {
+                    File::delete($hotFile);
+                } catch (\Throwable $e) {
+                    Log::warning('Failed to delete Vite hot file: '.$e->getMessage());
+                }
+            }
         }
 
         // Ensure PHP uses the configured application timezone

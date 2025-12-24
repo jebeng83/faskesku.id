@@ -68,36 +68,116 @@ class RegistrationController extends Controller
     /**
      * Register patient for examination
      */
-    public function registerPatient(Request $request, Patient $patient)
+    public function registerPatient(Request $request, $patient)
     {
-        $request->validate([
-            'kd_dokter' => 'required|exists:dokter,kd_dokter',
-            'kd_poli' => 'required|exists:poliklinik,kd_poli',
-            'kd_pj' => 'required|exists:penjab,kd_pj',
-            'p_jawab' => 'required|string|max:100',
-            'almt_pj' => 'required|string|max:200',
-            'hubunganpj' => 'required|string|max:20',
-            'tgl_registrasi' => 'nullable|date',
-            'jam_reg' => 'nullable',
+        // Log immediately when method is called - ini akan membantu debug apakah request sampai ke controller
+        Log::info('[REGISTRATION DEBUG] registerPatient METHOD CALLED', [
+            'patient_param' => $patient,
+            'request_method' => $request->method(),
+            'request_url' => $request->fullUrl(),
+            'request_path' => $request->path(),
+            'request_headers' => $request->headers->all(),
+            'request_data' => $request->all(),
+            'timestamp' => now()->toDateTimeString(),
         ]);
+
+        // Handle route model binding manually untuk memastikan tidak ada masalah
+        $patientModel = Patient::where('no_rkm_medis', $patient)->first();
+
+        if (! $patientModel) {
+            Log::error('[REGISTRATION DEBUG] Patient not found', [
+                'patient_no_rkm_medis' => $patient,
+                'request_url' => $request->fullUrl(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Pasien tidak ditemukan.',
+            ], 404);
+        }
+
+        Log::info('[REGISTRATION DEBUG] Start registerPatient', [
+            'patient_no_rkm_medis' => $patientModel->no_rkm_medis,
+            'request_data' => $request->all(),
+            'request_method' => $request->method(),
+            'request_url' => $request->fullUrl(),
+        ]);
+
+        $patient = $patientModel; // Set untuk digunakan di bawah
+
+        try {
+            $request->validate([
+                'kd_dokter' => 'required|exists:dokter,kd_dokter',
+                'kd_poli' => 'required|exists:poliklinik,kd_poli',
+                'kd_pj' => 'required|exists:penjab,kd_pj',
+                'p_jawab' => 'required|string|max:100',
+                'almt_pj' => 'required|string|max:200',
+                'hubunganpj' => 'required|string|max:20',
+                'tgl_registrasi' => 'nullable|date',
+                'jam_reg' => 'nullable',
+            ]);
+            Log::info('[REGISTRATION DEBUG] Validation passed');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('[REGISTRATION DEBUG] Validation failed', [
+                'errors' => $e->errors(),
+                'request_data' => $request->all(),
+            ]);
+
+            // Return JSON response untuk validation error
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('[REGISTRATION DEBUG] Unexpected error during validation', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
+            ], 500);
+        }
 
         // Check if patient has ever registered in this polyclinic
         $hasRegistered = RegPeriksa::where('no_rkm_medis', $patient->no_rkm_medis)
             ->where('kd_poli', $request->kd_poli)
             ->exists();
 
+        Log::info('[REGISTRATION DEBUG] Patient registration check', [
+            'hasRegistered' => $hasRegistered,
+            'kd_poli' => $request->kd_poli,
+        ]);
+
         // Get polyclinic data for biaya registrasi
         $poliklinik = Poliklinik::where('kd_poli', $request->kd_poli)->first();
+
+        if (! $poliklinik) {
+            Log::error('[REGISTRATION DEBUG] Poliklinik not found', [
+                'kd_poli' => $request->kd_poli,
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Poliklinik tidak ditemukan',
+            ], 404);
+        }
 
         // Determine status poli and biaya registrasi
         $status_poli = $hasRegistered ? 'Lama' : 'Baru';
         $biaya_reg = $hasRegistered ? $poliklinik->registrasilama : $poliklinik->registrasi;
 
+        Log::info('[REGISTRATION DEBUG] Poli status and biaya', [
+            'status_poli' => $status_poli,
+            'biaya_reg' => $biaya_reg,
+            'poliklinik' => $poliklinik->nm_poli,
+        ]);
+
         // Set default values
         $status_lanjut = 'Ralan';
         $status_bayar = 'Belum Bayar';
-
-        
 
         // Hitung umur pasien untuk registrasi
         $tglLahir = Carbon::parse($patient->tgl_lahir);
@@ -115,6 +195,13 @@ class RegistrationController extends Controller
 
         $noReg = RegPeriksa::generateNoReg($request->kd_dokter, $request->kd_poli, $tglReg);
         $noRawat = RegPeriksa::generateNoRawat($tglReg);
+
+        Log::info('[REGISTRATION DEBUG] Generated numbers', [
+            'no_reg' => $noReg,
+            'no_rawat' => $noRawat,
+            'tgl_registrasi' => $tglReg,
+            'jam_reg' => $jamReg,
+        ]);
 
         $data = [
             'no_reg' => $noReg,
@@ -150,7 +237,29 @@ class RegistrationController extends Controller
             }
         }
 
-        $registration = RegPeriksa::create($data);
+        Log::info('[REGISTRATION DEBUG] Data to be saved', [
+            'data' => $data,
+        ]);
+
+        try {
+            $registration = RegPeriksa::create($data);
+            Log::info('[REGISTRATION DEBUG] Registration created successfully', [
+                'no_rawat' => $registration->no_rawat,
+                'no_reg' => $registration->no_reg,
+                'id' => $registration->id ?? 'N/A',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('[REGISTRATION DEBUG] Failed to create registration', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'data' => $data,
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan registrasi: '.$e->getMessage(),
+            ], 500);
+        }
 
         try {
             $kdPj = strtoupper(trim((string) ($registration->kd_pj ?? '')));
@@ -207,6 +316,11 @@ class RegistrationController extends Controller
             ]);
         }
 
+        Log::info('[REGISTRATION DEBUG] Registration completed successfully', [
+            'no_rawat' => $registration->no_rawat,
+            'no_reg' => $registration->no_reg,
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'Pasien berhasil didaftarkan untuk periksa.',
@@ -228,7 +342,7 @@ class RegistrationController extends Controller
      */
     public function checkPatientPoliStatus(Request $request, Patient $patient)
     {
-        $kd_poli = $request->get('kd_poli');
+        $kd_poli = $request->query('kd_poli');
 
         if (! $kd_poli) {
             return response()->json([
@@ -347,7 +461,7 @@ class RegistrationController extends Controller
         }
 
         // Mendukung parameter per_page dari request agar client dapat mengatur jumlah data per halaman
-        $perPage = (int) ($request->get('per_page') ?? 15);
+        $perPage = (int) $request->query('per_page', 15);
         if ($perPage <= 0) {
             $perPage = 15;
         } elseif ($perPage > 100) {
@@ -426,8 +540,8 @@ class RegistrationController extends Controller
      */
     public function poliMonthlyStats(Request $request)
     {
-        $year = (int) ($request->get('year') ?? date('Y'));
-        $limit = (int) ($request->get('limit') ?? 5);
+        $year = (int) $request->query('year', date('Y'));
+        $limit = (int) $request->query('limit', 5);
         if ($limit < 1) {
             $limit = 5;
         }

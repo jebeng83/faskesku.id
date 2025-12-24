@@ -46,6 +46,7 @@ use App\Http\Controllers\RawatInapController;
 use App\Http\Controllers\RawatJalan\ObatController;
 use App\Http\Controllers\RawatJalan\RawatJalanController;
 use App\Http\Controllers\RawatJalan\ResepController;
+use App\Http\Controllers\SkriningVisualController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\RegPeriksaController;
 use App\Http\Controllers\RehabilitasiMedikController;
@@ -84,12 +85,12 @@ Route::get('/antrian/loket', function () {
     $todayPoli = [];
     if (Schema::hasTable('setting')) {
         $fields = [];
-        foreach (['nama_instansi','alamat_instansi','kabupaten','propinsi','kontak','email','kode_ppk'] as $col) {
+        foreach (['nama_instansi', 'alamat_instansi', 'kabupaten', 'propinsi', 'kontak', 'email', 'kode_ppk'] as $col) {
             if (Schema::hasColumn('setting', $col)) {
                 $fields[] = $col;
             }
         }
-        if (!empty($fields)) {
+        if (! empty($fields)) {
             $query = DB::table('setting')->select($fields);
             if (Schema::hasColumn('setting', 'aktifkan')) {
                 $query->where('aktifkan', 'Yes');
@@ -109,7 +110,7 @@ Route::get('/antrian/loket', function () {
     }
     // Poliklinik dengan jadwal pada hari ini
     if (Schema::hasTable('jadwal') && Schema::hasTable('poliklinik')) {
-        $hariMap = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+        $hariMap = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
         $hari = $hariMap[(int) date('w')] ?? date('l');
         $hasHari = Schema::hasColumn('jadwal', 'hari_kerja');
         $hasKdPoliJ = Schema::hasColumn('jadwal', 'kd_poli');
@@ -131,22 +132,24 @@ Route::get('/antrian/loket', function () {
             })->all();
         }
     }
+
     return Inertia::render('Antrian/AntrialLoket', [
         'setting' => $setting,
         'today_poli' => $todayPoli,
     ]);
 })->name('antrian.loket');
 
-Route::get('/antrian/display', function () {
+Route::get('/anjungan/pasien-mandiri', function () {
     $setting = null;
+    $todayPoli = [];
     if (Schema::hasTable('setting')) {
         $fields = [];
-        foreach (['nama_instansi','alamat_instansi','kabupaten','propinsi','kontak','email','kode_ppk'] as $col) {
+        foreach (['logo', 'nama_instansi', 'alamat_instansi', 'kabupaten', 'propinsi', 'kontak', 'email', 'kode_ppk'] as $col) {
             if (Schema::hasColumn('setting', $col)) {
                 $fields[] = $col;
             }
         }
-        if (!empty($fields)) {
+        if (! empty($fields)) {
             $query = DB::table('setting')->select($fields);
             if (Schema::hasColumn('setting', 'aktifkan')) {
                 $query->where('aktifkan', 'Yes');
@@ -164,6 +167,98 @@ Route::get('/antrian/display', function () {
             }
         }
     }
+    if (Schema::hasTable('jadwal')) {
+        $hariMap = [
+            0 => 'AKHAD',
+            1 => 'SENIN',
+            2 => 'SELASA',
+            3 => 'RABU',
+            4 => 'KAMIS',
+            5 => 'JUMAT',
+            6 => 'SABTU',
+        ];
+        $hari = $hariMap[(int) now()->dayOfWeek] ?? 'SENIN';
+        $rows = DB::table('jadwal')
+            ->join('poliklinik', 'poliklinik.kd_poli', '=', 'jadwal.kd_poli')
+            ->where('jadwal.hari_kerja', $hari)
+            ->select('jadwal.kd_poli', 'poliklinik.nm_poli')
+            ->distinct()
+            ->orderBy('poliklinik.nm_poli')
+            ->get();
+        $todayPoli = collect($rows)->map(function ($r) {
+            return [
+                'kd_poli' => $r->kd_poli,
+                'nm_poli' => preg_replace('/[\x00-\x1F\x7F]/u', '', (string) $r->nm_poli),
+            ];
+        })->all();
+    }
+
+    return Inertia::render('Anjungan/PasienMandiri', [
+        'setting' => $setting,
+        'today_poli' => $todayPoli,
+    ]);
+})->name('anjungan.pasien-mandiri');
+
+Route::get('/anjungan/cetak-label', function () {
+    $setting = null;
+    if (Schema::hasTable('setting')) {
+        $fields = [];
+        foreach (['logo', 'nama_instansi', 'alamat_instansi', 'kabupaten', 'propinsi', 'kontak', 'email', 'kode_ppk'] as $col) {
+            if (Schema::hasColumn('setting', $col)) {
+                $fields[] = $col;
+            }
+        }
+        if (! empty($fields)) {
+            $query = DB::table('setting')->select($fields);
+            if (Schema::hasColumn('setting', 'aktifkan')) {
+                $query->where('aktifkan', 'Yes');
+            }
+            $row = $query->orderBy('nama_instansi')->first();
+            if ($row) {
+                $setting = [];
+                foreach ($fields as $f) {
+                    $v = $row->{$f} ?? null;
+                    if (is_string($v)) {
+                        $v = preg_replace('/[\x00-\x1F\x7F]/u', '', $v);
+                    }
+                    $setting[$f] = $v;
+                }
+            }
+        }
+    }
+    return Inertia::render('Anjungan/CetakLabel', [
+        'setting' => $setting,
+    ]);
+})->name('anjungan.cetak-label');
+
+Route::get('/antrian/display', function () {
+    $setting = null;
+    if (Schema::hasTable('setting')) {
+        $fields = [];
+        foreach (['nama_instansi', 'alamat_instansi', 'kabupaten', 'propinsi', 'kontak', 'email', 'kode_ppk'] as $col) {
+            if (Schema::hasColumn('setting', $col)) {
+                $fields[] = $col;
+            }
+        }
+        if (! empty($fields)) {
+            $query = DB::table('setting')->select($fields);
+            if (Schema::hasColumn('setting', 'aktifkan')) {
+                $query->where('aktifkan', 'Yes');
+            }
+            $row = $query->orderBy('nama_instansi')->first();
+            if ($row) {
+                $setting = [];
+                foreach ($fields as $f) {
+                    $v = $row->{$f} ?? null;
+                    if (is_string($v)) {
+                        $v = preg_replace('/[\x00-\x1F\x7F]/u', '', $v);
+                    }
+                    $setting[$f] = $v;
+                }
+            }
+        }
+    }
+
     return Inertia::render('Antrian/DisplayLoket', [
         'setting' => $setting,
     ]);
@@ -521,13 +616,29 @@ Route::middleware('auth')->group(function () {
         ->name('registration.lanjutan')
         ->middleware('menu.permission');
     Route::get('/registration/search-patients', [RegistrationController::class, 'searchPatients'])->name('registration.search-patients');
-    Route::post('/registration/{patient}/register', [RegistrationController::class, 'registerPatient'])->name('registration.register-patient');
+    Route::post('/registration/{patient}/register', [RegistrationController::class, 'registerPatient'])
+        ->name('registration.register-patient');
     Route::get('/registration/{patient}/check-poli-status', [RegistrationController::class, 'checkPatientPoliStatus'])->name('registration.check-poli-status');
     Route::get('/registration/get-registrations', [RegistrationController::class, 'getRegistrations'])->name('registration.get-registrations');
     // Statistik kunjungan poli per bulan (untuk Dashboard)
     Route::get('/registration/poli-monthly-stats', [RegistrationController::class, 'poliMonthlyStats'])->name('registration.poli-monthly-stats');
     Route::post('/registration/cancel', [RegistrationController::class, 'cancelRegistration'])->name('registration.cancel');
     Route::get('/registration/{no_rawat}/print', [RegistrationController::class, 'print'])->name('registration.print')->where('no_rawat', '.*');
+
+    // Skrining Visual routes (CRUD)
+    Route::prefix('skrining-visual')->name('skrining-visual.')->group(function () {
+        Route::get('/', [SkriningVisualController::class, 'index'])->name('index');
+        Route::post('/', [SkriningVisualController::class, 'store'])->name('store');
+        Route::get('/{no_rkm_medis}/{tanggal}', [SkriningVisualController::class, 'show'])
+            ->name('show')
+            ->where(['no_rkm_medis' => '.*', 'tanggal' => '.*']);
+        Route::put('/{no_rkm_medis}/{tanggal}', [SkriningVisualController::class, 'update'])
+            ->name('update')
+            ->where(['no_rkm_medis' => '.*', 'tanggal' => '.*']);
+        Route::delete('/{no_rkm_medis}/{tanggal}', [SkriningVisualController::class, 'destroy'])
+            ->name('destroy')
+            ->where(['no_rkm_medis' => '.*', 'tanggal' => '.*']);
+    });
 
     // Employee routes
     Route::resource('employees', EmployeeController::class);
@@ -848,6 +959,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/hutang-obat', function () {
             return Inertia::render('farmasi/HutangObat');
         })->name('hutang-obat');
+        Route::get('/hutang-obat/data', [\App\Http\Controllers\Farmasi\PemesananController::class, 'listHutang'])
+            ->name('hutang-obat.data');
 
         Route::get('/penjualan-obat', function () {
             return Inertia::render('farmasi/PenjualanObat');
@@ -870,6 +983,9 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('farmasi/RiwayatTransaksiGudang');
         })->name('riwayat-transaksi-gudang');
 
+        Route::get('/riwayat-transaksi-gudang/data', [\App\Http\Controllers\Farmasi\RiwayatTransaksiGudangController::class, 'data'])
+            ->name('riwayat-transaksi-gudang.data');
+
         // Riwayat Barang Medis (Inertia page + JSON data endpoint)
         Route::get('/riwayat-barang-medis', [\App\Http\Controllers\Farmasi\RiwayatBarangMedisController::class, 'index'])
             ->name('riwayat-barang-medis');
@@ -885,15 +1001,23 @@ Route::middleware('auth')->group(function () {
         Route::get('/darurat-stok', function () {
             return Inertia::render('farmasi/DaruratStok');
         })->name('darurat-stok');
+        Route::get('/darurat-stok/data', [\App\Http\Controllers\Farmasi\DaruratStokController::class, 'index'])
+            ->name('darurat-stok.data');
         Route::get('/sirkulasi-obat', function () {
             return Inertia::render('farmasi/SirkulasiObat');
         })->name('sirkulasi-obat');
+        Route::get('/sirkulasi-obat/data', [\App\Http\Controllers\Farmasi\SirkulasiObatController::class, 'index'])
+            ->name('sirkulasi-obat.data');
         Route::get('/cek-stok-obat', function () {
             return Inertia::render('farmasi/CekStok');
         })->name('cek-stok-obat');
+        Route::get('/pembelian/lokasi', [\App\Http\Controllers\Farmasi\PembelianController::class, 'getLokasi']);
+        Route::get('/akun-bayar', [\App\Http\Controllers\Farmasi\PembelianController::class, 'getAkunBayar']);
         Route::get('/sisa-stok', function () {
             return Inertia::render('farmasi/SisaStok');
         })->name('sisa-stok');
+        Route::get('/sisa-stok/data', [\App\Http\Controllers\Farmasi\SisaStokController::class, 'index'])
+            ->name('sisa-stok.data');
 
         // Laporan & utility stok farmasi
         Route::get('/sisa-stok', function () {

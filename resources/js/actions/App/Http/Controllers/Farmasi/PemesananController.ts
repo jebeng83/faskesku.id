@@ -78,46 +78,95 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::listHutang
- * @see app/Http/Controllers/Farmasi/PemesananController.php:12
- * @route '/api/farmasi/hutang'
- */
-export const listHutang = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: listHutang.url(options),
+* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @route '/api/farmasi/hutang'
+*/
+const listHutang8c28e2c51c4dba8872baf17b38a0c0a4 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: listHutang8c28e2c51c4dba8872baf17b38a0c0a4.url(options),
     method: 'get',
 })
 
-listHutang.definition = {
+listHutang8c28e2c51c4dba8872baf17b38a0c0a4.definition = {
     methods: ["get","head"],
     url: '/api/farmasi/hutang',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::listHutang
- * @see app/Http/Controllers/Farmasi/PemesananController.php:12
- * @route '/api/farmasi/hutang'
- */
-listHutang.url = (options?: RouteQueryOptions) => {
-    return listHutang.definition.url + queryParams(options)
+* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @route '/api/farmasi/hutang'
+*/
+listHutang8c28e2c51c4dba8872baf17b38a0c0a4.url = (options?: RouteQueryOptions) => {
+    return listHutang8c28e2c51c4dba8872baf17b38a0c0a4.definition.url + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::listHutang
- * @see app/Http/Controllers/Farmasi/PemesananController.php:12
- * @route '/api/farmasi/hutang'
- */
-listHutang.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: listHutang.url(options),
+* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @route '/api/farmasi/hutang'
+*/
+listHutang8c28e2c51c4dba8872baf17b38a0c0a4.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: listHutang8c28e2c51c4dba8872baf17b38a0c0a4.url(options),
     method: 'get',
 })
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::listHutang
- * @see app/Http/Controllers/Farmasi/PemesananController.php:12
- * @route '/api/farmasi/hutang'
- */
-listHutang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: listHutang.url(options),
+* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @route '/api/farmasi/hutang'
+*/
+listHutang8c28e2c51c4dba8872baf17b38a0c0a4.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: listHutang8c28e2c51c4dba8872baf17b38a0c0a4.url(options),
     method: 'head',
 })
+
+/**
+* @see \App\Http\Controllers\Farmasi\PemesananController::listHutang
+* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @route '/farmasi/hutang-obat/data'
+*/
+const listHutang4aecbaa2a017b79537893135987e0a6a = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: listHutang4aecbaa2a017b79537893135987e0a6a.url(options),
+    method: 'get',
+})
+
+listHutang4aecbaa2a017b79537893135987e0a6a.definition = {
+    methods: ["get","head"],
+    url: '/farmasi/hutang-obat/data',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Farmasi\PemesananController::listHutang
+* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @route '/farmasi/hutang-obat/data'
+*/
+listHutang4aecbaa2a017b79537893135987e0a6a.url = (options?: RouteQueryOptions) => {
+    return listHutang4aecbaa2a017b79537893135987e0a6a.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Farmasi\PemesananController::listHutang
+* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @route '/farmasi/hutang-obat/data'
+*/
+listHutang4aecbaa2a017b79537893135987e0a6a.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: listHutang4aecbaa2a017b79537893135987e0a6a.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Farmasi\PemesananController::listHutang
+* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @route '/farmasi/hutang-obat/data'
+*/
+listHutang4aecbaa2a017b79537893135987e0a6a.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: listHutang4aecbaa2a017b79537893135987e0a6a.url(options),
+    method: 'head',
+})
+
+export const listHutang = {
+    '/api/farmasi/hutang': listHutang8c28e2c51c4dba8872baf17b38a0c0a4,
+    '/farmasi/hutang-obat/data': listHutang4aecbaa2a017b79537893135987e0a6a,
+}
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::stagePelunasan

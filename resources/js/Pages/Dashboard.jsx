@@ -270,98 +270,36 @@ const TopNavbar = React.memo(function TopNavbar() {
     );
 });
 
-function BottomNavbarMobile({ items }) {
-    if (!items || items.length === 0) return null;
-    return (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
-            <div className="h-16 bg-white dark:bg-gray-900 border-t border-slate-200 dark:border-gray-800 flex items-center justify-around px-3">
-                {items.map((item) => {
-                    const content = (
-                        <>
-                            <div className="p-2 rounded-full bg-slate-100 dark:bg-gray-800">
-                                {item.icon}
-                            </div>
-                            <span className="truncate max-w-[4rem] text-[11px]">
-                                {item.label}
-                            </span>
-                        </>
-                    );
-                    if (item.onClick) {
-                        return (
-                            <button
-                                key={item.key}
-                                type="button"
-                                onClick={item.onClick}
-                                className="flex flex-col items-center gap-1 text-slate-700 dark:text-gray-200"
-                            >
-                                {content}
-                            </button>
-                        );
-                    }
-                    return (
-                        <Link
-                            key={item.key}
-                            href={item.href || "#"}
-                            className="flex flex-col items-center gap-1 text-slate-700 dark:text-gray-200"
-                        >
-                            {content}
-                        </Link>
-                    );
-                })}
-            </div>
-        </nav>
-    );
-}
-
-function MoreMenuSheet({ open, onClose, shortcuts }) {
-    if (!open) return null;
-    const items = Array.isArray(shortcuts)
-        ? shortcuts.filter(
-              (item) => item && !["rajal", "ranap"].includes(item.key)
-          )
-        : [];
-    if (items.length === 0) return null;
+const MobileBottomNav = React.memo(function MobileBottomNav() {
+    const navItems = [
+        { href: route("registration.index"), label: "Pendaftaran", icon: UserPlus },
+        { href: route("rawat-jalan.index"), label: "Rawat Jalan", icon: Stethoscope },
+        { href: route("laboratorium.index"), label: "Laborat", icon: FlaskConical },
+        { href: route("farmasi.permintaan-resep"), label: "Farmasi", icon: Pill },
+        { href: route("akutansi.kasir-ralan.page"), label: "Kasir", icon: CreditCard },
+    ];
 
     return (
-        <div className="fixed inset-0 z-50 md:hidden">
-            <button
-                type="button"
-                className="absolute inset-0 bg-black/40"
-                onClick={onClose}
-            />
-            <div className="absolute inset-x-0 bottom-0 max-h-[70vh] rounded-t-2xl bg-white dark:bg-gray-900 border-t border-slate-200 dark:border-gray-800 p-4">
-                <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-semibold text-slate-900 dark:text-white">
-                        Menu lainnya
-                    </span>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="p-2 rounded-full bg-slate-100 dark:bg-gray-800 text-slate-600 dark:text-gray-200"
-                    >
-                        <X className="w-4 h-4" />
-                    </button>
-                </div>
-                <div className="grid grid-cols-3 gap-3">
-                    {items.map((item) => (
+        <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/80 dark:bg-gray-900/85 backdrop-blur border-t border-slate-200/70 dark:border-gray-800">
+            <div className="h-16 px-4 pb-[env(safe-area-inset-bottom)]">
+                <div className="grid grid-cols-5 gap-2 h-full">
+                    {navItems.map((item) => (
                         <Link
-                            key={item.key}
-                            href={item.href || "#"}
-                            onClick={onClose}
-                            className="flex flex-col items-center gap-2 rounded-xl border border-slate-200 dark:border-gray-800 bg-slate-50/80 dark:bg-gray-800/60 p-3 text-xs text-slate-700 dark:text-gray-200"
+                            key={item.label}
+                            href={item.href}
+                            className="group flex flex-col items-center justify-center rounded-lg text-xs font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
                         >
-                            <div className="p-2 rounded-full bg-white dark:bg-gray-900">
-                                {item.icon}
-                            </div>
-                            <span className="text-center">{item.label}</span>
+                            <item.icon className="w-5 h-5 transition-transform group-hover:scale-110" />
+                            <span className="mt-1">{item.label}</span>
                         </Link>
                     ))}
                 </div>
             </div>
-        </div>
+        </nav>
     );
-}
+});
 
+// Footer
 const Footer = React.memo(function Footer() {
     const year = new Date().getFullYear();
     const { props } = usePage();
@@ -451,6 +389,7 @@ const Footer = React.memo(function Footer() {
     const footerLinks = [
         { label: "Loket Antrian", href: resolveLoketUrl(), target: "_blank" },
         { label: "Display TV Loket", href: resolveDisplayUrl(), target: "_blank" },
+        { label: "APM", href: route("anjungan.pasien-mandiri") },
         { label: "Pendaftaran Pasien", href: "/registration/lanjutan" },
         { label: "Perpustakaan (Dokumen)", href: "/docs" },
         { label: "Berita Sistem", href: "/news" },
@@ -1035,16 +974,18 @@ export default function Dashboard() {
         setNotes((n) => n.filter((i) => i.id !== id));
     };
     const [sipExpiring, setSipExpiring] = useState([]);
+    const { props: pageProps } = usePage();
     useEffect(() => {
         let active = true;
         const controller = new AbortController();
         (async () => {
             try {
-                const res = await fetch("/api/sip-pegawai/expiring", {
+                const res = await window.axios.get("/api/public/sip-pegawai/expiring", {
                     signal: controller.signal,
+                    withCredentials: true,
                     headers: { Accept: "application/json" },
                 });
-                const json = await res.json();
+                const json = res?.data || {};
                 if (!active) return;
                 const list = Array.isArray(json?.data) ? json.data : [];
                 const seen = new Set();
@@ -1082,15 +1023,11 @@ export default function Dashboard() {
                 />
             </Head>
             <TopNavbar />
-            <BottomNavbarMobile items={bottomNavItems} />
-            <MoreMenuSheet
-                open={showMoreMenu}
-                onClose={() => setShowMoreMenu(false)}
-                shortcuts={shortcuts}
-            />
+            <MobileBottomNav />
+            {/* Fullscreen container tanpa sidebar/layout bawaan */}
             <div
                 id="page-top"
-                className="min-h-screen w-full bg-gradient-to-br from-blue-50 via-indigo-50 to-cyan-50 dark:from-[#0B1220] dark:via-[#0F172A] dark:to-[#111827] p-6 pt-24 pb-24 sm:pt-28 sm:pb-10 relative z-0"
+                className="min-h-screen w-full bg-gradient-to-br from-blue-50 via-indigo-50 to-cyan-50 dark:from-[#0B1220] dark:via-[#0F172A] dark:to-[#111827] p-6 pt-24 sm:pt-28 pb-24 md:pb-0 relative z-0"
             >
                 {/* Overlay tipis untuk meningkatkan kontras teks terhadap background gradient */}
                 <div

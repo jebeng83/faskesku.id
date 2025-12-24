@@ -31,7 +31,7 @@ export default function SisaStok() {
         controllerRef.current = ac;
         setLoading(true);
         try {
-            const { data } = await axios.get("/api/inventori/sisa-stok", {
+            const { data } = await axios.get("/farmasi/sisa-stok/data", {
                 params: {
                     jenis,
                     kategori,

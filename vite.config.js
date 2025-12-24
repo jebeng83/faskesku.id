@@ -18,9 +18,10 @@ export default defineConfig(() => ({
         react(),
         ...(wayfinderPluginFactory ? [wayfinderPluginFactory()] : []),
     ],
-    build: {
-        chunkSizeWarningLimit: 1024,
-    },
+	build: {
+		// Increase warning threshold; let Vite decide optimal chunking to avoid cyclic order issues
+		chunkSizeWarningLimit: 1024,
+	},
     server: {
         host: 'localhost',
         port: Number(process.env.VITE_PORT || process.env.PORT || 5177),

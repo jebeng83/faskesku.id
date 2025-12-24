@@ -16,6 +16,10 @@
     <link href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css" rel="stylesheet">
     <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+    <!-- Google Fonts: Teko -->
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Expletus Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Expletus+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
         .main-sidebar {

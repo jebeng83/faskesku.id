@@ -120,6 +120,7 @@ class QueueController extends Controller
         $hasTanggal = Schema::hasColumn('antriloket', 'tanggal');
         $hasPrefix = Schema::hasColumn('antriloket', 'prefix');
         $hasStatus = Schema::hasColumn('antriloket', 'status');
+        $hasLoket = Schema::hasColumn('antriloket', 'loket');
         $hasId = Schema::hasColumn('antriloket', 'id');
 
         if (! $colNumber) {
@@ -132,6 +133,7 @@ class QueueController extends Controller
         if ($hasPrefix) { $q = $q->addSelect('prefix'); }
         if ($hasStatus) { $q = $q->addSelect('status'); }
         if ($hasTanggal) { $q = $q->addSelect('tanggal'); }
+        if ($hasLoket) { $q = $q->addSelect('loket'); }
         if ($hasId) { $q = $q->orderBy($colNumber)->orderBy('id'); } else { $q = $q->orderBy($colNumber); }
 
         $rows = $q->get();
