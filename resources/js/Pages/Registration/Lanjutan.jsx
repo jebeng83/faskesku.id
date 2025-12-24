@@ -252,7 +252,7 @@ export default function Lanjutan() {
         {/* Header Gradient */}
         <motion.div className="mb-8" variants={itemVariants}>
           <div className="bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 rounded-2xl p-8 text-white">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-white/20 backdrop-blur rounded-xl">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -264,16 +264,16 @@ export default function Lanjutan() {
                   <p className="text-sm text-blue-100">Kelola pendaftaran pasien, dokter, dan poliklinik</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="px-2 py-1 rounded-md bg-white/10 border border-white/20">
+              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                <div className="px-2 py-1 rounded-md bg-white/10 border border-white/20 w-full sm:w-auto">
                   <span className="text-[11px] font-semibold text-blue-100">Nomor Antrean</span>
                   <div className="flex items-center gap-2">
                     <div className="text-base font-extrabold tracking-tight">{formatQueueLabel(queueCurrent?.nomor, queueCurrent?.prefix)}</div>
                     <span className="text-[11px] font-semibold text-blue-100">{queueStatusCode ?? '-'}</span>
                   </div>
                 </div>
-                <motion.button disabled={!queueCurrent?.nomor} onClick={() => handleCallLoketQueue(false)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-white/20 text-white hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Panggil</motion.button>
-                <motion.button disabled={!queueCurrent?.nomor && !queueLastCalledNumber} onClick={() => handleCallLoketQueue(true)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Ulang</motion.button>
+                <motion.button disabled={!queueCurrent?.nomor} onClick={() => handleCallLoketQueue(false)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-white/20 text-white hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Panggil</motion.button>
+                <motion.button disabled={!queueCurrent?.nomor && !queueLastCalledNumber} onClick={() => handleCallLoketQueue(true)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Ulang</motion.button>
               </div>
             </div>
           </div>
