@@ -24,9 +24,10 @@ export default function Lanjutan() {
       const envUrl = import.meta?.env?.VITE_BACKEND_URL;
       if (envUrl) c.push(envUrl);
     } catch (_) {}
-    c.push(window.location.origin);
-    c.push("http://127.0.0.1:8000");
+    // Prefer backend localhost first
     c.push("http://localhost:8000");
+    // Then current origin
+    c.push(window.location.origin);
     return c;
   };
 
@@ -36,7 +37,7 @@ export default function Lanjutan() {
     for (const base of bases) {
       try {
         const url = new URL(path, base).href;
-        const res = await axios.get(url, { headers: { Accept: "application/json" } });
+        const res = await axios.get(url, { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }, withCredentials: true });
         return res;
       } catch (e) {
         lastErr = e;

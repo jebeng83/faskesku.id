@@ -52,6 +52,32 @@ export default function DisplayLoket() {
   const [calledNow, setCalledNow] = useState(null);
   const [error, setError] = useState("");
   const [lastByLoket, setLastByLoket] = useState({ 1: null, 2: null, 3: null, 4: null });
+  const getApiBaseCandidates = () => {
+    const c = [];
+    c.push("http://localhost:8000");
+    c.push(window.location.origin);
+    try {
+      const envUrl = import.meta?.env?.VITE_BACKEND_URL;
+      if (envUrl) c.push(envUrl);
+    } catch (_) {}
+    return c;
+  };
+  const httpGet = async (path) => {
+    const bases = getApiBaseCandidates();
+    let lastErr = null;
+    for (const base of bases) {
+      try {
+        const url = new URL(path, base).href;
+        const res = await axios.get(url, { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }, withCredentials: true });
+        return res;
+      } catch (e) {
+        lastErr = e;
+        const status = e?.response?.status;
+        if (status && status !== 404) throw e;
+      }
+    }
+    throw lastErr || new Error("API not reachable");
+  };
 
   const formatNomor = (n, prefix) => {
     const num = typeof n === "number" ? n : parseInt(String(n || "0"), 10);
@@ -62,7 +88,7 @@ export default function DisplayLoket() {
   const fetchToday = async () => {
     try {
       setError("");
-      const res = await axios.get("/api/queue/today", { headers: { Accept: "application/json" } });
+      const res = await httpGet("/api/queue/today");
       const rows = Array.isArray(res?.data?.data) ? res.data.data : [];
       const called = rows.filter((r) => String(r.status || "").toLowerCase() === "dipanggil");
       const latest = called.length ? called[called.length - 1] : null;

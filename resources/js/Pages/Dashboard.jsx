@@ -357,11 +357,35 @@ const Footer = React.memo(function Footer() {
             return '/antrian/display';
         }
     };
+    const resolveApmUrl = () => {
+        try {
+            if (typeof route === 'function') {
+                return route('anjungan.pasien-mandiri');
+            }
+        } catch (_) {}
+        try {
+            const { protocol, hostname, port } = window.location;
+            const base = `${protocol}//${hostname}`;
+            if (port === '5173') {
+                return `${base}:8000/anjungan/pasien-mandiri`;
+            }
+            return `${base}${port ? ':' + port : ''}/anjungan/pasien-mandiri`;
+        } catch (_) {
+            return '/anjungan/pasien-mandiri';
+        }
+    };
+    const safeRouteFooter = (name, params = {}) => {
+        try {
+            return route(name, params, false);
+        } catch (_) {
+            return '#';
+        }
+    };
 
     const footerLinks = [
         { label: "Loket Antrian", href: resolveLoketUrl(), target: "_blank" },
         { label: "Display TV Loket", href: resolveDisplayUrl(), target: "_blank" },
-        { label: "APM", href: route("anjungan.pasien-mandiri") },
+        { label: "APM", href: resolveApmUrl() },
         { label: "Pendaftaran Pasien", href: "/registration/lanjutan" },
         { label: "Perpustakaan (Dokumen)", href: "/docs" },
         { label: "Berita Sistem", href: "/news" },
@@ -380,14 +404,14 @@ const Footer = React.memo(function Footer() {
             href: "/permissions",
             requiredPermission: "group.pengaturan.access",
         },
-            {
-                label: "Laboratorium",
-                href: route("laboratorium.permintaan-lab.index"),
+        {
+            label: "Laboratorium",
+            href: safeRouteFooter("laboratorium.permintaan-lab.index"),
             requiredPermission: "group.laboratorium.access",
         },
         {
             label: "Radiologi",
-            href: route("radiologi.index"),
+            href: safeRouteFooter("radiologi.index"),
             requiredPermission: "group.radiologi.access",
         },
         {
@@ -812,7 +836,7 @@ export default function Dashboard() {
                     label: "Register",
                     href: safeRoute("registration.lanjutan"),
                     icon: <UserPlus className="w-5 h-5" />,
-                    requiredPermission: "group.registrasi.access",
+                    requiredPermission: null,
                 },
                 {
                     key: "bridging",
