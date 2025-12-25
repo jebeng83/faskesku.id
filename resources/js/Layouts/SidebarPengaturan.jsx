@@ -138,6 +138,7 @@ export default function SidebarPengaturan({
             dashboard: safeRoute("dashboard", "/dashboard"),
             profileHome: safeRoute("profile.home", "/profile/home"),
             settingIndex: safeRoute("setting.index", "/setting"),
+            antrianSuara: safeRoute("antrian.suara", "/antrian/suara"),
             pcareSetting: safeRoute("pcare.setting.index", "/pcare/setting"),
             mobileJknSetting: safeRoute(
                 "pcare.setting.mobilejkn.index",
@@ -275,6 +276,13 @@ export default function SidebarPengaturan({
                             icon={Settings}
                             label="Setting Aplikasi"
                             active={isActive(paths.settingIndex)}
+                        />
+                        <NavItem
+                            collapsed={isSidebarCollapsed}
+                            href={paths.antrianSuara}
+                            icon={Stethoscope}
+                            label="Suara Poli"
+                            active={isActive(paths.antrianSuara)}
                         />
                     </Section>
 

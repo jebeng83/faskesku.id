@@ -1,5 +1,6 @@
 import API from './API'
 import QueueController from './QueueController'
+import Antrian from './Antrian'
 import PermintaanLabController from './PermintaanLabController'
 import MenuController from './MenuController'
 import RawatJalan from './RawatJalan'
@@ -41,6 +42,7 @@ import PenjabController from './PenjabController'
 const Controllers = {
     API: Object.assign(API, API),
     QueueController: Object.assign(QueueController, QueueController),
+    Antrian: Object.assign(Antrian, Antrian),
     PermintaanLabController: Object.assign(PermintaanLabController, PermintaanLabController),
     MenuController: Object.assign(MenuController, MenuController),
     RawatJalan: Object.assign(RawatJalan, RawatJalan),

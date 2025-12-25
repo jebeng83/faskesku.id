@@ -2,6 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 import wilayah from './wilayah'
 import publicMethod from './public'
 import queue from './queue'
+import poli from './poli'
 import employees from './employees'
 import penjab from './penjab'
 import pasien from './pasien'
@@ -33,6 +34,7 @@ import jadwal from './jadwal'
 import v1 from './v1'
 import poliklinik from './poliklinik'
 import akutansi from './akutansi'
+import antrianPoli2d4a79 from './antrian-poli'
 import menu from './menu'
 import tarifTindakan from './tarif-tindakan'
 /**
@@ -168,7 +170,7 @@ setHargaObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:392
+* @see routes/web.php:425
 * @route '/api/antrian-poli'
 */
 export const antrianPoli = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -182,7 +184,7 @@ antrianPoli.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:392
+* @see routes/web.php:425
 * @route '/api/antrian-poli'
 */
 antrianPoli.url = (options?: RouteQueryOptions) => {
@@ -190,7 +192,7 @@ antrianPoli.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:392
+* @see routes/web.php:425
 * @route '/api/antrian-poli'
 */
 antrianPoli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -199,7 +201,7 @@ antrianPoli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:392
+* @see routes/web.php:425
 * @route '/api/antrian-poli'
 */
 antrianPoli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -211,6 +213,7 @@ const api = {
     wilayah: Object.assign(wilayah, wilayah),
     public: Object.assign(publicMethod, publicMethod),
     queue: Object.assign(queue, queue),
+    poli: Object.assign(poli, poli),
     employees: Object.assign(employees, employees),
     penjab: Object.assign(penjab, penjab),
     pasien: Object.assign(pasien, pasien),
@@ -244,7 +247,7 @@ const api = {
     v1: Object.assign(v1, v1),
     poliklinik: Object.assign(poliklinik, poliklinik),
     akutansi: Object.assign(akutansi, akutansi),
-    antrianPoli: Object.assign(antrianPoli, antrianPoli),
+    antrianPoli: Object.assign(antrianPoli, antrianPoli2d4a79),
     menu: Object.assign(menu, menu),
     tarifTindakan: Object.assign(tarifTindakan, tarifTindakan),
 }

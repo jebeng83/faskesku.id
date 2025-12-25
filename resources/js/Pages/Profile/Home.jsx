@@ -68,6 +68,13 @@ const tabs = [
                 icon: ClipboardDocumentListIcon,
                 accent: "from-indigo-500 to-purple-500",
             },
+            {
+                title: "Suara Poli",
+                description: "Konfigurasi suara display poli",
+                href: route("antrian.suara"),
+                icon: ClipboardDocumentListIcon,
+                accent: "from-purple-500 to-pink-500",
+            },
         ],
     },
     {

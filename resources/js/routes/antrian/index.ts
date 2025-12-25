@@ -119,10 +119,51 @@ poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+/**
+* @see routes/web.php:391
+* @route '/antrian/suara'
+*/
+export const suara = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: suara.url(options),
+    method: 'get',
+})
+
+suara.definition = {
+    methods: ["get","head"],
+    url: '/antrian/suara',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:391
+* @route '/antrian/suara'
+*/
+suara.url = (options?: RouteQueryOptions) => {
+    return suara.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:391
+* @route '/antrian/suara'
+*/
+suara.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: suara.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:391
+* @route '/antrian/suara'
+*/
+suara.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: suara.url(options),
+    method: 'head',
+})
+
 const antrian = {
     loket: Object.assign(loket, loket),
     display: Object.assign(display, display),
     poli: Object.assign(poli, poli),
+    suara: Object.assign(suara, suara),
 }
 
 export default antrian
