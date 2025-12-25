@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\API\UserController::index
-* @see app/Http/Controllers/API/UserController.php:17
+* @see app/Http/Controllers/API/UserController.php:20
 * @route '/api/users'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\API\UserController::index
-* @see app/Http/Controllers/API/UserController.php:17
+* @see app/Http/Controllers/API/UserController.php:20
 * @route '/api/users'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\UserController::index
-* @see app/Http/Controllers/API/UserController.php:17
+* @see app/Http/Controllers/API/UserController.php:20
 * @route '/api/users'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\API\UserController::index
-* @see app/Http/Controllers/API/UserController.php:17
+* @see app/Http/Controllers/API/UserController.php:20
 * @route '/api/users'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\API\UserController::store
-* @see app/Http/Controllers/API/UserController.php:44
+* @see app/Http/Controllers/API/UserController.php:47
 * @route '/api/users'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +60,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\API\UserController::store
-* @see app/Http/Controllers/API/UserController.php:44
+* @see app/Http/Controllers/API/UserController.php:47
 * @route '/api/users'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\UserController::store
-* @see app/Http/Controllers/API/UserController.php:44
+* @see app/Http/Controllers/API/UserController.php:47
 * @route '/api/users'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -79,7 +79,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\API\UserController::roles
-* @see app/Http/Controllers/API/UserController.php:163
+* @see app/Http/Controllers/API/UserController.php:166
 * @route '/api/users/roles'
 */
 export const roles = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ roles.definition = {
 
 /**
 * @see \App\Http\Controllers\API\UserController::roles
-* @see app/Http/Controllers/API/UserController.php:163
+* @see app/Http/Controllers/API/UserController.php:166
 * @route '/api/users/roles'
 */
 roles.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ roles.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\UserController::roles
-* @see app/Http/Controllers/API/UserController.php:163
+* @see app/Http/Controllers/API/UserController.php:166
 * @route '/api/users/roles'
 */
 roles.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -113,7 +113,7 @@ roles.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\API\UserController::roles
-* @see app/Http/Controllers/API/UserController.php:163
+* @see app/Http/Controllers/API/UserController.php:166
 * @route '/api/users/roles'
 */
 roles.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -123,7 +123,7 @@ roles.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\API\UserController::permissions
-* @see app/Http/Controllers/API/UserController.php:173
+* @see app/Http/Controllers/API/UserController.php:176
 * @route '/api/users/permissions'
 */
 export const permissions = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -138,7 +138,7 @@ permissions.definition = {
 
 /**
 * @see \App\Http\Controllers\API\UserController::permissions
-* @see app/Http/Controllers/API/UserController.php:173
+* @see app/Http/Controllers/API/UserController.php:176
 * @route '/api/users/permissions'
 */
 permissions.url = (options?: RouteQueryOptions) => {
@@ -147,7 +147,7 @@ permissions.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\UserController::permissions
-* @see app/Http/Controllers/API/UserController.php:173
+* @see app/Http/Controllers/API/UserController.php:176
 * @route '/api/users/permissions'
 */
 permissions.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -157,7 +157,7 @@ permissions.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\API\UserController::permissions
-* @see app/Http/Controllers/API/UserController.php:173
+* @see app/Http/Controllers/API/UserController.php:176
 * @route '/api/users/permissions'
 */
 permissions.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -167,7 +167,7 @@ permissions.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\API\UserController::employees
-* @see app/Http/Controllers/API/UserController.php:183
+* @see app/Http/Controllers/API/UserController.php:186
 * @route '/api/users/employees'
 */
 export const employees = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -182,7 +182,7 @@ employees.definition = {
 
 /**
 * @see \App\Http\Controllers\API\UserController::employees
-* @see app/Http/Controllers/API/UserController.php:183
+* @see app/Http/Controllers/API/UserController.php:186
 * @route '/api/users/employees'
 */
 employees.url = (options?: RouteQueryOptions) => {
@@ -191,7 +191,7 @@ employees.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\UserController::employees
-* @see app/Http/Controllers/API/UserController.php:183
+* @see app/Http/Controllers/API/UserController.php:186
 * @route '/api/users/employees'
 */
 employees.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -201,7 +201,7 @@ employees.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\API\UserController::employees
-* @see app/Http/Controllers/API/UserController.php:183
+* @see app/Http/Controllers/API/UserController.php:186
 * @route '/api/users/employees'
 */
 employees.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -211,7 +211,7 @@ employees.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\API\UserController::checkByNik
-* @see app/Http/Controllers/API/UserController.php:193
+* @see app/Http/Controllers/API/UserController.php:276
 * @route '/api/users/check-by-nik/{nik}'
 */
 export const checkByNik = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -226,7 +226,7 @@ checkByNik.definition = {
 
 /**
 * @see \App\Http\Controllers\API\UserController::checkByNik
-* @see app/Http/Controllers/API/UserController.php:193
+* @see app/Http/Controllers/API/UserController.php:276
 * @route '/api/users/check-by-nik/{nik}'
 */
 checkByNik.url = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -253,7 +253,7 @@ checkByNik.url = (args: { nik: string | number } | [nik: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\API\UserController::checkByNik
-* @see app/Http/Controllers/API/UserController.php:193
+* @see app/Http/Controllers/API/UserController.php:276
 * @route '/api/users/check-by-nik/{nik}'
 */
 checkByNik.get = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -263,7 +263,7 @@ checkByNik.get = (args: { nik: string | number } | [nik: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\API\UserController::checkByNik
-* @see app/Http/Controllers/API/UserController.php:193
+* @see app/Http/Controllers/API/UserController.php:276
 * @route '/api/users/check-by-nik/{nik}'
 */
 checkByNik.head = (args: { nik: string | number } | [nik: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -272,8 +272,120 @@ checkByNik.head = (args: { nik: string | number } | [nik: string | number ] | st
 })
 
 /**
+* @see \App\Http\Controllers\API\UserController::legacyOptions
+* @see app/Http/Controllers/API/UserController.php:196
+* @route '/api/users/legacy-options'
+*/
+export const legacyOptions = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: legacyOptions.url(options),
+    method: 'get',
+})
+
+legacyOptions.definition = {
+    methods: ["get","head"],
+    url: '/api/users/legacy-options',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\API\UserController::legacyOptions
+* @see app/Http/Controllers/API/UserController.php:196
+* @route '/api/users/legacy-options'
+*/
+legacyOptions.url = (options?: RouteQueryOptions) => {
+    return legacyOptions.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\API\UserController::legacyOptions
+* @see app/Http/Controllers/API/UserController.php:196
+* @route '/api/users/legacy-options'
+*/
+legacyOptions.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: legacyOptions.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\API\UserController::legacyOptions
+* @see app/Http/Controllers/API/UserController.php:196
+* @route '/api/users/legacy-options'
+*/
+legacyOptions.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: legacyOptions.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\API\UserController::importLegacy
+* @see app/Http/Controllers/API/UserController.php:328
+* @route '/api/users/import-legacy'
+*/
+export const importLegacy = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: importLegacy.url(options),
+    method: 'post',
+})
+
+importLegacy.definition = {
+    methods: ["post"],
+    url: '/api/users/import-legacy',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\API\UserController::importLegacy
+* @see app/Http/Controllers/API/UserController.php:328
+* @route '/api/users/import-legacy'
+*/
+importLegacy.url = (options?: RouteQueryOptions) => {
+    return importLegacy.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\API\UserController::importLegacy
+* @see app/Http/Controllers/API/UserController.php:328
+* @route '/api/users/import-legacy'
+*/
+importLegacy.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: importLegacy.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\API\UserController::importLegacyAll
+* @see app/Http/Controllers/API/UserController.php:425
+* @route '/api/users/import-legacy-all'
+*/
+export const importLegacyAll = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: importLegacyAll.url(options),
+    method: 'post',
+})
+
+importLegacyAll.definition = {
+    methods: ["post"],
+    url: '/api/users/import-legacy-all',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\API\UserController::importLegacyAll
+* @see app/Http/Controllers/API/UserController.php:425
+* @route '/api/users/import-legacy-all'
+*/
+importLegacyAll.url = (options?: RouteQueryOptions) => {
+    return importLegacyAll.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\API\UserController::importLegacyAll
+* @see app/Http/Controllers/API/UserController.php:425
+* @route '/api/users/import-legacy-all'
+*/
+importLegacyAll.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: importLegacyAll.url(options),
+    method: 'post',
+})
+
+/**
 * @see \App\Http\Controllers\API\UserController::show
-* @see app/Http/Controllers/API/UserController.php:87
+* @see app/Http/Controllers/API/UserController.php:90
 * @route '/api/users/{user}'
 */
 export const show = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -288,7 +400,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\API\UserController::show
-* @see app/Http/Controllers/API/UserController.php:87
+* @see app/Http/Controllers/API/UserController.php:90
 * @route '/api/users/{user}'
 */
 show.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -321,7 +433,7 @@ show.url = (args: { user: number | { id: number } } | [user: number | { id: numb
 
 /**
 * @see \App\Http\Controllers\API\UserController::show
-* @see app/Http/Controllers/API/UserController.php:87
+* @see app/Http/Controllers/API/UserController.php:90
 * @route '/api/users/{user}'
 */
 show.get = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -331,7 +443,7 @@ show.get = (args: { user: number | { id: number } } | [user: number | { id: numb
 
 /**
 * @see \App\Http\Controllers\API\UserController::show
-* @see app/Http/Controllers/API/UserController.php:87
+* @see app/Http/Controllers/API/UserController.php:90
 * @route '/api/users/{user}'
 */
 show.head = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -341,7 +453,7 @@ show.head = (args: { user: number | { id: number } } | [user: number | { id: num
 
 /**
 * @see \App\Http\Controllers\API\UserController::update
-* @see app/Http/Controllers/API/UserController.php:97
+* @see app/Http/Controllers/API/UserController.php:100
 * @route '/api/users/{user}'
 */
 export const update = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -356,7 +468,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\API\UserController::update
-* @see app/Http/Controllers/API/UserController.php:97
+* @see app/Http/Controllers/API/UserController.php:100
 * @route '/api/users/{user}'
 */
 update.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -389,7 +501,7 @@ update.url = (args: { user: number | { id: number } } | [user: number | { id: nu
 
 /**
 * @see \App\Http\Controllers\API\UserController::update
-* @see app/Http/Controllers/API/UserController.php:97
+* @see app/Http/Controllers/API/UserController.php:100
 * @route '/api/users/{user}'
 */
 update.put = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -399,7 +511,7 @@ update.put = (args: { user: number | { id: number } } | [user: number | { id: nu
 
 /**
 * @see \App\Http\Controllers\API\UserController::destroy
-* @see app/Http/Controllers/API/UserController.php:145
+* @see app/Http/Controllers/API/UserController.php:148
 * @route '/api/users/{user}'
 */
 export const destroy = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -414,7 +526,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\API\UserController::destroy
-* @see app/Http/Controllers/API/UserController.php:145
+* @see app/Http/Controllers/API/UserController.php:148
 * @route '/api/users/{user}'
 */
 destroy.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -447,7 +559,7 @@ destroy.url = (args: { user: number | { id: number } } | [user: number | { id: n
 
 /**
 * @see \App\Http\Controllers\API\UserController::destroy
-* @see app/Http/Controllers/API/UserController.php:145
+* @see app/Http/Controllers/API/UserController.php:148
 * @route '/api/users/{user}'
 */
 destroy.delete = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -457,7 +569,7 @@ destroy.delete = (args: { user: number | { id: number } } | [user: number | { id
 
 /**
 * @see \App\Http\Controllers\API\UserController::password
-* @see app/Http/Controllers/API/UserController.php:212
+* @see app/Http/Controllers/API/UserController.php:295
 * @route '/api/users/{user}/password'
 */
 export const password = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -472,7 +584,7 @@ password.definition = {
 
 /**
 * @see \App\Http\Controllers\API\UserController::password
-* @see app/Http/Controllers/API/UserController.php:212
+* @see app/Http/Controllers/API/UserController.php:295
 * @route '/api/users/{user}/password'
 */
 password.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -505,7 +617,7 @@ password.url = (args: { user: number | { id: number } } | [user: number | { id: 
 
 /**
 * @see \App\Http\Controllers\API\UserController::password
-* @see app/Http/Controllers/API/UserController.php:212
+* @see app/Http/Controllers/API/UserController.php:295
 * @route '/api/users/{user}/password'
 */
 password.put = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -520,6 +632,9 @@ const users = {
     permissions: Object.assign(permissions, permissions),
     employees: Object.assign(employees, employees),
     checkByNik: Object.assign(checkByNik, checkByNik),
+    legacyOptions: Object.assign(legacyOptions, legacyOptions),
+    importLegacy: Object.assign(importLegacy, importLegacy),
+    importLegacyAll: Object.assign(importLegacyAll, importLegacyAll),
     show: Object.assign(show, show),
     update: Object.assign(update, update),
     destroy: Object.assign(destroy, destroy),

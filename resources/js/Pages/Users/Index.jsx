@@ -12,7 +12,8 @@ export default function Index() {
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [showHelpModal, setShowHelpModal] = useState(false);
     const [showCopyModal, setShowCopyModal] = useState(false);
-    const [modalMode, setModalMode] = useState("create"); // create, edit
+    const [showLegacyImportModal, setShowLegacyImportModal] = useState(false);
+    const [modalMode, setModalMode] = useState("create");
     const [selectedUser, setSelectedUser] = useState(null);
     const [roles, setRoles] = useState([]);
     const [employees, setEmployees] = useState([]);
@@ -31,6 +32,10 @@ export default function Index() {
         password: "",
         password_confirmation: "",
     });
+    const [legacyUsername, setLegacyUsername] = useState("");
+    const [legacyRoles, setLegacyRoles] = useState([]);
+    const [legacyOptions, setLegacyOptions] = useState([]);
+    const [legacyLoading, setLegacyLoading] = useState(false);
     const [errors, setErrors] = useState({});
     const [pagination, setPagination] = useState({});
 
@@ -90,6 +95,40 @@ export default function Index() {
         return () => clearTimeout(timeoutId);
     }, [search, roleFilter]);
 
+    useEffect(() => {
+        if (!showLegacyImportModal) {
+            return;
+        }
+
+        const query = legacyUsername.trim();
+
+        if (query.length < 2) {
+            setLegacyOptions([]);
+            setLegacyLoading(false);
+            return;
+        }
+
+        setLegacyLoading(true);
+
+        const timeoutId = setTimeout(() => {
+            axios
+                .get("/api/users/legacy-options", {
+                    params: { search: query },
+                })
+                .then((response) => {
+                    setLegacyOptions(response.data.data || []);
+                })
+                .catch(() => {
+                    setLegacyOptions([]);
+                })
+                .finally(() => {
+                    setLegacyLoading(false);
+                });
+        }, 300);
+
+        return () => clearTimeout(timeoutId);
+    }, [legacyUsername, showLegacyImportModal]);
+
     // Modal handlers
     const openCreateModal = () => {
         setModalMode("create");
@@ -139,6 +178,7 @@ export default function Index() {
         setShowPasswordModal(false);
         setShowHelpModal(false);
         setShowCopyModal(false);
+        setShowLegacyImportModal(false);
         setSelectedUser(null);
         setFormData({
             name: "",
@@ -154,6 +194,10 @@ export default function Index() {
             password: "",
             password_confirmation: "",
         });
+        setLegacyUsername("");
+        setLegacyRoles([]);
+        setLegacyOptions([]);
+        setLegacyLoading(false);
         setErrors({});
     };
 
@@ -273,6 +317,14 @@ export default function Index() {
         fetchUsers(page);
     };
 
+    const toggleLegacyRole = (roleName) => {
+        setLegacyRoles((prev) =>
+            prev.includes(roleName)
+                ? prev.filter((r) => r !== roleName)
+                : [...prev, roleName]
+        );
+    };
+
     return (
         <SidebarPengaturan>
             <Head title="Manajemen User" />
@@ -290,42 +342,93 @@ export default function Index() {
                                     Kelola data pengguna dan permission
                                 </p>
                             </div>
-                            <button
-                                onClick={openCreateModal}
-                                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 shadow-md hover:shadow-lg font-medium text-sm whitespace-nowrap transform hover:scale-105"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    fill="currentColor"
-                                    className="w-4 h-4"
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={openCreateModal}
+                                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 shadow-md hover:shadow-lg font-medium text-sm whitespace-nowrap transform hover:scale-105"
                                 >
-                                    <path
-                                        fillRule="evenodd"
-                                        d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
-                                        clipRule="evenodd"
-                                    />
-                                </svg>
-                                <span>Tambah User</span>
-                            </button>
-                            <button
-                                onClick={() => setShowHelpModal(true)}
-                                className="ml-2 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 shadow-md hover:shadow-lg font-medium text-sm whitespace-nowrap"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    fill="currentColor"
-                                    className="w-4 h-4"
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor"
+                                        className="w-4 h-4"
+                                    >
+                                        <path
+                                            fillRule="evenodd"
+                                            d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+                                            clipRule="evenodd"
+                                        />
+                                    </svg>
+                                    <span>Tambah User</span>
+                                </button>
+                                <button
+                                    onClick={async () => {
+                                        if (
+                                            !confirm(
+                                                "Yakin ingin mengimpor semua user dari tabel legacy user? Data dengan username yang sama akan diperbarui."
+                                            )
+                                        ) {
+                                            return;
+                                        }
+                                        setErrors({});
+                                        try {
+                                            const response = await axios.post(
+                                                "/api/users/import-legacy-all"
+                                            );
+                                            fetchUsers();
+                                            if (response.data?.summary) {
+                                                const s = response.data.summary;
+                                                alert(
+                                                    "Import selesai. Dibuat: " +
+                                                        s.created +
+                                                        ", diperbarui: " +
+                                                        s.updated +
+                                                        ", dilewati: " +
+                                                        s.skipped
+                                                );
+                                            }
+                                        } catch (error) {
+                                            alert(
+                                                error.response?.data?.message ||
+                                                    "Gagal mengimpor user legacy"
+                                            );
+                                        }
+                                    }}
+                                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 shadow-md hover:shadow-lg font-medium text-sm whitespace-nowrap"
                                 >
-                                    <path
-                                        fillRule="evenodd"
-                                        d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm0 13.5a.75.75 0 100 1.5.75.75 0 000-1.5zm.75-8.25a.75.75 0 00-1.5 0v.818c0 .47.22.912.593 1.187l.593.445a1.5 1.5 0 01.594 1.2v.1a.75.75 0 01-1.5 0v-.1a.001.001 0 00-.001-.001l-.001-.001a.75.75 0 00-.149-.449l-.593-.445A2.997 2.997 0 019.75 8.068V7.5a2.25 2.25 0 114.5 0v.25a.75.75 0 11-1.5 0V7.5z"
-                                        clipRule="evenodd"
-                                    />
-                                </svg>
-                                <span>Bantuan</span>
-                            </button>
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor"
+                                        className="w-4 h-4"
+                                    >
+                                        <path
+                                            fillRule="evenodd"
+                                            d="M4.5 4.5A1.5 1.5 0 016 3h5.25a.75.75 0 010 1.5H6v13.5h5.25a.75.75 0 010 1.5H6a1.5 1.5 0 01-1.5-1.5v-15zM9 12a.75.75 0 01.75-.75h9.69l-3.22-3.22a.75.75 0 011.06-1.06l4.5 4.5a.75.75 0 010 1.06l-4.5 4.5a.75.75 0 01-1.06-1.06l3.22-3.22H9.75A.75.75 0 019 12z"
+                                            clipRule="evenodd"
+                                        />
+                                    </svg>
+                                    <span>Ambil User Legacy</span>
+                                </button>
+                                <button
+                                    onClick={() => setShowHelpModal(true)}
+                                    className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 shadow-md hover:shadow-lg font-medium text-sm whitespace-nowrap"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor"
+                                        className="w-4 h-4"
+                                    >
+                                        <path
+                                            fillRule="evenodd"
+                                            d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm0 13.5a.75.75 0 100 1.5.75.75 0 000-1.5zm.75-8.25a.75.75 0 00-1.5 0v.818c0 .47.22.912.593 1.187l.593.445a1.5 1.5 0 01.594 1.2v.1a.75.75 0 01-1.5 0v-.1a.001.001 0 00-.001-.001l-.001-.001a.75.75 0 00-.149-.449l-.593-.445A2.997 2.997 0 019.75 8.068V7.5a2.25 2.25 0 114.5 0v.25a.75.75 0 11-1.5 0V7.5z"
+                                            clipRule="evenodd"
+                                        />
+                                    </svg>
+                                    <span>Bantuan</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -847,6 +950,255 @@ export default function Index() {
                                         </button>
                                     </div>
                                 </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {showLegacyImportModal && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full mx-4">
+                            <div className="p-6 space-y-4">
+                                <div className="flex justify-between items-center mb-2">
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                        Ambil User Legacy
+                                    </h3>
+                                    <button
+                                        onClick={closeModal}
+                                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                    >
+                                        <svg
+                                            className="w-6 h-6"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M6 18L18 6M6 6l12 12"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                            Username di tabel user
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                value={legacyUsername}
+                                                onChange={(e) =>
+                                                    setLegacyUsername(
+                                                        e.target.value
+                                                    )
+                                                }
+                                                className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:text-white"
+                                                placeholder="Ketik minimal 2 huruf untuk mencari"
+                                            />
+                                            {legacyLoading && (
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                                </div>
+                                            )}
+                                            {legacyOptions.length > 0 && (
+                                                <div className="absolute z-10 mt-1 max-h-40 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white text-sm shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                                                    {legacyOptions.map(
+                                                        (item, index) => (
+                                                            <button
+                                                                type="button"
+                                                                key={index}
+                                                                onClick={() => {
+                                                                    setLegacyUsername(
+                                                                        item.username
+                                                                    );
+                                                                    setLegacyOptions(
+                                                                        []
+                                                                    );
+                                                                }}
+                                                                className="flex w-full flex-col px-3 py-2 text-left text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+                                                            >
+                                                                <span className="font-medium">
+                                                                    {item.label ||
+                                                                        item.username}
+                                                                </span>
+                                                                {item.nama && (
+                                                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                        NIK:{" "}
+                                                                        {item.nik ||
+                                                                            item.username}
+                                                                    </span>
+                                                                )}
+                                                            </button>
+                                                        )
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                        {errors.username && (
+                                            <p className="text-sm text-red-600 mt-1">
+                                                {errors.username[0]}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                            Roles untuk user ini
+                                        </p>
+                                        <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-2">
+                                            {roles.map((role) => (
+                                                <label
+                                                    key={role.id}
+                                                    className="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-200"
+                                                >
+                                                    <input
+                                                        type="checkbox"
+                                                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                        checked={legacyRoles.includes(
+                                                            role.name
+                                                        )}
+                                                        onChange={() =>
+                                                            toggleLegacyRole(
+                                                                role.name
+                                                            )
+                                                        }
+                                                    />
+                                                    <span>{role.name}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                        {errors.roles && (
+                                            <p className="text-sm text-red-600 mt-1">
+                                                {errors.roles[0]}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                        Jika roles tidak dipilih, user akan diberi role default petugas jika belum memiliki role.
+                                    </div>
+                                    <div className="flex justify-between items-center pt-2">
+                                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                                            Klik "Import Semua" untuk mengimpor seluruh user dari tabel legacy user.
+                                        </div>
+                                        <div className="flex space-x-3">
+                                            <button
+                                                type="button"
+                                                onClick={closeModal}
+                                                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                                            >
+                                                Batal
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={async () => {
+                                                    if (!legacyUsername) {
+                                                        setErrors({
+                                                            username: [
+                                                                "Username wajib diisi",
+                                                            ],
+                                                        });
+                                                        return;
+                                                    }
+                                                    try {
+                                                        const payload = {
+                                                            username: legacyUsername,
+                                                        };
+                                                        if (legacyRoles.length > 0) {
+                                                            payload.roles =
+                                                                legacyRoles;
+                                                        }
+                                                        await axios.post(
+                                                            "/api/users/import-legacy",
+                                                            payload
+                                                        );
+                                                        closeModal();
+                                                        fetchUsers();
+                                                    } catch (error) {
+                                                        if (
+                                                            error.response
+                                                                ?.status ===
+                                                            422
+                                                        ) {
+                                                            setErrors(
+                                                                error.response
+                                                                    .data
+                                                                    .errors || {}
+                                                            );
+                                                        } else {
+                                                            alert(
+                                                                error.response
+                                                                    ?.data
+                                                                    ?.message ||
+                                                                    "Gagal mengimpor user legacy"
+                                                            );
+                                                        }
+                                                    }
+                                                }}
+                                                className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+                                            >
+                                                Import
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={async () => {
+                                                    if (
+                                                        !confirm(
+                                                            "Yakin ingin mengimpor semua user dari tabel legacy user? Data dengan username yang sama akan diperbarui."
+                                                        )
+                                                    ) {
+                                                        return;
+                                                    }
+                                                    setErrors({});
+                                                    try {
+                                                        const payload = {};
+                                                        if (
+                                                            legacyRoles.length >
+                                                            0
+                                                        ) {
+                                                            payload.roles =
+                                                                legacyRoles;
+                                                        }
+                                                        const response =
+                                                            await axios.post(
+                                                                "/api/users/import-legacy-all",
+                                                                payload
+                                                            );
+                                                        closeModal();
+                                                        fetchUsers();
+                                                        if (
+                                                            response.data
+                                                                ?.summary
+                                                        ) {
+                                                            const s =
+                                                                response.data
+                                                                    .summary;
+                                                            alert(
+                                                                "Import selesai. Dibuat: " +
+                                                                    s.created +
+                                                                    ", diperbarui: " +
+                                                                    s.updated +
+                                                                    ", dilewati: " +
+                                                                    s.skipped
+                                                            );
+                                                        }
+                                                    } catch (error) {
+                                                        alert(
+                                                            error.response?.data
+                                                                ?.message ||
+                                                                "Gagal mengimpor semua user legacy"
+                                                        );
+                                                    }
+                                                }}
+                                                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+                                            >
+                                                Import Semua
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

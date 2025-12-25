@@ -85,13 +85,11 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        // Coba cari user berdasarkan username atau email
         $user = \App\Models\User::where('username', $credentials['username'])
             ->orWhere('email', $credentials['username'])
             ->first();
 
         if ($user && \Illuminate\Support\Facades\Hash::check($credentials['password'], $user->password)) {
-            // Reset rate limiter setelah login berhasil
             RateLimiter::clear($key);
 
             Auth::login($user, $request->boolean('remember'));
@@ -104,7 +102,6 @@ class AuthController extends Controller
                 'user_agent' => $request->userAgent(),
             ]);
 
-            // Setelah login, arahkan ke Dashboard
             return redirect()->route('dashboard');
         }
 

@@ -189,6 +189,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/permissions', [UserController::class, 'getPermissions'])->name('api.users.permissions');
         Route::get('/employees', [UserController::class, 'getEmployees'])->name('api.users.employees');
         Route::get('/check-by-nik/{nik}', [UserController::class, 'checkUserByNik'])->name('api.users.check-by-nik');
+        Route::get('/legacy-options', [UserController::class, 'legacyOptions'])->name('api.users.legacy-options');
+        Route::post('/import-legacy', [UserController::class, 'importFromLegacy'])->name('api.users.import-legacy');
+        Route::post('/import-legacy-all', [UserController::class, 'importAllFromLegacy'])->name('api.users.import-legacy-all');
         Route::get('/{user}', [UserController::class, 'show'])->name('api.users.show');
         Route::put('/{user}', [UserController::class, 'update'])->name('api.users.update');
         Route::delete('/{user}', [UserController::class, 'destroy'])->name('api.users.destroy');
