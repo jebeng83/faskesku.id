@@ -587,12 +587,12 @@ class RawatJalanController extends Controller
             'tgl_perawatan' => 'required|date',
             'jam_rawat' => 'required|date_format:H:i',
             'suhu_tubuh' => 'nullable|string|max:5',
-            'tensi' => 'required|string|max:8',
+            'tensi' => 'nullable|string|max:8',
             'nadi' => 'nullable|string|max:3',
             'respirasi' => 'nullable|string|max:3',
             'tinggi' => 'nullable|string|max:5',
             'berat' => 'nullable|string|max:5',
-            'spo2' => 'required|string|max:3',
+            'spo2' => 'nullable|string|max:3',
             'gcs' => 'nullable|string|max:10',
             'kesadaran' => 'required|in:Compos Mentis,Somnolence,Sopor,Coma,Alert,Confusion,Voice,Pain,Unresponsive,Apatis,Delirium',
             'keluhan' => 'nullable|string|max:2000',
@@ -606,13 +606,37 @@ class RawatJalanController extends Controller
             'nip' => 'required|string|max:20',
         ]);
 
-        foreach (['rtl', 'penilaian', 'instruksi', 'evaluasi'] as $field) {
-            $validated[$field] = $validated[$field] ?? '';
+        $nullableFields = [
+            'suhu_tubuh','tensi','nadi','respirasi','tinggi','berat','spo2','gcs',
+            'keluhan','pemeriksaan','alergi','lingkar_perut','rtl','penilaian','instruksi','evaluasi',
+        ];
+        foreach ($nullableFields as $field) {
+            if (!array_key_exists($field, $validated) || $validated[$field] === null) {
+                $validated[$field] = '';
+            }
+        }
+        foreach ($nullableFields as $field) {
+            $validated[$field] = isset($validated[$field]) ? trim((string) $validated[$field]) : '';
         }
 
         // Pastikan format jam menjadi H:i:s
         $validated['jam_rawat'] = sprintf('%s:00', $validated['jam_rawat']);
 
+        // Pastikan setiap simpan menjadi entry terpisah:
+        // pilih detik unik pada jam_rawat agar tidak bentrok dengan primary key komposit
+        $base = \Carbon\Carbon::createFromFormat('H:i', substr($validated['jam_rawat'], 0, 5));
+        for ($sec = 0; $sec < 60; $sec++) {
+            $candidate = $base->copy()->second($sec)->format('H:i:s');
+            $exists = DB::table('pemeriksaan_ralan')
+                ->where('no_rawat', $validated['no_rawat'])
+                ->where('tgl_perawatan', $validated['tgl_perawatan'])
+                ->where('jam_rawat', $candidate)
+                ->exists();
+            if (! $exists) {
+                $validated['jam_rawat'] = $candidate;
+                break;
+            }
+        }
         DB::table('pemeriksaan_ralan')->insert($validated);
 
         // Update status reg_periksa.stts menjadi 'Sudah' setelah pemeriksaan tersimpan
@@ -688,12 +712,12 @@ class RawatJalanController extends Controller
             'key.jam_rawat' => 'required|date_format:H:i:s',
             // Updatable fields
             'suhu_tubuh' => 'nullable|string|max:5',
-            'tensi' => 'required|string|max:8',
+            'tensi' => 'nullable|string|max:8',
             'nadi' => 'nullable|string|max:3',
             'respirasi' => 'nullable|string|max:3',
             'tinggi' => 'nullable|string|max:5',
             'berat' => 'nullable|string|max:5',
-            'spo2' => 'required|string|max:3',
+            'spo2' => 'nullable|string|max:3',
             'gcs' => 'nullable|string|max:10',
             'kesadaran' => 'required|in:Compos Mentis,Somnolence,Sopor,Coma,Alert,Confusion,Voice,Pain,Unresponsive,Apatis,Delirium',
             'keluhan' => 'nullable|string|max:2000',
@@ -707,18 +731,21 @@ class RawatJalanController extends Controller
             'nip' => 'required|string|max:20',
         ]);
 
-        foreach (['rtl', 'penilaian', 'instruksi', 'evaluasi'] as $field) {
-            if (array_key_exists($field, $validated) && $validated[$field] === null) {
-                $validated[$field] = '';
-            }
-        }
-
         $key = $validated['key'];
         $data = $request->only(['suhu_tubuh', 'tensi', 'nadi', 'respirasi', 'tinggi', 'berat', 'spo2', 'gcs', 'kesadaran', 'keluhan', 'pemeriksaan', 'alergi', 'lingkar_perut', 'rtl', 'penilaian', 'instruksi', 'evaluasi', 'nip']);
 
-        foreach (['rtl', 'penilaian', 'instruksi', 'evaluasi'] as $field) {
+        $nullableUpdateFields = [
+            'suhu_tubuh','tensi','nadi','respirasi','tinggi','berat','spo2','gcs',
+            'keluhan','pemeriksaan','alergi','lingkar_perut','rtl','penilaian','instruksi','evaluasi',
+        ];
+        foreach ($nullableUpdateFields as $field) {
             if (array_key_exists($field, $data) && $data[$field] === null) {
                 $data[$field] = '';
+            }
+        }
+        foreach ($nullableUpdateFields as $field) {
+            if (array_key_exists($field, $data)) {
+                $data[$field] = trim((string) $data[$field]);
             }
         }
 
