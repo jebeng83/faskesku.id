@@ -352,28 +352,29 @@ Route::get('/antrian/poli', function () {
             ];
         }
 
-        $first = DB::table('reg_periksa')
+        $latest = DB::table('reg_periksa')
             ->whereDate('tgl_registrasi', $today)
-            ->where('stts', 'Belum')
-            ->orderBy('jam_reg')
+            ->where('stts', 'Sudah')
+            ->orderBy('jam_reg', 'desc')
             ->first();
-        if ($first) {
+        if ($latest) {
             $nm_pasien = null;
             if (Schema::hasTable('pasien')) {
-                $nm_pasien = DB::table('pasien')->where('no_rkm_medis', $first->no_rkm_medis)->value('nm_pasien');
+                $nm_pasien = DB::table('pasien')->where('no_rkm_medis', $latest->no_rkm_medis)->value('nm_pasien');
                 if (is_string($nm_pasien)) {
                     $nm_pasien = preg_replace('/[\x00-\x1F\x7F]/u', '', $nm_pasien);
                 }
             }
-            $nm_poli_h = $first->kd_poli;
+            $nm_poli_h = $latest->kd_poli;
             if (Schema::hasTable('poliklinik')) {
-                $nm_poli_h = DB::table('poliklinik')->where('kd_poli', $first->kd_poli)->value('nm_poli') ?: $first->kd_poli;
+                $nm_poli_h = DB::table('poliklinik')->where('kd_poli', $latest->kd_poli)->value('nm_poli') ?: $latest->kd_poli;
                 if (is_string($nm_poli_h)) {
                     $nm_poli_h = preg_replace('/[\x00-\x1F\x7F]/u', '', $nm_poli_h);
                 }
             }
             $highlight = [
-                'no_reg' => $first->no_reg,
+                'kd_poli' => $latest->kd_poli,
+                'no_reg' => $latest->no_reg,
                 'nm_poli' => $nm_poli_h,
                 'nm_pasien' => $nm_pasien,
             ];
@@ -386,6 +387,38 @@ Route::get('/antrian/poli', function () {
         'highlight' => $highlight,
     ]);
 })->name('antrian.poli');
+
+Route::get('/antrian/suara', function () {
+    $setting = null;
+    if (Schema::hasTable('setting')) {
+        $fields = [];
+        foreach (['logo', 'nama_instansi', 'alamat_instansi', 'kabupaten', 'propinsi', 'kontak', 'email', 'kode_ppk'] as $col) {
+            if (Schema::hasColumn('setting', $col)) {
+                $fields[] = $col;
+            }
+        }
+        if (! empty($fields)) {
+            $query = DB::table('setting')->select($fields);
+            if (Schema::hasColumn('setting', 'aktifkan')) {
+                $query->where('aktifkan', 'Yes');
+            }
+            $row = $query->orderBy('nama_instansi')->first();
+            if ($row) {
+                $setting = [];
+                foreach ($fields as $f) {
+                    $v = $row->{$f} ?? null;
+                    if (is_string($v)) {
+                        $v = preg_replace('/[\x00-\x1F\x7F]/u', '', $v);
+                    }
+                    $setting[$f] = $v;
+                }
+            }
+        }
+    }
+    return Inertia::render('Antrian/SuaraDisplay', [
+        'setting' => $setting,
+    ]);
+})->name('antrian.suara');
 
 // API routes that don't require authentication
 Route::get('/api/lab-tests', [PermintaanLabController::class, 'getLabTests'])->name('api.lab-tests');
@@ -450,28 +483,29 @@ Route::get('/api/antrian-poli', function () {
             ];
         }
 
-        $first = DB::table('reg_periksa')
+        $latest = DB::table('reg_periksa')
             ->whereDate('tgl_registrasi', $today)
-            ->where('stts', 'Belum')
-            ->orderBy('jam_reg')
+            ->where('stts', 'Sudah')
+            ->orderBy('jam_reg', 'desc')
             ->first();
-        if ($first) {
+        if ($latest) {
             $nm_pasien = null;
             if (Schema::hasTable('pasien')) {
-                $nm_pasien = DB::table('pasien')->where('no_rkm_medis', $first->no_rkm_medis)->value('nm_pasien');
+                $nm_pasien = DB::table('pasien')->where('no_rkm_medis', $latest->no_rkm_medis)->value('nm_pasien');
                 if (is_string($nm_pasien)) {
                     $nm_pasien = preg_replace('/[\x00-\x1F\x7F]/u', '', $nm_pasien);
                 }
             }
-            $nm_poli_h = $first->kd_poli;
+            $nm_poli_h = $latest->kd_poli;
             if (Schema::hasTable('poliklinik')) {
-                $nm_poli_h = DB::table('poliklinik')->where('kd_poli', $first->kd_poli)->value('nm_poli') ?: $first->kd_poli;
+                $nm_poli_h = DB::table('poliklinik')->where('kd_poli', $latest->kd_poli)->value('nm_poli') ?: $latest->kd_poli;
                 if (is_string($nm_poli_h)) {
                     $nm_poli_h = preg_replace('/[\x00-\x1F\x7F]/u', '', $nm_poli_h);
                 }
             }
             $highlight = [
-                'no_reg' => $first->no_reg,
+                'kd_poli' => $latest->kd_poli,
+                'no_reg' => $latest->no_reg,
                 'nm_poli' => $nm_poli_h,
                 'nm_pasien' => $nm_pasien,
             ];
@@ -490,6 +524,61 @@ Route::get('/api/antrian-poli', function () {
 Route::middleware('auth')->prefix('api')->group(function () {
     Route::get('/menu/search', [\App\Http\Controllers\API\MenuSearchController::class, 'search'])->name('api.menu.search');
     Route::get('/menu/popular', [\App\Http\Controllers\API\MenuSearchController::class, 'popular'])->name('api.menu.popular');
+
+    Route::post('/antrian-poli/call', function (\Illuminate\Http\Request $request) {
+        $noRawat = (string) $request->input('no_rawat');
+        $kdPoli = (string) $request->input('kd_poli');
+        $kdDokter = $request->input('kd_dokter');
+        $status = (string) ($request->input('status') ?: '1');
+        if (! $noRawat) {
+            return response()->json(['ok' => false, 'message' => 'no_rawat required'], 422);
+        }
+        if (! \Illuminate\Support\Facades\Schema::hasTable('antripoli')) {
+            return response()->json(['ok' => false, 'message' => 'tabel antripoli tidak tersedia'], 500);
+        }
+        $exists = \Illuminate\Support\Facades\DB::table('antripoli')->where('no_rawat', $noRawat)->first();
+        $payload = [
+            'kd_dokter' => $kdDokter,
+            'kd_poli' => $kdPoli,
+            'status' => in_array($status, ['0','1']) ? $status : '1',
+            'no_rawat' => $noRawat,
+        ];
+        if ($exists) {
+            \Illuminate\Support\Facades\DB::table('antripoli')->where('no_rawat', $noRawat)->update($payload);
+        } else {
+            \Illuminate\Support\Facades\DB::table('antripoli')->insert($payload);
+        }
+        if (\Illuminate\Support\Facades\Schema::hasTable('reg_periksa') && \Illuminate\Support\Facades\Schema::hasColumn('reg_periksa', 'stts')) {
+            \Illuminate\Support\Facades\DB::table('reg_periksa')->where('no_rawat', $noRawat)->update(['stts' => 'Sudah']);
+        }
+        return response()->json(['ok' => true, 'data' => $payload]);
+    })->name('api.antrian-poli.call');
+
+    Route::post('/antrian-poli/repeat', function (\Illuminate\Http\Request $request) {
+        $noRawat = (string) $request->input('no_rawat');
+        $kdPoli = (string) $request->input('kd_poli');
+        $kdDokter = $request->input('kd_dokter');
+        $status = (string) ($request->input('status') ?: '1');
+        if (! $noRawat) {
+            return response()->json(['ok' => false, 'message' => 'no_rawat required'], 422);
+        }
+        if (! \Illuminate\Support\Facades\Schema::hasTable('antripoli')) {
+            return response()->json(['ok' => false, 'message' => 'tabel antripoli tidak tersedia'], 500);
+        }
+        $exists = \Illuminate\Support\Facades\DB::table('antripoli')->where('no_rawat', $noRawat)->first();
+        $payload = [
+            'kd_dokter' => $kdDokter,
+            'kd_poli' => $kdPoli,
+            'status' => in_array($status, ['0','1']) ? $status : '1',
+            'no_rawat' => $noRawat,
+        ];
+        if ($exists) {
+            \Illuminate\Support\Facades\DB::table('antripoli')->where('no_rawat', $noRawat)->update($payload);
+        } else {
+            \Illuminate\Support\Facades\DB::table('antripoli')->insert($payload);
+        }
+        return response()->json(['ok' => true, 'data' => $payload]);
+    })->name('api.antrian-poli.repeat');
 });
 
 Route::middleware('auth')->group(function () {

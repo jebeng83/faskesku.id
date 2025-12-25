@@ -23,11 +23,11 @@ export default defineConfig(() => ({
 		chunkSizeWarningLimit: 1024,
 	},
     server: {
-        host: 'localhost',
+        host: '127.0.0.1',
         port: Number(process.env.VITE_PORT || process.env.PORT || 5177),
         strictPort: false,
         cors: true,
-        origin: process.env.VITE_DEV_ORIGIN || 'http://localhost:5177',
+        origin: process.env.VITE_DEV_ORIGIN || 'http://127.0.0.1:5177',
         headers: {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET,OPTIONS',
@@ -35,7 +35,7 @@ export default defineConfig(() => ({
         },
         // Do not hardcode HMR port; let Vite use the actual dev server port to avoid mismatches
         proxy: (() => {
-            const backendUrl = process.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000';
+            const backendUrl = process.env.VITE_BACKEND_URL || 'http://127.0.0.1:8080';
             return {
                 '/farmasi': {
                     target: backendUrl,

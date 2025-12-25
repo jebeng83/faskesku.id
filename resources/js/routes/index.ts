@@ -118,7 +118,7 @@ landing.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:496
+* @see routes/web.php:585
 * @route '/dashboard'
 */
 export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -132,7 +132,7 @@ dashboard.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:496
+* @see routes/web.php:585
 * @route '/dashboard'
 */
 dashboard.url = (options?: RouteQueryOptions) => {
@@ -140,7 +140,7 @@ dashboard.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:496
+* @see routes/web.php:585
 * @route '/dashboard'
 */
 dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -149,7 +149,7 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:496
+* @see routes/web.php:585
 * @route '/dashboard'
 */
 dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -158,7 +158,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:500
+* @see routes/web.php:589
 * @route '/docs/{section?}'
 */
 export const docs = (args?: { section?: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -172,7 +172,7 @@ docs.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:500
+* @see routes/web.php:589
 * @route '/docs/{section?}'
 */
 docs.url = (args?: { section?: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -202,7 +202,7 @@ docs.url = (args?: { section?: string | number } | [section: string | number ] |
 }
 
 /**
-* @see routes/web.php:500
+* @see routes/web.php:589
 * @route '/docs/{section?}'
 */
 docs.get = (args?: { section?: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -211,7 +211,7 @@ docs.get = (args?: { section?: string | number } | [section: string | number ] |
 })
 
 /**
-* @see routes/web.php:500
+* @see routes/web.php:589
 * @route '/docs/{section?}'
 */
 docs.head = (args?: { section?: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -105,6 +105,10 @@ Route::prefix('queue')->group(function () {
     Route::post('/cancel', [QueueController::class, 'cancel'])->name('api.queue.cancel');
 });
 
+// Poli voice mapping (public) - tidak membutuhkan CSRF stateful
+Route::get('/poli-voice-mapping', [\App\Http\Controllers\Antrian\PoliVoiceController::class, 'index'])->name('api.poli.voice.mapping.index');
+Route::post('/poli-voice-mapping', [\App\Http\Controllers\Antrian\PoliVoiceController::class, 'store'])->name('api.poli.voice.mapping.store');
+
 // Protected API endpoints (memerlukan authentication)
 // Menggunakan 'auth:sanctum' untuk Inertia.js SPA authentication
 // Sanctum akan otomatis menggunakan session-based auth untuk requests dari stateful domains
@@ -521,6 +525,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Poliklinik lookup (SearchableSelect) - ringan tanpa auth
     Route::get('/poliklinik', [PoliklinikController::class, 'apiIndex'])->name('api.poliklinik.index');
+
 
     // Akutansi - Nota Jalan & Jurnal
     // Akutansi: Cek & buat nota_jalan
