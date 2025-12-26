@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Head, Link } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import { motion, useReducedMotion } from "framer-motion";
@@ -10,6 +10,7 @@ import Diagnosa from "./components/Diagnosa";
 import PermintaanLab from "./components/PermintaanLab";
 import PermintaanRadiologi from "./components/PermintaanRadiologi";
 import TarifTindakan from "./components/TarifTindakan";
+import VitalSignsChart from "./components/VitalSignsChart";
 import { getAppTimeZone } from '@/tools/datetime';
 
 export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitDate }) {
@@ -47,6 +48,8 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     const [soapViewMode, setSoapViewMode] = useState('table');
     const [soapShowAll, setSoapShowAll] = useState(false);
     const [soapPage, setSoapPage] = useState(1);
+    const [vitalsChartOpen, setVitalsChartOpen] = useState(false);
+    const [vitalsChartDefaultVital, setVitalsChartDefaultVital] = useState('all');
 
     const toggle = (section) => {
         setOpenAcc((prev) => ({
@@ -84,6 +87,67 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
             return timeString;
         }
     };
+
+    const parseNumber = (value) => {
+        const raw = String(value ?? "").trim();
+        if (!raw || raw === "-" || raw.toLowerCase() === "n/a") return null;
+        const n = Number(raw.replace(",", "."));
+        return Number.isFinite(n) ? n : null;
+    };
+
+    const parseTensi = (value) => {
+        const raw = String(value ?? "").trim();
+        if (!raw || raw === "-" || raw.toLowerCase() === "n/a") return null;
+        const cleaned = raw.replace(/\s+/g, "");
+        const parts = cleaned.split("/");
+        if (parts.length < 2) return null;
+        const systole = Number(parts[0]);
+        const diastole = Number(parts[1]);
+        if (!Number.isFinite(systole) || !Number.isFinite(diastole)) return null;
+        return { systole, diastole };
+    };
+
+    const soapChartEntries = useMemo(() => {
+        const out = [];
+        const seen = new Set();
+        for (const h of soapModalItems || []) {
+            const noRawat = String(h?.no_rawat || "");
+            const entries = Array.isArray(h?.entries) ? h.entries : [];
+            for (const e of entries) {
+                const tgl = String(e?.tgl_perawatan || "").trim();
+                const jam = String(e?.jam_rawat || "").trim();
+                const key = `${noRawat}|${tgl}|${jam}`;
+                if (!tgl && !jam) continue;
+                if (seen.has(key)) continue;
+                seen.add(key);
+                out.push(e);
+            }
+        }
+        return out;
+    }, [soapModalItems]);
+
+    const soapChartHasSuhu = useMemo(() => {
+        return soapChartEntries.some((e) => parseNumber(e?.suhu_tubuh) !== null);
+    }, [soapChartEntries]);
+
+    const soapChartHasTensi = useMemo(() => {
+        return soapChartEntries.some((e) => parseTensi(e?.tensi) !== null);
+    }, [soapChartEntries]);
+
+    const openVitalsChart = (defaultVital) => {
+        setVitalsChartDefaultVital(defaultVital || "all");
+        setVitalsChartOpen(true);
+    };
+
+    const closeVitalsChart = () => {
+        setVitalsChartOpen(false);
+    };
+
+    useEffect(() => {
+        if (!soapModalOpen) {
+            setVitalsChartOpen(false);
+        }
+    }, [soapModalOpen]);
 
     const menuTabs = [
         {
@@ -850,19 +914,19 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                             ) : soapModalItems.length === 0 ? (
                                 <div className="text-xs text-gray-500">Tidak ada data</div>
                             ) : (
-                                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-4 md:p-6">
-                                    <div className="flex items-center justify-between mb-4 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-2 rounded">
-                                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                                    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-4 md:p-6">
+                                        <div className="flex items-center justify-between mb-4 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-2 rounded">
+                                            <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
                                             <svg className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                                             </svg>
-                                            Riwayat SOAP
-                                        </h4>
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                type="button"
-                                                onClick={() => openSoapHistoryModal(!soapShowAll)}
-                                                aria-pressed={soapShowAll}
+                                                Riwayat SOAP
+                                            </h4>
+                                            <div className="flex flex-wrap items-center justify-end gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => openSoapHistoryModal(!soapShowAll)}
+                                                    aria-pressed={soapShowAll}
                                                 className={`text-xs px-3 py-1 rounded border transition-colors ${
                                                     soapShowAll
                                                         ? 'bg-indigo-600 text-white border-indigo-600'
@@ -872,13 +936,51 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                             >
                                                 Semua record
                                             </button>
-                                            <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                                                {soapModalItems.length} record
-                                            </span>
-                                            <div className="flex items-center gap-1">
+                                                <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                                                    {soapModalItems.length} record
+                                                </span>
                                                 <button
                                                     type="button"
-                                                    onClick={() => setSoapViewMode('table')}
+                                                    onClick={() => openVitalsChart("suhu")}
+                                                    disabled={soapModalLoading || !soapChartHasSuhu}
+                                                    className={`px-2 py-1 text-[11px] rounded border transition-colors ${
+                                                        !soapModalLoading && soapChartHasSuhu
+                                                            ? "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
+                                                            : "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600"
+                                                    }`}
+                                                    title={
+                                                        soapModalLoading
+                                                            ? "Memuat data SOAP..."
+                                                            : soapChartHasSuhu
+                                                              ? "Grafik suhu dari pemeriksaan ralan"
+                                                              : "Tidak ada data suhu"
+                                                    }
+                                                >
+                                                    Grafik Suhu
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => openVitalsChart("tensi")}
+                                                    disabled={soapModalLoading || !soapChartHasTensi}
+                                                    className={`px-2 py-1 text-[11px] rounded border transition-colors ${
+                                                        !soapModalLoading && soapChartHasTensi
+                                                            ? "bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100"
+                                                            : "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600"
+                                                    }`}
+                                                    title={
+                                                        soapModalLoading
+                                                            ? "Memuat data SOAP..."
+                                                            : soapChartHasTensi
+                                                              ? "Grafik tensi (sistole/diastole) dari pemeriksaan ralan"
+                                                              : "Tidak ada data tensi"
+                                                    }
+                                                >
+                                                    Grafik Tensi
+                                                </button>
+                                                <div className="flex items-center gap-1">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSoapViewMode('table')}
                                                     className={`px-2 py-1 text-[11px] rounded border ${soapViewMode === 'table' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'}`}
                                                     title="Tampilan Tabel"
                                                 >
@@ -1311,6 +1413,45 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                             <button
                                 type="button"
                                 onClick={() => setSoapModalOpen(false)}
+                                className="text-[11px] bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded border border-gray-200 dark:border-gray-700"
+                            >
+                                Tutup
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {soapModalOpen && vitalsChartOpen && (
+                <div className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto">
+                    <div
+                        className="absolute inset-0 bg-black/50"
+                        onClick={closeVitalsChart}
+                    ></div>
+                    <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-full md:max-w-5xl lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[90vw] mx-2 sm:mx-4 my-4 sm:my-8 overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                            <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">
+                                {vitalsChartDefaultVital === "suhu"
+                                    ? "Grafik Suhu"
+                                    : vitalsChartDefaultVital === "tensi"
+                                      ? "Grafik Tensi"
+                                      : "Grafik Vital Signs"}
+                            </h3>
+                            <button
+                                onClick={closeVitalsChart}
+                                className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="p-3 sm:p-4">
+                            <VitalSignsChart data={soapChartEntries} defaultSelectedVital={vitalsChartDefaultVital} />
+                        </div>
+                        <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-end">
+                            <button
+                                type="button"
+                                onClick={closeVitalsChart}
                                 className="text-[11px] bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded border border-gray-200 dark:border-gray-700"
                             >
                                 Tutup

@@ -16,6 +16,185 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
     const [soapData, setSoapData] = useState({});
     const [loadingSoap, setLoadingSoap] = useState({});
     const [openSections, setOpenSections] = useState({}); // { [noRawat]: { obat:boolean, lab:boolean, rad:boolean } }
+    const [chartModal, setChartModal] = useState({ open: false, type: null, noRawat: null });
+
+    const parseNumber = (value) => {
+        const raw = String(value ?? '').trim();
+        if (!raw || raw === '-' || raw.toLowerCase() === 'n/a') return null;
+        const n = Number(raw.replace(',', '.'));
+        return Number.isFinite(n) ? n : null;
+    };
+
+    const parseTensi = (value) => {
+        const raw = String(value ?? '').trim();
+        if (!raw || raw === '-' || raw.toLowerCase() === 'n/a') return null;
+        const cleaned = raw.replace(/\s+/g, '');
+        const parts = cleaned.split('/');
+        if (parts.length < 2) return null;
+        const systole = Number(parts[0]);
+        const diastole = Number(parts[1]);
+        if (!Number.isFinite(systole) || !Number.isFinite(diastole)) return null;
+        return { systole, diastole };
+    };
+
+    const openChart = (type, noRawat) => {
+        setChartModal({ open: true, type, noRawat });
+    };
+
+    const closeChart = () => {
+        setChartModal({ open: false, type: null, noRawat: null });
+    };
+
+    const buildChartRows = (rows) => {
+        const seen = new Set();
+        const out = [];
+        for (const r of rows || []) {
+            const tgl = String(r?.tgl_perawatan || '').trim();
+            const jam = String(r?.jam_rawat || '').trim();
+            const key = `${tgl}|${jam}`;
+            if (!tgl && !jam) continue;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            out.push(r);
+        }
+        out.sort((a, b) => {
+            const at = `${String(a?.tgl_perawatan || '')} ${String(a?.jam_rawat || '')}`.trim();
+            const bt = `${String(b?.tgl_perawatan || '')} ${String(b?.jam_rawat || '')}`.trim();
+            return at < bt ? -1 : at > bt ? 1 : 0;
+        });
+        return out;
+    };
+
+    const formatChartLabel = (row) => {
+        const tgl = String(row?.tgl_perawatan || '').trim();
+        const jam = String(row?.jam_rawat || '').trim();
+        const jamShort = jam ? jam.substring(0, 5) : '';
+        if (!tgl) return jamShort || '-';
+        try {
+            const d = new Date(tgl);
+            const t = d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+            return `${t} ${jamShort}`.trim();
+        } catch (_) {
+            return `${tgl} ${jamShort}`.trim();
+        }
+    };
+
+    const LineChart = ({ title, labels, series, height = 260 }) => {
+        const width = 820;
+        const padL = 44;
+        const padR = 18;
+        const padT = 20;
+        const padB = 36;
+        const allValues = series.flatMap((s) => s.values).filter((v) => Number.isFinite(v));
+        if (allValues.length === 0) {
+            return (
+                <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
+                    <div className="text-sm font-semibold text-gray-900 dark:text-white">{title}</div>
+                    <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">Belum ada data yang bisa digrafikkan.</div>
+                </div>
+            );
+        }
+        let minY = Math.min(...allValues);
+        let maxY = Math.max(...allValues);
+        if (minY === maxY) {
+            minY -= 1;
+            maxY += 1;
+        } else {
+            const pad = (maxY - minY) * 0.08;
+            minY -= pad;
+            maxY += pad;
+        }
+
+        const n = Math.max(1, labels.length);
+        const xStep = n <= 1 ? 0 : (width - padL - padR) / (n - 1);
+        const xAt = (i) => padL + i * xStep;
+        const yAt = (v) => padT + ((maxY - v) / (maxY - minY)) * (height - padT - padB);
+
+        const buildPath = (values) => {
+            let d = '';
+            let started = false;
+            for (let i = 0; i < values.length; i++) {
+                const v = values[i];
+                if (!Number.isFinite(v)) {
+                    started = false;
+                    continue;
+                }
+                const x = xAt(i);
+                const y = yAt(v);
+                if (!started) {
+                    d += `M ${x} ${y}`;
+                    started = true;
+                } else {
+                    d += ` L ${x} ${y}`;
+                }
+            }
+            return d;
+        };
+
+        const gridLines = 4;
+        const ticks = Array.from({ length: gridLines + 1 }).map((_, i) => {
+            const t = i / gridLines;
+            const v = maxY - (maxY - minY) * t;
+            const y = padT + (height - padT - padB) * t;
+            return { v, y };
+        });
+
+        const xLabels = (() => {
+            if (labels.length <= 2) return labels.map((l, i) => ({ i, text: l }));
+            const mid = Math.floor((labels.length - 1) / 2);
+            return [
+                { i: 0, text: labels[0] },
+                { i: mid, text: labels[mid] },
+                { i: labels.length - 1, text: labels[labels.length - 1] },
+            ];
+        })();
+
+        return (
+            <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div className="text-sm font-semibold text-gray-900 dark:text-white">{title}</div>
+                    <div className="flex flex-wrap items-center gap-3">
+                        {series.map((s) => (
+                            <div key={s.id} className="flex items-center gap-2 text-[11px] text-gray-600 dark:text-gray-300">
+                                <span className="inline-block w-3 h-0.5 rounded" style={{ backgroundColor: s.color }} />
+                                <span>{s.label}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <div className="mt-3 overflow-x-auto">
+                    <svg viewBox={`0 0 ${width} ${height}`} className="min-w-[720px] w-full">
+                        <rect x="0" y="0" width={width} height={height} fill="transparent" />
+                        {ticks.map((t, idx) => (
+                            <g key={idx}>
+                                <line x1={padL} y1={t.y} x2={width - padR} y2={t.y} stroke="rgba(148,163,184,0.35)" strokeWidth="1" />
+                                <text x={padL - 8} y={t.y + 4} textAnchor="end" fontSize="10" fill="rgba(100,116,139,0.95)">
+                                    {Math.round(t.v * 10) / 10}
+                                </text>
+                            </g>
+                        ))}
+                        <line x1={padL} y1={height - padB} x2={width - padR} y2={height - padB} stroke="rgba(148,163,184,0.55)" strokeWidth="1" />
+                        {series.map((s) => (
+                            <g key={s.id}>
+                                <path d={buildPath(s.values)} fill="none" stroke={s.color} strokeWidth="2" />
+                                {s.values.map((v, i) => {
+                                    if (!Number.isFinite(v)) return null;
+                                    return (
+                                        <circle key={`${s.id}-${i}`} cx={xAt(i)} cy={yAt(v)} r="2.5" fill={s.color} stroke="white" strokeWidth="1" />
+                                    );
+                                })}
+                            </g>
+                        ))}
+                        {xLabels.map((xl) => (
+                            <text key={xl.i} x={xAt(xl.i)} y={height - 12} textAnchor="middle" fontSize="10" fill="rgba(100,116,139,0.95)">
+                                {xl.text}
+                            </text>
+                        ))}
+                    </svg>
+                </div>
+            </div>
+        );
+    };
 
     const fetchMedicationData = useCallback(async (noRawat) => {
         if (medicationData[noRawat]) {
@@ -429,6 +608,8 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
             const bb = String(b.jam_rawat || '').substring(0,5);
             return aa < bb ? 1 : aa > bb ? -1 : 0;
         });
+        const hasSuhu = sorted.some((e) => parseNumber(e?.suhu_tubuh) !== null);
+        const hasTensi = sorted.some((e) => parseTensi(e?.tensi) !== null);
         return (
             <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden w-full">
                 <div className="bg-gray-50 dark:bg-gray-700/50 px-3 py-2 flex items-center justify-between">
@@ -438,7 +619,35 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                         </svg>
                         <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">Riwayat SOAP</span>
                     </div>
-                    <span className="text-[11px] text-gray-600 dark:text-gray-300">{sorted.length} record</span>
+                    <div className="flex items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={() => openChart('suhu', noRawat)}
+                            disabled={!hasSuhu}
+                            className={`px-2 py-1 text-[11px] rounded border transition-colors ${
+                                hasSuhu
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                                    : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                            }`}
+                            title={hasSuhu ? 'Grafik suhu dari pemeriksaan ralan' : 'Tidak ada data suhu'}
+                        >
+                            Grafik Suhu
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => openChart('tensi', noRawat)}
+                            disabled={!hasTensi}
+                            className={`px-2 py-1 text-[11px] rounded border transition-colors ${
+                                hasTensi
+                                    ? 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'
+                                    : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                            }`}
+                            title={hasTensi ? 'Grafik tensi (sistole/diastole) dari pemeriksaan ralan' : 'Tidak ada data tensi'}
+                        >
+                            Grafik Tensi
+                        </button>
+                        <span className="text-[11px] text-gray-600 dark:text-gray-300">{sorted.length} record</span>
+                    </div>
                 </div>
                 <div className="overflow-x-auto overflow-y-auto max-h-[320px] w-full">
                     <table className="w-full text-xs table-fixed">
@@ -666,7 +875,55 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                                 id={`visit-${index}`}
                                 className={`px-3 pb-3 transition-all duration-200 ease-out ${isOpen ? 'block' : 'hidden'} bg-white dark:bg-gray-800`}
                             >
-                                {/* Info poli sudah tampil di header */}
+                                {(() => {
+                                    const rows = soapData[row.no_rawat] || [];
+                                    const isSoapLoading = loadingSoap[row.no_rawat];
+                                    const usable = Array.isArray(rows) ? rows : [];
+                                    const hasSuhu = usable.some((e) => parseNumber(e?.suhu_tubuh) !== null);
+                                    const hasTensi = usable.some((e) => parseTensi(e?.tensi) !== null);
+                                    return (
+                                        <div className="mb-2 flex flex-wrap items-center gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => openChart('suhu', row.no_rawat)}
+                                                disabled={isSoapLoading || !hasSuhu}
+                                                className={`px-2 py-1 text-[11px] rounded border transition-colors ${
+                                                    !isSoapLoading && hasSuhu
+                                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                                                        : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                                                }`}
+                                                title={
+                                                    isSoapLoading
+                                                        ? 'Memuat data SOAP...'
+                                                        : hasSuhu
+                                                          ? 'Grafik suhu dari pemeriksaan ralan'
+                                                          : 'Tidak ada data suhu'
+                                                }
+                                            >
+                                                Grafik Suhu
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => openChart('tensi', row.no_rawat)}
+                                                disabled={isSoapLoading || !hasTensi}
+                                                className={`px-2 py-1 text-[11px] rounded border transition-colors ${
+                                                    !isSoapLoading && hasTensi
+                                                        ? 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'
+                                                        : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                                                }`}
+                                                title={
+                                                    isSoapLoading
+                                                        ? 'Memuat data SOAP...'
+                                                        : hasTensi
+                                                          ? 'Grafik tensi (sistole/diastole) dari pemeriksaan ralan'
+                                                          : 'Tidak ada data tensi'
+                                                }
+                                            >
+                                                Grafik Tensi
+                                            </button>
+                                        </div>
+                                    );
+                                })()}
                                 {renderMedicationTable(row.no_rawat)}
                                 {renderLab(row.no_rawat)}
                                 {renderRadiologi(row.no_rawat)}
@@ -829,6 +1086,63 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                     ))}
                 </div>
             </div>
+
+            {chartModal?.open && (
+                <div className="fixed inset-0 z-50">
+                    <button type="button" className="absolute inset-0 bg-black/40" onClick={closeChart} />
+                    <div className="absolute inset-x-0 top-10 sm:top-16 mx-auto w-[calc(100%-2rem)] max-w-4xl">
+                        <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl overflow-hidden">
+                            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between gap-3">
+                                <div className="min-w-0">
+                                    <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                        {chartModal.type === 'tensi'
+                                            ? 'Grafik Tensi (Sistole/Diastole)'
+                                            : 'Grafik Suhu'}
+                                    </div>
+                                    <div className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
+                                        No. Rawat: {chartModal.noRawat || '-'}
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={closeChart}
+                                    className="px-3 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                >
+                                    Tutup
+                                </button>
+                            </div>
+                            <div className="p-4">
+                                {(() => {
+                                    const baseRows = buildChartRows(soapData[chartModal.noRawat] || []);
+                                    const labels = baseRows.map(formatChartLabel);
+                                    if (chartModal.type === 'tensi') {
+                                        const systole = baseRows.map((r) => parseTensi(r?.tensi)?.systole ?? null);
+                                        const diastole = baseRows.map((r) => parseTensi(r?.tensi)?.diastole ?? null);
+                                        return (
+                                            <LineChart
+                                                title="Tensi"
+                                                labels={labels}
+                                                series={[
+                                                    { id: 'sistole', label: 'Sistole', color: '#ef4444', values: systole },
+                                                    { id: 'diastole', label: 'Diastole', color: '#3b82f6', values: diastole },
+                                                ]}
+                                            />
+                                        );
+                                    }
+                                    const suhu = baseRows.map((r) => parseNumber(r?.suhu_tubuh));
+                                    return (
+                                        <LineChart
+                                            title="Suhu Tubuh"
+                                            labels={labels}
+                                            series={[{ id: 'suhu', label: 'Suhu (°C)', color: '#10b981', values: suhu }]}
+                                        />
+                                    );
+                                })()}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
