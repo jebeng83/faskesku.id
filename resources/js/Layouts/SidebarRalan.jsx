@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { Link, usePage, router } from '@inertiajs/react';
+import { useState, useMemo, useEffect } from 'react';
+import { Link, usePage } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { Stethoscope, Hospital, Gauge, HeartPulse, ChevronDown, ChevronRight, Receipt } from 'lucide-react';
 import MobileBottomNav from "@/Components/MobileBottomNav";
@@ -30,15 +30,15 @@ export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
       if (savedCollapsed !== null) setIsSidebarCollapsed(savedCollapsed === 'true');
       const savedOpen = localStorage.getItem('ralanSidebarOpen');
       if (savedOpen !== null) setIsSidebarOpen(savedOpen === 'true');
-    } catch (_) {}
+    } catch (_) { }
   }, []);
 
   // Persist sidebar states
   useEffect(() => {
-    try { localStorage.setItem('ralanSidebarCollapsed', String(isSidebarCollapsed)); } catch (_) {}
+    try { localStorage.setItem('ralanSidebarCollapsed', String(isSidebarCollapsed)); } catch (_) { }
   }, [isSidebarCollapsed]);
   useEffect(() => {
-    try { localStorage.setItem('ralanSidebarOpen', String(isSidebarOpen)); } catch (_) {}
+    try { localStorage.setItem('ralanSidebarOpen', String(isSidebarOpen)); } catch (_) { }
   }, [isSidebarOpen]);
 
   // Close profile dropdown saat klik di luar
@@ -73,6 +73,16 @@ export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
           icon: <Hospital className="w-4 h-4" />,
         },
         {
+          label: 'Data Surat Sehat',
+          href: route('rawat-jalan.surat-sehat.index'),
+          icon: <Receipt className="w-4 h-4" />,
+        },
+        {
+          label: 'Data Surat Sakit',
+          href: route('rawat-jalan.surat-sakit.index'),
+          icon: <Receipt className="w-4 h-4" />,
+        },
+        {
           label: 'Satu Sehat',
           href: route('satusehat.interoperabilitas.rajal.encounter'),
           icon: <HeartPulse className="w-4 h-4" />,
@@ -94,9 +104,8 @@ export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
     <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-full bg-gradient-to-b from-blue-600 via-blue-700 to-blue-800 dark:from-blue-900 dark:via-blue-950 dark:to-black shadow-2xl border-r border-blue-500/20 dark:border-blue-800 z-40 transition-all duration-300 ${
-          isSidebarOpen ? 'w-64 translate-x-0' : isSidebarCollapsed ? 'w-16 -translate-x-full lg:translate-x-0' : 'w-64 -translate-x-full lg:translate-x-0'
-        }`}
+        className={`fixed top-0 left-0 h-full bg-gradient-to-b from-blue-600 via-blue-700 to-blue-800 dark:from-blue-900 dark:via-blue-950 dark:to-black shadow-2xl border-r border-blue-500/20 dark:border-blue-800 z-40 transition-all duration-300 ${isSidebarOpen ? 'w-64 translate-x-0' : isSidebarCollapsed ? 'w-16 -translate-x-full lg:translate-x-0' : 'w-64 -translate-x-full lg:translate-x-0'
+          }`}
       >
         {/* Sidebar Header */}
         <div className="h-14 flex items-center px-3 gap-2 text-white">
@@ -110,11 +119,10 @@ export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
               {!item.children ? (
                 <Link
                   href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                    isActive(item.href)
+                  className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${isActive(item.href)
                       ? 'bg-white/20 text-white'
                       : 'hover:bg-white/10'
-                  }`}
+                    }`}
                 >
                   <span className="text-white/90">{item.icon}</span>
                   {!isSidebarCollapsed && <span className="text-sm font-medium">{item.label}</span>}
@@ -140,11 +148,10 @@ export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
                         <Link
                           key={cIdx}
                           href={child.href}
-                          className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                            isActive(child.href)
+                          className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${isActive(child.href)
                               ? 'bg-white/20 text-white'
                               : 'hover:bg-white/10'
-                          }`}
+                            }`}
                         >
                           <span className="text-white/90">{child.icon}</span>
                           {!isSidebarCollapsed && <span className="text-sm">{child.label}</span>}
@@ -166,9 +173,8 @@ export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
 
       {/* Top Navigation Bar - Fixed Header */}
       <header
-        className={`fixed top-0 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50 flex-shrink-0 transition-all duration-300 ${
-          isSidebarOpen ? 'left-64 right-0' : isSidebarCollapsed ? 'left-0 right-0 lg:left-16' : 'left-0 right-0 lg:left-64'
-        }`}
+        className={`fixed top-0 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50 flex-shrink-0 transition-all duration-300 ${isSidebarOpen ? 'left-64 right-0' : isSidebarCollapsed ? 'left-0 right-0 lg:left-16' : 'left-0 right-0 lg:left-64'
+          }`}
       >
         <div className="h-full flex items-center justify-between px-4">
           {/* Left side - Toggle + Breadcrumb */}

@@ -18,8 +18,12 @@ import {
 } from "lucide-react";
 
 function buildShortcuts(permissionNames) {
-    const hasPermission = (permission) =>
-        !permission || permissionNames.includes(permission);
+    const hasPermission = (permission) => {
+        if (!permission) return true;
+        if (Array.isArray(permission))
+            return permission.some((p) => permissionNames.includes(p));
+        return permissionNames.includes(permission);
+    };
 
     const safeRoute = (name, params = {}) => {
         try {
@@ -35,7 +39,12 @@ function buildShortcuts(permissionNames) {
             label: "Register",
             href: safeRoute("registration.lanjutan"),
             icon: <UserPlus className="w-5 h-5" />,
-            requiredPermission: "group.registrasi.access",
+            requiredPermission: [
+                "group.registrasi.access",
+                "registration.view",
+                "reg-periksa.view",
+                "reg-periksa.index",
+            ],
         },
         {
             key: "bridging",
@@ -245,4 +254,3 @@ export default function MobileBottomNav() {
         </>
     );
 }
-

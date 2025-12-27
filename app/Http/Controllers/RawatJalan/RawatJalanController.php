@@ -11,10 +11,60 @@ use App\Models\RawatJalan\RawatJalan;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 
 class RawatJalanController extends Controller
 {
+    private function kopSuratSetting(): ?object
+    {
+        if (! Schema::hasTable('setting')) {
+            return null;
+        }
+
+        $select = [];
+        $columns = [
+            'nama_instansi',
+            'alamat_instansi',
+            'kabupaten',
+            'propinsi',
+            'kontak',
+            'email',
+            'aktifkan',
+            'logo',
+        ];
+
+        foreach ($columns as $col) {
+            if (Schema::hasColumn('setting', $col)) {
+                $select[] = $col;
+            }
+        }
+
+        if (Schema::hasColumn('setting', 'provinsi') && ! Schema::hasColumn('setting', 'propinsi')) {
+            $select[] = DB::raw('provinsi as propinsi');
+        }
+
+        if (count($select) === 0) {
+            return null;
+        }
+
+        $baseQuery = DB::table('setting')->select($select);
+
+        $setting = null;
+        if (Schema::hasColumn('setting', 'aktifkan')) {
+            $setting = (clone $baseQuery)->where('aktifkan', 'Yes')->first();
+        }
+        if (! $setting) {
+            $setting = $baseQuery->first();
+        }
+
+        if ($setting && isset($setting->logo) && $setting->logo) {
+            $setting->logo = base64_encode($setting->logo);
+        }
+
+        return $setting;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -607,11 +657,11 @@ class RawatJalanController extends Controller
         ]);
 
         $nullableFields = [
-            'suhu_tubuh','tensi','nadi','respirasi','tinggi','berat','spo2','gcs',
-            'keluhan','pemeriksaan','alergi','lingkar_perut','rtl','penilaian','instruksi','evaluasi',
+            'suhu_tubuh', 'tensi', 'nadi', 'respirasi', 'tinggi', 'berat', 'spo2', 'gcs',
+            'keluhan', 'pemeriksaan', 'alergi', 'lingkar_perut', 'rtl', 'penilaian', 'instruksi', 'evaluasi',
         ];
         foreach ($nullableFields as $field) {
-            if (!array_key_exists($field, $validated) || $validated[$field] === null) {
+            if (! array_key_exists($field, $validated) || $validated[$field] === null) {
                 $validated[$field] = '';
             }
         }
@@ -735,8 +785,8 @@ class RawatJalanController extends Controller
         $data = $request->only(['suhu_tubuh', 'tensi', 'nadi', 'respirasi', 'tinggi', 'berat', 'spo2', 'gcs', 'kesadaran', 'keluhan', 'pemeriksaan', 'alergi', 'lingkar_perut', 'rtl', 'penilaian', 'instruksi', 'evaluasi', 'nip']);
 
         $nullableUpdateFields = [
-            'suhu_tubuh','tensi','nadi','respirasi','tinggi','berat','spo2','gcs',
-            'keluhan','pemeriksaan','alergi','lingkar_perut','rtl','penilaian','instruksi','evaluasi',
+            'suhu_tubuh', 'tensi', 'nadi', 'respirasi', 'tinggi', 'berat', 'spo2', 'gcs',
+            'keluhan', 'pemeriksaan', 'alergi', 'lingkar_perut', 'rtl', 'penilaian', 'instruksi', 'evaluasi',
         ];
         foreach ($nullableUpdateFields as $field) {
             if (array_key_exists($field, $data) && $data[$field] === null) {
@@ -1171,10 +1221,146 @@ class RawatJalanController extends Controller
             $dokter->nm_dokter = '';
         }
 
-        return Inertia::render('RawatJalan/components/SuratSehat', [
-            'rawatJalan' => $rawatJalan,
-            'patient' => $patient,
-            'dokter' => $dokter,
+        $setting = $this->kopSuratSetting();
+
+        // Cek apakah ada data surat sehat sebelumnya untuk no_rawat ini
+    $existing = \Illuminate\Support\Facades\DB::table('surat_keterangan_sehat')
+        ->where('no_rawat', $noRawat)
+        ->first();
+
+    return Inertia::render('RawatJalan/components/SuratSehat', [
+        'rawatJalan' => $rawatJalan,
+        'patient' => $patient,
+        'dokter' => $dokter,
+        'setting' => $setting,
+        'suratSehatData' => $existing, // Data surat sehat yang sudah ada (jika ada)
+    ]);
+    }
+
+    public function indexSuratSehat(Request $request)
+    {
+        $search = trim((string) $request->input('search', ''));
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        $tanggal = $request->input('tanggal');
+
+        // Set default tanggal ke hari ini jika tidak ada filter
+        if (! $startDate && ! $endDate && ! $tanggal) {
+            $tanggal = date('Y-m-d');
+        }
+
+        $query = DB::table('surat_keterangan_sehat')
+            ->leftJoin('reg_periksa', 'surat_keterangan_sehat.no_rawat', '=', 'reg_periksa.no_rawat')
+            ->leftJoin('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+            ->select([
+                'surat_keterangan_sehat.no_surat',
+                'surat_keterangan_sehat.no_rawat',
+                'surat_keterangan_sehat.tanggalsurat',
+                'surat_keterangan_sehat.keperluan',
+                'surat_keterangan_sehat.kesimpulan',
+                'surat_keterangan_sehat.berat',
+                'surat_keterangan_sehat.tinggi',
+                'surat_keterangan_sehat.tensi',
+                'surat_keterangan_sehat.suhu',
+                'surat_keterangan_sehat.butawarna',
+                'pasien.nm_pasien',
+                'pasien.no_rkm_medis',
+            ]);
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('surat_keterangan_sehat.no_surat', 'like', "%{$search}%")
+                    ->orWhere('surat_keterangan_sehat.no_rawat', 'like', "%{$search}%")
+                    ->orWhere('surat_keterangan_sehat.keperluan', 'like', "%{$search}%")
+                    ->orWhere('surat_keterangan_sehat.kesimpulan', 'like', "%{$search}%")
+                    ->orWhere('pasien.nm_pasien', 'like', "%{$search}%")
+                    ->orWhere('pasien.no_rkm_medis', 'like', "%{$search}%");
+            });
+        }
+
+        if ($startDate || $endDate) {
+            if ($startDate && $endDate) {
+                $query->whereBetween('surat_keterangan_sehat.tanggalsurat', [$startDate, $endDate]);
+            } elseif ($startDate) {
+                $query->whereDate('surat_keterangan_sehat.tanggalsurat', '>=', $startDate);
+            } elseif ($endDate) {
+                $query->whereDate('surat_keterangan_sehat.tanggalsurat', '<=', $endDate);
+            }
+        } elseif ($tanggal) {
+            $query->whereDate('surat_keterangan_sehat.tanggalsurat', $tanggal);
+        }
+
+        $suratSehat = $query
+            ->orderByDesc('surat_keterangan_sehat.tanggalsurat')
+            ->orderByDesc('surat_keterangan_sehat.no_surat')
+            ->paginate(15)
+            ->withQueryString();
+
+        return Inertia::render('RawatJalan/components/SuratSehatList', [
+            'suratSehat' => $suratSehat,
+            'filters' => [
+                'search' => $search,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'tanggal' => $tanggal,
+            ],
+        ]);
+    }
+
+    public function checkSuratSehatDuplicate(Request $request)
+    {
+        $validated = $request->validate([
+            'no_rawat' => 'required|string|max:17',
+            'tanggalsurat' => 'required|date',
+            'no_surat' => 'nullable|string|max:17',
+        ]);
+
+        $noRkmMedis = DB::table('reg_periksa')
+            ->where('no_rawat', $validated['no_rawat'])
+            ->value('no_rkm_medis');
+
+        if (! $noRkmMedis) {
+            return response()->json([
+                'exists' => false,
+                'no_rkm_medis' => null,
+                'existing' => null,
+                'message' => null,
+            ]);
+        }
+
+        $query = DB::table('surat_keterangan_sehat')
+            ->join('reg_periksa', 'surat_keterangan_sehat.no_rawat', '=', 'reg_periksa.no_rawat')
+            ->whereDate('surat_keterangan_sehat.tanggalsurat', $validated['tanggalsurat'])
+            ->where('reg_periksa.no_rkm_medis', $noRkmMedis);
+
+        if (! empty($validated['no_surat'])) {
+            $query->where('surat_keterangan_sehat.no_surat', '<>', $validated['no_surat']);
+        }
+
+        $existing = $query
+            ->orderByDesc('surat_keterangan_sehat.tanggalsurat')
+            ->orderByDesc('surat_keterangan_sehat.no_surat')
+            ->first(['surat_keterangan_sehat.no_surat', 'surat_keterangan_sehat.tanggalsurat']);
+
+        if (! $existing) {
+            return response()->json([
+                'exists' => false,
+                'no_rkm_medis' => $noRkmMedis,
+                'existing' => null,
+                'message' => null,
+            ]);
+        }
+
+        $message = "Tidak bisa simpan. Surat sehat untuk No. RM {$noRkmMedis} pada tanggal {$existing->tanggalsurat} sudah ada (No Surat: {$existing->no_surat}).";
+
+        return response()->json([
+            'exists' => true,
+            'no_rkm_medis' => $noRkmMedis,
+            'existing' => [
+                'no_surat' => $existing->no_surat,
+                'tanggalsurat' => $existing->tanggalsurat,
+            ],
+            'message' => $message,
         ]);
     }
 
@@ -1183,7 +1369,7 @@ class RawatJalanController extends Controller
      */
     public function storeSuratSehat(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'no_surat' => 'required|string|max:17',
             'no_rawat' => 'required|string|max:17',
             'tanggalsurat' => 'required|date',
@@ -1196,8 +1382,37 @@ class RawatJalanController extends Controller
             'kesimpulan' => 'required|in:Sehat,Tidak Sehat',
         ]);
 
-        // TODO: Insert data ke tabel surat_keterangan_sehat
-        // DB::table('surat_keterangan_sehat')->insert($request->all());
+        $noRkmMedis = DB::table('reg_periksa')
+            ->where('no_rawat', $validated['no_rawat'])
+            ->value('no_rkm_medis');
+
+        if (! $noRkmMedis) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'no_rawat' => 'No. Rawat tidak ditemukan.',
+            ]);
+        }
+
+        $existing = DB::table('surat_keterangan_sehat')
+            ->join('reg_periksa', 'surat_keterangan_sehat.no_rawat', '=', 'reg_periksa.no_rawat')
+            ->whereDate('surat_keterangan_sehat.tanggalsurat', $validated['tanggalsurat'])
+            ->where('reg_periksa.no_rkm_medis', $noRkmMedis)
+            ->where('surat_keterangan_sehat.no_surat', '<>', $validated['no_surat'])
+            ->orderByDesc('surat_keterangan_sehat.tanggalsurat')
+            ->orderByDesc('surat_keterangan_sehat.no_surat')
+            ->first(['surat_keterangan_sehat.no_surat', 'surat_keterangan_sehat.tanggalsurat']);
+
+        if ($existing) {
+            $message = "Tidak bisa simpan. Surat sehat untuk No. RM {$noRkmMedis} pada tanggal {$existing->tanggalsurat} sudah ada (No Surat: {$existing->no_surat}).";
+
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'tanggalsurat' => $message,
+            ]);
+        }
+
+        DB::table('surat_keterangan_sehat')->updateOrInsert(
+            ['no_surat' => $validated['no_surat']],
+            $validated
+        );
 
         return redirect()->route('rawat-jalan.index')
             ->with('success', 'Surat sehat berhasil dibuat dan disimpan.');
@@ -1222,10 +1437,66 @@ class RawatJalanController extends Controller
             $dokter->nm_dokter = '';
         }
 
+        $setting = $this->kopSuratSetting();
+
         return Inertia::render('RawatJalan/components/SuratSakit', [
             'rawatJalan' => $rawatJalan,
             'patient' => $patient,
             'dokter' => $dokter,
+            'setting' => $setting,
+        ]);
+    }
+
+    public function indexSuratSakit(Request $request)
+    {
+        $search = trim((string) $request->input('search', ''));
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        $tanggal = $request->input('tanggal');
+
+        $query = DB::table('suratsakit')
+            ->select([
+                'no_surat',
+                'no_rawat',
+                'tanggalawal',
+                'tanggalakhir',
+                'lamasakit',
+            ]);
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('no_surat', 'like', "%{$search}%")
+                    ->orWhere('no_rawat', 'like', "%{$search}%")
+                    ->orWhere('lamasakit', 'like', "%{$search}%");
+            });
+        }
+
+        if ($startDate || $endDate) {
+            if ($startDate && $endDate) {
+                $query->whereBetween('tanggalawal', [$startDate, $endDate]);
+            } elseif ($startDate) {
+                $query->whereDate('tanggalawal', '>=', $startDate);
+            } elseif ($endDate) {
+                $query->whereDate('tanggalawal', '<=', $endDate);
+            }
+        } elseif ($tanggal) {
+            $query->whereDate('tanggalawal', $tanggal);
+        }
+
+        $suratSakit = $query
+            ->orderByDesc('tanggalawal')
+            ->orderByDesc('no_surat')
+            ->paginate(15)
+            ->withQueryString();
+
+        return Inertia::render('RawatJalan/components/SuratSakitList', [
+            'suratSakit' => $suratSakit,
+            'filters' => [
+                'search' => $search,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'tanggal' => $tanggal,
+            ],
         ]);
     }
 
@@ -1234,24 +1505,63 @@ class RawatJalanController extends Controller
      */
     public function storeSuratSakit(Request $request)
     {
-        $request->validate([
-            'no_surat' => 'required|string|max:17',
-            'no_rawat' => 'required|string|max:17',
-            'tanggalawal' => 'required|date',
-            'tanggalakhir' => 'required|date|after:tanggalawal',
-            'lamasakit' => 'required|string|max:20',
-            'nama2' => 'required|string|max:50',
-            'tgl_lahir' => 'required|date',
-            'umur' => 'required|string|max:20',
-            'jk' => 'required|in:Laki-laki,Perempuan',
-            'alamat' => 'required|string|max:200',
-            'hubungan' => 'required|in:Suami,Istri,Anak,Ayah,Saudara,Keponakan',
-            'pekerjaan' => 'required|in:Karyawan Swasta,PNS,Wiraswasta,Pelajar,Mahasiswa,Buruh,Lain-lain',
-            'instansi' => 'required|string|max:50',
-        ]);
+        $isPihakKedua = $request->boolean('is_pihak_kedua');
 
-        // TODO: Insert data ke tabel suratsakitpihak2
-        // DB::table('suratsakitpihak2')->insert($request->all());
+        if ($isPihakKedua) {
+            $validated = $request->validate([
+                'no_surat' => 'required|string|max:20',
+                'no_rawat' => 'required|string|max:17',
+                'tanggalawal' => 'required|date',
+                'tanggalakhir' => 'required|date|after_or_equal:tanggalawal',
+                'lamasakit' => 'required|string|max:20',
+                'nama2' => 'required|string|max:50',
+                'tgl_lahir' => 'required|date',
+                'umur' => 'required|string|max:20',
+                'jk' => 'required|in:Laki-laki,Perempuan',
+                'alamat' => 'required|string|max:200',
+                'hubungan' => 'required|in:Suami,Istri,Anak,Ayah,Saudara,Keponakan',
+                'pekerjaan' => 'required|in:Karyawan Swasta,PNS,Wiraswasta,Pelajar,Mahasiswa,Buruh,Lain-lain',
+                'instansi' => 'required|string|max:50',
+            ]);
+
+            DB::table('suratsakitpihak2')->updateOrInsert(
+                ['no_surat' => $validated['no_surat']],
+                [
+                    'no_surat' => $validated['no_surat'],
+                    'no_rawat' => $validated['no_rawat'],
+                    'tanggalawal' => $validated['tanggalawal'],
+                    'tanggalakhir' => $validated['tanggalakhir'],
+                    'lamasakit' => $validated['lamasakit'],
+                    'nama2' => $validated['nama2'],
+                    'tgl_lahir' => $validated['tgl_lahir'],
+                    'umur' => $validated['umur'],
+                    'jk' => $validated['jk'],
+                    'alamat' => $validated['alamat'],
+                    'hubungan' => $validated['hubungan'],
+                    'pekerjaan' => $validated['pekerjaan'],
+                    'instansi' => $validated['instansi'],
+                ]
+            );
+        } else {
+            $validated = $request->validate([
+                'no_surat' => 'required|string|max:17',
+                'no_rawat' => 'required|string|max:17',
+                'tanggalawal' => 'required|date',
+                'tanggalakhir' => 'required|date|after_or_equal:tanggalawal',
+                'lamasakit' => 'required|string|max:20',
+            ]);
+
+            DB::table('suratsakit')->updateOrInsert(
+                ['no_surat' => $validated['no_surat']],
+                [
+                    'no_surat' => $validated['no_surat'],
+                    'no_rawat' => $validated['no_rawat'],
+                    'tanggalawal' => $validated['tanggalawal'],
+                    'tanggalakhir' => $validated['tanggalakhir'],
+                    'lamasakit' => $validated['lamasakit'],
+                ]
+            );
+        }
 
         return redirect()->route('rawat-jalan.index')
             ->with('success', 'Surat sakit berhasil dibuat dan disimpan.');

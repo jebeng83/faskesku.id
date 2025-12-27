@@ -1,7 +1,51 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1450
+* @route '/rawat-jalan/surat-sakit'
+*/
+export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index.url(options),
+    method: 'get',
+})
+
+index.definition = {
+    methods: ["get","head"],
+    url: '/rawat-jalan/surat-sakit',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1450
+* @route '/rawat-jalan/surat-sakit'
+*/
+index.url = (options?: RouteQueryOptions) => {
+    return index.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1450
+* @route '/rawat-jalan/surat-sakit'
+*/
+index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1450
+* @route '/rawat-jalan/surat-sakit'
+*/
+index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: index.url(options),
+    method: 'head',
+})
+
+/**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1235
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1506
 * @route '/rawat-jalan/surat-sakit'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +60,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1235
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1506
 * @route '/rawat-jalan/surat-sakit'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -25,7 +69,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1235
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1506
 * @route '/rawat-jalan/surat-sakit'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

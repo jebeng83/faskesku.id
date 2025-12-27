@@ -5,6 +5,7 @@ import {
     XAxis,
     YAxis,
     CartesianGrid,
+    ReferenceArea,
     Tooltip,
     Legend,
     ResponsiveContainer,
@@ -15,9 +16,52 @@ import {
     Cell
 } from 'recharts';
 
-const VitalSignsChart = ({ data = [] }) => {
+const VitalSignsChart = ({ data = [], defaultSelectedVital = 'all' }) => {
     const [activeChart, setActiveChart] = useState('trend');
-    const [selectedVital, setSelectedVital] = useState('all');
+    const [selectedVital, setSelectedVital] = useState(defaultSelectedVital || 'all');
+
+    const vitalRanges = useMemo(
+        () => ({
+            suhu: { low: 36.1, high: 37.2 },
+            sistolik: { low: 90, high: 140 },
+            diastolik: { low: 60, high: 90 },
+            nadi: { low: 60, high: 100 },
+            respirasi: { low: 12, high: 20 },
+            spo2: { low: 95, high: 100 },
+        }),
+        []
+    );
+
+    const normalBands = useMemo(() => {
+        if (selectedVital === 'all') return [];
+        if (selectedVital === 'tensi') {
+            return [
+                {
+                    key: 'sistolik',
+                    ...vitalRanges.sistolik,
+                    fill: '#dcfce7',
+                    fillOpacity: 0.35,
+                },
+                {
+                    key: 'diastolik',
+                    ...vitalRanges.diastolik,
+                    fill: '#cffafe',
+                    fillOpacity: 0.28,
+                },
+            ];
+        }
+
+        const range = vitalRanges[selectedVital];
+        if (!range) return [];
+        return [
+            {
+                key: selectedVital,
+                ...range,
+                fill: '#dcfce7',
+                fillOpacity: 0.35,
+            },
+        ];
+    }, [selectedVital, vitalRanges]);
 
     // Process data for charts
     const chartData = useMemo(() => {
@@ -63,17 +107,8 @@ const VitalSignsChart = ({ data = [] }) => {
     // Vital signs ranges for color coding
     const getVitalStatus = (vital, value) => {
         if (!value) return 'normal';
-        
-        const ranges = {
-            suhu: { low: 36.1, high: 37.2 },
-            sistolik: { low: 90, high: 140 },
-            diastolik: { low: 60, high: 90 },
-            nadi: { low: 60, high: 100 },
-            respirasi: { low: 12, high: 20 },
-            spo2: { low: 95, high: 100 }
-        };
 
-        const range = ranges[vital];
+        const range = vitalRanges[vital];
         if (!range) return 'normal';
 
         if (value < range.low) return 'low';
@@ -183,6 +218,16 @@ const VitalSignsChart = ({ data = [] }) => {
                             >
                                 Semua
                             </button>
+                            <button
+                                onClick={() => setSelectedVital('tensi')}
+                                className={`px-3 py-1 text-sm rounded-full transition-colors ${
+                                    selectedVital === 'tensi'
+                                        ? 'bg-indigo-600 text-white'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                                }`}
+                            >
+                                Tensi
+                            </button>
                             {Object.entries(colors).map(([vital, color]) => (
                                 <button
                                     key={vital}
@@ -205,8 +250,23 @@ const VitalSignsChart = ({ data = [] }) => {
                         </div>
 
                         {/* Line Chart */}
-                        <div className="h-80">
-                            <ResponsiveContainer width="100%" height="100%">
+                        <div className="relative h-80 rounded-xl overflow-hidden border border-gray-200/70 dark:border-gray-700/70 bg-gradient-to-br from-indigo-50 via-white to-emerald-50 dark:from-indigo-950/35 dark:via-gray-900/15 dark:to-emerald-950/25">
+                            <div
+                                className="absolute inset-0 pointer-events-none opacity-35"
+                                style={{
+                                    backgroundImage:
+                                        "repeating-linear-gradient(135deg, rgba(99, 102, 241, 0.35) 0, rgba(99, 102, 241, 0.35) 1px, transparent 1px, transparent 12px)",
+                                }}
+                            />
+                            <div
+                                className="absolute inset-0 pointer-events-none opacity-20"
+                                style={{
+                                    backgroundImage:
+                                        "repeating-linear-gradient(45deg, rgba(16, 185, 129, 0.35) 0, rgba(16, 185, 129, 0.35) 1px, transparent 1px, transparent 16px)",
+                                }}
+                            />
+                            <div className="relative h-full">
+                                <ResponsiveContainer width="100%" height="100%">
                                 <LineChart data={chartData}>
                                     <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                                     <XAxis 
@@ -217,6 +277,16 @@ const VitalSignsChart = ({ data = [] }) => {
                                         height={60}
                                     />
                                     <YAxis tick={{ fontSize: 12 }} />
+                                    {normalBands.map((band) => (
+                                        <ReferenceArea
+                                            key={band.key}
+                                            y1={band.low}
+                                            y2={band.high}
+                                            fill={band.fill}
+                                            fillOpacity={band.fillOpacity}
+                                            strokeOpacity={0}
+                                        />
+                                    ))}
                                     <Tooltip content={<CustomTooltip />} />
                                     <Legend />
                                     
@@ -231,7 +301,7 @@ const VitalSignsChart = ({ data = [] }) => {
                                             connectNulls={false}
                                         />
                                     )}
-                                    {(selectedVital === 'all' || selectedVital === 'sistolik') && (
+                                    {(selectedVital === 'all' || selectedVital === 'sistolik' || selectedVital === 'tensi') && (
                                         <Line
                                             type="monotone"
                                             dataKey="sistolik"
@@ -242,7 +312,7 @@ const VitalSignsChart = ({ data = [] }) => {
                                             connectNulls={false}
                                         />
                                     )}
-                                    {(selectedVital === 'all' || selectedVital === 'diastolik') && (
+                                    {(selectedVital === 'all' || selectedVital === 'diastolik' || selectedVital === 'tensi') && (
                                         <Line
                                             type="monotone"
                                             dataKey="diastolik"
@@ -288,6 +358,7 @@ const VitalSignsChart = ({ data = [] }) => {
                                     )}
                                 </LineChart>
                             </ResponsiveContainer>
+                            </div>
                         </div>
                     </div>
                 )}
