@@ -66,7 +66,7 @@ class PatientController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'no_rkm_medis' => 'nullable|string|max:15|unique:pasien,no_rkm_medis',
+            'no_rkm_medis' => 'nullable|string|max:15',
             'nm_pasien' => 'required|string|max:40',
             'no_ktp' => 'required|string|max:20|unique:pasien,no_ktp',
             'jk' => 'required|in:L,P',
@@ -202,10 +202,6 @@ class PatientController extends Controller
             }
         }
 
-        // Generate nomor RM otomatis jika tidak diisi
-        if (empty($data['no_rkm_medis'])) {
-            $data['no_rkm_medis'] = Patient::generateNoRM();
-        }
         $data['tgl_daftar'] = now()->toDateString();
         $data['umur'] = Patient::calculateAgeFromDate($data['tgl_lahir']);
 
@@ -226,13 +222,52 @@ class PatientController extends Controller
         $data['email'] = $data['email'] ?? '-';
         $data['nip'] = $data['nip'] ?? '-';
 
-        // Ensure kd_pj references an existing penjab (validated above)
+        // Retry mechanism for duplicate No. RM
+        $maxRetries = 3;
+        $attempt = 0;
+        $saved = false;
+        $patient = null;
+        $originalNoRM = $data['no_rkm_medis'] ?? null;
+        $finalNoRM = null;
 
-        $patient = Patient::create($data);
+        while ($attempt < $maxRetries && !$saved) {
+            try {
+                // If No RM is empty or already exists, generate a new one
+                if (empty($data['no_rkm_medis']) || Patient::where('no_rkm_medis', $data['no_rkm_medis'])->exists()) {
+                    $data['no_rkm_medis'] = Patient::generateNoRM();
+                }
+                
+                $finalNoRM = $data['no_rkm_medis'];
+                $patient = Patient::create($data);
+                $saved = true;
+
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Check if it's a duplicate entry error (error code 1062 for MySQL)
+                if ($e->errorInfo[1] == 1062) {
+                    $attempt++;
+                    $data['no_rkm_medis'] = null; // Force regeneration in next loop
+                    
+                    if ($attempt >= $maxRetries) {
+                        throw $e; // Give up after max retries
+                    }
+                } else {
+                    throw $e; // Throw other errors
+                }
+            }
+        }
+
+        $successMessage = 'Data pasien berhasil ditambahkan.';
+        if ($originalNoRM && $originalNoRM !== $finalNoRM) {
+             if ($originalNoRM) {
+                $successMessage .= " Nomor Rekam Medis diperbarui menjadi {$finalNoRM} karena nomor sebelumnya ({$originalNoRM}) sudah digunakan.";
+             } else {
+                $successMessage .= " Nomor Rekam Medis: {$finalNoRM}.";
+             }
+        }
 
         // Always respond with a redirect for Inertia requests to avoid plain JSON overlay
         return redirect()->back()->with([
-            'success' => 'Data pasien berhasil ditambahkan.',
+            'success' => $successMessage,
             'new_patient' => $patient
         ]);
     }

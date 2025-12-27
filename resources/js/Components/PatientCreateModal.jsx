@@ -191,7 +191,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                     }
                     const next = "I" + String(max + 1).padStart(4, "0");
                     perusahaanPasienForm.setData("kode_perusahaan", next);
-                } catch {}
+                } catch { }
             };
             try {
                 const res = await axios.get("/api/perusahaan-pasien/next-code");
@@ -298,7 +298,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                     no_tlp: peserta.noHP || prev.no_tlp,
                     gol_darah:
                         peserta.golDarah &&
-                        ["A", "B", "O", "AB"].includes(peserta.golDarah)
+                            ["A", "B", "O", "AB"].includes(peserta.golDarah)
                             ? peserta.golDarah
                             : prev.gol_darah,
                 }));
@@ -310,7 +310,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
             console.error("Error checking BPJS by NIK:", error);
             alert(
                 "Gagal cek BPJS: " +
-                    (error.response?.data?.metaData?.message || error.message)
+                (error.response?.data?.metaData?.message || error.message)
             );
         }
     };
@@ -339,7 +339,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                     no_tlp: peserta.noHP || prev.no_tlp,
                     gol_darah:
                         peserta.golDarah &&
-                        ["A", "B", "O", "AB"].includes(peserta.golDarah)
+                            ["A", "B", "O", "AB"].includes(peserta.golDarah)
                             ? peserta.golDarah
                             : prev.gol_darah,
                 }));
@@ -351,7 +351,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
             console.error("Error checking BPJS by No Kartu:", error);
             alert(
                 "Gagal cek BPJS: " +
-                    (error.response?.data?.metaData?.message || error.message)
+                (error.response?.data?.metaData?.message || error.message)
             );
         }
     };
@@ -388,7 +388,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                 }))
                             );
                         }
-                    } catch (_) {}
+                    } catch (_) { }
                 })();
             },
         });
@@ -426,7 +426,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                 }))
                             );
                         }
-                    } catch (_) {}
+                    } catch (_) { }
                 })();
             },
         });
@@ -464,7 +464,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                 }))
                             );
                         }
-                    } catch (_) {}
+                    } catch (_) { }
                 })();
             },
         });
@@ -502,7 +502,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                 }))
                             );
                         }
-                    } catch (_) {}
+                    } catch (_) { }
                 })();
             },
         });
@@ -546,7 +546,14 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
         post(route("patients.store"), {
             onSuccess: (page) => {
                 console.log("Success response:", page);
-                const newPatient = page.props.flash?.new_patient;
+                const flash = page.props.flash || {};
+                const newPatient = flash.new_patient;
+
+                // Show notification if the No. RM was updated automatically
+                if (flash.success && flash.success.includes('diperbarui menjadi')) {
+                    alert(flash.success);
+                }
+
                 if (onSuccess) {
                     onSuccess(newPatient);
                 }
@@ -693,12 +700,12 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                 {getErrorMessage(
                                                     "no_rkm_medis"
                                                 ) && (
-                                                    <p className="mt-1 text-xs text-red-600">
-                                                        {getErrorMessage(
-                                                            "no_rkm_medis"
-                                                        )}
-                                                    </p>
-                                                )}
+                                                        <p className="mt-1 text-xs text-red-600">
+                                                            {getErrorMessage(
+                                                                "no_rkm_medis"
+                                                            )}
+                                                        </p>
+                                                    )}
                                             </div>
 
                                             <div>
@@ -721,12 +728,12 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                 {getErrorMessage(
                                                     "nm_pasien"
                                                 ) && (
-                                                    <p className="mt-1 text-xs text-red-600">
-                                                        {getErrorMessage(
-                                                            "nm_pasien"
-                                                        )}
-                                                    </p>
-                                                )}
+                                                        <p className="mt-1 text-xs text-red-600">
+                                                            {getErrorMessage(
+                                                                "nm_pasien"
+                                                            )}
+                                                        </p>
+                                                    )}
                                             </div>
 
                                             <div>
@@ -760,18 +767,17 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                             maxLength="16"
                                                         />
                                                         <div
-                                                            className={`absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-medium ${
-                                                                data.no_ktp
+                                                            className={`absolute inset-y-0 right-0 flex items-center pr-3 text-xs font-medium ${data.no_ktp
                                                                     .length ===
-                                                                16
+                                                                    16
                                                                     ? "text-green-600 dark:text-green-400"
                                                                     : data
-                                                                          .no_ktp
-                                                                          .length >
-                                                                      0
-                                                                    ? "text-yellow-600 dark:text-yellow-400"
-                                                                    : "text-gray-400 dark:text-gray-500"
-                                                            }`}
+                                                                        .no_ktp
+                                                                        .length >
+                                                                        0
+                                                                        ? "text-yellow-600 dark:text-yellow-400"
+                                                                        : "text-gray-400 dark:text-gray-500"
+                                                                }`}
                                                         >
                                                             {
                                                                 data.no_ktp
@@ -830,12 +836,12 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                 {getErrorMessage(
                                                     "no_peserta"
                                                 ) && (
-                                                    <p className="mt-1 text-xs text-red-600">
-                                                        {getErrorMessage(
-                                                            "no_peserta"
-                                                        )}
-                                                    </p>
-                                                )}
+                                                        <p className="mt-1 text-xs text-red-600">
+                                                            {getErrorMessage(
+                                                                "no_peserta"
+                                                            )}
+                                                        </p>
+                                                    )}
                                             </div>
 
                                             <SelectWithAdd
@@ -905,12 +911,12 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                 {getErrorMessage(
                                                     "tmp_lahir"
                                                 ) && (
-                                                    <p className="mt-1 text-xs text-red-600">
-                                                        {getErrorMessage(
-                                                            "tmp_lahir"
-                                                        )}
-                                                    </p>
-                                                )}
+                                                        <p className="mt-1 text-xs text-red-600">
+                                                            {getErrorMessage(
+                                                                "tmp_lahir"
+                                                            )}
+                                                        </p>
+                                                    )}
                                             </div>
 
                                             <div>
@@ -932,12 +938,12 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                 {getErrorMessage(
                                                     "tgl_lahir"
                                                 ) && (
-                                                    <p className="mt-1 text-xs text-red-600">
-                                                        {getErrorMessage(
-                                                            "tgl_lahir"
-                                                        )}
-                                                    </p>
-                                                )}
+                                                        <p className="mt-1 text-xs text-red-600">
+                                                            {getErrorMessage(
+                                                                "tgl_lahir"
+                                                            )}
+                                                        </p>
+                                                    )}
                                             </div>
                                         </div>
                                     </motion.div>
@@ -1121,12 +1127,12 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                     {getErrorMessage(
                                                         "bahasa_pasien"
                                                     ) && (
-                                                        <p className="mt-1 text-xs text-red-600">
-                                                            {getErrorMessage(
-                                                                "bahasa_pasien"
-                                                            )}
-                                                        </p>
-                                                    )}
+                                                            <p className="mt-1 text-xs text-red-600">
+                                                                {getErrorMessage(
+                                                                    "bahasa_pasien"
+                                                                )}
+                                                            </p>
+                                                        )}
                                                 </div>
 
                                                 {/* Suku Bangsa */}
@@ -1169,12 +1175,12 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                     {getErrorMessage(
                                                         "suku_bangsa"
                                                     ) && (
-                                                        <p className="mt-1 text-xs text-red-600">
-                                                            {getErrorMessage(
-                                                                "suku_bangsa"
-                                                            )}
-                                                        </p>
-                                                    )}
+                                                            <p className="mt-1 text-xs text-red-600">
+                                                                {getErrorMessage(
+                                                                    "suku_bangsa"
+                                                                )}
+                                                            </p>
+                                                        )}
                                                 </div>
 
                                                 {/* Perusahaan Pasien */}
@@ -1221,12 +1227,12 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                     {getErrorMessage(
                                                         "perusahaan_pasien"
                                                     ) && (
-                                                        <p className="mt-1 text-xs text-red-600">
-                                                            {getErrorMessage(
-                                                                "perusahaan_pasien"
-                                                            )}
-                                                        </p>
-                                                    )}
+                                                            <p className="mt-1 text-xs text-red-600">
+                                                                {getErrorMessage(
+                                                                    "perusahaan_pasien"
+                                                                )}
+                                                            </p>
+                                                        )}
                                                 </div>
 
                                                 {/* Cacat Fisik */}
@@ -1269,12 +1275,12 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                     {getErrorMessage(
                                                         "cacat_fisik"
                                                     ) && (
-                                                        <p className="mt-1 text-xs text-red-600">
-                                                            {getErrorMessage(
-                                                                "cacat_fisik"
-                                                            )}
-                                                        </p>
-                                                    )}
+                                                            <p className="mt-1 text-xs text-red-600">
+                                                                {getErrorMessage(
+                                                                    "cacat_fisik"
+                                                                )}
+                                                            </p>
+                                                        )}
                                                 </div>
 
                                                 {/* Golongan Darah */}
@@ -1312,12 +1318,12 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                     {getErrorMessage(
                                                         "gol_darah"
                                                     ) && (
-                                                        <p className="mt-1 text-xs text-red-600">
-                                                            {getErrorMessage(
-                                                                "gol_darah"
-                                                            )}
-                                                        </p>
-                                                    )}
+                                                            <p className="mt-1 text-xs text-red-600">
+                                                                {getErrorMessage(
+                                                                    "gol_darah"
+                                                                )}
+                                                            </p>
+                                                        )}
                                                 </div>
 
                                                 {/* Pekerjaan */}
@@ -1402,41 +1408,41 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                     </select>
                                                     {pekerjaanOption ===
                                                         "LAINNYA" && (
-                                                        <div className="mt-2">
-                                                            <input
-                                                                type="text"
-                                                                name="pekerjaan"
-                                                                value={
-                                                                    pekerjaanOther
-                                                                }
-                                                                onChange={(
-                                                                    e
-                                                                ) => {
-                                                                    const v =
-                                                                        e.target
-                                                                            .value;
-                                                                    setPekerjaanOther(
-                                                                        v
-                                                                    );
-                                                                    setData(
-                                                                        "pekerjaan",
-                                                                        v
-                                                                    );
-                                                                }}
-                                                                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                                placeholder="Tuliskan pekerjaan"
-                                                            />
-                                                        </div>
-                                                    )}
+                                                            <div className="mt-2">
+                                                                <input
+                                                                    type="text"
+                                                                    name="pekerjaan"
+                                                                    value={
+                                                                        pekerjaanOther
+                                                                    }
+                                                                    onChange={(
+                                                                        e
+                                                                    ) => {
+                                                                        const v =
+                                                                            e.target
+                                                                                .value;
+                                                                        setPekerjaanOther(
+                                                                            v
+                                                                        );
+                                                                        setData(
+                                                                            "pekerjaan",
+                                                                            v
+                                                                        );
+                                                                    }}
+                                                                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                                    placeholder="Tuliskan pekerjaan"
+                                                                />
+                                                            </div>
+                                                        )}
                                                     {getErrorMessage(
                                                         "pekerjaan"
                                                     ) && (
-                                                        <p className="mt-1 text-xs text-red-600">
-                                                            {getErrorMessage(
-                                                                "pekerjaan"
-                                                            )}
-                                                        </p>
-                                                    )}
+                                                            <p className="mt-1 text-xs text-red-600">
+                                                                {getErrorMessage(
+                                                                    "pekerjaan"
+                                                                )}
+                                                            </p>
+                                                        )}
                                                 </div>
 
                                                 {/* Status Pernikahan */}
@@ -1479,12 +1485,12 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                     {getErrorMessage(
                                                         "stts_nikah"
                                                     ) && (
-                                                        <p className="mt-1 text-xs text-red-600">
-                                                            {getErrorMessage(
-                                                                "stts_nikah"
-                                                            )}
-                                                        </p>
-                                                    )}
+                                                            <p className="mt-1 text-xs text-red-600">
+                                                                {getErrorMessage(
+                                                                    "stts_nikah"
+                                                                )}
+                                                            </p>
+                                                        )}
                                                 </div>
 
                                                 {/* Agama */}
@@ -1528,12 +1534,12 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                     {getErrorMessage(
                                                         "agama"
                                                     ) && (
-                                                        <p className="mt-1 text-xs text-red-600">
-                                                            {getErrorMessage(
-                                                                "agama"
-                                                            )}
-                                                        </p>
-                                                    )}
+                                                            <p className="mt-1 text-xs text-red-600">
+                                                                {getErrorMessage(
+                                                                    "agama"
+                                                                )}
+                                                            </p>
+                                                        )}
                                                 </div>
                                             </div>
                                         </div>
@@ -1602,12 +1608,12 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                 {getErrorMessage(
                                                     "namakeluarga"
                                                 ) && (
-                                                    <p className="mt-1 text-xs text-red-600">
-                                                        {getErrorMessage(
-                                                            "namakeluarga"
-                                                        )}
-                                                    </p>
-                                                )}
+                                                        <p className="mt-1 text-xs text-red-600">
+                                                            {getErrorMessage(
+                                                                "namakeluarga"
+                                                            )}
+                                                        </p>
+                                                    )}
                                             </div>
 
                                             <div>
@@ -1653,12 +1659,12 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                 {getErrorMessage(
                                                     "keluarga"
                                                 ) && (
-                                                    <p className="mt-1 text-xs text-red-600">
-                                                        {getErrorMessage(
-                                                            "keluarga"
-                                                        )}
-                                                    </p>
-                                                )}
+                                                        <p className="mt-1 text-xs text-red-600">
+                                                            {getErrorMessage(
+                                                                "keluarga"
+                                                            )}
+                                                        </p>
+                                                    )}
                                             </div>
 
                                             {/* Pekerjaan Penanggung Jawab */}
@@ -1682,12 +1688,12 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                 {getErrorMessage(
                                                     "pekerjaanpj"
                                                 ) && (
-                                                    <p className="mt-1 text-xs text-red-600">
-                                                        {getErrorMessage(
-                                                            "pekerjaanpj"
-                                                        )}
-                                                    </p>
-                                                )}
+                                                        <p className="mt-1 text-xs text-red-600">
+                                                            {getErrorMessage(
+                                                                "pekerjaanpj"
+                                                            )}
+                                                        </p>
+                                                    )}
                                             </div>
 
 
@@ -1714,12 +1720,12 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                 {getErrorMessage(
                                                     "alamatpj"
                                                 ) && (
-                                                    <p className="mt-1 text-xs text-red-600">
-                                                        {getErrorMessage(
-                                                            "alamatpj"
-                                                        )}
-                                                    </p>
-                                                )}
+                                                        <p className="mt-1 text-xs text-red-600">
+                                                            {getErrorMessage(
+                                                                "alamatpj"
+                                                            )}
+                                                        </p>
+                                                    )}
                                             </div>
                                         </div>
                                     </motion.div>
@@ -1996,13 +2002,13 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                     />
                                     {perusahaanPasienForm.errors
                                         .kode_perusahaan && (
-                                        <p className="mt-1 text-xs text-red-600">
-                                            {
-                                                perusahaanPasienForm.errors
-                                                    .kode_perusahaan
-                                            }
-                                        </p>
-                                    )}
+                                            <p className="mt-1 text-xs text-red-600">
+                                                {
+                                                    perusahaanPasienForm.errors
+                                                        .kode_perusahaan
+                                                }
+                                            </p>
+                                        )}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -2025,13 +2031,13 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                     />
                                     {perusahaanPasienForm.errors
                                         .nama_perusahaan && (
-                                        <p className="mt-1 text-xs text-red-600">
-                                            {
-                                                perusahaanPasienForm.errors
-                                                    .nama_perusahaan
-                                            }
-                                        </p>
-                                    )}
+                                            <p className="mt-1 text-xs text-red-600">
+                                                {
+                                                    perusahaanPasienForm.errors
+                                                        .nama_perusahaan
+                                                }
+                                            </p>
+                                        )}
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     <div>

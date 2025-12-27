@@ -224,14 +224,29 @@ class Patient extends Model
     // Generate nomor RM otomatis
     public static function generateNoRM()
     {
-        $lastPatient = self::orderBy('no_rkm_medis', 'desc')->first();
-        if ($lastPatient) {
-            $lastNumber = (int) substr($lastPatient->no_rkm_medis, -6);
+        // Urutkan secara numerik untuk mendapatkan angka terbesar yang sebenarnya
+        $lastPatient = self::select('no_rkm_medis')
+            ->whereRaw("no_rkm_medis REGEXP '^[0-9]+$'") // Prioritaskan angka murni
+            ->orderByRaw('CAST(no_rkm_medis AS UNSIGNED) DESC')
+            ->first();
+
+        // Jika tidak ada angka murni, coba cari yang campuran tapi ambil angka terbesar
+        if (!$lastPatient) {
+             $lastPatient = self::select('no_rkm_medis')
+                ->orderByRaw('CAST(REGEXP_REPLACE(no_rkm_medis, "[^0-9]+", "") AS UNSIGNED) DESC')
+                ->first();
+        }
+
+        if ($lastPatient && $lastPatient->no_rkm_medis) {
+            // Ambil hanya angka dari string
+            $numberStr = preg_replace('/[^0-9]/', '', $lastPatient->no_rkm_medis);
+            $lastNumber = (int) $numberStr;
             $newNumber = $lastNumber + 1;
         } else {
             $newNumber = 1;
         }
 
+        // Pad dengan 0 di depan, minimal 6 digit
         return str_pad($newNumber, 6, '0', STR_PAD_LEFT);
     }
 
