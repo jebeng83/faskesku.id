@@ -1446,7 +1446,26 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                             </button>
                         </div>
                         <div className="p-3 sm:p-4">
-                            <VitalSignsChart data={soapChartEntries} defaultSelectedVital={vitalsChartDefaultVital} />
+                            <div className="relative overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+                                <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-emerald-50 dark:from-indigo-950/35 dark:via-gray-900/15 dark:to-emerald-950/25" />
+                                <div
+                                    className="absolute inset-0 pointer-events-none opacity-35"
+                                    style={{
+                                        backgroundImage:
+                                            "repeating-linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0, rgba(99, 102, 241, 0.25) 1px, transparent 1px, transparent 14px)",
+                                    }}
+                                />
+                                <div
+                                    className="absolute inset-0 pointer-events-none opacity-20"
+                                    style={{
+                                        backgroundImage:
+                                            "repeating-linear-gradient(45deg, rgba(16, 185, 129, 0.22) 0, rgba(16, 185, 129, 0.22) 1px, transparent 1px, transparent 18px)",
+                                    }}
+                                />
+                                <div className="relative p-2 sm:p-3">
+                                    <VitalSignsChart data={soapChartEntries} defaultSelectedVital={vitalsChartDefaultVital} />
+                                </div>
+                            </div>
                         </div>
                         <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-end">
                             <button

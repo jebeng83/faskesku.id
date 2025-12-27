@@ -26,6 +26,7 @@ class PembelianScenarioTest extends TestCase
         DB::statement('CREATE TABLE IF NOT EXISTS gudangbarang (kode_brng TEXT, kd_bangsal TEXT, stok REAL, no_batch TEXT, no_faktur TEXT)');
         DB::statement('CREATE TABLE IF NOT EXISTS data_batch (kode_brng TEXT, no_batch TEXT, no_faktur TEXT, h_beli REAL, tgl_kadaluarsa TEXT, sisa REAL)');
         DB::statement('CREATE TABLE IF NOT EXISTS riwayat_barang_medis (kode_brng TEXT, stok_awal REAL, masuk REAL, keluar REAL, stok_akhir REAL, posisi TEXT, tanggal TEXT, jam TEXT, petugas TEXT, kd_bangsal TEXT, status TEXT, no_batch TEXT, no_faktur TEXT, keterangan TEXT)');
+        DB::statement('CREATE TABLE IF NOT EXISTS riwayat_transaksi_gudangbarang (id INTEGER PRIMARY KEY AUTOINCREMENT, kode_brng TEXT, kd_bangsal TEXT, no_batch TEXT, no_faktur TEXT, jenis_transaksi TEXT, stok_sebelum REAL, stok_sesudah REAL, selisih REAL, keterangan TEXT, user_id TEXT, sumber_transaksi TEXT, data_sebelum TEXT, data_sesudah TEXT, waktu_transaksi TEXT, created_at TEXT, updated_at TEXT)');
         DB::statement('CREATE TABLE IF NOT EXISTS pembelian (no_faktur TEXT PRIMARY KEY, kode_suplier TEXT, nip TEXT, tgl_beli TEXT, total1 REAL, potongan REAL, total2 REAL, ppn REAL, tagihan REAL, kd_bangsal TEXT, kd_rek TEXT)');
         DB::statement('CREATE TABLE IF NOT EXISTS detailbeli (no_faktur TEXT, kode_brng TEXT, jumlah REAL, h_beli REAL, subtotal REAL, dis REAL, besardis REAL, total REAL, no_batch TEXT, jumlah2 REAL, kadaluarsa TEXT)');
         DB::statement('CREATE TABLE IF NOT EXISTS databarang (kode_brng TEXT PRIMARY KEY, nama_brng TEXT, kode_sat TEXT, kode_satbesar TEXT, dasar REAL, h_beli REAL, ralan REAL, kelas1 REAL, kelas2 REAL, kelas3 REAL, utama REAL, vip REAL, vvip REAL, beliluar REAL, jualbebas REAL, karyawan REAL, isi REAL, kapasitas REAL, status TEXT, letak_barang TEXT)');
@@ -110,4 +111,3 @@ class PembelianScenarioTest extends TestCase
         $this->assertSame(350.0, $sumDebet);
     }
 }
-

@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { Link, usePage, router } from '@inertiajs/react';
+import { useState, useMemo, useEffect } from 'react';
+import { Link, usePage } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { Stethoscope, Hospital, Gauge, HeartPulse, ChevronDown, ChevronRight, Receipt } from 'lucide-react';
 import MobileBottomNav from "@/Components/MobileBottomNav";
@@ -71,6 +71,16 @@ export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
           label: 'Rawat Jalan',
           href: route('rawat-jalan.index'),
           icon: <Hospital className="w-4 h-4" />,
+        },
+        {
+          label: 'Surat Sehat',
+          href: route('rawat-jalan.surat-sehat.index'),
+          icon: <Receipt className="w-4 h-4" />,
+        },
+        {
+          label: 'Surat Sakit',
+          href: route('rawat-jalan.surat-sakit.index'),
+          icon: <Receipt className="w-4 h-4" />,
         },
         {
           label: 'Satu Sehat',
