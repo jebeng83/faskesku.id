@@ -1505,32 +1505,63 @@ class RawatJalanController extends Controller
      */
     public function storeSuratSakit(Request $request)
     {
-        $validated = $request->validate([
-            'no_surat' => 'required|string|max:17',
-            'no_rawat' => 'required|string|max:17',
-            'tanggalawal' => 'required|date',
-            'tanggalakhir' => 'required|date|after:tanggalawal',
-            'lamasakit' => 'required|string|max:20',
-            'nama2' => 'required|string|max:50',
-            'tgl_lahir' => 'required|date',
-            'umur' => 'required|string|max:20',
-            'jk' => 'required|in:Laki-laki,Perempuan',
-            'alamat' => 'required|string|max:200',
-            'hubungan' => 'required|in:Suami,Istri,Anak,Ayah,Saudara,Keponakan',
-            'pekerjaan' => 'required|in:Karyawan Swasta,PNS,Wiraswasta,Pelajar,Mahasiswa,Buruh,Lain-lain',
-            'instansi' => 'required|string|max:50',
-        ]);
+        $isPihakKedua = $request->boolean('is_pihak_kedua');
 
-        DB::table('suratsakit')->updateOrInsert(
-            ['no_surat' => $validated['no_surat']],
-            [
-                'no_surat' => $validated['no_surat'],
-                'no_rawat' => $validated['no_rawat'],
-                'tanggalawal' => $validated['tanggalawal'],
-                'tanggalakhir' => $validated['tanggalakhir'],
-                'lamasakit' => $validated['lamasakit'],
-            ]
-        );
+        if ($isPihakKedua) {
+            $validated = $request->validate([
+                'no_surat' => 'required|string|max:20',
+                'no_rawat' => 'required|string|max:17',
+                'tanggalawal' => 'required|date',
+                'tanggalakhir' => 'required|date|after_or_equal:tanggalawal',
+                'lamasakit' => 'required|string|max:20',
+                'nama2' => 'required|string|max:50',
+                'tgl_lahir' => 'required|date',
+                'umur' => 'required|string|max:20',
+                'jk' => 'required|in:Laki-laki,Perempuan',
+                'alamat' => 'required|string|max:200',
+                'hubungan' => 'required|in:Suami,Istri,Anak,Ayah,Saudara,Keponakan',
+                'pekerjaan' => 'required|in:Karyawan Swasta,PNS,Wiraswasta,Pelajar,Mahasiswa,Buruh,Lain-lain',
+                'instansi' => 'required|string|max:50',
+            ]);
+
+            DB::table('suratsakitpihak2')->updateOrInsert(
+                ['no_surat' => $validated['no_surat']],
+                [
+                    'no_surat' => $validated['no_surat'],
+                    'no_rawat' => $validated['no_rawat'],
+                    'tanggalawal' => $validated['tanggalawal'],
+                    'tanggalakhir' => $validated['tanggalakhir'],
+                    'lamasakit' => $validated['lamasakit'],
+                    'nama2' => $validated['nama2'],
+                    'tgl_lahir' => $validated['tgl_lahir'],
+                    'umur' => $validated['umur'],
+                    'jk' => $validated['jk'],
+                    'alamat' => $validated['alamat'],
+                    'hubungan' => $validated['hubungan'],
+                    'pekerjaan' => $validated['pekerjaan'],
+                    'instansi' => $validated['instansi'],
+                ]
+            );
+        } else {
+            $validated = $request->validate([
+                'no_surat' => 'required|string|max:17',
+                'no_rawat' => 'required|string|max:17',
+                'tanggalawal' => 'required|date',
+                'tanggalakhir' => 'required|date|after_or_equal:tanggalawal',
+                'lamasakit' => 'required|string|max:20',
+            ]);
+
+            DB::table('suratsakit')->updateOrInsert(
+                ['no_surat' => $validated['no_surat']],
+                [
+                    'no_surat' => $validated['no_surat'],
+                    'no_rawat' => $validated['no_rawat'],
+                    'tanggalawal' => $validated['tanggalawal'],
+                    'tanggalakhir' => $validated['tanggalakhir'],
+                    'lamasakit' => $validated['lamasakit'],
+                ]
+            );
+        }
 
         return redirect()->route('rawat-jalan.index')
             ->with('success', 'Surat sakit berhasil dibuat dan disimpan.');

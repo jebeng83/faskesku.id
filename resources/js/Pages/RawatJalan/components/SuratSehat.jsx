@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Head, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import SidebarRalan from '@/Layouts/SidebarRalan';
@@ -20,10 +20,10 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
     });
 
     const [isLoading, setIsLoading] = useState(false);
-    const [qrDataUrl, setQrDataUrl] = useState('');
     const [submitError, setSubmitError] = useState('');
     const [duplicateWarning, setDuplicateWarning] = useState('');
     const [duplicateExists, setDuplicateExists] = useState(false);
+    const [ttdQrDataUrl, setTtdQrDataUrl] = useState('');
 
     useEffect(() => {
         if (formData.no_surat) return;
@@ -160,18 +160,19 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
         });
     };
 
-    const calculateAge = (birthDate) => {
-        if (!birthDate) return '';
-        const today = new Date();
-        const birth = new Date(birthDate);
-        let age = today.getFullYear() - birth.getFullYear();
-        const monthDiff = today.getMonth() - birth.getMonth();
-
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-            age--;
+    const formatShortDate = (date) => {
+        if (!date) return '-';
+        try {
+            const iso = typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date) ? `${date}T00:00:00` : date;
+            const d = new Date(iso);
+            if (Number.isNaN(d.getTime())) return String(date);
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            return `${day}-${month}-${year}`;
+        } catch {
+            return String(date);
         }
-
-        return age;
     };
 
     const safeText = (value) => {
@@ -179,22 +180,28 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
         return v === '' ? '-' : v;
     };
 
-    const qrText = `FASKESKU|SURAT_SEHAT|${safeText(formData.no_surat)}|${safeText(formData.no_rawat)}|${safeText(formData.tanggalsurat)}`;
+    const ttdQrText = [
+        `Dikeluarkan oleh: ${safeText(setting?.nama_instansi)}`,
+        `Ditandatangani oleh: ${safeText(dokter?.nm_dokter)}`,
+        `Untuk: ${safeText(patient?.nm_pasien)}`,
+        `No Surat: ${safeText(formData.no_surat)}`,
+        `Pada: ${formatDate(formData.tanggalsurat)}`,
+    ].join('\n');
 
     useEffect(() => {
         let active = true;
-        QRCode.toDataURL(qrText, { width: 256, margin: 1, errorCorrectionLevel: 'M' })
+        QRCode.toDataURL(ttdQrText, { width: 256, margin: 1, errorCorrectionLevel: 'M' })
             .then((url) => {
-                if (active) setQrDataUrl(url);
+                if (active) setTtdQrDataUrl(url);
             })
             .catch(() => {
-                if (active) setQrDataUrl('');
+                if (active) setTtdQrDataUrl('');
             });
 
         return () => {
             active = false;
         };
-    }, [qrText]);
+    }, [ttdQrText]);
 
     const backToRalanUrl = route('rawat-jalan.index');
 
@@ -609,17 +616,19 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                             </div>
 
                                             <div className="mt-3 flex justify-end print:mt-0">
-                                                <div className="w-[86mm] text-center text-xs">
-                                                    <div className="mb-1 font-medium print-text-black">{formatDate(formData.tanggalsurat)}</div>
-                                                    <div className="mx-auto w-14 h-14 mb-1 print:w-12 print:h-12">
-                                                        {qrDataUrl ? (
-                                                            <img src={qrDataUrl} alt="QR Code" className="w-14 h-14 print:w-12 print:h-12" />
-                                                        ) : (
-                                                            <div className="w-14 h-14 border border-gray-300 print:w-12 print:h-12" />
-                                                        )}
+                                                <div className="w-[86mm] text-xs print:text-[10px]">
+                                                    <div className="text-center">
+                                                        <div className="print-text-black">{(setting?.kabupaten || 'Madiun')}, {formatShortDate(formData.tanggalsurat)}</div>
+                                                        <div className="print-text-black">Dokter Pemeriksa</div>
+                                                        <div className="mt-2 w-32 h-32 bg-white flex items-center justify-center mx-auto">
+                                                            {ttdQrDataUrl ? (
+                                                                <img src={ttdQrDataUrl} alt="QR Code" className="w-full h-full object-contain" />
+                                                            ) : (
+                                                                <div className="text-xs text-gray-500 print:text-black">QR</div>
+                                                            )}
+                                                        </div>
+                                                        <div className="mt-4 text-sm font-medium print-text-black">{safeText(dokter?.nm_dokter)}</div>
                                                     </div>
-                                                    <div className="font-bold text-sm print-text-bold print:text-xs">{safeText(dokter?.nm_dokter)}</div>
-                                                    <div className="font-medium print-text-black">Dokter</div>
                                                 </div>
                                             </div>
                                         </div>
