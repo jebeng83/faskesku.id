@@ -6,7 +6,7 @@ use App\Models\RawatJalan\RawatJalan;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Support\Facades\DB;
 class Patient extends Model
 {
     use HasFactory;
@@ -224,13 +224,11 @@ class Patient extends Model
     // Generate nomor RM otomatis
     public static function generateNoRM()
     {
-        $lastPatient = self::orderBy('no_rkm_medis', 'desc')->first();
-        if ($lastPatient) {
-            $lastNumber = (int) substr($lastPatient->no_rkm_medis, -6);
-            $newNumber = $lastNumber + 1;
-        } else {
-            $newNumber = 1;
-        }
+        $maxNumber = (int) DB::table('pasien')
+            ->selectRaw('MAX(CAST(no_rkm_medis AS UNSIGNED)) as max_no')
+            ->value('max_no');
+
+        $newNumber = $maxNumber > 0 ? $maxNumber + 1 : 1;
 
         return str_pad($newNumber, 6, '0', STR_PAD_LEFT);
     }
