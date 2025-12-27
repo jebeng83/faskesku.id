@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\API\PatientController::describe
-* @see app/Http/Controllers/API/PatientController.php:33
+* @see app/Http/Controllers/API/PatientController.php:52
 * @route '/api/pasien/describe'
 */
 export const describe = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ describe.definition = {
 
 /**
 * @see \App\Http\Controllers\API\PatientController::describe
-* @see app/Http/Controllers/API/PatientController.php:33
+* @see app/Http/Controllers/API/PatientController.php:52
 * @route '/api/pasien/describe'
 */
 describe.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ describe.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\PatientController::describe
-* @see app/Http/Controllers/API/PatientController.php:33
+* @see app/Http/Controllers/API/PatientController.php:52
 * @route '/api/pasien/describe'
 */
 describe.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ describe.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\API\PatientController::describe
-* @see app/Http/Controllers/API/PatientController.php:33
+* @see app/Http/Controllers/API/PatientController.php:52
 * @route '/api/pasien/describe'
 */
 describe.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Patient;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class PatientController extends Controller
@@ -25,6 +26,24 @@ class PatientController extends Controller
                 'message' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function existsNoRM(Request $request)
+    {
+        $validated = $request->validate([
+            'no_rkm_medis' => 'required|string|max:15',
+        ]);
+
+        $exists = DB::table('pasien')
+            ->where('no_rkm_medis', $validated['no_rkm_medis'])
+            ->exists();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'exists' => $exists,
+            ],
+        ]);
     }
 
     /**

@@ -50,6 +50,7 @@ Route::get('/wilayah/search', [WilayahController::class, 'search'])->name('api.p
 // Public endpoints for Registration (Pasien Baru) - Tanpa prefix 'public' agar sesuai dengan frontend
 Route::get('/wilayah/all-villages', [WilayahController::class, 'allVillages'])->name('api.public.wilayah.all-villages');
 Route::get('/pasien/next-no-rm', [ApiPatientController::class, 'nextNoRM'])->name('api.public.pasien.next-no-rm');
+Route::get('/pasien/exists-no-rm', [ApiPatientController::class, 'existsNoRM'])->name('api.public.pasien.exists-no-rm');
 Route::get('/penjab', [PenjabController::class, 'index'])->name('api.public.penjab.index');
 
 // Public endpoints for Reference Options

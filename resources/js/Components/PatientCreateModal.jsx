@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useForm } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,6 +22,8 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
     const [selectedWilayah, setSelectedWilayah] = useState(null);
     const [loadingWilayah, setLoadingWilayah] = useState(false);
     const [isNoRMTouched, setIsNoRMTouched] = useState(false);
+    const lastNoRMCheckedRef = useRef("");
+    const noRMDuplicateRetryRef = useRef(0);
     const [perusahaanOptions, setPerusahaanOptions] = useState([]);
     const [sukuOptions, setSukuOptions] = useState([]);
     const [bahasaOptions, setBahasaOptions] = useState([]);
@@ -75,15 +77,63 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
         nip: "",
     });
 
+    const getSuggestedNoRM = async () => {
+        const response = await axios.get("/api/pasien/next-no-rm");
+        if (response.data && response.data.success) {
+            return response.data.data;
+        }
+        return "";
+    };
+
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    const checkNoRMDuplicateAndOfferNext = async (value, { retrySubmit } = {}) => {
+        const currentValue = String(value || "").trim();
+        if (!currentValue) return { handled: false };
+        if (lastNoRMCheckedRef.current === currentValue) return { handled: false };
+
+        try {
+            const existsRes = await axios.get("/api/pasien/exists-no-rm", {
+                params: { no_rkm_medis: currentValue },
+            });
+            const exists = Boolean(existsRes?.data?.data?.exists);
+            lastNoRMCheckedRef.current = currentValue;
+
+            if (!exists) return { handled: false };
+
+            const suggested = await getSuggestedNoRM();
+            if (!suggested) return { handled: false };
+
+            const ok = window.confirm(
+                `No. RM ${currentValue} sudah digunakan.\n\nGunakan No. RM berikutnya: ${suggested}?`
+            );
+
+            if (!ok) return { handled: true, suggested: "" };
+
+            setIsNoRMTouched(true);
+            setData("no_rkm_medis", suggested);
+            lastNoRMCheckedRef.current = suggested;
+
+            if (retrySubmit) {
+                return { handled: true, suggested };
+            }
+
+            return { handled: true, suggested };
+        } catch (error) {
+            console.error("Error checking No. RM:", error);
+            return { handled: false };
+        }
+    };
+
     // Load next no_rkm_medis on component mount
     useEffect(() => {
         const fetchNextNoRM = async () => {
             try {
-                const response = await axios.get("/api/pasien/next-no-rm");
-                if (response.data && response.data.success) {
+                const next = await getSuggestedNoRM();
+                if (next) {
                     setData((prevData) => ({
                         ...prevData,
-                        no_rkm_medis: response.data.data,
+                        no_rkm_medis: next,
                     }));
                 }
             } catch (error) {
@@ -97,6 +147,8 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
             setPekerjaanOption("");
             setPekerjaanOther("");
             setIsNoRMTouched(false);
+            lastNoRMCheckedRef.current = "";
+            noRMDuplicateRetryRef.current = 0;
             fetchNextNoRM();
         }
     }, [isOpen]);
@@ -543,13 +595,17 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
         }
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const shouldAutoGenerateNoRM = !isNoRMTouched;
+    const submitPatient = ({ forceNoRM } = {}) => {
+        const shouldAutoGenerateNoRM = !isNoRMTouched && !forceNoRM;
         transform((payload) => ({
             ...payload,
-            no_rkm_medis: shouldAutoGenerateNoRM ? "" : payload.no_rkm_medis,
+            no_rkm_medis: forceNoRM
+                ? forceNoRM
+                : shouldAutoGenerateNoRM
+                  ? ""
+                  : payload.no_rkm_medis,
         }));
+
         post(route("patients.store"), {
             onSuccess: (page) => {
                 const newPatient = page.props.flash?.new_patient;
@@ -558,13 +614,40 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                 }
                 onClose();
             },
-            onError: (errors) => {
+            onError: async (errors) => {
+                const noRMError = errors?.no_rkm_medis;
+                if (noRMError && noRMDuplicateRetryRef.current < 3) {
+                    const nextAttempt = noRMDuplicateRetryRef.current + 1;
+                    const delayMs = 200 * Math.pow(2, nextAttempt - 1);
+                    await sleep(delayMs);
+
+                    const suggested = await getSuggestedNoRM();
+                    if (suggested) {
+                        noRMDuplicateRetryRef.current = nextAttempt;
+                        setIsNoRMTouched(true);
+                        setData("no_rkm_medis", suggested);
+                        submitPatient({ forceNoRM: suggested });
+                        return;
+                    }
+
+                    const result = await checkNoRMDuplicateAndOfferNext(
+                        data.no_rkm_medis,
+                        { retrySubmit: true }
+                    );
+                    if (result?.suggested) {
+                        noRMDuplicateRetryRef.current = nextAttempt;
+                        submitPatient({ forceNoRM: result.suggested });
+                        return;
+                    }
+                }
+
                 console.error("Form submission errors:", errors);
-                // Format error messages for display
                 let errorMessage = "Terjadi kesalahan:\n";
-                if (typeof errors === 'object' && errors !== null) {
+                if (typeof errors === "object" && errors !== null) {
                     Object.keys(errors).forEach((key) => {
-                        const message = Array.isArray(errors[key]) ? errors[key][0] : errors[key];
+                        const message = Array.isArray(errors[key])
+                            ? errors[key][0]
+                            : errors[key];
                         errorMessage += `- ${message}\n`;
                     });
                 } else {
@@ -576,6 +659,11 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                 transform((payload) => payload);
             },
         });
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        submitPatient();
     };
 
     return (
@@ -693,6 +781,13 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                             "no_rkm_medis",
                                                             e.target.value
                                                         );
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        if (isNoRMTouched) {
+                                                            checkNoRMDuplicateAndOfferNext(
+                                                                e.target.value
+                                                            );
+                                                        }
                                                     }}
                                                     className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                                     placeholder="Otomatis"

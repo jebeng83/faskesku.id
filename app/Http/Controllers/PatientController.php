@@ -3,16 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Dokter;
+use App\Models\Kabupaten;
+use App\Models\Kecamatan;
+use App\Models\Kelurahan;
 use App\Models\Patient;
 use App\Models\Penjab;
 use App\Models\Poliklinik;
 use App\Models\Propinsi;
-use App\Models\Kabupaten;
-use App\Models\Kecamatan;
-use App\Models\Kelurahan;
 use App\Models\RegPeriksa;
 use App\Models\Wilayah;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -151,17 +152,17 @@ class PatientController extends Controller
             // Map kode_wilayah => kd_prop, kd_kab, kd_kec, kd_kel
             // Format expected: PP.RR.DD.VVVV (e.g., 74.01.01.1001)
             if (preg_match('/^\d{2}\.\d{2}\.\d{2}\.\d{4}$/', $data['kode_wilayah'])) {
-                [$pp, $rr, $dd, $vvvv] = explode('.', $data['kode_wilayah']);
+                [$pp] = explode('.', $data['kode_wilayah']);
 
                 // 1. Propinsi
                 $ppInt = (int) $pp;
                 $propinsi = Propinsi::find($ppInt);
-                if (!$propinsi) {
+                if (! $propinsi) {
                     $propinsi = Propinsi::where('nm_prop', $wilayahDetails['province'])->first();
-                    if (!$propinsi) {
+                    if (! $propinsi) {
                         $propinsi = Propinsi::create([
                             'kd_prop' => $ppInt,
-                            'nm_prop' => $wilayahDetails['province']
+                            'nm_prop' => $wilayahDetails['province'],
                         ]);
                     }
                 }
@@ -169,33 +170,33 @@ class PatientController extends Controller
 
                 // 2. Kabupaten
                 $kabupaten = Kabupaten::where('nm_kab', $wilayahDetails['regency'])->first();
-                if (!$kabupaten) {
+                if (! $kabupaten) {
                     $nextId = (Kabupaten::max('kd_kab') ?? 0) + 1;
                     $kabupaten = Kabupaten::create([
                         'kd_kab' => $nextId,
-                        'nm_kab' => $wilayahDetails['regency']
+                        'nm_kab' => $wilayahDetails['regency'],
                     ]);
                 }
                 $data['kd_kab'] = $kabupaten->kd_kab;
 
                 // 3. Kecamatan
                 $kecamatan = Kecamatan::where('nm_kec', $wilayahDetails['district'])->first();
-                if (!$kecamatan) {
+                if (! $kecamatan) {
                     $nextId = (Kecamatan::max('kd_kec') ?? 0) + 1;
                     $kecamatan = Kecamatan::create([
                         'kd_kec' => $nextId,
-                        'nm_kec' => $wilayahDetails['district']
+                        'nm_kec' => $wilayahDetails['district'],
                     ]);
                 }
                 $data['kd_kec'] = $kecamatan->kd_kec;
 
                 // 4. Kelurahan
                 $kelurahan = Kelurahan::where('nm_kel', $wilayahDetails['village'])->first();
-                if (!$kelurahan) {
+                if (! $kelurahan) {
                     $nextId = (Kelurahan::max('kd_kel') ?? 0) + 1;
                     $kelurahan = Kelurahan::create([
                         'kd_kel' => $nextId,
-                        'nm_kel' => $wilayahDetails['village']
+                        'nm_kel' => $wilayahDetails['village'],
                     ]);
                 }
                 $data['kd_kel'] = $kelurahan->kd_kel;
@@ -214,7 +215,7 @@ class PatientController extends Controller
         $data['kd_kab'] = $data['kd_kab'] ?? 1;
         $data['kd_kec'] = $data['kd_kec'] ?? 1;
         $data['kd_kel'] = $data['kd_kel'] ?? 1;
-        
+
         // Handle non-nullable fields that are optional in form
         $data['namakeluarga'] = $data['namakeluarga'] ?? '-';
         $data['pekerjaanpj'] = $data['pekerjaanpj'] ?? '-';
@@ -228,12 +229,44 @@ class PatientController extends Controller
 
         // Ensure kd_pj references an existing penjab (validated above)
 
-        $patient = Patient::create($data);
+        $patient = null;
+        $attempt = 0;
+        $maxAttempts = 3;
+        while ($attempt < $maxAttempts) {
+            $attempt++;
+
+            if (empty($data['no_rkm_medis'])) {
+                $data['no_rkm_medis'] = Patient::generateNoRM();
+            }
+
+            try {
+                $patient = Patient::create($data);
+                break;
+            } catch (QueryException $e) {
+                $errorCode = (int) ($e->errorInfo[1] ?? 0);
+                $isDuplicate = $errorCode === 1062 || str_contains($e->getMessage(), 'Integrity constraint violation');
+                if (! $isDuplicate) {
+                    throw $e;
+                }
+
+                $message = $e->getMessage();
+                $isNoRMDuplicate = str_contains($message, 'no_rkm_medis') || str_contains($message, 'pasien.PRIMARY');
+                if (! $isNoRMDuplicate) {
+                    throw $e;
+                }
+
+                if ($attempt >= $maxAttempts) {
+                    throw $e;
+                }
+
+                $data['no_rkm_medis'] = '';
+            }
+        }
 
         // Always respond with a redirect for Inertia requests to avoid plain JSON overlay
         return redirect()->back()->with([
             'success' => 'Data pasien berhasil ditambahkan.',
-            'new_patient' => $patient
+            'new_patient' => $patient,
         ]);
     }
 
@@ -326,17 +359,17 @@ class PatientController extends Controller
             // Map kode_wilayah => kd_prop, kd_kab, kd_kec, kd_kel
             // Guarded by existence checks on legacy tables to avoid FK violations
             if (preg_match('/^\d{2}\.\d{2}\.\d{2}\.\d{4}$/', $data['kode_wilayah'])) {
-                [$pp, $rr, $dd, $vvvv] = explode('.', $data['kode_wilayah']);
-                
+                [$pp] = explode('.', $data['kode_wilayah']);
+
                 // 1. Propinsi
                 $ppInt = (int) $pp;
                 $propinsi = Propinsi::find($ppInt);
-                if (!$propinsi) {
+                if (! $propinsi) {
                     $propinsi = Propinsi::where('nm_prop', $wilayahDetails['province'])->first();
-                    if (!$propinsi) {
+                    if (! $propinsi) {
                         $propinsi = Propinsi::create([
                             'kd_prop' => $ppInt,
-                            'nm_prop' => $wilayahDetails['province']
+                            'nm_prop' => $wilayahDetails['province'],
                         ]);
                     }
                 }
@@ -344,33 +377,33 @@ class PatientController extends Controller
 
                 // 2. Kabupaten
                 $kabupaten = Kabupaten::where('nm_kab', $wilayahDetails['regency'])->first();
-                if (!$kabupaten) {
+                if (! $kabupaten) {
                     $nextId = (Kabupaten::max('kd_kab') ?? 0) + 1;
                     $kabupaten = Kabupaten::create([
                         'kd_kab' => $nextId,
-                        'nm_kab' => $wilayahDetails['regency']
+                        'nm_kab' => $wilayahDetails['regency'],
                     ]);
                 }
                 $data['kd_kab'] = $kabupaten->kd_kab;
 
                 // 3. Kecamatan
                 $kecamatan = Kecamatan::where('nm_kec', $wilayahDetails['district'])->first();
-                if (!$kecamatan) {
+                if (! $kecamatan) {
                     $nextId = (Kecamatan::max('kd_kec') ?? 0) + 1;
                     $kecamatan = Kecamatan::create([
                         'kd_kec' => $nextId,
-                        'nm_kec' => $wilayahDetails['district']
+                        'nm_kec' => $wilayahDetails['district'],
                     ]);
                 }
                 $data['kd_kec'] = $kecamatan->kd_kec;
 
                 // 4. Kelurahan
                 $kelurahan = Kelurahan::where('nm_kel', $wilayahDetails['village'])->first();
-                if (!$kelurahan) {
+                if (! $kelurahan) {
                     $nextId = (Kelurahan::max('kd_kel') ?? 0) + 1;
                     $kelurahan = Kelurahan::create([
                         'kd_kel' => $nextId,
-                        'nm_kel' => $wilayahDetails['village']
+                        'nm_kel' => $wilayahDetails['village'],
                     ]);
                 }
                 $data['kd_kel'] = $kelurahan->kd_kel;
