@@ -36,6 +36,7 @@ import RehabilitasiMedikController from './RehabilitasiMedikController'
 import KategoriPerawatanController from './KategoriPerawatanController'
 import DaftarTarifController from './DaftarTarifController'
 import TarifTindakanController from './TarifTindakanController'
+import SetNoRkmMedisController from './SetNoRkmMedisController'
 import PenjabController from './PenjabController'
 
 const Controllers = {
@@ -77,6 +78,7 @@ const Controllers = {
     KategoriPerawatanController: Object.assign(KategoriPerawatanController, KategoriPerawatanController),
     DaftarTarifController: Object.assign(DaftarTarifController, DaftarTarifController),
     TarifTindakanController: Object.assign(TarifTindakanController, TarifTindakanController),
+    SetNoRkmMedisController: Object.assign(SetNoRkmMedisController, SetNoRkmMedisController),
     PenjabController: Object.assign(PenjabController, PenjabController),
 }
 

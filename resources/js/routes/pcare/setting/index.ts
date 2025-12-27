@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
+import noRm from './no-rm'
 import mobilejkn from './mobilejkn'
 /**
 * @see \App\Http\Controllers\Pcare\SettingBridgingBpjsController::index
@@ -116,6 +117,7 @@ const setting = {
     index: Object.assign(index, index),
     store: Object.assign(store, store),
     destroy: Object.assign(destroy, destroy),
+    noRm: Object.assign(noRm, noRm),
     mobilejkn: Object.assign(mobilejkn, mobilejkn),
 }
 

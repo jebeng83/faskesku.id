@@ -122,6 +122,13 @@ const tabs = [
                 icon: ChartBarIcon,
                 accent: "from-indigo-500 to-blue-500",
             },
+            {
+                title: "No. Rekam Medis",
+                description: "Pengaturan nomor rekam medis terakhir",
+                href: route("pcare.setting.no-rm.index"),
+                icon: ClipboardDocumentListIcon,
+                accent: "from-emerald-500 to-teal-500",
+            },
         ],
     },
     {

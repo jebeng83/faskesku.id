@@ -224,13 +224,25 @@ class Patient extends Model
     // Generate nomor RM otomatis
     public static function generateNoRM()
     {
-        $maxNumber = (int) DB::table('pasien')
-            ->selectRaw('MAX(CAST(no_rkm_medis AS UNSIGNED)) as max_no')
-            ->value('max_no');
+        $row = DB::table('set_no_rkm_medis')->lockForUpdate()->first();
 
-        $newNumber = $maxNumber > 0 ? $maxNumber + 1 : 1;
+        if (! $row) {
+            $current = 0;
+            DB::table('set_no_rkm_medis')->insert([
+                'no_rkm_medis' => '000000',
+            ]);
+        } else {
+            $current = (int) $row->no_rkm_medis;
+        }
 
-        return str_pad($newNumber, 6, '0', STR_PAD_LEFT);
+        $next = $current + 1;
+        $formatted = str_pad((string) $next, 6, '0', STR_PAD_LEFT);
+
+        DB::table('set_no_rkm_medis')->update([
+            'no_rkm_medis' => $formatted,
+        ]);
+
+        return $formatted;
     }
 
     // Static method untuk menghitung umur dari tanggal lahir

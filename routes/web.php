@@ -1424,6 +1424,12 @@ Route::middleware('auth')->group(function () {
         Route::delete('/setting', [\App\Http\Controllers\Pcare\SettingBridgingBpjsController::class, 'destroy'])
             ->name('setting.destroy');
 
+        // Pengaturan No. RM (set_no_rkm_medis)
+        Route::get('/setting/no-rm', [\App\Http\Controllers\SetNoRkmMedisController::class, 'index'])
+            ->name('setting.no-rm.index');
+        Route::post('/setting/no-rm', [\App\Http\Controllers\SetNoRkmMedisController::class, 'store'])
+            ->name('setting.no-rm.store');
+
         // Setting Bridging Mobile JKN (Inertia form + CRUD)
         Route::get('/setting-mobilejkn', [\App\Http\Controllers\Pcare\SettingBridgingMobileJknController::class, 'index'])
             ->name('setting.mobilejkn.index');
