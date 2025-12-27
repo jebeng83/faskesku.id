@@ -797,10 +797,13 @@ Route::middleware('auth')->group(function () {
     Route::get('rawat-inap/riwayat', [RawatInapController::class, 'riwayat'])->name('rawat-inap.riwayat');
 
     // Surat Sehat dan Surat Sakit routes
+    Route::get('rawat-jalan/surat-sehat', [RawatJalanController::class, 'indexSuratSehat'])->name('rawat-jalan.surat-sehat.index');
+    Route::get('rawat-jalan/surat-sehat/check-duplicate', [RawatJalanController::class, 'checkSuratSehatDuplicate'])->name('rawat-jalan.surat-sehat.check-duplicate');
     Route::get('rawat-jalan/surat-sehat/{no_rawat}', [RawatJalanController::class, 'suratSehat'])
         ->where('no_rawat', '.*')
         ->name('rawat-jalan.surat-sehat');
     Route::post('rawat-jalan/surat-sehat', [RawatJalanController::class, 'storeSuratSehat'])->name('rawat-jalan.surat-sehat.store');
+    Route::get('rawat-jalan/surat-sakit', [RawatJalanController::class, 'indexSuratSakit'])->name('rawat-jalan.surat-sakit.index');
     Route::get('rawat-jalan/surat-sakit/{no_rawat}', [RawatJalanController::class, 'suratSakit'])
         ->where('no_rawat', '.*')
         ->name('rawat-jalan.surat-sakit');

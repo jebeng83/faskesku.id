@@ -250,8 +250,23 @@ const VitalSignsChart = ({ data = [], defaultSelectedVital = 'all' }) => {
                         </div>
 
                         {/* Line Chart */}
-                        <div className="h-80">
-                            <ResponsiveContainer width="100%" height="100%">
+                        <div className="relative h-80 rounded-xl overflow-hidden border border-gray-200/70 dark:border-gray-700/70 bg-gradient-to-br from-indigo-50 via-white to-emerald-50 dark:from-indigo-950/35 dark:via-gray-900/15 dark:to-emerald-950/25">
+                            <div
+                                className="absolute inset-0 pointer-events-none opacity-35"
+                                style={{
+                                    backgroundImage:
+                                        "repeating-linear-gradient(135deg, rgba(99, 102, 241, 0.35) 0, rgba(99, 102, 241, 0.35) 1px, transparent 1px, transparent 12px)",
+                                }}
+                            />
+                            <div
+                                className="absolute inset-0 pointer-events-none opacity-20"
+                                style={{
+                                    backgroundImage:
+                                        "repeating-linear-gradient(45deg, rgba(16, 185, 129, 0.35) 0, rgba(16, 185, 129, 0.35) 1px, transparent 1px, transparent 16px)",
+                                }}
+                            />
+                            <div className="relative h-full">
+                                <ResponsiveContainer width="100%" height="100%">
                                 <LineChart data={chartData}>
                                     <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                                     <XAxis 
@@ -343,6 +358,7 @@ const VitalSignsChart = ({ data = [], defaultSelectedVital = 'all' }) => {
                                     )}
                                 </LineChart>
                             </ResponsiveContainer>
+                            </div>
                         </div>
                     </div>
                 )}
