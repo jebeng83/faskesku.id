@@ -209,14 +209,14 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
             const res = await fetch(url, {
                 headers: { 'Accept': 'application/json' }
             });
-            
+
             if (!res.ok) {
                 throw new Error(`HTTP ${res.status}: ${res.statusText}`);
             }
-            
+
             const json = await res.json();
             const data = Array.isArray(json.data) ? json.data : [];
-            
+
             setMedicationData(prev => ({ ...prev, [noRawat]: data }));
         } catch (e) {
             console.error('Error fetching medication data:', e);
@@ -294,11 +294,11 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                 if (!res.ok) throw new Error('Gagal memuat riwayat');
                 const json = await res.json();
                 setItems(Array.isArray(json.data) ? json.data : []);
-                
-                // Set the first visit as expanded by default if there are items
-                if (Array.isArray(json.data) && json.data.length > 0) {
-                    setExpandedVisit(json.data[0]);
-                }
+
+                // Visit items are now minimized by default as requested
+                // if (Array.isArray(json.data) && json.data.length > 0) {
+                //     setExpandedVisit(json.data[0]);
+                // }
             } catch (e) {
                 if (e.name !== 'AbortError') setError(e.message || 'Terjadi kesalahan');
             } finally {
@@ -316,10 +316,10 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
             setExpandedVisit(null);
         } else {
             setExpandedVisit(visit);
-            // Auto-open Obat section for this visit and fetch immediately
+            // Do not auto-open sub-sections, keep them minimized as requested
             setOpenSections(prev => ({
                 ...prev,
-                [visit.no_rawat]: { obat: true, soap: true, lab: false, rad: false }
+                [visit.no_rawat]: { obat: false, soap: false, lab: false, rad: false }
             }));
             fetchMedicationData(visit.no_rawat);
             fetchSoapData(visit.no_rawat);
@@ -473,18 +473,18 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
             acc[key].push(item);
             return acc;
         }, {});
-        const sortedDates = Object.keys(grouped).sort((a,b) => {
+        const sortedDates = Object.keys(grouped).sort((a, b) => {
             if (a === '-') return 1; if (b === '-') return -1;
             return new Date(b) - new Date(a);
         });
         const formatDateId = (date) => {
             if (!date || date === '-') return '-';
-            try {return new Date(date).toLocaleDateString('id-ID', { weekday:'long', year:'numeric', month:'long', day:'numeric' });} catch {return date;}
+            try { return new Date(date).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); } catch { return date; }
         };
         return (
             <div>
                 {sortedDates.map((dateKey) => {
-                    const items = grouped[dateKey].slice().sort((a,b) => (a.jam||'').localeCompare(b.jam||''));
+                    const items = grouped[dateKey].slice().sort((a, b) => (a.jam || '').localeCompare(b.jam || ''));
                     return (
                         <div key={dateKey} className="border-t border-gray-100">
                             <div className="px-4 py-2 bg-gray-50 flex items-center justify-between">
@@ -533,12 +533,14 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
             title: 'lab',
             emptyIcon: <BeakerIcon className="w-8 h-8 mx-auto mb-2 text-gray-300" />,
             columns: [
-                { key: 'pemeriksaan', header: 'Pemeriksaan', render: (r) => (
-                    <div>
-                        <div className="text-sm">{r.pemeriksaan || '-'}</div>
-                        <div className="text-[11px] text-gray-400 mt-0.5">{r.jam || ''}</div>
-                    </div>
-                )},
+                {
+                    key: 'pemeriksaan', header: 'Pemeriksaan', render: (r) => (
+                        <div>
+                            <div className="text-sm">{r.pemeriksaan || '-'}</div>
+                            <div className="text-[11px] text-gray-400 mt-0.5">{r.jam || ''}</div>
+                        </div>
+                    )
+                },
                 { key: 'nilai', header: 'Nilai', render: (r) => r.nilai || '-' },
                 { key: 'satuan', header: 'Satuan', render: (r) => r.satuan || '-' },
                 { key: 'rujukan', header: 'Nilai Rujukan', render: (r) => r.nilai_rujukan || '-' },
@@ -565,12 +567,14 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
             title: 'radiologi',
             emptyIcon: <DocumentTextIcon className="w-8 h-8 mx-auto mb-2 text-gray-300" />,
             columns: [
-                { key: 'hasil', header: 'Hasil', render: (r) => (
-                    <div>
-                        <div className="text-sm">{r.hasil || '-'}</div>
-                        <div className="text-[11px] text-gray-400 mt-0.5">{r.jam || ''}</div>
-                    </div>
-                )},
+                {
+                    key: 'hasil', header: 'Hasil', render: (r) => (
+                        <div>
+                            <div className="text-sm">{r.hasil || '-'}</div>
+                            <div className="text-[11px] text-gray-400 mt-0.5">{r.jam || ''}</div>
+                        </div>
+                    )
+                },
             ],
             mobileTemplate: (r) => (
                 <div>
@@ -596,7 +600,7 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
             const seen = new Set();
             const out = [];
             for (const e of rows) {
-                const t = String(e.jam_rawat || '').substring(0,5);
+                const t = String(e.jam_rawat || '').substring(0, 5);
                 if (seen.has(t)) continue;
                 seen.add(t);
                 out.push(e);
@@ -604,8 +608,8 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
             return out;
         })();
         const sorted = deduped.slice().sort((a, b) => {
-            const aa = String(a.jam_rawat || '').substring(0,5);
-            const bb = String(b.jam_rawat || '').substring(0,5);
+            const aa = String(a.jam_rawat || '').substring(0, 5);
+            const bb = String(b.jam_rawat || '').substring(0, 5);
             return aa < bb ? 1 : aa > bb ? -1 : 0;
         });
         const hasSuhu = sorted.some((e) => parseNumber(e?.suhu_tubuh) !== null);
@@ -624,11 +628,10 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                             type="button"
                             onClick={() => openChart('suhu', noRawat)}
                             disabled={!hasSuhu}
-                            className={`px-2 py-1 text-[11px] rounded border transition-colors ${
-                                hasSuhu
-                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-                                    : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                            }`}
+                            className={`px-2 py-1 text-[11px] rounded border transition-colors ${hasSuhu
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                                : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                                }`}
                             title={hasSuhu ? 'Grafik suhu dari pemeriksaan ralan' : 'Tidak ada data suhu'}
                         >
                             Grafik Suhu
@@ -637,11 +640,10 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                             type="button"
                             onClick={() => openChart('tensi', noRawat)}
                             disabled={!hasTensi}
-                            className={`px-2 py-1 text-[11px] rounded border transition-colors ${
-                                hasTensi
-                                    ? 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'
-                                    : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                            }`}
+                            className={`px-2 py-1 text-[11px] rounded border transition-colors ${hasTensi
+                                ? 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'
+                                : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                                }`}
                             title={hasTensi ? 'Grafik tensi (sistole/diastole) dari pemeriksaan ralan' : 'Tidak ada data tensi'}
                         >
                             Grafik Tensi
@@ -672,7 +674,7 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                                                 {e.tgl_perawatan ? new Date(e.tgl_perawatan).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
                                             </div>
                                             <div className="text-[11px] text-gray-900 dark:text-white font-mono w-20 whitespace-nowrap">
-                                                {typeof e.jam_rawat === 'string' && e.jam_rawat.trim() ? e.jam_rawat.trim().substring(0,5) : '-'}
+                                                {typeof e.jam_rawat === 'string' && e.jam_rawat.trim() ? e.jam_rawat.trim().substring(0, 5) : '-'}
                                             </div>
                                         </div>
                                     </td>
@@ -864,7 +866,7 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                                             {row.no_rawat}
                                         </span>
                                     </div>
-                                    
+
                                 </div>
                                 <svg className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''} flex-shrink-0 self-start ml-2`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -887,17 +889,16 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                                                 type="button"
                                                 onClick={() => openChart('suhu', row.no_rawat)}
                                                 disabled={isSoapLoading || !hasSuhu}
-                                                className={`px-2 py-1 text-[11px] rounded border transition-colors ${
-                                                    !isSoapLoading && hasSuhu
-                                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-                                                        : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                                                }`}
+                                                className={`px-2 py-1 text-[11px] rounded border transition-colors ${!isSoapLoading && hasSuhu
+                                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                                                    : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                                                    }`}
                                                 title={
                                                     isSoapLoading
                                                         ? 'Memuat data SOAP...'
                                                         : hasSuhu
-                                                          ? 'Grafik suhu dari pemeriksaan ralan'
-                                                          : 'Tidak ada data suhu'
+                                                            ? 'Grafik suhu dari pemeriksaan ralan'
+                                                            : 'Tidak ada data suhu'
                                                 }
                                             >
                                                 Grafik Suhu
@@ -906,17 +907,16 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                                                 type="button"
                                                 onClick={() => openChart('tensi', row.no_rawat)}
                                                 disabled={isSoapLoading || !hasTensi}
-                                                className={`px-2 py-1 text-[11px] rounded border transition-colors ${
-                                                    !isSoapLoading && hasTensi
-                                                        ? 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'
-                                                        : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                                                }`}
+                                                className={`px-2 py-1 text-[11px] rounded border transition-colors ${!isSoapLoading && hasTensi
+                                                    ? 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'
+                                                    : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                                                    }`}
                                                 title={
                                                     isSoapLoading
                                                         ? 'Memuat data SOAP...'
                                                         : hasTensi
-                                                          ? 'Grafik tensi (sistole/diastole) dari pemeriksaan ralan'
-                                                          : 'Tidak ada data tensi'
+                                                            ? 'Grafik tensi (sistole/diastole) dari pemeriksaan ralan'
+                                                            : 'Tidak ada data tensi'
                                                 }
                                             >
                                                 Grafik Tensi
@@ -939,17 +939,15 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                     {items.map((row) => (
                         <div
                             key={row.no_rawat}
-                            className={`rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden ${
-                                expandedVisit && expandedVisit.no_rawat === row.no_rawat ? 'ring-1 ring-blue-300 dark:ring-blue-700' : ''
-                            }`}
+                            className={`rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden ${expandedVisit && expandedVisit.no_rawat === row.no_rawat ? 'ring-1 ring-blue-300 dark:ring-blue-700' : ''
+                                }`}
                         >
                             <button
                                 type="button"
                                 onClick={() => toggleVisitDetails(row)}
                                 aria-expanded={expandedVisit && expandedVisit.no_rawat === row.no_rawat ? 'true' : 'false'}
-                                className={`w-full flex items-center justify-between px-3 h-14 bg-gray-50 dark:bg-gray-700/30 ${
-                                    expandedVisit && expandedVisit.no_rawat === row.no_rawat ? 'border-b border-gray-200 dark:border-gray-700' : ''
-                                }`}
+                                className={`w-full flex items-center justify-between px-3 h-14 bg-gray-50 dark:bg-gray-700/30 ${expandedVisit && expandedVisit.no_rawat === row.no_rawat ? 'border-b border-gray-200 dark:border-gray-700' : ''
+                                    }`}
                             >
                                 <div className="flex items-center gap-2">
                                     <svg className="w-4 h-4 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
