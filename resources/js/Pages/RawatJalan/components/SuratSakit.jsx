@@ -222,7 +222,6 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting }) {
                 </div>
 
                 <div className="relative overflow-hidden rounded-2xl border border-gray-200/60 dark:border-gray-700/60 bg-gradient-to-br from-blue-50/80 via-white/70 to-indigo-50/80 dark:from-gray-900/70 dark:via-gray-900/60 dark:to-gray-800/70 p-4 lg:p-5 print:border-0 print:bg-transparent print:p-0 print:rounded-none">
-                    <div className="pointer-events-none absolute inset-0 opacity-50 dark:opacity-30 bg-[repeating-linear-gradient(135deg,rgba(59,130,246,0.14)_0,rgba(59,130,246,0.14)_1px,transparent_1px,transparent_12px)] print:hidden" />
                     <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-6 print:block">
                         {/* Form */}
                         <div className="lg:col-span-5 xl:col-span-4 print:hidden">
