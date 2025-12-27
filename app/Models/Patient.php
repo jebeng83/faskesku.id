@@ -224,25 +224,45 @@ class Patient extends Model
     // Generate nomor RM otomatis
     public static function generateNoRM()
     {
-        $row = DB::table('set_no_rkm_medis')->lockForUpdate()->first();
+        return DB::transaction(function () {
+            $row = DB::table('set_no_rkm_medis')->lockForUpdate()->first();
+            $currentSetting = $row ? (int) $row->no_rkm_medis : 0;
 
-        if (! $row) {
-            $current = 0;
-            DB::table('set_no_rkm_medis')->insert([
-                'no_rkm_medis' => '000000',
-            ]);
-        } else {
-            $current = (int) $row->no_rkm_medis;
-        }
+            $maxExisting = (int) (DB::table('pasien')
+                ->selectRaw('MAX(CAST(no_rkm_medis AS UNSIGNED)) as max_no')
+                ->value('max_no') ?? 0);
 
-        $next = $current + 1;
-        $formatted = str_pad((string) $next, 6, '0', STR_PAD_LEFT);
+            $baseline = max($currentSetting, $maxExisting);
+            $next = $baseline + 1;
+            $formatted = str_pad((string) $next, 6, '0', STR_PAD_LEFT);
 
-        DB::table('set_no_rkm_medis')->update([
-            'no_rkm_medis' => $formatted,
-        ]);
+            if ($row) {
+                DB::table('set_no_rkm_medis')->update([
+                    'no_rkm_medis' => $formatted,
+                ]);
+            } else {
+                DB::table('set_no_rkm_medis')->insert([
+                    'no_rkm_medis' => $formatted,
+                ]);
+            }
 
-        return $formatted;
+            return $formatted;
+        });
+    }
+
+    public static function peekNextNoRM(): string
+    {
+        $row = DB::table('set_no_rkm_medis')->first();
+        $currentSetting = $row ? (int) $row->no_rkm_medis : 0;
+
+        $maxExisting = (int) (DB::table('pasien')
+            ->selectRaw('MAX(CAST(no_rkm_medis AS UNSIGNED)) as max_no')
+            ->value('max_no') ?? 0);
+
+        $baseline = max($currentSetting, $maxExisting);
+        $next = $baseline + 1;
+
+        return str_pad((string) $next, 6, '0', STR_PAD_LEFT);
     }
 
     // Static method untuk menghitung umur dari tanggal lahir

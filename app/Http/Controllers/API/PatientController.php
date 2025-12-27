@@ -14,7 +14,7 @@ class PatientController extends Controller
     public function nextNoRM()
     {
         try {
-            $nextNoRM = Patient::generateNoRM();
+            $nextNoRM = Patient::peekNextNoRM();
             return response()->json([
                 'success' => true,
                 'data' => $nextNoRM,

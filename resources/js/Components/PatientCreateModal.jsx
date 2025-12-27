@@ -21,6 +21,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
     const [isPenjabModalOpen, setIsPenjabModalOpen] = useState(false);
     const [selectedWilayah, setSelectedWilayah] = useState(null);
     const [loadingWilayah, setLoadingWilayah] = useState(false);
+    const [isNoRMTouched, setIsNoRMTouched] = useState(false);
     const [perusahaanOptions, setPerusahaanOptions] = useState([]);
     const [sukuOptions, setSukuOptions] = useState([]);
     const [bahasaOptions, setBahasaOptions] = useState([]);
@@ -43,7 +44,8 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
     const [pekerjaanOption, setPekerjaanOption] = useState("");
     const [pekerjaanOther, setPekerjaanOther] = useState("");
 
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors, reset, transform } =
+        useForm({
         no_rkm_medis: "",
         nm_pasien: "",
         no_ktp: "",
@@ -94,6 +96,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
             setSelectedWilayah(null);
             setPekerjaanOption("");
             setPekerjaanOther("");
+            setIsNoRMTouched(false);
             fetchNextNoRM();
         }
     }, [isOpen]);
@@ -542,10 +545,13 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log("Submitting form with data:", data);
+        const shouldAutoGenerateNoRM = !isNoRMTouched;
+        transform((payload) => ({
+            ...payload,
+            no_rkm_medis: shouldAutoGenerateNoRM ? "" : payload.no_rkm_medis,
+        }));
         post(route("patients.store"), {
             onSuccess: (page) => {
-                console.log("Success response:", page);
                 const newPatient = page.props.flash?.new_patient;
                 if (onSuccess) {
                     onSuccess(newPatient);
@@ -567,7 +573,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                 alert(errorMessage);
             },
             onFinish: () => {
-                console.log("Form submission finished");
+                transform((payload) => payload);
             },
         });
     };
@@ -681,12 +687,13 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                     type="text"
                                                     name="no_rkm_medis"
                                                     value={data.no_rkm_medis}
-                                                    onChange={(e) =>
+                                                    onChange={(e) => {
+                                                        setIsNoRMTouched(true);
                                                         setData(
                                                             "no_rkm_medis",
                                                             e.target.value
-                                                        )
-                                                    }
+                                                        );
+                                                    }}
                                                     className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                                     placeholder="Otomatis"
                                                 />
