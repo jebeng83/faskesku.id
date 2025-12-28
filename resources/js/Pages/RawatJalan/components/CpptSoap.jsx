@@ -1542,7 +1542,7 @@ export default function CpptSoap({
                                     </svg>
                                     Alergi
                                 </label>
-                                <input type="text" name="alergi" value={formData.alergi} onChange={handleChange} placeholder="Contoh: Penisilin, Aspirin" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                <input type="text" name="alergi" value={formData.alergi} onChange={handleChange} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                             </div>
                             <div className="relative">
                                 <label className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center">
@@ -1594,39 +1594,39 @@ export default function CpptSoap({
                         <div className="relative p-4 md:p-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
                             <div>
                                 <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Suhu (°C)</label>
-                                <input type="text" name="suhu_tubuh" value={formData.suhu_tubuh} onChange={handleChange} onBlur={handleBlur} placeholder="36.8" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                <input type="text" name="suhu_tubuh" value={formData.suhu_tubuh} onChange={handleChange} onBlur={handleBlur} className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                             </div>
                             <div>
                                 <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Tensi (mmHg)</label>
-                                <input type="text" name="tensi" value={formData.tensi} onChange={handleChange} onBlur={handleBlur} placeholder="120/80" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                <input type="text" name="tensi" value={formData.tensi} onChange={handleChange} onBlur={handleBlur} className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                             </div>
                             <div>
                                 <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Nadi (/menit)</label>
-                                <input type="text" name="nadi" value={formData.nadi} onChange={handleChange} onBlur={handleBlur} placeholder="80" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                <input type="text" name="nadi" value={formData.nadi} onChange={handleChange} onBlur={handleBlur} className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                             </div>
                             <div>
                                 <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Respirasi (/menit)</label>
-                                <input type="text" name="respirasi" value={formData.respirasi} onChange={handleChange} onBlur={handleBlur} placeholder="20" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                <input type="text" name="respirasi" value={formData.respirasi} onChange={handleChange} onBlur={handleBlur} className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                             </div>
                             <div>
                                 <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">SpO2 (%)</label>
-                                <input type="text" name="spo2" value={formData.spo2} onChange={handleChange} onBlur={handleBlur} placeholder="98" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                <input type="text" name="spo2" value={formData.spo2} onChange={handleChange} onBlur={handleBlur} className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                             </div>
                             <div>
                                 <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Tinggi (cm)</label>
-                                <input type="text" name="tinggi" value={formData.tinggi} onChange={handleChange} onBlur={handleBlur} placeholder="165" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                <input type="text" name="tinggi" value={formData.tinggi} onChange={handleChange} onBlur={handleBlur} className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                             </div>
                             <div>
                                 <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Berat (kg)</label>
-                                <input type="text" name="berat" value={formData.berat} onChange={handleChange} onBlur={handleBlur} placeholder="60" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                <input type="text" name="berat" value={formData.berat} onChange={handleChange} onBlur={handleBlur} className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                             </div>
                             <div>
                                 <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">GCS</label>
-                                <input type="text" name="gcs" value={formData.gcs} onChange={handleChange} onBlur={handleBlur} placeholder="E4V5M6" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                <input type="text" name="gcs" value={formData.gcs} onChange={handleChange} onBlur={handleBlur} className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                             </div>
                             <div>
                                 <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Lingkar Perut (cm)</label>
-                                <input type="text" name="lingkar_perut" value={formData.lingkar_perut} onChange={handleChange} onBlur={handleBlur} placeholder="80" className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                <input type="text" name="lingkar_perut" value={formData.lingkar_perut} onChange={handleChange} onBlur={handleBlur} className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                             </div>
                         </div>
                     </motion.div>
@@ -1668,19 +1668,19 @@ export default function CpptSoap({
                         <div className="relative p-4 md:p-6 grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
                             <div>
                                 <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Penilaian (Assessment)</label>
-                                <textarea name="penilaian" value={formData.penilaian} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Diagnosis dan analisis kondisi pasien..." />
+                                <textarea name="penilaian" value={formData.penilaian} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" />
                             </div>
                             <div>
                                 <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Rencana Tindak Lanjut (Planning)</label>
-                                <textarea name="rtl" value={formData.rtl} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Rencana pengobatan dan tindakan..." />
+                                <textarea name="rtl" value={formData.rtl} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" />
                             </div>
                             <div>
                                 <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Instruksi Medis</label>
-                                <textarea name="instruksi" value={formData.instruksi} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Instruksi untuk pasien dan perawat..." />
+                                <textarea name="instruksi" value={formData.instruksi} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" />
                             </div>
                             <div>
                                 <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Evaluasi</label>
-                                <textarea name="evaluasi" value={formData.evaluasi} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Evaluasi hasil pengobatan..." />
+                                <textarea name="evaluasi" value={formData.evaluasi} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" />
                             </div>
                         </div>
                     </motion.div>
