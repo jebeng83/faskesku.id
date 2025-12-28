@@ -68,6 +68,7 @@ class HandleInertiaRequests
                 'success' => fn () => $this->sanitizeUtf8($request->session()->get('success')),
                 'error' => fn () => $this->sanitizeUtf8($request->session()->get('error')),
                 'new_patient' => fn () => $this->sanitizeUtf8($request->session()->get('new_patient')),
+                'trigger_print' => fn () => $this->sanitizeUtf8($request->session()->get('trigger_print')),
             ],
             'errors' => fn () => $this->sanitizeUtf8($request->session()->get('errors') ? $request->session()->get('errors')->getBag('default')->getMessages() : (object) []),
             'auth' => [

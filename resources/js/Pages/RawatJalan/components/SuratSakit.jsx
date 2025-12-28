@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import SidebarRalan from '@/Layouts/SidebarRalan';
 import { todayDateString } from '@/tools/datetime';
 import QRCode from 'qrcode';
 
 export default function SuratSakit({ rawatJalan, patient, dokter, setting }) {
+    const { props } = usePage();
+    const triggerPrint = !!props?.flash?.trigger_print;
+
     const [formData, setFormData] = useState({
         no_surat: '',
         no_rawat: rawatJalan?.no_rawat || '',
@@ -204,10 +207,8 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting }) {
         setIsLoading(true);
 
         router.post(route('rawat-jalan.surat-sakit.store'), formData, {
-            onSuccess: () => {
-                // Redirect back to rawat jalan index
-                router.get(route('rawat-jalan.index'));
-            },
+            preserveScroll: true,
+            preserveState: true,
             onError: (errors) => {
                 const firstKey = errors ? Object.keys(errors)[0] : null;
                 const firstValue = firstKey ? errors[firstKey] : null;
@@ -227,6 +228,14 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting }) {
     const handlePrint = () => {
         window.print();
     };
+
+    useEffect(() => {
+        if (!triggerPrint) return;
+        const t = setTimeout(() => {
+            window.print();
+        }, 150);
+        return () => clearTimeout(t);
+    }, [triggerPrint]);
 
     const formatDate = (date) => {
         if (!date) return '-';
