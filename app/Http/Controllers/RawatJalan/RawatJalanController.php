@@ -1455,19 +1455,25 @@ class RawatJalanController extends Controller
         $tanggal = $request->input('tanggal');
 
         $query = DB::table('suratsakit')
+            ->leftJoin('reg_periksa', 'suratsakit.no_rawat', '=', 'reg_periksa.no_rawat')
+            ->leftJoin('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
             ->select([
-                'no_surat',
-                'no_rawat',
-                'tanggalawal',
-                'tanggalakhir',
-                'lamasakit',
+                'suratsakit.no_surat',
+                'suratsakit.no_rawat',
+                'suratsakit.tanggalawal',
+                'suratsakit.tanggalakhir',
+                'suratsakit.lamasakit',
+                'pasien.nm_pasien',
+                'pasien.no_rkm_medis',
             ]);
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
-                $q->where('no_surat', 'like', "%{$search}%")
-                    ->orWhere('no_rawat', 'like', "%{$search}%")
-                    ->orWhere('lamasakit', 'like', "%{$search}%");
+                $q->where('suratsakit.no_surat', 'like', "%{$search}%")
+                    ->orWhere('suratsakit.no_rawat', 'like', "%{$search}%")
+                    ->orWhere('suratsakit.lamasakit', 'like', "%{$search}%")
+                    ->orWhere('pasien.nm_pasien', 'like', "%{$search}%")
+                    ->orWhere('pasien.no_rkm_medis', 'like', "%{$search}%");
             });
         }
 

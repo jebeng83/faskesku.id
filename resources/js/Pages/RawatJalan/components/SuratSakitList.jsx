@@ -86,7 +86,7 @@ export default function SuratSakitList({ suratSakit, filters }) {
                                 <input
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
-                                    placeholder="No Surat / No Rawat / Lama Sakit"
+                                    placeholder="No Surat / No Rawat / Nama / No RM / Lama Sakit"
                                     className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-red-500 focus:border-transparent"
                                 />
                             </div>
@@ -132,6 +132,12 @@ export default function SuratSakitList({ suratSakit, filters }) {
                                         No Surat
                                     </th>
                                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">
+                                        Nama
+                                    </th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">
+                                        No. RM
+                                    </th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">
                                         No Rawat
                                     </th>
                                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">
@@ -154,6 +160,12 @@ export default function SuratSakitList({ suratSakit, filters }) {
                                         <tr key={row.no_surat}>
                                             <td className="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
                                                 {row.no_surat}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">
+                                                {row.nm_pasien || "-"}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200 whitespace-nowrap">
+                                                {row.no_rkm_medis || "-"}
                                             </td>
                                             <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 {row.no_rawat || "-"}
@@ -189,7 +201,7 @@ export default function SuratSakitList({ suratSakit, filters }) {
                                 ) : (
                                     <tr>
                                         <td
-                                            colSpan={6}
+                                            colSpan={8}
                                             className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400"
                                         >
                                             Tidak ada data.

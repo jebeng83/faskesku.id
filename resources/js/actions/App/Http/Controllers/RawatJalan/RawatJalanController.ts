@@ -947,7 +947,7 @@ indexSuratSakit.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::nextSuratSakitNoSurat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1538
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1544
 * @route '/rawat-jalan/surat-sakit/next-no-surat'
 */
 export const nextSuratSakitNoSurat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -962,7 +962,7 @@ nextSuratSakitNoSurat.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::nextSuratSakitNoSurat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1538
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1544
 * @route '/rawat-jalan/surat-sakit/next-no-surat'
 */
 nextSuratSakitNoSurat.url = (options?: RouteQueryOptions) => {
@@ -971,7 +971,7 @@ nextSuratSakitNoSurat.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::nextSuratSakitNoSurat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1538
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1544
 * @route '/rawat-jalan/surat-sakit/next-no-surat'
 */
 nextSuratSakitNoSurat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -981,7 +981,7 @@ nextSuratSakitNoSurat.get = (options?: RouteQueryOptions): RouteDefinition<'get'
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::nextSuratSakitNoSurat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1538
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1544
 * @route '/rawat-jalan/surat-sakit/next-no-surat'
 */
 nextSuratSakitNoSurat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -991,7 +991,7 @@ nextSuratSakitNoSurat.head = (options?: RouteQueryOptions): RouteDefinition<'hea
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::checkSuratSakitDuplicate
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1549
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1555
 * @route '/rawat-jalan/surat-sakit/check-duplicate'
 */
 export const checkSuratSakitDuplicate = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1006,7 +1006,7 @@ checkSuratSakitDuplicate.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::checkSuratSakitDuplicate
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1549
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1555
 * @route '/rawat-jalan/surat-sakit/check-duplicate'
 */
 checkSuratSakitDuplicate.url = (options?: RouteQueryOptions) => {
@@ -1015,7 +1015,7 @@ checkSuratSakitDuplicate.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::checkSuratSakitDuplicate
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1549
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1555
 * @route '/rawat-jalan/surat-sakit/check-duplicate'
 */
 checkSuratSakitDuplicate.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1025,7 +1025,7 @@ checkSuratSakitDuplicate.get = (options?: RouteQueryOptions): RouteDefinition<'g
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::checkSuratSakitDuplicate
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1549
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1555
 * @route '/rawat-jalan/surat-sakit/check-duplicate'
 */
 checkSuratSakitDuplicate.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1097,7 +1097,7 @@ suratSakit.head = (args: { no_rawat: string | number } | [no_rawat: string | num
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratSakit
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1604
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1610
 * @route '/rawat-jalan/surat-sakit'
 */
 export const storeSuratSakit = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1112,7 +1112,7 @@ storeSuratSakit.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratSakit
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1604
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1610
 * @route '/rawat-jalan/surat-sakit'
 */
 storeSuratSakit.url = (options?: RouteQueryOptions) => {
@@ -1121,7 +1121,7 @@ storeSuratSakit.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratSakit
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1604
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1610
 * @route '/rawat-jalan/surat-sakit'
 */
 storeSuratSakit.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

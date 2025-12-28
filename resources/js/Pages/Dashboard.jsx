@@ -896,13 +896,6 @@ export default function Dashboard() {
                     requiredPermission: "group.rawatjalan.access",
                 },
                 {
-                    key: "laporan",
-                    label: "Laporan",
-                    href: safeRoute("laporan.index"),
-                    icon: <Activity className="w-5 h-5" />,
-                    requiredPermission: "group.laporan.access",
-                },
-                {
                     key: "keuangan",
                     label: "Keuangan",
                     // Arahkan ke halaman Home Akutansi
