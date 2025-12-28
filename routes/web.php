@@ -341,6 +341,18 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('Docs', ['section' => $section]);
     })->name('docs');
 
+    Route::get('/laporan', function () {
+        return Inertia::render('Laporan/Home');
+    })->name('laporan.index');
+
+    Route::get('/laporan/rl-kemenkes', function () {
+        return Inertia::render('Laporan/RLKemenkes');
+    })->name('laporan.rl-kemenkes');
+
+    Route::get('/laporan/bor', function () {
+        return Inertia::render('Laporan/BOR');
+    })->name('laporan.bor');
+
     // Akutansi: preview invoice berbasis billing/nota
     Route::get('/akutansi/invoice/{no_rawat}', [AkutansiController::class, 'invoice'])
         ->where('no_rawat', '.*')

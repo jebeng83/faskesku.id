@@ -76,8 +76,11 @@ class MenuSeeder extends Seeder
             'name' => 'Laporan',
             'slug' => 'laporan',
             'icon' => 'fas fa-chart-bar',
+            'route' => 'laporan.index',
+            'url' => route('laporan.index'),
             'sort_order' => 5,
             'is_active' => true,
+            'permission_name' => 'group.laporan.access',
             'description' => 'Laporan dan statistik sistem',
         ]);
 
