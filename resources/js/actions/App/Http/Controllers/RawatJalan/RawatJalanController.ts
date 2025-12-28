@@ -946,6 +946,94 @@ indexSuratSakit.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
 })
 
 /**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::nextSuratSakitNoSurat
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1538
+* @route '/rawat-jalan/surat-sakit/next-no-surat'
+*/
+export const nextSuratSakitNoSurat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: nextSuratSakitNoSurat.url(options),
+    method: 'get',
+})
+
+nextSuratSakitNoSurat.definition = {
+    methods: ["get","head"],
+    url: '/rawat-jalan/surat-sakit/next-no-surat',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::nextSuratSakitNoSurat
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1538
+* @route '/rawat-jalan/surat-sakit/next-no-surat'
+*/
+nextSuratSakitNoSurat.url = (options?: RouteQueryOptions) => {
+    return nextSuratSakitNoSurat.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::nextSuratSakitNoSurat
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1538
+* @route '/rawat-jalan/surat-sakit/next-no-surat'
+*/
+nextSuratSakitNoSurat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: nextSuratSakitNoSurat.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::nextSuratSakitNoSurat
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1538
+* @route '/rawat-jalan/surat-sakit/next-no-surat'
+*/
+nextSuratSakitNoSurat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: nextSuratSakitNoSurat.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::checkSuratSakitDuplicate
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1549
+* @route '/rawat-jalan/surat-sakit/check-duplicate'
+*/
+export const checkSuratSakitDuplicate = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: checkSuratSakitDuplicate.url(options),
+    method: 'get',
+})
+
+checkSuratSakitDuplicate.definition = {
+    methods: ["get","head"],
+    url: '/rawat-jalan/surat-sakit/check-duplicate',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::checkSuratSakitDuplicate
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1549
+* @route '/rawat-jalan/surat-sakit/check-duplicate'
+*/
+checkSuratSakitDuplicate.url = (options?: RouteQueryOptions) => {
+    return checkSuratSakitDuplicate.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::checkSuratSakitDuplicate
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1549
+* @route '/rawat-jalan/surat-sakit/check-duplicate'
+*/
+checkSuratSakitDuplicate.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: checkSuratSakitDuplicate.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::checkSuratSakitDuplicate
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1549
+* @route '/rawat-jalan/surat-sakit/check-duplicate'
+*/
+checkSuratSakitDuplicate.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: checkSuratSakitDuplicate.url(options),
+    method: 'head',
+})
+
+/**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::suratSakit
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1424
 * @route '/rawat-jalan/surat-sakit/{no_rawat}'
@@ -1009,7 +1097,7 @@ suratSakit.head = (args: { no_rawat: string | number } | [no_rawat: string | num
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratSakit
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1506
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1604
 * @route '/rawat-jalan/surat-sakit'
 */
 export const storeSuratSakit = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1024,7 +1112,7 @@ storeSuratSakit.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratSakit
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1506
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1604
 * @route '/rawat-jalan/surat-sakit'
 */
 storeSuratSakit.url = (options?: RouteQueryOptions) => {
@@ -1033,7 +1121,7 @@ storeSuratSakit.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratSakit
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1506
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1604
 * @route '/rawat-jalan/surat-sakit'
 */
 storeSuratSakit.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1357,6 +1445,6 @@ destroy.delete = (args: { rawat_jalan: string | number } | [rawat_jalan: string 
     method: 'delete',
 })
 
-const RawatJalanController = { searchPenyakit, getDiagnosaPasien, storeDiagnosaPasien, lanjutan, index, riwayat, getRiwayatPemeriksaan, pemeriksaanRalan, storePemeriksaanRalan, deletePemeriksaanRalan, updatePemeriksaanRalan, getobatRalanPublic, getPemeriksaanLabPublic, getRadiologiPublic, searchPegawai, getStatistics, indexSuratSehat, checkSuratSehatDuplicate, suratSehat, storeSuratSehat, indexSuratSakit, suratSakit, storeSuratSakit, create, store, show, edit, update, destroy }
+const RawatJalanController = { searchPenyakit, getDiagnosaPasien, storeDiagnosaPasien, lanjutan, index, riwayat, getRiwayatPemeriksaan, pemeriksaanRalan, storePemeriksaanRalan, deletePemeriksaanRalan, updatePemeriksaanRalan, getobatRalanPublic, getPemeriksaanLabPublic, getRadiologiPublic, searchPegawai, getStatistics, indexSuratSehat, checkSuratSehatDuplicate, suratSehat, storeSuratSehat, indexSuratSakit, nextSuratSakitNoSurat, checkSuratSakitDuplicate, suratSakit, storeSuratSakit, create, store, show, edit, update, destroy }
 
 export default RawatJalanController

@@ -46,11 +46,11 @@ use App\Http\Controllers\RawatInapController;
 use App\Http\Controllers\RawatJalan\ObatController;
 use App\Http\Controllers\RawatJalan\RawatJalanController;
 use App\Http\Controllers\RawatJalan\ResepController;
-use App\Http\Controllers\SkriningVisualController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\RegPeriksaController;
 use App\Http\Controllers\RehabilitasiMedikController;
 use App\Http\Controllers\setting\SettingController;
+use App\Http\Controllers\SkriningVisualController;
 use App\Http\Controllers\SpesialisController;
 use App\Http\Controllers\TarifTindakanController;
 use Illuminate\Support\Facades\Auth;
@@ -226,6 +226,7 @@ Route::get('/anjungan/cetak-label', function () {
             }
         }
     }
+
     return Inertia::render('Anjungan/CetakLabel', [
         'setting' => $setting,
     ]);
@@ -816,6 +817,8 @@ Route::middleware('auth')->group(function () {
         ->name('rawat-jalan.surat-sehat');
     Route::post('rawat-jalan/surat-sehat', [RawatJalanController::class, 'storeSuratSehat'])->name('rawat-jalan.surat-sehat.store');
     Route::get('rawat-jalan/surat-sakit', [RawatJalanController::class, 'indexSuratSakit'])->name('rawat-jalan.surat-sakit.index');
+    Route::get('rawat-jalan/surat-sakit/next-no-surat', [RawatJalanController::class, 'nextSuratSakitNoSurat'])->name('rawat-jalan.surat-sakit.next-no-surat');
+    Route::get('rawat-jalan/surat-sakit/check-duplicate', [RawatJalanController::class, 'checkSuratSakitDuplicate'])->name('rawat-jalan.surat-sakit.check-duplicate');
     Route::get('rawat-jalan/surat-sakit/{no_rawat}', [RawatJalanController::class, 'suratSakit'])
         ->where('no_rawat', '.*')
         ->name('rawat-jalan.surat-sakit');

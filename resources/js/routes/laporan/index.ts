@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
-* @see routes/web.php:344
+* @see routes/web.php:345
 * @route '/laporan'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:344
+* @see routes/web.php:345
 * @route '/laporan'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:344
+* @see routes/web.php:345
 * @route '/laporan'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:344
+* @see routes/web.php:345
 * @route '/laporan'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -40,7 +40,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:348
+* @see routes/web.php:349
 * @route '/laporan/rl-kemenkes'
 */
 export const rlKemenkes = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -54,7 +54,7 @@ rlKemenkes.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:348
+* @see routes/web.php:349
 * @route '/laporan/rl-kemenkes'
 */
 rlKemenkes.url = (options?: RouteQueryOptions) => {
@@ -62,7 +62,7 @@ rlKemenkes.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:348
+* @see routes/web.php:349
 * @route '/laporan/rl-kemenkes'
 */
 rlKemenkes.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -71,7 +71,7 @@ rlKemenkes.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:348
+* @see routes/web.php:349
 * @route '/laporan/rl-kemenkes'
 */
 rlKemenkes.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -80,7 +80,7 @@ rlKemenkes.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:352
+* @see routes/web.php:353
 * @route '/laporan/bor'
 */
 export const bor = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ bor.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:352
+* @see routes/web.php:353
 * @route '/laporan/bor'
 */
 bor.url = (options?: RouteQueryOptions) => {
@@ -102,7 +102,7 @@ bor.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:352
+* @see routes/web.php:353
 * @route '/laporan/bor'
 */
 bor.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -111,7 +111,7 @@ bor.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:352
+* @see routes/web.php:353
 * @route '/laporan/bor'
 */
 bor.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

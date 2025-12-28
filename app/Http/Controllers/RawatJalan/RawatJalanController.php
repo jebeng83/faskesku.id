@@ -1224,17 +1224,17 @@ class RawatJalanController extends Controller
         $setting = $this->kopSuratSetting();
 
         // Cek apakah ada data surat sehat sebelumnya untuk no_rawat ini
-    $existing = \Illuminate\Support\Facades\DB::table('surat_keterangan_sehat')
-        ->where('no_rawat', $noRawat)
-        ->first();
+        $existing = \Illuminate\Support\Facades\DB::table('surat_keterangan_sehat')
+            ->where('no_rawat', $noRawat)
+            ->first();
 
-    return Inertia::render('RawatJalan/components/SuratSehat', [
-        'rawatJalan' => $rawatJalan,
-        'patient' => $patient,
-        'dokter' => $dokter,
-        'setting' => $setting,
-        'suratSehatData' => $existing, // Data surat sehat yang sudah ada (jika ada)
-    ]);
+        return Inertia::render('RawatJalan/components/SuratSehat', [
+            'rawatJalan' => $rawatJalan,
+            'patient' => $patient,
+            'dokter' => $dokter,
+            'setting' => $setting,
+            'suratSehatData' => $existing, // Data surat sehat yang sudah ada (jika ada)
+        ]);
     }
 
     public function indexSuratSehat(Request $request)
@@ -1500,6 +1500,104 @@ class RawatJalanController extends Controller
         ]);
     }
 
+    private function generateSuratSakitNoSurat(string $tanggalawal): string
+    {
+        $date = Carbon::parse($tanggalawal)->format('Ymd');
+        $prefix = "SK/{$date}/";
+
+        $lastSuratSakit = DB::table('suratsakit')
+            ->where('no_surat', 'like', $prefix.'%')
+            ->orderByDesc('no_surat')
+            ->value('no_surat');
+
+        $lastSuratSakitPihak2 = DB::table('suratsakitpihak2')
+            ->where('no_surat', 'like', $prefix.'%')
+            ->orderByDesc('no_surat')
+            ->value('no_surat');
+
+        $maxSeq = 0;
+        foreach ([$lastSuratSakit, $lastSuratSakitPihak2] as $last) {
+            if (! $last) {
+                continue;
+            }
+
+            $pos = strrpos($last, '/');
+            if ($pos === false) {
+                continue;
+            }
+
+            $seq = (int) substr($last, $pos + 1);
+            $maxSeq = max($maxSeq, $seq);
+        }
+
+        $nextSeq = str_pad((string) ($maxSeq + 1), 3, '0', STR_PAD_LEFT);
+
+        return $prefix.$nextSeq;
+    }
+
+    public function nextSuratSakitNoSurat(Request $request)
+    {
+        $validated = $request->validate([
+            'tanggalawal' => 'required|date',
+        ]);
+
+        return response()->json([
+            'no_surat' => $this->generateSuratSakitNoSurat($validated['tanggalawal']),
+        ]);
+    }
+
+    public function checkSuratSakitDuplicate(Request $request)
+    {
+        $validated = $request->validate([
+            'no_rawat' => 'required|string|max:17',
+            'tanggalawal' => 'required|date',
+            'no_surat' => 'nullable|string|max:20',
+        ]);
+
+        $queryBase = function (string $table) use ($validated) {
+            $query = DB::table($table)
+                ->where('no_rawat', $validated['no_rawat'])
+                ->whereDate('tanggalawal', $validated['tanggalawal']);
+
+            if (! empty($validated['no_surat'])) {
+                $query->where('no_surat', '<>', $validated['no_surat']);
+            }
+
+            return $query;
+        };
+
+        $existing = $queryBase('suratsakit')
+            ->orderByDesc('tanggalawal')
+            ->orderByDesc('no_surat')
+            ->first(['no_surat', 'tanggalawal']);
+
+        if (! $existing) {
+            $existing = $queryBase('suratsakitpihak2')
+                ->orderByDesc('tanggalawal')
+                ->orderByDesc('no_surat')
+                ->first(['no_surat', 'tanggalawal']);
+        }
+
+        if (! $existing) {
+            return response()->json([
+                'exists' => false,
+                'existing' => null,
+                'message' => null,
+            ]);
+        }
+
+        $message = "Tidak bisa simpan. Surat sakit untuk No. Rawat {$validated['no_rawat']} pada tanggal {$existing->tanggalawal} sudah ada (No Surat: {$existing->no_surat}).";
+
+        return response()->json([
+            'exists' => true,
+            'existing' => [
+                'no_surat' => $existing->no_surat,
+                'tanggalawal' => $existing->tanggalawal,
+            ],
+            'message' => $message,
+        ]);
+    }
+
     /**
      * Store surat sakit
      */
@@ -1509,7 +1607,7 @@ class RawatJalanController extends Controller
 
         if ($isPihakKedua) {
             $validated = $request->validate([
-                'no_surat' => 'required|string|max:20',
+                'no_surat' => 'nullable|string|max:20',
                 'no_rawat' => 'required|string|max:17',
                 'tanggalawal' => 'required|date',
                 'tanggalakhir' => 'required|date|after_or_equal:tanggalawal',
@@ -1524,43 +1622,165 @@ class RawatJalanController extends Controller
                 'instansi' => 'required|string|max:50',
             ]);
 
-            DB::table('suratsakitpihak2')->updateOrInsert(
-                ['no_surat' => $validated['no_surat']],
-                [
-                    'no_surat' => $validated['no_surat'],
-                    'no_rawat' => $validated['no_rawat'],
-                    'tanggalawal' => $validated['tanggalawal'],
-                    'tanggalakhir' => $validated['tanggalakhir'],
-                    'lamasakit' => $validated['lamasakit'],
-                    'nama2' => $validated['nama2'],
-                    'tgl_lahir' => $validated['tgl_lahir'],
-                    'umur' => $validated['umur'],
-                    'jk' => $validated['jk'],
-                    'alamat' => $validated['alamat'],
-                    'hubungan' => $validated['hubungan'],
-                    'pekerjaan' => $validated['pekerjaan'],
-                    'instansi' => $validated['instansi'],
-                ]
-            );
+            DB::transaction(function () use ($validated) {
+                DB::table('reg_periksa')
+                    ->where('no_rawat', $validated['no_rawat'])
+                    ->lockForUpdate()
+                    ->value('no_rawat');
+
+                $existing = DB::table('suratsakit')
+                    ->where('no_rawat', $validated['no_rawat'])
+                    ->whereDate('tanggalawal', $validated['tanggalawal'])
+                    ->first(['no_surat', 'tanggalawal']);
+
+                if (! $existing) {
+                    $existing = DB::table('suratsakitpihak2')
+                        ->where('no_rawat', $validated['no_rawat'])
+                        ->whereDate('tanggalawal', $validated['tanggalawal'])
+                        ->first(['no_surat', 'tanggalawal']);
+                }
+
+                if ($existing) {
+                    $message = "Tidak bisa simpan. Surat sakit untuk No. Rawat {$validated['no_rawat']} pada tanggal {$existing->tanggalawal} sudah ada (No Surat: {$existing->no_surat}).";
+
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'tanggalawal' => $message,
+                    ]);
+                }
+
+                $incomingNoSurat = trim((string) ($validated['no_surat'] ?? ''));
+                if ($incomingNoSurat !== '') {
+                    $expectedPrefix = 'SK/'.Carbon::parse($validated['tanggalawal'])->format('Ymd').'/';
+                    if (! str_starts_with($incomingNoSurat, $expectedPrefix)) {
+                        throw \Illuminate\Validation\ValidationException::withMessages([
+                            'no_surat' => 'Format nomor surat tidak sesuai tanggal.',
+                        ]);
+                    }
+                }
+
+                for ($attempt = 0; $attempt < 5; $attempt++) {
+                    $noSurat = $incomingNoSurat !== ''
+                        ? $incomingNoSurat
+                        : $this->generateSuratSakitNoSurat($validated['tanggalawal']);
+
+                    $row = [
+                        'no_surat' => $noSurat,
+                        'no_rawat' => $validated['no_rawat'],
+                        'tanggalawal' => $validated['tanggalawal'],
+                        'tanggalakhir' => $validated['tanggalakhir'],
+                        'lamasakit' => $validated['lamasakit'],
+                        'nama2' => $validated['nama2'],
+                        'tgl_lahir' => $validated['tgl_lahir'],
+                        'umur' => $validated['umur'],
+                        'jk' => $validated['jk'],
+                        'alamat' => $validated['alamat'],
+                        'hubungan' => $validated['hubungan'],
+                        'pekerjaan' => $validated['pekerjaan'],
+                        'instansi' => $validated['instansi'],
+                    ];
+
+                    try {
+                        DB::table('suratsakitpihak2')->insert($row);
+
+                        return;
+                    } catch (\Illuminate\Database\QueryException $e) {
+                        $isDuplicate = str_contains(strtolower((string) $e->getMessage()), 'duplicate');
+                        if (! $isDuplicate) {
+                            throw $e;
+                        }
+
+                        if ($incomingNoSurat !== '') {
+                            throw \Illuminate\Validation\ValidationException::withMessages([
+                                'no_surat' => 'Nomor surat sudah terpakai. Muat ulang untuk mengambil nomor terbaru.',
+                            ]);
+                        }
+                    }
+                }
+
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'no_surat' => 'Gagal membuat nomor surat otomatis. Coba lagi.',
+                ]);
+            });
         } else {
             $validated = $request->validate([
-                'no_surat' => 'required|string|max:17',
+                'no_surat' => 'nullable|string|max:17',
                 'no_rawat' => 'required|string|max:17',
                 'tanggalawal' => 'required|date',
                 'tanggalakhir' => 'required|date|after_or_equal:tanggalawal',
                 'lamasakit' => 'required|string|max:20',
             ]);
 
-            DB::table('suratsakit')->updateOrInsert(
-                ['no_surat' => $validated['no_surat']],
-                [
-                    'no_surat' => $validated['no_surat'],
-                    'no_rawat' => $validated['no_rawat'],
-                    'tanggalawal' => $validated['tanggalawal'],
-                    'tanggalakhir' => $validated['tanggalakhir'],
-                    'lamasakit' => $validated['lamasakit'],
-                ]
-            );
+            DB::transaction(function () use ($validated) {
+                DB::table('reg_periksa')
+                    ->where('no_rawat', $validated['no_rawat'])
+                    ->lockForUpdate()
+                    ->value('no_rawat');
+
+                $existing = DB::table('suratsakit')
+                    ->where('no_rawat', $validated['no_rawat'])
+                    ->whereDate('tanggalawal', $validated['tanggalawal'])
+                    ->first(['no_surat', 'tanggalawal']);
+
+                if (! $existing) {
+                    $existing = DB::table('suratsakitpihak2')
+                        ->where('no_rawat', $validated['no_rawat'])
+                        ->whereDate('tanggalawal', $validated['tanggalawal'])
+                        ->first(['no_surat', 'tanggalawal']);
+                }
+
+                if ($existing) {
+                    $message = "Tidak bisa simpan. Surat sakit untuk No. Rawat {$validated['no_rawat']} pada tanggal {$existing->tanggalawal} sudah ada (No Surat: {$existing->no_surat}).";
+
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'tanggalawal' => $message,
+                    ]);
+                }
+
+                $incomingNoSurat = trim((string) ($validated['no_surat'] ?? ''));
+                if ($incomingNoSurat !== '') {
+                    $expectedPrefix = 'SK/'.Carbon::parse($validated['tanggalawal'])->format('Ymd').'/';
+                    if (! str_starts_with($incomingNoSurat, $expectedPrefix)) {
+                        throw \Illuminate\Validation\ValidationException::withMessages([
+                            'no_surat' => 'Format nomor surat tidak sesuai tanggal.',
+                        ]);
+                    }
+                }
+
+                for ($attempt = 0; $attempt < 5; $attempt++) {
+                    $noSurat = $incomingNoSurat !== ''
+                        ? $incomingNoSurat
+                        : $this->generateSuratSakitNoSurat($validated['tanggalawal']);
+
+                    $row = [
+                        'no_surat' => $noSurat,
+                        'no_rawat' => $validated['no_rawat'],
+                        'tanggalawal' => $validated['tanggalawal'],
+                        'tanggalakhir' => $validated['tanggalakhir'],
+                        'lamasakit' => $validated['lamasakit'],
+                    ];
+
+                    try {
+                        DB::table('suratsakit')->insert($row);
+
+                        return;
+                    } catch (\Illuminate\Database\QueryException $e) {
+                        $isDuplicate = str_contains(strtolower((string) $e->getMessage()), 'duplicate');
+                        if (! $isDuplicate) {
+                            throw $e;
+                        }
+
+                        if ($incomingNoSurat !== '') {
+                            throw \Illuminate\Validation\ValidationException::withMessages([
+                                'no_surat' => 'Nomor surat sudah terpakai. Muat ulang untuk mengambil nomor terbaru.',
+                            ]);
+                        }
+                    }
+                }
+
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'no_surat' => 'Gagal membuat nomor surat otomatis. Coba lagi.',
+                ]);
+            });
         }
 
         return redirect()->route('rawat-jalan.index')
