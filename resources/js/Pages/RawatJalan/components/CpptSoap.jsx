@@ -1567,11 +1567,11 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     return (
         <div className="space-y-6">
             <form onSubmit={handleSubmit} className="space-y-3 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden h-full flex flex-col">
-                <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between gap-3">
-                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-4 sm:px-6 py-3 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <div className="p-1.5 sm:p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                             <svg
-                                className="w-5 h-5"
+                                className="w-4 h-4 sm:w-5 sm:h-5"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -1584,13 +1584,13 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                 />
                             </svg>
                         </div>
-                        <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">CPPT / SOAP</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 font-normal">Catatan Perkembangan Pasien</p>
+                        <div className="min-w-0">
+                            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white leading-tight">CPPT / SOAP</h3>
+                            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-normal leading-tight">Catatan Perkembangan Pasien</p>
                         </div>
-                        <div className="flex items-center gap-4 flex-wrap">
+                        <div className="flex flex-wrap items-center gap-3">
                             <div className="flex items-center gap-2">
-                                <label htmlFor="tgl_perawatan" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-0">
+                                <label htmlFor="tgl_perawatan" className="text-[11px] md:text-xs font-medium text-gray-700 dark:text-gray-300 mb-0 whitespace-nowrap">
                                     Tanggal Perawatan
                                 </label>
                                 <input
@@ -1599,11 +1599,11 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                     name="tgl_perawatan"
                                     value={formData.tgl_perawatan}
                                     onChange={handleChange}
-                                    className="text-sm h-9 md:h-10 px-2.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                    className="text-[12px] sm:text-sm h-8 sm:h-9 px-2 rounded-md sm:rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                                 />
                             </div>
                             <div className="flex items-center gap-2">
-                                <label htmlFor="jam_rawat" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-0">
+                                <label htmlFor="jam_rawat" className="text-[11px] md:text-xs font-medium text-gray-700 dark:text-gray-300 mb-0 whitespace-nowrap">
                                     Jam Rawat
                                 </label>
                                 <input
@@ -1612,7 +1612,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                     name="jam_rawat"
                                     value={formData.jam_rawat}
                                     onChange={handleChange}
-                                    className="text-sm h-9 md:h-10 px-2.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                    className="text-[12px] sm:text-sm h-8 sm:h-9 px-2 rounded-md sm:rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                                 />
                             </div>
                         </div>
@@ -1681,8 +1681,8 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                 <div className="min-w-0 flex flex-row items-center gap-1">
                                     <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Template :</label>
                                     <div className="w-full md:flex-1">
-                                        <div className="flex flex-col sm:flex-row sm:items-center gap-1">
-                                            <div className="w-full sm:w-52 md:w-52">
+                                        <div className="flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-center">
+                                            <div className="w-full sm:flex-1 sm:min-w-[13rem] md:min-w-[16rem] min-w-0">
                                                 <SearchableSelect
                                                     options={templateOptions}
                                                     value={selectedTemplate}
@@ -1691,14 +1691,14 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                     searchPlaceholder="Cari diagnosa..."
                                                     displayKey="label"
                                                     valueKey="key"
-                                                    className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none"
+                                                    className="h-8 px-2 py-1 text-[11px] rounded-md shadow-none sm:h-9 sm:px-3 sm:py-2 sm:text-sm sm:rounded-lg"
                                                 />
                                             </div>
                                             <button
                                                 type="button"
                                                 onClick={fillFromLastSoap}
                                                 disabled={!noRawat || fillingLastSoap}
-                                                className="inline-flex items-center w-auto self-start sm:self-auto px-2 py-1 text-[11px] text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                                                className="inline-flex items-center w-auto self-start sm:self-auto h-8 px-2.5 text-[11px] sm:h-9 sm:px-3 sm:text-sm whitespace-nowrap text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md sm:rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                                                 title="Ambil SOAP terakhir"
                                             >
                                                 SOAP terakhir
@@ -1706,11 +1706,11 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                             <button
                                                 type="button"
                                                 onClick={clearTemplateFields}
-                                                className="inline-flex items-center w-auto self-start sm:self-auto p-1 text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                                className="inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 self-start sm:self-auto text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md sm:rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                                                 aria-label="Bersihkan Form"
                                                 title="Bersihkan"
                                             >
-                                                <Eraser className="w-4 h-4" />
+                                                <Eraser className="w-4 h-4 sm:w-5 sm:h-5" />
                                             </button>
                                         </div>
                                     </div>
