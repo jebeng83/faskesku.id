@@ -508,6 +508,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     latestDraftRef.current = { key: draftStorageKey, data: formData };
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [fillingLastSoap, setFillingLastSoap] = useState(false);
     const [list, setList] = useState([]);
     const [loadingList, setLoadingList] = useState(false);
     const [message, setMessage] = useState(null);
@@ -735,6 +736,72 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             evaluasi: '',
         }));
         setSelectedTemplate('');
+    };
+
+    const fillFromLastSoap = async () => {
+        if (!noRawat) {
+            setError('No. Rawat tidak ditemukan');
+            setMessage(null);
+            return;
+        }
+        setFillingLastSoap(true);
+        try {
+            const url = route('rawat-jalan.pemeriksaan-ralan', { no_rawat: noRawat });
+            const res = await fetch(url, { headers: { Accept: 'application/json' } });
+            const json = await res.json();
+            const rows = Array.isArray(json?.data) ? json.data : [];
+            const filtered = rows.filter((r) => String(r?.no_rawat || '') === String(noRawat));
+            const pick = (arr) => {
+                const copy = [...arr];
+                copy.sort((a, b) => {
+                    const ta = a?.tgl_perawatan || '';
+                    const tb = b?.tgl_perawatan || '';
+                    if (ta === tb) {
+                        const ja = String(a?.jam_rawat || '');
+                        const jb = String(b?.jam_rawat || '');
+                        return jb.localeCompare(ja);
+                    }
+                    const da = new Date(ta);
+                    const db = new Date(tb);
+                    return db - da;
+                });
+                return copy[0] || null;
+            };
+            const latest = pick(filtered.length ? filtered : rows);
+            if (!latest) {
+                setError('SOAP terakhir belum ada');
+                setMessage(null);
+                return;
+            }
+            setFormData((prev) => ({
+                ...prev,
+                suhu_tubuh: latest.suhu_tubuh || '',
+                tensi: latest.tensi || '',
+                nadi: latest.nadi || '',
+                respirasi: latest.respirasi || '',
+                tinggi: latest.tinggi || '',
+                berat: latest.berat || '',
+                spo2: latest.spo2 || '',
+                gcs: latest.gcs || '',
+                kesadaran: latest.kesadaran || prev.kesadaran || 'Compos Mentis',
+                keluhan: latest.keluhan || '',
+                pemeriksaan: latest.pemeriksaan || '',
+                alergi: latest.alergi || '',
+                lingkar_perut: latest.lingkar_perut || '',
+                rtl: latest.rtl || '',
+                penilaian: latest.penilaian || '',
+                instruksi: latest.instruksi || '',
+                evaluasi: latest.evaluasi || '',
+            }));
+            setEditKey(null);
+            setError(null);
+            setMessage('Form terisi dari SOAP terakhir');
+        } catch (_) {
+            setError('Gagal memuat SOAP terakhir');
+            setMessage(null);
+        } finally {
+            setFillingLastSoap(false);
+        }
     };
 
     const kesadaranOptions = [
@@ -1627,6 +1694,15 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                     className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none"
                                                 />
                                             </div>
+                                            <button
+                                                type="button"
+                                                onClick={fillFromLastSoap}
+                                                disabled={!noRawat || fillingLastSoap}
+                                                className="inline-flex items-center w-auto self-start sm:self-auto px-2 py-1 text-[11px] text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                                                title="Ambil SOAP terakhir"
+                                            >
+                                                SOAP terakhir
+                                            </button>
                                             <button
                                                 type="button"
                                                 onClick={clearTemplateFields}
