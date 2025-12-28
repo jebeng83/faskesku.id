@@ -132,8 +132,9 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
 
         router.post(route('rawat-jalan.surat-sehat.store'), formData, {
             onSuccess: () => {
-                // Redirect back to rawat jalan index
-                router.get(route('rawat-jalan.index'));
+                setTimeout(() => {
+                    handlePrint();
+                }, 150);
             },
             onError: (errors) => {
                 const msg = firstErrorMessage(errors) || 'Tidak bisa menyimpan surat sehat.';
@@ -210,13 +211,23 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
             <Head title="Surat Sehat" />
             <style>{`
                 @page { 
-                    size: A5 landscape; 
+                    size: A4 portrait; 
                     margin: 0;
                 }
                 @media print {
+                    html, body {
+                        background: #fff !important;
+                    }
                     body { 
                         -webkit-print-color-adjust: exact; 
                         print-color-adjust: exact; 
+                    }
+                    body * {
+                        visibility: hidden !important;
+                    }
+                    .print-container,
+                    .print-container * {
+                        visibility: visible !important;
                     }
                     /* Hide all navigation elements */
                     nav, header, footer, .sidebar, [role="navigation"] {
@@ -236,13 +247,17 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                         width: 100% !important;
                         max-width: 100% !important;
                     }
-                    /* Format for A5 Landscape */
                     .print-container {
-                        width: 100%;
-                        height: 100%;
-                        margin: 0;
-                        padding: 4mm; /* Minimal padding for A5 */
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        width: 210mm;
+                        min-height: 297mm;
+                        margin: 0 auto;
+                        padding: 12mm;
                         box-sizing: border-box;
+                        background: #fff !important;
                     }
                     
                     /* Print-specific text colors - HITAM PEKAT */
@@ -270,15 +285,6 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                 </p>
                             </div>
                             <div className="flex gap-3">
-                                <button
-                                    onClick={handlePrint}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                                        <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6v-8z" />
-                                    </svg>
-                                    Cetak
-                                </button>
                                 <button
                                     type="button"
                                     onClick={() => router.get(backToRalanUrl)}
@@ -507,7 +513,7 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
                                                         <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                     </svg>
-                                                    {suratSehatData ? 'Ubah Surat Sehat' : 'Simpan Surat Sehat'}
+                                                    {suratSehatData ? 'Ubah & Cetak' : 'Simpan & Cetak'}
                                                 </>
                                             )}
                                         </button>
@@ -619,7 +625,7 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                                     <div className="text-center">
                                                         <div className="print-text-black">{(setting?.kabupaten || 'Madiun')}, {formatShortDate(formData.tanggalsurat)}</div>
                                                         <div className="print-text-black">Dokter Pemeriksa</div>
-                                                        <div className="mt-2 w-32 h-32 bg-white flex items-center justify-center mx-auto">
+                                                        <div className="mt-1.5 w-24 h-24 print:w-20 print:h-20 bg-white flex items-center justify-center mx-auto">
                                                             {ttdQrDataUrl ? (
                                                                 <img src={ttdQrDataUrl} alt="QR Code" className="w-full h-full object-contain" />
                                                             ) : (

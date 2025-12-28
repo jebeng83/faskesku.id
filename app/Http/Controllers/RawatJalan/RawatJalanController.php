@@ -1414,7 +1414,7 @@ class RawatJalanController extends Controller
             $validated
         );
 
-        return redirect()->route('rawat-jalan.index')
+        return redirect()->route('rawat-jalan.surat-sehat', $validated['no_rawat'])
             ->with('success', 'Surat sehat berhasil dibuat dan disimpan.');
     }
 
