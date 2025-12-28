@@ -39,6 +39,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     const [autoSaveStatus, setAutoSaveStatus] = useState("");
     const [showPatientDetails, setShowPatientDetails] = useState(false);
     const [resepAppendItems, setResepAppendItems] = useState(null);
+    const [diagnosaAppendItems, setDiagnosaAppendItems] = useState(null);
     const [selectedNoRawat, setSelectedNoRawat] = useState(params?.no_rawat || rawatJalan?.no_rawat || "");
     const [soapModalOpen, setSoapModalOpen] = useState(false);
     const [soapModalLoading, setSoapModalLoading] = useState(false);
@@ -341,7 +342,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
 
         switch (activeTab) {
             case "cppt":
-                return <CpptSoap {...commonProps} onOpenResep={() => setActiveTab("resep")} appendToPlanning={resepAppendItems} onPlanningAppended={() => setResepAppendItems(null)} />;
+                return <CpptSoap {...commonProps} onOpenResep={() => setActiveTab("resep")} onOpenDiagnosa={() => setActiveTab("diagnosa")} appendToPlanning={resepAppendItems} onPlanningAppended={() => setResepAppendItems(null)} appendToAssessment={diagnosaAppendItems} onAssessmentAppended={() => setDiagnosaAppendItems(null)} />;
             case "tarifTindakan":
                 return <TarifTindakan {...commonProps} />;
             case "resep":
@@ -356,13 +357,13 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                     />
                 );
             case "diagnosa":
-                return <Diagnosa {...commonProps} />;
+                return <Diagnosa {...commonProps} onInputSoap={(items) => { setDiagnosaAppendItems(items); setActiveTab("cppt"); }} />;
             case "lab":
                 return <PermintaanLab {...commonProps} />;
             case "radiologi":
                 return <PermintaanRadiologi {...commonProps} />;
             default:
-                return <CpptSoap {...commonProps} />;
+                return <CpptSoap {...commonProps} onOpenResep={() => setActiveTab("resep")} onOpenDiagnosa={() => setActiveTab("diagnosa")} appendToPlanning={resepAppendItems} onPlanningAppended={() => setResepAppendItems(null)} appendToAssessment={diagnosaAppendItems} onAssessmentAppended={() => setDiagnosaAppendItems(null)} />;
         }
     };
 

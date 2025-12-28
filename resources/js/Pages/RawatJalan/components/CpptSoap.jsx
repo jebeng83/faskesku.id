@@ -6,7 +6,7 @@ import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
 import { Eraser } from 'lucide-react';
 
-export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, appendToPlanning = null, onPlanningAppended = null }) {
+export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, onOpenDiagnosa = null, appendToPlanning = null, onPlanningAppended = null, appendToAssessment = null, onAssessmentAppended = null }) {
     // Gunakan helper untuk mendapatkan tanggal/waktu dengan timezone yang benar
     const nowDateString = todayDateString();
     const nowTimeString = nowDateTimeString().split(' ')[1].substring(0, 5);
@@ -696,6 +696,29 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             }
         }
     }, [appendToPlanning]);
+
+    useEffect(() => {
+        if (appendToAssessment && Array.isArray(appendToAssessment) && appendToAssessment.length > 0) {
+            const items = appendToAssessment
+                .map((it) => {
+                    const kode = String(it?.kode ?? '').trim();
+                    const nama = String(it?.nama ?? '').trim();
+                    if (!kode && !nama) return '';
+                    if (kode && nama) return `- ${kode} ${nama}`;
+                    return `- ${kode || nama}`;
+                })
+                .filter(Boolean);
+            if (items.length === 0) return;
+            const block = `Diagnosa :\n${items.join('\n')}`;
+            setFormData((prev) => ({
+                ...prev,
+                penilaian: prev.penilaian ? `${prev.penilaian}\n${block}` : block,
+            }));
+            if (typeof onAssessmentAppended === 'function') {
+                try { onAssessmentAppended(); } catch (_) {}
+            }
+        }
+    }, [appendToAssessment]);
     const clearTemplateFields = () => {
         setFormData((prev) => ({
             ...prev,
@@ -1679,7 +1702,20 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                         <div className="space-y-px md:space-y-px">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-1 md:gap-1 items-stretch">
                                 <div className="flex flex-col h-full">
-                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Penilaian (Assessment)</label>
+                                    <div className="flex items-center justify-between">
+                                        <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Penilaian (Assessment)</label>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (typeof onOpenDiagnosa === 'function') onOpenDiagnosa();
+                                            }}
+                                            className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300 dark:border-red-700"
+                                            aria-label="Buka tab Diagnosa"
+                                            title="Buka Diagnosa"
+                                        >
+                                            Diagnosa
+                                        </button>
+                                    </div>
                                     <textarea name="penilaian" value={formData.penilaian} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
                                 </div>
                                 <div className="flex flex-col h-full">

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) {
+export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '', onInputSoap = null }) {
     const [query, setQuery] = useState('');
     const [selected, setSelected] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -106,6 +106,9 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) 
             }));
             setSelected(mapped);
             setSaveStatus({ type: 'success', message: 'Diagnosa berhasil disimpan' });
+            if (typeof onInputSoap === 'function') {
+                try { onInputSoap(mapped); } catch (_) {}
+            }
         } catch (e) {
             setSaveStatus({ type: 'error', message: e?.message || 'Gagal menyimpan diagnosa' });
         } finally {
@@ -347,7 +350,7 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) 
                                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                     </svg>
-                                    Simpan Diagnosa
+                                    INPUT SOAP
                                 </>
                             )}
                         </button>
