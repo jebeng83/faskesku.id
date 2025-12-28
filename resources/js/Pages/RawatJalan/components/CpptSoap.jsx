@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import SearchableSelect from '../../../Components/SearchableSelect.jsx';
@@ -502,6 +502,10 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         evaluasi: '',
         nip: '',
     });
+    const draftStorageKey = useMemo(() => (noRawat ? `cpptSoap_draft_${noRawat}` : 'cpptSoap_draft'), [noRawat]);
+    const [draftReady, setDraftReady] = useState(false);
+    const latestDraftRef = useRef({ key: draftStorageKey, data: formData });
+    latestDraftRef.current = { key: draftStorageKey, data: formData };
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [list, setList] = useState([]);
@@ -603,6 +607,63 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             const nip = sessionStorage.getItem('cpptSoap_nip');
             if (nip) setFormData((prev) => ({ ...prev, nip }));
         } catch (_) {}
+    }, []);
+
+    useEffect(() => {
+        setDraftReady(false);
+        let draft = null;
+        try {
+            const raw = sessionStorage.getItem(draftStorageKey);
+            if (raw) draft = JSON.parse(raw);
+        } catch (_) {}
+        setFormData((prev) => {
+            const base = {
+                tgl_perawatan: todayDateString(),
+                jam_rawat: nowDateTimeString().split(' ')[1]?.substring(0, 5) || '',
+                suhu_tubuh: '',
+                tensi: '',
+                nadi: '',
+                respirasi: '',
+                tinggi: '',
+                berat: '',
+                spo2: '',
+                gcs: '',
+                kesadaran: 'Compos Mentis',
+                keluhan: '',
+                pemeriksaan: '',
+                alergi: '',
+                lingkar_perut: '',
+                rtl: '',
+                penilaian: '',
+                instruksi: '',
+                evaluasi: '',
+                nip: prev.nip || '',
+            };
+            if (draft && typeof draft === 'object') {
+                const next = { ...base, ...draft };
+                if (!next.nip) next.nip = base.nip || '';
+                return next;
+            }
+            return base;
+        });
+        setEditKey(null);
+        setDraftReady(true);
+    }, [draftStorageKey]);
+
+    useEffect(() => {
+        if (!draftReady) return;
+        try {
+            sessionStorage.setItem(draftStorageKey, JSON.stringify(formData));
+        } catch (_) {}
+    }, [draftStorageKey, draftReady, formData]);
+
+    useEffect(() => {
+        return () => {
+            try {
+                const { key, data } = latestDraftRef.current || {};
+                if (key) sessionStorage.setItem(key, JSON.stringify(data || {}));
+            } catch (_) {}
+        };
     }, []);
 
     useEffect(() => {

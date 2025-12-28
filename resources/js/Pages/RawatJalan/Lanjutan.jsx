@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Head, Link } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import { motion, useReducedMotion } from "framer-motion";
@@ -50,6 +50,22 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     const [soapPage, setSoapPage] = useState(1);
     const [vitalsChartOpen, setVitalsChartOpen] = useState(false);
     const [vitalsChartDefaultVital, setVitalsChartDefaultVital] = useState('all');
+    const [suratMenuOpen, setSuratMenuOpen] = useState(false);
+    const suratMenuRef = useRef(null);
+
+    const currentNoRawat = selectedNoRawat || params?.no_rawat || rawatJalan?.no_rawat || "";
+
+    useEffect(() => {
+        if (!suratMenuOpen) return;
+        const onMouseDown = (e) => {
+            if (!suratMenuRef.current) return;
+            if (!suratMenuRef.current.contains(e.target)) {
+                setSuratMenuOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", onMouseDown);
+        return () => document.removeEventListener("mousedown", onMouseDown);
+    }, [suratMenuOpen]);
 
     const toggle = (section) => {
         setOpenAcc((prev) => ({
@@ -761,7 +777,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                             {typeof lastVisitDays === 'number' ? `${lastVisitDays} hari` : '-'}
                                         </span>
                                     </div>
-                                    <div className="mt-2 mb-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded px-2 py-1.5">
+                                    <div className="mt-2 mb-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded px-2 py-1.5 flex items-center gap-2">
                                         <button
                                             onClick={openSoapHistoryModal}
                                             className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded border border-blue-200"
@@ -769,6 +785,39 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                         >
                                             CPPT
                                         </button>
+                                        <div ref={suratMenuRef} className="relative">
+                                            <button
+                                                type="button"
+                                                onClick={() => setSuratMenuOpen((v) => !v)}
+                                                disabled={!currentNoRawat}
+                                                className={`text-xs px-3 py-1.5 rounded border ${
+                                                    currentNoRawat
+                                                        ? "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200"
+                                                        : "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                                                }`}
+                                                title="Pilih surat"
+                                            >
+                                                Surat
+                                            </button>
+                                            {suratMenuOpen && (
+                                                <div className="absolute z-50 mt-1 w-44 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg overflow-hidden">
+                                                    <Link
+                                                        href={route("rawat-jalan.surat-sehat", currentNoRawat)}
+                                                        onClick={() => setSuratMenuOpen(false)}
+                                                        className="block w-full text-left px-3 py-2 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+                                                    >
+                                                        Surat Sehat
+                                                    </Link>
+                                                    <Link
+                                                        href={route("rawat-jalan.surat-sakit", currentNoRawat)}
+                                                        onClick={() => setSuratMenuOpen(false)}
+                                                        className="block w-full text-left px-3 py-2 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 border-t border-gray-100 dark:border-gray-800"
+                                                    >
+                                                        Surat Sakit
+                                                    </Link>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
