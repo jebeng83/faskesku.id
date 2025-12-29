@@ -293,11 +293,16 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                 });
                 if (!res.ok) throw new Error('Gagal memuat riwayat');
                 const json = await res.json();
-                setItems(Array.isArray(json.data) ? json.data : []);
-                
-                // Set the first visit as expanded by default if there are items
-                if (Array.isArray(json.data) && json.data.length > 0) {
-                    setExpandedVisit(json.data[0]);
+                const data = Array.isArray(json.data) ? json.data : [];
+                setItems(data);
+
+                if (data.length > 0) {
+                    const isDesktop = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+                        ? window.matchMedia('(min-width: 768px)').matches
+                        : true;
+                    setExpandedVisit(isDesktop ? data[0] : null);
+                } else {
+                    setExpandedVisit(null);
                 }
             } catch (e) {
                 if (e.name !== 'AbortError') setError(e.message || 'Terjadi kesalahan');
@@ -832,17 +837,25 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
     }
 
     // Tampilan header mobile: netral (tanpa warna khusus)
+    const mobileItems = items
+        .slice()
+        .sort((a, b) => {
+            const at = Date.parse(String(a?.tgl_registrasi || '')) || 0;
+            const bt = Date.parse(String(b?.tgl_registrasi || '')) || 0;
+            return bt - at;
+        })
+        .slice(0, 2);
 
     return (
         <div className="overflow-hidden">
             {/* Mobile: Card list */}
-            <div className="md:hidden grid gap-3 pr-1 h-[396px] overflow-y-auto">
-                {items.map((row, index) => {
+            <div className="md:hidden grid gap-3 pr-1 justify-items-center items-start content-start auto-rows-max">
+                {mobileItems.map((row, index) => {
                     const isOpen = expandedVisit && expandedVisit.no_rawat === row.no_rawat;
                     return (
                         <div
                             key={row.no_rawat}
-                            className={`rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden`}
+                            className={`w-full max-w-[360px] self-start rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden`}
                         >
                             <button
                                 onClick={() => toggleVisitDetails(row)}

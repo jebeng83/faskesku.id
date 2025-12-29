@@ -55,6 +55,8 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     const suratMenuRef = useRef(null);
 
     const currentNoRawat = selectedNoRawat || params?.no_rawat || rawatJalan?.no_rawat || "";
+    const caraBayar = rawatJalan?.penjab?.png_jawab || rawatJalan?.cara_bayar || "BPJS";
+    const isBpjs = String(caraBayar || "").toLowerCase().includes("bpjs");
 
     useEffect(() => {
         if (!suratMenuOpen) return;
@@ -730,8 +732,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                     )}
                                 </button>
                             </div>
-                            {/* Patient summary under the Riwayat header for large screens */}
-                            <div className="hidden lg:block px-2 py-0.5 border-b border-gray-200 dark:border-gray-700">
+                            <div className="px-2 py-0.5 border-b border-gray-200 dark:border-gray-700">
                                 <div className="text-[11px] font-medium text-gray-800 dark:text-gray-200 mb-1">Identitas Pasien</div>
                                 <div className="space-y-0 text-[12px] leading-tight">
                                     <div className="grid grid-cols-[7.5rem_0.75rem_1fr] md:grid-cols-[8.5rem_0.9rem_1fr] items-baseline gap-x-0.5">
@@ -769,7 +770,17 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                     <div className="grid grid-cols-[7.5rem_0.75rem_1fr] md:grid-cols-[8.5rem_0.9rem_1fr] items-baseline gap-x-0.5">
                                         <span className="text-left text-gray-700 dark:text-gray-300">Cara bayar</span>
                                         <span className="text-gray-400 text-center">:</span>
-                                        <span className="text-gray-900 dark:text-white">{rawatJalan?.penjab?.png_jawab || rawatJalan?.cara_bayar || 'BPJS'}</span>
+                                        <span className="text-gray-900 dark:text-white">
+                                            <span
+                                                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                                                    isBpjs
+                                                        ? "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200"
+                                                        : "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200"
+                                                }`}
+                                            >
+                                                {caraBayar}
+                                            </span>
+                                        </span>
                                     </div>
                                     <div className="grid grid-cols-[7.5rem_0.75rem_1fr] md:grid-cols-[8.5rem_0.9rem_1fr] items-baseline gap-x-0.5">
                                         <span className="block mb-1 text-left text-gray-700 dark:text-gray-300">Kunjung Terakhir</span>
