@@ -6,6 +6,7 @@ import {
     BookOpen,
     ArrowRight,
     ShieldCheck,
+    BarChart2,
     Activity,
     ClipboardList,
     Bell,
@@ -235,6 +236,16 @@ const TopNavbar = React.memo(function TopNavbar() {
                                 </span>
                             </Link>
                         )}
+                        <Link
+                            href="/laporan"
+                            className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
+                        >
+                            <BarChart2 className="w-4 h-4 transition-transform group-hover:scale-110" />
+                            <span className="relative">
+                                Laporan
+                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
+                            </span>
+                        </Link>
                     </nav>
                     <div className="flex items-center gap-2">
                         <Link
@@ -406,6 +417,11 @@ const Footer = React.memo(function Footer() {
             label: "SATUSEHAT Monitoring",
             href: "/satusehat/monitoring",
             requiredPermission: "group.satusehat.access",
+        },
+        {
+            label: "Laporan",
+            href: "/laporan",
+            requiredPermission: null,
         },
         {
             label: "Penjaminan Mutu (Audit)",
@@ -902,6 +918,13 @@ export default function Dashboard() {
                     href: "/akutansi/home",
                     icon: <Wallet className="w-5 h-5" />,
                     requiredPermission: "group.keuangan.access",
+                },
+                {
+                    key: "laporan",
+                    label: "Laporan",
+                    href: "/laporan",
+                    icon: <BarChart2 className="w-5 h-5" />,
+                    requiredPermission: null,
                 },
                 {
                     key: "settings",
