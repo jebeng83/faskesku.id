@@ -303,6 +303,26 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                   </motion.div>
 
                   <div className="px-4 py-2 border-b border-[oklch(84.1%_0.238_128.85_/_0.35)] text-[oklch(98.5%_0_0)]">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const idx = pages.findIndex((p) => p.key === "resep");
+                          if (idx >= 0) {
+                            setDir(idx > index ? 1 : -1);
+                            setIndex(idx);
+                          }
+                        }}
+                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] border border-[oklch(84.1%_0.238_128.85_/_0.45)]"
+                        aria-label="Buka Resep"
+                        title="Buka Resep"
+                      >
+                        Resep
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="px-4 py-2 border-b border-[oklch(84.1%_0.238_128.85_/_0.35)] text-[oklch(98.5%_0_0)]">
                     <div className="flex items-center justify-between">
                       <div className="text-[11px] font-medium mb-1">Identitas Pasien</div>
                       <button

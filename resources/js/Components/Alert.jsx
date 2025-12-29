@@ -13,6 +13,7 @@ export default function Alert({
 	onClose,
 	autoClose = false,
 	autoCloseDelay = 3000,
+	zIndex = 10000,
 }) {
 	useEffect(() => {
 		if (isOpen && autoClose) {
@@ -128,7 +129,7 @@ export default function Alert({
 	};
 
 	return (
-		<div className="fixed inset-0 z-50 overflow-y-auto">
+		<div className="fixed inset-0 overflow-y-auto" style={{ zIndex }}>
 			<div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
 				{/* Overlay */}
 				<div

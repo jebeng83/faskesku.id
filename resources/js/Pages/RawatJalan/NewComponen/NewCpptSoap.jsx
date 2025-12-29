@@ -186,7 +186,7 @@ export default function NewCpptSoap({ token = '', noRkmMedis = '', noRawat = '',
   const handleChange = (e) => setFormData((p) => ({ ...p, [e.target.name]: e.target.value }));
   const handleSubmit = (e) => {
     e.preventDefault();
-    setModalOpen(true);
+    performSave();
   };
 
   const performSave = async () => {
@@ -314,7 +314,7 @@ export default function NewCpptSoap({ token = '', noRkmMedis = '', noRawat = '',
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 bg-[oklch(14.5%_0_0)] text-[oklch(84.1%_0.238_128.85)] font-mono rounded-2xl border border-[oklch(84.1%_0.238_128.85_/_0.35)] shadow-[0_0_20px_oklch(84.1%_0.238_128.85_/_0.25)] overflow-hidden">
+    <form onSubmit={handleSubmit} className="space-y-3 bg-[oklch(14.5%_0_0)] text-[oklch(98.5%_0_0)] font-mono rounded-2xl border border-[oklch(84.1%_0.238_128.85_/_0.35)] shadow-[0_0_20px_oklch(84.1%_0.238_128.85_/_0.25)] overflow-hidden">
       <div className="px-4 py-2.5 border-b border-[oklch(84.1%_0.238_128.85_/_0.35)]">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
@@ -359,14 +359,14 @@ export default function NewCpptSoap({ token = '', noRkmMedis = '', noRawat = '',
                     placeholder="— Pilih pegawai —"
                     searchPlaceholder="Ketik nama atau NIK pegawai..."
                     defaultDisplay={pegawaiDisplay || currentName || null}
-                    className="!h-8 !px-2 !py-1 !text-xs !rounded !shadow-none !bg-[oklch(14.5%_0_0)] !text-[oklch(84.1%_0.238_128.85)] !border-[oklch(84.1%_0.238_128.85_/_0.35)] !focus:ring-[oklch(84.1%_0.238_128.85)] !focus:border-[oklch(84.1%_0.238_128.85)]"
+                    className="!h-8 !px-2 !py-1 !text-xs !rounded !shadow-none !bg-[oklch(14.5%_0_0)] !text-[oklch(98.5%_0_0)] !border-[oklch(84.1%_0.238_128.85_/_0.35)] !focus:ring-[oklch(84.1%_0.238_128.85)] !focus:border-[oklch(84.1%_0.238_128.85)]"
                     dropdownClassName="bg-[oklch(14.5%_0_0)] border-[oklch(84.1%_0.238_128.85_/_0.5)] shadow-[0_0_14px_oklch(84.1%_0.238_128.85_/_0.5)]"
-                    searchInputClassName="bg-[oklch(14.5%_0_0)] text-[oklch(84.1%_0.238_128.85)] placeholder-[oklch(84.1%_0.238_128.85_/_0.7)] border-[oklch(84.1%_0.238_128.85_/_0.5)] focus:ring-[oklch(84.1%_0.238_128.85)] focus:border-[oklch(84.1%_0.238_128.85)] drop-shadow-[0_0_6px_oklch(84.1%_0.238_128.85_/_0.6)]"
-                    optionClassName="bg-[oklch(14.5%_0_0)] text-[oklch(84.1%_0.238_128.85)] drop-shadow-[0_0_4px_oklch(84.1%_0.238_128.85_/_0.5)]"
-                    selectedOptionClassName="bg-[oklch(14.5%_0_0)] text-[oklch(84.1%_0.238_128.85)]"
+                    searchInputClassName="bg-[oklch(14.5%_0_0)] text-[oklch(98.5%_0_0)] placeholder-[oklch(84.1%_0.238_128.85_/_0.7)] border-[oklch(84.1%_0.238_128.85_/_0.5)] focus:ring-[oklch(84.1%_0.238_128.85)] focus:border-[oklch(84.1%_0.238_128.85)] drop-shadow-[0_0_6px_oklch(84.1%_0.238_128.85_/_0.6)]"
+                    optionClassName="bg-[oklch(14.5%_0_0)] text-[oklch(98.5%_0_0)] drop-shadow-[0_0_4px_oklch(84.1%_0.238_128.85_/_0.5)]"
+                    selectedOptionClassName="bg-[oklch(14.5%_0_0)] text-[oklch(98.5%_0_0)]"
                     optionHoverClassName="hover:bg-[oklch(14.5%_0_0)]"
                     selectedOptionHoverClassName="hover:bg-[oklch(14.5%_0_0)]"
-                    displayClassName="text-[oklch(84.1%_0.238_128.85)] drop-shadow-[0_0_6px_oklch(84.1%_0.238_128.85_/_0.7)]"
+                    displayClassName="text-[oklch(98.5%_0_0)] drop-shadow-[0_0_6px_oklch(84.1%_0.238_128.85_/_0.7)]"
                   />
               </div>
             </div>
@@ -413,12 +413,12 @@ export default function NewCpptSoap({ token = '', noRkmMedis = '', noRawat = '',
                 valueKey="value"
                 className="!h-8 !px-2 !py-1 !text-xs !rounded !shadow-none !bg-[oklch(14.5%_0_0)] !border-[oklch(84.1%_0.238_128.85_/_0.35)] !focus:ring-[oklch(84.1%_0.238_128.85)] !focus:border-[oklch(84.1%_0.238_128.85)]"
                 dropdownClassName="bg-[oklch(14.5%_0_0)] border-[oklch(84.1%_0.238_128.85_/_0.5)] shadow-[0_0_14px_oklch(84.1%_0.238_128.85_/_0.5)]"
-                searchInputClassName="bg-[oklch(14.5%_0_0)] text-[oklch(84.1%_0.238_128.85)] placeholder-[oklch(84.1%_0.238_128.85_/_0.7)] border-[oklch(84.1%_0.238_128.85_/_0.5)] focus:ring-[oklch(84.1%_0.238_128.85)] focus:border-[oklch(84.1%_0.238_128.85)] drop-shadow-[0_0_6px_oklch(84.1%_0.238_128.85_/_0.6)]"
-                optionClassName="bg-[oklch(14.5%_0_0)] text-[oklch(84.1%_0.238_128.85)] drop-shadow-[0_0_4px_oklch(84.1%_0.238_128.85_/_0.5)]"
-                selectedOptionClassName="bg-[oklch(14.5%_0_0)] text-[oklch(84.1%_0.238_128.85)]"
+                searchInputClassName="bg-[oklch(14.5%_0_0)] text-[oklch(98.5%_0_0)] placeholder-[oklch(84.1%_0.238_128.85_/_0.7)] border-[oklch(84.1%_0.238_128.85_/_0.5)] focus:ring-[oklch(84.1%_0.238_128.85)] focus:border-[oklch(84.1%_0.238_128.85)] drop-shadow-[0_0_6px_oklch(84.1%_0.238_128.85_/_0.6)]"
+                optionClassName="bg-[oklch(14.5%_0_0)] text-[oklch(98.5%_0_0)] drop-shadow-[0_0_4px_oklch(84.1%_0.238_128.85_/_0.5)]"
+                selectedOptionClassName="bg-[oklch(14.5%_0_0)] text-[oklch(98.5%_0_0)]"
                 optionHoverClassName="hover:bg-[oklch(14.5%_0_0)]"
                 selectedOptionHoverClassName="hover:bg-[oklch(14.5%_0_0)]"
-                displayClassName={`${((kdAlergi || '').trim() !== '' && (kdAlergi || '').trim() !== '-') ? 'text-red-600' : 'text-[oklch(84.1%_0.238_128.85)]'} drop-shadow-[0_0_6px_oklch(84.1%_0.238_128.85_/_0.7)]`}
+                displayClassName={`${((kdAlergi || '').trim() !== '' && (kdAlergi || '').trim() !== '-') ? 'text-red-600' : 'text-[oklch(98.5%_0_0)]'} drop-shadow-[0_0_6px_oklch(84.1%_0.238_128.85_/_0.7)]`}
               />
             </div>
             <label className="text-[11px] font-semibold">Template :</label>
@@ -431,14 +431,14 @@ export default function NewCpptSoap({ token = '', noRkmMedis = '', noRawat = '',
                 searchPlaceholder="Cari diagnosa..."
                 displayKey="label"
                 valueKey="key"
-                className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none !bg-[oklch(14.5%_0_0)] !text-[oklch(84.1%_0.238_128.85)] !border-[oklch(84.1%_0.238_128.85_/_0.35)] !focus:ring-[oklch(84.1%_0.238_128.85)] !focus:border-[oklch(84.1%_0.238_128.85)] shadow-[0_0_10px_oklch(84.1%_0.238_128.85_/_0.4)]"
+                className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none !bg-[oklch(14.5%_0_0)] !text-[oklch(98.5%_0_0)] !border-[oklch(84.1%_0.238_128.85_/_0.35)] !focus:ring-[oklch(84.1%_0.238_128.85)] !focus:border-[oklch(84.1%_0.238_128.85)] shadow-[0_0_10px_oklch(84.1%_0.238_128.85_/_0.4)]"
                 dropdownClassName="bg-[oklch(14.5%_0_0)] border-[oklch(84.1%_0.238_128.85_/_0.5)] shadow-[0_0_14px_oklch(84.1%_0.238_128.85_/_0.5)]"
-                searchInputClassName="bg-[oklch(14.5%_0_0)] text-[oklch(84.1%_0.238_128.85)] placeholder-[oklch(84.1%_0.238_128.85_/_0.7)] border-[oklch(84.1%_0.238_128.85_/_0.5)] focus:ring-[oklch(84.1%_0.238_128.85)] focus:border-[oklch(84.1%_0.238_128.85)] drop-shadow-[0_0_6px_oklch(84.1%_0.238_128.85_/_0.6)]"
-                optionClassName="bg-[oklch(14.5%_0_0)] text-[oklch(84.1%_0.238_128.85)] drop-shadow-[0_0_4px_oklch(84.1%_0.238_128.85_/_0.5)]"
-                selectedOptionClassName="bg-[oklch(14.5%_0_0)] text-[oklch(84.1%_0.238_128.85)]"
+                searchInputClassName="bg-[oklch(14.5%_0_0)] text-[oklch(98.5%_0_0)] placeholder-[oklch(84.1%_0.238_128.85_/_0.7)] border-[oklch(84.1%_0.238_128.85_/_0.5)] focus:ring-[oklch(84.1%_0.238_128.85)] focus:border-[oklch(84.1%_0.238_128.85)] drop-shadow-[0_0_6px_oklch(84.1%_0.238_128.85_/_0.6)]"
+                optionClassName="bg-[oklch(14.5%_0_0)] text-[oklch(98.5%_0_0)] drop-shadow-[0_0_4px_oklch(84.1%_0.238_128.85_/_0.5)]"
+                selectedOptionClassName="bg-[oklch(14.5%_0_0)] text-[oklch(98.5%_0_0)]"
                 optionHoverClassName="hover:bg-[oklch(14.5%_0_0)]"
                 selectedOptionHoverClassName="hover:bg-[oklch(14.5%_0_0)]"
-                displayClassName="text-[oklch(84.1%_0.238_128.85)] drop-shadow-[0_0_6px_oklch(84.1%_0.238_128.85_/_0.7)]"
+                displayClassName="text-[oklch(98.5%_0_0)] drop-shadow-[0_0_6px_oklch(84.1%_0.238_128.85_/_0.7)]"
               />
             </div>
             <button
@@ -522,11 +522,6 @@ export default function NewCpptSoap({ token = '', noRkmMedis = '', noRawat = '',
           <div className="space-y-1">
             <div className="flex items-center justify-between">
               <label className="block text-[11px] font-semibold">Rencana Tindak Lanjut (Planning)</label>
-              <Link href={noRawat ? `/rawat-jalan/obat-ralan/${encodeURIComponent(noRawat)}` : '/farmasi/resep-obat'}
-                onClick={(e) => { if (typeof onOpenResep === 'function') { e.preventDefault(); onOpenResep(); } }}
-                className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] border border-[oklch(84.1%_0.238_128.85_/_0.45)]">
-                Resep
-              </Link>
             </div>
             <textarea name="rtl" rows={3} value={formData.rtl} onChange={handleChange}
               className="w-full text-xs rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
@@ -674,7 +669,7 @@ export default function NewCpptSoap({ token = '', noRkmMedis = '', noRawat = '',
                           </div>
                         </div>
                         <div className="px-3 pb-2 text-[11px]">
-                          <div className="text-[oklch(84.1%_0.238_128.85)]">{(row?.keluhan || '').toString().slice(0, 160) || '-'}</div>
+                          <div className="text-[oklch(98.5%_0_0)]">{(row?.keluhan || '').toString().slice(0, 160) || '-'}</div>
                           <div className="mt-1 text-[10px]">{(row?.pemeriksaan || '').toString().slice(0, 200) || '-'}</div>
                           <div className="mt-2 hidden">
                             <button
@@ -790,18 +785,7 @@ export default function NewCpptSoap({ token = '', noRkmMedis = '', noRawat = '',
         </div>
       </div>
 
-      {modalOpen && (
-        <div className="fixed inset-0 z-[99999] bg-[oklch(14.5%_0_0_/_0.6)] backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-md rounded-xl bg-[oklch(14.5%_0_0)] text-[oklch(84.1%_0.238_128.85)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] shadow-[0_0_18px_oklch(84.1%_0.238_128.85_/_0.35)]">
-            <div className="px-4 py-3 border-b border-[oklch(84.1%_0.238_128.85_/_0.35)] font-semibold">Konfirmasi</div>
-            <div className="p-4 text-sm">Simpan pemeriksaan untuk No. Rawat {noRawat || '-'} dan No RM {noRkmMedis || '-'}?</div>
-            <div className="px-4 py-3 flex justify-end gap-2 border-t border-[oklch(84.1%_0.238_128.85_/_0.35)]">
-              <button type="button" className="px-3 py-1.5 rounded-md border border-[oklch(84.1%_0.238_128.85_/_0.45)]" onClick={() => setModalOpen(false)}>Batal</button>
-              <button type="button" className="px-3 py-1.5 rounded-md bg-[oklch(84.1%_0.238_128.85)] text-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85)]" onClick={performSave} disabled={saving}>Simpan</button>
-            </div>
-          </div>
-        </div>
-      )}
+      
 
       {message && (
         <div className="px-4 py-2 text-[11px] text-emerald-500">{message}</div>
