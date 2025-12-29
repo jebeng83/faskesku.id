@@ -8,7 +8,7 @@ import SearchableSelect from "@/Components/SearchableSelect";
 import PenjabCreateModal from "@/Components/PenjabCreateModal";
 import WilayahSearchableSelect from "@/Components/WilayahSearchableSelect";
 import AddressDisplay from "@/Components/AddressDisplay";
-import wilayahRoutes from "@/routes/api/wilayah";
+import wilayahRoutes from "@/routes/api/public/wilayah";
 import { isValidWilayahCode, constructKodeWilayah } from "@/tools/wilayah";
 import { IdentificationIcon, PhoneIcon, ClipboardDocumentListIcon, UserGroupIcon, UserPlusIcon } from "@heroicons/react/24/outline";
 

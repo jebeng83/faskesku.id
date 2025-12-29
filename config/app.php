@@ -122,7 +122,7 @@ return [
 
     'maintenance' => [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
-        'store' => env('APP_MAINTENANCE_STORE', 'database'),
+        'store' => env('APP_MAINTENANCE_STORE', env('REDIS_HOST') ? 'redis' : 'database'),
     ],
 
     // Koordinat peta default (untuk komponen UI). Dibaca dari .env dan dicache.

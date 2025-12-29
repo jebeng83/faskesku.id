@@ -579,11 +579,20 @@ class RawatJalanController extends Controller
             'instruksi' => 'required|string|max:2000',
             'evaluasi' => 'required|string|max:2000',
             'nip' => 'required|string|max:20',
+            'alergi_pasien' => 'nullable|array',
+            'alergi_pasien.no_rkm_medis' => 'required_with:alergi_pasien|string|max:15',
+            'alergi_pasien.kode_jenis' => 'required_with:alergi_pasien|integer',
+            'alergi_pasien.kd_alergi' => 'required_with:alergi_pasien|string|max:5',
         ]);
 
         // Pastikan format jam menjadi H:i:s
         $validated['jam_rawat'] = sprintf('%s:00', $validated['jam_rawat']);
 
+        // Pisahkan alergi_pasien dari data pemeriksaan
+        $alergiPasien = $validated['alergi_pasien'] ?? null;
+        unset($validated['alergi_pasien']);
+
+        // Insert data pemeriksaan tanpa alergi_pasien
         DB::table('pemeriksaan_ralan')->insert($validated);
 
         // Update status reg_periksa.stts menjadi 'Sudah' setelah pemeriksaan tersimpan
@@ -607,6 +616,41 @@ class RawatJalanController extends Controller
                     'new_stts' => 'Sudah',
                     'rows_affected' => $updated,
                 ]);
+
+                // Simpan alergi pasien jika ada
+                if (isset($alergiPasien) && is_array($alergiPasien)) {
+                    $alergiData = $alergiPasien;
+                    $noRM = $alergiData['no_rkm_medis'] ?? null;
+                    $kodeJenis = $alergiData['kode_jenis'] ?? null;
+                    $kdAlergi = trim((string) ($alergiData['kd_alergi'] ?? ''));
+
+                    if ($noRM && $kodeJenis && $kdAlergi !== '' && $kdAlergi !== '-') {
+                        try {
+                            DB::table('alergi_pasien')->updateOrInsert(
+                                [
+                                    'no_rkm_medis' => $noRM,
+                                    'kd_alergi' => $kdAlergi,
+                                ],
+                                [
+                                    'kode_jenis' => $kodeJenis,
+                                ]
+                            );
+
+                            \Illuminate\Support\Facades\Log::info('Berhasil menyimpan alergi_pasien', [
+                                'no_rkm_medis' => $noRM,
+                                'kode_jenis' => $kodeJenis,
+                                'kd_alergi' => $kdAlergi,
+                            ]);
+                        } catch (\Throwable $e) {
+                            \Illuminate\Support\Facades\Log::error('Gagal menyimpan alergi_pasien', [
+                                'no_rkm_medis' => $noRM,
+                                'kode_jenis' => $kodeJenis,
+                                'kd_alergi' => $kdAlergi,
+                                'error' => $e->getMessage(),
+                            ]);
+                        }
+                    }
+                }
             } else {
                 \Illuminate\Support\Facades\Log::warning('reg_periksa tidak ditemukan untuk update status', [
                     'no_rawat' => $validated['no_rawat'],
@@ -676,6 +720,10 @@ class RawatJalanController extends Controller
             'instruksi' => 'required|string|max:2000',
             'evaluasi' => 'required|string|max:2000',
             'nip' => 'required|string|max:20',
+            'alergi_pasien' => 'nullable|array',
+            'alergi_pasien.no_rkm_medis' => 'required_with:alergi_pasien|string|max:15',
+            'alergi_pasien.kode_jenis' => 'required_with:alergi_pasien|integer',
+            'alergi_pasien.kd_alergi' => 'required_with:alergi_pasien|string|max:5',
         ]);
 
         $key = $validated['key'];
@@ -712,6 +760,41 @@ class RawatJalanController extends Controller
                     'new_stts' => 'Sudah',
                     'rows_affected' => $updatedReg,
                 ]);
+
+                // Simpan alergi pasien jika ada
+                if (isset($validated['alergi_pasien']) && is_array($validated['alergi_pasien'])) {
+                    $alergiData = $validated['alergi_pasien'];
+                    $noRM = $alergiData['no_rkm_medis'] ?? null;
+                    $kodeJenis = $alergiData['kode_jenis'] ?? null;
+                    $kdAlergi = trim((string) ($alergiData['kd_alergi'] ?? ''));
+
+                    if ($noRM && $kodeJenis && $kdAlergi !== '' && $kdAlergi !== '-') {
+                        try {
+                            DB::table('alergi_pasien')->updateOrInsert(
+                                [
+                                    'no_rkm_medis' => $noRM,
+                                    'kd_alergi' => $kdAlergi,
+                                ],
+                                [
+                                    'kode_jenis' => $kodeJenis,
+                                ]
+                            );
+
+                            \Illuminate\Support\Facades\Log::info('Berhasil menyimpan alergi_pasien setelah update pemeriksaan', [
+                                'no_rkm_medis' => $noRM,
+                                'kode_jenis' => $kodeJenis,
+                                'kd_alergi' => $kdAlergi,
+                            ]);
+                        } catch (\Throwable $e) {
+                            \Illuminate\Support\Facades\Log::error('Gagal menyimpan alergi_pasien setelah update pemeriksaan', [
+                                'no_rkm_medis' => $noRM,
+                                'kode_jenis' => $kodeJenis,
+                                'kd_alergi' => $kdAlergi,
+                                'error' => $e->getMessage(),
+                            ]);
+                        }
+                    }
+                }
             } else {
                 \Illuminate\Support\Facades\Log::warning('reg_periksa tidak ditemukan untuk update status', [
                     'no_rawat' => $key['no_rawat'],

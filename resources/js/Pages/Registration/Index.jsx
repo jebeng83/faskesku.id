@@ -759,6 +759,7 @@ export default function Registration({
                 alert(`Lengkapi data registrasi: ${missingList}`);
                 return;
             }
+            
             // Pastikan URL benar. Gunakan fallback eksplisit dan hanya terima hasil Ziggy jika valid.
             let url = `/registration/${encodeURIComponent(selectedPatient.no_rkm_medis)}/register`;
             try {
@@ -770,33 +771,60 @@ export default function Registration({
                     }
                 }
             } catch (_) {}
-
-            // Refresh CSRF token sebelum request - ini akan memastikan token sesuai dengan session aktif
+            
+            // Helper untuk mendapatkan token dari cookie
+            const getCookieToken = () => {
+                try {
+                    const cookieStr = '; ' + document.cookie;
+                    const xsrfPart = cookieStr.split('; XSRF-TOKEN=');
+                    if (xsrfPart.length === 2) {
+                        const token = decodeURIComponent(xsrfPart.pop().split(';').shift());
+                        return token || '';
+                    }
+                } catch (e) {
+                    console.warn('Error reading cookie:', e);
+                }
+                return '';
+            };
+            
+            // Helper untuk mendapatkan token dari meta tag
+            const getMetaToken = () => {
+                try {
+                    return document.querySelector('meta[name="csrf-token"]')?.content || '';
+                } catch (e) {
+                    return '';
+                }
+            };
+            
+            // PENTING: Biarkan axios membaca token dari cookie secara otomatis
+            // Jangan set token secara manual di headers karena bisa berbeda dengan session
+            // Axios sudah dikonfigurasi dengan xsrfCookieName dan xsrfHeaderName di bootstrap.js
+            // Yang perlu kita lakukan adalah memastikan cookie ter-set dengan benar
+            
+            // Refresh CSRF cookie untuk memastikan token terbaru dari session
             try {
-                await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
-                // Tunggu lebih lama untuk memastikan cookie sudah ter-set dan session masih valid
-                await new Promise(resolve => setTimeout(resolve, 200));
+                await axios.get('/sanctum/csrf-cookie', { 
+                    withCredentials: true,
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    }
+                });
+                
+                // Tunggu cukup lama untuk memastikan cookie benar-benar ter-set
+                await new Promise(resolve => setTimeout(resolve, 800));
+                
+                // Verifikasi cookie ter-set
+                const cookieToken = getCookieToken();
+                
+                if (!cookieToken || cookieToken.length <= 10) {
+                    setIsSubmitting(false);
+                    alert('Gagal mendapatkan CSRF token. Silakan refresh halaman dan coba lagi.');
+                    return;
+                }
             } catch (csrfError) {
-                alert('Session expired. Silakan refresh halaman dan coba lagi.');
-                window.location.reload();
-                return;
-            }
-            
-            // Ambil token dari cookie (prioritas) atau meta tag
-            const cookieStr = '; ' + document.cookie;
-            const xsrfPart = cookieStr.split('; XSRF-TOKEN=');
-            let xsrfToken = xsrfPart.length === 2 ? decodeURIComponent(xsrfPart.pop().split(';').shift()) : '';
-            
-            // Jika tidak ada di cookie, ambil dari meta tag
-            const metaToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-            if (!xsrfToken && metaToken) {
-                xsrfToken = metaToken;
-            }
-            
-            // Jika masih tidak ada token, kemungkinan session expired
-            if (!xsrfToken) {
-                alert('Session expired. Silakan refresh halaman dan coba lagi.');
-                window.location.reload();
+                setIsSubmitting(false);
+                alert('Gagal mendapatkan CSRF token. Silakan refresh halaman dan coba lagi.');
                 return;
             }
 
@@ -819,24 +847,21 @@ export default function Registration({
             }
 
             let response;
-            // Axios akan otomatis mengirim X-XSRF-TOKEN dari cookie XSRF-TOKEN
-            // Kita hanya perlu memastikan cookie ter-set dengan benar
-            // Jangan kirim X-CSRF-TOKEN secara manual jika sudah ada X-XSRF-TOKEN
+            // PENTING: Jangan set token secara manual di headers
+            // Biarkan axios membaca token dari cookie secara otomatis menggunakan xsrfCookieName dan xsrfHeaderName
+            // Ini memastikan token yang dikirim sama dengan token di session
             const config = {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json',
-                    // Hanya kirim X-CSRF-TOKEN jika X-XSRF-TOKEN tidak tersedia (fallback)
-                    // Axios akan otomatis mengirim X-XSRF-TOKEN dari cookie
+                    // JANGAN set X-CSRF-TOKEN atau X-XSRF-TOKEN di sini
+                    // Biarkan axios membaca dari cookie secara otomatis
                 },
-                withCredentials: true,
-                // Force axios to treat response as JSON, not HTML
+                withCredentials: true, // Penting untuk mengirim cookie
                 responseType: 'json',
-                // Ensure axios doesn't follow redirects
                 maxRedirects: 0,
                 validateStatus: function (status) {
-                    // Accept all status codes so we can handle them manually
                     return status >= 200 && status < 600;
                 },
             };
@@ -846,6 +871,15 @@ export default function Registration({
                     // Pastikan URL adalah absolute atau relative yang benar
                     const finalUrl = url.startsWith('http') ? url : url.startsWith('/') ? url : `/${url}`;
                     
+                    // Verifikasi cookie token masih ada sebelum request
+                    const cookieToken = getCookieToken();
+                    
+                    if (!cookieToken || cookieToken.length <= 10) {
+                        throw new Error('CSRF token tidak ditemukan di cookie');
+                    }
+                    
+                    // Axios akan otomatis membaca token dari cookie dan mengirim ke header
+                    // Jangan set token secara manual karena bisa berbeda dengan session
                     const res = await axios.post(finalUrl, payload, config);
                     
                     // Cek apakah response adalah error 419 (CSRF token expired)
@@ -903,109 +937,13 @@ export default function Registration({
             };
 
             try {
+                // Axios interceptor di bootstrap.js akan otomatis handle retry untuk 419
+                // Kita hanya perlu memanggil doPost dan handle error biasa
                 response = await doPost();
-                
-                // Hanya retry jika benar-benar ada masalah:
-                // 1. Status bukan 2xx (success)
-                // 2. Atau status 200 tapi tidak ada data sama sekali
-                // 3. Atau status 200 tapi success === false (explicit failure)
-                const isSuccessStatus = response?.status >= 200 && response?.status < 300;
-                const hasNoData = !response?.data;
-                const isExplicitFailure = response?.data?.success === false;
-                
-                if (isSuccessStatus && !hasNoData && !isExplicitFailure) {
-                    // Response sudah berhasil, tidak perlu retry
-                } else if (response?.status === 419) {
-                    // CSRF token expired - refresh dan retry
-                    // Refresh CSRF token
-                    await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                    
-                    // Update CSRF token di config
-                    const cookieStr = '; ' + document.cookie;
-                    const xsrfPart = cookieStr.split('; XSRF-TOKEN=');
-                    let newXsrfToken = xsrfPart.length === 2 ? decodeURIComponent(xsrfPart.pop().split(';').shift()) : '';
-                    const newMetaToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-                    
-                    if (!newXsrfToken && newMetaToken) {
-                        newXsrfToken = newMetaToken;
-                    }
-                    
-                    // Update meta tag jika perlu
-                    const metaTag = document.querySelector('meta[name="csrf-token"]');
-                    if (metaTag && newXsrfToken) {
-                        metaTag.setAttribute('content', newXsrfToken);
-                    }
-                    
-                    config.headers['X-CSRF-TOKEN'] = newXsrfToken;
-                    config.headers['X-XSRF-TOKEN'] = newXsrfToken;
-                    
-                    response = await doPost();
-                }
-                // Jika status bukan 2xx, akan masuk ke catch block
             } catch (err) {
-                // Handle CSRF token expired (419) atau Unauthorized (401)
-                if (err?.response?.status === 419 || err?.response?.status === 401) {
-                    // Cek apakah ini retry kedua (sudah pernah retry sebelumnya)
-                    const isRetry = config.headers['X-CSRF-RETRY'] === '1';
-                    
-                    if (isRetry) {
-                        // Sudah pernah retry, kemungkinan session benar-benar expired
-                        const sessionError = new Error('Session expired. Silakan refresh halaman dan coba lagi.');
-                        sessionError.response = err?.response;
-                        throw sessionError;
-                    }
-                    
-                    // Mark bahwa ini adalah retry
-                    config.headers['X-CSRF-RETRY'] = '1';
-                    
-                    // Refresh CSRF token dan session - hanya sekali retry
-                    try {
-                        // Refresh CSRF cookie untuk mendapatkan token baru
-                        await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
-                        await new Promise(resolve => setTimeout(resolve, 300)); // Delay untuk memastikan cookie ter-set
-                        
-                        // Update CSRF token di config
-                        const cookieStr = '; ' + document.cookie;
-                        const xsrfPart = cookieStr.split('; XSRF-TOKEN=');
-                        let newXsrfToken = xsrfPart.length === 2 ? decodeURIComponent(xsrfPart.pop().split(';').shift()) : '';
-                        const newMetaToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-                        
-                        if (!newXsrfToken && newMetaToken) {
-                            newXsrfToken = newMetaToken;
-                        }
-                        
-                        // Jika masih tidak ada token setelah refresh, session mungkin expired
-                        if (!newXsrfToken) {
-                            const sessionError = new Error('Session expired. Silakan refresh halaman dan coba lagi.');
-                            sessionError.response = err?.response;
-                            throw sessionError;
-                        }
-                        
-                        // Update meta tag jika perlu
-                        const metaTag = document.querySelector('meta[name="csrf-token"]');
-                        if (metaTag && newXsrfToken) {
-                            metaTag.setAttribute('content', newXsrfToken);
-                        }
-                        
-                        // Update config headers dengan token baru
-                        config.headers['X-CSRF-TOKEN'] = newXsrfToken;
-                        config.headers['X-XSRF-TOKEN'] = newXsrfToken;
-                        
-                        // Retry request dengan token baru - hanya sekali
-                        response = await doPost();
-                    } catch (retryErr) {
-                        // Jika retry masih gagal dengan 419, session pasti expired - langsung refresh halaman
-                        if (retryErr?.response?.status === 419 || retryErr?.message?.includes('Session expired')) {
-                            const sessionError = new Error('Session expired. Silakan refresh halaman dan coba lagi.');
-                            sessionError.response = retryErr?.response || err?.response;
-                            throw sessionError;
-                        }
-                        throw retryErr;
-                    }
-                } else {
-                    throw err;
-                }
+                // Axios interceptor sudah menangani retry untuk 419
+                // Jika masih error setelah retry, berarti ada masalah lain
+                throw err;
             }
 
             // Cek apakah response adalah HTML (bukan JSON) - ini biasanya berarti error atau redirect
@@ -1224,6 +1162,7 @@ export default function Registration({
             } else if (error?.response?.status === 403) {
                 alert('Anda tidak memiliki izin untuk melakukan aksi ini.');
             } else if (error?.response?.status === 419 || error?.message?.includes('Session expired')) {
+                // Jika masih 419 setelah interceptor retry, berarti session benar-benar expired
                 const errorMessage = error?.response?.data?.message || error?.message || 'Session expired. Silakan refresh halaman dan coba lagi.';
                 alert(errorMessage);
                 // Refresh halaman untuk mendapatkan session baru
@@ -1870,18 +1809,18 @@ export default function Registration({
                                 animate={{ opacity: 1 }}
                                 transition={{ duration: 0.5, delay: 0.5 }}
                             >
-                                <div className="flex items-center justify-between mb-3 lg:mb-4">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3 lg:mb-4">
                                     <h3 className="text-base lg:text-lg font-semibold text-gray-900 dark:text-white">
                                         Cari Pasien
                                     </h3>
-                                    <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-2">
-                                            <div className="flex items-center gap-2">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
+                        <div className="flex flex-wrap items-center gap-2 w-full">
+                                            <div className="flex items-center gap-2 w-full sm:w-auto">
                                                 <label className="text-xs font-semibold text-slate-700 dark:text-gray-300">Loket</label>
                                                 <select
                                                     value={selectedLoket}
                                                     onChange={(e) => setSelectedLoket(parseInt(e.target.value, 10))}
-                                                    className="px-2 py-1 text-xs rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200"
+                                                    className="px-2 py-1 text-xs rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 w-full sm:w-auto"
                                                 >
                                                     <option value={1}>Loket 1</option>
                                                     <option value={2}>Loket 2</option>
@@ -1889,18 +1828,18 @@ export default function Registration({
                                                     <option value={4}>Loket 4</option>
                                                 </select>
                                             </div>
-                                            <div className="px-2 py-1 rounded-md bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800">
+                                            <div className="px-2 py-1 rounded-md bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 w-full sm:w-auto">
                                                 <div className="flex items-center gap-2">
                                                     <div className="text-base font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">{formatQueueLabel(queueCurrent?.nomor, queueCurrent?.prefix)}</div>
                                                     <span className="text-[11px] font-semibold text-gray-600 dark:text-gray-300">{queueStatusCode ?? '-'}</span>
                                                 </div>
                                             </div>
-                                            <motion.button disabled={!queueCurrent?.nomor} onClick={() => handleCallLoketQueue(false)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Panggil</motion.button>
-                                            <motion.button disabled={!queueCurrent?.nomor && !queueLastCalledNumber} onClick={() => handleCallLoketQueue(true)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Ulang</motion.button>
-                                        </div>
+                                            <motion.button disabled={!queueCurrent?.nomor} onClick={() => handleCallLoketQueue(false)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Panggil</motion.button>
+                                            <motion.button disabled={!queueCurrent?.nomor && !queueLastCalledNumber} onClick={() => handleCallLoketQueue(true)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Ulang</motion.button>
+                                            </div>
                                         <motion.button
                                             onClick={openPatientModal}
-                                            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 text-xs rounded-md flex items-center gap-1 transition-colors shadow-sm"
+                                            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 text-xs rounded-md flex items-center gap-1 transition-colors shadow-sm w-full sm:w-auto mt-2 sm:mt-0 justify-center"
                                             whileHover={{ scale: 1.05, y: -1 }}
                                             whileTap={{ scale: 0.95 }}
                                             initial={{ opacity: 0, scale: 0.8 }}
@@ -1923,7 +1862,7 @@ export default function Registration({
                                                     d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                                                 />
                                             </svg>
-                                            Tambah
+                                        Tambah
                                         </motion.button>
                                     </div>
                                 </div>

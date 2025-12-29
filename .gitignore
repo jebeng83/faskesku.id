@@ -26,3 +26,9 @@ Thumbs.db
 **/caddy
 frankenphp
 frankenphp-worker.php
+*_headers.txt
+*_out.json
+*_out.txt
+*cookies.txt
+.cookies
+.*.html

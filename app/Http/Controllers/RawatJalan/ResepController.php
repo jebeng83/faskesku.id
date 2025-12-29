@@ -1125,6 +1125,71 @@ class ResepController extends Controller
         }
     }
 
+    public function masterAturanPakai(Request $request): JsonResponse
+    {
+        try {
+            $search = trim((string) $request->get('search', ''));
+            $limit = (int) ($request->get('limit', 20));
+
+            $q = DB::table('master_aturan_pakai')->select('aturan');
+            if ($search !== '') {
+                $q->where('aturan', 'like', '%' . $search . '%');
+            }
+            $rows = $q->orderBy('aturan')->limit($limit)->get();
+
+            if ($rows->isEmpty()) {
+                $q2 = DB::table('aturan_pakai')->select('aturan')->distinct();
+                if ($search !== '') {
+                    $q2->where('aturan', 'like', '%' . $search . '%');
+                }
+                $rows = $q2->orderBy('aturan')->limit($limit)->get();
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $rows,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memuat master aturan pakai: ' . $e->getMessage(),
+                'data' => [],
+            ], 500);
+        }
+    }
+
+    public function createAturanPakai(Request $request): JsonResponse
+    {
+        $request->validate([
+            'aturan' => 'required|string|max:150',
+        ]);
+
+        try {
+            $aturan = trim((string) $request->input('aturan', ''));
+            if ($aturan === '') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Aturan tidak boleh kosong',
+                ], 422);
+            }
+
+            $exists = DB::table('master_aturan_pakai')->where('aturan', $aturan)->exists();
+            if (! $exists) {
+                DB::table('master_aturan_pakai')->insert(['aturan' => $aturan]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => ['aturan' => $aturan],
+            ], 201);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan aturan pakai: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
     /**
      * Update stok obat setelah resep dibuat dengan metode FIFO
      */

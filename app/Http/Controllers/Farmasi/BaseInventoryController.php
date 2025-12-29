@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Farmasi;
 
 use App\Models\Farmasi\RiwayatBarangMedis;
-use App\Models\Farmasi\TampJurnal;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class BaseInventoryController extends BaseController
 {
@@ -35,6 +35,9 @@ class BaseInventoryController extends BaseController
 
     protected function recordRiwayat(string $kodeBrg, string $kdBangsal, float $masuk, float $keluar, string $status, ?string $noBatch, ?string $noFaktur, ?string $keterangan, ?string $petugas): void
     {
+        if (! Schema::hasTable('riwayat_barang_medis')) {
+            return;
+        }
         $nb = $noBatch ?? '';
         $nf = $noFaktur ?? '';
         $prev = DB::table('riwayat_barang_medis')
@@ -43,7 +46,7 @@ class BaseInventoryController extends BaseController
             ->orderBy('tanggal', 'desc')
             ->orderBy('jam', 'desc')
             ->first();
-        $stokAwal = (double) ($prev->stok_akhir ?? 0);
+        $stokAwal = (float) ($prev->stok_akhir ?? 0);
         $stokAkhir = $stokAwal + $masuk - $keluar;
 
         RiwayatBarangMedis::create([

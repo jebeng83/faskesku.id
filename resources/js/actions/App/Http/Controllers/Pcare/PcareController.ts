@@ -1,5 +1,98 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
+* @see \App\Http\Controllers\Pcare\PcareController::getDiagnosa
+* @see app/Http/Controllers/Pcare/PcareController.php:2252
+* @route '/api/pcare/diagnosa'
+*/
+const getDiagnosacbdcddb07b3886aa644cd1e380ccd9b9 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getDiagnosacbdcddb07b3886aa644cd1e380ccd9b9.url(options),
+    method: 'get',
+})
+
+getDiagnosacbdcddb07b3886aa644cd1e380ccd9b9.definition = {
+    methods: ["get","head"],
+    url: '/api/pcare/diagnosa',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getDiagnosa
+* @see app/Http/Controllers/Pcare/PcareController.php:2252
+* @route '/api/pcare/diagnosa'
+*/
+getDiagnosacbdcddb07b3886aa644cd1e380ccd9b9.url = (options?: RouteQueryOptions) => {
+    return getDiagnosacbdcddb07b3886aa644cd1e380ccd9b9.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getDiagnosa
+* @see app/Http/Controllers/Pcare/PcareController.php:2252
+* @route '/api/pcare/diagnosa'
+*/
+getDiagnosacbdcddb07b3886aa644cd1e380ccd9b9.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getDiagnosacbdcddb07b3886aa644cd1e380ccd9b9.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getDiagnosa
+* @see app/Http/Controllers/Pcare/PcareController.php:2252
+* @route '/api/pcare/diagnosa'
+*/
+getDiagnosacbdcddb07b3886aa644cd1e380ccd9b9.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getDiagnosacbdcddb07b3886aa644cd1e380ccd9b9.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getDiagnosa
+* @see app/Http/Controllers/Pcare/PcareController.php:2252
+* @route '/pcare/api/diagnosa'
+*/
+const getDiagnosafadc90ea3e97aaa7f1e8ddc8fb06a6d5 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getDiagnosafadc90ea3e97aaa7f1e8ddc8fb06a6d5.url(options),
+    method: 'get',
+})
+
+getDiagnosafadc90ea3e97aaa7f1e8ddc8fb06a6d5.definition = {
+    methods: ["get","head"],
+    url: '/pcare/api/diagnosa',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getDiagnosa
+* @see app/Http/Controllers/Pcare/PcareController.php:2252
+* @route '/pcare/api/diagnosa'
+*/
+getDiagnosafadc90ea3e97aaa7f1e8ddc8fb06a6d5.url = (options?: RouteQueryOptions) => {
+    return getDiagnosafadc90ea3e97aaa7f1e8ddc8fb06a6d5.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getDiagnosa
+* @see app/Http/Controllers/Pcare/PcareController.php:2252
+* @route '/pcare/api/diagnosa'
+*/
+getDiagnosafadc90ea3e97aaa7f1e8ddc8fb06a6d5.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getDiagnosafadc90ea3e97aaa7f1e8ddc8fb06a6d5.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getDiagnosa
+* @see app/Http/Controllers/Pcare/PcareController.php:2252
+* @route '/pcare/api/diagnosa'
+*/
+getDiagnosafadc90ea3e97aaa7f1e8ddc8fb06a6d5.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getDiagnosafadc90ea3e97aaa7f1e8ddc8fb06a6d5.url(options),
+    method: 'head',
+})
+
+export const getDiagnosa = {
+    '/api/pcare/diagnosa': getDiagnosacbdcddb07b3886aa644cd1e380ccd9b9,
+    '/pcare/api/diagnosa': getDiagnosafadc90ea3e97aaa7f1e8ddc8fb06a6d5,
+}
+
+/**
 * @see \App\Http\Controllers\Pcare\PcareController::ping
 * @see app/Http/Controllers/Pcare/PcareController.php:29
 * @route '/api/pcare/ping'
@@ -226,99 +319,6 @@ getDokter8d2dff60a18c4591d77b87e52d5e4999.head = (options?: RouteQueryOptions): 
 export const getDokter = {
     '/api/pcare/dokter': getDokterca5945421beecfede6d16185319e6459,
     '/pcare/api/dokter': getDokter8d2dff60a18c4591d77b87e52d5e4999,
-}
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::getDiagnosa
-* @see app/Http/Controllers/Pcare/PcareController.php:2252
-* @route '/api/pcare/diagnosa'
-*/
-const getDiagnosacbdcddb07b3886aa644cd1e380ccd9b9 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: getDiagnosacbdcddb07b3886aa644cd1e380ccd9b9.url(options),
-    method: 'get',
-})
-
-getDiagnosacbdcddb07b3886aa644cd1e380ccd9b9.definition = {
-    methods: ["get","head"],
-    url: '/api/pcare/diagnosa',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::getDiagnosa
-* @see app/Http/Controllers/Pcare/PcareController.php:2252
-* @route '/api/pcare/diagnosa'
-*/
-getDiagnosacbdcddb07b3886aa644cd1e380ccd9b9.url = (options?: RouteQueryOptions) => {
-    return getDiagnosacbdcddb07b3886aa644cd1e380ccd9b9.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::getDiagnosa
-* @see app/Http/Controllers/Pcare/PcareController.php:2252
-* @route '/api/pcare/diagnosa'
-*/
-getDiagnosacbdcddb07b3886aa644cd1e380ccd9b9.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: getDiagnosacbdcddb07b3886aa644cd1e380ccd9b9.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::getDiagnosa
-* @see app/Http/Controllers/Pcare/PcareController.php:2252
-* @route '/api/pcare/diagnosa'
-*/
-getDiagnosacbdcddb07b3886aa644cd1e380ccd9b9.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: getDiagnosacbdcddb07b3886aa644cd1e380ccd9b9.url(options),
-    method: 'head',
-})
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::getDiagnosa
-* @see app/Http/Controllers/Pcare/PcareController.php:2252
-* @route '/pcare/api/diagnosa'
-*/
-const getDiagnosafadc90ea3e97aaa7f1e8ddc8fb06a6d5 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: getDiagnosafadc90ea3e97aaa7f1e8ddc8fb06a6d5.url(options),
-    method: 'get',
-})
-
-getDiagnosafadc90ea3e97aaa7f1e8ddc8fb06a6d5.definition = {
-    methods: ["get","head"],
-    url: '/pcare/api/diagnosa',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::getDiagnosa
-* @see app/Http/Controllers/Pcare/PcareController.php:2252
-* @route '/pcare/api/diagnosa'
-*/
-getDiagnosafadc90ea3e97aaa7f1e8ddc8fb06a6d5.url = (options?: RouteQueryOptions) => {
-    return getDiagnosafadc90ea3e97aaa7f1e8ddc8fb06a6d5.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::getDiagnosa
-* @see app/Http/Controllers/Pcare/PcareController.php:2252
-* @route '/pcare/api/diagnosa'
-*/
-getDiagnosafadc90ea3e97aaa7f1e8ddc8fb06a6d5.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: getDiagnosafadc90ea3e97aaa7f1e8ddc8fb06a6d5.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::getDiagnosa
-* @see app/Http/Controllers/Pcare/PcareController.php:2252
-* @route '/pcare/api/diagnosa'
-*/
-getDiagnosafadc90ea3e97aaa7f1e8ddc8fb06a6d5.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: getDiagnosafadc90ea3e97aaa7f1e8ddc8fb06a6d5.url(options),
-    method: 'head',
-})
-
-export const getDiagnosa = {
-    '/api/pcare/diagnosa': getDiagnosacbdcddb07b3886aa644cd1e380ccd9b9,
-    '/pcare/api/diagnosa': getDiagnosafadc90ea3e97aaa7f1e8ddc8fb06a6d5,
 }
 
 /**
@@ -2911,6 +2911,6 @@ deletePesertaKegiatan.delete = (args: { eduId: string | number, noKartu: string 
     method: 'delete',
 })
 
-const PcareController = { ping, proxy, getDokter, getDiagnosa, getFaskes, getPoli, getKesadaran, getDpho, getTindakan, getProvider, getSpesialis, getSubSpesialis, getSarana, getKhusus, getPrognosa, getAlergi, getStatusPulang, getFaskesRujukanSubSpesialis, pesertaByNoKartu, addPendaftaran, getPendaftaranByRawat, getRujukanSubspesialisByRawat, getKabupatenConfig, searchDokterRs, searchPoliklinikRs, searchObatRs, getMappingPoli, storeMappingPoli, deleteMappingPoli, getMappingDokter, storeMappingDokter, deleteMappingDokter, getMappingObat, storeMappingObat, deleteMappingObat, pesertaByNik, kirimKunjunganSehat, monitoringSummary, monitoringAttempts, pendaftaranSummary, pendaftaranList, monitoringRaw, bpjsLogList, bpjsLogByRawat, resendByNoRawat, massSend, getPeserta, getClubProlanis, getKegiatanKelompok, addKegiatanKelompok, updateKegiatanKelompok, deleteKegiatanKelompok, getPesertaKegiatan, addPesertaKegiatan, deletePesertaKegiatan }
+const PcareController = { getDiagnosa, ping, proxy, getDokter, getFaskes, getPoli, getKesadaran, getDpho, getTindakan, getProvider, getSpesialis, getSubSpesialis, getSarana, getKhusus, getPrognosa, getAlergi, getStatusPulang, getFaskesRujukanSubSpesialis, pesertaByNoKartu, addPendaftaran, getPendaftaranByRawat, getRujukanSubspesialisByRawat, getKabupatenConfig, searchDokterRs, searchPoliklinikRs, searchObatRs, getMappingPoli, storeMappingPoli, deleteMappingPoli, getMappingDokter, storeMappingDokter, deleteMappingDokter, getMappingObat, storeMappingObat, deleteMappingObat, pesertaByNik, kirimKunjunganSehat, monitoringSummary, monitoringAttempts, pendaftaranSummary, pendaftaranList, monitoringRaw, bpjsLogList, bpjsLogByRawat, resendByNoRawat, massSend, getPeserta, getClubProlanis, getKegiatanKelompok, addKegiatanKelompok, updateKegiatanKelompok, deleteKegiatanKelompok, getPesertaKegiatan, addPesertaKegiatan, deletePesertaKegiatan }
 
 export default PcareController

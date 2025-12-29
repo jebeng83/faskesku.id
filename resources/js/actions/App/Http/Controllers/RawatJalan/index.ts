@@ -1,10 +1,10 @@
-import ObatController from './ObatController'
 import ResepController from './ResepController'
+import ObatController from './ObatController'
 import RawatJalanController from './RawatJalanController'
 
 const RawatJalan = {
-    ObatController: Object.assign(ObatController, ObatController),
     ResepController: Object.assign(ResepController, ResepController),
+    ObatController: Object.assign(ObatController, ObatController),
     RawatJalanController: Object.assign(RawatJalanController, RawatJalanController),
 }
 

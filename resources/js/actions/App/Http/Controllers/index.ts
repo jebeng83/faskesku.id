@@ -1,9 +1,11 @@
 import API from './API'
+import RawatJalan from './RawatJalan'
+import Pcare from './Pcare'
 import QueueController from './QueueController'
 import Antrian from './Antrian'
 import PermintaanLabController from './PermintaanLabController'
 import MenuController from './MenuController'
-import RawatJalan from './RawatJalan'
+import Alergi from './Alergi'
 import PermintaanRadiologiController from './PermintaanRadiologiController'
 import OpnameController from './OpnameController'
 import Farmasi from './Farmasi'
@@ -11,7 +13,6 @@ import BarangController from './BarangController'
 import DataBarangController from './DataBarangController'
 import GudangBarangController from './GudangBarangController'
 import Kepegawaian from './Kepegawaian'
-import Pcare from './Pcare'
 import SatuSehat from './SatuSehat'
 import JadwalController from './JadwalController'
 import PoliklinikController from './PoliklinikController'
@@ -41,11 +42,13 @@ import PenjabController from './PenjabController'
 
 const Controllers = {
     API: Object.assign(API, API),
+    RawatJalan: Object.assign(RawatJalan, RawatJalan),
+    Pcare: Object.assign(Pcare, Pcare),
     QueueController: Object.assign(QueueController, QueueController),
     Antrian: Object.assign(Antrian, Antrian),
     PermintaanLabController: Object.assign(PermintaanLabController, PermintaanLabController),
     MenuController: Object.assign(MenuController, MenuController),
-    RawatJalan: Object.assign(RawatJalan, RawatJalan),
+    Alergi: Object.assign(Alergi, Alergi),
     PermintaanRadiologiController: Object.assign(PermintaanRadiologiController, PermintaanRadiologiController),
     OpnameController: Object.assign(OpnameController, OpnameController),
     Farmasi: Object.assign(Farmasi, Farmasi),
@@ -53,7 +56,6 @@ const Controllers = {
     DataBarangController: Object.assign(DataBarangController, DataBarangController),
     GudangBarangController: Object.assign(GudangBarangController, GudangBarangController),
     Kepegawaian: Object.assign(Kepegawaian, Kepegawaian),
-    Pcare: Object.assign(Pcare, Pcare),
     SatuSehat: Object.assign(SatuSehat, SatuSehat),
     JadwalController: Object.assign(JadwalController, JadwalController),
     PoliklinikController: Object.assign(PoliklinikController, PoliklinikController),

@@ -3,6 +3,21 @@ import { createPortal } from "react-dom";
 
 // Konfigurasi sumber referensi PCare agar SearchableSelect bisa memuat opsi secara remote
 const REFERENSI_CONFIG = {
+    pegawai: {
+        supportsSearch: true,
+        defaultParams: { q: "" },
+        buildUrl: ({ q = "" } = {}) => {
+            const params = new URLSearchParams({ q });
+            return `/pegawai/search?${params.toString()}`;
+        },
+        parse: (json) => {
+            const list = json?.data || json?.list || [];
+            return list.map((it) => ({
+                value: it?.nik || "",
+                label: `${it?.nik ?? ""} — ${it?.nama ?? ""}`.trim(),
+            }));
+        },
+    },
     // Sumber lokal: departemen (untuk mapping ke SATUSEHAT Organization)
     // Endpoint: GET /api/departemen
     // Mendukung pencarian dengan parameter q, serta pagination start & limit
@@ -204,6 +219,21 @@ const REFERENSI_CONFIG = {
             return list.map((it) => ({
                 value: it?.kdAlergi || it?.kode || "",
                 label: it?.nmAlergi || it?.nama || "",
+            }));
+        },
+    },
+    alergi_local: {
+        supportsSearch: true,
+        defaultParams: { kode_jenis: "", q: "" },
+        buildUrl: ({ kode_jenis = "", q = "" } = {}) => {
+            const params = new URLSearchParams({ kode_jenis, q });
+            return `/api/alergi?${params.toString()}`;
+        },
+        parse: (json) => {
+            const list = json?.data || json?.list || [];
+            return list.map((it) => ({
+                value: it?.kd_alergi || it?.kdAlergi || it?.kode || "",
+                label: it?.nm_alergi || it?.nmAlergi || it?.nama || "",
             }));
         },
     },
@@ -499,6 +529,15 @@ const SearchableSelect = ({
     debounceMs = 350,
     // Label default untuk ditampilkan ketika value sudah ada tetapi opsi belum dimuat
     defaultDisplay = null,
+    // Kustomisasi tampilan dropdown
+    dropdownClassName = "",
+    searchInputClassName = "",
+    optionClassName = "",
+    selectedOptionClassName = "",
+    displayClassName = "",
+    // Kustomisasi hover state
+    optionHoverClassName = "",
+    selectedOptionHoverClassName = "",
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
@@ -664,7 +703,7 @@ const SearchableSelect = ({
                 portalElRef.current = null;
             }
         };
-    }, [isOpen]);
+    }, [isOpen, source, JSON.stringify(sourceParams)]);
 
     // Pencarian remote dengan debounce untuk sumber yang mendukung (mis. diagnosa)
     useEffect(() => {
@@ -721,9 +760,7 @@ const SearchableSelect = ({
             >
                 <span
                     className={
-                        value
-                            ? "text-gray-900 dark:text-white"
-                            : "text-gray-500 dark:text-gray-400"
+                        displayClassName || (value ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400")
                     }
                 >
                     {getSelectedDisplay()}
@@ -758,7 +795,7 @@ const SearchableSelect = ({
                             // Pastikan dropdown berada di atas modal overlay (z-[9999])
                             zIndex: 10000,
                         }}
-                        className="mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-lg max-h-60 overflow-hidden"
+                        className={`mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-lg max-h-60 overflow-hidden ${dropdownClassName}`}
                     >
                         {/* Search input */}
                         <div className="p-2 border-b border-gray-200 dark:border-gray-600">
@@ -768,7 +805,7 @@ const SearchableSelect = ({
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 placeholder={searchPlaceholder}
-                                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-600 dark:text-white"
+                                className={`w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-600 dark:text-white ${searchInputClassName}`}
                             />
                         </div>
 
@@ -796,16 +833,18 @@ const SearchableSelect = ({
                                             : option[displayKey];
                                     const isSelected = optionValue === value;
 
+                                    const unselectedClasses = optionClassName || "text-gray-900 dark:text-white";
+                                    const selectedClasses = selectedOptionClassName || "bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300";
+                                    const unselectedHover = optionHoverClassName || "hover:bg-gray-100 dark:hover:bg-gray-600";
+                                    const selectedHover = selectedOptionHoverClassName || unselectedHover;
                                     return (
                                         <button
                                             key={index}
                                             type="button"
                                             onClick={() => handleSelect(option)}
-                                            className={`w-full px-3 py-2 text-left text-sm transition-colors hover:bg-gray-100 dark:hover:bg-gray-600 ${
-                                                isSelected
-                                                    ? "bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300"
-                                                    : "text-gray-900 dark:text-white"
-                                            }`}
+                                            className={`w-full px-3 py-2 text-left text-sm transition-colors ${
+                                                isSelected ? selectedHover : unselectedHover
+                                            } ${isSelected ? selectedClasses : unselectedClasses}`}
                                         >
                                             {optionDisplay}
                                         </button>

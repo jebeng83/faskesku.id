@@ -158,6 +158,13 @@ class PermintaanLabController extends Controller
         ]);
 
         if ($validator->fails()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi gagal',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
@@ -223,7 +230,16 @@ class PermintaanLabController extends Controller
 
             DB::commit();
 
-            // Return Inertia response with success message
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'noorder' => $permintaanLab->noorder,
+                    ],
+                    'message' => 'Permintaan laboratorium berhasil dibuat',
+                ], 201);
+            }
+
             return redirect()->back()->with('success', 'Permintaan laboratorium berhasil dibuat dengan nomor order: '.$permintaanLab->noorder);
         } catch (\Exception $e) {
             DB::rollback();
@@ -233,6 +249,12 @@ class PermintaanLabController extends Controller
                 'trace' => $e->getTraceAsString(),
             ]);
 
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menyimpan permintaan laboratorium: '.$e->getMessage(),
+                ], 500);
+            }
             return redirect()->back()->withErrors(['error' => 'Gagal menyimpan permintaan laboratorium: '.$e->getMessage()])->withInput();
         }
     }

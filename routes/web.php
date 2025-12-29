@@ -46,11 +46,11 @@ use App\Http\Controllers\RawatInapController;
 use App\Http\Controllers\RawatJalan\ObatController;
 use App\Http\Controllers\RawatJalan\RawatJalanController;
 use App\Http\Controllers\RawatJalan\ResepController;
-use App\Http\Controllers\SkriningVisualController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\RegPeriksaController;
 use App\Http\Controllers\RehabilitasiMedikController;
 use App\Http\Controllers\setting\SettingController;
+use App\Http\Controllers\SkriningVisualController;
 use App\Http\Controllers\SpesialisController;
 use App\Http\Controllers\TarifTindakanController;
 use Illuminate\Support\Facades\Auth;
@@ -226,6 +226,7 @@ Route::get('/anjungan/cetak-label', function () {
             }
         }
     }
+
     return Inertia::render('Anjungan/CetakLabel', [
         'setting' => $setting,
     ]);
@@ -415,6 +416,7 @@ Route::get('/antrian/suara', function () {
             }
         }
     }
+
     return Inertia::render('Antrian/SuaraDisplay', [
         'setting' => $setting,
     ]);
@@ -540,7 +542,7 @@ Route::middleware('auth')->prefix('api')->group(function () {
         $payload = [
             'kd_dokter' => $kdDokter,
             'kd_poli' => $kdPoli,
-            'status' => in_array($status, ['0','1']) ? $status : '1',
+            'status' => in_array($status, ['0', '1']) ? $status : '1',
             'no_rawat' => $noRawat,
         ];
         if ($exists) {
@@ -551,6 +553,7 @@ Route::middleware('auth')->prefix('api')->group(function () {
         if (\Illuminate\Support\Facades\Schema::hasTable('reg_periksa') && \Illuminate\Support\Facades\Schema::hasColumn('reg_periksa', 'stts')) {
             \Illuminate\Support\Facades\DB::table('reg_periksa')->where('no_rawat', $noRawat)->update(['stts' => 'Sudah']);
         }
+
         return response()->json(['ok' => true, 'data' => $payload]);
     })->name('api.antrian-poli.call');
 
@@ -569,7 +572,7 @@ Route::middleware('auth')->prefix('api')->group(function () {
         $payload = [
             'kd_dokter' => $kdDokter,
             'kd_poli' => $kdPoli,
-            'status' => in_array($status, ['0','1']) ? $status : '1',
+            'status' => in_array($status, ['0', '1']) ? $status : '1',
             'no_rawat' => $noRawat,
         ];
         if ($exists) {
@@ -577,6 +580,7 @@ Route::middleware('auth')->prefix('api')->group(function () {
         } else {
             \Illuminate\Support\Facades\DB::table('antripoli')->insert($payload);
         }
+
         return response()->json(['ok' => true, 'data' => $payload]);
     })->name('api.antrian-poli.repeat');
 });
@@ -1003,6 +1007,14 @@ Route::middleware('auth')->group(function () {
 
     Route::get('rawat-jalan/lanjutan', [RawatJalanController::class, 'lanjutan'])->name('rawat-jalan.lanjutan');
     // Rawat Jalan landing/index page (Inertia)
+    Route::get('rawat-jalan/canvas', function () {
+        return Inertia::render('RawatJalan/CanvasRajal', [
+            'token' => request()->query('token'),
+            'noRawat' => request()->query('no_rawat'),
+            'noRkmMedis' => request()->query('no_rkm_medis'),
+            'kdPoli' => request()->query('kd_poli'),
+        ]);
+    })->name('rawat-jalan.canvas');
     Route::get('rawat-jalan', function () {
         return Inertia::render('RawatJalan/Index');
     })->name('rawat-jalan.index');

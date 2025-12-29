@@ -1,4 +1,6 @@
 import React from "react";
+import { router } from "@inertiajs/react";
+import { route } from "ziggy-js";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -761,9 +763,28 @@ export default function KasirRalanPage() {
                                                             {formatShortDateId(r?.tgl_registrasi)}{" "}
                                                             {String(r?.jam_reg || "").slice(0, 5)}
                                                         </span>
-                                                        <span className="font-mono text-xs font-bold text-gray-900 dark:text-gray-100 mt-0.5">
+                                                        <motion.button
+                                                            onClick={() => {
+                                                                try {
+                                                                    const url = route('rawat-jalan.canvas', {
+                                                                        no_rawat: r?.no_rawat,
+                                                                        no_rkm_medis: r?.no_rkm_medis,
+                                                                        kd_poli: r?.kd_poli
+                                                                    });
+                                                                    router.visit(url);
+                                                                } catch (e) {
+                                                                    const params = new URLSearchParams({
+                                                                        no_rawat: r?.no_rawat || '',
+                                                                        no_rkm_medis: r?.no_rkm_medis || '',
+                                                                        kd_poli: r?.kd_poli || ''
+                                                                    }).toString();
+                                                                    router.visit(`/rawat-jalan/canvas?${params}`);
+                                                                }
+                                                            }}
+                                                            className="font-mono text-xs font-bold text-gray-900 dark:text-gray-100 mt-0.5 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                                        >
                                                             {r?.no_rawat || "-"}
-                                                        </span>
+                                                        </motion.button>
                                                         <span className="text-[11px] truncate text-gray-900 dark:text-white mt-0.5">
                                                             {r?.dokter?.nm_dokter ? `dr. ${r.dokter.nm_dokter}` : "-"}
                                                         </span>

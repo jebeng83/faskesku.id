@@ -499,7 +499,27 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                                 {item.no_rkm_medis}
                                             </span>
                                         </td>
-                                        <td className="px-4 py-2 whitespace-nowrap">
+                                        <td
+                                            className="px-4 py-2 whitespace-nowrap cursor-pointer"
+                                            onClick={() => {
+                                                try {
+                                                    const url = route('rawat-jalan.canvas', {
+                                                        no_rawat: item.no_rawat,
+                                                        no_rkm_medis: item.no_rkm_medis || '',
+                                                        kd_poli: item.kd_poli || item.poliklinik?.kd_poli || ''
+                                                    });
+                                                    router.visit(url);
+                                                } catch (e) {
+                                                    const params = new URLSearchParams({
+                                                        no_rawat: item.no_rawat || '',
+                                                        no_rkm_medis: item.no_rkm_medis || '',
+                                                        kd_poli: item.kd_poli || item.poliklinik?.kd_poli || ''
+                                                    }).toString();
+                                                    router.visit(`/rawat-jalan/canvas?${params}`);
+                                                }
+                                            }}
+                                            title="Buka Canvas Rawat Jalan"
+                                        >
                                             <span className="font-mono text-sm font-semibold text-gray-800 dark:text-gray-200">
                                                 {item.no_rawat}
                                             </span>

@@ -2904,7 +2904,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                     </div>
                 </div>
             )}
-            <div className="relative z-20 -mx-4 sm:-mx-6 lg:-mx-8 pb-4 md:pb-6 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
+            <div className="relative z-20 pb-4 md:pb-6 px-3 md:px-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
                 {(message || error) && (
                     <div className={`mb-4 text-sm px-4 py-3 rounded-lg border flex items-start ${error ? 'bg-red-50 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800' : 'bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800'}`}>
                         <svg className={`w-5 h-5 mr-2 mt-0.5 flex-shrink-0 ${error ? 'text-red-500' : 'text-green-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">

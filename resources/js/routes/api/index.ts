@@ -1,6 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
-import wilayah from './wilayah'
 import publicMethod from './public'
+import resep from './resep'
+import pcare from './pcare'
 import queue from './queue'
 import poli from './poli'
 import employees from './employees'
@@ -11,9 +12,9 @@ import regPeriksaD17f92 from './reg-periksa'
 import users from './users'
 import menus from './menus'
 import obat from './obat'
-import resep from './resep'
 import rawatJalan from './rawat-jalan'
 import dokter from './dokter'
+import alergi from './alergi'
 import permintaanLab from './permintaan-lab'
 import radiologiTests from './radiologi-tests'
 import permintaanRadiologi from './permintaan-radiologi'
@@ -27,7 +28,6 @@ import databarang from './databarang'
 import gudangbarang from './gudangbarang'
 import departemen from './departemen'
 import sipPegawai from './sip-pegawai'
-import pcare from './pcare'
 import satusehat from './satusehat'
 import mobilejkn from './mobilejkn'
 import jadwal from './jadwal'
@@ -39,7 +39,7 @@ import menu from './menu'
 import tarifTindakan from './tarif-tindakan'
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
-* @see app/Http/Controllers/PermintaanLabController.php:922
+* @see app/Http/Controllers/PermintaanLabController.php:944
 * @route '/api/reg-periksa'
 */
 export const regPeriksa = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -54,7 +54,7 @@ regPeriksa.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
-* @see app/Http/Controllers/PermintaanLabController.php:922
+* @see app/Http/Controllers/PermintaanLabController.php:944
 * @route '/api/reg-periksa'
 */
 regPeriksa.url = (options?: RouteQueryOptions) => {
@@ -63,7 +63,7 @@ regPeriksa.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
-* @see app/Http/Controllers/PermintaanLabController.php:922
+* @see app/Http/Controllers/PermintaanLabController.php:944
 * @route '/api/reg-periksa'
 */
 regPeriksa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -73,7 +73,7 @@ regPeriksa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
-* @see app/Http/Controllers/PermintaanLabController.php:922
+* @see app/Http/Controllers/PermintaanLabController.php:944
 * @route '/api/reg-periksa'
 */
 regPeriksa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -83,7 +83,7 @@ regPeriksa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:1172
+* @see app/Http/Controllers/PermintaanLabController.php:1194
 * @route '/api/lab-tests'
 */
 export const labTests = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -98,7 +98,7 @@ labTests.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:1172
+* @see app/Http/Controllers/PermintaanLabController.php:1194
 * @route '/api/lab-tests'
 */
 labTests.url = (options?: RouteQueryOptions) => {
@@ -107,7 +107,7 @@ labTests.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:1172
+* @see app/Http/Controllers/PermintaanLabController.php:1194
 * @route '/api/lab-tests'
 */
 labTests.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -117,7 +117,7 @@ labTests.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:1172
+* @see app/Http/Controllers/PermintaanLabController.php:1194
 * @route '/api/lab-tests'
 */
 labTests.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -170,7 +170,7 @@ setHargaObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:425
+* @see routes/web.php:427
 * @route '/api/antrian-poli'
 */
 export const antrianPoli = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -184,7 +184,7 @@ antrianPoli.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:425
+* @see routes/web.php:427
 * @route '/api/antrian-poli'
 */
 antrianPoli.url = (options?: RouteQueryOptions) => {
@@ -192,7 +192,7 @@ antrianPoli.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:425
+* @see routes/web.php:427
 * @route '/api/antrian-poli'
 */
 antrianPoli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -201,7 +201,7 @@ antrianPoli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:425
+* @see routes/web.php:427
 * @route '/api/antrian-poli'
 */
 antrianPoli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -210,8 +210,9 @@ antrianPoli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 const api = {
-    wilayah: Object.assign(wilayah, wilayah),
     public: Object.assign(publicMethod, publicMethod),
+    resep: Object.assign(resep, resep),
+    pcare: Object.assign(pcare, pcare),
     queue: Object.assign(queue, queue),
     poli: Object.assign(poli, poli),
     employees: Object.assign(employees, employees),
@@ -222,9 +223,9 @@ const api = {
     users: Object.assign(users, users),
     menus: Object.assign(menus, menus),
     obat: Object.assign(obat, obat),
-    resep: Object.assign(resep, resep),
     rawatJalan: Object.assign(rawatJalan, rawatJalan),
     dokter: Object.assign(dokter, dokter),
+    alergi: Object.assign(alergi, alergi),
     labTests: Object.assign(labTests, labTests),
     permintaanLab: Object.assign(permintaanLab, permintaanLab),
     radiologiTests: Object.assign(radiologiTests, radiologiTests),
@@ -240,7 +241,6 @@ const api = {
     gudangbarang: Object.assign(gudangbarang, gudangbarang),
     departemen: Object.assign(departemen, departemen),
     sipPegawai: Object.assign(sipPegawai, sipPegawai),
-    pcare: Object.assign(pcare, pcare),
     satusehat: Object.assign(satusehat, satusehat),
     mobilejkn: Object.assign(mobilejkn, mobilejkn),
     jadwal: Object.assign(jadwal, jadwal),

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import SidebarBriding from '@/Layouts/SidebarBriding';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowPathIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, CheckCircleIcon, ExclamationTriangleIcon, PlusIcon } from '@heroicons/react/24/outline';
+import DataAlergi from '@/Alergi/DataAlergi';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -30,6 +31,7 @@ export default function ReferensiAlergi() {
   const [error, setError] = useState(null);
   const [jenis, setJenis] = useState('01'); // default: Makanan
   const [data, setData] = useState({ response: { list: [] }, metaData: { message: '', code: null } });
+  const [crudOpen, setCrudOpen] = useState(false);
 
   const list = Array.isArray(data?.response?.list) ? data.response.list : [];
   const total = data?.response?.count ?? list.length;
@@ -88,16 +90,22 @@ export default function ReferensiAlergi() {
               <div className="text-sm text-slate-600">Total item: <span className="font-semibold text-slate-800">{total}</span></div>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-slate-500">Jenis:</span>
-                <div className="inline-flex items-center rounded-full border border-slate-300 overflow-hidden">
-                  {jenisOptions.map((opt) => (
-                    <button
-                      key={opt.code}
-                      type="button"
-                      onClick={() => setJenis(opt.code)}
-                      className={`px-3 py-1.5 text-xs ${jenis === opt.code ? 'bg-slate-100 text-slate-800' : 'bg-white text-slate-600'}`}
-                    >{opt.label}</button>
-                  ))}
-                </div>
+                <select
+                  value={jenis}
+                  onChange={(e) => setJenis(e.target.value)}
+                  className="w-32 text-xs h-8 px-2 rounded-md bg-slate-50 border border-slate-300 focus:ring-2 focus:ring-indigo-200"
+                >
+                  <option value="01">Makanan</option>
+                  <option value="02">Udara</option>
+                  <option value="03">Obat</option>
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setCrudOpen(true)}
+                  className="inline-flex items-center justify-center h-8 w-8 rounded-md bg-slate-100 border border-slate-300 text-slate-700 hover:bg-slate-200"
+                >
+                  <PlusIcon className="h-4 w-4" />
+                </button>
               </div>
             </div>
           </div>
@@ -179,6 +187,11 @@ export default function ReferensiAlergi() {
           </AnimatePresence>
         </div>
       </motion.div>
+      <AnimatePresence>
+        {crudOpen && (
+          <DataAlergi open={crudOpen} onClose={() => setCrudOpen(false)} jenis={jenis} />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

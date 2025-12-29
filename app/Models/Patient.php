@@ -203,6 +203,12 @@ class Patient extends Model
             ->orderBy('jam_reg', 'desc');
     }
 
+    // Relasi dengan AlergiPasien
+    public function alergi()
+    {
+        return $this->hasMany(\App\Models\Alergi\AlergiPasien::class, 'no_rkm_medis', 'no_rkm_medis');
+    }
+
     // Method untuk menghitung umur otomatis dari tgl_lahir
     public function calculateAge()
     {

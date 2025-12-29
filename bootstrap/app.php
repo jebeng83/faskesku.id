@@ -15,11 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // Security headers middleware untuk semua requests
         $middleware->web(prepend: [
             \App\Http\Middleware\SecurityHeadersMiddleware::class,
+            \App\Http\Middleware\SecurityLoggingMiddleware::class, // Pindahkan ke prepend agar logging terjadi sebelum CSRF validation
         ]);
 
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
-            \App\Http\Middleware\SecurityLoggingMiddleware::class,
         ]);
 
         // API rate limiting

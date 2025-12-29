@@ -42,6 +42,117 @@ php artisan octane:stop
 # Check status
 php artisan octane:status
 ```
+ 
+---
+
+## ✅ Panduan Production — Langkah demi langkah
+
+### 1) Prasyarat Server
+
+```bash
+php -v && php -m | egrep "pcntl|pdo|openssl|curl|mbstring|fileinfo"
+node -v && npm -v
+cat .env | egrep "^APP_ENV|^APP_DEBUG|^DB_CONNECTION|^DB_HOST|^DB_DATABASE|^DB_USERNAME|^DB_PASSWORD"
+```
+
+### 2) Install Octane + FrankenPHP
+
+```bash
+composer require laravel/octane --no-dev
+php artisan octane:install --server=frankenphp
+```
+
+### 3) Konfigurasi .env (Production)
+
+```env
+APP_ENV=production
+APP_DEBUG=false
+OCTANE_SERVER=frankenphp
+OCTANE_PORT=8000
+OCTANE_WORKERS=auto
+OCTANE_MAX_REQUESTS=500
+```
+
+### 4) Build Aset & Optimisasi Laravel
+
+```bash
+npm ci --include=dev
+npm run build
+php artisan optimize:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+### 5) Jalankan Octane (uji manual)
+
+```bash
+php artisan octane:start --server=frankenphp --port=${OCTANE_PORT:-8000} --workers=${OCTANE_WORKERS:-auto} --max-requests=${OCTANE_MAX_REQUESTS:-500}
+php artisan octane:status
+```
+
+### 6) Jalankan via Supervisor (disarankan)
+
+```ini
+[program:octane]
+process_name=%(program_name)s_%(process_num)02d
+command=php /path/to/app/artisan octane:start --server=frankenphp --host=127.0.0.1 --port=8000
+autostart=true
+autorestart=true
+user=www-data
+redirect_stderr=true
+stdout_logfile=/path/to/app/storage/logs/octane.log
+stopwaitsecs=3600
+```
+
+```bash
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start octane:*
+```
+
+### 7) (Opsional) Nginx sebagai Reverse Proxy
+
+```nginx
+map $http_upgrade $connection_upgrade { default upgrade; '' close; }
+server {
+    listen 80;
+    server_name your-domain.com;
+    root /path/to/app/public;
+    location / { try_files $uri $uri/ @octane; }
+    location @octane {
+        proxy_http_version 1.1;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+        proxy_pass http://127.0.0.1:8000;
+    }
+}
+```
+
+### 8) Workflow Deployment
+
+```bash
+php artisan octane:reload
+sudo supervisorctl restart octane:*
+```
+
+### 9) Monitoring & Health Check
+
+```bash
+php artisan octane:status
+tail -f storage/logs/octane.log
+lsof -i :8000
+ps aux | grep octane
+```
+
+### 10) Troubleshooting Ringkas
+
+- Port terpakai: ubah `OCTANE_PORT` atau hentikan proses di port tersebut.
+- Server tidak start: pastikan binary `frankenphp` ada dan extension `pcntl` aktif.
+- Memory leak: hindari static properties dan caching request/config di constructor; gunakan `OCTANE_MAX_REQUESTS` untuk restart berkala.
 
 ---
 
@@ -456,5 +567,5 @@ lsof -i :8000
 ---
 
 **Dibuat**: 2025-01-27
-**Versi**: 1.0
-**Status**: Production Ready
+**Versi**: 1.1
+**Status**: Production Ready — Step-by-step diperbarui

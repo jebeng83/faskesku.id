@@ -5,6 +5,50 @@ import pendaftaran from './pendaftaran'
 import rujukSubspesialis from './rujuk-subspesialis'
 import config from './config'
 /**
+* @see \App\Http\Controllers\Pcare\PcareController::diagnosa
+* @see app/Http/Controllers/Pcare/PcareController.php:2252
+* @route '/api/pcare/diagnosa'
+*/
+export const diagnosa = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: diagnosa.url(options),
+    method: 'get',
+})
+
+diagnosa.definition = {
+    methods: ["get","head"],
+    url: '/api/pcare/diagnosa',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::diagnosa
+* @see app/Http/Controllers/Pcare/PcareController.php:2252
+* @route '/api/pcare/diagnosa'
+*/
+diagnosa.url = (options?: RouteQueryOptions) => {
+    return diagnosa.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::diagnosa
+* @see app/Http/Controllers/Pcare/PcareController.php:2252
+* @route '/api/pcare/diagnosa'
+*/
+diagnosa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: diagnosa.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::diagnosa
+* @see app/Http/Controllers/Pcare/PcareController.php:2252
+* @route '/api/pcare/diagnosa'
+*/
+diagnosa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: diagnosa.url(options),
+    method: 'head',
+})
+
+/**
 * @see \App\Http\Controllers\Pcare\PcareController::ping
 * @see app/Http/Controllers/Pcare/PcareController.php:29
 * @route '/api/pcare/ping'
@@ -181,50 +225,6 @@ dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 */
 dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: dokter.url(options),
-    method: 'head',
-})
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::diagnosa
-* @see app/Http/Controllers/Pcare/PcareController.php:2252
-* @route '/api/pcare/diagnosa'
-*/
-export const diagnosa = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: diagnosa.url(options),
-    method: 'get',
-})
-
-diagnosa.definition = {
-    methods: ["get","head"],
-    url: '/api/pcare/diagnosa',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::diagnosa
-* @see app/Http/Controllers/Pcare/PcareController.php:2252
-* @route '/api/pcare/diagnosa'
-*/
-diagnosa.url = (options?: RouteQueryOptions) => {
-    return diagnosa.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::diagnosa
-* @see app/Http/Controllers/Pcare/PcareController.php:2252
-* @route '/api/pcare/diagnosa'
-*/
-diagnosa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: diagnosa.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::diagnosa
-* @see app/Http/Controllers/Pcare/PcareController.php:2252
-* @route '/api/pcare/diagnosa'
-*/
-diagnosa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: diagnosa.url(options),
     method: 'head',
 })
 
@@ -862,10 +862,10 @@ pesertaNokartu.head = (args: { noka: string | number, tglPelayanan: string | num
 })
 
 const pcare = {
+    diagnosa: Object.assign(diagnosa, diagnosa),
     ping: Object.assign(ping, ping),
     proxy: Object.assign(proxy, proxy),
     dokter: Object.assign(dokter, dokter),
-    diagnosa: Object.assign(diagnosa, diagnosa),
     faskes: Object.assign(faskes, faskes),
     poli: Object.assign(poli, poli),
     kesadaran: Object.assign(kesadaran, kesadaran),

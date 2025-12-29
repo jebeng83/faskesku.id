@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Akutansi\JurnalController;
 use App\Http\Controllers\Akutansi\NotaJalanController;
+use App\Http\Controllers\Alergi\AlergiController;
 use App\Http\Controllers\API\DokterController;
 use App\Http\Controllers\API\EmployeeController;
 use App\Http\Controllers\API\PatientController as ApiPatientController;
@@ -46,9 +47,10 @@ Route::get('/wilayah/regencies/{provinceCode}', [WilayahController::class, 'rege
 Route::get('/wilayah/districts/{regencyCode}', [WilayahController::class, 'districts'])->name('api.public.wilayah.districts');
 Route::get('/wilayah/villages/{districtCode}', [WilayahController::class, 'villages'])->name('api.public.wilayah.villages');
 Route::get('/wilayah/search', [WilayahController::class, 'search'])->name('api.public.wilayah.search');
+Route::get('/wilayah/all-villages', [WilayahController::class, 'allVillages'])->name('api.public.wilayah.all-villages');
+Route::get('/wilayah/{code}', [WilayahController::class, 'show'])->name('api.public.wilayah.show');
 
 // Public endpoints for Registration (Pasien Baru) - Tanpa prefix 'public' agar sesuai dengan frontend
-Route::get('/wilayah/all-villages', [WilayahController::class, 'allVillages'])->name('api.public.wilayah.all-villages');
 Route::get('/pasien/next-no-rm', [ApiPatientController::class, 'nextNoRM'])->name('api.public.pasien.next-no-rm');
 Route::get('/penjab', [PenjabController::class, 'index'])->name('api.public.penjab.index');
 
@@ -60,6 +62,16 @@ Route::get('/bahasa-pasien', [ReferenceController::class, 'bahasaPasien'])->name
 Route::get('/cacat-fisik', [ReferenceController::class, 'cacatFisik'])->name('api.public.cacat-fisik.index');
 // Public endpoint for doctors list (minimal fields) for dev preview dropdowns
 Route::get('/public/dokter', [DokterController::class, 'index'])->name('api.public.dokter');
+
+// Public lookup: master Aturan Pakai (digunakan untuk dropdown resep)
+Route::get('/aturan-pakai', [ResepController::class, 'masterAturanPakai'])->name('api.resep.master-aturan-pakai');
+// Public create: master Aturan Pakai (untuk dev/testing)
+Route::post('/aturan-pakai/public-store', [ResepController::class, 'createAturanPakai'])->name('api.resep.master-aturan-pakai.store.public');
+
+// PCare referensi diagnosa (public untuk autocomplete ICD)
+Route::prefix('pcare')->group(function () {
+    Route::get('/diagnosa', [PcareController::class, 'getDiagnosa'])->name('api.pcare.diagnosa');
+});
 
 // Public endpoint: SIP Pegawai yang akan habis dalam 30 hari (sanitized fields)
 Route::get('/public/sip-pegawai/expiring', function () {
@@ -109,11 +121,9 @@ Route::prefix('queue')->group(function () {
 Route::get('/poli-voice-mapping', [\App\Http\Controllers\Antrian\PoliVoiceController::class, 'index'])->name('api.poli.voice.mapping.index');
 Route::post('/poli-voice-mapping', [\App\Http\Controllers\Antrian\PoliVoiceController::class, 'store'])->name('api.poli.voice.mapping.store');
 
-// Protected API endpoints (memerlukan authentication)
-// Menggunakan 'auth:sanctum' untuk Inertia.js SPA authentication
-// Sanctum akan otomatis menggunakan session-based auth untuk requests dari stateful domains
-// (localhost, 127.0.0.1:8000, dll) dan token-based auth untuk external API
-Route::middleware('auth:sanctum')->group(function () {
+// Protected API endpoints (require authentication)
+// Use web session guard to fully support Inertia.js SPA with same-origin cookies
+Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/employees', [EmployeeController::class, 'store'])->name('api.employees.store');
     Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('api.employees.destroy');
 
@@ -125,13 +135,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Reference lookup endpoints - moved to public
 
-    // Wilayah routes (protected version)
-    Route::get('/wilayah/provinces', [WilayahController::class, 'provinces'])->name('api.wilayah.provinces');
-    Route::get('/wilayah/regencies/{provinceCode}', [WilayahController::class, 'regencies'])->name('api.wilayah.regencies');
-    Route::get('/wilayah/districts/{regencyCode}', [WilayahController::class, 'districts'])->name('api.wilayah.districts');
-    Route::get('/wilayah/villages/{districtCode}', [WilayahController::class, 'villages'])->name('api.wilayah.villages');
-    // all-villages moved to public
-    Route::get('/wilayah/{code}', [WilayahController::class, 'show'])->name('api.wilayah.show');
+    // Wilayah routes sudah didefinisikan sebagai public di atas untuk kebutuhan form dropdown
 
     // Permission Management Routes
     Route::prefix('permissions')->group(function () {
@@ -211,6 +215,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/obat/{kode_barang}', [ObatController::class, 'getDetailObat'])->name('api.obat.detail');
     Route::post('/obat/cek-stok', [ObatController::class, 'cekStokObat'])->name('api.obat.cek-stok');
 
+    Route::post('/aturan-pakai', [ResepController::class, 'createAturanPakai'])->name('api.resep.master-aturan-pakai.store');
+    Route::post('/aturan-pakai/store', [ResepController::class, 'createAturanPakai'])->name('api.resep.master-aturan-pakai.store.alt');
+
     // API routes untuk resep
     Route::post('/resep', [ResepController::class, 'store'])->name('api.resep.store');
     Route::get('/resep/list', [ResepController::class, 'list'])->name('api.resep.list');
@@ -233,6 +240,21 @@ Route::middleware('auth:sanctum')->group(function () {
     // API routes untuk dokter
     Route::get('/dokter', [DokterController::class, 'index'])->name('api.dokter.index');
     Route::get('/dokter/{kd_dokter}', [DokterController::class, 'show'])->name('api.dokter.show');
+
+    Route::prefix('alergi')->group(function () {
+        Route::get('/', [AlergiController::class, 'index'])->name('api.alergi.index');
+        Route::post('/', [AlergiController::class, 'store'])->name('api.alergi.store');
+        // Route spesifik harus didefinisikan sebelum route dengan parameter
+        Route::get('/next-code', [AlergiController::class, 'nextCode'])->name('api.alergi.next-code');
+        Route::get('/pasien', [AlergiController::class, 'getAlergiPasien'])->name('api.alergi.pasien.index');
+        Route::get('/jenis', [AlergiController::class, 'jenisIndex'])->name('api.alergi.jenis.index');
+        Route::post('/jenis', [AlergiController::class, 'jenisStore'])->name('api.alergi.jenis.store');
+        Route::put('/jenis/{kode_jenis}', [AlergiController::class, 'jenisUpdate'])->name('api.alergi.jenis.update');
+        Route::delete('/jenis/{kode_jenis}', [AlergiController::class, 'jenisDestroy'])->name('api.alergi.jenis.destroy');
+        // Route dengan parameter harus didefinisikan setelah route spesifik
+        Route::put('/{kd_alergi}', [AlergiController::class, 'update'])->name('api.alergi.update');
+        Route::delete('/{kd_alergi}', [AlergiController::class, 'destroy'])->name('api.alergi.destroy');
+    });
 
     // API routes untuk permintaan laboratorium
     Route::get('/lab-tests', [PermintaanLabController::class, 'getLabTests'])->name('api.lab-tests.index');
@@ -375,8 +397,8 @@ Route::middleware('auth:sanctum')->group(function () {
             ->where('endpoint', '.*')
             ->name('api.pcare.proxy');
         Route::get('/dokter', [PcareController::class, 'getDokter'])->name('api.pcare.dokter');
-        // Referensi Diagnosa (PCare)
-        Route::get('/diagnosa', [PcareController::class, 'getDiagnosa'])->name('api.pcare.diagnosa');
+        // Referensi Diagnosa (PCare) - dipindahkan ke public agar autocomplete ICD tidak terblokir auth
+        // Route::get('/diagnosa', [PcareController::class, 'getDiagnosa'])->name('api.pcare.diagnosa');
         Route::get('/faskes', [PcareController::class, 'getFaskes'])->name('api.pcare.faskes');
         Route::get('/poli', [PcareController::class, 'getPoli'])->name('api.pcare.poli');
         Route::get('/kesadaran', [PcareController::class, 'getKesadaran'])->name('api.pcare.kesadaran');
@@ -525,7 +547,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Poliklinik lookup (SearchableSelect) - ringan tanpa auth
     Route::get('/poliklinik', [PoliklinikController::class, 'apiIndex'])->name('api.poliklinik.index');
-
 
     // Akutansi - Nota Jalan & Jurnal
     // Akutansi: Cek & buat nota_jalan
