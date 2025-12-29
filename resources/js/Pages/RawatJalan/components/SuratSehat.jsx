@@ -181,6 +181,16 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
         return v === '' ? '-' : v;
     };
 
+    const patientFullAddress = () => {
+        const normalize = (value) => (value ?? '').toString().trim();
+        const kel = normalize(patient?.kelurahan?.nm_kel || patient?.kelurahanpj || patient?.kelurahan);
+        const kec = normalize(patient?.kecamatan?.nm_kec || patient?.kecamatanpj || patient?.kecamatan);
+        const kab = normalize(patient?.kabupaten?.nm_kab || patient?.kabupatenpj || patient?.kabupaten);
+
+        const parts = [normalize(patient?.alamat), kel, kec, kab].filter(Boolean);
+        return parts.join(', ');
+    };
+
     const ttdQrText = [
         `Dikeluarkan oleh: ${safeText(setting?.nama_instansi)}`,
         `Ditandatangani oleh: ${safeText(dokter?.nm_dokter)}`,
@@ -580,10 +590,15 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                                         <div className="print-text-black">{safeText(patient?.no_rkm_medis)}</div>
                                                         <div className="text-gray-700 print-text-black">Tgl Lahir</div>
                                                         <div className="text-gray-700 print-text-black">:</div>
-                                                        <div className="print-text-black">{patient?.tgl_lahir ? patient.tgl_lahir.split('-').reverse().join('-') : '-'}</div>
+                                                        <div className="print-text-black">{formatShortDate(patient?.tgl_lahir)}</div>
                                                         <div className="text-gray-700 print-text-black">JK</div>
                                                         <div className="text-gray-700 print-text-black">:</div>
                                                         <div className="print-text-black">{patient?.jk === 'L' ? 'Laki-laki' : patient?.jk === 'P' ? 'Perempuan' : safeText(patient?.jk)}</div>
+                                                        <div className="text-gray-700 print-text-black">Alamat</div>
+                                                        <div className="text-gray-700 print-text-black">:</div>
+                                                        <div className="print-text-black uppercase whitespace-normal break-words">
+                                                            {patientFullAddress() || safeText(patient?.alamat)}
+                                                        </div>
                                                     </div>
                                                 </div>
 

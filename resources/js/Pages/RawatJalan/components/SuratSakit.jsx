@@ -770,7 +770,7 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting }) {
                                                 Berdasarkan hasil pemeriksaan kesehatan, yang bersangkutan dalam keadaan <span className="font-bold print-text-bold uppercase">Sakit</span> dan memerlukan istirahat selama <span className="font-bold print-text-bold">{formData.lamasakit || '...'}</span> hari terhitung sejak tanggal <span className="font-semibold print-text-bold">{formatDate(formData.tanggalawal)}</span> sampai dengan <span className="font-semibold print-text-bold">{formatDate(formData.tanggalakhir)}</span>.
                                             </div>
 
-                                            <div className="mt-1.5 text-xs leading-tight print:mt-1 print-text-black">
+                                            <div className="mt-1.5 text-xs leading-tight print:mt-1 print:mb-2 print-text-black">
                                                 Demikian surat keterangan ini dibuat untuk dipergunakan seperlunya.
                                             </div>
 
