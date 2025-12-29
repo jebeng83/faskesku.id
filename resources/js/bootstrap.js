@@ -194,7 +194,7 @@ window.axios.interceptors.response.use(
 (() => {
     const matchBpjs = (url) => typeof url === "string" && url.includes("/pcare/api/");
     const genId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    const shouldDebug = true; // aktifkan selalu sesuai permintaan
+    const shouldDebug = Boolean(typeof import.meta !== 'undefined' && import.meta?.env?.DEV);
 
     if (!shouldDebug) return;
 

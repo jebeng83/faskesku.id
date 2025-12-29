@@ -536,6 +536,106 @@ Jika ada pertanyaan atau masalah terkait update keamanan ini:
 
 ---
 
+## Kebijakan Keamanan Informasi (A.5) — Draft Ringkas
+
+Tujuan: menetapkan prinsip dan kontrol minimum keamanan informasi yang wajib diterapkan pada pengembangan, operasi, dan pemeliharaan aplikasi Faskesku ID.
+
+Ruang Lingkup: kode aplikasi web/API, konfigurasi aplikasi, proses pengembangan (SDLC), integrasi pihak ketiga, dan data yang dikelola aplikasi. Kontrol organisasi di luar aplikasi (keamanan fisik, HR) dicakup oleh kebijakan terpisah.
+
+Prinsip:
+- Kepatuhan pada regulasi kesehatan dan privasi yang relevan.
+- Least privilege, defense-in-depth, dan secure-by-default.
+- Dokumentasi, traceability, dan auditability untuk semua perubahan signifikan.
+
+Kontrol Minimum Wajib:
+- Autentikasi & Akses: semua endpoint sensitif di belakang autentikasi; penerapan password policy kuat; rencana adopsi token API untuk integrasi. Rujukan: [routes/api.php](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/routes/api.php), [StrongPassword.php](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/app/Rules/StrongPassword.php).
+- Kriptografi: HTTPS wajib di production; HSTS; enkripsi dan kebijakan cookie yang aman. Rujukan: [AppServiceProvider.php](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/app/Providers/AppServiceProvider.php), [SecurityHeadersMiddleware.php](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/app/Http/Middleware/SecurityHeadersMiddleware.php), [config/session.php](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/config/session.php).
+- Logging & Monitoring: log aktivitas sensitif dan percobaan login; review berkala; siapkan alert bertahap. Rujukan: [SecurityLoggingMiddleware.php](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/app/Http/Middleware/SecurityLoggingMiddleware.php), bagian Monitoring & Maintenance dokumen ini.
+- Konfigurasi & Perubahan: baseline konfigurasi keamanan terdokumentasi; proses change management untuk perubahan yang berdampak. Rujukan: bagian Konfigurasi .env dan Session Security dokumen ini.
+- Kerentanan & Patch: audit kerentanan dependency secara rutin; patch manajemen; break build untuk tingkat keparahan tertentu. Rujukan: bagian “Checklist CI Audit Kerentanan” di bawah.
+- Backup & Pemulihan: tetapkan jadwal dan prosedur backup/restore; uji berkala. (Disiapkan dalam rencana tindak lanjut).
+- Penghapusan & Masking Data: kebijakan penghapusan dan pseudonimisasi untuk data sensitif di aplikasi dan export. (Disiapkan dalam rencana tindak lanjut).
+- Integrasi Pihak Ketiga: gunakan prinsip least privilege; verifikasi autentikasi dan izin; dokumentasikan endpoint dan rahasia. Rujukan: dokumen integrasi (SATUSEHAT/PCare) di folder docs.
+- Manajemen Rahasia: rahasia disimpan di .env; hindari commit; rotasi berkala untuk secret kritis; akses dibatasi.
+
+Kepatuhan & Review:
+- Review tahunan kebijakan ini atau saat terjadi perubahan besar pada aplikasi/infrastruktur.
+- Simpan bukti penerapan kontrol (log, konfigurasi, hasil audit CI) untuk keperluan compliance.
+
+Peran & Tanggung Jawab:
+- Tim Development: menerapkan kontrol A.5 pada kode, dependency, dan konfigurasi.
+- Tim Operasional: menjalankan backup/restore, hardening lingkungan, dan monitoring produksi.
+- Manajemen Produk: menyetujui perubahan yang berdampak pada keamanan dan privasi.
+
+---
+
+## Checklist CI Audit Kerentanan
+
+Tujuan: memastikan dependency PHP dan JavaScript diaudit otomatis, dengan kebijakan gagal build bila ditemukan kerentanan pada tingkat keparahan yang ditetapkan.
+
+Kebijakan Eksekusi:
+- Trigger: pada push/pull request ke branch utama dan jadwal mingguan.
+- Ambang Batas: gagal jika
+  - Composer audit menemukan kerentanan (severity apa pun pada paket runtime).
+  - NPM audit menemukan kerentanan tingkat minimal “moderate”.
+- Penerapan: jalankan audit tanpa menjalankan build aplikasi untuk efisiensi.
+
+Langkah Teknis (otomasi di CI):
+- PHP
+  - checkout kode.
+  - setup PHP 8.2 dan composer.
+  - composer install (tanpa scripts).
+  - composer audit.
+- Node.js
+  - checkout kode.
+  - setup Node 20.
+  - npm ci --ignore-scripts.
+  - npm audit --audit-level=moderate.
+  - npm run security:react2shell:scan.
+
+Workflow CI: lihat [security-audit.yml](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/.github/workflows/security-audit.yml).
+
+---
+
+## Statement of Applicability (SoA) — ISO/IEC 27001:2022
+
+Tujuan bagian ini adalah memetakan kontrol Annex A ISO/IEC 27001:2022 yang relevan terhadap implementasi keamanan aplikasi Faskesku ID, beserta status penerapannya dan rujukan teknis yang tersedia di repository.
+
+Ruang lingkup SoA ini berfokus pada komponen aplikasi web, API, konfigurasi aplikasi, dan integrasi pihak ketiga yang berada dalam kendali tim pengembangan. Kontrol yang berada di luar kendali aplikasi (mis. keamanan fisik gedung, HR) ditandai sebagai Tidak Berlaku (N/A) atau dikelola oleh penyedia layanan/operasional.
+
+| Kontrol (ID — Nama) | Status | Justifikasi/Implementasi | Rujukan |
+|---|---|---|---|
+| A.5 — Kebijakan Keamanan Informasi | Parsial | Kebijakan dan standar teknis terdokumentasi di dokumen keamanan dan update ini; perlu formalisasi kebijakan organisasi | [keamanan.md](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/docs/keamanan.md), [updatekeamanan.md](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/docs/updatekeamanan.md) |
+| A.5.18 — Kontrol Akses | Implementasi | Proteksi routes sensitif dengan autentikasi; grup auth pada API | [routes/api.php](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/routes/api.php) |
+| A.5.36 — Kepatuhan Regulasi | Parsial | Referensi HIPAA/UU Kesehatan tercantum; perlu penetapan daftar regulasi dan bukti kepatuhan | [keamanan.md](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/docs/keamanan.md) |
+| A.6.3 — Awareness & Training | Direncanakan | Agenda pelatihan tercantum di Monitoring & Maintenance | [updatekeamanan.md](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/docs/updatekeamanan.md#L487-L495) |
+| A.7.1 — Keamanan Fisik | N/A | Ditangani oleh penyedia infrastruktur/operasional, di luar lingkup aplikasi | — |
+| A.8.2 — Kriptografi | Implementasi | HTTPS force, HSTS, enkripsi session/cookie | [AppServiceProvider.php](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/app/Providers/AppServiceProvider.php), [config/session.php](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/config/session.php), [SecurityHeadersMiddleware.php](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/app/Http/Middleware/SecurityHeadersMiddleware.php) |
+| A.8.3 — Secure SDLC | Parsial | Praktik secure coding, header keamanan, validasi input, testing disarankan; perlu formalisasi proses SDLC | [SECURITY_IMPLEMENTATION.md](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/docs/SECURITY_IMPLEMENTATION.md) |
+| A.8.4 — Keamanan Layanan Jaringan | Parsial | Proteksi via TLS, rate limiting; segmentasi jaringan dan hardening jaringan perlu ditetapkan | [bootstrap/app.php](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/bootstrap/app.php), [AuthController.php](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/app/Http/Controllers/AuthController.php) |
+| A.8.5 — Identitas & Autentikasi | Implementasi | Password policy kuat, session-based auth, dukungan token via Sanctum | [StrongPassword.php](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/app/Rules/StrongPassword.php), [UserController.php](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/app/Http/Controllers/API/UserController.php), [config/sanctum.php](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/config/sanctum.php) |
+| A.8.7 — Proteksi Malware | Direncanakan | Belum ada kontrol khusus di aplikasi; rekomendasi scanner dan hardening lingkungan | [keamanan.md](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/docs/keamanan.md) |
+| A.8.8 — Manajemen Kerentanan Teknis | Parsial | Rekomendasi composer audit dan npm audit; perlu otomatisasi (CI) dan patch management | [updatekeamanan.md](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/docs/updatekeamanan.md#L480-L485) |
+| A.8.9 — Manajemen Konfigurasi | Parsial | Konfigurasi session & security header terdokumentasi; perlu baseline konfigurasi dan kontrol perubahan | [config/session.php](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/config/session.php), [SecurityHeadersMiddleware.php](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/app/Http/Middleware/SecurityHeadersMiddleware.php) |
+| A.8.10 — Penghapusan Data | Direncanakan | Belum ada prosedur penghapusan/pseudonimisasi data sensitif | — |
+| A.8.11 — Masking/Pseudonimisasi Data | Direncanakan | Perlu kebijakan dan implementasi di layer tampilan/API | — |
+| A.8.14 — Proteksi Data Saat Transit | Implementasi | HTTPS/HSTS, secure cookies, same-site policy | [AppServiceProvider.php](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/app/Providers/AppServiceProvider.php), [config/session.php](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/config/session.php) |
+| A.8.15 — Logging Peristiwa | Implementasi | Security logging untuk aktivitas sensitif dan login attempts | [SecurityLoggingMiddleware.php](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/app/Http/Middleware/SecurityLoggingMiddleware.php) |
+| A.8.16 — Monitoring Aktivitas | Implementasi | Prosedur review log dan monitoring terdefinisi; dapat ditingkatkan ke alert otomatis | [updatekeamanan.md](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/docs/updatekeamanan.md#L475-L485) |
+| A.8.23 — Pencadangan Informasi | Direncanakan | Prosedur backup/restore belum terdokumentasi di repository aplikasi | — |
+
+### Catatan SoA
+- Status “Parsial” berarti sebagian kontrol sudah diterapkan di level aplikasi, namun memerlukan kebijakan/proses pendukung organisasi atau otomatisasi operasional.
+- Kontrol “N/A” berada di luar lingkup aplikasi dan biasanya ditangani oleh penyedia hosting, fasilitas fisik, atau fungsi HR/operasional.
+
+### Rencana Tindak Lanjut (Prioritas)
+- Formalkan kebijakan keamanan (A.5) dan daftar kepatuhan regulasi (A.5.36) beserta bukti.
+- Otomatiskan audit kerentanan (A.8.8) via pipeline CI dan rencana patching berkala.
+- Tetapkan baseline konfigurasi dan proses change management (A.8.9).
+- Dokumentasikan dan implementasikan prosedur backup/restore (A.8.23).
+- Susun kebijakan penghapusan data, masking/pseudonimisasi (A.8.10, A.8.11).
+- Program awareness/training keamanan berkala untuk tim (A.6.3).
+
 **Dokumen ini harus direview setiap kali ada update keamanan baru.**
 
 **Terakhir diupdate:** {{ date('Y-m-d H:i:s') }}
