@@ -12,9 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Security headers middleware untuk semua requests
         $middleware->web(prepend: [
             \App\Http\Middleware\SecurityHeadersMiddleware::class,
+            \App\Http\Middleware\FirewallMiddleware::class,
         ]);
 
         $middleware->web(append: [

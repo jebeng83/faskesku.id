@@ -47,6 +47,7 @@ use App\Http\Controllers\RawatJalan\ObatController;
 use App\Http\Controllers\RawatJalan\RawatJalanController;
 use App\Http\Controllers\RawatJalan\ResepController;
 use App\Http\Controllers\SkriningVisualController;
+use Inertia\Inertia;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\RegPeriksaController;
 use App\Http\Controllers\RehabilitasiMedikController;
@@ -57,7 +58,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
-use Inertia\Inertia;
+use App\Http\Controllers\Security\FirewallSettingsController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/security/firewall', [FirewallSettingsController::class, 'index'])->name('security.firewall.index');
+    Route::put('/security/firewall', [FirewallSettingsController::class, 'update'])->name('security.firewall.update');
+    Route::get('/security/firewall/blocked', [FirewallSettingsController::class, 'blocked'])->name('security.firewall.blocked');
+    Route::delete('/security/firewall/blocked/{blockedIp}', [FirewallSettingsController::class, 'unblock'])->name('security.firewall.unblock');
+});
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

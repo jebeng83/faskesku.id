@@ -15,6 +15,7 @@ import SatuSehat from './SatuSehat'
 import JadwalController from './JadwalController'
 import PoliklinikController from './PoliklinikController'
 import Akutansi from './Akutansi'
+import Security from './Security'
 import AuthController from './AuthController'
 import PatientController from './PatientController'
 import Pasien from './Pasien'
@@ -57,6 +58,7 @@ const Controllers = {
     JadwalController: Object.assign(JadwalController, JadwalController),
     PoliklinikController: Object.assign(PoliklinikController, PoliklinikController),
     Akutansi: Object.assign(Akutansi, Akutansi),
+    Security: Object.assign(Security, Security),
     AuthController: Object.assign(AuthController, AuthController),
     PatientController: Object.assign(PatientController, PatientController),
     Pasien: Object.assign(Pasien, Pasien),

@@ -18,6 +18,7 @@ import {
     FileText,
     Home,
     Receipt,
+    Shield,
 } from "lucide-react";
 
 // Theme toggle terkontrol, state diangkat ke parent agar sinkron di semua instance
@@ -134,6 +135,7 @@ export default function SidebarPengaturan({
             user: true,
             hr: true,
             ss: true,
+            security: true,
         };
         if (typeof window === "undefined") {
             return base;
@@ -229,6 +231,14 @@ export default function SidebarPengaturan({
             ssLocRanap: safeRoute(
                 "satusehat.prerequisites.location_ranap",
                 "/satusehat/prerequisites/location-ranap"
+            ),
+            firewallSettings: safeRoute(
+                "security.firewall.index",
+                "/security/firewall"
+            ),
+            firewallBlocked: safeRoute(
+                "security.firewall.blocked",
+                "/security/firewall/blocked"
             ),
             // Setting User
             userIndex: safeRoute("users.index", "/users"),
@@ -339,6 +349,28 @@ export default function SidebarPengaturan({
                             icon={Settings}
                             label="Setting Aplikasi"
                             active={isActive(paths.settingIndex)}
+                        />
+                    </Section>
+
+                    <Section
+                        title="Keamanan"
+                        collapsed={isSidebarCollapsed}
+                        open={openSections.security}
+                        onToggle={() => toggleSection("security")}
+                    >
+                        <NavItem
+                            collapsed={isSidebarCollapsed}
+                            href={paths.firewallSettings}
+                            icon={Shield}
+                            label="Pengaturan Firewall"
+                            active={isActive(paths.firewallSettings)}
+                        />
+                        <NavItem
+                            collapsed={isSidebarCollapsed}
+                            href={paths.firewallBlocked}
+                            icon={Shield}
+                            label="Daftar IP Diblokir"
+                            active={isActive(paths.firewallBlocked)}
                         />
                     </Section>
 
