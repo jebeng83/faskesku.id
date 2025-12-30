@@ -50,11 +50,8 @@ class MenuPermissionMiddleware
             return $next($request);
         }
 
-        // Check if menu requires permission
-        if ($menu->permission_name) {
-            if (! $user->can($menu->permission_name)) {
-                abort(403, 'Anda tidak memiliki akses ke halaman ini.');
-            }
+        if (! Menu::userCanAccessMenu($menu, $user)) {
+            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 
         // Store current menu in request for use in views

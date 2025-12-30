@@ -222,29 +222,20 @@ class Patient extends Model
         }
     }
 
+    // Generate nomor RM otomatis
     public static function generateNoRM()
     {
         return DB::transaction(function () {
             $row = DB::table('set_no_rkm_medis')->lockForUpdate()->first();
+            $currentSetting = $row ? (int) $row->no_rkm_medis : 0;
+
             $maxExisting = (int) (DB::table('pasien')
                 ->selectRaw('MAX(CAST(no_rkm_medis AS UNSIGNED)) as max_no')
                 ->value('max_no') ?? 0);
 
-            $baseline = $row
-                ? (int) $row->no_rkm_medis
-                : $maxExisting;
-
-            $candidate = $baseline + 1;
-
-            while (
-                DB::table('pasien')
-                    ->where('no_rkm_medis', str_pad((string) $candidate, 6, '0', STR_PAD_LEFT))
-                    ->exists()
-            ) {
-                $candidate++;
-            }
-
-            $formatted = str_pad((string) $candidate, 6, '0', STR_PAD_LEFT);
+            $baseline = max($currentSetting, $maxExisting);
+            $next = $baseline + 1;
+            $formatted = str_pad((string) $next, 6, '0', STR_PAD_LEFT);
 
             if ($row) {
                 DB::table('set_no_rkm_medis')->update([
@@ -263,14 +254,13 @@ class Patient extends Model
     public static function peekNextNoRM(): string
     {
         $row = DB::table('set_no_rkm_medis')->first();
+        $currentSetting = $row ? (int) $row->no_rkm_medis : 0;
+
         $maxExisting = (int) (DB::table('pasien')
             ->selectRaw('MAX(CAST(no_rkm_medis AS UNSIGNED)) as max_no')
             ->value('max_no') ?? 0);
 
-        $baseline = $row
-            ? (int) $row->no_rkm_medis
-            : $maxExisting;
-
+        $baseline = max($currentSetting, $maxExisting);
         $next = $baseline + 1;
 
         return str_pad((string) $next, 6, '0', STR_PAD_LEFT);

@@ -22,7 +22,6 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
     const [selectedWilayah, setSelectedWilayah] = useState(null);
     const [loadingWilayah, setLoadingWilayah] = useState(false);
     const [isNoRMTouched, setIsNoRMTouched] = useState(false);
-    const [isAutoNoRM, setIsAutoNoRM] = useState(true);
     const lastNoRMCheckedRef = useRef("");
     const noRMDuplicateRetryRef = useRef(0);
     const [perusahaanOptions, setPerusahaanOptions] = useState([]);
@@ -148,7 +147,6 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
             setPekerjaanOption("");
             setPekerjaanOther("");
             setIsNoRMTouched(false);
-            setIsAutoNoRM(true);
             lastNoRMCheckedRef.current = "";
             noRMDuplicateRetryRef.current = 0;
             fetchNextNoRM();
@@ -598,7 +596,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
     };
 
     const submitPatient = ({ forceNoRM } = {}) => {
-        const shouldAutoGenerateNoRM = isAutoNoRM && !forceNoRM;
+        const shouldAutoGenerateNoRM = !isNoRMTouched && !forceNoRM;
         transform((payload) => ({
             ...payload,
             no_rkm_medis: forceNoRM
@@ -609,32 +607,12 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
         }));
 
         post(route("patients.store"), {
-            onSuccess: async (page) => {
+            onSuccess: (page) => {
                 const newPatient = page.props.flash?.new_patient;
                 if (onSuccess) {
                     onSuccess(newPatient);
                 }
-
-                reset();
-                setSelectedWilayah(null);
-                setPekerjaanOption("");
-                setPekerjaanOther("");
-                setIsNoRMTouched(false);
-                setIsAutoNoRM(true);
-                lastNoRMCheckedRef.current = "";
-                noRMDuplicateRetryRef.current = 0;
-
-                try {
-                    const next = await getSuggestedNoRM();
-                    if (next) {
-                        setData((prevData) => ({
-                            ...prevData,
-                            no_rkm_medis: next,
-                        }));
-                    }
-                } catch (error) {
-                    console.error("Error loading next No. RM after success:", error);
-                }
+                onClose();
             },
             onError: async (errors) => {
                 const noRMError = errors?.no_rkm_medis;
@@ -790,53 +768,29 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                         </h4>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
-                                                <div className="flex items-center justify-between mb-2 gap-2">
-                                                    <span className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                        No. Rekam Medis
-                                                    </span>
-                                                    <label className="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={isAutoNoRM}
-                                                            onChange={(e) => {
-                                                                const checked = e.target.checked;
-                                                                setIsAutoNoRM(checked);
-                                                                if (!checked) {
-                                                                    setIsNoRMTouched(true);
-                                                                }
-                                                            }}
-                                                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                                        />
-                                                        <span>Otomatis dari pengaturan No. RM</span>
-                                                    </label>
-                                                </div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    No. Rekam Medis
+                                                </label>
                                                 <input
                                                     type="text"
                                                     name="no_rkm_medis"
                                                     value={data.no_rkm_medis}
                                                     onChange={(e) => {
-                                                        if (!isAutoNoRM) {
-                                                            setIsNoRMTouched(true);
-                                                            setData(
-                                                                "no_rkm_medis",
-                                                                e.target.value
-                                                            );
-                                                        }
+                                                        setIsNoRMTouched(true);
+                                                        setData(
+                                                            "no_rkm_medis",
+                                                            e.target.value
+                                                        );
                                                     }}
                                                     onBlur={(e) => {
-                                                        if (isNoRMTouched && !isAutoNoRM) {
+                                                        if (isNoRMTouched) {
                                                             checkNoRMDuplicateAndOfferNext(
                                                                 e.target.value
                                                             );
                                                         }
                                                     }}
                                                     className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                    placeholder={
-                                                        isAutoNoRM
-                                                            ? "Otomatis dari set_no_rkm_medis"
-                                                            : "Isi manual jika diperlukan"
-                                                    }
-                                                    disabled={isAutoNoRM}
+                                                    placeholder="Otomatis"
                                                 />
                                                 {getErrorMessage(
                                                     "no_rkm_medis"

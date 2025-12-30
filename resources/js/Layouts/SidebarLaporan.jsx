@@ -17,6 +17,8 @@ export default function SidebarLaporan({ title = "Laporan", children }) {
     const { url } = usePage();
     const [openKeuangan, setOpenKeuangan] = useState(true);
     const [openOperasional, setOpenOperasional] = useState(true);
+    const [openRalan, setOpenRalan] = useState(true);
+    const [openRanap, setOpenRanap] = useState(true);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isDark, setIsDark] = useState(false);
@@ -127,21 +129,6 @@ export default function SidebarLaporan({ title = "Laporan", children }) {
                 groupKey: "operasional",
                 children: [
                     {
-                        label: "Billing Rawat Jalan",
-                        href: "/akutansi/billing",
-                        icon: <Receipt className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Nota Jalan",
-                        href: "/akutansi/nota-jalan",
-                        icon: <Receipt className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Kasir Ralan",
-                        href: "/akutansi/kasir-ralan",
-                        icon: <Receipt className="w-4 h-4" />,
-                    },
-                    {
                         label: "RL Kemenkes",
                         href: "/laporan/rl-kemenkes",
                         icon: <FileText className="w-4 h-4" />,
@@ -155,6 +142,45 @@ export default function SidebarLaporan({ title = "Laporan", children }) {
                         label: "Laporan BOR",
                         href: "/laporan/bor",
                         icon: <FileText className="w-4 h-4" />,
+                    },
+                ],
+            },
+            {
+                label: "Laporan RALAN",
+                icon: <Receipt className="w-4 h-4" />,
+                groupKey: "ralan",
+                children: [
+                    {
+                        label: "Billing RALAN",
+                        href: "/akutansi/billing",
+                        icon: <Receipt className="w-4 h-4" />,
+                    },
+                    {
+                        label: "Nota Jalan RALAN",
+                        href: "/akutansi/nota-jalan",
+                        icon: <Receipt className="w-4 h-4" />,
+                    },
+                    {
+                        label: "Kasir RALAN",
+                        href: "/akutansi/kasir-ralan",
+                        icon: <Receipt className="w-4 h-4" />,
+                    },
+                ],
+            },
+            {
+                label: "Laporan RANAP",
+                icon: <Receipt className="w-4 h-4" />,
+                groupKey: "ranap",
+                children: [
+                    {
+                        label: "Billing RANAP",
+                        href: "/akutansi/billing-ranap",
+                        icon: <Receipt className="w-4 h-4" />,
+                    },
+                    {
+                        label: "Pembayaran RANAP",
+                        href: "/pembayaran/ranap",
+                        icon: <Receipt className="w-4 h-4" />,
                     },
                 ],
             },
@@ -174,6 +200,8 @@ export default function SidebarLaporan({ title = "Laporan", children }) {
     const isGroupOpen = (groupKey) => {
         if (groupKey === "keuangan") return openKeuangan;
         if (groupKey === "operasional") return openOperasional;
+        if (groupKey === "ralan") return openRalan;
+        if (groupKey === "ranap") return openRanap;
         return false;
     };
 
@@ -182,6 +210,10 @@ export default function SidebarLaporan({ title = "Laporan", children }) {
             setOpenKeuangan((v) => !v);
         } else if (groupKey === "operasional") {
             setOpenOperasional((v) => !v);
+        } else if (groupKey === "ralan") {
+            setOpenRalan((v) => !v);
+        } else if (groupKey === "ranap") {
+            setOpenRanap((v) => !v);
         }
     };
 
