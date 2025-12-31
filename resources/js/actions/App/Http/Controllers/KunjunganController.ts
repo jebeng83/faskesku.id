@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\KunjunganController::index
-* @see app/Http/Controllers/KunjunganController.php:101
+* @see app/Http/Controllers/KunjunganController.php:102
 * @route '/laporan'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\KunjunganController::index
-* @see app/Http/Controllers/KunjunganController.php:101
+* @see app/Http/Controllers/KunjunganController.php:102
 * @route '/laporan'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\KunjunganController::index
-* @see app/Http/Controllers/KunjunganController.php:101
+* @see app/Http/Controllers/KunjunganController.php:102
 * @route '/laporan'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\KunjunganController::index
-* @see app/Http/Controllers/KunjunganController.php:101
+* @see app/Http/Controllers/KunjunganController.php:102
 * @route '/laporan'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\KunjunganController::getStats
-* @see app/Http/Controllers/KunjunganController.php:284
+* @see app/Http/Controllers/KunjunganController.php:285
 * @route '/laporan/stats'
 */
 export const getStats = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,7 +60,7 @@ getStats.definition = {
 
 /**
 * @see \App\Http\Controllers\KunjunganController::getStats
-* @see app/Http/Controllers/KunjunganController.php:284
+* @see app/Http/Controllers/KunjunganController.php:285
 * @route '/laporan/stats'
 */
 getStats.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ getStats.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\KunjunganController::getStats
-* @see app/Http/Controllers/KunjunganController.php:284
+* @see app/Http/Controllers/KunjunganController.php:285
 * @route '/laporan/stats'
 */
 getStats.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -79,7 +79,7 @@ getStats.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\KunjunganController::getStats
-* @see app/Http/Controllers/KunjunganController.php:284
+* @see app/Http/Controllers/KunjunganController.php:285
 * @route '/laporan/stats'
 */
 getStats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -89,7 +89,7 @@ getStats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\KunjunganController::kunjunganRalanPage
-* @see app/Http/Controllers/KunjunganController.php:484
+* @see app/Http/Controllers/KunjunganController.php:485
 * @route '/laporan/ralan/kunjungan'
 */
 export const kunjunganRalanPage = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -104,7 +104,7 @@ kunjunganRalanPage.definition = {
 
 /**
 * @see \App\Http\Controllers\KunjunganController::kunjunganRalanPage
-* @see app/Http/Controllers/KunjunganController.php:484
+* @see app/Http/Controllers/KunjunganController.php:485
 * @route '/laporan/ralan/kunjungan'
 */
 kunjunganRalanPage.url = (options?: RouteQueryOptions) => {
@@ -113,7 +113,7 @@ kunjunganRalanPage.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\KunjunganController::kunjunganRalanPage
-* @see app/Http/Controllers/KunjunganController.php:484
+* @see app/Http/Controllers/KunjunganController.php:485
 * @route '/laporan/ralan/kunjungan'
 */
 kunjunganRalanPage.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -123,7 +123,7 @@ kunjunganRalanPage.get = (options?: RouteQueryOptions): RouteDefinition<'get'> =
 
 /**
 * @see \App\Http\Controllers\KunjunganController::kunjunganRalanPage
-* @see app/Http/Controllers/KunjunganController.php:484
+* @see app/Http/Controllers/KunjunganController.php:485
 * @route '/laporan/ralan/kunjungan'
 */
 kunjunganRalanPage.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -133,7 +133,7 @@ kunjunganRalanPage.head = (options?: RouteQueryOptions): RouteDefinition<'head'>
 
 /**
 * @see \App\Http\Controllers\KunjunganController::kunjunganRalanData
-* @see app/Http/Controllers/KunjunganController.php:497
+* @see app/Http/Controllers/KunjunganController.php:498
 * @route '/laporan/ralan/kunjungan/data'
 */
 export const kunjunganRalanData = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -148,7 +148,7 @@ kunjunganRalanData.definition = {
 
 /**
 * @see \App\Http\Controllers\KunjunganController::kunjunganRalanData
-* @see app/Http/Controllers/KunjunganController.php:497
+* @see app/Http/Controllers/KunjunganController.php:498
 * @route '/laporan/ralan/kunjungan/data'
 */
 kunjunganRalanData.url = (options?: RouteQueryOptions) => {
@@ -157,7 +157,7 @@ kunjunganRalanData.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\KunjunganController::kunjunganRalanData
-* @see app/Http/Controllers/KunjunganController.php:497
+* @see app/Http/Controllers/KunjunganController.php:498
 * @route '/laporan/ralan/kunjungan/data'
 */
 kunjunganRalanData.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -167,7 +167,7 @@ kunjunganRalanData.get = (options?: RouteQueryOptions): RouteDefinition<'get'> =
 
 /**
 * @see \App\Http\Controllers\KunjunganController::kunjunganRalanData
-* @see app/Http/Controllers/KunjunganController.php:497
+* @see app/Http/Controllers/KunjunganController.php:498
 * @route '/laporan/ralan/kunjungan/data'
 */
 kunjunganRalanData.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -175,6 +175,50 @@ kunjunganRalanData.head = (options?: RouteQueryOptions): RouteDefinition<'head'>
     method: 'head',
 })
 
-const KunjunganController = { index, getStats, kunjunganRalanPage, kunjunganRalanData }
+/**
+* @see \App\Http\Controllers\KunjunganController::kunjunganRalanPrint
+* @see app/Http/Controllers/KunjunganController.php:664
+* @route '/laporan/ralan/kunjungan/print'
+*/
+export const kunjunganRalanPrint = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: kunjunganRalanPrint.url(options),
+    method: 'get',
+})
+
+kunjunganRalanPrint.definition = {
+    methods: ["get","head"],
+    url: '/laporan/ralan/kunjungan/print',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\KunjunganController::kunjunganRalanPrint
+* @see app/Http/Controllers/KunjunganController.php:664
+* @route '/laporan/ralan/kunjungan/print'
+*/
+kunjunganRalanPrint.url = (options?: RouteQueryOptions) => {
+    return kunjunganRalanPrint.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\KunjunganController::kunjunganRalanPrint
+* @see app/Http/Controllers/KunjunganController.php:664
+* @route '/laporan/ralan/kunjungan/print'
+*/
+kunjunganRalanPrint.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: kunjunganRalanPrint.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\KunjunganController::kunjunganRalanPrint
+* @see app/Http/Controllers/KunjunganController.php:664
+* @route '/laporan/ralan/kunjungan/print'
+*/
+kunjunganRalanPrint.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: kunjunganRalanPrint.url(options),
+    method: 'head',
+})
+
+const KunjunganController = { index, getStats, kunjunganRalanPage, kunjunganRalanData, kunjunganRalanPrint }
 
 export default KunjunganController

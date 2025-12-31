@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 import ralan from './ralan'
 /**
 * @see \App\Http\Controllers\KunjunganController::index
-* @see app/Http/Controllers/KunjunganController.php:101
+* @see app/Http/Controllers/KunjunganController.php:102
 * @route '/laporan'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,7 +17,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\KunjunganController::index
-* @see app/Http/Controllers/KunjunganController.php:101
+* @see app/Http/Controllers/KunjunganController.php:102
 * @route '/laporan'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -26,7 +26,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\KunjunganController::index
-* @see app/Http/Controllers/KunjunganController.php:101
+* @see app/Http/Controllers/KunjunganController.php:102
 * @route '/laporan'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -36,7 +36,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\KunjunganController::index
-* @see app/Http/Controllers/KunjunganController.php:101
+* @see app/Http/Controllers/KunjunganController.php:102
 * @route '/laporan'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -46,7 +46,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\KunjunganController::stats
-* @see app/Http/Controllers/KunjunganController.php:284
+* @see app/Http/Controllers/KunjunganController.php:285
 * @route '/laporan/stats'
 */
 export const stats = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -61,7 +61,7 @@ stats.definition = {
 
 /**
 * @see \App\Http\Controllers\KunjunganController::stats
-* @see app/Http/Controllers/KunjunganController.php:284
+* @see app/Http/Controllers/KunjunganController.php:285
 * @route '/laporan/stats'
 */
 stats.url = (options?: RouteQueryOptions) => {
@@ -70,7 +70,7 @@ stats.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\KunjunganController::stats
-* @see app/Http/Controllers/KunjunganController.php:284
+* @see app/Http/Controllers/KunjunganController.php:285
 * @route '/laporan/stats'
 */
 stats.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -80,7 +80,7 @@ stats.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\KunjunganController::stats
-* @see app/Http/Controllers/KunjunganController.php:284
+* @see app/Http/Controllers/KunjunganController.php:285
 * @route '/laporan/stats'
 */
 stats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -89,7 +89,7 @@ stats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:351
+* @see routes/web.php:352
 * @route '/laporan/rl-kemenkes'
 */
 export const rlKemenkes = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -103,7 +103,7 @@ rlKemenkes.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:351
+* @see routes/web.php:352
 * @route '/laporan/rl-kemenkes'
 */
 rlKemenkes.url = (options?: RouteQueryOptions) => {
@@ -111,7 +111,7 @@ rlKemenkes.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:351
+* @see routes/web.php:352
 * @route '/laporan/rl-kemenkes'
 */
 rlKemenkes.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -120,7 +120,7 @@ rlKemenkes.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:351
+* @see routes/web.php:352
 * @route '/laporan/rl-kemenkes'
 */
 rlKemenkes.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -129,7 +129,7 @@ rlKemenkes.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:355
+* @see routes/web.php:356
 * @route '/laporan/bor'
 */
 export const bor = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -143,7 +143,7 @@ bor.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:355
+* @see routes/web.php:356
 * @route '/laporan/bor'
 */
 bor.url = (options?: RouteQueryOptions) => {
@@ -151,7 +151,7 @@ bor.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:355
+* @see routes/web.php:356
 * @route '/laporan/bor'
 */
 bor.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -160,7 +160,7 @@ bor.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:355
+* @see routes/web.php:356
 * @route '/laporan/bor'
 */
 bor.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

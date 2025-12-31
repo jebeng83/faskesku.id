@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Throwable;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class KunjunganController extends Controller
 {
@@ -657,6 +658,206 @@ class KunjunganController extends Controller
             return response()->json($rows);
         } catch (Throwable $e) {
             return response()->json(['data' => []]);
+        }
+    }
+
+    public function kunjunganRalanPrint(Request $request)
+    {
+        $startDate = $request->input('start_date', now()->subDays(30)->toDateString());
+        $endDate = $request->input('end_date', now()->toDateString());
+        $poli = trim($request->input('poli', ''));
+        $dokter = trim($request->input('dokter', ''));
+        $penjab = trim($request->input('penjab', ''));
+        $status = trim($request->input('status', ''));
+        $excludeBatal = filter_var($request->input('exclude_batal', 'false'), FILTER_VALIDATE_BOOLEAN);
+        $keyword = trim($request->input('q', ''));
+        $nmKab = trim($request->input('kabupaten', ''));
+        $nmKec = trim($request->input('kecamatan', ''));
+        $nmKel = trim($request->input('kelurahan', ''));
+        $sortBy = trim($request->input('sort_by', ''));
+        $sortDir = strtolower(trim($request->input('sort_dir', 'asc')));
+
+        try {
+            $hasReg = Schema::hasTable('reg_periksa');
+            $hasDokter = Schema::hasTable('dokter');
+            $hasPasien = Schema::hasTable('pasien');
+            $hasPoli = Schema::hasTable('poliklinik');
+            $hasPenjab = Schema::hasTable('penjab');
+            $hasStts = Schema::hasColumn('reg_periksa', 'stts');
+            if (! $hasReg || ! $hasDokter || ! $hasPasien || ! $hasPoli || ! $hasPenjab) {
+                return response('Tidak dapat mencetak: tabel referensi tidak lengkap', 500);
+            }
+
+            $query = DB::table('reg_periksa')
+                ->join('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
+                ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+                ->join('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli')
+                ->join('penjab', 'reg_periksa.kd_pj', '=', 'penjab.kd_pj')
+                ->whereBetween('reg_periksa.tgl_registrasi', [$startDate, $endDate])
+                ->where('reg_periksa.status_lanjut', 'Ralan');
+
+            if ($status !== '') {
+                if (Schema::hasColumn('reg_periksa', 'stts_daftar')) {
+                    $query->where('reg_periksa.stts_daftar', 'like', "%{$status}%");
+                }
+            }
+            if ($excludeBatal && $hasStts) {
+                $query->where('reg_periksa.stts', '<>', 'Batal');
+            }
+
+            $hasKab = Schema::hasTable('kabupaten');
+            $hasKec = Schema::hasTable('kecamatan');
+            $hasKel = Schema::hasTable('kelurahan');
+            if ($hasKab && $hasKec && $hasKel) {
+                $query
+                    ->leftJoin('kabupaten', 'pasien.kd_kab', '=', 'kabupaten.kd_kab')
+                    ->leftJoin('kecamatan', 'pasien.kd_kec', '=', 'kecamatan.kd_kec')
+                    ->leftJoin('kelurahan', 'pasien.kd_kel', '=', 'kelurahan.kd_kel')
+                    ->select(
+                        'reg_periksa.no_rawat',
+                        'reg_periksa.tgl_registrasi',
+                        'reg_periksa.stts_daftar',
+                        'dokter.nm_dokter',
+                        'reg_periksa.no_rkm_medis',
+                        'pasien.nm_pasien',
+                        'poliklinik.nm_poli',
+                        DB::raw('penjab.png_jawab as penjab'),
+                        DB::raw('concat(pasien.alamat, ", ", kelurahan.nm_kel, ", ", kecamatan.nm_kec, ", ", kabupaten.nm_kab) as alamat'),
+                        'pasien.jk',
+                        DB::raw('concat(reg_periksa.umurdaftar, " ", reg_periksa.sttsumur) as umur'
+                        )
+                    );
+                if ($nmKab !== '') $query->where('kabupaten.nm_kab', 'like', "%{$nmKab}%");
+                if ($nmKec !== '') $query->where('kecamatan.nm_kec', 'like', "%{$nmKec}%");
+                if ($nmKel !== '') $query->where('kelurahan.nm_kel', 'like', "%{$nmKel}%");
+            } else {
+                $query->select(
+                    'reg_periksa.no_rawat',
+                    'reg_periksa.tgl_registrasi',
+                    'reg_periksa.stts_daftar',
+                    'dokter.nm_dokter',
+                    'reg_periksa.no_rkm_medis',
+                    'pasien.nm_pasien',
+                    'poliklinik.nm_poli',
+                    DB::raw('penjab.png_jawab as penjab'),
+                    DB::raw('pasien.alamat as alamat'),
+                    'pasien.jk',
+                    DB::raw('concat(reg_periksa.umurdaftar, " ", reg_periksa.sttsumur) as umur')
+                );
+            }
+
+            if ($poli !== '') $query->where('reg_periksa.kd_poli', $poli);
+            if ($dokter !== '') $query->where('reg_periksa.kd_dokter', $dokter);
+            if ($penjab !== '') $query->where('reg_periksa.kd_pj', $penjab);
+
+            if ($keyword !== '') {
+                $query->where(function ($q) use ($keyword) {
+                    $q->where('poliklinik.nm_poli', 'like', "%{$keyword}%")
+                        ->orWhere('dokter.nm_dokter', 'like', "%{$keyword}%")
+                        ->orWhere('reg_periksa.no_rkm_medis', 'like', "%{$keyword}%")
+                        ->orWhere('pasien.nm_pasien', 'like', "%{$keyword}%")
+                        ->orWhere('pasien.alamat', 'like', "%{$keyword}%");
+                });
+            }
+
+            // Diagnosa utama jika tersedia
+            if (Schema::hasTable('diagnosa_pasien') && Schema::hasTable('penyakit') && Schema::hasColumn('diagnosa_pasien', 'prioritas')) {
+                $dpmin = DB::raw("
+                    (
+                        SELECT dp.no_rawat, dp.kd_penyakit
+                        FROM diagnosa_pasien dp
+                        JOIN (
+                            SELECT no_rawat, MIN(prioritas) AS minp
+                            FROM diagnosa_pasien
+                            GROUP BY no_rawat
+                        ) x ON x.no_rawat = dp.no_rawat AND dp.prioritas = x.minp
+                    ) AS dpmin
+                ");
+                $query->leftJoin($dpmin, 'dpmin.no_rawat', '=', 'reg_periksa.no_rawat')
+                    ->leftJoin('penyakit', 'dpmin.kd_penyakit', '=', 'penyakit.kd_penyakit')
+                    ->addSelect(
+                        DB::raw('dpmin.kd_penyakit as kd_penyakit'),
+                        DB::raw('penyakit.nm_penyakit as nm_penyakit')
+                    );
+            } else {
+                $query->addSelect(DB::raw('NULL as kd_penyakit'), DB::raw('NULL as nm_penyakit'));
+            }
+
+            // Sorting
+            $allowedSorts = [
+                'tgl_registrasi' => 'reg_periksa.tgl_registrasi',
+                'no_rawat' => 'reg_periksa.no_rawat',
+                'nm_pasien' => 'pasien.nm_pasien',
+                'no_rkm_medis' => 'reg_periksa.no_rkm_medis',
+                'jk' => 'pasien.jk',
+                'umur' => 'reg_periksa.umurdaftar',
+                'nm_dokter' => 'dokter.nm_dokter',
+                'nm_poli' => 'poliklinik.nm_poli',
+                'penjab' => 'penjab.png_jawab',
+                'alamat' => 'pasien.alamat',
+                'stts_daftar' => 'reg_periksa.stts_daftar',
+            ];
+            if (Schema::hasTable('diagnosa_pasien') && Schema::hasTable('penyakit')) {
+                $allowedSorts['kd_penyakit'] = 'dpmin.kd_penyakit';
+                $allowedSorts['nm_penyakit'] = 'penyakit.nm_penyakit';
+            }
+            if (! in_array($sortDir, ['asc', 'desc'])) $sortDir = 'asc';
+            if (array_key_exists($sortBy, $allowedSorts)) {
+                $col = $allowedSorts[$sortBy];
+                if ($col === 'reg_periksa.tgl_registrasi') {
+                    $query->orderBy($col, $sortDir)->orderBy('reg_periksa.jam_reg', $sortDir);
+                } else {
+                    $query->orderBy($col, $sortDir);
+                }
+            } else {
+                $query->orderBy('reg_periksa.tgl_registrasi', 'desc')->orderBy('reg_periksa.jam_reg', 'desc');
+            }
+
+            $rows = $query->get();
+
+            // Ringkasan
+            $total = count($rows);
+            $baru = collect($rows)->where('stts_daftar', 'Baru')->count();
+            $lama = collect($rows)->where('stts_daftar', 'Lama')->count();
+            $laki = collect($rows)->where('jk', 'L')->count();
+            $perempuan = collect($rows)->where('jk', 'P')->count();
+
+            // Setting RS
+            $setting = null;
+            if (Schema::hasTable('setting')) {
+                $fields = [];
+                foreach (['logo', 'nama_instansi', 'alamat_instansi', 'kabupaten', 'propinsi', 'kontak', 'email'] as $col) {
+                    if (Schema::hasColumn('setting', $col)) $fields[] = $col;
+                }
+                if (! empty($fields)) {
+                    $row = DB::table('setting')->select($fields)->orderBy('nama_instansi')->first();
+                    if ($row) {
+                        $setting = [];
+                        foreach ($fields as $f) {
+                            $setting[$f] = $row->{$f} ?? null;
+                        }
+                    }
+                }
+            }
+
+            $periodeStr = date('d-m-Y', strtotime($startDate)).' s.d. '.date('d-m-Y', strtotime($endDate));
+
+            $pdf = Pdf::loadView('reports.kunjungan_ralan', [
+                'setting' => $setting,
+                'periode' => $periodeStr,
+                'summary' => [
+                    'total' => $total,
+                    'baru' => $baru,
+                    'lama' => $lama,
+                    'laki' => $laki,
+                    'perempuan' => $perempuan,
+                ],
+                'rows' => $rows,
+            ])->setPaper('a4', 'landscape');
+
+            return $pdf->stream('KunjunganRalan.pdf');
+        } catch (Throwable $e) {
+            return response('Terjadi kesalahan saat mencetak: '.$e->getMessage(), 500);
         }
     }
 }

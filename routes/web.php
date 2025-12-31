@@ -347,6 +347,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/laporan/stats', [KunjunganController::class, 'getStats'])->name('laporan.stats');
     Route::get('/laporan/ralan/kunjungan', [KunjunganController::class, 'kunjunganRalanPage'])->name('laporan.ralan.kunjungan.page');
     Route::get('/laporan/ralan/kunjungan/data', [KunjunganController::class, 'kunjunganRalanData'])->name('laporan.ralan.kunjungan.data');
+    Route::get('/laporan/ralan/kunjungan/print', [KunjunganController::class, 'kunjunganRalanPrint'])->name('laporan.ralan.kunjungan.print');
 
     Route::get('/laporan/rl-kemenkes', function () {
         return Inertia::render('Laporan/RLKemenkes');

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Head } from "@inertiajs/react";
 import SidebarLaporan from "@/Layouts/SidebarLaporan";
-import { Calendar, Filter, Loader2, Search, X, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Calendar, Filter, Loader2, Search, X, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, Printer } from "lucide-react";
 
 function toDateInputValue(date) {
   const d = new Date(date);
@@ -125,6 +125,25 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
     } else {
       setPage(1);
     }
+  };
+
+  const handlePrint = () => {
+    const params = new URLSearchParams();
+    params.set("start_date", startDate);
+    params.set("end_date", endDate);
+    if (sortBy) params.set("sort_by", sortBy);
+    if (sortDir) params.set("sort_dir", sortDir);
+    if (poli) params.set("poli", poli);
+    if (dokter) params.set("dokter", dokter);
+    if (penjab) params.set("penjab", penjab);
+    if (status) params.set("status", status);
+    if (excludeBatal) params.set("exclude_batal", String(excludeBatal));
+    if (keyword) params.set("q", keyword);
+    if (kabupaten) params.set("kabupaten", kabupaten);
+    if (kecamatan) params.set("kecamatan", kecamatan);
+    if (kelurahan) params.set("kelurahan", kelurahan);
+    const url = `/laporan/ralan/kunjungan/print?${params.toString()}`;
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const handleResetFilters = () => {
@@ -337,6 +356,14 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
               >
                 <X className="h-4 w-4" />
                 Reset
+              </button>
+              <button
+                type="button"
+                onClick={handlePrint}
+                className="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                <Printer className="h-4 w-4" />
+                Print
               </button>
               <button
                 type="button"
