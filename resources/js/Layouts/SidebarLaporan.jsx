@@ -86,70 +86,17 @@ export default function SidebarLaporan({ title = "Laporan", children }) {
                 href: route("laporan.index"),
                 icon: <BarChart2 className="w-4 h-4" />,
             },
-            {
-                label: "Laporan Keuangan",
-                icon: <Activity className="w-4 h-4" />,
-                groupKey: "keuangan",
-                children: [
-                    {
-                        label: "Neraca",
-                        href: "/akutansi/neraca",
-                        icon: <Activity className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Cash Flow",
-                        href: "/akutansi/cashflow",
-                        icon: <Activity className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Buku Besar",
-                        href: "/akutansi/buku-besar",
-                        icon: <BookOpen className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Mutasi Rekening",
-                        href: "/akutansi/mutasi-rekening",
-                        icon: <BookOpen className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Mutasi Kas",
-                        href: "/akutansi/mutasi-kas",
-                        icon: <BookOpen className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Setoran Bank",
-                        href: "/akutansi/setoran-bank",
-                        icon: <Receipt className="w-4 h-4" />,
-                    },
-                ],
-            },
-            {
-                label: "Laporan Operasional",
-                icon: <FileText className="w-4 h-4" />,
-                groupKey: "operasional",
-                children: [
-                    {
-                        label: "RL Kemenkes",
-                        href: "/laporan/rl-kemenkes",
-                        icon: <FileText className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Laporan Farmasi",
-                        href: "/farmasi/sirkulasi-obat",
-                        icon: <FileText className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Laporan BOR",
-                        href: "/laporan/bor",
-                        icon: <FileText className="w-4 h-4" />,
-                    },
-                ],
-            },
+            // Tombol dengan submenu diletakkan tepat di bawah anchor "Pusat Laporan"
             {
                 label: "Laporan RALAN",
                 icon: <Receipt className="w-4 h-4" />,
                 groupKey: "ralan",
                 children: [
+                    {
+                        label: "Kunjungan Ralan",
+                        href: "/laporan/ralan/kunjungan",
+                        icon: <FileText className="w-4 h-4" />,
+                    },
                     {
                         label: "Billing RALAN",
                         href: "/akutansi/billing",
@@ -181,6 +128,29 @@ export default function SidebarLaporan({ title = "Laporan", children }) {
                         label: "Pembayaran RANAP",
                         href: "/pembayaran/ranap",
                         icon: <Receipt className="w-4 h-4" />,
+                    },
+                ],
+            },
+            // Ubah submenu dari "Keuangan" menjadi "Laporan Umum"
+            {
+                label: "Laporan Umum",
+                icon: <FileText className="w-4 h-4" />,
+                groupKey: "keuangan",
+                children: [
+                    {
+                        label: "RL Kemenkes",
+                        href: "/laporan/rl-kemenkes",
+                        icon: <FileText className="w-4 h-4" />,
+                    },
+                    {
+                        label: "Laporan Farmasi",
+                        href: "/farmasi/sirkulasi-obat",
+                        icon: <FileText className="w-4 h-4" />,
+                    },
+                    {
+                        label: "Laporan BOR",
+                        href: "/laporan/bor",
+                        icon: <FileText className="w-4 h-4" />,
                     },
                 ],
             },

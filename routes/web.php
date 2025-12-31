@@ -18,6 +18,7 @@ use App\Http\Controllers\Farmasi\DataSuplierController;
 use App\Http\Controllers\Farmasi\IndustriFarmasiController;
 use App\Http\Controllers\Farmasi\SetHargaObatController;
 use App\Http\Controllers\IGDController;
+use App\Http\Controllers\KunjunganController;
 use App\Http\Controllers\KamarOperasiController;
 use App\Http\Controllers\KategoriPerawatanController;
 use App\Http\Controllers\Kepegawaian\BankController;
@@ -342,9 +343,10 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('Docs', ['section' => $section]);
     })->name('docs');
 
-    Route::get('/laporan', function () {
-        return Inertia::render('Laporan/Home');
-    })->name('laporan.index');
+    Route::get('/laporan', [KunjunganController::class, 'index'])->name('laporan.index');
+    Route::get('/laporan/stats', [KunjunganController::class, 'getStats'])->name('laporan.stats');
+    Route::get('/laporan/ralan/kunjungan', [KunjunganController::class, 'kunjunganRalanPage'])->name('laporan.ralan.kunjungan.page');
+    Route::get('/laporan/ralan/kunjungan/data', [KunjunganController::class, 'kunjunganRalanData'])->name('laporan.ralan.kunjungan.data');
 
     Route::get('/laporan/rl-kemenkes', function () {
         return Inertia::render('Laporan/RLKemenkes');

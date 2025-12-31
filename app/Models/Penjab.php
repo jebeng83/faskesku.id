@@ -24,6 +24,7 @@ class Penjab extends Model
         'png_jawab',
         'nama_perusahaan',
         'alamat_asuransi',
+        'alamat_perusahaan',
         'no_telp',
         'attn',
         'status',

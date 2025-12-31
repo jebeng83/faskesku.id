@@ -1,9 +1,34 @@
-import React, { useDeferredValue, useMemo, useState } from "react";
+import React, {
+    Suspense,
+    useDeferredValue,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 import { Head, Link } from "@inertiajs/react";
 import SidebarLaporan from "@/Layouts/SidebarLaporan";
 import { route } from "ziggy-js";
 import { motion, useReducedMotion } from "framer-motion";
-import { BarChart2, Activity, FileText, ClipboardList, Search, X } from "lucide-react";
+import DropdownMenu, { DropdownItem } from "@/Components/DropdownMenu";
+import {
+    Activity,
+    BarChart2,
+    ClipboardList,
+    FileText,
+    MoreVertical,
+    Plus,
+    UserRound,
+    Bed,
+    TrendingDown,
+    TrendingUp,
+    Search,
+    X,
+} from "lucide-react";
+
+const ChartPoliMonthlyLazy = React.lazy(() =>
+    import("../DashboardComponents/ChartPoliMonthly")
+);
 
 const containerVariants = {
     hidden: { opacity: 0, y: 6 },
@@ -64,10 +89,118 @@ const items = [
     },
 ];
 
-export default function LaporanHome() {
+export default function LaporanHome({ summary }) {
     const [search, setSearch] = useState("");
     const deferredSearch = useDeferredValue(search);
     const shouldReduceMotion = useReducedMotion();
+
+    // Stats State
+    const [ralanPeriod, setRalanPeriod] = useState('today');
+    const [ranapPeriod, setRanapPeriod] = useState('today');
+    const [igdPeriod, setIgdPeriod] = useState('today');
+
+    const [ralan, setRalan] = useState(summary?.rawat_jalan || {});
+    const [ranap, setRanap] = useState(summary?.rawat_inap || {});
+    const [igd, setIgd] = useState(summary?.igd || {});
+    
+    const [lastUpdate, setLastUpdate] = useState(summary?.updated_at || "-");
+    
+    const [isLoadingRalan, setIsLoadingRalan] = useState(false);
+    const [isLoadingRanap, setIsLoadingRanap] = useState(false);
+    const [isLoadingIgd, setIsLoadingIgd] = useState(false);
+
+    const handleFilterChange = async (type, period) => {
+        if (type === 'ralan') {
+            if (period === ralanPeriod) return;
+            setIsLoadingRalan(true);
+        } else if (type === 'ranap') {
+            if (period === ranapPeriod) return;
+            setIsLoadingRanap(true);
+        } else if (type === 'igd') {
+            if (period === igdPeriod) return;
+            setIsLoadingIgd(true);
+        }
+
+        try {
+            const res = await fetch(route('laporan.stats', { type, period }));
+            const data = await res.json();
+
+            if (type === 'ralan') {
+                setRalan(data);
+                setRalanPeriod(period);
+            } else if (type === 'ranap') {
+                setRanap(data);
+                setRanapPeriod(period);
+            } else if (type === 'igd') {
+                setIgd(data);
+                setIgdPeriod(period);
+            }
+
+            const now = new Date();
+            setLastUpdate(now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }));
+        } catch (error) {
+            console.error("Error fetching stats:", error);
+        } finally {
+            if (type === 'ralan') setIsLoadingRalan(false);
+            if (type === 'ranap') setIsLoadingRanap(false);
+            if (type === 'igd') setIsLoadingIgd(false);
+        }
+    };
+
+    const chartRef = useRef(null);
+    const [shouldLoadChart, setShouldLoadChart] = useState(false);
+    const [poliMonthly, setPoliMonthly] = useState(null);
+
+    useEffect(() => {
+        const el = chartRef.current;
+        if (!el) return;
+
+        if (typeof IntersectionObserver === "undefined") {
+            setShouldLoadChart(true);
+            return;
+        }
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries.some((e) => e.isIntersecting)) {
+                    setShouldLoadChart(true);
+                    observer.disconnect();
+                }
+            },
+            { rootMargin: "200px" }
+        );
+
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
+
+    useEffect(() => {
+        if (!shouldLoadChart) return;
+        let active = true;
+
+        const run = async () => {
+            try {
+                const year = new Date().getFullYear();
+                const url = route(
+                    "registration.poli-monthly-stats",
+                    { year, limit: 6 },
+                    false
+                );
+                const res = await fetch(url, {
+                    headers: { Accept: "application/json" },
+                });
+                const json = await res.json();
+                if (active) setPoliMonthly(json?.data || null);
+            } catch (e) {
+                if (active) setPoliMonthly(null);
+            }
+        };
+
+        run();
+        return () => {
+            active = false;
+        };
+    }, [shouldLoadChart]);
 
     const filteredItems = useMemo(() => {
         if (!deferredSearch) return items;
@@ -86,6 +219,121 @@ export default function LaporanHome() {
               initial: "hidden",
               animate: "visible",
           };
+
+    const formatNumber = (n) => new Intl.NumberFormat("id-ID").format(Number(n || 0));
+    const formatPct = (n) => {
+        const v = Number(n || 0);
+        const sign = v > 0 ? "+" : "";
+        return `${sign}${v}%`;
+    };
+
+    const MetricRow = ({ label, value }) => (
+        <div className="flex items-center justify-between gap-4 text-sm">
+            <div className="text-gray-600 dark:text-gray-300">{label}</div>
+            <div className="font-semibold text-gray-900 dark:text-white tabular-nums">
+                {value}
+            </div>
+        </div>
+    );
+
+    const DeltaRow = ({ deltaPct, href, accent = "blue" }) => {
+        const v = Number(deltaPct || 0);
+        const positive = v >= 0;
+        const Icon = positive ? TrendingUp : TrendingDown;
+        const color = positive
+            ? "text-emerald-600 dark:text-emerald-400"
+            : "text-red-600 dark:text-red-400";
+
+        return (
+            <div className="flex items-center justify-between gap-3 pt-3 mt-3 border-t border-gray-100 dark:border-gray-800">
+                <div className={`flex items-center gap-2 text-xs ${color}`}>
+                    <Icon className="h-4 w-4" />
+                    <span>vs kemarin {formatPct(v)}</span>
+                </div>
+                <Link
+                    href={href}
+                    className={`text-xs font-semibold ${
+                        accent === "red"
+                            ? "text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                            : accent === "green"
+                              ? "text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
+                              : "text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                    }`}
+                >
+                    Lihat Detail →
+                </Link>
+            </div>
+        );
+    };
+
+    const Panel = ({
+        title,
+        icon: Icon,
+        iconBg,
+        iconColor,
+        accentBar,
+        children,
+        menuAccent,
+        currentPeriod,
+        onPeriodChange,
+        loading
+    }) => {
+        const periodLabels = {
+            today: 'Hari Ini',
+            week: 'Minggu Ini',
+            month: 'Bulan Ini',
+            year: 'Tahun Ini'
+        };
+
+        return (
+            <div className={`relative overflow-hidden rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm transition-opacity duration-200 ${loading ? 'opacity-60 pointer-events-none' : ''}`}>
+                <div className={`absolute inset-x-0 top-0 h-1 ${accentBar}`} />
+                <div className="p-4">
+                    <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-3 min-w-0">
+                            <div
+                                className={`shrink-0 inline-flex items-center justify-center rounded-xl ${iconBg} p-2`}
+                                aria-hidden="true"
+                            >
+                                <Icon className={`h-5 w-5 ${iconColor}`} />
+                            </div>
+                            <div className="min-w-0">
+                                <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                    {title}
+                                </div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                                    {periodLabels[currentPeriod] || 'Hari Ini'}
+                                </div>
+                            </div>
+                        </div>
+                        <DropdownMenu
+                            trigger={
+                                <button
+                                    type="button"
+                                    className={`shrink-0 rounded-lg p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 ${menuAccent}`}
+                                    aria-label="Menu"
+                                >
+                                    <MoreVertical className="h-5 w-5" />
+                                </button>
+                            }
+                            align="end"
+                        >
+                            {Object.entries(periodLabels).map(([key, label]) => (
+                                <DropdownItem
+                                    key={key}
+                                    onClick={() => onPeriodChange(key)}
+                                    className={currentPeriod === key ? 'bg-gray-50 dark:bg-gray-700 font-medium' : ''}
+                                >
+                                    {label}
+                                </DropdownItem>
+                            ))}
+                        </DropdownMenu>
+                    </div>
+                    <div className="mt-4">{children}</div>
+                </div>
+            </div>
+        );
+    };
 
     return (
         <SidebarLaporan title="Laporan">
@@ -129,9 +377,341 @@ export default function LaporanHome() {
                     </div>
                 </div>
 
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
+                    <Panel
+                        title="Rawat Inap"
+                        icon={Bed}
+                        iconBg="bg-blue-50 dark:bg-blue-950/30"
+                        iconColor="text-blue-600 dark:text-blue-300"
+                        accentBar="bg-blue-600"
+                        currentPeriod={ranapPeriod}
+                        onPeriodChange={(p) => handleFilterChange('ranap', p)}
+                        loading={isLoadingRanap}
+                    >
+                        <div className="grid grid-cols-3 gap-3">
+                            <div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    Total
+                                </div>
+                                <div className="mt-0.5 text-lg font-semibold text-gray-900 dark:text-white tabular-nums">
+                                    {formatNumber(ranap.total)}
+                                </div>
+                            </div>
+                            <div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    Masuk
+                                </div>
+                                <div className="mt-0.5 text-lg font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                                    {formatNumber(ranap.masuk)}
+                                </div>
+                            </div>
+                            <div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    Keluar
+                                </div>
+                                <div className="mt-0.5 text-lg font-semibold text-red-600 dark:text-red-400 tabular-nums">
+                                    {formatNumber(ranap.keluar)}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-4">
+                            <div className="flex items-center justify-between text-sm">
+                                <div className="text-gray-600 dark:text-gray-300">
+                                    Okupansi
+                                </div>
+                                <div className="font-semibold text-blue-600 dark:text-blue-400 tabular-nums">
+                                    {Number(ranap.okupansi_pct || 0).toFixed(1)}%
+                                </div>
+                            </div>
+                            <div className="mt-2 h-2 w-full rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                                <div
+                                    className="h-full rounded-full bg-blue-600"
+                                    style={{
+                                        width: `${Math.max(
+                                            0,
+                                            Math.min(
+                                                100,
+                                                Number(ranap.okupansi_pct || 0)
+                                            )
+                                        )}%`,
+                                    }}
+                                />
+                            </div>
+                            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                {formatNumber(ranap.total)} dari{" "}
+                                {formatNumber(ranap.bed_total)} tempat tidur
+                                terisi
+                            </div>
+                        </div>
+
+                        <div className="mt-4">
+                            <MetricRow
+                                label="Rata-rata Rawat"
+                                value={`${Number(ranap.avg_los_days || 0).toFixed(
+                                    1
+                                )} Hari`}
+                            />
+                        </div>
+
+                        <DeltaRow
+                            deltaPct={ranap.delta_pct}
+                            href={route("rawat-inap.index")}
+                            accent="blue"
+                        />
+                    </Panel>
+
+                    <Panel
+                        title="Rawat Jalan"
+                        icon={UserRound}
+                        iconBg="bg-emerald-50 dark:bg-emerald-950/30"
+                        iconColor="text-emerald-600 dark:text-emerald-300"
+                        accentBar="bg-emerald-600"
+                        currentPeriod={ralanPeriod}
+                        onPeriodChange={(p) => handleFilterChange('ralan', p)}
+                        loading={isLoadingRalan}
+                    >
+                        <div className="grid grid-cols-3 gap-3">
+                            <div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    Total
+                                </div>
+                                <div className="mt-0.5 text-lg font-semibold text-gray-900 dark:text-white tabular-nums">
+                                    {formatNumber(ralan.total)}
+                                </div>
+                            </div>
+                            <div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    Baru
+                                </div>
+                                <div className="mt-0.5 text-lg font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                                    {formatNumber(ralan.baru)}
+                                </div>
+                            </div>
+                            <div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    Lama
+                                </div>
+                                <div className="mt-0.5 text-lg font-semibold text-blue-600 dark:text-blue-400 tabular-nums">
+                                    {formatNumber(ralan.lama)}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-4">
+                            <div className="flex items-center justify-between text-sm">
+                                <div className="text-gray-600 dark:text-gray-300">
+                                    Rasio Pasien Baru
+                                </div>
+                                <div className="font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                                    {ralan.total > 0 ? ((ralan.baru / ralan.total) * 100).toFixed(1) : 0}%
+                                </div>
+                            </div>
+                            <div className="mt-2 h-2 w-full rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                                <div
+                                    className="h-full rounded-full bg-emerald-600"
+                                    style={{
+                                        width: `${Math.min(100, ralan.total > 0 ? (ralan.baru / ralan.total) * 100 : 0)}%`,
+                                    }}
+                                />
+                            </div>
+                            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                {formatNumber(ralan.baru)} dari {formatNumber(ralan.total)} pasien adalah baru
+                            </div>
+                        </div>
+
+                        <div className="mt-4">
+                            <MetricRow
+                                label="Rata-rata Harian"
+                                value={`${Number(ralan.avg_daily || 0).toFixed(1)} Pasien`}
+                            />
+                        </div>
+
+                        <DeltaRow
+                            deltaPct={ralan.delta_pct}
+                            href={route("rawat-jalan.index")}
+                            accent="green"
+                        />
+                    </Panel>
+
+                    <Panel
+                        title="IGD"
+                        icon={Plus}
+                        iconBg="bg-red-50 dark:bg-red-950/30"
+                        iconColor="text-red-600 dark:text-red-300"
+                        accentBar="bg-red-600"
+                        currentPeriod={igdPeriod}
+                        onPeriodChange={(p) => handleFilterChange('igd', p)}
+                        loading={isLoadingIgd}
+                    >
+                        <div className="grid grid-cols-3 gap-3">
+                            <div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    Total
+                                </div>
+                                <div className="mt-0.5 text-lg font-semibold text-gray-900 dark:text-white tabular-nums">
+                                    {formatNumber(igd.total)}
+                                </div>
+                            </div>
+                            <div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    Lanjut Ranap
+                                </div>
+                                <div className="mt-0.5 text-lg font-semibold text-red-600 dark:text-red-400 tabular-nums">
+                                    {formatNumber(igd.lanjut_ranap)}
+                                </div>
+                            </div>
+                            <div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    Pulang
+                                </div>
+                                <div className="mt-0.5 text-lg font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                                    {formatNumber(igd.pulang)}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-4">
+                            <div className="flex items-center justify-between text-sm">
+                                <div className="text-gray-600 dark:text-gray-300">
+                                    Rasio Lanjut Ranap
+                                </div>
+                                <div className="font-semibold text-red-600 dark:text-red-400 tabular-nums">
+                                    {igd.total > 0 ? ((igd.lanjut_ranap / igd.total) * 100).toFixed(1) : 0}%
+                                </div>
+                            </div>
+                            <div className="mt-2 h-2 w-full rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                                <div
+                                    className="h-full rounded-full bg-red-600"
+                                    style={{
+                                        width: `${Math.min(100, igd.total > 0 ? (igd.lanjut_ranap / igd.total) * 100 : 0)}%`,
+                                    }}
+                                />
+                            </div>
+                            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                {formatNumber(igd.lanjut_ranap)} pasien dirujuk ke rawat inap
+                            </div>
+                        </div>
+
+                        <div className="mt-4">
+                            <MetricRow
+                                label="Rata-rata Harian"
+                                value={`${Number(igd.avg_daily || 0).toFixed(1)} Pasien`}
+                            />
+                        </div>
+
+                        <DeltaRow
+                            deltaPct={igd.delta_pct}
+                            href={route("igd.index")}
+                            accent="red"
+                        />
+                    </Panel>
+                </div>
+
+                <div ref={chartRef} className="mt-6">
+                    <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm">
+                        <div className="absolute inset-x-0 top-0 h-1 bg-indigo-600" />
+                        <div className="p-4">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="min-w-0">
+                                    <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                        Tren Kunjungan Poli (Bulanan)
+                                    </div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                        Update terakhir: {lastUpdate}
+                                    </div>
+                                </div>
+                                <div className="shrink-0 inline-flex items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-950/30 p-2">
+                                    <BarChart2 className="h-5 w-5 text-indigo-600 dark:text-indigo-300" />
+                                </div>
+                            </div>
+
+                            <div className="mt-4">
+                                {shouldLoadChart && poliMonthly ? (
+                                    <Suspense
+                                        fallback={
+                                            <div className="h-[260px] rounded-xl bg-gray-50 dark:bg-gray-800/40 animate-pulse" />
+                                        }
+                                    >
+                                        <ChartPoliMonthlyLazy
+                                            data={poliMonthly}
+                                        />
+                                    </Suspense>
+                                ) : (
+                                    <div className="h-[260px] rounded-xl bg-gray-50 dark:bg-gray-800/40 animate-pulse" />
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
+                    {/* Chart Tren Cara Bayar Rawat Jalan */}
+                    <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm">
+                        <div className="absolute inset-x-0 top-0 h-1 bg-emerald-600" />
+                        <div className="p-4">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="min-w-0">
+                                    <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                        Tren Cara Bayar Rawat Jalan
+                                    </div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                        Update terakhir: {lastUpdate}
+                                    </div>
+                                </div>
+                                <div className="shrink-0 inline-flex items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/30 p-2">
+                                    <TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-300" />
+                                </div>
+                            </div>
+                            <div className="mt-4">
+                                {summary.tren_ralan ? (
+                                    <Suspense fallback={<div className="h-[260px] rounded-xl bg-gray-50 dark:bg-gray-800/40 animate-pulse" />}>
+                                        <ChartPoliMonthlyLazy data={summary.tren_ralan} />
+                                    </Suspense>
+                                ) : (
+                                    <div className="h-[260px] flex items-center justify-center text-gray-400">
+                                        Data tidak tersedia
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Chart Tren Cara Bayar Rawat Inap */}
+                    <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm">
+                        <div className="absolute inset-x-0 top-0 h-1 bg-blue-600" />
+                        <div className="p-4">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="min-w-0">
+                                    <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                        Tren Cara Bayar Rawat Inap
+                                    </div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                        Update terakhir: {lastUpdate}
+                                    </div>
+                                </div>
+                                <div className="shrink-0 inline-flex items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/30 p-2">
+                                    <Bed className="h-5 w-5 text-blue-600 dark:text-blue-300" />
+                                </div>
+                            </div>
+                            <div className="mt-4">
+                                {summary.tren_ranap ? (
+                                    <Suspense fallback={<div className="h-[260px] rounded-xl bg-gray-50 dark:bg-gray-800/40 animate-pulse" />}>
+                                        <ChartPoliMonthlyLazy data={summary.tren_ranap} />
+                                    </Suspense>
+                                ) : (
+                                    <div className="h-[260px] flex items-center justify-center text-gray-400">
+                                        Data tidak tersedia
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <motion.div
                     {...motionGridProps}
-                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mt-4"
+                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mt-6"
                 >
                     {filteredItems.map((item) => (
                         <motion.div

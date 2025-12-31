@@ -18,6 +18,8 @@ function ChartPoliMonthly({ data }) {
     "#f97316",
     "#06b6d4",
   ];
+  const strokeWidths = [2.2, 2.6, 2.4, 2.8, 2.3, 2.7, 2.5];
+  const markerShapes = ["circle", "square", "triangle", "diamond"];
   const colors = [
     "from-blue-500 to-blue-600",
     "from-indigo-500 to-indigo-600",
@@ -82,6 +84,21 @@ function ChartPoliMonthly({ data }) {
 
   const [hover, setHover] = React.useState(null);
   const [mounted, setMounted] = React.useState(false);
+  const mapClientXToHover = React.useCallback(
+    (si, s, clientX) => {
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const localX = clientX - rect.left;
+      const svgX = (localX / rect.width) * chartWidth;
+      const ratio = (svgX - paddingLeft) / innerWidth;
+      const clamped = Math.max(0, Math.min(1, ratio));
+      const mi =
+        months.length > 1 ? Math.round(clamped * (months.length - 1)) : 0;
+      const val = s.data?.[mi] ?? 0;
+      setHover({ mi, si, val, x: svgX, cssX: localX });
+    },
+    [chartWidth, innerWidth, months.length, paddingLeft]
+  );
 
   React.useEffect(() => {
     const el = containerRef.current;
@@ -120,13 +137,15 @@ function ChartPoliMonthly({ data }) {
   return (
     <div className="relative">
       {/* Legend */}
-      <div className="flex flex-wrap items-center gap-4 text-xs text-gray-600 dark:text-gray-300">
+      <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-300 overflow-x-auto whitespace-nowrap py-1">
         {series.length === 0 ? (
           <span className="text-gray-500 dark:text-gray-400">Tidak ada data poli</span>
         ) : (
           series.map((s, idx) => {
             const isSeriesHovered = hover && hover.si === idx;
             const isSeriesDimmed = hover && hover.si !== idx;
+            const colorClass = colors[idx % colors.length];
+            const borderClass = borders[idx % borders.length];
             return (
               <button
                 key={s.kd_poli}
@@ -140,7 +159,7 @@ function ChartPoliMonthly({ data }) {
                   })
                 }
                 onMouseLeave={() => setHover(null)}
-                className={`inline-flex items-center gap-2 rounded-full px-2 py-1 transition ${
+                className={`inline-flex items-center gap-2 rounded-full px-2 py-1 transition shrink-0 ${
                   isSeriesHovered
                     ? "bg-white/60 dark:bg-white/10 shadow-sm"
                     : isSeriesDimmed
@@ -149,7 +168,7 @@ function ChartPoliMonthly({ data }) {
                 }`}
               >
                 <span
-                  className={`inline-block w-3 h-3 rounded bg-gradient-to-br ${colors[idx]} ring-1 ${borders[idx]}`}
+                  className={`inline-block w-3 h-3 rounded bg-gradient-to-br ${colorClass} ring-1 ${borderClass}`}
                 />
                 <span className="font-medium">{s.nm_poli}</span>
               </button>
@@ -160,7 +179,16 @@ function ChartPoliMonthly({ data }) {
 
       {/* Tooltip */}
       {hover && hover.mi != null && (
-        <div className="absolute left-1/2 -translate-x-1/2 -top-2 z-10">
+        <div
+          className="absolute -top-2 z-10"
+          style={{
+            left:
+              typeof hover?.cssX === "number"
+                ? `${hover.cssX}px`
+                : "50%",
+            transform: "translateX(-50%)",
+          }}
+        >
           <div className="px-3 py-2 rounded-lg bg-white/95 dark:bg-gray-900/95 backdrop-blur border border-gray-200 dark:border-gray-800 shadow text-xs text-gray-700 dark:text-gray-200">
             <div className="font-semibold text-gray-900 dark:text-white">{months[hover.mi]}</div>
             <div className="mt-0.5">{series[hover.si]?.nm_poli}</div>
@@ -317,11 +345,16 @@ function ChartPoliMonthly({ data }) {
                     d={d}
                     fill="none"
                     stroke={color}
-                    strokeWidth={isSeriesHovered ? 4.2 : 3.2}
+                    strokeWidth={isSeriesHovered ? 4.4 : 3.2}
                     strokeOpacity={isSeriesDimmed ? 0.18 : 0.4}
                     filter="url(#lineShadowMonthly)"
                     pathLength={1}
+                    strokeLinecap="round"
+                    onMouseEnter={(e) => mapClientXToHover(si, s, e.clientX)}
+                    onMouseMove={(e) => mapClientXToHover(si, s, e.clientX)}
+                    onMouseLeave={() => setHover(null)}
                     style={{
+                      cursor: "crosshair",
                       transition:
                         "stroke-dashoffset 900ms cubic-bezier(0.22, 1, 0.36, 1)",
                       strokeDasharray: 1,
@@ -332,7 +365,11 @@ function ChartPoliMonthly({ data }) {
                     d={d}
                     fill="none"
                     stroke={color}
-                    strokeWidth={isSeriesHovered ? 2.6 : 2.1}
+                    strokeWidth={
+                      isSeriesHovered
+                        ? Math.max(2.1, strokeWidths[si % strokeWidths.length] + 0.5)
+                        : strokeWidths[si % strokeWidths.length]
+                    }
                     opacity={
                       mounted
                         ? isSeriesDimmed
@@ -341,11 +378,36 @@ function ChartPoliMonthly({ data }) {
                         : 0
                     }
                     pathLength={1}
+                    strokeLinecap="round"
+                    onMouseEnter={(e) => mapClientXToHover(si, s, e.clientX)}
+                    onMouseMove={(e) => mapClientXToHover(si, s, e.clientX)}
+                    onMouseLeave={() => setHover(null)}
                     style={{
+                      cursor: "crosshair",
                       transition:
                         "opacity 500ms cubic-bezier(0.22, 1, 0.36, 1), stroke-dashoffset 900ms cubic-bezier(0.22, 1, 0.36, 1)",
                       strokeDasharray: 1,
                       strokeDashoffset: mounted ? 0 : 1,
+                    }}
+                  />
+                  <path
+                    d={d}
+                    fill="none"
+                    stroke="#ffffff"
+                    strokeOpacity={isSeriesDimmed ? 0.08 : 0.18}
+                    strokeWidth={1.2}
+                    pathLength={1}
+                    strokeLinecap="round"
+                    onMouseEnter={(e) => mapClientXToHover(si, s, e.clientX)}
+                    onMouseMove={(e) => mapClientXToHover(si, s, e.clientX)}
+                    onMouseLeave={() => setHover(null)}
+                    style={{
+                      cursor: "crosshair",
+                      transition:
+                        "opacity 500ms cubic-bezier(0.22, 1, 0.36, 1), stroke-dashoffset 900ms cubic-bezier(0.22, 1, 0.36, 1)",
+                      strokeDasharray: 1,
+                      strokeDashoffset: mounted ? 0 : 1,
+                      mixBlendMode: "overlay",
                     }}
                   />
                   {pts.map((p) => (
@@ -355,47 +417,87 @@ function ChartPoliMonthly({ data }) {
                           hover &&
                           hover.si === si &&
                           hover.mi === p.mi;
-                        const outerR = isPointHovered
-                          ? 9
-                          : isSeriesHovered
-                          ? 7
-                          : 5.5;
-                        const innerR = isPointHovered
-                          ? 5
-                          : isSeriesHovered
-                          ? 3.8
-                          : 3.1;
+                        const outerR = isPointHovered ? 9 : isSeriesHovered ? 7 : 5.5;
+                        const innerR = isPointHovered ? 5 : isSeriesHovered ? 3.8 : 3.1;
                         const outerOpacity = isSeriesDimmed
                           ? 0.08
                           : 0.18;
+                        const shape = markerShapes[si % markerShapes.length];
 
                         return (
                           <>
-                            <circle
-                              cx={p.x}
-                              cy={p.y}
-                              r={outerR}
-                              fill={color}
-                              fillOpacity={outerOpacity}
-                              stroke="none"
-                            />
-                            <circle
-                              cx={p.x}
-                              cy={p.y}
-                              r={innerR}
-                              fill="#0b1120"
-                              stroke={color}
-                              strokeWidth={2}
-                              onMouseEnter={() =>
-                                setHover({
-                                  mi: p.mi,
-                                  si,
-                                  val: p.val,
-                                  x: p.x,
-                                })
-                              }
-                              onMouseLeave={() => setHover(null)}
-                            />
+                            {shape === "circle" && (
+                              <>
+                                <circle cx={p.x} cy={p.y} r={outerR} fill={color} fillOpacity={outerOpacity} stroke="none" />
+                                <circle
+                                  cx={p.x}
+                                  cy={p.y}
+                                  r={innerR}
+                                  fill="#0b1120"
+                                  stroke={color}
+                                  strokeWidth={2}
+                                  onMouseEnter={() => setHover({ mi: p.mi, si, val: p.val, x: p.x })}
+                                  onMouseLeave={() => setHover(null)}
+                                />
+                              </>
+                            )}
+                            {shape === "square" && (
+                              <>
+                                <rect
+                                  x={p.x - outerR}
+                                  y={p.y - outerR}
+                                  width={outerR * 2}
+                                  height={outerR * 2}
+                                  fill={color}
+                                  fillOpacity={outerOpacity}
+                                />
+                                <rect
+                                  x={p.x - innerR}
+                                  y={p.y - innerR}
+                                  width={innerR * 2}
+                                  height={innerR * 2}
+                                  fill="#0b1120"
+                                  stroke={color}
+                                  strokeWidth={2}
+                                  onMouseEnter={() => setHover({ mi: p.mi, si, val: p.val, x: p.x })}
+                                  onMouseLeave={() => setHover(null)}
+                                />
+                              </>
+                            )}
+                            {shape === "triangle" && (
+                              <>
+                                <polygon
+                                  points={`${p.x},${p.y - outerR} ${p.x - outerR * 0.866},${p.y + outerR * 0.5} ${p.x + outerR * 0.866},${p.y + outerR * 0.5}`}
+                                  fill={color}
+                                  fillOpacity={outerOpacity}
+                                />
+                                <polygon
+                                  points={`${p.x},${p.y - innerR} ${p.x - innerR * 0.866},${p.y + innerR * 0.5} ${p.x + innerR * 0.866},${p.y + innerR * 0.5}`}
+                                  fill="#0b1120"
+                                  stroke={color}
+                                  strokeWidth={2}
+                                  onMouseEnter={() => setHover({ mi: p.mi, si, val: p.val, x: p.x })}
+                                  onMouseLeave={() => setHover(null)}
+                                />
+                              </>
+                            )}
+                            {shape === "diamond" && (
+                              <>
+                                <polygon
+                                  points={`${p.x},${p.y - outerR} ${p.x + outerR},${p.y} ${p.x},${p.y + outerR} ${p.x - outerR},${p.y}`}
+                                  fill={color}
+                                  fillOpacity={outerOpacity}
+                                />
+                                <polygon
+                                  points={`${p.x},${p.y - innerR} ${p.x + innerR},${p.y} ${p.x},${p.y + innerR} ${p.x - innerR},${p.y}`}
+                                  fill="#0b1120"
+                                  stroke={color}
+                                  strokeWidth={2}
+                                  onMouseEnter={() => setHover({ mi: p.mi, si, val: p.val, x: p.x })}
+                                  onMouseLeave={() => setHover(null)}
+                                />
+                              </>
+                            )}
                           </>
                         );
                       })()}
