@@ -397,6 +397,227 @@ class MobileJknController extends Controller
         }
     }
 
+    public function cekSrk(Request $request)
+    {
+        try {
+            $request->validate([
+                'no_rkm_medis' => 'nullable|string',
+                'kd_poli' => 'nullable|string',
+                'kd_dokter' => 'nullable|string',
+                'tanggalperiksa' => 'nullable|date',
+                'nomorkartu' => 'nullable|string',
+                'nik' => 'nullable|string',
+                'kodepoli' => 'nullable|string',
+                'namapoli' => 'nullable|string',
+                'norm' => 'nullable|string',
+                'kodedokter' => 'nullable',
+                'namadokter' => 'nullable|string',
+                'jampraktek' => 'nullable|string',
+                'nomorantrean' => 'nullable|string',
+                'angkaantrean' => 'nullable',
+                'keterangan' => 'nullable|string',
+                'nohp' => 'nullable|string',
+            ]);
+
+            $noRkmMedis = (string) $request->input('no_rkm_medis');
+            $kdPoli = (string) $request->input('kd_poli');
+            $kdDokter = (string) $request->input('kd_dokter');
+            $tanggalPeriksa = (string) ($request->input('tanggalperiksa') ?: date('Y-m-d'));
+
+            $pasien = \Illuminate\Support\Facades\DB::table('pasien')
+                ->select(['no_peserta', 'no_ktp', 'no_tlp', 'no_rkm_medis'])
+                ->where('no_rkm_medis', $noRkmMedis)
+                ->first();
+
+            if (! $pasien) {
+                $nk = (string) ($request->input('nomorkartu') ?: '');
+                if ($nk === '') {
+                    return response()->json([
+                        'status' => 'UNKNOWN',
+                        'message' => 'Data pasien tidak ditemukan',
+                        'metadata' => ['code' => 404, 'message' => 'Data pasien tidak ditemukan'],
+                    ], 200);
+                }
+            }
+
+            $mapPoli = \Illuminate\Support\Facades\DB::table('maping_poliklinik_pcare')
+                ->select(['kd_poli_rs', 'kd_poli_pcare', 'nm_poli_pcare'])
+                ->where('kd_poli_rs', $kdPoli)
+                ->first();
+
+            $mapDokter = \Illuminate\Support\Facades\DB::table('maping_dokter_pcare')
+                ->select(['kd_dokter', 'kd_dokter_pcare', 'nm_dokter_pcare'])
+                ->where('kd_dokter', $kdDokter)
+                ->first();
+
+            $jadwal = \Illuminate\Support\Facades\DB::table('jadwal')
+                ->select(['jam_mulai', 'jam_selesai'])
+                ->where('kd_dokter', $kdDokter)
+                ->where('kd_poli', $kdPoli)
+                ->orderBy('jam_mulai')
+                ->first();
+
+            $rawJamMulai = $jadwal?->jam_mulai ?: '08:00';
+            $rawJamSelesai = $jadwal?->jam_selesai ?: '16:00';
+            $formatJam = function ($time) {
+                if (! is_string($time)) {
+                    return '08:00';
+                }
+                $time = substr($time, 0, 5);
+                if (preg_match('/^\d:\d{2}$/', $time)) {
+                    $time = '0'.$time;
+                }
+                if (! preg_match('/^\d{2}:\d{2}$/', $time)) {
+                    return '08:00';
+                }
+                return $time;
+            };
+            $jamMulai = $formatJam($rawJamMulai);
+            $jamSelesai = $formatJam($rawJamSelesai);
+            $jamPraktek = $jamMulai.'-'.$jamSelesai;
+
+            $sanitizeName = function ($name) {
+                $name = (string) $name;
+                $name = preg_replace('/\s+/u', ' ', $name);
+                $name = trim($name);
+                $name = preg_replace('/\s*,\s*/', ',', $name);
+                return $name;
+            };
+            $namaDokterPcare = $sanitizeName(($mapDokter->nm_dokter_pcare ?? '') ?: '');
+            $namaPoliPcare = $sanitizeName(($mapPoli->nm_poli_pcare ?? '') ?: '');
+            $kodePoliPcare = (string) ($mapPoli->kd_poli_pcare ?? $kdPoli);
+            $kodeDokterPcareRaw = ($mapDokter->kd_dokter_pcare ?? $kdDokter);
+            $kodeDokterPcare = is_numeric($kodeDokterPcareRaw ?? '') ? (int) $kodeDokterPcareRaw : (string) $kodeDokterPcareRaw;
+
+            $overrideNomorKartu = (string) ($request->input('nomorkartu') ?: '');
+            $overrideNik = (string) ($request->input('nik') ?: '');
+
+            $payload = [
+                'nomorkartu' => $overrideNomorKartu !== '' ? $overrideNomorKartu : (string) ($pasien->no_peserta ?? ''),
+                'nik' => $overrideNik !== '' ? $overrideNik : (string) ($pasien->no_ktp ?? ''),
+                'nohp' => (string) ($request->input('nohp') ?: ($pasien->no_tlp ?? '')),
+                'kodepoli' => $kodePoliPcare,
+                'namapoli' => $namaPoliPcare,
+                'norm' => (string) ($pasien->no_rkm_medis ?? ''),
+                'tanggalperiksa' => $tanggalPeriksa,
+                'kodedokter' => $kodeDokterPcare,
+                'namadokter' => $namaDokterPcare,
+                'jampraktek' => $jamPraktek,
+                'nomorantrean' => '',
+                'angkaantrean' => null,
+                'keterangan' => '',
+            ];
+
+            if ($request->filled('kodepoli')) {
+                $payload['kodepoli'] = (string) $request->input('kodepoli');
+            }
+            if ($request->filled('namapoli')) {
+                $payload['namapoli'] = (string) $request->input('namapoli');
+            }
+            if ($request->has('norm')) {
+                $payload['norm'] = (string) $request->input('norm');
+            }
+            $kdOverride = $request->input('kodedokter');
+            if (! is_null($kdOverride) && $kdOverride !== '') {
+                $payload['kodedokter'] = is_numeric($kdOverride ?? '') ? (int) $kdOverride : (string) $kdOverride;
+            }
+            if ($request->has('namadokter')) {
+                $payload['namadokter'] = (string) $request->input('namadokter');
+            }
+            if ($request->has('jampraktek')) {
+                $payload['jampraktek'] = (string) $request->input('jampraktek');
+            }
+            if ($request->has('nomorantrean')) {
+                $payload['nomorantrean'] = (string) $request->input('nomorantrean');
+            }
+            $angkaOverride = $request->input('angkaantrean');
+            if (! is_null($angkaOverride)) {
+                $payload['angkaantrean'] = is_numeric($angkaOverride) ? (int) $angkaOverride : null;
+            }
+            if ($request->has('keterangan')) {
+                $payload['keterangan'] = (string) $request->input('keterangan');
+            }
+
+            \Illuminate\Support\Facades\Log::channel('bpjs')->debug('MobileJKN cekSrk payload (antrean/add)', $payload);
+
+            $result = $this->mobilejknRequest('POST', 'antrean/add', [], $payload);
+            $response = $result['response'];
+            $timestamp = $result['timestamp_used'];
+
+            $body = $response->body();
+            $parsed = $this->maybeDecryptAndDecompressMobileJkn($body, $timestamp);
+
+            if (is_array($parsed)) {
+                $meta = $parsed['metadata'] ?? $parsed['metaData'] ?? null;
+                $message = '';
+                $code = 0;
+                if (is_array($meta)) {
+                    $message = (string) ($meta['message'] ?? '');
+                    $code = (int) ($meta['code'] ?? 0);
+                }
+                $belum = false;
+                if ($message !== '') {
+                    $belum = (bool) preg_match('/skrining kesehatan|skrining/i', $message);
+                }
+                $status = $belum ? 'BELUM_SRK' : (($code >= 200 && $code < 300) ? 'SUDAH_SRK' : 'UNKNOWN');
+                \Illuminate\Support\Facades\Log::channel('bpjs')->info('MobileJKN cekSrk response (normalized)', [
+                    'metadata' => $meta,
+                    'status_mapped' => $status,
+                    'message' => $message,
+                ]);
+                return response()->json([
+                    'status' => $status,
+                    'message' => $message,
+                    'metadata' => $meta,
+                ], 200);
+            }
+
+            $rawDecoded = json_decode((string) $body, true);
+            if (is_array($rawDecoded)) {
+                $meta = $rawDecoded['metadata'] ?? $rawDecoded['metaData'] ?? null;
+                $message = '';
+                $code = 0;
+                if (is_array($meta)) {
+                    $message = (string) ($meta['message'] ?? '');
+                    $code = (int) ($meta['code'] ?? 0);
+                }
+                $belum = false;
+                if ($message !== '') {
+                    $belum = (bool) preg_match('/skrining kesehatan|skrining/i', $message);
+                }
+                $status = $belum ? 'BELUM_SRK' : (($code >= 200 && $code < 300) ? 'SUDAH_SRK' : 'UNKNOWN');
+                \Illuminate\Support\Facades\Log::channel('bpjs')->info('MobileJKN cekSrk response (raw-decoded)', [
+                    'metadata' => $meta,
+                    'status_mapped' => $status,
+                    'message' => $message,
+                ]);
+                return response()->json([
+                    'status' => $status,
+                    'message' => $message,
+                    'metadata' => $meta,
+                ], 200);
+            }
+
+            return response()->json([
+                'status' => 'UNKNOWN',
+                'message' => 'Response Mobile JKN tidak dapat diparse',
+                'metadata' => null,
+            ], 200);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'status' => 'UNKNOWN',
+                'message' => 'Konfigurasi Mobile JKN belum lengkap: '.$e->getMessage(),
+                'metadata' => ['code' => 400, 'message' => 'Konfigurasi Mobile JKN belum lengkap'],
+            ], 200);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'UNKNOWN',
+                'message' => 'Terjadi kesalahan saat memeriksa Status SRK',
+                'metadata' => ['code' => 500, 'message' => $e->getMessage()],
+            ], 200);
+        }
+    }
+
     /**
      * Referensi Dokter per Poli (Mobile JKN)
      * Endpoint katalog: {BASE}/{Service}/ref/dokter/kodepoli/{kodepoli}/tanggal/{tanggal}

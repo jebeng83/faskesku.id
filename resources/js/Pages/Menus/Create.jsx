@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Head, Link, useForm, usePage } from "@inertiajs/react";
+import { Head, Link, useForm } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
 import { ArrowLeftIcon, EyeIcon } from "@heroicons/react/24/outline";
 
 export default function Create({ parentMenus, permissions }) {
-	const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
 		name: "",
 		slug: "",
 		icon: "",
@@ -17,7 +17,7 @@ export default function Create({ parentMenus, permissions }) {
 		description: "",
 	});
 
-	const [iconOptions, setIconOptions] = useState({});
+    const [, setIconOptions] = useState({});
 	const [showIconPreview, setShowIconPreview] = useState(false);
 	const [autoGenerateSlug, setAutoGenerateSlug] = useState(true);
 

@@ -679,8 +679,8 @@ const SearchableSelect = ({
                             const json = await res.json();
                             const opts = cfg.parse(json);
                             setRemoteOptions(Array.isArray(opts) ? opts : []);
-                        } catch (e) {
-                            setRemoteError(e?.message || "Gagal memuat data");
+                        } catch (_e) {
+                            setRemoteError(_e?.message || "Gagal memuat data");
                         } finally {
                             setRemoteLoading(false);
                         }
@@ -699,7 +699,7 @@ const SearchableSelect = ({
             if (!isOpen && portalElRef.current) {
                 try {
                     document.body.removeChild(portalElRef.current);
-                } catch (e) {}
+                } catch {}
                 portalElRef.current = null;
             }
         };
@@ -733,8 +733,8 @@ const SearchableSelect = ({
                 const json = await res.json();
                 const opts = cfg.parse(json);
                 setRemoteOptions(Array.isArray(opts) ? opts : []);
-            } catch (e) {
-                setRemoteError(e?.message || "Gagal memuat data");
+            } catch (_e) {
+                setRemoteError(_e?.message || "Gagal memuat data");
             } finally {
                 setRemoteLoading(false);
             }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, usePage, router } from "@inertiajs/react";
+import { router } from "@inertiajs/react";
 import {
   ChevronDownIcon,
   HomeIcon,
@@ -15,9 +15,7 @@ export default function LanjutanRegistrasiSidebar({
   collapsed = false,
   title = "Registrasi Pasien",
   menuConfig = {},
-  onToggle,
 }) {
-  const { auth } = usePage().props;
   const [expandedMenus, setExpandedMenus] = useState(new Set());
   const shouldReduceMotion = useReducedMotion();
   const ease = [0.22, 1, 0.36, 1];
@@ -77,7 +75,7 @@ export default function LanjutanRegistrasiSidebar({
       url: (() => {
         try {
           return route("dashboard");
-        } catch (error) {
+        } catch {
           console.warn("Dashboard route not found");
           return "/";
         }
@@ -205,7 +203,7 @@ export default function LanjutanRegistrasiSidebar({
     if (menu.route) {
       try {
         return route(menu.route);
-      } catch (error) {
+      } catch {
         console.warn(`Route ${menu.route} not found for menu ${menu.name}`);
         return "#";
       }

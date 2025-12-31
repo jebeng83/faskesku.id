@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Head, Link } from "@inertiajs/react";
+import { Head } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import { motion, useReducedMotion } from "framer-motion";
 import LanjutanRalanLayout from "@/Layouts/LanjutanRalanLayout";
 import RiwayatPerawatan from "./components/RiwayatPerawatan"; // Updated import
 import CpptSoap from "./components/CpptSoap";
@@ -11,22 +10,9 @@ import Diagnosa from "./components/Diagnosa";
 import PermintaanLab from "./components/PermintaanLab";
 import PermintaanRadiologi from "./components/PermintaanRadiologi";
 import TarifTindakan from "./components/TarifTindakan";
-import { getAppTimeZone } from '@/tools/datetime';
+ 
 
 export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitDate }) {
-    // UI/UX variants (guided by docs/UI_UX_IMPROVEMENTS_GUIDE.md)
-    const prefersReducedMotion = useReducedMotion();
-    const itemVariants = {
-        hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 24, scale: prefersReducedMotion ? 1 : 0.98 },
-        visible: {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            transition: prefersReducedMotion
-                ? { duration: 0 }
-                : { duration: 0.35, ease: [0.22, 1, 0.36, 1] }
-        }
-    };
 
     const [activeTab, setActiveTab] = useState("cppt");
     const [openAcc, setOpenAcc] = useState({
@@ -37,7 +23,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [autoSaveStatus, setAutoSaveStatus] = useState("");
-    const [showPatientDetails, setShowPatientDetails] = useState(false);
+    
     const [resepAppendItems, setResepAppendItems] = useState(null);
     const [selectedNoRawat, setSelectedNoRawat] = useState(params?.no_rawat || rawatJalan?.no_rawat || "");
     const [soapModalOpen, setSoapModalOpen] = useState(false);
@@ -64,31 +50,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
         setActiveTab(tab);
     };
 
-    const formatDate = (dateString) => {
-        if (!dateString) return "-";
-        try {
-            const tz = getAppTimeZone();
-            const date = new Date(dateString);
-            return date.toLocaleDateString("id-ID", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-                timeZone: tz
-            });
-        } catch (error) {
-            return dateString;
-        }
-    };
-
-    const formatTime = (timeString) => {
-        if (!timeString) return "-";
-        try {
-            return timeString.substring(0, 8);
-        } catch (error) {
-            return timeString;
-        }
-    };
+    
     const getSkriningBadgeClasses = (v) => {
         const k = String(v || '').toLowerCase();
         if (k === 'merah') return 'inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800';
@@ -280,39 +242,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
         },
     ];
 
-    const getTabColorClasses = (color, isActive) => {
-        const colors = {
-            blue: {
-                active: "bg-blue-100 text-blue-700 border-blue-500",
-                inactive: "text-gray-600 hover:text-blue-600 hover:bg-blue-50",
-            },
-            orange: {
-                active: "bg-orange-100 text-orange-700 border-orange-500",
-                inactive:
-                    "text-gray-600 hover:text-orange-600 hover:bg-orange-50",
-            },
-            green: {
-                active: "bg-green-100 text-green-700 border-green-500",
-                inactive:
-                    "text-gray-600 hover:text-green-600 hover:bg-green-50",
-            },
-            red: {
-                active: "bg-red-100 text-red-700 border-red-500",
-                inactive: "text-gray-600 hover:text-red-600 hover:bg-red-50",
-            },
-            purple: {
-                active: "bg-purple-100 text-purple-700 border-purple-500",
-                inactive:
-                    "text-gray-600 hover:text-purple-600 hover:bg-purple-50",
-            },
-            indigo: {
-                active: "bg-indigo-100 text-indigo-700 border-indigo-500",
-                inactive:
-                    "text-gray-600 hover:text-indigo-600 hover:bg-indigo-50",
-            },
-        };
-        return colors[color][isActive ? "active" : "inactive"];
-    };
+    
 
     const renderActiveTabContent = () => {
         const commonProps = {
@@ -1139,7 +1069,6 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                             {(() => {
                                                                 let rowIndex = -1;
                                                                 return soapModalItems.map((h) => {
-                                                                    const latest = h.latest || {};
                                                                     let tanggal = '-';
                                                                     try {
                                                                         if (typeof h.no_rawat === 'string') {

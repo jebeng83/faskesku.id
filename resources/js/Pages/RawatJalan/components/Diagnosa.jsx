@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '' }) {
+export default function Diagnosa({ noRawat = '' }) {
     const [query, setQuery] = useState('');
     const [type, setType] = useState('utama'); // utama | sekunder
     const [selected, setSelected] = useState([]);

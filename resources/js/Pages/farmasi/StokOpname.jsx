@@ -26,7 +26,7 @@ import {
 import Alert from "@/Components/Alert";
 import ConfirmationAlert from "@/Components/ConfirmationAlert";
 
-export default function StokOpname({ auth }) {
+export default function StokOpname() {
     const [formData, setFormData] = useState({
         tanggal: todayDateString(),
         kd_bangsal: "",
@@ -440,14 +440,7 @@ export default function StokOpname({ auth }) {
         }
     };
 
-    const resetForm = () => {
-        setFormData({
-            tanggal: todayDateString(),
-            kd_bangsal: "",
-            keterangan: "",
-        });
-        setOpnameItems([]);
-    };
+    
 
     // useEffect untuk pencarian barang
     useEffect(() => {

@@ -62,7 +62,7 @@ export default function SatuSehatLocationFarmasi() {
           setLatitude(json.latitude || "");
           setAltittude(json.altitude || "");
         }
-      } catch (_) {}
+      } catch {}
     })();
     loadMappings();
   }, []);

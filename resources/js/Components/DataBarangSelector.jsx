@@ -105,7 +105,7 @@ export default function DataBarangSelector({ value, onChange, className = '' }) 
         <a
           href={route('farmasi.data-obat')}
           target="_blank"
-          rel="noopener"
+          rel="noopener noreferrer"
           className="rounded border border-indigo-200 px-2 py-1 font-medium text-indigo-700 hover:bg-indigo-50"
         >
           Buka Data Obat

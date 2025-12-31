@@ -52,10 +52,6 @@ export default function Index({
 	});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [toasts, setToasts] = useState([]);
-    const addToast = (type = "info", title = "", message = "", duration = 4000) => {
-        const id = `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-        setToasts((prev) => [...prev, { id, type, title, message, duration }]);
-    };
     const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id));
 
     // Kunjungan Sehat (PCare) modal states
@@ -321,18 +317,18 @@ export default function Index({
 					setShowAlert(true);
 					setIsSubmitting(false);
 				},
-				onError: (errors) => {
-					// Show error alert
-					setAlertConfig({
-						type: "error",
-						title: "Gagal!",
-						message:
-							"Terjadi kesalahan saat mendaftarkan pasien. Silakan coba lagi.",
-						autoClose: false,
-					});
-					setShowAlert(true);
-					setIsSubmitting(false);
-				},
+                onError: (_errors) => {
+                    // Show error alert
+                    setAlertConfig({
+                        type: "error",
+                        title: "Gagal!",
+                        message:
+                            "Terjadi kesalahan saat mendaftarkan pasien. Silakan coba lagi.",
+                        autoClose: false,
+                    });
+                    setShowAlert(true);
+                    setIsSubmitting(false);
+                },
 			}
 		);
 	};

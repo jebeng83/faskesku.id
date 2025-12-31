@@ -5,7 +5,7 @@ import ConfirmationAlert from '@/Components/ConfirmationAlert'
 import { todayDateString, nowDateTimeString } from '@/tools/datetime'
 import { motion, AnimatePresence } from 'framer-motion'
 
-export default function NewTarifTindakan({ token, noRkmMedis = '', noRawat = '' }) {
+export default function NewTarifTindakan({ token, noRawat = '' }) {
   const [activeTab, setActiveTab] = useState('dokter')
   const [jnsPerawatan, setJnsPerawatan] = useState([])
   const [filteredPerawatan, setFilteredPerawatan] = useState([])
@@ -17,8 +17,8 @@ export default function NewTarifTindakan({ token, noRkmMedis = '', noRawat = '' 
   const [selectedPetugas, setSelectedPetugas] = useState('')
   const [riwayatTindakan, setRiwayatTindakan] = useState([])
   const [loading, setLoading] = useState(false)
-  const [stageLoading, setStageLoading] = useState(false)
-  const [postingLoading, setPostingLoading] = useState(false)
+  
+  const [postingLoading] = useState(false)
   const [showAlert, setShowAlert] = useState(false)
   const [alertConfig, setAlertConfig] = useState({ type: 'success', title: '', message: '', autoClose: true })
   const [showConfirmAlert, setShowConfirmAlert] = useState(false)
@@ -176,28 +176,7 @@ export default function NewTarifTindakan({ token, noRkmMedis = '', noRawat = '' 
     setShowConfirmAlert(true)
   }
 
-  const handleStageJurnalRalan = async () => {
-    try {
-      setStageLoading(true)
-      const response = await axios.post('/api/tarif-tindakan/stage-ralan', { token, no_rawat: noRawat })
-      if (response?.data && response?.data?.success) {
-        const meta = response?.data?.meta || {}
-        const message = `Staging jurnal berhasil disusun. Debet: ${new Intl.NumberFormat('id-ID').format(meta.debet || 0)}, Kredit: ${new Intl.NumberFormat('id-ID').format(meta.kredit || 0)}, Baris: ${meta.lines || 0}. ${meta.balanced ? 'Seimbang.' : 'Tidak seimbang!'}`
-        setAlertConfig({ type: 'success', title: 'Staging Berhasil', message, autoClose: true })
-        setShowAlert(true)
-      } else {
-        const errMsg = response?.data?.message || 'Gagal menyusun staging jurnal'
-        setAlertConfig({ type: 'error', title: 'Error', message: errMsg, autoClose: true })
-        setShowAlert(true)
-      }
-    } catch (error) {
-      const errMsg = error?.response?.data?.message || error?.message || 'Gagal menyusun staging jurnal'
-      setAlertConfig({ type: 'error', title: 'Error', message: errMsg, autoClose: true })
-      setShowAlert(true)
-    } finally {
-      setStageLoading(false)
-    }
-  }
+  
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount || 0)

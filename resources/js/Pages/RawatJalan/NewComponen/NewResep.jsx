@@ -262,15 +262,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
     fetchRiwayatResep(true)
   }
 
-  const cekStokObat = async (kodeObat, jumlah) => {
-    if (!kodeObat || !kdPoli) return false
-    try {
-      const response = await axios.post("/api/obat/cek-stok", { kode_brng: kodeObat, kd_poli: kdPoli, jumlah })
-      return response?.data?.success ? !!response.data.data.tersedia : false
-    } catch (_) {
-      return false
-    }
-  }
+  
 
   const validateForm = async () => {
     for (const item of items) {

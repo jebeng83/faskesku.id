@@ -7,7 +7,6 @@ import { motion } from 'framer-motion';
 import { todayDateString, getAppTimeZone } from '@/tools/datetime';
 import {
   PlusIcon,
-  FunnelIcon,
   MagnifyingGlassIcon,
   DocumentTextIcon,
   DocumentCheckIcon,
@@ -15,7 +14,6 @@ import {
   ClockIcon,
   UserIcon,
   BanknotesIcon,
-  ArrowPathIcon,
   EllipsisVerticalIcon,
 } from '@heroicons/react/24/outline';
 
@@ -94,7 +92,7 @@ function SimpleDropdown({ children, trigger }) {
     );
 }
 
-function DropdownItem({ children, onClick, icon, variant = "default" }) {
+function DropdownItem({ children, onClick, icon, _variant = "default" }) {
     return (
         <button
             onClick={onClick}
@@ -124,7 +122,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
     // Sinkronisasi state dengan props filters setiap kali halaman dikunjungi ulang
     // (misal: klik menu Rawat Jalan di sidebar) agar pilihan Dokter/Poli tidak "terkunci".
     useEffect(() => {
-        setSearchParams((prev) => ({
+        setSearchParams((_prev) => ({
             start_date: filters.start_date || todayDateString(),
             end_date: filters.end_date || todayDateString(),
             status: filters.status || '',
@@ -225,7 +223,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         try {
             const tz = getAppTimeZone();
             return new Date(date).toLocaleDateString('id-ID', { timeZone: tz });
-        } catch (e) {
+        } catch {
             return new Date(date).toLocaleDateString('id-ID');
         }
     };
@@ -509,7 +507,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                                         kd_poli: item.kd_poli || item.poliklinik?.kd_poli || ''
                                                     });
                                                     router.visit(url);
-                                                } catch (e) {
+                                                } catch {
                                                     const params = new URLSearchParams({
                                                         no_rawat: item.no_rawat || '',
                                                         no_rkm_medis: item.no_rkm_medis || '',

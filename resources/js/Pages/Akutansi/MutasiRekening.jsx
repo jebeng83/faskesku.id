@@ -100,7 +100,7 @@ export default function MutasiRekeningPage() {
             });
             setItems(res.data.items || []);
             setServerFilters(res.data.filters || null);
-        } catch (e) {
+        } catch (_e) {
             setItems([]);
             setServerFilters(null);
         } finally {

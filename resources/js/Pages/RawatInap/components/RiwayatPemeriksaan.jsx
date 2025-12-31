@@ -9,7 +9,7 @@ import {
     DocumentTextIcon
 } from '@heroicons/react/24/outline';
 
-export default function RiwayatPemeriksaan({ token = '', noRawat = '', noRkmMedis = '' }) {
+export default function RiwayatPemeriksaan({ _token = '', noRawat = '', _noRkmMedis = '' }) {
     const [rows, setRows] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useForm, router } from "@inertiajs/react";
+import { useForm } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
 	XMarkIcon,
@@ -40,10 +40,10 @@ const inputVariants = {
 };
 
 export default function SpesialisModal({ show, onClose, mode, spesialis }) {
-	const { data, setData, post, put, processing, errors, reset } = useForm({
-		kd_sps: spesialis?.kd_sps || "",
-		nm_sps: spesialis?.nm_sps || "",
-	});
+    const { data, setData, post, errors, reset, processing } = useForm({
+        kd_sps: spesialis?.kd_sps || "",
+        nm_sps: spesialis?.nm_sps || "",
+    });
 
 	useEffect(() => {
 		if (show && mode === "edit" && spesialis) {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BeakerIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 
-export default function RiwayatPemeriksaan({ token = '', noRawat = '', noRkmMedis = '' }) {
+export default function RiwayatPemeriksaan({ _token = '', noRawat = '' }) {
     const [medicationItems, setMedicationItems] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');

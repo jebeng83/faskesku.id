@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
 import SearchableSelect from "@/Components/SearchableSelect";
-import { Card, CardHeader, CardTitle, CardContent } from "@/Components/ui/Card";
+import { CardHeader, CardTitle, CardContent } from "@/Components/ui/Card";
 import Button from "@/Components/ui/Button";
 import Input from "@/Components/ui/Input";
 import Label from "@/Components/ui/Label";
@@ -21,12 +21,11 @@ import {
   AlertCircle,
   Loader2,
   Building2,
-  Navigation,
   Link2,
   Globe,
   Sparkles,
-  X,
   Info,
+  Navigation,
 } from "lucide-react";
 
 export default function SatuSehatLocation() {
@@ -86,7 +85,7 @@ export default function SatuSehatLocation() {
           setLatitude(json.latitude || "");
           setAltittude(json.altitude || "");
         }
-      } catch (_) {}
+      } catch {}
     })();
     loadMappings();
   }, []);

@@ -1,14 +1,14 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Head, Link, router, usePage } from "@inertiajs/react";
+import { Head, router, usePage } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import SidebarLaboratorium from "@/Layouts/SidebarLaboratorium";
 import ResponsiveTable from "@/Components/ResponsiveTable";
 import ActionDropdown from "@/Components/ActionDropdown";
 import Pagination from "@/Components/Pagination";
 import Alert from "@/Components/Alert";
 import Modal from "@/Components/Modal";
-import { Search, Plus, Eye, Trash2, Clock, ClipboardList, RefreshCw, Printer } from "lucide-react";
+import { Search, Eye, Trash2, Clock, ClipboardList, RefreshCw, Printer } from "lucide-react";
 
 // Helper function untuk mendapatkan tanggal hari ini dalam format YYYY-MM-DD
 // Menggunakan timezone Asia/Jakarta (UTC+7)
@@ -50,17 +50,7 @@ const itemVariants = {
     },
 };
 
-const cardHoverVariants = {
-    rest: { scale: 1, y: 0 },
-    hover: {
-        scale: 1.01,
-        y: -4,
-        transition: {
-            duration: 0.3,
-            ease: "easeOut",
-        },
-    },
-};
+
 
 export default function Index({ permintaanLab, dokters = [], filters = {}, flash, errors: pageErrors }) {
     const { auth } = usePage().props;

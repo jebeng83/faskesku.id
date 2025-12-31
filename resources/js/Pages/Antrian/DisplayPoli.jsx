@@ -112,6 +112,9 @@ export default function DisplayPoli() {
     return () => { mounted = false; clearInterval(it); };
   }, []);
   useEffect(() => {
+    return () => { stopAudio(); };
+  }, []);
+  useEffect(() => {
     const getApiBaseCandidates = () => {
       const c = [];
       try {
@@ -363,9 +366,7 @@ export default function DisplayPoli() {
     audioLastKeyRef.current = k;
     lastPlayAtRef.current = Date.now();
     const nomor = parseInt(String(h.no_reg || '0'), 10) || 0;
-    const nmPasien = String(h.nm_pasien || '').trim();
     const nmPoli = String(h.nm_poli || h.kd_poli || '').trim();
-    const frase = `Nomor antrian ${nomor}, atas nama ${nmPasien}, silahkan ke poli ${nmPoli}`;
     const seq = [
       `${baseSuara}/notifbell.mp3`,
       `${baseSuara}/${encodeURIComponent('Antrian.mp3')}`,

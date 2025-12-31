@@ -80,7 +80,7 @@ export default function RiwayatTransaksiGudang() {
             );
             setItems(Array.isArray(data?.items) ? data.items : []);
             setTotal(Number(data?.total ?? 0));
-        } catch (e) {
+        } catch {
             setItems([]);
             setTotal(0);
         } finally {
@@ -310,9 +310,9 @@ export default function RiwayatTransaksiGudang() {
                             </thead>
                             <tbody>
                                 {loading &&
-                                    Array.from({ length: 5 }).map((_, i) => (
+                                    [...Array(5).keys()].map((i) => (
                                         <tr key={`s-${i}`} className="animate-pulse">
-                                            {Array.from({ length: 12 }).map((__, j) => (
+                                            {[...Array(12).keys()].map((j) => (
                                                 <td key={j} className="px-3 py-2">
                                                     <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded" />
                                                 </td>
@@ -379,4 +379,3 @@ export default function RiwayatTransaksiGudang() {
         </SidebarFarmasi>
     );
 }
-

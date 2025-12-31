@@ -51,7 +51,7 @@ export default function DoctorModal({
 	availableEmployees,
 	spesialisList,
 }) {
-	const { data, setData, post, put, processing, errors, reset, transform } = useForm({
+    const { data, setData, post, processing, errors, reset, transform } = useForm({
 		kd_dokter: doctor?.kd_dokter || "",
 		nm_dokter: doctor?.nm_dokter || "",
 		jk: doctor?.jk || "L",

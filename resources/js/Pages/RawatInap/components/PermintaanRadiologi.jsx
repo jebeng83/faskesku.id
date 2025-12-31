@@ -8,8 +8,7 @@ import {
     ClockIcon,
     CheckCircleIcon,
     XCircleIcon,
-    ExclamationTriangleIcon,
-    DocumentTextIcon
+    ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 
 const PermintaanRadiologi = () => {

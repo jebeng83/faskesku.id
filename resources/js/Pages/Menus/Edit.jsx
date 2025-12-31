@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Head, Link, useForm, usePage, router } from "@inertiajs/react";
-import { route as ziggy } from "ziggy-js";
+import { Head, Link, useForm, router } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
 import { ArrowLeftIcon, EyeIcon } from "@heroicons/react/24/outline";
 
@@ -18,7 +17,7 @@ export default function Edit({ menu, parentMenus, permissions }) {
 		description: menu.description || "",
 	});
 
-	const [iconOptions, setIconOptions] = useState({});
+    const [, setIconOptions] = useState({});
 	const [showIconPreview, setShowIconPreview] = useState(false);
 	const [autoGenerateSlug, setAutoGenerateSlug] = useState(false);
 	const [processing, setProcessing] = useState(false);

@@ -6,6 +6,7 @@ use App\Models\Penjab;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Database\QueryException;
 use Inertia\Inertia;
 
 class PenjabController extends Controller
@@ -13,6 +14,7 @@ class PenjabController extends Controller
     public function index(Request $request)
     {
         $search = $request->query('search');
+        $status = $request->query('status');
         $query = Penjab::query();
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -21,12 +23,16 @@ class PenjabController extends Controller
                     ->orWhere('nama_perusahaan', 'like', "%{$search}%");
             });
         }
+        if ($status !== null && $status !== '') {
+            $query->where('status', $status);
+        }
         $penjabs = $query->orderBy('png_jawab')->paginate(10)->withQueryString();
 
         return Inertia::render('Penjab/Index', [
             'penjabs' => $penjabs,
             'filters' => [
                 'search' => $search,
+                'status' => $status,
             ],
         ]);
     }
@@ -137,6 +143,22 @@ class PenjabController extends Controller
         $statusText = $validated['status'] === '1' ? 'diaktifkan' : 'dinonaktifkan';
 
         return to_route('penjab.index', [], 303)->with('success', "Penjamin berhasil {$statusText}");
+    }
+
+    public function destroy(Request $request, string $kd_pj)
+    {
+        $penjab = Penjab::findOrFail($kd_pj);
+        try {
+            $penjab->delete();
+            return to_route('penjab.index', [], 303)->with('success', 'Penjamin berhasil dihapus');
+        } catch (QueryException $e) {
+            if ((int) ($e->errorInfo[1] ?? 0) === 1451) {
+                return redirect()->back()->withErrors(['error' => 'Gagal menghapus: data sedang digunakan (foreign key constraint).']);
+            }
+            return redirect()->back()->withErrors(['error' => 'Gagal menghapus penjamin']);
+        } catch (\Throwable $e) {
+            return redirect()->back()->withErrors(['error' => 'Gagal menghapus penjamin']);
+        }
     }
 
     /**

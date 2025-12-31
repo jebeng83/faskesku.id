@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useForm, router } from "@inertiajs/react";
+import { useForm } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { route } from "ziggy-js";
 import SelectWithAdd from "@/Components/SelectWithAdd";
@@ -10,7 +10,7 @@ import WilayahSearchableSelect from "@/Components/WilayahSearchableSelect";
 import AddressDisplay from "@/Components/AddressDisplay";
 import wilayahRoutes from "@/routes/api/public/wilayah";
 import { isValidWilayahCode, constructKodeWilayah } from "@/tools/wilayah";
-import { IdentificationIcon, PhoneIcon, ClipboardDocumentListIcon, UserGroupIcon, UserPlusIcon } from "@heroicons/react/24/outline";
+import { IdentificationIcon, PhoneIcon, ClipboardDocumentListIcon, UserGroupIcon } from "@heroicons/react/24/outline";
 
 export default function PatientEditModal({
     isOpen,
@@ -66,7 +66,7 @@ export default function PatientEditModal({
         return "";
     };
 
-    const { data, setData, errors, reset, post, transform } = useForm({
+    const { data, setData, errors, post, transform } = useForm({
         nm_pasien: "",
         no_ktp: "",
         no_kk: "",

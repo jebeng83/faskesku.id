@@ -58,7 +58,7 @@ export default function Show({ patient }) {
                         cacatFisik: cacatLabel,
                     });
                 }
-            } catch (e) {
+            } catch {
                 // ignore errors; keep defaults
             }
         };

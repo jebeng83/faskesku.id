@@ -11,7 +11,6 @@ import {
     Save,
     Edit2,
     Info,
-    CheckCircle2,
     AlertCircle,
 } from "lucide-react";
 
@@ -52,7 +51,6 @@ export default function RekeningTahunPage() {
     const [q, setQ] = useState("");
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [refreshing, setRefreshing] = useState(false);
 
     // Form tambah/edit saldo awal
     const [saldoForm, setSaldoForm] = useState({
@@ -95,12 +93,7 @@ export default function RekeningTahunPage() {
 
     const handleSearch = async (e) => {
         e.preventDefault();
-        setRefreshing(true);
-        try {
-            await fetchItems();
-        } finally {
-            setRefreshing(false);
-        }
+        await fetchItems();
     };
 
     const resetSaldoForm = () => {

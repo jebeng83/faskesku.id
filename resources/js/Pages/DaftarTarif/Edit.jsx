@@ -4,7 +4,7 @@ import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
 
 export default function Edit({ jnsPerawatan, polikliniks, bangsals, penjaabs, kategoris, category = 'rawat-jalan' }) {
-    const { data, setData, put, processing, errors, reset } = useForm({
+    const { data, setData, processing, errors } = useForm({
         kd_jenis_prw: jnsPerawatan?.kd_jenis_prw || '',
         nm_perawatan: jnsPerawatan?.nm_perawatan || '',
         kd_kategori: jnsPerawatan?.kd_kategori || '',

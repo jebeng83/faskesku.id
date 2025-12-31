@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Head, Link, router, useForm } from "@inertiajs/react";
+import { Head, Link, useForm } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import { motion, AnimatePresence } from "framer-motion";
 import SidebarLaboratorium from "@/Layouts/SidebarLaboratorium";
@@ -32,23 +32,12 @@ const itemVariants = {
 	},
 };
 
-const cardHoverVariants = {
-	rest: { scale: 1, y: 0 },
-	hover: {
-		scale: 1.01,
-		y: -4,
-		transition: {
-			duration: 0.3,
-			ease: "easeOut",
-		},
-	},
-};
+
 
 export default function Show({ 
 	periksaLab, 
 	permintaanLab, 
 	groupedDetails, 
-	petugas, 
 	dokters, 
 	usiaTahun, 
 	mode = 'periksa-lab',
@@ -356,7 +345,7 @@ export default function Show({
 			post(route('laboratorium.permintaan-lab.store-hasil', permintaanLab.noorder), {
 				preserveScroll: false,
 				preserveState: false, // Pastikan state di-refresh setelah redirect
-				onSuccess: (page) => {
+				onSuccess: () => {
 					// Flash message dari backend akan ditangani oleh useEffect
 					// Data akan otomatis ter-refresh karena redirect ke Index dengan data terbaru
 					// Tidak perlu set alert di sini karena redirect akan membawa flash message
@@ -681,12 +670,12 @@ export default function Show({
 									</h2>
 								</div>
 								<div className="relative p-8">
-									{groupedDetails.map((group, groupIndex) => (
-										<motion.div
-											key={group.kd_jenis_prw}
-											variants={itemVariants}
-											className="mb-8 last:mb-0"
-										>
+					{groupedDetails.map((group) => (
+						<motion.div
+							key={group.kd_jenis_prw}
+							variants={itemVariants}
+							className="mb-8 last:mb-0"
+						>
 											<h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
 												<span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
 													{group.nm_perawatan}

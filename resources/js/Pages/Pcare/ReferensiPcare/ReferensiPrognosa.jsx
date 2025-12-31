@@ -55,8 +55,8 @@ export default function ReferensiPrognosa() {
       const res = await fetch(`/api/pcare/prognosa`, { headers: { Accept: 'application/json' } });
       const json = await res.json();
       setData(json);
-    } catch (e) {
-      setError(e?.message || 'Gagal memuat data');
+    } catch {
+      setError('Gagal memuat data');
     } finally {
       setLoading(false);
     }

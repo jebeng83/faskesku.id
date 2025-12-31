@@ -9,7 +9,6 @@ import {
     Plus,
     Pencil,
     Trash2,
-    Info,
     Wallet,
     Check,
     Calendar,
@@ -19,7 +18,6 @@ import {
     Hash,
     X,
     Loader2,
-    AlertCircle,
     Database,
     RefreshCw,
     CreditCard,
@@ -103,7 +101,7 @@ function normalizeDateForInput(dateValue, useAppTimezone = true) {
                 const tz = getAppTimeZone();
                 const date = new Date(dateValue);
                 return date.toLocaleDateString("en-CA", { timeZone: tz });
-            } catch (e) {
+            } catch {
                 // Fallback ke split jika parsing gagal
                 return dateValue.split("T")[0];
             }
@@ -116,7 +114,7 @@ function normalizeDateForInput(dateValue, useAppTimezone = true) {
             try {
                 const tz = getAppTimeZone();
                 return dateValue.toLocaleDateString("en-CA", { timeZone: tz });
-            } catch (e) {
+            } catch {
                 // Fallback ke ISO jika parsing gagal
                 return dateValue.toISOString().slice(0, 10);
             }
@@ -131,14 +129,14 @@ function normalizeDateForInput(dateValue, useAppTimezone = true) {
                 try {
                     const tz = getAppTimeZone();
                     return date.toLocaleDateString("en-CA", { timeZone: tz });
-                } catch (e) {
+                } catch {
                     // Fallback ke ISO jika parsing gagal
                     return date.toISOString().slice(0, 10);
                 }
             }
             return date.toISOString().slice(0, 10);
         }
-    } catch (e) {
+    } catch {
         // Ignore
     }
     return "";
@@ -176,7 +174,7 @@ function formatTanggal(dateString) {
         const year = date.getFullYear();
 
         return `${day}/${month}/${year}`;
-    } catch (e) {
+    } catch {
         // Jika error, return as-is
         return dateString;
     }
@@ -426,7 +424,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         grand_total: 0,
     });
     const [loading, setLoading] = React.useState(false);
-    const [error, setError] = React.useState(null);
+    const [, setError] = React.useState(null);
     const [showCreate, setShowCreate] = React.useState(false);
     const [editItem, setEditItem] = React.useState(null);
     const [q, setQ] = React.useState("");
@@ -438,9 +436,6 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
     const [radRequests, setRadRequests] = React.useState([]);
     const [resepRequests, setResepRequests] = React.useState([]);
     const [loadingRequests, setLoadingRequests] = React.useState(false);
-    // Preview tambahan dari resep obat (ketika belum ada snapshot billing)
-    const [mergingObatPreview, setMergingObatPreview] = React.useState(false);
-    const [mergeError, setMergeError] = React.useState(null);
 
     // Pemetaan kategori UI -> status billing (dipakai bersama oleh PembayaranTab dan handleSnapshot)
     const CATEGORY_MAP = [
@@ -630,10 +625,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                 );
             }
 
-            const baseSummary = apiRes.data.summary || {
-                by_status: {},
-                grand_total: 0,
-            };
+            
 
             // Recalculate summary berdasarkan items yang sudah difilter
             const recalculatedSummary = baseItems.reduce(
@@ -706,9 +698,9 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             // if (isPreviewMode) {
             //     ... buildObatPreview code disabled ...
             // }
-        } catch (e) {
+        } catch (_e) {
             setError(
-                e?.response?.data?.message || e?.message || "Gagal memuat data"
+                _e?.response?.data?.message || _e?.message || "Gagal memuat data"
             );
         } finally {
             setLoading(false);
@@ -719,7 +711,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         if (!msg) return;
         try {
             toast.success(String(msg));
-        } catch (e) {
+        } catch {
             alert(String(msg));
         }
     };
@@ -727,7 +719,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         if (!msg) return;
         try {
             toast.error(String(msg));
-        } catch (e) {
+        } catch {
             alert(String(msg));
         }
     };
@@ -735,7 +727,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         if (!msg) return;
         try {
             toast.warning(String(msg));
-        } catch (e) {
+        } catch {
             alert(String(msg));
         }
     };
@@ -743,7 +735,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         if (!msg) return;
         try {
             toast.info(String(msg));
-        } catch (e) {
+        } catch {
             alert(String(msg));
         }
     };
@@ -771,9 +763,9 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                 );
                 return false;
             }
-        } catch (e) {
+        } catch (_e) {
             // Jika gagal cek, tetap lanjut tapi beri peringatan
-            console.warn("Gagal cek nota_jalan exists:", e?.message);
+            console.warn("Gagal cek nota_jalan exists:", _e?.message);
         }
         return true;
     };
@@ -863,8 +855,8 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                 );
                 return false;
             }
-        } catch (e) {
-            console.warn("Gagal cek nota_jalan exists:", e?.message);
+        } catch (_e) {
+            console.warn("Gagal cek nota_jalan exists:", _e?.message);
         }
         return true;
     };
@@ -874,104 +866,6 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
      * Mengacu pada DlgBilingRalan.sqlpscariobat: agregasi per obat (kode_brng) dengan jumlah, tambahan (embalase+tuslah), dan total biaya.
      * Sumber data: GET /api/resep/rawat?no_rawat={no_rawat} -> daftar resep; lalu GET /api/resep/{no_resep} untuk detail biaya.
      */
-    const buildObatPreview = async (rawatNo) => {
-        // Penting: jangan gunakan encodeURIComponent untuk path param yang mengandung '/'
-        // karena Laravel akan menganggap %2F tidak valid dan bisa memetakan route secara keliru.
-        // Gunakan encodeURI agar '/' tetap utuh.
-        const listRes = await axios.get(
-            `/api/resep/rawat?no_rawat=${encodeURIComponent(rawatNo)}`
-        );
-        const resepList = listRes?.data?.data || [];
-        if (!Array.isArray(resepList) || resepList.length === 0)
-            return { extraItems: [], extraSummary: { total: 0, count: 0 } };
-
-        // Ambil detail tiap resep secara paralel lalu agregasi per kode_brng
-        const detailPromises = resepList.map((r) =>
-            axios
-                .get(`/api/resep/${encodeURI(r.no_resep)}`)
-                .then((res) => ({ ok: true, data: res?.data?.data, resep: r }))
-                .catch((err) => ({ ok: false, error: err, resep: r }))
-        );
-        const details = await Promise.all(detailPromises);
-
-        // Map agregasi: key = kode_brng
-        const agg = new Map();
-        let totalObatAll = 0;
-        let countItems = 0;
-
-        const addDetail = (d, resepMeta) => {
-            // d: { kode_brng, nama_brng, jml, tarif, subtotal, embalase, tuslah }
-            const kode = d.kode_brng;
-            if (!kode) return;
-            const prev = agg.get(kode) || {
-                kode_brng: kode,
-                nama_brng: d.nama_brng || kode,
-                tarif: Number(d.tarif || 0),
-                jml: 0,
-                tambahan: 0, // embalase + tuslah
-                tgl_byr: resepMeta?.tgl_peresepan || "",
-                no_resep_concat: new Set(),
-            };
-            prev.jml += Number(d.jml || 0);
-            // Tambahan mengikuti DlgBilingRalan: sum(embalase+tuslah)
-            const embTus = Number(d.embalase || 0) + Number(d.tuslah || 0);
-            prev.tambahan += embTus;
-            prev.no_resep_concat.add(resepMeta?.no_resep);
-            // Tarif: jika sebelumnya 0 dan sekarang ada, gunakan yang terbaru
-            if (!prev.tarif && d.tarif) prev.tarif = Number(d.tarif);
-            agg.set(kode, prev);
-        };
-
-        for (const it of details) {
-            if (!it.ok || !it.data) continue;
-            const resepMeta = it.resep;
-            const nonRacikan = Array.isArray(it.data.detail_obat)
-                ? it.data.detail_obat
-                : [];
-            nonRacikan.forEach((d) => addDetail(d, resepMeta));
-            const racikanGroups = Array.isArray(it.data.racikan)
-                ? it.data.racikan
-                : [];
-            racikanGroups.forEach((g) => {
-                const arr = Array.isArray(g.details) ? g.details : [];
-                arr.forEach((d) => addDetail(d, resepMeta));
-            });
-        }
-
-        const extraItems = [];
-        for (const [, val] of agg.entries()) {
-            const total = Math.round(
-                Number(val.tarif || 0) * Number(val.jml || 0) +
-                    Number(val.tambahan || 0)
-            );
-            totalObatAll += total;
-            countItems += 1;
-            // Gabungkan nomor resep untuk kolom keterangan (no)
-            const noKeterangan = Array.from(val.no_resep_concat || []).join(
-                ", "
-            );
-            extraItems.push({
-                noindex: `preview-obat-${val.kode_brng}`,
-                source: "preview",
-                no_rawat: rawatNo,
-                tgl_byr:
-                    normalizeDateForInput(val.tgl_byr) || todayDateString(),
-                no: noKeterangan || "-",
-                nm_perawatan: val.nama_brng || val.kode_brng,
-                pemisah: "-",
-                biaya: Number(val.tarif || 0),
-                jumlah: Number(val.jml || 0),
-                tambahan: Number(val.tambahan || 0),
-                totalbiaya: total,
-                status: "Obat",
-            });
-        }
-
-        return {
-            extraItems,
-            extraSummary: { total: totalObatAll, count: countItems },
-        };
-    };
 
     const loadRequests = async () => {
         if (!noRawat) return;
@@ -1018,15 +912,15 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                     new Date().toTimeString().slice(0, 8),
             });
             noNota = createNotaRes?.data?.no_nota || noNota;
-        } catch (e) {
+        } catch (_e) {
             const errorMsg =
-                e?.response?.data?.message ||
-                e?.message ||
+                _e?.response?.data?.message ||
+                _e?.message ||
                 "Gagal membuat nota_jalan";
             console.error(
                 "Gagal membuat nota_jalan:",
                 errorMsg,
-                e?.response?.data
+                _e?.response?.data
             );
             notifyError(`Gagal membuat nota_jalan: ${errorMsg}`);
             // Jangan lanjut jika gagal membuat nota_jalan
@@ -1036,19 +930,19 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         // 3) Stage jurnal dari total billing pasien ini
         let stagingSuccess = false;
         try {
-            const stageRes = await axios.post(
+            await axios.post(
                 "/api/akutansi/jurnal/stage-from-billing",
                 {
                     no_rawat: payload.no_rawat,
                 }
             );
             stagingSuccess = true;
-        } catch (e) {
+        } catch (_e) {
             const errorMsg =
-                e?.response?.data?.message ||
+                _e?.response?.data?.message ||
                 "Gagal menyiapkan staging jurnal. Pastikan mapping rekening debet/kredit di config/akutansi.php.";
             notifyError(errorMsg);
-            console.error("Error staging jurnal:", e?.response?.data);
+            console.error("Error staging jurnal:", _e?.response?.data);
             // Jangan lanjut ke posting jika staging gagal
             return;
         }
@@ -1071,18 +965,18 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                         `Posting jurnal berhasil: ${postRes.data.no_jurnal}`
                     );
                 }
-            } catch (e) {
+            } catch (_e) {
                 const errorMsg =
-                    e?.response?.data?.message ||
+                    _e?.response?.data?.message ||
                     "Posting jurnal gagal. Periksa keseimbangan debet/kredit atau data staging.";
                 notifyError(errorMsg);
-                console.error("Error posting jurnal:", e?.response?.data);
+                console.error("Error posting jurnal:", _e?.response?.data);
                 // Log detail error untuk debugging
-                if (e?.response?.status === 400) {
+                if (_e?.response?.status === 400) {
                     console.error("Detail error 400:", {
-                        status: e?.response?.status,
-                        data: e?.response?.data,
-                        message: e?.response?.data?.message,
+                        status: _e?.response?.status,
+                        data: _e?.response?.data,
+                        message: _e?.response?.data?.message,
                     });
                 }
             }
@@ -1103,9 +997,9 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         selectedCategories,
         ppnPercent,
         bayar,
-        subtotal,
+        _subtotal,
         totalWithPpn,
-        kembali,
+        _kembali,
         piutang,
         akunBayar,
         akunPiutang,
@@ -1239,9 +1133,9 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                     }
                 }
             }
-        } catch (e) {
+        } catch (_e) {
             notifyError(
-                e?.response?.data?.message ||
+                _e?.response?.data?.message ||
                     "Snapshot billing gagal. Pastikan data sumber tersedia dan belum ada nota_jalan."
             );
             return;
@@ -1259,15 +1153,15 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             });
             noNota = createNotaRes?.data?.no_nota || null;
             if (noNota) notify(`Nota jalan dibuat: ${noNota}`);
-        } catch (e) {
+        } catch (_e) {
             const errorMsg =
-                e?.response?.data?.message ||
-                e?.message ||
+                _e?.response?.data?.message ||
+                _e?.message ||
                 "Gagal membuat nota_jalan setelah snapshot";
             console.error(
                 "Gagal membuat nota_jalan setelah snapshot:",
                 errorMsg,
-                e?.response?.data
+                _e?.response?.data
             );
             notifyError(
                 `Gagal membuat nota_jalan: ${errorMsg}. Anda dapat membuatnya manual dari menu terkait.`
@@ -1279,7 +1173,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         // 3) Stage jurnal dari total billing dengan pemecahan debit & PPN
         let stagingSuccess = false;
         try {
-            const stageRes = await axios.post(
+            await axios.post(
                 "/api/akutansi/jurnal/stage-from-billing",
                 {
                     no_rawat: noRawat,
@@ -1292,12 +1186,12 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                 }
             );
             stagingSuccess = true;
-        } catch (e) {
+        } catch (_e) {
             const errorMsg =
-                e?.response?.data?.message ||
+                _e?.response?.data?.message ||
                 "Gagal menyiapkan staging jurnal. Pastikan mapping rekening debet/kredit di config/akutansi.php.";
             notifyError(errorMsg);
-            console.error("Error staging jurnal:", e?.response?.data);
+            console.error("Error staging jurnal:", _e?.response?.data);
             // Jangan lanjut ke posting jika staging gagal
             return;
         }
@@ -1338,18 +1232,18 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                         // Jangan gagalkan proses jika update status_bayar gagal
                     }
                 }
-            } catch (e) {
+            } catch (_e) {
                 const errorMsg =
-                    e?.response?.data?.message ||
+                    _e?.response?.data?.message ||
                     "Posting jurnal gagal. Periksa keseimbangan debet/kredit atau data staging.";
                 notifyError(errorMsg);
-                console.error("Error posting jurnal:", e?.response?.data);
+                console.error("Error posting jurnal:", _e?.response?.data);
                 // Log detail error untuk debugging
-                if (e?.response?.status === 400) {
+                if (_e?.response?.status === 400) {
                     console.error("Detail error 400:", {
-                        status: e?.response?.status,
-                        data: e?.response?.data,
-                        message: e?.response?.data?.message,
+                        status: _e?.response?.status,
+                        data: _e?.response?.data,
+                        message: _e?.response?.data?.message,
                     });
                 }
             }
@@ -1775,29 +1669,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                 </span>
                             </motion.div>
                         </div>
-                        {/* Status proses preview obat / pesan error saja (tanpa pesan info panjang) */}
-                        {items.length > 0 &&
-                            items[0]?.source === "preview" &&
-                            (mergingObatPreview || mergeError) && (
-                                <motion.div
-                                    className="mt-4 rounded-lg bg-gradient-to-r from-amber-50/50 to-yellow-50/50 dark:from-amber-900/20 dark:to-yellow-900/20 border border-amber-200/50 dark:border-amber-800/50 p-4 backdrop-blur-sm"
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                >
-                                    {mergingObatPreview && (
-                                        <div className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-200">
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                            Memuat preview obat dari resep…
-                                        </div>
-                                    )}
-                                    {mergeError && (
-                                        <div className="flex items-center gap-2 text-sm text-red-700 dark:text-red-300">
-                                            <AlertCircle className="w-4 h-4" />
-                                            {mergeError}
-                                        </div>
-                                    )}
-                                </motion.div>
-                            )}
+                        
                     </div>
                 )}
 
@@ -2266,9 +2138,7 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice }) {
                         setPpnPercent(opt.ppn);
                     }
                 }
-            } catch (e) {
-                // ignore default failure
-            }
+            } catch {}
         })();
     }, [akunBayar]);
 

@@ -25,7 +25,10 @@ class RegistrationController extends Controller
     {
         // Get data for dropdowns
         $dokters = Dokter::select('kd_dokter', 'nm_dokter')->get();
-        $polikliniks = Poliklinik::select('kd_poli', 'nm_poli')->get();
+        $polikliniks = Poliklinik::select('kd_poli', 'nm_poli', 'status')
+            ->where('status', '1')
+            ->orderBy('nm_poli')
+            ->get();
         $penjabs = Penjab::select('kd_pj', 'png_jawab')->get();
 
         // Get registrations for today

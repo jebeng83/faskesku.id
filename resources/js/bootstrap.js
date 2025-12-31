@@ -69,7 +69,7 @@ if (token) {
                 const url = new URL(input.url, window.location.href);
                 return url.origin === window.location.origin;
             }
-        } catch (_) {}
+        } catch {}
         return false;
     };
 
@@ -122,7 +122,7 @@ const refreshCsrfToken = async () => {
             window.axios.defaults.headers.common['X-CSRF-TOKEN'] = t;
         }
         return t;
-    } catch (_) {
+    } catch {
         return '';
     }
 };
@@ -132,7 +132,6 @@ window.axios.interceptors.response.use(
     async (error) => {
         const status = error?.response?.status;
         const is419 = status === 419;
-        const is401 = status === 401;
         
         // Cek CSRF mismatch dari string response atau JSON response
         const responseData = error?.response?.data;
@@ -213,7 +212,7 @@ window.axios.interceptors.response.use(
                     data: config.data,
                 });
             }
-        } catch (e) {
+        } catch {
             // jangan blokir request jika logging gagal
         }
         return config;
@@ -241,7 +240,7 @@ window.axios.interceptors.response.use(
                     preview,
                 });
             }
-        } catch (e) {
+        } catch {
             // abaikan error logging
         }
         return response;
@@ -257,7 +256,7 @@ window.axios.interceptors.response.use(
                     data: error.response?.data,
                 });
             }
-        } catch (e) {
+        } catch {
             // abaikan error logging
         }
         return Promise.reject(error);

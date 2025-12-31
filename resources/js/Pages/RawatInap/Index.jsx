@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Index(props = {}) {
     const { rawatInap = { data: [], meta: {} }, filters = {}, sttsPulangOptions = [] } = props;

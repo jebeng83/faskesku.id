@@ -832,7 +832,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             const poJson = await poRes.json();
             const poList = poJson?.response?.list || poJson?.list || poJson?.data || [];
             setPoliOptions(poList.map((row) => ({ value: row?.kdPoli || row?.kode || '', label: row?.nmPoli || row?.nama || '' })));
-        } catch (e) {
+        } catch {
             setPoliOptions([]);
         }
         try {
@@ -845,7 +845,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             const dkJson = await dkRes.json();
             const dkList = dkJson?.response?.list || dkJson?.list || dkJson?.data || [];
             setDokterOptions(dkList.map((row) => ({ value: row?.kdDokter || row?.kdProvider || row?.kdDok || row?.kode || '', label: row?.nmDokter || row?.nmProvider || row?.nama || '' })));
-        } catch (e) {
+        } catch {
             setDokterOptions([]);
         }
         // Muat referensi awal untuk Rujukan
@@ -860,7 +860,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             const spJson = await spRes.json();
             const spList = spJson?.response?.list || [];
             setSpesialisOptions(spList.map((row) => ({ value: row.kdSpesialis, label: `${row.kdSpesialis || ''} — ${row.nmSpesialis || ''}` })));
-        } catch (e) {
+        } catch {
             setSpesialisOptions([]);
         }
         try {
@@ -872,7 +872,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             const saJson = await saRes.json();
             const saList = saJson?.response?.list || [];
             setSaranaOptions(saList.map((row) => ({ value: row.kdSarana, label: `${row.kdSarana || ''} — ${row.nmSarana || ''}` })));
-        } catch (e) {
+        } catch {
             setSaranaOptions([]);
         }
     };
@@ -928,7 +928,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 } else {
                     setKunjunganPreview(null);
                 }
-            } catch (e) {
+            } catch {
                 setKunjunganPreview(null);
             }
         } else {
@@ -953,7 +953,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 const ssJson = await ssRes.json();
                 const ssList = ssJson?.response?.list || [];
                 setSubSpesialisOptions(ssList.map((row) => ({ value: row.kdSubSpesialis, label: `${row.kdSubSpesialis || ''} — ${row.nmSubSpesialis || ''}` })));
-            } catch (e) {
+            } catch {
                 setSubSpesialisOptions([]);
             }
         };
@@ -1049,7 +1049,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                         setRujukForm((p) => ({ ...p, kdppk: '' }));
                     }
                 }
-            } catch (e) {
+            } catch {
                 setProviderOptions([]);
             }
         };
@@ -1278,7 +1278,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                             // Jika tidak ada data di tabel tapi payload ada rujukan, tetap set true
                             setRujukanBerhasil(true);
                         }
-                    } catch (e) {
+                    } catch {
                         // Jika error cek tabel, tetap set berdasarkan payload
                 if (payload.rujukLanjut) {
                     setRujukanBerhasil(true);
@@ -1387,7 +1387,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 } else {
                     setShowBridging(false);
                 }
-            } catch (e) {
+            } catch {
                 // Jika error, tetap hidden
                 setShowBridging(false);
             }
@@ -1837,8 +1837,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                     
                                     // Gunakan data dari tabel jika tersedia, fallback ke payload
                                     const nmPPK = fktpData?.nmProvider || rujukanData.nmPPK || '';
-                                    const nmSubSpesialis = rujukanData.nmSubSpesialis || '';
-                                    const nmSarana = rujukanData.nmSarana || '';
+                                    
                                     
                                     // Cari label dari options jika tersedia
                                     const providerLabel = findLabel(providerOptions, kdPPK);
@@ -1896,28 +1895,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                         }
                                     }
                                     
-                                    // Format tanggal
-                                const fmtIdDate = (d) => {
-                                    if (!d) return '-';
-                                    try {
-                                            if (typeof d === 'string' && d.includes('-')) {
-                                                const parts = d.split('-');
-                                                if (parts.length === 3) {
-                                                    if (parts[0].length === 2 && parts[2].length === 4) {
-                                                        const dt = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
-                                                        const tz = getAppTimeZone();
-                                                        return dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', timeZone: tz });
-                                                    }
-                                                    const dt = new Date(d);
-                                                    const tz = getAppTimeZone();
-                                                    return dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', timeZone: tz });
-                                                }
-                                            }
-                                        const dt = new Date(d);
-                                        const tz = getAppTimeZone();
-                                        return dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', timeZone: tz });
-                                    } catch { return String(d); }
-                                };
                                     
                                     const fmtIdDateShort = (d) => {
                                         if (!d) return '-';
@@ -1951,7 +1928,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                         } catch { return String(d); }
                                     };
                                     
-                                const todayStr = fmtIdDate(new Date()); // fmtIdDate sudah menggunakan timezone dari getAppTimeZone
                                     const tglEstStr = tglEstRujuk ? fmtIdDateShort(tglEstRujuk) : '-';
                                     
                                     // Hitung tanggal validitas (90 hari dari tglEstRujuk)
@@ -1983,7 +1959,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                             } else {
                                                 tglValiditasStr = fmtIdDateShort(tglValiditas.toISOString().split('T')[0]);
                                             }
-                                        } catch (e) {
+                                        } catch {
                                             tglValiditasStr = '-';
                                         }
                                     }
@@ -2000,7 +1976,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                     
                                     // Umur: hanya angka tanpa satuan
                                     const umur = rujukanData.umur || rujukanData.umurdaftar || '';
-                                    const satuanUmur = rujukanData.satuanUmur || rujukanData.sttsumur || 'Th';
                                     const umurDisplay = umur ? String(umur) : '-';
                                     
                                     const tglLahir = rujukanData.tgl_lahir || '';
@@ -2062,13 +2037,13 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                 if (jadwalParsed[dayName] && jadwalParsed[dayName].length > 0) {
                                                     jadwalPraktekDisplay = `${dayName} : ${jadwalParsed[dayName].join(' - ')}`;
                                                 }
-                                            } catch (e) {
-                                                // Fallback: ambil jadwal pertama yang ada
-                                                const firstDay = Object.keys(jadwalParsed)[0];
-                                                if (firstDay && jadwalParsed[firstDay].length > 0) {
-                                                    jadwalPraktekDisplay = `${firstDay} : ${jadwalParsed[firstDay].join(' - ')}`;
-                                                }
+                                        } catch {
+                                            // Fallback: ambil jadwal pertama yang ada
+                                            const firstDay = Object.keys(jadwalParsed)[0];
+                                            if (firstDay && jadwalParsed[firstDay].length > 0) {
+                                                jadwalPraktekDisplay = `${firstDay} : ${jadwalParsed[firstDay].join(' - ')}`;
                                             }
+                                        }
                                         }
                                     }
 
@@ -2129,7 +2104,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                         try {
                                             const dataUrl = await fetchAsDataURL(u);
                                             if (dataUrl) return dataUrl;
-                                        } catch (e) { /* try next candidate */ }
+                                        } catch { /* try next candidate */ }
                                     }
                                     return '/img/BPJS_Kesehatan_logo.png';
                                             })(),

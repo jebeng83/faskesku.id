@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 
 export default function SelectWithAdd({
 	label,
 	name,
 	value,
-	defaultValue,
+	_defaultValue,
 	onChange,
 	options = [],
 	placeholder = "Pilih opsi",
@@ -15,7 +15,6 @@ export default function SelectWithAdd({
 	disabled = false,
 	className = "",
 }) {
-	const [isOpen, setIsOpen] = useState(false);
 
 	const handleAddClick = () => {
 		if (onAdd) {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
 import SearchableSelect from "@/Components/SearchableSelect";
-import { Card, CardHeader, CardTitle, CardContent } from "@/Components/ui/Card";
+import { CardHeader, CardTitle, CardContent } from "@/Components/ui/Card";
 import Button from "@/Components/ui/Button";
 import Input from "@/Components/ui/Input";
 import Label from "@/Components/ui/Label";
@@ -11,24 +11,19 @@ import Modal from "@/Components/Modal";
 import Toaster from "@/Components/ui/Toaster";
 import {
   Building2,
-  Search,
   Plus,
   Edit2,
   Trash2,
   Copy,
   RefreshCw,
   CheckCircle2,
-  AlertCircle,
   Loader2,
   Link2,
   Sparkles,
-  X,
   Info,
   Globe,
   Users,
-  ArrowRight,
   Check,
-  ExternalLink,
 } from "lucide-react";
 
 export default function SatuSehatOrganization() {

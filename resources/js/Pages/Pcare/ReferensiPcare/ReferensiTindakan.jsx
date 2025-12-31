@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import SidebarBriding from '@/Layouts/SidebarBriding';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowPathIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { motion } from 'framer-motion';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -40,8 +40,8 @@ export default function ReferensiTindakan() {
       const list = json?.response?.list || [];
       setData(list);
       setCount(json?.response?.count || list.length || 0);
-    } catch (e) {
-      setError(e.message || 'Terjadi kesalahan');
+    } catch {
+      setError('Terjadi kesalahan');
     } finally {
       setLoading(false);
     }

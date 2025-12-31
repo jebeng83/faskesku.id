@@ -250,12 +250,6 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
             : errors[fieldName];
     };
 
-    // Helper to get label from options
-    const findLabelByValue = (options, value) => {
-        if (!value) return "";
-        const found = options.find((o) => o.value === value);
-        return found ? found.label : "";
-    };
 
     const handleAddPenjab = () => {
         setIsPenjabModalOpen(true);

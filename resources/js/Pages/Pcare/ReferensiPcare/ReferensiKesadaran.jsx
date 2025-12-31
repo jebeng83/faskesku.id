@@ -34,8 +34,8 @@ export default function ReferensiKesadaran() {
       const res = await fetch(`/api/pcare/kesadaran`, { headers: { Accept: 'application/json' } });
       const json = await res.json();
       setData(json);
-    } catch (e) {
-      setError(e?.message || 'Gagal memuat data');
+    } catch {
+      setError('Gagal memuat data');
     } finally {
       setLoading(false);
     }

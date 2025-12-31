@@ -4,7 +4,6 @@ import { route } from "ziggy-js";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-    Receipt,
     Search,
     Filter,
     RefreshCw,
@@ -40,14 +39,6 @@ const itemVariants = {
     },
 };
 
-const cardHoverVariants = {
-    rest: { scale: 1, y: 0 },
-    hover: {
-        scale: 1.01,
-        y: -4,
-        transition: { duration: 0.3, ease: "easeOut" },
-    },
-};
 
 const currency = new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -100,7 +91,7 @@ function useDateRangeDefaults() {
         sevenDaysAgo = sevenDaysAgoDate.toLocaleDateString("en-CA", {
             timeZone: tz,
         });
-    } catch (e) {
+    } catch {
         // Fallback ke ISO jika parsing gagal
         sevenDaysAgo = sevenDaysAgoDate.toISOString().slice(0, 10);
     }
@@ -141,7 +132,7 @@ export default function KasirRalanPage() {
                     timeZone: tz,
                 });
                 days.push(dateStr);
-            } catch (e) {
+            } catch {
                 // Fallback ke ISO jika parsing gagal
                 days.push(cur.toISOString().slice(0, 10));
             }
@@ -772,7 +763,7 @@ export default function KasirRalanPage() {
                                                                         kd_poli: r?.kd_poli
                                                                     });
                                                                     router.visit(url);
-                                                                } catch (e) {
+                                                                } catch {
                                                                     const params = new URLSearchParams({
                                                                         no_rawat: r?.no_rawat || '',
                                                                         no_rkm_medis: r?.no_rkm_medis || '',

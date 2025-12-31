@@ -40,7 +40,7 @@ export default function MonitoringPcare() {
       const a = await fetch(`/pcare/api/pendaftaran/list${qa.length ? `?${qa.join('&')}` : ""}`, { headers: { Accept: "application/json" }, credentials: 'include' });
       const aj = await a.json();
       setAttempts(Array.isArray(aj?.data) ? aj.data : []);
-    } catch (e) {
+    } catch {
     } finally {
       setLoading(false);
     }

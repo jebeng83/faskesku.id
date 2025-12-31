@@ -152,17 +152,17 @@ export default function EmployeeCreateModal({ isOpen, onClose, onSuccess }) {
 				});
 				setShowAlert(true);
 			}
-		} catch (error) {
-			setAlertConfig({
-				type: "error",
-				title: "Kesalahan Jaringan",
-				message: "Terjadi kesalahan jaringan saat menyimpan pegawai.",
-				autoClose: false,
-			});
-			setShowAlert(true);
-		} finally {
-			setIsSubmitting(false);
-		}
+        } catch (_error) {
+            setAlertConfig({
+                type: "error",
+                title: "Kesalahan Jaringan",
+                message: "Terjadi kesalahan jaringan saat menyimpan pegawai.",
+                autoClose: false,
+            });
+            setShowAlert(true);
+        } finally {
+            setIsSubmitting(false);
+        }
 	};
 
 	const handleClose = () => {

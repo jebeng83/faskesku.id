@@ -154,41 +154,13 @@ export default function Encounter() {
         it.organization_id = org;
       });
       setRows(all);
-    } catch (_) {
+    } catch {
     } finally {
       setLoading(false);
     }
   }
 
-  async function resolveIhsForRow(rowIndex) {
-    const cur = rows[rowIndex];
-    if (!cur) return;
-    setResolvingIhs(true);
-    try {
-      let ptId = cur.pasien_ihs;
-      let prId = cur.dokter_ihs;
-      if (!ptId && cur.pasien_ktp) {
-        const r = await axios.get("/api/satusehat/patient", {
-          params: { nik: String(cur.pasien_ktp || "") },
-        });
-        const first = Array.isArray(r?.data?.list) && r.data.list.length ? r.data.list[0] : null;
-        ptId = first?.id || "";
-      }
-      if (!prId && cur.dokter_ktp) {
-        const r2 = await axios.get("/api/satusehat/practitioner", {
-          params: { nik: String(cur.dokter_ktp || "") },
-        });
-        const first2 = Array.isArray(r2?.data?.list) && r2.data.list.length ? r2.data.list[0] : null;
-        prId = first2?.id || "";
-      }
-      const nxt = rows.slice();
-      nxt[rowIndex] = { ...cur, pasien_ihs: ptId, dokter_ihs: prId };
-      setRows(nxt);
-    } catch (_) {
-    } finally {
-      setResolvingIhs(false);
-    }
-  }
+  
 
   function sortRows(list) {
     const toKey = (r) => `${r.tgl_registrasi || ''}T${String(r.jam_registrasi || '').slice(0,8)}|${String(r.no_rawat || '')}`;
@@ -217,14 +189,14 @@ export default function Encounter() {
             const r1 = await axios.get("/api/satusehat/patient", { params: { nik: ptNik } });
             const first = Array.isArray(r1?.data?.list) && r1.data.list.length ? r1.data.list[0] : null;
             ptId = first?.id || "";
-          } catch (_) {}
+          } catch {}
         }
         if (!prId && prNik.length === 16) {
           try {
             const r2 = await axios.get("/api/satusehat/practitioner", { params: { nik: prNik } });
             const first2 = Array.isArray(r2?.data?.list) && r2.data.list.length ? r2.data.list[0] : null;
             prId = first2?.id || "";
-          } catch (_) {}
+          } catch {}
         }
         next[idx] = { ...next[idx], pasien_ihs: ptId, dokter_ihs: prId };
       }
@@ -267,7 +239,7 @@ export default function Encounter() {
           const id = rPost?.data?.resource?.id || rPost?.data?.resource?.resource?.id || "";
           next[idx] = { ...cur, enc1_id: id };
           setRows(next.slice());
-        } catch (_) {}
+        } catch {}
       }
     } finally {
       setPostingEncounter(false);
@@ -293,7 +265,7 @@ export default function Encounter() {
               next[idx] = { ...cur, enc1_id: encId };
               setRows(next.slice());
             }
-          } catch (_) {}
+          } catch {}
         }
         if (!encId) continue;
         try {
@@ -312,66 +284,16 @@ export default function Encounter() {
           } catch (e) {
             addToast("error", "Pipeline gagal", formatError(e));
           }
-        } catch (_) {}
+        } catch {}
       }
     } finally {
       setUpdatingEncounter(false);
     }
   }
 
-  async function postEncounter(rowIndex) {
-    const cur = rows[rowIndex];
-    if (!cur) return;
-    const startIso = combineDateTime(cur.tgl_registrasi, cur.jam_registrasi);
-    try {
-      if (!cur.pasien_ihs) await resolveIhsForRow(rowIndex);
-      const r = await axios.post("/api/satusehat/rajal/encounter", {
-        patient_id: cur.pasien_ihs,
-        practitioner_id: cur.dokter_ihs,
-        location_id: cur.location_id,
-        organization_id: cur.organization_id,
-        status: "in-progress",
-        class_code: "AMB",
-        start: startIso,
-        no_rawat: cur.no_rawat,
-      });
-      const id = r?.data?.resource?.id || r?.data?.resource?.resource?.id || "";
-      const nxt = rows.slice();
-      nxt[rowIndex] = { ...cur, enc1_id: id };
-      setRows(nxt);
-    } catch (_) {}
-  }
+  
 
-  async function putEncounter(rowIndex) {
-    const cur = rows[rowIndex];
-    if (!cur || !cur.enc1_id) return;
-    try {
-      let encId = cur.enc1_id;
-      if (!encId) {
-        try {
-          const look = await axios.get(`/api/satusehat/rajal/encounter/id-by-rawat/${encodeURIComponent(cur.no_rawat)}`);
-          encId = look?.data?.encounter_id || "";
-        } catch (_) {}
-      }
-      if (!encId) return;
-      const r = await axios.put(`/api/satusehat/rajal/encounter/by-rawat/${encodeURIComponent(cur.no_rawat)}`, {
-        encounter_id: encId,
-        status: "finished",
-        tz_offset: "+07:00",
-      });
-      const id = r?.data?.resource?.id || r?.data?.resource?.resource?.id || cur.enc1_id;
-      const nxt = rows.slice();
-      nxt[rowIndex] = { ...cur, enc2_id: id };
-      setRows(nxt);
-      try {
-        await axios.post(`/api/satusehat/rajal/pipeline/by-rawat/${encodeURIComponent(cur.no_rawat)}`, {
-          tz_offset: "+07:00",
-        });
-      } catch (e) {
-        addToast("error", "Pipeline gagal", formatError(e));
-      }
-    } catch (_) {}
-  }
+  
 
   const columns = [
     { key: "no", header: "No" },

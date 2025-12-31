@@ -78,7 +78,7 @@ const columns = [
     "No.Faktur",
 ];
 
-export default function DataOpname({ auth }) {
+export default function DataOpname() {
     const appTz =
         typeof document !== "undefined"
             ? document
@@ -107,6 +107,7 @@ export default function DataOpname({ auth }) {
     const [loading, setLoading] = useState(false);
     const [selected, setSelected] = useState(new Set());
     const [appSetting, setAppSetting] = useState(null);
+    
 
     // Modal Tambah Obat
     const [showAddObatModal, setShowAddObatModal] = useState(false);
@@ -252,6 +253,21 @@ export default function DataOpname({ auth }) {
             setSavingObat(false);
         }
     }
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const res = await fetch("/setting/app", {
+                    headers: { Accept: "application/json" },
+                });
+                if (res.ok) {
+                    const json = await res.json();
+                    const d = Array.isArray(json?.data) && json.data.length ? json.data[0] : null;
+                    setAppSetting(d);
+                }
+            } catch {}
+        })();
+    }, []);
 
     useEffect(() => {
         loadLokasi();
@@ -761,7 +777,7 @@ export default function DataOpname({ auth }) {
                                                     </td>
                                                 </tr>
                                             ) : (
-                                                rows.map((r, idx) => {
+                                                rows.map((r) => {
                                                     const key = rowKey(r);
                                                     const checked =
                                                         selected.has(key);

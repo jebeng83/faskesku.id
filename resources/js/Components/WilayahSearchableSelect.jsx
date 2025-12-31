@@ -214,7 +214,7 @@ export default function WilayahSearchableSelect({
 
 		// Reset filteredOptions to show all options after selection
 		// This ensures the selected option is visible when dropdown is reopened
-		setFilteredOptions((prev) => {
+		setFilteredOptions((_prev) => {
 			const allOptions = [...options];
 			if (!allOptions.find((opt) => opt.value === option.value)) {
 				allOptions.push(option);

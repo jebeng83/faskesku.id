@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { route } from 'ziggy-js';
-import { Link, usePage } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import SearchableSelect from '../../../Components/SearchableSelect.jsx';
 import { Eraser, Pencil, Trash2 } from 'lucide-react';
 import { PlusIcon } from '@heroicons/react/24/outline';
@@ -8,12 +8,12 @@ import DataAlergi from '../../../Alergi/DataAlergi.jsx';
 import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
 import axios from 'axios';
 
-export default function NewCpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null }) {
+export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = '', _onOpenResep = null }) {
   const page = usePage();
   const currentNik = page?.props?.auth?.user?.nik || '';
   const currentName = page?.props?.auth?.user?.name || page?.props?.auth?.user?.nama || '';
   const [pegawaiDisplay, setPegawaiDisplay] = useState('');
-  const [saving, setSaving] = useState(false);
+  const [, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
   const [historyList, setHistoryList] = useState([]);
@@ -182,7 +182,7 @@ export default function NewCpptSoap({ token = '', noRkmMedis = '', noRawat = '',
     return () => { active = false; };
   }, [noRkmMedis, editKey]);
 
-  const [modalOpen, setModalOpen] = useState(false);
+  const [, setModalOpen] = useState(false);
   const handleChange = (e) => setFormData((p) => ({ ...p, [e.target.name]: e.target.value }));
   const handleSubmit = (e) => {
     e.preventDefault();

@@ -194,9 +194,9 @@ export default function Breadcrumb({ currentMenu, menuHierarchy }) {
 								</Link>
 
 								{/* Parent breadcrumb items */}
-								{breadcrumbPath.slice(0, -1).map((menu, index) => {
-									const menuUrl = getMenuUrl(menu);
-									return (
+                                {breadcrumbPath.slice(0, -1).map((menu, _index) => {
+                                    const menuUrl = getMenuUrl(menu);
+                                    return (
 										<Link
 											key={menu.id}
 											href={menuUrl}
@@ -268,9 +268,9 @@ export default function Breadcrumb({ currentMenu, menuHierarchy }) {
 				</Link>
 
 				{/* Breadcrumb items */}
-				{breadcrumbPath.map((menu, index) => {
-					const isLast = index === breadcrumbPath.length - 1;
-					const menuUrl = getMenuUrl(menu);
+                {breadcrumbPath.map((menu, _index) => {
+                    const isLast = _index === breadcrumbPath.length - 1;
+                    const menuUrl = getMenuUrl(menu);
 
 					return (
 						<React.Fragment key={menu.id}>
@@ -349,10 +349,10 @@ function getMenuUrl(menu) {
 	if (menu.route) {
 		try {
 			return route(menu.route);
-		} catch (error) {
-			console.warn(`Route ${menu.route} not found for menu ${menu.name}`);
-			return "#";
-		}
+        } catch (_error) {
+            console.warn(`Route ${menu.route} not found for menu ${menu.name}`);
+            return "#";
+        }
 	}
 
 	return "#";

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Head, usePage } from "@inertiajs/react";
 import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
-import { router } from "@inertiajs/react";
 import { toast } from "@/tools/toast";
 import Button from "@/Components/ui/Button";
 import Input from "@/Components/ui/Input";
@@ -12,7 +11,7 @@ import {
     SelectContent,
     SelectItem,
 } from "@/Components/ui";
-import { Search, RefreshCcw, Plus, Save, X } from "lucide-react";
+import { RefreshCcw, Plus, Save, X } from "lucide-react";
 
 function Card({ children, className = "" }) {
     return (
@@ -268,7 +267,7 @@ export default function PembelianObat() {
                 const day = String(today.getDate()).padStart(2, "0");
                 return `PO-${year}${month}${day}-001`;
             }
-        } catch (error) {
+        } catch {
             const today = new Date();
             const year = today.getFullYear();
             const month = String(today.getMonth() + 1).padStart(2, "0");

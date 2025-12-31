@@ -20,6 +20,10 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
   const [poliName, setPoliName] = useState("");
   const [poliCode, setPoliCode] = useState(kdPoli || "");
   const [identityOpen, setIdentityOpen] = useState(false);
+  const [cpptModalOpen, setCpptModalOpen] = useState(false);
+  const [cpptModalLoading, setCpptModalLoading] = useState(false);
+  const [cpptModalError, setCpptModalError] = useState("");
+  const [cpptModalItems, setCpptModalItems] = useState([]);
 
   const formatDateId = (d) => {
     if (!d) return "-";
@@ -200,6 +204,43 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
 
   const pageVariants = createPageVariants(prefersReducedMotion);
 
+  const openCpptModal = async () => {
+    setCpptModalOpen(true);
+    setCpptModalLoading(true);
+    setCpptModalError("");
+    try {
+      const qs = token ? `t=${encodeURIComponent(token)}` : `no_rkm_medis=${encodeURIComponent(noRkmMedis)}`;
+      const res = await fetch(`/rawat-jalan/riwayat?${qs}`, { headers: { Accept: "application/json" } });
+      const json = await res.json();
+      let arr = Array.isArray(json.data) ? json.data : [];
+      arr = arr
+        .slice()
+        .sort((a, b) => new Date(b.tgl_registrasi || 0) - new Date(a.tgl_registrasi || 0))
+        .slice(0, 5);
+      const results = await Promise.all(
+        arr.map(async (v) => {
+          try {
+            const url = route("rawat-jalan.pemeriksaan-ralan", { no_rawat: v.no_rawat });
+            const r = await fetch(url);
+            const j = await r.json();
+            const list = Array.isArray(j.data) ? j.data : [];
+            const filtered = list && list.length && list.some((row) => Object.prototype.hasOwnProperty.call(row, "no_rawat"))
+              ? list.filter((row) => String(row.no_rawat) === String(v.no_rawat))
+              : list;
+            return { ...v, entries: filtered };
+          } catch {
+            return { ...v, entries: [] };
+          }
+        })
+      );
+      setCpptModalItems(results);
+    } catch (e) {
+      setCpptModalError(String(e?.message || e));
+    } finally {
+      setCpptModalLoading(false);
+    }
+  };
+
   useEffect(() => {
     const onKey = (e) => {
       if (!isOpen) return;
@@ -210,7 +251,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
         setTimeout(() => {
           try {
             router.visit(route("rawat-jalan.index"));
-          } catch (err) {
+          } catch {
             router.visit("/rawat-jalan");
           }
         }, 250);
@@ -277,7 +318,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                           setTimeout(() => {
                             try {
                               router.visit(route('rawat-jalan.index'));
-                            } catch (e) {
+                            } catch {
                               router.visit('/rawat-jalan');
                             }
                           }, 250);
@@ -306,6 +347,14 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                     <div className="flex items-center justify-end gap-2">
                       <button
                         type="button"
+                        onClick={openCpptModal}
+                        className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded border border-blue-200"
+                        title="Tampilkan Riwayat SOAP"
+                      >
+                        CPPT
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => {
                           const idx = pages.findIndex((p) => p.key === "resep");
                           if (idx >= 0) {
@@ -313,7 +362,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                             setIndex(idx);
                           }
                         }}
-                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] border border-[oklch(84.1%_0.238_128.85_/_0.45)]"
+                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-transparent text-[oklch(98.5%_0_0)] border border-[oklch(62%_0.30_29.5)]"
                         aria-label="Buka Resep"
                         title="Buka Resep"
                       >
@@ -421,8 +470,142 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                   &gt;
                 </motion.button>
               </div>
+              </motion.div>
+              {cpptModalOpen && (
+                <div className="fixed inset-0 z-[10000] flex items-start justify-center overflow-y-auto">
+                  <div className="absolute inset-0 bg-black/50" onClick={() => setCpptModalOpen(false)}></div>
+                  <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-full md:max-w-5xl lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[90vw] mx-2 sm:mx-4 my-4 overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                      <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">Riwayat SOAP</h3>
+                      <button onClick={() => setCpptModalOpen(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                    <div className="p-3 sm:p-4 space-y-2">
+                      {cpptModalLoading ? (
+                        <div className="text-xs text-gray-500">Memuat...</div>
+                      ) : cpptModalError ? (
+                        <div className="text-xs text-red-600 dark:text-red-400">{cpptModalError}</div>
+                      ) : cpptModalItems.length === 0 ? (
+                        <div className="text-xs text-gray-500">Tidak ada data</div>
+                      ) : (
+                        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden w-full">
+                          <div className="overflow-x-auto lg:overflow-x-hidden w-full max-w-full">
+                            <table className="w-full text-xs table-auto">
+                              <thead className="bg-gray-50 dark:bg-gray-700/50">
+                                <tr className="text-left text-gray-600 dark:text-gray-300">
+                                  <th className="px-3 py-2 font-bold w-44 lg:w-auto">Tanggal</th>
+                                  <th className="px-3 py-2 font-bold w-56 lg:w-auto">Keluhan (Subjektif)</th>
+                                  <th className="px-3 py-2 font-bold min-w-[9rem] w-28 lg:w-auto">TTV</th>
+                                  <th className="px-3 py-2 font-bold w-56 lg:w-auto">Pemeriksaan Fisik (Objektif)</th>
+                                  <th className="px-3 py-2 font-bold w-48 lg:w-auto">Penilaian (Assessment)</th>
+                                  <th className="px-3 py-2 font-bold w-48 lg:w-auto">Tindak Lanjut (Planning)</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                                {cpptModalItems.map((h) => {
+                                  let tanggal = "-";
+                                  try {
+                                    if (typeof h.no_rawat === "string") {
+                                      const m = h.no_rawat.match(/^(\d{4})\/(\d{2})\/(\d{2})\//);
+                                      if (m) {
+                                        const y = m[1];
+                                        const mm = m[2];
+                                        const dd = m[3];
+                                        const dt = new Date(`${y}-${mm}-${dd}T00:00:00`);
+                                        tanggal = dt.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
+                                      } else if (h.tgl_registrasi) {
+                                        tanggal = new Date(h.tgl_registrasi).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
+                                      }
+                                    } else if (h.tgl_registrasi) {
+                                      tanggal = new Date(h.tgl_registrasi).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
+                                    }
+                                  } catch {}
+                                  return Array.isArray(h.entries) && h.entries.length > 0 ? (
+                                    h.entries
+                                      .slice()
+                                      .sort((a, b) => {
+                                        const aa = String(a.jam_rawat || "").substring(0, 5);
+                                        const bb = String(b.jam_rawat || "").substring(0, 5);
+                                        return aa < bb ? 1 : aa > bb ? -1 : 0;
+                                      })
+                                      .map((e, i) => (
+                                        <tr key={`${h.no_rawat}-e-${i}`} className="bg-white dark:bg-gray-900/40 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                          <td className="px-3 py-2 text-gray-900 dark:text-white">
+                                            <div className="space-y-0.5">
+                                              <div className="font-mono">
+                                                {tanggal} {(typeof e.jam_rawat === "string" && e.jam_rawat.trim()) ? e.jam_rawat.trim().substring(0,5) : "-"}
+                                              </div>
+                                              <div className="text-[11px] font-mono text-gray-900 dark:text-white">{h.no_rawat || "-"}</div>
+                                            </div>
+                                          </td>
+                                          <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
+                                            <div className="break-words whitespace-normal" title={typeof e.keluhan === "string" ? e.keluhan.trim() : ""}>
+                                              {(typeof e.keluhan === "string" && e.keluhan.trim()) ? e.keluhan.trim() : "-"}
+                                            </div>
+                                          </td>
+                                          <td className="px-3 py-2 text-gray-700 dark:text-gray-300 min-w-[9rem]">
+                                            <div className="space-y-0.5 text-[11px] leading-tight">
+                                              <div className="flex justify-between gap-2">
+                                                <span className="text-gray-500 whitespace-nowrap">Suhu</span>
+                                                <span className="text-right">{e.suhu_tubuh || "-"}°C</span>
+                                              </div>
+                                              <div className="flex justify-between gap-2">
+                                                <span className="text-gray-500 whitespace-nowrap">Tensi</span>
+                                                <span className="text-right">{e.tensi || "-"}</span>
+                                              </div>
+                                              <div className="flex justify-between gap-2">
+                                                <span className="text-gray-500 whitespace-nowrap">Nadi</span>
+                                                <span className="text-right">{e.nadi || "-"}/min</span>
+                                              </div>
+                                              <div className="flex justify-between gap-2">
+                                                <span className="text-gray-500 whitespace-nowrap">SpO2</span>
+                                                <span className="text-right">{e.spo2 || "-"}%</span>
+                                              </div>
+                                            </div>
+                                          </td>
+                                          <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
+                                            <div className="break-words whitespace-normal" title={typeof e.pemeriksaan === "string" ? e.pemeriksaan.trim() : ""}>
+                                              {(typeof e.pemeriksaan === "string" && e.pemeriksaan.trim()) ? e.pemeriksaan.trim() : "-"}
+                                            </div>
+                                          </td>
+                                          <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
+                                            <div className="break-words whitespace-normal" title={typeof e.penilaian === "string" ? e.penilaian.trim() : ""}>
+                                              {(typeof e.penilaian === "string" && e.penilaian.trim()) ? e.penilaian.trim() : "-"}
+                                            </div>
+                                          </td>
+                                          <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
+                                            <div className="break-words whitespace-normal" title={(() => {
+                                              const s = typeof e.rtl === "string" ? e.rtl.trim() : "";
+                                              const i = typeof e.instruksi === "string" ? e.instruksi.trim() : "";
+                                              const v = typeof e.evaluasi === "string" ? e.evaluasi.trim() : "";
+                                              return s || i || v || "";
+                                            })()}>
+                                              {(() => {
+                                                const s = typeof e.rtl === "string" ? e.rtl.trim() : "";
+                                                const i = typeof e.instruksi === "string" ? e.instruksi.trim() : "";
+                                                const v = typeof e.evaluasi === "string" ? e.evaluasi.trim() : "";
+                                                const joined = [s, i, v].filter(Boolean).join("\n");
+                                                return joined || "-";
+                                              })()}
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      ))
+                                  ) : null;
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </motion.div>
-          </motion.div>
         )}
       </AnimatePresence>
     </LanjutanRalanLayout>

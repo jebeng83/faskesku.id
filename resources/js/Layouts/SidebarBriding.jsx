@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import { HomeIcon, Squares2X2Icon } from "@heroicons/react/24/outline";

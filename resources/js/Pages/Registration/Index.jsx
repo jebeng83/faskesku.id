@@ -21,7 +21,7 @@ import PenjabQuickCreateModal from "@/Components/PenjabQuickCreateModal";
 import { todayDateString, nowDateTimeString, getAppTimeZone } from "@/tools/datetime";
 
 export default function Registration({
-    auth,
+    _auth,
     dokters,
     polikliniks,
     penjabs,
@@ -37,8 +37,7 @@ export default function Registration({
     const [selectedRegistration, setSelectedRegistration] = useState(null);
     const [selectedRegForQueue, setSelectedRegForQueue] = useState(null);
     const [queueCurrent, setQueueCurrent] = useState(null);
-    const [queueCallStatus, setQueueCallStatus] = useState("");
-    const [queueLastCalledAt, setQueueLastCalledAt] = useState("");
+    
     const [queueLastCalledNumber, setQueueLastCalledNumber] = useState(null);
     const [queueStatusCode, setQueueStatusCode] = useState(null);
     const [queueTodayList, setQueueTodayList] = useState([]);
@@ -48,13 +47,13 @@ export default function Registration({
         try {
             const v = parseInt(String(localStorage.getItem("selectedLoket") || ""), 10);
             if ([1,2,3,4].includes(v)) setSelectedLoket(v);
-        } catch (_) {}
+        } catch {}
     }, []);
 
     useEffect(() => {
         try {
             localStorage.setItem("selectedLoket", String(selectedLoket));
-        } catch (_) {}
+        } catch {}
     }, [selectedLoket]);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [isPatientModalOpen, setIsPatientModalOpen] = useState(false);
@@ -62,6 +61,8 @@ export default function Registration({
     const [editPatient, setEditPatient] = useState(null);
     const [isSkriningVisualOpen, setIsSkriningVisualOpen] = useState(false);
     const [skriningVisualRecords, setSkriningVisualRecords] = useState([]);
+    const [srkStatus, setSrkStatus] = useState({ status: "UNKNOWN", message: "" });
+    const [srkLoading, setSrkLoading] = useState(false);
     const [resikoSelections, setResikoSelections] = useState([]);
     const [isIdentityCollapsed, setIsIdentityCollapsed] = useState(false);
     const resikoOptions = [
@@ -99,6 +100,11 @@ export default function Registration({
         if (v === "Oranye") return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300";
         if (v === "Kuning") return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300";
         if (v === "Hijau") return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300";
+        return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
+    };
+    const srkBadgeClasses = (s) => {
+        if (s === "SUDAH_SRK") return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300";
+        if (s === "BELUM_SRK") return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300";
         return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
     };
     const keputusanBadgeClasses = (v) => {
@@ -151,7 +157,7 @@ export default function Registration({
         keputusan: "Sesuai Antrian",
     });
     const [registrationData, setRegistrationData] = useState(registrations);
-    const [currentPage, setCurrentPage] = useState(1);
+    
     const [isLoading, setIsLoading] = useState(false);
     const [isFilterExpanded, setIsFilterExpanded] = useState(false);
     const [stats, setStats] = useState({
@@ -198,8 +204,26 @@ export default function Registration({
     // Daftar penjamin lokal (agar bisa di-update setelah tambah penjab tanpa reload penuh)
     const [penjabsList, setPenjabsList] = useState(penjabs || []);
     useEffect(() => {
-        setPenjabsList(penjabs || []);
+        const arr = Array.isArray(penjabs) ? penjabs : [];
+        const hasStatus = arr.some((p) => p && typeof p === "object" && ("status" in p));
+        const filtered = hasStatus ? arr.filter((p) => String(p.status) === "1") : arr;
+        setPenjabsList(filtered);
     }, [penjabs]);
+
+    useEffect(() => {
+        const arr = Array.isArray(penjabs) ? penjabs : [];
+        const hasStatus = arr.some((p) => p && typeof p === "object" && ("status" in p));
+        if (!hasStatus) {
+            (async () => {
+                try {
+                    const res = await httpGet('/api/penjab');
+                    const d = res?.data || {};
+                    const list = Array.isArray(d.data) ? d.data : (Array.isArray(d.list) ? d.list : (Array.isArray(d) ? d : []));
+                    setPenjabsList(list);
+                } catch (_) {}
+            })();
+        }
+    }, []);
 
     // Modal tambah penjab cepat
     const [isPenjabCreateOpen, setIsPenjabCreateOpen] = useState(false);
@@ -227,6 +251,45 @@ export default function Registration({
     // State untuk popup menu cetak
     const [isPrintMenuOpen, setIsPrintMenuOpen] = useState(false);
     const [selectedRegForPrint, setSelectedRegForPrint] = useState(null);
+
+    const [poliOptions, setPoliOptions] = useState(Array.isArray(polikliniks) ? polikliniks : []);
+    useEffect(() => {
+        setPoliOptions(Array.isArray(polikliniks) ? polikliniks : []);
+    }, [polikliniks]);
+    useEffect(() => {
+        if (!Array.isArray(poliOptions) || poliOptions.length === 0) {
+            (async () => {
+                try {
+                    const res = await httpGet('/api/poliklinik?status=1&limit=200');
+                    const d = res?.data || {};
+                    const list = Array.isArray(d.list) ? d.list : (Array.isArray(d.data) ? d.data : (Array.isArray(d) ? d : []));
+                    setPoliOptions(list);
+                } catch (_) {}
+            })();
+        }
+    }, []);
+
+    const [doctorOptions, setDoctorOptions] = useState(Array.isArray(dokters) ? dokters : []);
+    useEffect(() => {
+        const arr = Array.isArray(dokters) ? dokters : [];
+        const hasStatus = arr.some((d) => d && typeof d === "object" && ("status" in d));
+        const filtered = hasStatus ? arr.filter((d) => String(d.status) === "1") : arr;
+        setDoctorOptions(filtered);
+    }, [dokters]);
+    useEffect(() => {
+        const arr = Array.isArray(dokters) ? dokters : [];
+        const hasStatus = arr.some((d) => d && typeof d === "object" && ("status" in d));
+        if (!hasStatus || !Array.isArray(arr) || arr.length === 0) {
+            (async () => {
+                try {
+                    const res = await httpGet('/api/dokter');
+                    const d = res?.data || {};
+                    const list = Array.isArray(d.data) ? d.data : (Array.isArray(d.list) ? d.list : (Array.isArray(d) ? d : []));
+                    setDoctorOptions(list);
+                } catch (_) {}
+            })();
+        }
+    }, []);
 
     const openBpjsPopup = ({ status, message, data, raw }) => {
         setBpjsPopup({
@@ -366,8 +429,7 @@ export default function Registration({
         if (!queueCurrent?.nomor && !queueLastCalledNumber) return;
         try {
             const targetNomor = repeat ? (queueLastCalledNumber ?? queueCurrent?.nomor) : queueCurrent.nomor;
-            const res = await httpPost("/api/queue/call", { nomor: targetNomor, loket: selectedLoket });
-            const data = res?.data || {};
+            await httpPost("/api/queue/call", { nomor: targetNomor, loket: selectedLoket });
             try {
                 const bc = new BroadcastChannel("queue-call");
                 bc.postMessage({ nomor: targetNomor, loket: selectedLoket, prefix: queueCurrent?.prefix || "", repeat });
@@ -417,35 +479,7 @@ export default function Registration({
     };
 
     // Buka halaman Layanan PCare (Inertia page)
-    const openLayananPcare = (patient) => {
-        try {
-            // Gunakan Ziggy route jika tersedia; fallback ke path hardcode jika tidak
-            let url = "/pcare/layanan";
-            try {
-                url = route("layanan.pcare");
-            } catch (_) {}
-            // Kirim NIK dan/atau No. Kartu (BPJS) sebagai query agar halaman Layanan PCare otomatis terisi
-            const nik = sanitizeNik(patient?.no_ktp || "");
-            const noka = String(patient?.no_peserta || "").replace(/[^0-9]/g, "");
-            const query = {};
-            if (nik) query.nik = nik;
-            if (noka) query.noka = noka;
-            // Tambahkan preferensi mode pencarian agar form langsung menampilkan field yang sesuai
-            if (noka) {
-                query.mode = "noka";
-            } else if (nik) {
-                query.mode = "nik";
-            }
-            // Simpan prefill ke localStorage sebagai fallback bila user membuka via sidebar tanpa query
-            try {
-                const prefill = { mode: query.mode || '', nik: nik || '', noka: noka || '', ts: Date.now() };
-                localStorage.setItem('pcarePrefill', JSON.stringify(prefill));
-            } catch (_) {}
-            router.get(url, query, { preserveScroll: true });
-        } catch (e) {
-            console.error("Gagal membuka Layanan PCare:", e);
-        }
-    };
+    
 
     // Hanya kirim antrean ke Mobile JKN bila jenis bayar termasuk BPJ / PBI
     const isJenisBayarAllowedForAntrean = (kd_pj) => {
@@ -471,17 +505,7 @@ export default function Registration({
     };
 
     // Simpan filter yang relevan untuk halaman Rawat Jalan sebelum navigasi
-    const setRawatJalanFiltersForNavigation = (reg) => {
-        try {
-            const filters = {
-                date: reg?.tgl_registrasi || "",
-                kd_poli: reg?.kd_poli || reg?.poliklinik?.kd_poli || "",
-                kd_dokter: reg?.kd_dokter || "",
-                per_page: 50,
-            };
-            localStorage.setItem("rawatJalanFilters", JSON.stringify(filters));
-        } catch (_) {}
-    };
+    
 
     // Panggil antrean (status hadir=1) lalu buka halaman Rawat Jalan index
     const handleCallAntreanAndOpenRawatJalan = async (reg) => {
@@ -508,9 +532,7 @@ export default function Registration({
             // Setelah memanggil antrean, langsung buka halaman Rawat Jalan Lanjutan sesuai permintaan
             try {
                 goToLanjutan(reg.no_rawat, reg.no_rkm_medis);
-            } catch (e) {
-                // Fallback: jika terjadi error saat konstruksi token atau route ziggy tidak tersedia,
-                // tetap arahkan ke laman /rawat-jalan/lanjutan menggunakan path hardcode
+            } catch {
                 let url = "/rawat-jalan/lanjutan";
                 router.get(url, { t: btoa(JSON.stringify({ no_rawat: reg.no_rawat, no_rkm_medis: reg.no_rkm_medis })) }, { preserveScroll: true });
             }
@@ -522,33 +544,7 @@ export default function Registration({
         }
     };
 
-    const handleRepeatCallAntrean = async (reg) => {
-        if (!reg) return;
-        try {
-            if (isRegistrationAllowedForAntrean(reg)) {
-                const payload = {
-                    no_rkm_medis: reg.no_rkm_medis,
-                    kd_poli: reg.kd_poli || reg?.poliklinik?.kd_poli,
-                    status: 1,
-                    tanggalperiksa: reg.tgl_registrasi,
-                };
-                try {
-                    await axios.post("/api/mobilejkn/antrean/panggil", payload);
-                    alert("Nomor dipanggil ulang");
-                } catch (err) {
-                    console.warn(
-                        "Gagal memanggil ulang antrean:",
-                        err?.response?.data || err?.message
-                    );
-                    alert("Gagal memanggil ulang antrean");
-                }
-            } else {
-                alert("Jenis bayar bukan BPJ/PBI, panggilan antrean tidak tersedia");
-            }
-        } catch (e) {
-            console.error("Error saat memanggil ulang antrean:", e);
-        }
-    };
+    
 
     const handleCheckIn = async (reg) => {
         try {
@@ -713,6 +709,14 @@ export default function Registration({
         if (name === "kd_poli" && value && selectedPatient) {
             checkPoliStatus(value);
         }
+        if ((name === "kd_poli" || name === "kd_dokter" || name === "tgl_registrasi") && selectedPatient) {
+            const vPoli = name === "kd_poli" ? value : formData.kd_poli;
+            const vDokter = name === "kd_dokter" ? value : formData.kd_dokter;
+            const vTanggal = name === "tgl_registrasi" ? value : formData.tgl_registrasi;
+            if (vPoli && vDokter && vTanggal) {
+                checkSrk(vPoli, vDokter, vTanggal);
+            }
+        }
     };
 
     // Check patient status in polyclinic
@@ -727,6 +731,78 @@ export default function Registration({
             setPoliStatus(response.data.data);
         } catch (error) {
             console.error("Error checking poli status:", error);
+        }
+    };
+
+    const checkSrk = async (kdPoli, kdDokter, tanggal) => {
+        try {
+            if (!selectedPatient) return;
+            const kdPoliSim = String(kdPoli || formData.kd_poli || 'INT');
+            const kdDokterSim = String(kdDokter || formData.kd_dokter || '999999');
+            const tanggalSim = String(tanggal || formData.tgl_registrasi || todayDateString());
+            const p = {
+                no_rkm_medis: selectedPatient.no_rkm_medis,
+                kd_poli: kdPoliSim,
+                kd_dokter: kdDokterSim,
+                tanggalperiksa: tanggalSim,
+                nomorkartu: String(selectedPatient?.no_peserta || ''),
+                nik: String(selectedPatient?.no_ktp || ''),
+                kodepoli: kdPoliSim,
+                namapoli: 'Poli Internal',
+                norm: String(selectedPatient?.no_rkm_medis || ''),
+                kodedokter: 999999,
+                namadokter: 'Dokter SRK Check',
+                jampraktek: '00:01-00:02',
+                nomorantrean: '000',
+                angkaantrean: 0,
+                keterangan: 'SRK check only',
+                nohp: String(selectedPatient?.no_tlp || ''),
+            };
+            if (!p.no_rkm_medis) return;
+            setSrkLoading(true);
+            setSrkStatus({ status: "UNKNOWN", message: "" });
+            try {
+                await axios.get('/sanctum/csrf-cookie', { withCredentials: true, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+                await new Promise((resolve) => setTimeout(resolve, 300));
+            } catch (_) {}
+            const r = await axios.post("/api/mobilejkn/srk/check", p, { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }, withCredentials: true });
+            let st = typeof r?.data?.status === 'string' && r.data.status ? String(r.data.status) : 'UNKNOWN';
+            let msg = typeof r?.data?.message === 'string' ? r.data.message : '';
+            if (st === 'UNKNOWN') {
+                const meta = r?.data?.metadata || r?.data?.metaData || null;
+                const code = meta && typeof meta.code === 'number' ? meta.code : null;
+                const m = msg || (meta && typeof meta.message === 'string' ? meta.message : '');
+                const indikasiBelum = m && /skrining kesehatan|skrining/i.test(m);
+                if (indikasiBelum) {
+                    st = 'BELUM_SRK';
+                    msg = m;
+                } else if (code !== null && code >= 200 && code < 300) {
+                    st = 'SUDAH_SRK';
+                    msg = m;
+                }
+            }
+            if (st === 'UNKNOWN') {
+                try {
+                    const t = await axios.post("/api/mobilejkn/srk/check/test", p, { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" } });
+                    const metaT = t?.data?.metadata || t?.data?.metaData || null;
+                    const codeT = metaT && typeof metaT.code === 'number' ? metaT.code : null;
+                    const mT = typeof t?.data?.message === 'string' ? t.data.message : (metaT && typeof metaT.message === 'string' ? metaT.message : '');
+                    let stT = typeof t?.data?.status === 'string' && t.data.status ? String(t.data.status) : 'UNKNOWN';
+                    if (stT === 'UNKNOWN') {
+                        const indikasiBelumT = mT && /skrining kesehatan|skrining/i.test(mT);
+                        if (indikasiBelumT) stT = 'BELUM_SRK';
+                        else if (codeT !== null && codeT >= 200 && codeT < 300) stT = 'SUDAH_SRK';
+                    }
+                    st = stT;
+                    msg = mT || msg;
+                } catch (_) {}
+            }
+            setSrkStatus({ status: st, message: msg });
+        } catch (e) {
+            const msg = String(e?.response?.data?.message || e?.message || "");
+            setSrkStatus({ status: "UNKNOWN", message: msg });
+        } finally {
+            setSrkLoading(false);
         }
     };
 
@@ -788,13 +864,7 @@ export default function Registration({
             };
             
             // Helper untuk mendapatkan token dari meta tag
-            const getMetaToken = () => {
-                try {
-                    return document.querySelector('meta[name="csrf-token"]')?.content || '';
-                } catch (e) {
-                    return '';
-                }
-            };
+            
             
             // PENTING: Biarkan axios membaca token dari cookie secara otomatis
             // Jangan set token secara manual di headers karena bisa berbeda dengan session
@@ -822,7 +892,7 @@ export default function Registration({
                     alert('Gagal mendapatkan CSRF token. Silakan refresh halaman dan coba lagi.');
                     return;
                 }
-            } catch (csrfError) {
+            } catch {
                 setIsSubmitting(false);
                 alert('Gagal mendapatkan CSRF token. Silakan refresh halaman dan coba lagi.');
                 return;
@@ -867,84 +937,56 @@ export default function Registration({
             };
 
             const doPost = async () => {
-                try {
-                    // Pastikan URL adalah absolute atau relative yang benar
-                    const finalUrl = url.startsWith('http') ? url : url.startsWith('/') ? url : `/${url}`;
-                    
-                    // Verifikasi cookie token masih ada sebelum request
-                    const cookieToken = getCookieToken();
-                    
-                    if (!cookieToken || cookieToken.length <= 10) {
-                        throw new Error('CSRF token tidak ditemukan di cookie');
-                    }
-                    
-                    // Axios akan otomatis membaca token dari cookie dan mengirim ke header
-                    // Jangan set token secara manual karena bisa berbeda dengan session
-                    const res = await axios.post(finalUrl, payload, config);
-                    
-                    // Cek apakah response adalah error 419 (CSRF token expired)
-                    if (res?.status === 419) {
-                        const error = new Error('CSRF token expired');
-                        error.response = {
-                            status: 419,
-                            statusText: 'CSRF Token Expired',
-                            data: res?.data,
-                            headers: res?.headers,
-                        };
-                        throw error;
-                    }
-                    
-                    // Cek apakah response adalah HTML (bukan JSON)
-                    const contentType = res?.headers?.['content-type'] || res?.headers?.['Content-Type'] || '';
-                    const isHtml = contentType.includes('text/html') || 
-                                  (typeof res?.data === 'string' && (
-                                      res.data.trim().startsWith('<!DOCTYPE') ||
-                                      res.data.trim().startsWith('<html') ||
-                                      res.data.trim().startsWith('<HTML')
-                                  ));
-                    
-                    if (isHtml) {
-                        // Buat error object yang mirip dengan axios error
-                        const error = new Error('Server mengembalikan HTML bukan JSON. Kemungkinan route tidak ditemukan atau redirect.');
+                const finalUrl = url.startsWith('http') ? url : url.startsWith('/') ? url : `/${url}`;
+                const cookieToken = getCookieToken();
+                if (!cookieToken || cookieToken.length <= 10) {
+                    throw new Error('CSRF token tidak ditemukan di cookie');
+                }
+                const res = await axios.post(finalUrl, payload, config);
+                const contentType = res?.headers?.['content-type'] || res?.headers?.['Content-Type'] || '';
+                const isHtml = contentType.includes('text/html') ||
+                    (typeof res?.data === 'string' && (
+                        res.data.trim().startsWith('<!DOCTYPE') ||
+                        res.data.trim().startsWith('<html') ||
+                        res.data.trim().startsWith('<HTML')
+                    ));
+                if (res?.status === 419) {
+                    const error = new Error('CSRF token expired');
+                    error.response = {
+                        status: 419,
+                        statusText: 'CSRF Token Expired',
+                        data: res?.data,
+                        headers: res?.headers,
+                    };
+                    throw error;
+                }
+                if (isHtml) {
+                    const error = new Error('Server mengembalikan HTML bukan JSON. Kemungkinan route tidak ditemukan atau redirect.');
+                    error.response = {
+                        status: res?.status || 500,
+                        statusText: 'HTML Response',
+                        data: res?.data,
+                        headers: res?.headers,
+                    };
+                    throw error;
+                }
+                if (typeof res?.data === 'string') {
+                    try {
+                        res.data = JSON.parse(res.data);
+                    } catch {
+                        const error = new Error('Response data tidak dapat di-parse sebagai JSON');
                         error.response = {
                             status: res?.status || 500,
-                            statusText: 'HTML Response',
+                            statusText: 'Invalid JSON',
                             data: res?.data,
-                            headers: res?.headers,
                         };
                         throw error;
                     }
-                    
-                    // Pastikan response.data adalah object, bukan string
-                    if (typeof res?.data === 'string') {
-                        try {
-                            res.data = JSON.parse(res.data);
-                        } catch (parseErr) {
-                            const error = new Error('Response data tidak dapat di-parse sebagai JSON');
-                            error.response = {
-                                status: res?.status || 500,
-                                statusText: 'Invalid JSON',
-                                data: res?.data,
-                            };
-                            throw error;
-                        }
-                    }
-                    
-                    return res;
-                } catch (err) {
-                    throw err;
                 }
+                return res;
             };
 
-            try {
-                // Axios interceptor di bootstrap.js akan otomatis handle retry untuk 419
-                // Kita hanya perlu memanggil doPost dan handle error biasa
-                response = await doPost();
-            } catch (err) {
-                // Axios interceptor sudah menangani retry untuk 419
-                // Jika masih error setelah retry, berarti ada masalah lain
-                throw err;
-            }
+            response = await doPost();
 
             // Cek apakah response adalah HTML (bukan JSON) - ini biasanya berarti error atau redirect
             const contentType = response?.headers?.['content-type'] || '';
@@ -1485,7 +1527,6 @@ export default function Registration({
             );
             setRegistrationData(response.data.data);
             setStats(calculateStats(response.data.data));
-            setCurrentPage(page);
         } catch (error) {
             console.error("Error loading registrations:", error);
         } finally {
@@ -2165,12 +2206,27 @@ export default function Registration({
                                             <h3 className="text-base lg:text-lg font-semibold text-gray-900 dark:text-white pr-4">
                                                 Registrasi Periksa - {selectedPatient?.nm_pasien}
                                             </h3>
-                                            <div className="flex items-center gap-2">
-                                                <motion.button
-                                                    onClick={() => openSkriningVisualModal(selectedPatient)}
-                                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 text-xs rounded-md flex items-center gap-1 transition-colors shadow-sm"
-                                                    whileHover={{ scale: 1.05, y: -1 }}
-                                                    whileTap={{ scale: 0.95 }}
+                                        <div className="flex items-center gap-2">
+                                            <span className={srkBadgeClasses(srkStatus.status)}>
+                                                {srkStatus.status === "SUDAH_SRK" ? "Sudah SRK" : (srkStatus.status === "BELUM_SRK" ? "Belum SRK" : "Unknown")}
+                                            </span>
+                                            <motion.button
+                                                onClick={() => checkSrk()}
+                                                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 text-xs rounded-md flex items-center gap-1 transition-colors shadow-sm"
+                                                whileHover={{ scale: 1.05, y: -1 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                initial={{ opacity: 0, scale: 0.95 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                transition={{ duration: 0.2 }}
+                                                disabled={srkLoading}
+                                            >
+                                                {srkLoading ? "Memeriksa..." : "Cek SRK"}
+                                            </motion.button>
+                                            <motion.button
+                                                onClick={() => openSkriningVisualModal(selectedPatient)}
+                                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 text-xs rounded-md flex items-center gap-1 transition-colors shadow-sm"
+                                                whileHover={{ scale: 1.05, y: -1 }}
+                                                whileTap={{ scale: 0.95 }}
                                                     initial={{ opacity: 0, scale: 0.95 }}
                                                     animate={{ opacity: 1, scale: 1 }}
                                                     transition={{ duration: 0.2 }}
@@ -2236,11 +2292,11 @@ export default function Registration({
                                                         className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                     >
                                                         <option value="">Pilih Dokter</option>
-                                                        {dokters?.map((dokter) => (
-                                                            <option key={dokter.kd_dokter} value={dokter.kd_dokter}>
-                                                                {dokter.nm_dokter}
-                                                            </option>
-                                                        ))}
+                                                            {(Array.isArray(doctorOptions) ? doctorOptions.filter((dokter) => !("status" in dokter) || String(dokter.status) === "1") : []).map((dokter) => (
+                                                                <option key={dokter.kd_dokter} value={dokter.kd_dokter}>
+                                                                    {dokter.nm_dokter}
+                                                                </option>
+                                                            ))}
                                                     </select>
                                                 </motion.div>
                                                 <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: 0.25 }}>
@@ -2252,13 +2308,15 @@ export default function Registration({
                                                         required
                                                         className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                     >
-                                                        <option value="">Pilih Poliklinik</option>
-                                                        {polikliniks?.map((poli) => (
-                                                            <option key={poli.kd_poli} value={poli.kd_poli}>
-                                                                {poli.nm_poli}
-                                                            </option>
-                                                        ))}
-                                                    </select>
+                                                    <option value="">Pilih Poliklinik</option>
+                                                        {(Array.isArray(poliOptions) ? poliOptions : [])
+                                                            .filter((p) => p.status === "1")
+                                                            .map((poli) => (
+                                                             <option key={poli.kd_poli} value={poli.kd_poli}>
+                                                                 {poli.nm_poli}
+                                                             </option>
+                                                         ))}
+                                                     </select>
                                                 </motion.div>
                                             </div>
 
@@ -2351,7 +2409,7 @@ export default function Registration({
                                                             className="flex-1 w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                         >
                                                             <option value="">Pilih Cara Bayar</option>
-                                                            {penjabsList?.map((penjab) => (
+                                                            {(Array.isArray(penjabsList) ? penjabsList.filter((penjab) => !("status" in penjab) || String(penjab.status) === "1") : []).map((penjab) => (
                                                                 <option key={penjab.kd_pj} value={penjab.kd_pj}>
                                                                     {penjab.png_jawab}
                                                                 </option>
@@ -2724,12 +2782,14 @@ export default function Registration({
                                                     className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                 >
                                                     <option value="">Semua Poliklinik</option>
-                                                    {polikliniks?.map((poli) => (
-                                                        <option key={poli.kd_poli} value={poli.kd_poli}>
-                                                            {poli.nm_poli}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                    {(Array.isArray(poliOptions) ? poliOptions : [])
+                                                        .filter((p) => p.status === "1")
+                                                        .map((poli) => (
+                                                         <option key={poli.kd_poli} value={poli.kd_poli}>
+                                                             {poli.nm_poli}
+                                                         </option>
+                                                     ))}
+                                                 </select>
                                             </motion.div>
                                             <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
                                                 <label className="block text-xs lg:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -3428,7 +3488,7 @@ export default function Registration({
                                                 <option value="">
                                                     Pilih Dokter
                                                 </option>
-                                                {dokters?.map((dokter) => (
+                                                {(Array.isArray(doctorOptions) ? doctorOptions.filter((dokter) => !("status" in dokter) || String(dokter.status) === "1") : []).map((dokter) => (
                                                     <option
                                                         key={dokter.kd_dokter}
                                                         value={dokter.kd_dokter}
@@ -3458,18 +3518,20 @@ export default function Registration({
                                                 required
                                                 className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
                                             >
-                                                <option value="">
-                                                    Pilih Poliklinik
-                                                </option>
-                                                {polikliniks?.map((poli) => (
-                                                    <option
-                                                        key={poli.kd_poli}
-                                                        value={poli.kd_poli}
-                                                    >
-                                                        {poli.nm_poli}
+                                                    <option value="">
+                                                        Pilih Poliklinik
                                                     </option>
-                                                ))}
-                                            </select>
+                                                {(Array.isArray(poliOptions) ? poliOptions : [])
+                                                    .filter((p) => p.status === "1")
+                                                    .map((poli) => (
+                                                     <option
+                                                         key={poli.kd_poli}
+                                                         value={poli.kd_poli}
+                                                     >
+                                                         {poli.nm_poli}
+                                                     </option>
+                                                 ))}
+                                              </select>
                                         </motion.div>
 
                                         {/* Penanggung Jawab */}
@@ -3493,7 +3555,7 @@ export default function Registration({
                                                     <option value="">
                                                         Pilih Penanggung Jawab
                                                     </option>
-                                                    {penjabsList?.map((penjab) => (
+                                                    {(Array.isArray(penjabsList) ? penjabsList.filter((penjab) => !("status" in penjab) || String(penjab.status) === "1") : []).map((penjab) => (
                                                         <option
                                                             key={penjab.kd_pj}
                                                             value={penjab.kd_pj}

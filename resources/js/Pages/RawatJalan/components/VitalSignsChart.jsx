@@ -8,11 +8,6 @@ import {
     Tooltip,
     Legend,
     ResponsiveContainer,
-    BarChart,
-    Bar,
-    PieChart,
-    Pie,
-    Cell
 } from 'recharts';
 
 const VitalSignsChart = ({ data = [] }) => {

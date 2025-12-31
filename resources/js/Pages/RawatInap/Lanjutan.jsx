@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Head, Link } from '@inertiajs/react';
-import { route } from 'ziggy-js';
+import React, { useState } from 'react';
+import { Head } from '@inertiajs/react';
 import LanjutanRalanLayout from '@/Layouts/LanjutanRalanLayout';
 import RiwayatPemeriksaan from './components/RiwayatPemeriksaan';
 import CpptSoap from '../RawatJalan/components/CpptSoap';
@@ -15,8 +14,6 @@ import Konsultasi from './components/Konsultasi';
 export default function Lanjutan({ rawatInap, params }) {
     const [activeTab, setActiveTab] = useState('cppt');
     const [openAcc, setOpenAcc] = useState({ pemeriksaan: true });
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState(null);
 
     const handleTabChange = (tab) => setActiveTab(tab);
     const toggle = (section) => setOpenAcc(prev => ({ ...prev, [section]: !prev[section] }));

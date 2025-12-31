@@ -12,6 +12,8 @@ class PoliklinikController extends Controller
     public function index(Request $request)
     {
         $search = $request->query('search');
+        $status = $request->query('status');
+        $nmPoli = $request->query('nm_poli');
         $query = Poliklinik::query();
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -19,12 +21,20 @@ class PoliklinikController extends Controller
                     ->orWhere('nm_poli', 'like', "%{$search}%");
             });
         }
+        if (in_array($status, ['0', '1'], true)) {
+            $query->where('status', $status);
+        }
+        if ($nmPoli) {
+            $query->where('nm_poli', 'like', "%{$nmPoli}%");
+        }
         $polikliniks = $query->orderBy('nm_poli')->paginate(10)->withQueryString();
 
         return Inertia::render('Poliklinik/Index', [
             'polikliniks' => $polikliniks,
             'filters' => [
                 'search' => $search,
+                'status' => $status,
+                'nm_poli' => $nmPoli,
             ],
         ]);
     }
@@ -38,17 +48,21 @@ class PoliklinikController extends Controller
         $start = max(0, (int) $request->query('start', 0));
         $limit = max(1, min(500, (int) $request->query('limit', 25)));
         $q = trim((string) $request->query('q', ''));
+        $status = $request->query('status');
 
-        $builder = Poliklinik::query()->select(['kd_poli', 'nm_poli']);
+        $builder = Poliklinik::query()->select(['kd_poli', 'nm_poli', 'status']);
         if ($q !== '') {
             $builder->where(function ($w) use ($q) {
                 $w->where('kd_poli', 'like', "%{$q}%")
                     ->orWhere('nm_poli', 'like', "%{$q}%");
             });
         }
+        if (in_array($status, ['0', '1'], true)) {
+            $builder->where('status', $status);
+        }
 
         $total = (clone $builder)->count();
-        $rows = $builder->orderBy('kd_poli')->offset($start)->limit($limit)->get();
+        $rows = $builder->orderBy('nm_poli')->offset($start)->limit($limit)->get();
 
         return response()->json([
             'ok' => true,
@@ -155,5 +169,13 @@ class PoliklinikController extends Controller
                 'message' => 'Gagal generate kode poliklinik',
             ], 500);
         }
+    }
+
+    public function destroy(string $kd_poli)
+    {
+        $poliklinik = Poliklinik::findOrFail($kd_poli);
+        $poliklinik->update(['status' => '0']);
+
+        return to_route('poliklinik.index', [], 303)->with('success', 'Poliklinik berhasil dihapus');
     }
 }

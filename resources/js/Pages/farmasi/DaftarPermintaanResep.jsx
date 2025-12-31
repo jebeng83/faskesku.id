@@ -10,10 +10,8 @@ import {
     SelectContent,
     SelectItem,
     SelectTrigger,
-    SelectValue as BaseSelectValue,
 } from "@/Components/ui/Select";
-import Badge from "@/Components/ui/Badge";
-import { Filter, Search, Eye, ClipboardList, Pill, Printer, Loader2, Inbox } from "lucide-react";
+import { Filter, Search, Eye, Pill, Printer, Loader2, Inbox } from "lucide-react";
 import QRCode from "qrcode";
 
 // Custom SelectValue yang menampilkan label berdasarkan value
@@ -55,27 +53,7 @@ const DaftarPermintaanResep = () => {
         }
     };
     
-    // Helper untuk mendapatkan tanggal N hari yang lalu dalam format YYYY-MM-DD
-    // Menggunakan timezone Asia/Jakarta (UTC+7)
-    const minusDaysStr = (days) => {
-        try {
-            const now = new Date();
-            // Kurangi hari dalam millisecond
-            const pastDate = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));
-            return pastDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
-        } catch {
-            // Fallback jika toLocaleDateString tidak didukung
-            const now = new Date();
-            const pastDate = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));
-            const formatter = new Intl.DateTimeFormat('en-CA', {
-                timeZone: 'Asia/Jakarta',
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-            });
-            return formatter.format(pastDate);
-        }
-    };
+    
 
     // Helper untuk mendapatkan label berdasarkan value
     const getJenisLabel = (value) => {
@@ -148,7 +126,7 @@ const DaftarPermintaanResep = () => {
                     end_date: today
                 }));
             }
-        } catch (_) {
+        } catch {
             // Jika error, set default dengan tanggal hari ini
             const today = todayStr();
             setFilters(prev => ({
@@ -165,7 +143,7 @@ const DaftarPermintaanResep = () => {
                 "permintaanResepFilters",
                 JSON.stringify(filters)
             );
-        } catch (_) {}
+        } catch {}
     }, [filters]);
 
     const handleFilterChange = (key, value) => {
@@ -295,7 +273,7 @@ const DaftarPermintaanResep = () => {
                 // Reset stok info cache ketika membuka resep baru
                 setStokInfoMap({});
             }
-        } catch (e) {}
+        } catch {}
     };
 
     // Ambil stok info per item obat
@@ -430,15 +408,8 @@ const DaftarPermintaanResep = () => {
                           selectedResep.pasien?.nama_pasien ||
                           detailContext.nm_pasien ||
                           "";
-        const noRM = selectedResep.no_rkm_medis || 
-                    selectedResep.no_rkm || 
-                    selectedResep.pasien?.no_rkm_medis ||
-                    selectedResep.pasien?.no_rkm ||
-                    detailContext.no_rkm_medis ||
-                    "";
         const noResep = selectedResep.no_resep || "-";
         const tglResep = formatDate(selectedResep.tgl_peresepan) || "-";
-        const jamResep = formatTime(selectedResep.jam_peresepan) || "-";
 
         // Buat kop dari setting - hanya nama instansi saja
         const kop = kopData.nama_instansi || "ETIKET OBAT";

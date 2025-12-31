@@ -283,7 +283,7 @@ export default function CetakDataOpname() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {rows.map((r, i) => (
+                                {rows.map((r) => (
                                     <tr
                                         key={`${r.kode_brng}|${r.kd_bangsal}|${
                                             r.tanggal?.slice(0, 10) || ""

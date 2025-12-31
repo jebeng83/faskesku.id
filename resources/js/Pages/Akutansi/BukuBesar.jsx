@@ -53,7 +53,7 @@ function formatNumber(n) {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
         }).format(n || 0);
-    } catch (e) {
+    } catch (_e) {
         return (n || 0).toFixed(2);
     }
 }
@@ -87,7 +87,7 @@ export default function BukuBesarPage() {
                 });
                 if (!alive) return;
                 setRekeningList(resp.data?.data || []);
-            } catch (e) {
+            } catch (_e) {
                 /* ignore */
             }
         };
@@ -116,10 +116,10 @@ export default function BukuBesarPage() {
             setRows(resp.data?.rows || []);
             setMeta(resp.data?.meta || null);
             setTotals(resp.data?.totals || null);
-        } catch (e) {
+        } catch (_e) {
             const msg =
-                e?.response?.data?.message ||
-                e?.message ||
+                _e?.response?.data?.message ||
+                _e?.message ||
                 "Gagal memuat Buku Besar";
             setError(msg);
         } finally {

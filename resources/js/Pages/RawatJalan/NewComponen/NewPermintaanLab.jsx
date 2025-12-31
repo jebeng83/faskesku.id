@@ -4,7 +4,7 @@ import axios from "axios"
 import { todayDateString, nowDateTimeString } from "@/tools/datetime"
 import { createPageVariants, contentSpring } from "@/tools/motion"
 
-export default function NewPermintaanLab({ token = "", noRkmMedis = "", noRawat = "" }) {
+export default function NewPermintaanLab({ _token = "", _noRkmMedis = "", noRawat = "" }) {
   const [dir, setDir] = useState(1)
   const reduced = useReducedMotion()
   const pageVariants = createPageVariants(reduced)

@@ -363,59 +363,6 @@ export default function DataObat({ dataBarang = { data: [], links: null, from: 0
         }
     };
 
-    // Fungsi untuk update harga jual berdasarkan harga beli terbaru dari pembelian
-    const updateHargaJual = async (kodeBarang, hargaBeliBaru) => {
-        try {
-            // Fetch percentage data untuk perhitungan
-            const percentageResponse = await axios.get('/api/set-harga-obat');
-            if (!percentageResponse.data.success) {
-                throw new Error('Gagal mengambil data persentase');
-            }
-
-            const percentages = percentageResponse.data.data;
-            const harga = parseFloat(hargaBeliBaru) || 0;
-
-            // Hitung harga jual berdasarkan persentase keuntungan
-            const hargaJualBaru = {
-                ralan: Math.round(harga + (harga * parseFloat(percentages.ralan || 0) / 100)),
-                kelas1: Math.round(harga + (harga * parseFloat(percentages.kelas1 || 0) / 100)),
-                kelas2: Math.round(harga + (harga * parseFloat(percentages.kelas2 || 0) / 100)),
-                kelas3: Math.round(harga + (harga * parseFloat(percentages.kelas3 || 0) / 100)),
-                utama: Math.round(harga + (harga * parseFloat(percentages.utama || 0) / 100)),
-                vip: Math.round(harga + (harga * parseFloat(percentages.vip || 0) / 100)),
-                vvip: Math.round(harga + (harga * parseFloat(percentages.vvip || 0) / 100)),
-                beliluar: Math.round(harga + (harga * parseFloat(percentages.beliluar || 0) / 100)),
-                jualbebas: Math.round(harga + (harga * parseFloat(percentages.jualbebas || 0) / 100)),
-                karyawan: Math.round(harga + (harga * parseFloat(percentages.karyawan || 0) / 100))
-            };
-
-            // Update harga jual melalui API
-            const updateData = {
-                kode_brng: kodeBarang,
-                h_beli: harga,
-                ...hargaJualBaru
-            };
-
-            // Spoof PUT via POST to avoid 405 issues
-            const fd = new FormData();
-            Object.entries(updateData).forEach(([key, value]) => fd.append(key, value ?? ""));
-            fd.append('_method', 'PUT');
-            const response = await axios.post(`/api/databarang/update-harga-jual/${kodeBarang}`, fd, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
-            
-            if (response.data.success) {
-                console.log(`Harga jual berhasil diupdate untuk ${kodeBarang}:`, hargaJualBaru);
-                return true;
-            } else {
-                console.error(`Gagal update harga jual untuk ${kodeBarang}:`, response.data.message);
-                return false;
-            }
-        } catch (error) {
-            console.error('Error updating harga jual:', error);
-            return false;
-        }
-    };
 
     return (
         <SidebarFarmasi title="Farmasi">

@@ -36,14 +36,14 @@ export default function MonitoringStatusPcare() {
   });
 
   const [sendFlags, setSendFlags] = useState({});
-  const [statusAdd, setStatusAdd] = useState({});
-  const [descAdd, setDescAdd] = useState({});
-  const [statusPanggil, setStatusPanggil] = useState({});
-  const [descPanggil, setDescPanggil] = useState({});
-  const [statusDaftar, setStatusDaftar] = useState({});
-  const [descDaftar, setDescDaftar] = useState({});
-  const [statusKunjungan, setStatusKunjungan] = useState({});
-  const [descKunjungan, setDescKunjungan] = useState({});
+  const [, setStatusAdd] = useState({});
+  const [, setDescAdd] = useState({});
+  const [, setStatusPanggil] = useState({});
+  const [, setDescPanggil] = useState({});
+  const [, setStatusDaftar] = useState({});
+  const [, setDescDaftar] = useState({});
+  const [, setStatusKunjungan] = useState({});
+  const [, setDescKunjungan] = useState({});
 
   const csrfToken = typeof document !== 'undefined' ? (document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '') : '';
 
@@ -82,12 +82,7 @@ export default function MonitoringStatusPcare() {
     }
   };
 
-  const fmtDate = (s) => {
-    if (!s) return '';
-    const parts = String(s).split('-');
-    if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
-    return s;
-  };
+  
 
   const fmtDateTime = (s) => {
     if (!s) return '';
@@ -98,15 +93,7 @@ export default function MonitoringStatusPcare() {
     return hhmm ? `${ddmmyy} ${hhmm}` : ddmmyy;
   };
 
-  const jsonFetch = async (url, opts = {}) => {
-    const headers = { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest', ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}), ...(opts.headers || {}) };
-    const res = await fetch(url, { credentials: 'include', ...opts, headers });
-    const ct = res.headers.get('content-type') || '';
-    if (ct.includes('application/json')) {
-      try { return await res.json(); } catch { return null; }
-    }
-    return null;
-  };
+  
 
   const pushDebug = (entry) => {
     try { console.log('PCareDebug', entry); } catch {}
@@ -144,7 +131,7 @@ export default function MonitoringStatusPcare() {
       const j = await fetchDebugJson(url, {}, 'GET /pcare/api/bpjs-log/list');
       const list = Array.isArray(j?.data) ? j.data : [];
       setRows(list);
-    } catch (e) {
+    } catch {
     } finally {
       setLoading(false);
     }
@@ -336,6 +323,7 @@ export default function MonitoringStatusPcare() {
                     <th className="sticky top-0 z-10 px-3 py-2 text-left font-medium bg-gradient-to-r from-gray-50/80 via-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">metaCode</th>
                     <th className="sticky top-0 z-10 px-3 py-2 text-left font-medium bg-gradient-to-r from-gray-50/80 via-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">metaMessage</th>
                     <th className="sticky top-0 z-10 px-3 py-2 text-left font-medium bg-gradient-to-r from-gray-50/80 via-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">Preview</th>
+                    <th className="sticky top-0 z-10 px-3 py-2 text-left font-medium bg-gradient-to-r from-gray-50/80 via-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">Aksi</th>
                   </tr>
                 </thead>
                 <motion.tbody variants={containerVariants} initial="hidden" animate="show">
@@ -352,10 +340,34 @@ export default function MonitoringStatusPcare() {
                       <td className="p-2">{r.meta_code !== null && r.meta_code !== undefined ? Number(r.meta_code) : ''}</td>
                       <td className="p-2 break-all">{String(r.meta_message || '')}</td>
                       <td className="p-2 break-all">{String(r.response_preview || '').slice(0, 160)}</td>
+                      <td className="p-2">
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            onClick={() => sendPendaftaran(String(r.no_rawat || ''))}
+                            disabled={!r.no_rawat || !!(sendFlags[String(r.no_rawat || '')]?.pendaftaran)}
+                            className="text-xs rounded px-2 py-1 border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-50"
+                          >Pendaftaran</button>
+                          <button
+                            onClick={() => sendKunjungan(String(r.no_rawat || ''))}
+                            disabled={!r.no_rawat || !!(sendFlags[String(r.no_rawat || '')]?.kunjungan)}
+                            className="text-xs rounded px-2 py-1 border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-50"
+                          >Kunjungan</button>
+                          <button
+                            onClick={() => sendAntreanAdd(String(r.no_rawat || ''))}
+                            disabled={!r.no_rawat || !!(sendFlags[String(r.no_rawat || '')]?.add)}
+                            className="text-xs rounded px-2 py-1 border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-50"
+                          >Ambil Antrian</button>
+                          <button
+                            onClick={() => sendAntreanPanggil(String(r.no_rawat || ''))}
+                            disabled={!r.no_rawat || !!(sendFlags[String(r.no_rawat || '')]?.panggil)}
+                            className="text-xs rounded px-2 py-1 border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-50"
+                          >Panggil</button>
+                        </div>
+                      </td>
                     </motion.tr>
                   ))}
                   {rowsMemo.length === 0 && (
-                    <tr><td className="p-4 text-center" colSpan={9}>{loading ? 'Memuat...' : 'Tidak ada data'}</td></tr>
+                    <tr><td className="p-4 text-center" colSpan={10}>{loading ? 'Memuat...' : 'Tidak ada data'}</td></tr>
                   )}
                 </motion.tbody>
               </table>

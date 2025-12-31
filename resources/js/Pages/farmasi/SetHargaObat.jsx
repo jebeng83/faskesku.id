@@ -49,17 +49,13 @@ const UmumSummaryTable = lazy(() => import('@/Components/UmumSummaryTable'));
 const JenisSummaryTable = lazy(() => import('@/Components/JenisSummaryTable'));
 const BarangSummaryTable = lazy(() => import('@/Components/BarangSummaryTable'));
 
-export default function SetHargaObat({ auth, hargaObat, schema, penjualanUmum, penjualanPerJenis, penjualanPerBarang, error }) {
+export default function SetHargaObat({ hargaObat, schema, penjualanUmum, penjualanPerJenis, penjualanPerBarang, error }) {
     // Fields: settings + numeric percentages derived from DESCRIBE
     const numericFieldsKnown = ['ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan'];
-    const settingsFieldsKnown = ['setharga','hargadasar','ppn'];
     const schemaFields = Array.isArray(schema) ? schema.map((c) => c.Field) : null;
     const numericFields = (schemaFields && schemaFields.length > 0)
         ? schemaFields.filter((f) => numericFieldsKnown.includes(f))
         : numericFieldsKnown;
-    const settingsFields = (schemaFields && schemaFields.length > 0)
-        ? schemaFields.filter((f) => settingsFieldsKnown.includes(f))
-        : settingsFieldsKnown;
 
     const initialData = {
         // Settings defaults
@@ -84,7 +80,7 @@ export default function SetHargaObat({ auth, hargaObat, schema, penjualanUmum, p
         kode_brng: ''
     };
 
-    const { data, setData, post, processing, errors, reset } = useForm(initialData);
+    const { data, setData, processing, errors } = useForm(initialData);
 
     // Tabs + Global setter (incremental change)
     const [activeTab, setActiveTab] = useState('pengaturan');

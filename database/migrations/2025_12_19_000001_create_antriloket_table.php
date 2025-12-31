@@ -14,8 +14,8 @@ return new class extends Migration
                 $table->unsignedInteger('nomor');
                 $table->string('prefix', 2)->nullable();
                 $table->date('tanggal');
-                $table->enum('status', ['baru','dicetak','dipanggil','batal'])->default('baru');
-                $table->enum('asal', ['kiosk','loket'])->default('kiosk');
+                $table->enum('status', ['baru', 'dicetak', 'dipanggil', 'batal'])->default('baru');
+                $table->enum('asal', ['kiosk', 'loket'])->default('kiosk');
                 $table->unsignedInteger('loket')->nullable();
                 $table->char('kode_tiket', 8)->nullable()->unique();
                 $table->string('dibuat_oleh', 20)->nullable();
@@ -38,4 +38,3 @@ return new class extends Migration
         Schema::dropIfExists('antriloket');
     }
 };
-

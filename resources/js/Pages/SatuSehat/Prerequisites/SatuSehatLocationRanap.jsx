@@ -9,7 +9,7 @@ import Label from "@/Components/ui/Label";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/Components/ui/Table";
 import Modal from "@/Components/Modal";
 import Toaster from "@/Components/ui/Toaster";
-import { MapPin, Edit2, Trash2, Building2, Navigation, RefreshCw, Loader2, CheckCircle2, AlertCircle, Info, X, Globe } from "lucide-react";
+import { MapPin, Edit2, Trash2, Building2, RefreshCw, Loader2, CheckCircle2, Info, X, Globe } from "lucide-react";
 
 export default function SatuSehatLocationRanap() {
   const containerVariants = {
@@ -20,10 +20,7 @@ export default function SatuSehatLocationRanap() {
     hidden: { opacity: 0, y: 30, scale: 0.95 },
     visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
   };
-  const cardHoverVariants = {
-    rest: { scale: 1, y: 0 },
-    hover: { scale: 1.01, y: -4, transition: { duration: 0.3, ease: "easeOut" } },
-  };
+  
   // Toast state
   const [toasts, setToasts] = useState([]);
   const addToast = (type = "info", title = "", message = "", duration = 4000) => {
@@ -69,7 +66,7 @@ export default function SatuSehatLocationRanap() {
           setLatitude(json.latitude || "");
           setAltittude(json.altitude || "");
         }
-      } catch (_) {}
+      } catch {}
     })();
     loadMappings();
   }, []);

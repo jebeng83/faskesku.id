@@ -53,7 +53,7 @@ const cardVariants = {
 const hutangObatUrl = (() => {
     try {
         return route("farmasi.hutang-obat", {}, false);
-    } catch (_) {
+    } catch {
         return "/farmasi/hutang-obat";
     }
 })();
@@ -61,7 +61,7 @@ const hutangObatUrl = (() => {
 const sisaStokUrl = (() => {
     try {
         return route("farmasi.sisa-stok", {}, false);
-    } catch (_) {
+    } catch {
         return "/farmasi/sisa-stok";
     }
 })();
@@ -69,7 +69,7 @@ const sisaStokUrl = (() => {
 const sirkulasiObatUrl = (() => {
     try {
         return route("farmasi.sirkulasi-obat", {}, false);
-    } catch (_) {
+    } catch {
         return "/farmasi/sirkulasi-obat";
     }
 })();
@@ -77,7 +77,7 @@ const sirkulasiObatUrl = (() => {
 const cekStokObatUrl = (() => {
     try {
         return route("farmasi.cek-stok-obat", {}, false);
-    } catch (_) {
+    } catch {
         return "/farmasi/cek-stok-obat";
     }
 })();
@@ -85,7 +85,7 @@ const cekStokObatUrl = (() => {
 const riwayatBarangMedisUrl = (() => {
     try {
         return route("farmasi.riwayat-barang-medis", {}, false);
-    } catch (_) {
+    } catch {
         return "/farmasi/riwayat-barang-medis";
     }
 })();

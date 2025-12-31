@@ -3,46 +3,7 @@ import { Link } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
 import { route } from "ziggy-js";
 
-const statCards = {
-    ralan: [
-    {
-        title: "Tagihan Ralan",
-        amount: "Rp 128.450.000",
-        trend: "+8.2% dibanding kemarin",
-        gradient: "from-blue-500 to-indigo-600",
-        href: "/pembayaran/ralan",
-        label: "Kelola Pembayaran Ralan",
-        icon: (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8">
-                <path d="M4 6h16M4 12h12M4 18h8" />
-            </svg>
-        ),
-    },
-    ],
-    ranap: [
-    {
-        title: "Tagihan Ranap",
-        amount: "Rp 212.900.000",
-        trend: "+12.4% sejak awal minggu",
-        gradient: "from-emerald-500 to-teal-600",
-        href: "/pembayaran/ranap",
-        label: "Kelola Pembayaran Ranap",
-        icon: (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8">
-                <path d="M5 11h14" />
-                <path d="M12 5v14" />
-            </svg>
-        ),
-    },
-    ],
-};
-
-const workflowSteps = [
-    { title: "Verifikasi Tagihan", desc: "Review data billing otomatis dari modul medis." },
-    { title: "Pilih Penjamin", desc: "Pastikan penanggung jawab pembayaran dan plafon masih tersedia." },
-    { title: "Input Pembayaran", desc: "Entri metode bayar, nomor bukti, dan nilai pembayaran." },
-    { title: "Status & Kwitansi", desc: "Set status lunas dan unduh kwitansi resmi untuk pasien." },
-];
+ 
 
 export default function PembayaranIndex() {
     const [activeTab, setActiveTab] = useState("ralan"); // 'ralan' | 'ranap'

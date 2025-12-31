@@ -197,7 +197,7 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                     month: 'long',
                     day: 'numeric'
                 });
-            } catch (e) {
+            } catch {
                 return date;
             }
         };
@@ -541,7 +541,7 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
             } else if (key === 'rad' && !radData[noRawat]) {
                 await fetchRadData(noRawat);
             }
-        } catch (e) {
+        } catch {
             // ignore
         }
     };

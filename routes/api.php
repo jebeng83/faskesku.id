@@ -519,6 +519,10 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::post('/antrean/panggil', [MobileJknController::class, 'panggilAntrean'])->name('api.mobilejkn.antrean.panggil');
         // Batal Antrean
         Route::post('/antrean/batal', [MobileJknController::class, 'batalAntrean'])->name('api.mobilejkn.antrean.batal');
+        Route::post('/srk/check', [MobileJknController::class, 'cekSrk'])->name('api.mobilejkn.srk.check');
+        Route::post('/srk/check/test', [MobileJknController::class, 'cekSrk'])
+            ->withoutMiddleware(['auth', \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+            ->name('api.mobilejkn.srk.check.test');
     });
 
     // Jadwal API Routes

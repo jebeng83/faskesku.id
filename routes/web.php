@@ -1648,6 +1648,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/penjab', [\App\Http\Controllers\PenjabController::class, 'index'])->name('penjab.index');
     Route::post('/penjab', [\App\Http\Controllers\PenjabController::class, 'store'])->name('penjab.store');
     Route::put('/penjab/{kd_pj}', [\App\Http\Controllers\PenjabController::class, 'update'])->name('penjab.update');
+    Route::delete('/penjab/{kd_pj}', [\App\Http\Controllers\PenjabController::class, 'destroy'])->name('penjab.destroy');
     Route::patch('/penjab/{kd_pj}/toggle-status', [\App\Http\Controllers\PenjabController::class, 'toggleStatus'])->name('penjab.toggle-status');
     Route::get('/penjab/generate-kode', [\App\Http\Controllers\PenjabController::class, 'generateKode'])->name('penjab.generate-kode');
 
@@ -1655,6 +1656,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/poliklinik', [\App\Http\Controllers\PoliklinikController::class, 'index'])->name('poliklinik.index');
     Route::post('/poliklinik', [\App\Http\Controllers\PoliklinikController::class, 'store'])->name('poliklinik.store');
     Route::put('/poliklinik/{kd_poli}', [\App\Http\Controllers\PoliklinikController::class, 'update'])->name('poliklinik.update');
+    Route::delete('/poliklinik/{kd_poli}', [\App\Http\Controllers\PoliklinikController::class, 'destroy'])->name('poliklinik.destroy');
     Route::patch('/poliklinik/{kd_poli}/toggle-status', [\App\Http\Controllers\PoliklinikController::class, 'toggleStatus'])->name('poliklinik.toggle-status');
     Route::get('/poliklinik/generate-kode', [\App\Http\Controllers\PoliklinikController::class, 'generateKode'])->name('poliklinik.generate-kode');
 

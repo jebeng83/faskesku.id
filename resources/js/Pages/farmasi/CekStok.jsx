@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Head } from "@inertiajs/react";
 import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
 import axios from "axios";
-import { route } from "ziggy-js";
 import { motion } from "framer-motion";
 import { Search as SearchIcon, RefreshCcw, PackageOpen } from "lucide-react";
 
@@ -13,7 +12,6 @@ export default function CekStok() {
     const [q, setQ] = useState("");
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [mounted, setMounted] = useState(false);
 
     const cekStokDataUrl = "/farmasi/sisa-stok/data";
 
@@ -32,13 +30,12 @@ export default function CekStok() {
                     ? data.list
                     : [];
                 setBangsal(list);
-            } catch (e) {
+            } catch {
                 setBangsal([]);
             }
         };
         fetchLokasi();
-        const t = setTimeout(() => setMounted(true), 0);
-        return () => clearTimeout(t);
+        return () => {};
     }, []);
 
     const defaultBangsal = useMemo(() => {
@@ -104,7 +101,7 @@ export default function CekStok() {
                 stok: Number((r?.stok_per_gudang || {})[kdBangsal] ?? 0),
             }));
             setItems(mapped.filter((it) => Number(it.stok) > 0));
-        } catch (e) {
+        } catch {
             setItems([]);
         } finally {
             setLoading(false);
@@ -229,7 +226,7 @@ export default function CekStok() {
                         {loading ? (
                             <div className="p-6">
                                 <div className="space-y-2">
-                                    {[...Array(6)].map((_, i) => (
+                                    {[...Array(6).keys()].map((i) => (
                                         <div
                                             key={i}
                                             className="animate-pulse h-10 bg-gray-100 dark:bg-gray-800 rounded"

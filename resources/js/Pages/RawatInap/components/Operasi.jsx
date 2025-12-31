@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
-export default function Operasi({ token = '', noRkmMedis = '', noRawat = '' }) {
+export default function Operasi({ token: _token = '', noRkmMedis: _noRkmMedis = '', noRawat = '' }) {
     const [formData, setFormData] = useState({
         tgl_operasi: new Date().toISOString().slice(0, 10),
         jam_mulai: '',
