@@ -4,7 +4,7 @@ import { Link, usePage } from '@inertiajs/react';
 import SearchableSelect from '../../../Components/SearchableSelect.jsx';
 import { Eraser, Pencil, Trash2 } from 'lucide-react';
 import { PlusIcon } from '@heroicons/react/24/outline';
-import DataAlergi from '../../../Alergi/DataAlergi.jsx';
+import DataAlergi from '../../../Components/DataAlergi.jsx';
 import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
 import axios from 'axios';
 

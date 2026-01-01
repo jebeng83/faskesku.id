@@ -1,14 +1,106 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { overlayTransition, contentSpring, transformOriginForDir, createPageVariants, hoverTapVariants, headerItemVariants } from "@/tools/motion";
 import { Head, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import LanjutanRalanLayout from "@/Layouts/LanjutanRalanLayout";
 import NewCpptSoap from "./NewComponen/NewCpptSoap";
-import NewTarifTindakan from "./NewComponen/NewTarifTindakan";
-import NewResep from "./NewComponen/NewResep";
-import NewPermintaanLab from "./NewComponen/NewPermintaanLab";
+import TarifTindakan from "./components/TarifTindakan";
+import Resep from "./components/Resep";
+import PermintaanLab from "./components/PermintaanLab";
 import axios from "axios";
+
+const overlayTransition = {
+  duration: 0.25,
+  ease: [0.22, 1, 0.36, 1],
+};
+
+const contentSpring = {
+  type: "spring",
+  stiffness: 220,
+  damping: 28,
+  mass: 0.9,
+};
+
+const transformOriginForDir = (dir) => {
+  if (dir < 0) return "left center";
+  if (dir > 0) return "right center";
+  return "center center";
+};
+
+const createPageVariants = (prefersReducedMotion) => {
+  if (prefersReducedMotion) {
+    return {
+      enter: { opacity: 0, x: 0, scale: 1 },
+      center: {
+        opacity: 1,
+        x: 0,
+        scale: 1,
+        transition: { duration: 0 },
+      },
+      exit: {
+        opacity: 0,
+        x: 0,
+        scale: 1,
+        transition: { duration: 0 },
+      },
+    };
+  }
+  return {
+    enter: (dir = 1) => ({
+      opacity: 0,
+      x: dir > 0 ? 40 : -40,
+      scale: 0.98,
+    }),
+    center: {
+      opacity: 1,
+      x: 0,
+      scale: 1,
+      transition: {
+        opacity: { duration: 0.2 },
+        x: { type: "spring", stiffness: 260, damping: 30 },
+        scale: { duration: 0.2 },
+      },
+    },
+    exit: (dir = 1) => ({
+      opacity: 0,
+      x: dir > 0 ? -40 : 40,
+      scale: 0.98,
+      transition: {
+        opacity: { duration: 0.15 },
+        x: { duration: 0.2 },
+        scale: { duration: 0.2 },
+      },
+    }),
+  };
+};
+
+const hoverTapVariants = {
+  rest: { scale: 1, rotate: 0 },
+  hover: {
+    scale: 1.05,
+    rotate: 0,
+    transition: { duration: 0.15 },
+  },
+  tap: {
+    scale: 0.97,
+    rotate: 0,
+    transition: { duration: 0.1 },
+  },
+};
+
+const headerItemVariants = {
+  rest: { opacity: 1, y: 0 },
+  hover: {
+    opacity: 1,
+    y: -1,
+    transition: { duration: 0.15 },
+  },
+  tap: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.1 },
+  },
+};
 
 export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "", kdPoli = "" }) {
   const [isOpen, setIsOpen] = useState(true);
@@ -149,7 +241,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
       key: "tarif",
       title: "Tarif/Tindakan",
       render: () => (
-        <NewTarifTindakan token={token} noRkmMedis={noRkmMedis} noRawat={noRawat} />
+        <TarifTindakan token={token} noRkmMedis={noRkmMedis} noRawat={noRawat} />
       ),
     });
 
@@ -157,7 +249,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
       key: "resep",
       title: "Resep Obat",
       render: () => (
-        <NewResep token={token} noRkmMedis={noRkmMedis} noRawat={noRawat} kdPoli={poliCode || kdPoli} />
+        <Resep token={token} noRkmMedis={noRkmMedis} noRawat={noRawat} kdPoli={poliCode || kdPoli} />
       ),
     });
 
@@ -165,7 +257,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
       key: "lab",
       title: "Permintaan Lab",
       render: () => (
-        <NewPermintaanLab token={token} noRkmMedis={noRkmMedis} noRawat={noRawat} />
+        <PermintaanLab token={token} noRkmMedis={noRkmMedis} noRawat={noRawat} />
       ),
     });
 
