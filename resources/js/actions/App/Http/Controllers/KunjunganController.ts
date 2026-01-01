@@ -219,6 +219,138 @@ kunjunganRalanPrint.head = (options?: RouteQueryOptions): RouteDefinition<'head'
     method: 'head',
 })
 
-const KunjunganController = { index, getStats, kunjunganRalanPage, kunjunganRalanData, kunjunganRalanPrint }
+/**
+* @see \App\Http\Controllers\KunjunganController::kunjunganRanapPage
+* @see app/Http/Controllers/KunjunganController.php:864
+* @route '/laporan/ranap/kunjungan'
+*/
+export const kunjunganRanapPage = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: kunjunganRanapPage.url(options),
+    method: 'get',
+})
+
+kunjunganRanapPage.definition = {
+    methods: ["get","head"],
+    url: '/laporan/ranap/kunjungan',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\KunjunganController::kunjunganRanapPage
+* @see app/Http/Controllers/KunjunganController.php:864
+* @route '/laporan/ranap/kunjungan'
+*/
+kunjunganRanapPage.url = (options?: RouteQueryOptions) => {
+    return kunjunganRanapPage.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\KunjunganController::kunjunganRanapPage
+* @see app/Http/Controllers/KunjunganController.php:864
+* @route '/laporan/ranap/kunjungan'
+*/
+kunjunganRanapPage.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: kunjunganRanapPage.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\KunjunganController::kunjunganRanapPage
+* @see app/Http/Controllers/KunjunganController.php:864
+* @route '/laporan/ranap/kunjungan'
+*/
+kunjunganRanapPage.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: kunjunganRanapPage.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\KunjunganController::kunjunganRanapData
+* @see app/Http/Controllers/KunjunganController.php:877
+* @route '/laporan/ranap/kunjungan/data'
+*/
+export const kunjunganRanapData = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: kunjunganRanapData.url(options),
+    method: 'get',
+})
+
+kunjunganRanapData.definition = {
+    methods: ["get","head"],
+    url: '/laporan/ranap/kunjungan/data',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\KunjunganController::kunjunganRanapData
+* @see app/Http/Controllers/KunjunganController.php:877
+* @route '/laporan/ranap/kunjungan/data'
+*/
+kunjunganRanapData.url = (options?: RouteQueryOptions) => {
+    return kunjunganRanapData.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\KunjunganController::kunjunganRanapData
+* @see app/Http/Controllers/KunjunganController.php:877
+* @route '/laporan/ranap/kunjungan/data'
+*/
+kunjunganRanapData.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: kunjunganRanapData.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\KunjunganController::kunjunganRanapData
+* @see app/Http/Controllers/KunjunganController.php:877
+* @route '/laporan/ranap/kunjungan/data'
+*/
+kunjunganRanapData.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: kunjunganRanapData.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\KunjunganController::kunjunganRanapPrint
+* @see app/Http/Controllers/KunjunganController.php:1043
+* @route '/laporan/ranap/kunjungan/print'
+*/
+export const kunjunganRanapPrint = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: kunjunganRanapPrint.url(options),
+    method: 'get',
+})
+
+kunjunganRanapPrint.definition = {
+    methods: ["get","head"],
+    url: '/laporan/ranap/kunjungan/print',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\KunjunganController::kunjunganRanapPrint
+* @see app/Http/Controllers/KunjunganController.php:1043
+* @route '/laporan/ranap/kunjungan/print'
+*/
+kunjunganRanapPrint.url = (options?: RouteQueryOptions) => {
+    return kunjunganRanapPrint.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\KunjunganController::kunjunganRanapPrint
+* @see app/Http/Controllers/KunjunganController.php:1043
+* @route '/laporan/ranap/kunjungan/print'
+*/
+kunjunganRanapPrint.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: kunjunganRanapPrint.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\KunjunganController::kunjunganRanapPrint
+* @see app/Http/Controllers/KunjunganController.php:1043
+* @route '/laporan/ranap/kunjungan/print'
+*/
+kunjunganRanapPrint.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: kunjunganRanapPrint.url(options),
+    method: 'head',
+})
+
+const KunjunganController = { index, getStats, kunjunganRalanPage, kunjunganRalanData, kunjunganRalanPrint, kunjunganRanapPage, kunjunganRanapData, kunjunganRanapPrint }
 
 export default KunjunganController

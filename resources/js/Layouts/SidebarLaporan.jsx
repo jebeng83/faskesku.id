@@ -4,12 +4,13 @@ import { route } from "ziggy-js";
 import {
     Gauge,
     BarChart2,
-    Activity,
-    BookOpen,
     FileText,
-    Receipt,
     ChevronDown,
     ChevronRight,
+    Stethoscope,
+    Bed,
+    Users,
+    ClipboardList,
 } from "lucide-react";
 import MobileBottomNav from "@/Components/MobileBottomNav";
 
@@ -89,52 +90,32 @@ export default function SidebarLaporan({ title = "Laporan", children }) {
             // Tombol dengan submenu diletakkan tepat di bawah anchor "Pusat Laporan"
             {
                 label: "Laporan RALAN",
-                icon: <Receipt className="w-4 h-4" />,
+                icon: <Stethoscope className="w-4 h-4" />,
                 groupKey: "ralan",
                 children: [
                     {
                         label: "Kunjungan Ralan",
                         href: "/laporan/ralan/kunjungan",
-                        icon: <FileText className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Billing RALAN",
-                        href: "/akutansi/billing",
-                        icon: <Receipt className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Nota Jalan RALAN",
-                        href: "/akutansi/nota-jalan",
-                        icon: <Receipt className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Kasir RALAN",
-                        href: "/akutansi/kasir-ralan",
-                        icon: <Receipt className="w-4 h-4" />,
+                        icon: <Users className="w-4 h-4" />,
                     },
                 ],
             },
             {
                 label: "Laporan RANAP",
-                icon: <Receipt className="w-4 h-4" />,
+                icon: <Bed className="w-4 h-4" />,
                 groupKey: "ranap",
                 children: [
                     {
-                        label: "Billing RANAP",
-                        href: "/akutansi/billing-ranap",
-                        icon: <Receipt className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Pembayaran RANAP",
-                        href: "/pembayaran/ranap",
-                        icon: <Receipt className="w-4 h-4" />,
+                        label: "Kunjungan RANAP",
+                        href: "/laporan/ranap/kunjungan",
+                        icon: <Users className="w-4 h-4" />,
                     },
                 ],
             },
             // Ubah submenu dari "Keuangan" menjadi "Laporan Umum"
             {
                 label: "Laporan Umum",
-                icon: <FileText className="w-4 h-4" />,
+                icon: <ClipboardList className="w-4 h-4" />,
                 groupKey: "keuangan",
                 children: [
                     {
