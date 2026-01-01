@@ -346,6 +346,10 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('Laporan/Home');
     })->name('laporan.index');
 
+    Route::get('/laporan/ranap/kunjungan', [KunjunganController::class, 'kunjunganRanapPage'])->name('laporan.ranap.kunjungan.page');
+    Route::get('/laporan/ranap/kunjungan/data', [KunjunganController::class, 'kunjunganRanapData'])->name('laporan.ranap.kunjungan.data');
+    Route::get('/laporan/ranap/kunjungan/print', [KunjunganController::class, 'kunjunganRanapPrint'])->name('laporan.ranap.kunjungan.print');
+
     Route::get('/laporan/rl-kemenkes', function () {
         return Inertia::render('Laporan/RLKemenkes');
     })->name('laporan.rl-kemenkes');

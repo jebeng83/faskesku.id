@@ -4,12 +4,13 @@ import { route } from "ziggy-js";
 import {
     Gauge,
     BarChart2,
-    Activity,
-    BookOpen,
     FileText,
-    Receipt,
     ChevronDown,
     ChevronRight,
+    Stethoscope,
+    Bed,
+    Users,
+    ClipboardList,
 } from "lucide-react";
 import MobileBottomNav from "@/Components/MobileBottomNav";
 
@@ -85,62 +86,34 @@ export default function SidebarLaporan({ title = "Laporan", children }) {
                 icon: <BarChart2 className="w-4 h-4" />,
             },
             {
-                label: "Laporan Keuangan",
-                icon: <Activity className="w-4 h-4" />,
-                groupKey: "keuangan",
+                label: "Laporan RALAN",
+                icon: <Stethoscope className="w-4 h-4" />,
+                groupKey: "ralan",
                 children: [
                     {
-                        label: "Neraca",
-                        href: "/akutansi/neraca",
-                        icon: <Activity className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Cash Flow",
-                        href: "/akutansi/cashflow",
-                        icon: <Activity className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Buku Besar",
-                        href: "/akutansi/buku-besar",
-                        icon: <BookOpen className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Mutasi Rekening",
-                        href: "/akutansi/mutasi-rekening",
-                        icon: <BookOpen className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Mutasi Kas",
-                        href: "/akutansi/mutasi-kas",
-                        icon: <BookOpen className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Setoran Bank",
-                        href: "/akutansi/setoran-bank",
-                        icon: <Receipt className="w-4 h-4" />,
+                        label: "Kunjungan Ralan",
+                        href: "/laporan/ralan/kunjungan",
+                        icon: <Users className="w-4 h-4" />,
                     },
                 ],
             },
             {
-                label: "Laporan Operasional",
-                icon: <FileText className="w-4 h-4" />,
-                groupKey: "operasional",
+                label: "Laporan RANAP",
+                icon: <Bed className="w-4 h-4" />,
+                groupKey: "ranap",
                 children: [
                     {
-                        label: "Billing Rawat Jalan",
-                        href: "/akutansi/billing",
-                        icon: <Receipt className="w-4 h-4" />,
+                        label: "Kunjungan RANAP",
+                        href: "/laporan/ranap/kunjungan",
+                        icon: <Users className="w-4 h-4" />,
                     },
-                    {
-                        label: "Nota Jalan",
-                        href: "/akutansi/nota-jalan",
-                        icon: <Receipt className="w-4 h-4" />,
-                    },
-                    {
-                        label: "Kasir Ralan",
-                        href: "/akutansi/kasir-ralan",
-                        icon: <Receipt className="w-4 h-4" />,
-                    },
+                ],
+            },
+            {
+                label: "Laporan Umum",
+                icon: <ClipboardList className="w-4 h-4" />,
+                groupKey: "keuangan",
+                children: [
                     {
                         label: "RL Kemenkes",
                         href: "/laporan/rl-kemenkes",
