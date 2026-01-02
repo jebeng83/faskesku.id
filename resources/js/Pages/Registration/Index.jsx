@@ -504,6 +504,8 @@ export default function Registration({
         }
     };
 
+    
+
     // Simpan filter yang relevan untuk halaman Rawat Jalan sebelum navigasi
     
 
@@ -517,7 +519,7 @@ export default function Registration({
                     no_rkm_medis: reg.no_rkm_medis,
                     kd_poli: reg.kd_poli || reg?.poliklinik?.kd_poli,
                     status: 1, // Hadir
-                    tanggalperiksa: reg.tgl_registrasi,
+                    tanggalperiksa: todayDateString(getAppTimeZone()),
                 };
                 try {
                     await axios.post("/api/mobilejkn/antrean/panggil", payload);
@@ -1638,7 +1640,7 @@ export default function Registration({
                     no_rkm_medis: reg.no_rkm_medis,
                     kd_poli: reg.kd_poli || reg?.poliklinik?.kd_poli,
                     status: 2, // Tidak Hadir
-                    tanggalperiksa: reg.tgl_registrasi,
+                    tanggalperiksa: todayDateString(getAppTimeZone()),
                 };
                 try {
                     await axios.post(
@@ -1656,7 +1658,7 @@ export default function Registration({
                 const payloadBatal = {
                     no_rkm_medis: reg.no_rkm_medis,
                     kd_poli: reg.kd_poli || reg?.poliklinik?.kd_poli,
-                    tanggalperiksa: reg.tgl_registrasi,
+                    tanggalperiksa: todayDateString(getAppTimeZone()),
                     alasan: "Batal registrasi oleh petugas",
                 };
                 try {

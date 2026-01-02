@@ -16,6 +16,7 @@ import {
   UserIcon,
   BanknotesIcon,
   EllipsisVerticalIcon,
+  ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 
 // Simple Dropdown Component
@@ -234,6 +235,10 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         return time.substring(0, 5);
     };
 
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    
+
     const handleSuratSehat = (noRawAt) => {
         router.get(route('rawat-jalan.surat-sehat', noRawAt));
     };
@@ -270,7 +275,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                     no_rkm_medis: item.no_rkm_medis || '',
                     kd_poli: item.kd_poli || item.poliklinik?.kd_poli || '',
                     status: 1,
-                    tanggalperiksa: item.tgl_registrasi || '',
+                    tanggalperiksa: todayDateString(getAppTimeZone()),
                 };
                 try { await axios.post('/api/mobilejkn/antrean/panggil', payload); } catch (_) {}
             }
@@ -278,6 +283,60 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         const token = toBase64Url({ no_rawat: item.no_rawat, no_rkm_medis: item.no_rkm_medis || '' });
         try { router.get(route('rawat-jalan.lanjutan'), { t: token }, { preserveScroll: true }); }
         catch { router.get('/rawat-jalan/lanjutan', { t: token }, { preserveScroll: true }); }
+    };
+
+    const [panggilLoadingMap, setPanggilLoadingMap] = useState({});
+
+    const setPanggilLoading = (noRawat, loading) => {
+        setPanggilLoadingMap((prev) => ({ ...prev, [noRawat]: !!loading }));
+    };
+
+    const handleOpenCanvasAndPanggil = async (item) => {
+        const noRawat = item?.no_rawat;
+        const allowed = isAllowedForAntrean(item);
+        if (allowed && noRawat) setPanggilLoading(noRawat, true);
+        try {
+            if (allowed) {
+                const payload = {
+                    no_rkm_medis: item.no_rkm_medis || '',
+                    kd_poli: item.kd_poli || item.poliklinik?.kd_poli || '',
+                    status: 1,
+                    tanggalperiksa: todayDateString(getAppTimeZone()),
+                };
+                let success = false;
+                for (let attempt = 1; attempt <= 3; attempt++) {
+                    try {
+                        const res = await axios.post('/api/mobilejkn/antrean/panggil', payload);
+                        if (res && res.status === 200) {
+                            success = true;
+                            break;
+                        }
+                    } catch (_) {
+                        const backoff = 300 * Math.pow(2, attempt - 1);
+                        await sleep(backoff);
+                    }
+                }
+                if (!success) {
+                    // Gagal panggil setelah retry, lanjutkan navigasi tanpa mengganggu alur
+                }
+            }
+        } catch (_) {}
+        try {
+            const url = route('rawat-jalan.canvas', {
+                no_rawat: item.no_rawat,
+                no_rkm_medis: item.no_rkm_medis || '',
+                kd_poli: item.kd_poli || item.poliklinik?.kd_poli || ''
+            });
+            router.visit(url);
+        } catch {
+            const params = new URLSearchParams({
+                no_rawat: item.no_rawat || '',
+                no_rkm_medis: item.no_rkm_medis || '',
+                kd_poli: item.kd_poli || item.poliklinik?.kd_poli || ''
+            }).toString();
+            router.visit(`/rawat-jalan/canvas?${params}`);
+        }
+        if (allowed && noRawat) setPanggilLoading(noRawat, false);
     };
 
     return (
@@ -539,27 +598,16 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                         </td>
                                         <td
                                             className="px-4 py-2 whitespace-nowrap cursor-pointer"
-                                            onClick={() => {
-                                                try {
-                                                    const url = route('rawat-jalan.canvas', {
-                                                        no_rawat: item.no_rawat,
-                                                        no_rkm_medis: item.no_rkm_medis || '',
-                                                        kd_poli: item.kd_poli || item.poliklinik?.kd_poli || ''
-                                                    });
-                                                    router.visit(url);
-                                                } catch {
-                                                    const params = new URLSearchParams({
-                                                        no_rawat: item.no_rawat || '',
-                                                        no_rkm_medis: item.no_rkm_medis || '',
-                                                        kd_poli: item.kd_poli || item.poliklinik?.kd_poli || ''
-                                                    }).toString();
-                                                    router.visit(`/rawat-jalan/canvas?${params}`);
-                                                }
-                                            }}
+                                            onClick={() => handleOpenCanvasAndPanggil(item)}
                                             title="Buka Canvas Rawat Jalan"
                                         >
-                                            <span className="font-mono text-sm font-semibold text-gray-800 dark:text-gray-200">
-                                                {item.no_rawat}
+                                            <span className="inline-flex items-center gap-2">
+                                                <span className="font-mono text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                                    {item.no_rawat}
+                                                </span>
+                                                {panggilLoadingMap[item.no_rawat] && (
+                                                    <ArrowPathIcon className="w-3 h-3 text-blue-500 animate-spin" />
+                                                )}
                                             </span>
                                         </td>
 

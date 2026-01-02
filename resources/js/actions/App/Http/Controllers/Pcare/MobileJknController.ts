@@ -170,12 +170,12 @@ addAntrean.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 * @see app/Http/Controllers/Pcare/MobileJknController.php:703
 * @route '/api/mobilejkn/antrean/panggil'
 */
-export const panggilAntrean = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: panggilAntrean.url(options),
+const panggilAntrean5944077e33133cb7d98397e2fe74ac82 = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: panggilAntrean5944077e33133cb7d98397e2fe74ac82.url(options),
     method: 'post',
 })
 
-panggilAntrean.definition = {
+panggilAntrean5944077e33133cb7d98397e2fe74ac82.definition = {
     methods: ["post"],
     url: '/api/mobilejkn/antrean/panggil',
 } satisfies RouteDefinition<["post"]>
@@ -185,8 +185,8 @@ panggilAntrean.definition = {
 * @see app/Http/Controllers/Pcare/MobileJknController.php:703
 * @route '/api/mobilejkn/antrean/panggil'
 */
-panggilAntrean.url = (options?: RouteQueryOptions) => {
-    return panggilAntrean.definition.url + queryParams(options)
+panggilAntrean5944077e33133cb7d98397e2fe74ac82.url = (options?: RouteQueryOptions) => {
+    return panggilAntrean5944077e33133cb7d98397e2fe74ac82.definition.url + queryParams(options)
 }
 
 /**
@@ -194,10 +194,49 @@ panggilAntrean.url = (options?: RouteQueryOptions) => {
 * @see app/Http/Controllers/Pcare/MobileJknController.php:703
 * @route '/api/mobilejkn/antrean/panggil'
 */
-panggilAntrean.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: panggilAntrean.url(options),
+panggilAntrean5944077e33133cb7d98397e2fe74ac82.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: panggilAntrean5944077e33133cb7d98397e2fe74ac82.url(options),
     method: 'post',
 })
+
+/**
+* @see \App\Http\Controllers\Pcare\MobileJknController::panggilAntrean
+* @see app/Http/Controllers/Pcare/MobileJknController.php:703
+* @route '/api/mobilejkn/antrean/panggil/test'
+*/
+const panggilAntrean0d6ed321e787796635ffbf4db73905af = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: panggilAntrean0d6ed321e787796635ffbf4db73905af.url(options),
+    method: 'post',
+})
+
+panggilAntrean0d6ed321e787796635ffbf4db73905af.definition = {
+    methods: ["post"],
+    url: '/api/mobilejkn/antrean/panggil/test',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\MobileJknController::panggilAntrean
+* @see app/Http/Controllers/Pcare/MobileJknController.php:703
+* @route '/api/mobilejkn/antrean/panggil/test'
+*/
+panggilAntrean0d6ed321e787796635ffbf4db73905af.url = (options?: RouteQueryOptions) => {
+    return panggilAntrean0d6ed321e787796635ffbf4db73905af.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\MobileJknController::panggilAntrean
+* @see app/Http/Controllers/Pcare/MobileJknController.php:703
+* @route '/api/mobilejkn/antrean/panggil/test'
+*/
+panggilAntrean0d6ed321e787796635ffbf4db73905af.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: panggilAntrean0d6ed321e787796635ffbf4db73905af.url(options),
+    method: 'post',
+})
+
+export const panggilAntrean = {
+    '/api/mobilejkn/antrean/panggil': panggilAntrean5944077e33133cb7d98397e2fe74ac82,
+    '/api/mobilejkn/antrean/panggil/test': panggilAntrean0d6ed321e787796635ffbf4db73905af,
+}
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::batalAntrean

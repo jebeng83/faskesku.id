@@ -12,17 +12,33 @@ const itemVariants = {
   show: { opacity: 1, y: 0 },
 };
 
+const todayInput = (() => {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${dd}`;
+})();
+
 export default function MonitoringPcare() {
   const [summary, setSummary] = useState({ success: 0, failed: 0 });
   const [attempts, setAttempts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState("");
   const [selected, setSelected] = useState([]);
-  const [start, setStart] = useState("");
-  const [end, setEnd] = useState("");
+  const [start, setStart] = useState(todayInput);
+  const [end, setEnd] = useState(todayInput);
   const [resendingNo, setResendingNo] = useState("");
   const [debugOpen, setDebugOpen] = useState(false);
   const [debugInfo, setDebugInfo] = useState({ queued: null, raw: null, status: "", noKunjungan: "", metaCode: "", metaMessage: "" });
+  const [sortKey, setSortKey] = useState('tglDaftar');
+  const [sortOrder, setSortOrder] = useState('asc');
+  const [massSending, setMassSending] = useState(false);
+  const [massModalOpen, setMassModalOpen] = useState(false);
+  const [massLogs, setMassLogs] = useState([]);
+  const [kunjunganSending, setKunjunganSending] = useState(false);
+  const [kunjunganModalOpen, setKunjunganModalOpen] = useState(false);
+  const [kunjunganLogs, setKunjunganLogs] = useState([]);
 
   const load = async () => {
     setLoading(true);
@@ -56,6 +72,88 @@ export default function MonitoringPcare() {
 
   const csrfToken = typeof document !== 'undefined' ? (document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '') : '';
 
+
+  const sendPendaftaranWithResponse = async (no) => {
+    try {
+      const body = { no_rawat: String(no) };
+      const r = await fetch(`/api/pcare/pendaftaran`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}) }, credentials: 'include', body: JSON.stringify(body) });
+      const text = await r.text();
+      let json = null;
+      try { json = JSON.parse(text); } catch {}
+      const code = json?.metaData?.code ?? json?.metadata?.code;
+      const ok = Number(code) === 201 || Number(code) === 200;
+      return { ok, requestBody: body, response: json ?? text };
+    } catch (e) {
+      return { ok: false, requestBody: { no_rawat: String(no) }, response: String(e?.message || e) };
+    }
+  };
+
+  const resendFailedPendaftaran = async () => {
+    const targets = rows
+      .filter((r) => String(r.status) === 'Gagal')
+      .map((r) => r.no_rawat)
+      .filter(Boolean)
+      .sort((a, b) => String(a).localeCompare(String(b)));
+    if (!targets.length) {
+      setMassLogs((p) => [...p, { no_rawat: '-', status: 'none', requestBody: null, response: 'Tidak ada entri dengan status Gagal' }]);
+      setMassSending(false);
+      return;
+    }
+    try {
+      for (const no of targets) {
+        setMassLogs((p) => [...p, { no_rawat: String(no), status: 'sending', requestBody: { no_rawat: String(no) }, response: null }]);
+        const result = await sendPendaftaranWithResponse(no);
+        setMassLogs((p) => p.map((log) => log.no_rawat === String(no) ? { ...log, status: result.ok ? 'success' : 'failed', requestBody: result.requestBody, response: result.response } : log));
+        await new Promise((res) => setTimeout(res, 300));
+      }
+      load();
+    } finally {
+      setMassSending(false);
+    }
+  };
+
+  const sendKunjunganWithResponse = async (no) => {
+    try {
+      const prev = await fetch(`/api/pcare/kunjungan/preview/${encodeURIComponent(no)}`, { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include' });
+      const pj = await prev.json().catch(() => ({}));
+      const payload = pj?.payload || {};
+      const body = { ...payload, no_rawat: String(no) };
+      const r = await fetch(`/api/pcare/kunjungan`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}) }, credentials: 'include', body: JSON.stringify(body) });
+      const text = await r.text();
+      let json = null;
+      try { json = JSON.parse(text); } catch {}
+      const code = json?.metaData?.code ?? json?.metadata?.code;
+      const ok = Number(code) === 201 || Number(code) === 200;
+      return { ok, requestBody: body, response: json ?? text };
+    } catch (e) {
+      return { ok: false, requestBody: { no_rawat: String(no) }, response: String(e?.message || e) };
+    }
+  };
+
+  const makeKunjungan = async () => {
+    setKunjunganModalOpen(true);
+    setKunjunganLogs([]);
+    setKunjunganSending(true);
+    const targets = (selected.length ? [...selected] : rows.filter((r) => String(r.status) === 'Terkirim').map((r) => r.no_rawat).filter(Boolean))
+      .sort((a, b) => String(a).localeCompare(String(b)));
+    if (!targets.length) {
+      setKunjunganLogs((p) => [...p, { no_rawat: '-', status: 'none', requestBody: null, response: 'Tidak ada entri dengan status Terkirim' }]);
+      setKunjunganSending(false);
+      return;
+    }
+    try {
+      for (const no of targets) {
+        setKunjunganLogs((p) => [...p, { no_rawat: String(no), status: 'sending', requestBody: { no_rawat: String(no) }, response: null }]);
+        const result = await sendKunjunganWithResponse(no);
+        setKunjunganLogs((p) => p.map((log) => log.no_rawat === String(no) ? { ...log, status: result.ok ? 'success' : 'failed', requestBody: result.requestBody, response: result.response } : log));
+        await new Promise((res) => setTimeout(res, 300));
+      }
+      load();
+    } finally {
+      setKunjunganSending(false);
+    }
+  };
+
   const resend = async (no) => {
     setResendingNo(no);
     try {
@@ -84,13 +182,56 @@ export default function MonitoringPcare() {
   };
 
   const massSend = async () => {
-    const body = selected.length ? { no_rawat: selected } : {};
-    await fetch(`/pcare/api/mass-send`, { method: "POST", headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest", ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}) }, credentials: 'include', body: JSON.stringify(body) });
-    setSelected([]);
-    load();
+    setMassModalOpen(true);
+    setMassLogs([]);
+    setMassSending(true);
+    if (selected.length) {
+      try {
+        for (const no of selected) {
+          setMassLogs((p) => [...p, { no_rawat: String(no), status: 'sending', requestBody: { no_rawat: String(no) }, response: null }]);
+          const result = await sendPendaftaranWithResponse(no);
+          setMassLogs((p) => p.map((log) => log.no_rawat === String(no) ? { ...log, status: result.ok ? 'success' : 'failed', requestBody: result.requestBody, response: result.response } : log));
+          await new Promise((res) => setTimeout(res, 300));
+        }
+        setSelected([]);
+        load();
+      } finally {
+        setMassSending(false);
+      }
+      return;
+    }
+    await resendFailedPendaftaran();
   };
 
-  const rows = useMemo(() => attempts, [attempts]);
+  const rows = useMemo(() => {
+    const arr = Array.isArray(attempts) ? [...attempts] : [];
+    const key = sortKey;
+    const toVal = (obj) => {
+      const v = obj ? obj[key] : undefined;
+      if (key === 'tglDaftar') {
+        return v ? new Date(v) : new Date(0);
+      }
+      if (key === 'noUrut') {
+        const n = Number(v);
+        return Number.isNaN(n) ? 0 : n;
+      }
+      return v != null ? String(v).toLowerCase() : '';
+    };
+    arr.sort((a, b) => {
+      const va = toVal(a);
+      const vb = toVal(b);
+      let cmp = 0;
+      if (va instanceof Date && vb instanceof Date) {
+        cmp = va - vb;
+      } else if (typeof va === 'number' && typeof vb === 'number') {
+        cmp = va - vb;
+      } else {
+        cmp = va < vb ? -1 : va > vb ? 1 : 0;
+      }
+      return sortOrder === 'asc' ? cmp : -cmp;
+    });
+    return arr;
+  }, [attempts, sortKey, sortOrder]);
 
   const fmtDate = (s) => {
     if (!s) return '';
@@ -112,16 +253,29 @@ export default function MonitoringPcare() {
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
           <div className="relative px-4 py-3 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-600/50 flex items-center justify-between">
             <h2 className="text-base font-semibold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">Monitoring Pengiriman PCare</h2>
-            <div className="flex items-center gap-2">
-              <input type="date" value={start} onChange={(e) => setStart(e.target.value)} className="h-8 rounded-lg border border-gray-300/60 bg-white/80 dark:bg-gray-800/80 text-sm px-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/30" />
-              <input type="date" value={end} onChange={(e) => setEnd(e.target.value)} className="h-8 rounded-lg border border-gray-300/60 bg-white/80 dark:bg-gray-800/80 text-sm px-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/30" />
-              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-8 rounded-lg border border-gray-300/60 bg-white/80 dark:bg-gray-800/80 text-sm px-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+            <div className="flex flex-wrap items-center gap-2 justify-end">
+              <input type="date" value={start} onChange={(e) => setStart(e.target.value)} className="h-8 w-full sm:w-auto rounded-lg border border-gray-300/60 bg-white/80 dark:bg-gray-800/80 text-sm px-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/30" />
+              <input type="date" value={end} onChange={(e) => setEnd(e.target.value)} className="h-8 w-full sm:w-auto rounded-lg border border-gray-300/60 bg-white/80 dark:bg-gray-800/80 text-sm px-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/30" />
+              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-8 w-full sm:w-auto rounded-lg border border-gray-300/60 bg-white/80 dark:bg-gray-800/80 text-sm px-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
                 <option value="">Semua</option>
                 <option value="Terkirim">Terkirim</option>
                 <option value="Gagal">Gagal</option>
               </select>
-              <button onClick={load} className="h-8 rounded-lg border border-gray-300/60 bg-white/80 dark:bg-gray-800/80 px-3 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Refresh</button>
-              <button onClick={massSend} className="h-8 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-3 text-sm hover:from-indigo-500 hover:to-purple-500 transition-colors">Kirim Massal</button>
+              <select value={sortKey} onChange={(e) => setSortKey(e.target.value)} className="h-8 w-full sm:w-auto rounded-lg border border-gray-300/60 bg-white/80 dark:bg-gray-800/80 text-sm px-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+                <option value="tglDaftar">Tanggal</option>
+                <option value="noUrut">No Urut</option>
+                <option value="no_rawat">No Rawat</option>
+                <option value="nm_pasien">Nama</option>
+                <option value="kdPoli">Poli</option>
+                <option value="nmPoli">Nama Poli</option>
+              </select>
+              <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} className="h-8 w-full sm:w-auto rounded-lg border border-gray-300/60 bg-white/80 dark:bg-gray-800/80 text-sm px-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+                <option value="asc">ASC</option>
+                <option value="desc">DESC</option>
+              </select>
+              <button onClick={load} className="h-8 w-full sm:w-auto rounded-lg border border-gray-300/60 bg-white/80 dark:bg-gray-800/80 px-3 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Refresh</button>
+              <button onClick={massSend} disabled={massSending || kunjunganSending} className={`h-8 w-full sm:w-auto rounded-lg px-3 text-sm text-white transition-colors ${massSending ? 'bg-indigo-400' : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500'}`}>{massSending ? 'Mengirim…' : 'Kirim Massal'}</button>
+              <button onClick={makeKunjungan} disabled={kunjunganSending || massSending} className={`h-8 w-full sm:w-auto rounded-lg px-3 text-sm text-white transition-colors ${kunjunganSending ? 'bg-emerald-400' : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500'}`}>{kunjunganSending ? 'Mengirim…' : 'Jadikan Kunjungan'}</button>
             </div>
           </div>
           <div className="relative p-6">
@@ -135,17 +289,17 @@ export default function MonitoringPcare() {
                 <div className="text-2xl font-bold text-slate-900 dark:text-white">{summary.failed}</div>
               </motion.div>
             </div>
-            <div className="overflow-x-auto overflow-y-auto max-h-[60vh] rounded-xl border border-gray-200/50 dark:border-gray-700/50 bg-white/60 dark:bg-gray-800/60 backdrop-blur">
+            <div className="overflow-x-auto overflow-y-auto sm:max-h-[60vh] max-h-[52vh] rounded-xl border border-gray-200/50 dark:border-gray-700/50 bg-white/60 dark:bg-gray-800/60 backdrop-blur">
               <table className="relative w-full text-sm">
                 <thead>
                   <tr>
-                    <th className="sticky top-0 z-10 px-3 py-2 text-left font-medium bg-gradient-to-r from-gray-50/80 via-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">Pilih</th>
+                    <th className="sticky top-0 z-10 px-3 py-2 text-left font-medium bg-gradient-to-r from-gray-50/80 via-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 hidden sm:table-cell">Pilih</th>
                     <th className="sticky top-0 z-10 px-3 py-2 text-left font-medium bg-gradient-to-r from-gray-50/80 via-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">Tanggal</th>
                     <th className="sticky top-0 z-10 px-3 py-2 text-left font-medium bg-gradient-to-r from-gray-50/80 via-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">No Rawat</th>
                     <th className="sticky top-0 z-10 px-3 py-2 text-left font-medium bg-gradient-to-r from-gray-50/80 via-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">Nama (No RM)</th>
-                    <th className="sticky top-0 z-10 px-3 py-2 text-left font-medium bg-gradient-to-r from-gray-50/80 via-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">Poli</th>
-                    <th className="sticky top-0 z-10 px-3 py-2 text-left font-medium bg-gradient-to-r from-gray-50/80 via-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">Nama Poli</th>
-                    <th className="sticky top-0 z-10 px-3 py-2 text-left font-medium bg-gradient-to-r from-gray-50/80 via-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">No Urut</th>
+                    <th className="sticky top-0 z-10 px-3 py-2 text-left font-medium bg-gradient-to-r from-gray-50/80 via-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 hidden md:table-cell">Poli</th>
+                    <th className="sticky top-0 z-10 px-3 py-2 text-left font-medium bg-gradient-to-r from-gray-50/80 via-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 hidden md:table-cell">Nama Poli</th>
+                    <th className="sticky top-0 z-10 px-3 py-2 text-left font-medium bg-gradient-to-r from-gray-50/80 via-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 hidden md:table-cell">No Urut</th>
                     <th className="sticky top-0 z-10 px-3 py-2 text-left font-medium bg-gradient-to-r from-gray-50/80 via-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">Status</th>
                     <th className="sticky top-0 z-10 px-3 py-2 text-left font-medium bg-gradient-to-r from-gray-50/80 via-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">Aksi</th>
                   </tr>
@@ -153,16 +307,16 @@ export default function MonitoringPcare() {
                 <motion.tbody variants={containerVariants} initial="hidden" animate="show">
                   {rows.map((r) => (
                     <motion.tr key={r.no_rawat} variants={itemVariants} className="border-t border-gray-100/50 dark:border-gray-700/30 odd:bg-white/40 even:bg-white/60 dark:odd:bg-gray-800/40 dark:even:bg-gray-800/60 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 dark:hover:from-gray-700/50 dark:hover:to-gray-800/50 transition-colors">
-                      <td className="p-2"><input type="checkbox" checked={selected.includes(r.no_rawat)} onChange={() => toggleSel(r.no_rawat)} /></td>
+                      <td className="p-2 hidden sm:table-cell"><input type="checkbox" checked={selected.includes(r.no_rawat)} onChange={() => toggleSel(r.no_rawat)} /></td>
                       <td className="p-2">{fmtDate(r.tglDaftar)}</td>
                       <td className="p-2">{r.no_rawat || ''}</td>
                       <td className="p-2">{(r.nm_pasien || '') + (r.no_rkm_medis ? ` (${r.no_rkm_medis})` : '')}</td>
-                      <td className="p-2">{r.kdPoli || ''}</td>
-                      <td className="p-2">{r.nmPoli || ''}</td>
-                      <td className="p-2">{r.noUrut || ''}</td>
+                      <td className="p-2 hidden md:table-cell">{r.kdPoli || ''}</td>
+                      <td className="p-2 hidden md:table-cell">{r.nmPoli || ''}</td>
+                      <td className="p-2 hidden md:table-cell">{r.noUrut || ''}</td>
                       <td className="p-2"><span className={statusClass(r.status)}>{r.status || ''}</span></td>
                       <td className="p-2">
-                        <button onClick={() => resend(r.no_rawat)} disabled={r.status === 'Terkirim' || resendingNo === r.no_rawat} className="inline-flex items-center gap-2 border rounded px-2 py-1 disabled:opacity-50">
+                        <button onClick={() => resend(r.no_rawat)} disabled={r.status === 'Terkirim' || resendingNo === r.no_rawat} className="inline-flex items-center gap-2 border rounded px-2 py-1 disabled:opacity-50 w-full sm:w-auto">
                           {resendingNo === r.no_rawat ? (
                             <span className="inline-block w-3 h-3 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin" />
                           ) : null}
@@ -177,27 +331,89 @@ export default function MonitoringPcare() {
                 </motion.tbody>
               </table>
             </div>
-            <div className="mt-4">
-              {debugOpen && (
-                <div className="rounded-xl border border-white/30 dark:border-gray-700/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm font-semibold">Debug Resend</div>
-                    <button onClick={() => setDebugOpen(false)} className="text-xs rounded px-2 py-1 border">Tutup</button>
+          <div className="mt-4">
+            {debugOpen && (
+              <div className="rounded-xl border border-white/30 dark:border-gray-700/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-sm font-semibold">Debug Resend</div>
+                  <button onClick={() => setDebugOpen(false)} className="text-xs rounded px-2 py-1 border">Tutup</button>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div><div className="text-xs text-slate-600 dark:text-slate-400">Queued</div><div className="font-mono">{String(!!debugInfo.queued)}</div></div>
+                  <div><div className="text-xs text-slate-600 dark:text-slate-400">Status</div><div className="font-mono">{debugInfo.status || ''}</div></div>
+                  <div><div className="text-xs text-slate-600 dark:text-slate-400">No Kunjungan</div><div className="font-mono">{debugInfo.noKunjungan || ''}</div></div>
+                  <div><div className="text-xs text-slate-600 dark:text-slate-400">metaData.code</div><div className="font-mono">{debugInfo.metaCode || ''}</div></div>
+                  <div><div className="text-xs text-slate-600 dark:text-slate-400">metaData.message</div><div className="font-mono break-all">{debugInfo.metaMessage || ''}</div></div>
+                </div>
+                <div className="mt-3">
+                  <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Raw Response</div>
+                  <pre className="text-xs leading-relaxed p-3 rounded bg-slate-50/70 dark:bg-gray-900/40 border border-slate-200/50 dark:border-gray-700/50 overflow-auto max-h-64">{debugInfo.raw ? JSON.stringify(debugInfo.raw, null, 2) : 'Tidak ada data'}</pre>
+                </div>
+              </div>
+            )}
+            {massModalOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/30" onClick={() => setMassModalOpen(false)} />
+                <div className="relative w-[90vw] max-w-4xl max-h-[80vh] overflow-hidden rounded-2xl border border-white/30 dark:border-gray-700/50 bg-white/95 dark:bg-gray-800/95 shadow-xl">
+                  <div className="px-4 py-3 border-b border-gray-200/60 dark:border-gray-700/60 flex items-center justify-between">
+                    <div className="text-sm font-semibold">Proses Kirim Massal</div>
+                    <button onClick={() => setMassModalOpen(false)} className="text-xs rounded px-2 py-1 border">Tutup</button>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div><div className="text-xs text-slate-600 dark:text-slate-400">Queued</div><div className="font-mono">{String(!!debugInfo.queued)}</div></div>
-                    <div><div className="text-xs text-slate-600 dark:text-slate-400">Status</div><div className="font-mono">{debugInfo.status || ''}</div></div>
-                    <div><div className="text-xs text-slate-600 dark:text-slate-400">No Kunjungan</div><div className="font-mono">{debugInfo.noKunjungan || ''}</div></div>
-                    <div><div className="text-xs text-slate-600 dark:text-slate-400">metaData.code</div><div className="font-mono">{debugInfo.metaCode || ''}</div></div>
-                    <div><div className="text-xs text-slate-600 dark:text-slate-400">metaData.message</div><div className="font-mono break-all">{debugInfo.metaMessage || ''}</div></div>
-                  </div>
-                  <div className="mt-3">
-                    <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Raw Response</div>
-                    <pre className="text-xs leading-relaxed p-3 rounded bg-slate-50/70 dark:bg-gray-900/40 border border-slate-200/50 dark:border-gray-700/50 overflow-auto max-h-64">{debugInfo.raw ? JSON.stringify(debugInfo.raw, null, 2) : 'Tidak ada data'}</pre>
+                  <div className="p-4 overflow-auto" style={{ maxHeight: '70vh' }}>
+                    {massLogs.length === 0 ? (
+                      <div className="text-sm text-slate-600 dark:text-slate-300">Menunggu proses…</div>
+                    ) : (
+                      <div className="space-y-3">
+                        {massLogs.map((log) => (
+                          <div key={log.no_rawat} className="rounded-lg border border-slate-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-800">
+                            <div className="flex items-center justify-between">
+                              <div className="text-sm font-medium">No Rawat: {log.no_rawat}</div>
+                              <span className={`text-xs px-2 py-0.5 rounded ${log.status === 'success' ? 'bg-green-100 text-green-700' : log.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-indigo-100 text-indigo-700'}`}>{log.status}</span>
+                            </div>
+                            <div className="mt-2 text-xs text-slate-600 dark:text-slate-300">Payload</div>
+                            <pre className="text-xs p-2 rounded bg-slate-50 dark:bg-gray-900 border border-slate-200 dark:border-gray-700 overflow-auto">{JSON.stringify(log.requestBody, null, 2)}</pre>
+                            <div className="mt-2 text-xs text-slate-600 dark:text-slate-300">Response</div>
+                            <pre className="text-xs p-2 rounded bg-slate-50 dark:bg-gray-900 border border-slate-200 dark:border-gray-700 overflow-auto">{typeof log.response === 'string' ? log.response : JSON.stringify(log.response ?? null, null, 2)}</pre>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+            {kunjunganModalOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/30" onClick={() => setKunjunganModalOpen(false)} />
+                <div className="relative w-[90vw] max-w-4xl max-h-[80vh] overflow-hidden rounded-2xl border border-white/30 dark:border-gray-700/50 bg-white/95 dark:bg-gray-800/95 shadow-xl">
+                  <div className="px-4 py-3 border-b border-gray-200/60 dark:border-gray-700/60 flex items-center justify-between">
+                    <div className="text-sm font-semibold">Proses Jadikan Kunjungan</div>
+                    <button onClick={() => setKunjunganModalOpen(false)} className="text-xs rounded px-2 py-1 border">Tutup</button>
+                  </div>
+                  <div className="p-4 overflow-auto" style={{ maxHeight: '70vh' }}>
+                    {kunjunganLogs.length === 0 ? (
+                      <div className="text-sm text-slate-600 dark:text-slate-300">Menunggu proses…</div>
+                    ) : (
+                      <div className="space-y-3">
+                        {kunjunganLogs.map((log) => (
+                          <div key={log.no_rawat} className="rounded-lg border border-slate-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-800">
+                            <div className="flex items-center justify-between">
+                              <div className="text-sm font-medium">No Rawat: {log.no_rawat}</div>
+                              <span className={`text-xs px-2 py-0.5 rounded ${log.status === 'success' ? 'bg-green-100 text-green-700' : log.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-indigo-100 text-indigo-700'}`}>{log.status}</span>
+                            </div>
+                            <div className="mt-2 text-xs text-slate-600 dark:text-slate-300">Payload</div>
+                            <pre className="text-xs p-2 rounded bg-slate-50 dark:bg-gray-900 border border-slate-200 dark:border-gray-700 overflow-auto">{JSON.stringify(log.requestBody, null, 2)}</pre>
+                            <div className="mt-2 text-xs text-slate-600 dark:text-slate-300">Response</div>
+                            <pre className="text-xs p-2 rounded bg-slate-50 dark:bg-gray-900 border border-slate-200 dark:border-gray-700 overflow-auto">{typeof log.response === 'string' ? log.response : JSON.stringify(log.response ?? null, null, 2)}</pre>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
           </div>
         </motion.div>
       </div>

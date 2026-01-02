@@ -846,7 +846,15 @@ const SearchableSelect = ({
                                                 isSelected ? selectedHover : unselectedHover
                                             } ${isSelected ? selectedClasses : unselectedClasses}`}
                                         >
-                                            {optionDisplay}
+                                            <div className="flex flex-col">
+                                                <div>{optionDisplay}</div>
+                                                {typeof option === "object" && option?.meta?.jadwal && (
+                                                    <div className="mt-0.5 text-[11px] text-gray-500 dark:text-gray-300">Jadwal: {option.meta.jadwal}</div>
+                                                )}
+                                                {typeof option === "object" && (option?.meta?.kapasitas != null || option?.meta?.jmlRujuk != null || option?.meta?.persentase != null) && (
+                                                    <div className="mt-0.5 text-[11px] text-gray-500 dark:text-gray-300">Kapasitas: {option.meta.kapasitas ?? '-'} • Rujuk: {option.meta.jmlRujuk ?? '-'} • %: {option.meta.persentase ?? '-'}</div>
+                                                )}
+                                            </div>
                                         </button>
                                     );
                                 })

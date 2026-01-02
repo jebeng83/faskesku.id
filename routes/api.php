@@ -524,6 +524,10 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::post('/antrean/add', [MobileJknController::class, 'addAntrean'])->name('api.mobilejkn.antrean.add');
         // Panggil/Update Status Antrean
         Route::post('/antrean/panggil', [MobileJknController::class, 'panggilAntrean'])->name('api.mobilejkn.antrean.panggil');
+        // Endpoint uji panggil tanpa middleware auth/CSRF (khusus testing lokal)
+        Route::post('/antrean/panggil/test', [MobileJknController::class, 'panggilAntrean'])
+            ->withoutMiddleware(['auth', \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+            ->name('api.mobilejkn.antrean.panggil.test');
         // Batal Antrean
         Route::post('/antrean/batal', [MobileJknController::class, 'batalAntrean'])->name('api.mobilejkn.antrean.batal');
         Route::post('/srk/check', [MobileJknController::class, 'cekSrk'])->name('api.mobilejkn.srk.check');

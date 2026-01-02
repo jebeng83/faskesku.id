@@ -12,6 +12,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::getConnection()->getDriverName() === 'sqlite') {
+            return;
+        }
         Schema::table('alergi_pasien', function (Blueprint $table) {
             // Hapus primary key yang ada
             $table->dropPrimary(['no_rkm_medis']);
@@ -44,6 +47,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (Schema::getConnection()->getDriverName() === 'sqlite') {
+            return;
+        }
         Schema::table('alergi_pasien', function (Blueprint $table) {
             // Hapus composite primary key
             $table->dropPrimary('alergi_pasien_primary');

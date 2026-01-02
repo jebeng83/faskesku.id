@@ -19,7 +19,6 @@ import {
   CheckCircle2,
   Loader2,
   Link2,
-  Sparkles,
   Info,
   Globe,
   Users,
@@ -39,7 +38,7 @@ export default function SatuSehatOrganization() {
   const [depLabel, setDepLabel] = useState("");
   const [orgId, setOrgId] = useState("");
   const [orgName, setOrgName] = useState("");
-  const [createIfMissing, setCreateIfMissing] = useState(true);
+  const [createIfMissing] = useState(true);
   const [saving, setSaving] = useState(false);
 
   // Data state (Card 2)
@@ -264,7 +263,7 @@ export default function SatuSehatOrganization() {
   };
 
   return (
-    <SidebarPengaturan title="Pengaturan">
+    <SidebarPengaturan title="Pengaturan" wide>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
         <motion.div
           className="px-4 sm:px-6 lg:px-8 py-8 space-y-8"
@@ -298,14 +297,6 @@ export default function SatuSehatOrganization() {
                     >
                       Pemetaan Organization Subunit
                     </motion.h1>
-                    <motion.p
-                      className="mt-2 text-sm sm:text-base text-gray-600 dark:text-gray-400 max-w-2xl"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.4, duration: 0.6 }}
-                    >
-                      Kelola pemetaan Departemen internal ke subunit Organization milik SATUSEHAT untuk interoperabilitas yang rapi.
-                    </motion.p>
                   </div>
                 </motion.div>
               </div>
@@ -378,66 +369,6 @@ export default function SatuSehatOrganization() {
                         defaultDisplay={depLabel || undefined}
                       />
                     </div>
-                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                      <Info className="w-3 h-3" />
-                      Data diambil dari tabel departemen (endpoint: /api/departemen)
-                    </p>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.35 }}
-                  >
-                    <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
-                      ID Subunit SATUSEHAT <span className="text-gray-400 font-normal">(opsional)</span>
-                    </Label>
-                    <Input
-                      placeholder="Contoh: 123e4567-e89b-12d3-a456-426614174000"
-                      value={orgId}
-                      onChange={(e) => setOrgId(e.target.value)}
-                      className="border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/50"
-                    />
-                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                      <Info className="w-3 h-3" />
-                      Biarkan kosong untuk menemukan/atau membuat subunit berdasarkan kode departemen.
-                    </p>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="md:col-span-2"
-                  >
-                    <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
-                      Nama Subunit SATUSEHAT <span className="text-gray-400 font-normal">(opsional)</span>
-                    </Label>
-                    <Input
-                      placeholder="Jika membuat otomatis, override nama di sini (default: nama departemen)"
-                      value={orgName}
-                      onChange={(e) => setOrgName(e.target.value)}
-                      className="border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/50"
-                    />
-                  </motion.div>
-
-                  <motion.div
-                    className="flex items-center gap-3 md:col-span-2 p-4 rounded-xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-200/50 dark:border-blue-800/50"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5 }}
-                  >
-                    <input
-                      id="createIfMissing"
-                      type="checkbox"
-                      checked={createIfMissing}
-                      onChange={(e) => setCreateIfMissing(e.target.checked)}
-                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                    />
-                    <Label htmlFor="createIfMissing" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-blue-500" />
-                      Buat subunit otomatis jika belum ada
-                    </Label>
                   </motion.div>
                 </motion.div>
 

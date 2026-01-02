@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
+import panggil249175 from './panggil'
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::add
 * @see app/Http/Controllers/Pcare/MobileJknController.php:94
@@ -103,7 +104,7 @@ batal.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 const antrean = {
     add: Object.assign(add, add),
-    panggil: Object.assign(panggil, panggil),
+    panggil: Object.assign(panggil, panggil249175),
     batal: Object.assign(batal, batal),
 }
 

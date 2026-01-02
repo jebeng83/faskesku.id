@@ -96,10 +96,51 @@ monitoring.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+/**
+* @see routes/web.php:1428
+* @route '/pcare/data-pendaftaran'
+*/
+export const dataPendaftaran = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: dataPendaftaran.url(options),
+    method: 'get',
+})
+
+dataPendaftaran.definition = {
+    methods: ["get","head"],
+    url: '/pcare/data-pendaftaran',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:1428
+* @route '/pcare/data-pendaftaran'
+*/
+dataPendaftaran.url = (options?: RouteQueryOptions) => {
+    return dataPendaftaran.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:1428
+* @route '/pcare/data-pendaftaran'
+*/
+dataPendaftaran.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: dataPendaftaran.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:1428
+* @route '/pcare/data-pendaftaran'
+*/
+dataPendaftaran.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: dataPendaftaran.url(options),
+    method: 'head',
+})
+
 const pcare = {
     index: Object.assign(index, index),
     mapping: Object.assign(mapping, mapping),
     monitoring: Object.assign(monitoring, monitoringBb077c),
+    dataPendaftaran: Object.assign(dataPendaftaran, dataPendaftaran),
     referensi: Object.assign(referensi, referensi),
     layanan: Object.assign(layanan, layanan),
     kelompok: Object.assign(kelompok, kelompok),

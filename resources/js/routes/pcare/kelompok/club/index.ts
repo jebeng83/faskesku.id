@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:2660
+* @see app/Http/Controllers/Pcare/PcareController.php:2697
 * @route '/pcare/api/kelompok/club/{kdProgram}'
 */
 export const api = (args: { kdProgram: string | number } | [kdProgram: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ api.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:2660
+* @see app/Http/Controllers/Pcare/PcareController.php:2697
 * @route '/pcare/api/kelompok/club/{kdProgram}'
 */
 api.url = (args: { kdProgram: string | number } | [kdProgram: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ api.url = (args: { kdProgram: string | number } | [kdProgram: string | number ] 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:2660
+* @see app/Http/Controllers/Pcare/PcareController.php:2697
 * @route '/pcare/api/kelompok/club/{kdProgram}'
 */
 api.get = (args: { kdProgram: string | number } | [kdProgram: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ api.get = (args: { kdProgram: string | number } | [kdProgram: string | number ] 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:2660
+* @see app/Http/Controllers/Pcare/PcareController.php:2697
 * @route '/pcare/api/kelompok/club/{kdProgram}'
 */
 api.head = (args: { kdProgram: string | number } | [kdProgram: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

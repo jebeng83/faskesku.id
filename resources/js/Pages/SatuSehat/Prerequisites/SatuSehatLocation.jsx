@@ -11,20 +11,15 @@ import Modal from "@/Components/Modal";
 import Toaster from "@/Components/ui/Toaster";
 import {
   MapPin,
-  Search,
   Plus,
   Edit2,
   Trash2,
   Copy,
   RefreshCw,
   CheckCircle2,
-  AlertCircle,
   Loader2,
-  Building2,
   Link2,
   Globe,
-  Sparkles,
-  Info,
   Navigation,
 } from "lucide-react";
 
@@ -45,22 +40,14 @@ export default function SatuSehatLocation() {
   const [longitude, setLongitude] = useState("");
   const [latitude, setLatitude] = useState("");
   const [altittude, setAltittude] = useState("");
-  const [createIfMissing, setCreateIfMissing] = useState(true);
+  const [createIfMissing] = useState(true);
   const [saving, setSaving] = useState(false);
 
   // Data state (Card 2)
   const [mappings, setMappings] = useState([]);
   const [mappingsLoading, setMappingsLoading] = useState(false);
 
-  // Location search (GET /api/satusehat/location)
-  const [locName, setLocName] = useState("");
-  const [locIdentifier, setLocIdentifier] = useState("");
-  const [locOrganization, setLocOrganization] = useState("");
-  const [locUseCoords, setLocUseCoords] = useState(true);
-  const [locLoading, setLocLoading] = useState(false);
-  const [locResult, setLocResult] = useState({ total: 0, list: [], bundle: null });
-  const [locError, setLocError] = useState("");
-  const [showSearchDetails, setShowSearchDetails] = useState(false);
+  
 
   // Update modal
   const [showUpdate, setShowUpdate] = useState(false);
@@ -109,62 +96,7 @@ export default function SatuSehatLocation() {
     }
   }
 
-  async function searchLocations() {
-    setLocLoading(true);
-    setLocError("");
-    try {
-      const params = new URLSearchParams();
-      
-      // Parameter sesuai dokumentasi SATUSEHAT: identifier, name, organization
-      const qName = (locName || "").trim();
-      const qIdentifier = (locIdentifier || "").trim();
-      const qOrganization = (locOrganization || "").trim();
-      
-      if (qName) {
-        params.set("name", qName);
-      }
-      if (qIdentifier) {
-        params.set("identifier", qIdentifier);
-      }
-      if (qOrganization) {
-        params.set("organization", qOrganization);
-      }
-
-      // Koordinat (opsional)
-      if (locUseCoords && latitude && longitude) {
-        params.set("lat", String(latitude));
-        params.set("lon", String(longitude));
-        params.set("radius", "5");
-      }
-
-      // Validasi: minimal satu parameter harus diisi
-      if (!qName && !qIdentifier && !qOrganization && (!locUseCoords || !latitude || !longitude)) {
-        setLocError("Minimal salah satu parameter pencarian (name, identifier, organization, atau koordinat) harus diisi.");
-        setLocLoading(false);
-        return;
-      }
-
-      const res = await fetch(`/api/satusehat/location?${params.toString()}`, { headers: { Accept: "application/json" } });
-      const json = await res.json();
-      if (!res.ok || json?.ok === false) {
-        setLocError(json?.message || json?.error || `Gagal memuat hasil Location (status: ${res.status})`);
-        setLocResult({ total: 0, list: [], bundle: null });
-        return;
-      }
-      setLocResult({ 
-        total: json?.total ?? 0, 
-        list: Array.isArray(json?.list) ? json.list : [], 
-        bundle: json?.bundle ?? null,
-        query: json?.query ?? {}
-      });
-      setLocError(""); // Clear error jika berhasil
-    } catch (e) {
-      setLocError(e?.message || "Kesalahan jaringan saat memuat Location");
-      setLocResult({ total: 0, list: [], bundle: null });
-    } finally {
-      setLocLoading(false);
-    }
-  }
+  
 
   async function handleSave(e) {
     e?.preventDefault?.();
@@ -394,18 +326,10 @@ export default function SatuSehatLocation() {
                       className="text-3xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: 0.3 }}
+                      transition={{ delay: 0.6, duration: 0.3 }}
                     >
-                      Pemetaan Poliklinik ↔ SATUSEHAT Location
+                      Pemetaan Poliklinik → SATUSEHAT Location
                     </motion.h1>
-                    <motion.p
-                      className="mt-2 text-sm sm:text-base text-gray-600 dark:text-gray-400 max-w-2xl"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.4, duration: 0.6 }}
-                    >
-                      Kelola pemetaan poliklinik internal ke resource Location milik SATUSEHAT, termasuk koordinat dan organisasi pengelola.
-                    </motion.p>
                   </div>
                 </motion.div>
               </div>
@@ -503,10 +427,6 @@ export default function SatuSehatLocation() {
                         {field.label}
                       </Label>
                       <div className="mt-1.5">{field.component}</div>
-                      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                        <Info className="w-3 h-3" />
-                        {field.hint}
-                      </p>
                     </motion.div>
                   ))}
 
@@ -561,24 +481,7 @@ export default function SatuSehatLocation() {
                     ))}
                   </motion.div>
 
-                  <motion.div
-                    className="flex items-center gap-3 md:col-span-2 p-4 rounded-xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-200/50 dark:border-blue-800/50"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5 }}
-                  >
-                    <input
-                      id="createIfMissing"
-                      type="checkbox"
-                      checked={createIfMissing}
-                      onChange={(e) => setCreateIfMissing(e.target.checked)}
-                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                    />
-                    <Label htmlFor="createIfMissing" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-blue-500" />
-                      Buat Location otomatis jika belum ada
-                    </Label>
-                  </motion.div>
+                  
                 </motion.div>
 
                 <motion.div
@@ -630,270 +533,8 @@ export default function SatuSehatLocation() {
               className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-indigo-500/5"
             >
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
-              <CardHeader className="relative bg-gradient-to-r from-indigo-50/80 via-purple-50/80 to-pink-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-600/50">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-3 text-xl font-bold text-gray-900 dark:text-gray-100">
-                    <motion.div
-                      className="p-2 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 shadow-md"
-                      whileHover={{ rotate: 360 }}
-                      transition={{ duration: 0.6 }}
-                    >
-                      <Building2 className="w-5 h-5 text-white" />
-                    </motion.div>
-                    <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                      Mapping Lokasi Saat Ini
-                    </span>
-                  </CardTitle>
-                  <Button
-                    variant="secondary"
-                    onClick={loadMappings}
-                    disabled={mappingsLoading}
-                    size="sm"
-                    className="flex items-center gap-2 shadow-md hover:shadow-lg transition-all duration-300 bg-white/90 dark:bg-gray-700/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50"
-                  >
-                    {mappingsLoading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Memuat…
-                      </>
-                    ) : (
-                      <>
-                        <RefreshCw className="w-4 h-4" />
-                        Reload
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </CardHeader>
+              
               <CardContent className="p-8">
-                {/* Hasil GET Location (SATUSEHAT) */}
-                <motion.div
-                  className="mb-8 rounded-xl border border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-br from-gray-50/80 via-blue-50/50 to-indigo-50/50 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm p-6 shadow-lg"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  <div className="flex items-center justify-between mb-6">
-                    <div>
-                      <div className="text-base font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2 mb-1">
-                        <div className="p-1.5 rounded-lg bg-blue-500/10">
-                          <Search className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                        </div>
-                        Uji Coba GET Location (SATUSEHAT)
-                      </div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400 ml-8">
-                        Sesuai dokumentasi: GET /fhir-r4/v1/Location dengan parameter identifier, name, organization
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => setShowSearchDetails(!showSearchDetails)}
-                        className="flex items-center gap-2 bg-white/90 dark:bg-gray-700/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 shadow-md hover:shadow-lg transition-all"
-                      >
-                        <Info className="w-4 h-4" />
-                        {showSearchDetails ? "Sembunyikan" : "Detail"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={searchLocations}
-                        disabled={locLoading}
-                        className="flex items-center gap-2 bg-white/90 dark:bg-gray-700/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 shadow-md hover:shadow-lg transition-all"
-                      >
-                        {locLoading ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            Mencari…
-                          </>
-                        ) : (
-                          <>
-                            <Search className="w-4 h-4" />
-                            Cari
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Parameter pencarian sesuai dokumentasi SATUSEHAT */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <Label className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
-                        Name <span className="text-gray-400 font-normal">(opsional)</span>
-                      </Label>
-                      <Input
-                        value={locName}
-                        onChange={(e) => setLocName(e.target.value)}
-                        placeholder="cth: Poliklinik, IGD, Rawat Jalan"
-                        className="border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/50"
-                        onKeyDown={(e) => e.key === "Enter" && searchLocations()}
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
-                        Identifier <span className="text-gray-400 font-normal">(opsional)</span>
-                      </Label>
-                      <Input
-                        value={locIdentifier}
-                        onChange={(e) => setLocIdentifier(e.target.value)}
-                        placeholder="Format: system|value atau value saja"
-                        className="border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/50"
-                        onKeyDown={(e) => e.key === "Enter" && searchLocations()}
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
-                        Organization <span className="text-gray-400 font-normal">(opsional)</span>
-                      </Label>
-                      <Input
-                        value={locOrganization}
-                        onChange={(e) => setLocOrganization(e.target.value)}
-                        placeholder="ID Organization atau Organization/ID"
-                        className="border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/50"
-                        onKeyDown={(e) => e.key === "Enter" && searchLocations()}
-                      />
-                    </div>
-                    <div className="flex items-center gap-2 mt-6 md:mt-0">
-                      <input
-                        id="locUseCoords"
-                        type="checkbox"
-                        checked={locUseCoords}
-                        onChange={(e) => setLocUseCoords(e.target.checked)}
-                        className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                      />
-                      <Label htmlFor="locUseCoords" className="text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
-                        Gunakan Koordinat ({longitude || "?"}, {latitude || "?"})
-                      </Label>
-                    </div>
-                  </div>
-
-                  {/* Detail query dan response */}
-                  {showSearchDetails && (
-                    <motion.div
-                      className="mb-4 p-4 rounded-lg bg-blue-50/50 dark:bg-blue-900/10 border border-blue-200/50 dark:border-blue-800/50"
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                    >
-                      <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Detail Query & Response:</div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1 font-mono">
-                        <div>
-                          <span className="font-semibold">Endpoint:</span> GET /fhir-r4/v1/Location
-                        </div>
-                        {locResult.query && Object.keys(locResult.query).length > 0 && (
-                          <div>
-                            <span className="font-semibold">Query Parameters:</span> {JSON.stringify(locResult.query, null, 2)}
-                          </div>
-                        )}
-                        {locResult.bundle && (
-                          <div className="mt-2">
-                            <span className="font-semibold">Bundle Type:</span> {locResult.bundle.resourceType || "N/A"}
-                          </div>
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-                  {locError && (
-                    <motion.div
-                      className="mb-4 p-4 rounded-lg bg-red-50/80 dark:bg-red-900/20 border border-red-200/50 dark:border-red-800/50 flex items-center gap-2 text-sm text-red-700 dark:text-red-400 backdrop-blur-sm"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                    >
-                      <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                      {locError}
-                    </motion.div>
-                  )}
-                  <div className="mt-4">
-                    <div className="text-sm text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-                      <span>Total hasil:</span>
-                      <span className="font-bold text-indigo-600 dark:text-indigo-400 text-lg">{locResult.total}</span>
-                      {locResult.list && locResult.list.length > 0 && (
-                        <span className="text-xs text-gray-500">
-                          (Menampilkan {Math.min(locResult.list.length, 10)} dari {locResult.total})
-                        </span>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <AnimatePresence>
-                        {(locResult.list || []).slice(0, 10).map((item, idx) => (
-                          <motion.div
-                            key={idx}
-                            className="group rounded-xl border border-gray-200/50 dark:border-gray-700/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-4 hover:shadow-lg hover:border-blue-300/50 dark:hover:border-blue-600/50 transition-all duration-300 cursor-pointer"
-                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            transition={{ delay: idx * 0.05 }}
-                            whileHover={{ scale: 1.02, y: -2 }}
-                            onClick={() => {
-                              if (item?.id) {
-                                copyToClipboard(item.id);
-                                addToast("info", "Location ID disalin", `ID: ${item.id}`);
-                              }
-                            }}
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="text-sm font-semibold text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                                {item?.name || item?.id || "(tanpa nama)"}
-                              </div>
-                              {item?.id && (
-                                <motion.span
-                                  className="px-2.5 py-1 text-[10px] rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-200 dark:ring-indigo-800 font-mono font-medium"
-                                  whileHover={{ scale: 1.1 }}
-                                >
-                                  {item.id.substring(0, 8)}...
-                                </motion.span>
-                              )}
-                            </div>
-                            <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                              {item?.status && (
-                                <div className="flex items-center gap-1">
-                                  <span className="font-semibold">Status:</span>
-                                  <span className={`px-1.5 py-0.5 rounded text-[10px] ${
-                                    item.status === "active" 
-                                      ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300" 
-                                      : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
-                                  }`}>
-                                    {item.status}
-                                  </span>
-                                </div>
-                              )}
-                              {item?.managingOrganization && (
-                                <div className="flex items-center gap-1 truncate">
-                                  <span className="font-semibold">Org:</span>
-                                  <span className="truncate">{item.managingOrganization}</span>
-                                </div>
-                              )}
-                              {item?.address && (
-                                <div className="truncate">{item.address}</div>
-                              )}
-                              {item?.position && (
-                                <div className="text-[10px] text-gray-500">
-                                  Pos: {item.position.longitude || "?"}, {item.position.latitude || "?"}
-                                </div>
-                              )}
-                            </div>
-                          </motion.div>
-                        ))}
-                      </AnimatePresence>
-                      {(!locResult.list || locResult.list.length === 0) && !locLoading && (
-                        <motion.div
-                          className="rounded-xl border border-gray-200/50 dark:border-gray-700/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-4 text-xs text-gray-500 dark:text-gray-400 text-center"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                        >
-                          Tidak ada hasil ditampilkan. Coba parameter pencarian lain.
-                        </motion.div>
-                      )}
-                    </div>
-                    {locResult.list && locResult.list.length > 10 && (
-                      <div className="mt-3 text-xs text-gray-500 dark:text-gray-400 text-center">
-                        Menampilkan 10 hasil pertama. Total: {locResult.total} hasil.
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
 
                 {/* Table dengan design modern */}
                 <div className="overflow-x-auto rounded-xl border border-gray-200/50 dark:border-gray-700/50 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">

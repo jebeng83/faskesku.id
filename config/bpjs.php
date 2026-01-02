@@ -15,6 +15,7 @@ return [
         'user_key' => env('BPJS_PCARE_USER_KEY'),
         'user' => env('BPJS_PCARE_USER'),
         'pass' => env('BPJS_PCARE_PASS'),
+        'kunjungan_content_type' => env('BPJS_PCARE_KUNJUNGAN_CT', 'text/plain'),
     ],
 
     // Opsi HTTP untuk koneksi BPJS (dipakai oleh trait BpjsTraits)

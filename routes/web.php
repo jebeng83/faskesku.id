@@ -1425,6 +1425,10 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('Pcare/MonitoringStatusPcare');
         })->name('monitoring.status');
 
+        Route::get('/data-pendaftaran', function () {
+            return Inertia::render('Pcare/MonitoringPcare');
+        })->name('data-pendaftaran');
+
         // Referensi Diagnosa page (Inertia)
         Route::get('/referensi/diagnosa', function () {
             return Inertia::render('Pcare/ReferensiPcare/ReferensiDiagnosa');

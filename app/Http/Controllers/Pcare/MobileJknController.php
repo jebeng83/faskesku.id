@@ -713,8 +713,8 @@ class MobileJknController extends Controller
 
             $noRkmMedis = (string) $request->input('no_rkm_medis');
             $kdPoli = (string) $request->input('kd_poli');
-            $status = (int) $request->input('status'); // 1 = Hadir, 2 = Tidak Hadir
-            $tanggalPeriksa = (string) ($request->input('tanggalperiksa') ?: date('Y-m-d'));
+            $status = (int) $request->input('status');
+            $tanggalPeriksa = date('Y-m-d');
 
             // Early log: record incoming request even if it fails early (patient/mapping not found)
             \Illuminate\Support\Facades\Log::channel('bpjs')->info('MobileJKN panggilAntrean request received', [
@@ -775,8 +775,8 @@ class MobileJknController extends Controller
                 ], 400);
             }
 
-            // Waktu dalam timestamp miliseconds
             $waktuMs = (int) round(microtime(true) * 1000);
+            $timestampOverride = (string) floor($waktuMs / 1000);
 
             $payload = [
                 'tanggalperiksa' => $tanggalPeriksa,
@@ -806,7 +806,7 @@ class MobileJknController extends Controller
             ]);
 
             $start = microtime(true);
-            $result = $this->mobilejknRequest('POST', 'antrean/panggil', [], $payload);
+            $result = $this->mobilejknRequest('POST', 'antrean/panggil', [], $payload, [], $timestampOverride);
             $response = $result['response'];
             $timestamp = $result['timestamp_used'];
 

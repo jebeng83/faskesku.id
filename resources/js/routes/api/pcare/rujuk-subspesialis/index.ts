@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::byRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:1263
+* @see app/Http/Controllers/Pcare/PcareController.php:1300
 * @route '/api/pcare/rujuk-subspesialis/rawat/{no_rawat}'
 */
 export const byRawat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ byRawat.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::byRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:1263
+* @see app/Http/Controllers/Pcare/PcareController.php:1300
 * @route '/api/pcare/rujuk-subspesialis/rawat/{no_rawat}'
 */
 byRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ byRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::byRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:1263
+* @see app/Http/Controllers/Pcare/PcareController.php:1300
 * @route '/api/pcare/rujuk-subspesialis/rawat/{no_rawat}'
 */
 byRawat.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ byRawat.get = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::byRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:1263
+* @see app/Http/Controllers/Pcare/PcareController.php:1300
 * @route '/api/pcare/rujuk-subspesialis/rawat/{no_rawat}'
 */
 byRawat.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
