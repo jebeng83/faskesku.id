@@ -368,6 +368,28 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                       >
                         Resep
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          let url = '/rawat-jalan/canvas-surat';
+                          const q = { token, no_rawat: noRawat, no_rkm_medis: noRkmMedis };
+                          try {
+                            url = route('rawat-jalan.canvas-surat', q);
+                          } catch (_) {
+                            const qs = new URLSearchParams(Object.entries(q).filter(([, v]) => v)).toString();
+                            url = qs ? `${url}?${qs}` : url;
+                          }
+                          setIsOpen(false);
+                          setTimeout(() => {
+                            router.visit(url);
+                          }, 200);
+                        }}
+                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-transparent text-[oklch(98.5%_0_0)] border border-[oklch(62%_0.30_29.5)]"
+                        aria-label="Buka Surat"
+                        title="Buka Surat"
+                      >
+                        Surat
+                      </button>
                     </div>
                   </div>
 

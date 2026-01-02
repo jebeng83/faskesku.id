@@ -2,6 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 import publicMethod from './public'
 import resep from './resep'
 import pcare from './pcare'
+import rawatJalan from './rawat-jalan'
 import queue from './queue'
 import poli from './poli'
 import employees from './employees'
@@ -12,7 +13,6 @@ import regPeriksaD17f92 from './reg-periksa'
 import users from './users'
 import menus from './menus'
 import obat from './obat'
-import rawatJalan from './rawat-jalan'
 import dokter from './dokter'
 import alergi from './alergi'
 import permintaanLab from './permintaan-lab'
@@ -170,7 +170,7 @@ setHargaObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:427
+* @see routes/web.php:432
 * @route '/api/antrian-poli'
 */
 export const antrianPoli = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -184,7 +184,7 @@ antrianPoli.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:427
+* @see routes/web.php:432
 * @route '/api/antrian-poli'
 */
 antrianPoli.url = (options?: RouteQueryOptions) => {
@@ -192,7 +192,7 @@ antrianPoli.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:427
+* @see routes/web.php:432
 * @route '/api/antrian-poli'
 */
 antrianPoli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -201,7 +201,7 @@ antrianPoli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:427
+* @see routes/web.php:432
 * @route '/api/antrian-poli'
 */
 antrianPoli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -213,6 +213,7 @@ const api = {
     public: Object.assign(publicMethod, publicMethod),
     resep: Object.assign(resep, resep),
     pcare: Object.assign(pcare, pcare),
+    rawatJalan: Object.assign(rawatJalan, rawatJalan),
     queue: Object.assign(queue, queue),
     poli: Object.assign(poli, poli),
     employees: Object.assign(employees, employees),
@@ -223,7 +224,6 @@ const api = {
     users: Object.assign(users, users),
     menus: Object.assign(menus, menus),
     obat: Object.assign(obat, obat),
-    rawatJalan: Object.assign(rawatJalan, rawatJalan),
     dokter: Object.assign(dokter, dokter),
     alergi: Object.assign(alergi, alergi),
     labTests: Object.assign(labTests, labTests),

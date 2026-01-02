@@ -23,6 +23,95 @@ export default function SuratSakit({ rawatJalan, patient, dokter }) {
 
     const [isLoading, setIsLoading] = useState(false);
 
+    const [verify, setVerify] = useState(null);
+    const [serverVerify, setServerVerify] = useState(null);
+    const [verifyMode, setVerifyMode] = useState(false);
+    useEffect(() => {
+        try {
+            const params = new URLSearchParams(window.location.search || "");
+            const mode = params.get("mode");
+            const t = params.get("t");
+            if (mode === "verify" || mode === "info") {
+                setVerifyMode(true);
+                if (t) {
+                    const padded = t.replace(/-/g, "+").replace(/_/g, "/");
+                    const pad = padded + "=".repeat((4 - (padded.length % 4)) % 4);
+                    const bin = atob(pad);
+                    const bytes = new Uint8Array(bin.length);
+                    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                    const str = new window.TextDecoder().decode(bytes);
+                    const obj = JSON.parse(str);
+                    setVerify(obj);
+                }
+            } else {
+                setVerifyMode(false);
+            }
+        } catch (_) {}
+    }, []);
+
+    useEffect(() => {
+        try {
+            const params = new URLSearchParams(window.location.search || "");
+            const mode = params.get("mode");
+            const t = params.get("t") || "";
+            if (mode !== "verify" && mode !== "info") return;
+            if (!rawatJalan?.no_rawat) return;
+            const safeNoRawat = String(rawatJalan?.no_rawat || '').replace(/\//g, '');
+            let url = `/rawat-jalan/surat-sakit/${encodeURIComponent(safeNoRawat)}/verify`;
+            if (t) {
+                url += `?t=${encodeURIComponent(t)}`;
+            }
+            try {
+                url = route('rawat-jalan.surat-sakit.verify', encodeURIComponent(safeNoRawat));
+                if (t) {
+                    url += `?t=${encodeURIComponent(t)}`;
+                }
+            } catch (_) {}
+            fetch(url, { headers: { Accept: 'application/json' } })
+                .then((r) => r.json())
+                .then((data) => {
+                    setServerVerify(data);
+                    if (data?.payload && !verify) {
+                        setVerify(data.payload);
+                    }
+                    try {
+                        if (mode === 'verify' && String(data?.status || '') === 'Valid') {
+                            const qp = new URLSearchParams(window.location.search || '');
+                            qp.set('mode', 'info');
+                            if (t) qp.set('t', t);
+                            const next = qp.toString();
+                            if (next) window.location.search = next; else window.location.search = '';
+                        }
+                    } catch (_) {}
+                })
+                .catch(() => {});
+        } catch (_) {}
+    }, [rawatJalan?.no_rawat]);
+
+    const fmtAny = (date) => {
+        try {
+            const s = String(date || "");
+            if (!s) return "";
+            const p = s.split("-");
+            let dt;
+            if (p[0].length === 4) dt = new Date(`${p[0]}-${p[1]}-${p[2]}`);
+            else dt = new Date(`${p[2]}-${p[1]}-${p[0]}`);
+            return dt.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+        } catch {
+            return String(date || "");
+        }
+    };
+
+    const maskName = (n) => {
+        const s = (n || "").trim();
+        if (!s) return "-";
+        const arr = s.split(" ");
+        const first = arr[0] || "";
+        const maskedFirst = `${first.slice(0, 2)}**`;
+        const rest = arr.slice(1).map((x) => "*".repeat(x.length)).join(" ");
+        return [maskedFirst, rest].filter(Boolean).join(" ");
+    };
+
     useEffect(() => {
         // Generate nomor surat otomatis
         const today = new Date();
@@ -79,6 +168,36 @@ export default function SuratSakit({ rawatJalan, patient, dokter }) {
     };
 
     
+
+    if (verifyMode && (verify || (serverVerify?.payload))) {
+        const displayData = verify || serverVerify?.payload || {};
+        return (
+            <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center p-4">
+                <Head title="Surat Sakit" />
+                <div className="w-full max-w-md rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg p-6 text-center">
+                    <div className="mx-auto w-14 h-14 rounded-full bg-blue-500 text-white flex items-center justify-center text-2xl">✓</div>
+                    <div className="mt-3 text-2xl font-bold uppercase">Surat Sakit</div>
+                    <div className="my-4 border-t border-gray-200 dark:border-gray-700" />
+                    <div className="text-sm space-y-1 text-left">
+                        <div className="flex justify-between"><span>KLINIK :</span><span className="font-medium">{displayData.instansi || "-"}</span></div>
+                        <div className="flex justify-between"><span>NAMA :</span><span className="font-medium">{maskName(displayData.nama)}</span></div>
+                        <div className="flex justify-between"><span>TANGGAL LAHIR :</span><span className="font-medium">{fmtAny(displayData.tgl_lahir)}</span></div>
+                        <div className="flex justify-between"><span>ID MR :</span><span className="font-medium">{displayData.mr || "-"}</span></div>
+                        <div className="flex justify-between"><span>TANGGAL SURAT :</span><span className="font-medium">{fmtAny(displayData.tanggal_surat)}</span></div>
+                        <div className="flex justify-between"><span>PENANGGUNG JAWAB :</span><span className="font-medium">{displayData.dokter || "-"}</span></div>
+                        <div className="flex justify-between"><span>STATUS :</span><span className={`font-bold ${serverVerify?.status === 'Tidak Valid' ? 'text-red-600' : 'text-green-600'}`}>{serverVerify?.status || 'Valid'}</span></div>
+                    </div>
+                    <div className="my-4 border-t border-gray-200 dark:border-gray-700" />
+                    <div className="text-sm text-gray-800 dark:text-gray-100 space-y-1 text-left">
+                        <div>Dalam keadaan <span className="font-bold">SAKIT</span> dan memerlukan istirahat selama <span className="font-bold">{displayData.hari}</span> hari</div>
+                        <div>Terhitung mulai tanggal : <span className="font-medium">{fmtAny(displayData.mulai)}</span></div>
+                        <div>Sampai dengan tanggal : <span className="font-medium">{fmtAny(displayData.akhir)}</span></div>
+                        <div>Diagnosa : <span className="font-medium">{displayData.diagnosa || "-"}</span></div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <AppLayout>

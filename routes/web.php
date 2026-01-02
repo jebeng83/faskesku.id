@@ -42,6 +42,7 @@ use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\PermintaanLabController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RadiologiController;
+use App\Http\Controllers\SuratController;
 use App\Http\Controllers\RawatInapController;
 use App\Http\Controllers\RawatJalan\ObatController;
 use App\Http\Controllers\RawatJalan\RawatJalanController;
@@ -138,6 +139,10 @@ Route::get('/antrian/loket', function () {
         'today_poli' => $todayPoli,
     ]);
 })->name('antrian.loket');
+
+// Surat: preview HTML (public untuk preview)
+Route::get('/surat/preview', [SuratController::class, 'preview'])
+    ->name('surat.preview');
 
 Route::get('/anjungan/pasien-mandiri', function () {
     $setting = null;
@@ -585,6 +590,29 @@ Route::middleware('auth')->prefix('api')->group(function () {
     })->name('api.antrian-poli.repeat');
 });
 
+Route::get('rawat-jalan/surat-sakit/{no_rawat}/verify', [RawatJalanController::class, 'verifySuratSakit'])
+    ->name('rawat-jalan.surat-sakit.verify')
+    ->where('no_rawat', '.*');
+
+Route::get('rawat-jalan/surat-sakit/next-no-surat', [RawatJalanController::class, 'nextNoSuratSakit'])
+    ->name('rawat-jalan.surat-sakit.next-no-surat');
+
+Route::get('rawat-jalan/surat-sakit/nomor/{no_surat}', [RawatJalanController::class, 'suratSakitByNomor'])
+    ->name('rawat-jalan.surat-sakit.by-nomor')
+    ->where('no_surat', '.*');
+Route::get('rawat-jalan/surat-sakit/nomor/{no_surat}/verify', [RawatJalanController::class, 'verifySuratSakitByNomor'])
+    ->name('rawat-jalan.surat-sakit.verify.by-nomor')
+    ->where('no_surat', '.*');
+
+Route::middleware('auth')->group(function () {
+    Route::post('rawat-jalan/validasi-ttd', [RawatJalanController::class, 'storeValidasiTtd'])
+        ->name('rawat-jalan.validasi-ttd.store');
+    Route::get('rawat-jalan/validasi-ttd/describe', [RawatJalanController::class, 'describeValidasiTtd'])
+        ->name('rawat-jalan.validasi-ttd.describe');
+    Route::get('rawat-jalan/validasi-ttd/find', [RawatJalanController::class, 'findValidasiTtd'])
+        ->name('rawat-jalan.validasi-ttd.find');
+});
+
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
@@ -677,6 +705,12 @@ Route::middleware('auth')->group(function () {
     // Akutansi: Nota Jalan page (Inertia)
     Route::get('/akutansi/nota-jalan', [\App\Http\Controllers\Akutansi\NotaJalanController::class, 'page'])
         ->name('akutansi.nota-jalan.page');
+
+    // Surat: generate PDF via DOMPDF
+    Route::post('/surat/pdf', [SuratController::class, 'pdf'])
+        ->name('surat.pdf');
+    Route::get('/surat/pdf', [SuratController::class, 'pdf'])
+        ->name('surat.pdf.get');
 
     // Akutansi: Kasir Ralan page (Inertia)
     Route::get('/akutansi/kasir-ralan', [BillingController::class, 'kasirRalanPage'])
@@ -1015,6 +1049,14 @@ Route::middleware('auth')->group(function () {
             'kdPoli' => request()->query('kd_poli'),
         ]);
     })->name('rawat-jalan.canvas');
+    Route::get('rawat-jalan/canvas-surat', function () {
+        return Inertia::render('RawatJalan/CanvasSurat', [
+            'token' => request()->query('token'),
+            'noRawat' => request()->query('no_rawat'),
+            'noRkmMedis' => request()->query('no_rkm_medis'),
+            'defaultDate' => request()->query('tanggal'),
+        ]);
+    })->name('rawat-jalan.canvas-surat');
     Route::get('rawat-jalan', function () {
         return Inertia::render('RawatJalan/Index');
     })->name('rawat-jalan.index');
@@ -1041,12 +1083,13 @@ Route::middleware('auth')->group(function () {
 
     // Surat Sehat dan Surat Sakit routes
     Route::get('rawat-jalan/surat-sehat/{no_rawat}', [RawatJalanController::class, 'suratSehat'])
-        ->where('no_rawat', '.*')
-        ->name('rawat-jalan.surat-sehat');
+        ->name('rawat-jalan.surat-sehat')
+        ->where('no_rawat', '.*');
     Route::post('rawat-jalan/surat-sehat', [RawatJalanController::class, 'storeSuratSehat'])->name('rawat-jalan.surat-sehat.store');
+    // moved to public routes above
     Route::get('rawat-jalan/surat-sakit/{no_rawat}', [RawatJalanController::class, 'suratSakit'])
-        ->where('no_rawat', '.*')
-        ->name('rawat-jalan.surat-sakit');
+        ->name('rawat-jalan.surat-sakit')
+        ->where('no_rawat', '.*');
     Route::post('rawat-jalan/surat-sakit', [RawatJalanController::class, 'storeSuratSakit'])->name('rawat-jalan.surat-sakit.store');
 
     // API routes untuk obat

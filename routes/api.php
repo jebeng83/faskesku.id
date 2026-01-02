@@ -37,6 +37,7 @@ use App\Http\Controllers\RawatJalan\ResepController;
 use App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController;
 use App\Http\Controllers\SatuSehat\SatuSehatController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 
 // Public endpoints (tidak memerlukan authentication)
 // Hanya endpoint referensi yang benar-benar tidak sensitif
@@ -106,6 +107,12 @@ Route::get('/public/sip-pegawai/expiring', function () {
         'data' => $data,
     ]);
 })->name('api.public.sip-pegawai.expiring');
+
+// Public verification endpoint for Surat Sakit TTD
+Route::get('/rawat-jalan/surat-sakit/verify', function (Request $request) {
+    $noRawat = (string) $request->query('no_rawat', '');
+    return app(RawatJalanController::class)->verifySuratSakit($request, $noRawat);
+})->name('api.rawat-jalan.surat-sakit.verify');
 
 // Public endpoints for Queue (Kiosk)
 Route::prefix('queue')->group(function () {

@@ -11,7 +11,9 @@ use App\Models\RawatJalan\RawatJalan;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class RawatJalanController extends Controller
 {
@@ -1234,25 +1236,568 @@ class RawatJalanController extends Controller
     public function storeSuratSakit(Request $request)
     {
         $request->validate([
-            'no_surat' => 'required|string|max:17',
+            'no_surat' => 'required|string|max:20',
             'no_rawat' => 'required|string|max:17',
             'tanggalawal' => 'required|date',
             'tanggalakhir' => 'required|date|after:tanggalawal',
             'lamasakit' => 'required|string|max:20',
-            'nama2' => 'required|string|max:50',
-            'tgl_lahir' => 'required|date',
-            'umur' => 'required|string|max:20',
-            'jk' => 'required|in:Laki-laki,Perempuan',
-            'alamat' => 'required|string|max:200',
-            'hubungan' => 'required|in:Suami,Istri,Anak,Ayah,Saudara,Keponakan',
-            'pekerjaan' => 'required|in:Karyawan Swasta,PNS,Wiraswasta,Pelajar,Mahasiswa,Buruh,Lain-lain',
-            'instansi' => 'required|string|max:50',
+            'nama2' => 'nullable|string|max:50',
+            'tgl_lahir' => 'nullable|date',
+            'umur' => 'nullable|string|max:20',
+            'jk' => 'nullable|in:Laki-laki,Perempuan',
+            'alamat' => 'nullable|string|max:200',
+            'hubungan' => 'nullable|in:Suami,Istri,Anak,Ayah,Saudara,Keponakan',
+            'pekerjaan' => 'nullable|in:Karyawan Swasta,PNS,Wiraswasta,Pelajar,Mahasiswa,Buruh,Lain-lain',
+            'instansi' => 'nullable|string|max:50',
         ]);
+        $instansi = null;
+        try {
+            if (Schema::hasTable('setting')) {
+                $q = DB::table('setting');
+                if (Schema::hasColumn('setting', 'aktifkan')) {
+                    $q->where('aktifkan', 'Yes');
+                }
+                $row = $q->orderBy('nama_instansi')->first();
+                $instansi = $row->nama_instansi ?? null;
+            }
+        } catch (\Throwable $e) {}
 
-        // TODO: Insert data ke tabel suratsakitpihak2
-        // DB::table('suratsakitpihak2')->insert($request->all());
+        $hari = null;
+        try {
+            $mulai = \Carbon\Carbon::parse($request->input('tanggalawal'));
+            $akhir = \Carbon\Carbon::parse($request->input('tanggalakhir'));
+            $hari = $mulai && $akhir ? $mulai->diffInDays($akhir) + 1 : null;
+        } catch (\Throwable $e) {}
+
+        $reg = DB::table('reg_periksa')->where('no_rawat', $request->input('no_rawat'))->first();
+        $mr = (string) ($reg->no_rkm_medis ?? '');
+        $dokterName = (string) (DB::table('dokter')->where('kd_dokter', (string) ($reg->kd_dokter ?? ''))->value('nm_dokter') ?: '');
+        $pasien = $mr ? DB::table('pasien')->where('no_rkm_medis', $mr)->first() : null;
+        $instansiFinal = (string) ($request->input('instansi') ?: ($instansi ?? ''));
+        $tglLahirRaw = (string) ($request->input('tgl_lahir') ?: (is_object($pasien) ? (string) ($pasien->tgl_lahir ?? '') : ''));
+        $tglLahirYmd = null;
+        try { if ($tglLahirRaw) { $tglLahirYmd = \Carbon\Carbon::parse($tglLahirRaw)->format('Y-m-d'); } } catch (\Throwable $e) {}
+        $jkInput = (string) $request->input('jk');
+        $jkNorm = $jkInput ?: ((strtoupper((string) (is_object($pasien) ? ($pasien->jk ?? '') : '')) === 'P') ? 'Perempuan' : 'Laki-laki');
+        $allowedHub = ['Suami','Istri','Anak','Ayah','Saudara','Keponakan'];
+        $hubungan = (string) $request->input('hubungan');
+        if (! in_array($hubungan, $allowedHub, true)) { $hubungan = 'Suami'; }
+        $allowedJobs = ['Karyawan Swasta','PNS','Wiraswasta','Pelajar','Mahasiswa','Buruh','Lain-lain'];
+        $pekerjaan = (string) $request->input('pekerjaan');
+        if (! in_array($pekerjaan, $allowedJobs, true)) { $pekerjaan = 'Karyawan Swasta'; }
+        $alamatFinal = (string) ($request->input('alamat') ?: (is_object($pasien) ? (string) ($pasien->alamat ?? '') : ''));
+        $nama2Final = (string) ($request->input('nama2') ?: (is_object($pasien) ? (string) ($pasien->nm_pasien ?? '') : ''));
+
+        $payload = [
+            'type' => 'SKS',
+            'nomor' => (string) $request->input('no_surat'),
+            'instansi' => $instansiFinal,
+            'nama' => (string) ($request->user()?->name ?? ''),
+            'tgl_lahir' => (string) ($tglLahirYmd ?: $tglLahirRaw),
+            'mr' => $mr,
+            'tanggal_surat' => (string) $request->input('tanggalawal'),
+            'dokter' => $dokterName,
+            'status' => 'Valid',
+            'hari' => $hari ?? $request->input('lamasakit'),
+            'mulai' => (string) $request->input('tanggalawal'),
+            'akhir' => (string) $request->input('tanggalakhir'),
+        ];
+
+        try {
+            if (Schema::hasTable('suratsakitpihak2')) {
+                $tglLahirFinal = $tglLahirYmd ?: (function () use ($request) {
+                    try { return \Carbon\Carbon::parse($request->input('tanggalawal'))->format('Y-m-d'); } catch (\Throwable $e) { return date('Y-m-d'); }
+                })();
+                $insert = [
+                    'no_surat' => (string) $request->input('no_surat'),
+                    'no_rawat' => (string) $request->input('no_rawat'),
+                    'tanggalawal' => \Carbon\Carbon::parse($request->input('tanggalawal'))->format('Y-m-d'),
+                    'tanggalakhir' => \Carbon\Carbon::parse($request->input('tanggalakhir'))->format('Y-m-d'),
+                    'lamasakit' => (string) $request->input('lamasakit'),
+                    'nama2' => $nama2Final,
+                    'tgl_lahir' => $tglLahirFinal,
+                    'umur' => (string) ($request->input('umur') ?: ''),
+                    'jk' => $jkNorm,
+                    'alamat' => $alamatFinal,
+                    'hubungan' => $hubungan,
+                    'pekerjaan' => $pekerjaan,
+                    'instansi' => $instansiFinal,
+                ];
+                if (Schema::hasColumn('suratsakitpihak2', 'payload_json')) {
+                    $insert['payload_json'] = json_encode($payload);
+                }
+                $exists = DB::table('suratsakitpihak2')
+                    ->where('no_surat', (string) $request->input('no_surat'))
+                    ->exists();
+                if ($exists) {
+                    if (Schema::hasColumn('suratsakitpihak2', 'updated_at')) {
+                        $insert['updated_at'] = now();
+                    }
+                } else {
+                    if (Schema::hasColumn('suratsakitpihak2', 'created_at')) {
+                        $insert['created_at'] = now();
+                    }
+                    if (Schema::hasColumn('suratsakitpihak2', 'updated_at')) {
+                        $insert['updated_at'] = now();
+                    }
+                }
+                DB::table('suratsakitpihak2')->updateOrInsert(
+                    ['no_surat' => (string) $request->input('no_surat')],
+                    $insert
+                );
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Gagal menyimpan suratsakitpihak2', [
+                'no_rawat' => $request->input('no_rawat'),
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return redirect()->route('rawat-jalan.index')
             ->with('success', 'Surat sakit berhasil dibuat dan disimpan.');
+    }
+
+    /**
+     * Verifikasi server-side surat sakit
+     * Response: { status: 'Valid'|'Tidak Valid', payload: {...}, match: boolean }
+     */
+    public function verifySuratSakit(Request $request, $no_rawat)
+    {
+        $no_rawat = urldecode((string) $no_rawat);
+        $token = $request->query('t');
+        $client = null;
+        try {
+            if ($token) {
+                $padded = str_replace(['-', '_'], ['+', '/'], $token);
+                $padLen = 4 - (strlen($padded) % 4);
+                if ($padLen < 4) $padded .= str_repeat('=', $padLen);
+                $client = json_decode(base64_decode($padded), true) ?: null;
+            }
+        } catch (\Throwable $e) {}
+
+        $reg = DB::table('reg_periksa')->where('no_rawat', $no_rawat)->first();
+        if (! $reg) {
+            $compact = preg_replace('/[^0-9]/', '', $no_rawat);
+            if (strlen($compact) >= 9) {
+                $yy = substr($compact, 0, 4);
+                $mm = substr($compact, 4, 2);
+                $dd = substr($compact, 6, 2);
+                $seq = substr($compact, 8);
+                $candidate = $yy . '/' . $mm . '/' . $dd . '/' . $seq;
+                $reg = DB::table('reg_periksa')->where('no_rawat', $candidate)->first();
+                if ($reg) {
+                    $no_rawat = $candidate;
+                }
+            }
+        }
+        if (! $reg && is_array($client)) {
+            try {
+                $nomorClient = (string) ($client['nomor'] ?? '');
+                if ($nomorClient && Schema::hasTable('suratsakitpihak2')) {
+                    $row = DB::table('suratsakitpihak2')->where('no_surat', $nomorClient)->orderByDesc('created_at')->first();
+                    if ($row) {
+                        $no_rawat = (string) ($row->no_rawat ?? $no_rawat);
+                        $reg = DB::table('reg_periksa')->where('no_rawat', $no_rawat)->first();
+                    }
+                }
+            } catch (\Throwable $e) {}
+        }
+        if (! $reg && is_array($client)) {
+            try {
+                $mrClient = (string) ($client['mr'] ?? '');
+                $tglClient = (string) ($client['tanggal_surat'] ?? '');
+                $mulaiClient = (string) ($client['mulai'] ?? '');
+                $akhirClient = (string) ($client['akhir'] ?? '');
+                $ymdTanggal = null;
+                $ymdMulai = null;
+                $ymdAkhir = null;
+                try { if ($tglClient) { $ymdTanggal = \Carbon\Carbon::createFromFormat('d-m-Y', $tglClient)->format('Y-m-d'); } } catch (\Throwable $e) { try { if ($tglClient) { $ymdTanggal = \Carbon\Carbon::parse($tglClient)->format('Y-m-d'); } } catch (\Throwable $e2) {} }
+                try { if ($mulaiClient) { $ymdMulai = \Carbon\Carbon::createFromFormat('d-m-Y', $mulaiClient)->format('Y-m-d'); } } catch (\Throwable $e) { try { if ($mulaiClient) { $ymdMulai = \Carbon\Carbon::parse($mulaiClient)->format('Y-m-d'); } } catch (\Throwable $e2) {} }
+                try { if ($akhirClient) { $ymdAkhir = \Carbon\Carbon::createFromFormat('d-m-Y', $akhirClient)->format('Y-m-d'); } } catch (\Throwable $e) { try { if ($akhirClient) { $ymdAkhir = \Carbon\Carbon::parse($akhirClient)->format('Y-m-d'); } } catch (\Throwable $e2) {} }
+                if ($mrClient) {
+                    $q = DB::table('reg_periksa')->where('no_rkm_medis', $mrClient);
+                    if ($ymdMulai && $ymdAkhir) {
+                        $q->whereBetween('tgl_registrasi', [$ymdMulai, $ymdAkhir]);
+                    } elseif ($ymdTanggal) {
+                        $q->whereDate('tgl_registrasi', $ymdTanggal);
+                    }
+                    $reg = $q->orderByDesc('tgl_registrasi')->first();
+                    if ($reg) {
+                        $no_rawat = (string) $reg->no_rawat;
+                    }
+                }
+            } catch (\Throwable $e) {}
+        }
+        if (! $reg) {
+            return response()->json(['status' => 'Tidak Valid', 'payload' => null, 'match' => false], 404);
+        }
+
+        $mr = $reg->no_rkm_medis;
+        $patient = DB::table('pasien')->where('no_rkm_medis', $mr)->first();
+        $dokter = DB::table('dokter')->where('kd_dokter', $reg->kd_dokter)->first();
+
+        $instansi = null;
+        try {
+            if (Schema::hasTable('setting')) {
+                $q = DB::table('setting');
+                if (Schema::hasColumn('setting', 'aktifkan')) {
+                    $q->where('aktifkan', 'Yes');
+                }
+                $row = $q->orderBy('nama_instansi')->first();
+                $instansi = $row->nama_instansi ?? null;
+            }
+        } catch (\Throwable $e) {}
+
+        $surat = null;
+        try {
+            if (Schema::hasTable('suratsakitpihak2')) {
+                $surat = DB::table('suratsakitpihak2')->where('no_rawat', $no_rawat)->orderByDesc('created_at')->first();
+            }
+        } catch (\Throwable $e) {}
+
+        $mulai = $surat?->tanggalawal ?: $reg->tgl_registrasi;
+        $akhir = $surat?->tanggalakhir ?: $reg->tgl_registrasi;
+        $hari = null;
+        try {
+            $hari = \Carbon\Carbon::parse($mulai)->diffInDays(\Carbon\Carbon::parse($akhir)) + 1;
+        } catch (\Throwable $e) {}
+
+        $payload = [
+            'type' => 'SKS',
+            'nomor' => (string) ($surat->no_surat ?? ''),
+            'instansi' => (string) ($instansi ?? ''),
+            'nama' => (string) ($patient->nm_pasien ?? ''),
+            'tgl_lahir' => (string) ($patient->tgl_lahir ?? ''),
+            'mr' => (string) ($mr ?? ''),
+            'tanggal_surat' => (string) $mulai,
+            'dokter' => (string) ($dokter->nm_dokter ?? ''),
+            'status' => ($reg->stts === 'Batal') ? 'Tidak Valid' : 'Valid',
+            'hari' => $hari,
+            'mulai' => (string) $mulai,
+            'akhir' => (string) $akhir,
+        ];
+
+        $match = false;
+        try {
+            if (is_array($client)) {
+                $keys = ['type','instansi','mr','dokter'];
+                $same = true;
+                foreach ($keys as $k) {
+                    $a = strtolower(trim((string) ($client[$k] ?? '')));
+                    $b = strtolower(trim((string) ($payload[$k] ?? '')));
+                    if ($a !== $b) { $same = false; break; }
+                }
+                $match = $same;
+            }
+        } catch (\Throwable $e) {}
+
+        return response()->json([
+            'status' => $payload['status'],
+            'payload' => $payload,
+            'match' => $match,
+            'qr' => (function () use ($payload) {
+                $nomor = (string) ($payload['nomor'] ?? '');
+                if ($nomor === '') {
+                    return null;
+                }
+                $url = route('rawat-jalan.surat-sakit.by-nomor', ['no_surat' => $nomor]);
+                $url = preg_replace('/\/+$/', '', (string) $url) . '?mode=info';
+                $svg = null;
+                try {
+                    $svg = QrCode::size(160)->errorCorrection('H')->format('svg')->generate($url);
+                } catch (\Throwable $e) {}
+                return [
+                    'url' => $url,
+                    'svg' => $svg,
+                ];
+            })(),
+        ]);
+    }
+
+    public function nextNoSuratSakit(Request $request)
+    {
+        $tanggal = (string) ($request->query('tanggal') ?: Carbon::today()->toDateString());
+        try { $tanggal = Carbon::parse($tanggal)->toDateString(); } catch (\Throwable $e) {}
+        $year = Carbon::parse($tanggal)->format('Y');
+        $prefix = 'SKS/'.$year.'/';
+        $next = $prefix . '00001';
+        try {
+            if (Schema::hasTable('suratsakitpihak2')) {
+                $row = DB::table('suratsakitpihak2')
+                    ->where('no_surat', 'like', $prefix.'%')
+                    ->orderByDesc('no_surat')
+                    ->first();
+                if (! $row && Schema::hasColumn('suratsakitpihak2','created_at')) {
+                    $row = DB::table('suratsakitpihak2')
+                        ->orderByDesc('created_at')
+                        ->first();
+                }
+                if ($row && isset($row->no_surat)) {
+                    $last = (string) $row->no_surat;
+                    $num = 0;
+                    if (preg_match('/^'.preg_quote($prefix,'/').'([0-9]+)$/', $last, $m)) {
+                        $num = (int) ($m[1] ?? 0);
+                    } elseif (preg_match('/([0-9]{1,})$/', $last, $m)) {
+                        $num = (int) ($m[1] ?? 0);
+                    }
+                    $num = $num + 1;
+                    $next = $prefix . str_pad((string) $num, 5, '0', STR_PAD_LEFT);
+                }
+            } elseif (Schema::hasTable('suratsakit')) {
+                $row = DB::table('suratsakit')
+                    ->where('no_surat', 'like', $prefix.'%')
+                    ->orderByDesc('no_surat')
+                    ->first();
+                if ($row && isset($row->no_surat)) {
+                    $last = (string) $row->no_surat;
+                    $num = 0;
+                    if (preg_match('/^'.preg_quote($prefix,'/').'([0-9]+)$/', $last, $m)) {
+                        $num = (int) ($m[1] ?? 0);
+                    } elseif (preg_match('/([0-9]{1,})$/', $last, $m)) {
+                        $num = (int) ($m[1] ?? 0);
+                    }
+                    $num = $num + 1;
+                    $next = $prefix . str_pad((string) $num, 5, '0', STR_PAD_LEFT);
+                }
+            }
+        } catch (\Throwable $e) {}
+        return response()->json(['nomor' => $next]);
+    }
+
+    public function suratSakitByNomor(Request $request, $no_surat)
+    {
+        $no_surat = urldecode((string) $no_surat);
+        $mode = (string) $request->query('mode', '');
+        if (! Schema::hasTable('suratsakitpihak2')) {
+            abort(404);
+        }
+        $row = DB::table('suratsakitpihak2')->where('no_surat', $no_surat)->first();
+        if (! $row || ! isset($row->no_rawat)) {
+            abort(404);
+        }
+        if (strtolower($mode) === 'info') {
+            $no_rawat = (string) $row->no_rawat;
+            $reg = DB::table('reg_periksa')->where('no_rawat', $no_rawat)->first();
+            if (! $reg) {
+                abort(404);
+            }
+            $mr = (string) ($reg->no_rkm_medis ?? '');
+            $patient = DB::table('pasien')->where('no_rkm_medis', $mr)->first();
+            $dokter = DB::table('dokter')->where('kd_dokter', $reg->kd_dokter)->first();
+            $instansi = null;
+            try {
+                if (Schema::hasTable('setting')) {
+                    $q = DB::table('setting');
+                    if (Schema::hasColumn('setting', 'aktifkan')) {
+                        $q->where('aktifkan', 'Yes');
+                    }
+                    $r = $q->orderBy('nama_instansi')->first();
+                    $instansi = $r->nama_instansi ?? null;
+                }
+            } catch (\Throwable $e) {}
+            $surat = DB::table('suratsakitpihak2')->where('no_surat', $no_surat)->first();
+            $mulai = $surat?->tanggalawal ?: $reg->tgl_registrasi;
+            $akhir = $surat?->tanggalakhir ?: $reg->tgl_registrasi;
+            $hari = null;
+            try {
+                $hari = \Carbon\Carbon::parse($mulai)->diffInDays(\Carbon\Carbon::parse($akhir)) + 1;
+            } catch (\Throwable $e) {}
+            $fmt = function ($v) {
+                try { return $v ? \Carbon\Carbon::parse($v)->format('d-m-Y') : ''; } catch (\Throwable $e) { return (string) $v; }
+            };
+            $mask = function ($n) {
+                $s = trim((string) $n);
+                if ($s === '') return '-';
+                $arr = explode(' ', $s);
+                $first = $arr[0] ?? '';
+                $maskedFirst = substr($first, 0, 2) . '**';
+                $rest = [];
+                foreach (array_slice($arr, 1) as $x) { $rest[] = str_repeat('*', strlen($x)); }
+                $out = trim($maskedFirst . ' ' . implode(' ', $rest));
+                return $out !== '' ? $out : $maskedFirst;
+            };
+            $status = ($reg->stts === 'Batal') ? 'Tidak Valid' : 'Valid';
+            $html = '<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Surat Sakit</title><style>body{margin:0;background:#f6f7f9;color:#111;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif} .wrap{max-width:640px;margin:24px auto;padding:16px} .card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,0.06)} .head{padding:24px 24px 8px;text-align:center} .check{display:inline-flex;width:56px;height:56px;border-radius:50%;align-items:center;justify-content:center;background:#2563eb;color:#fff;font-weight:700} .title{margin-top:8px;font-size:22px;font-weight:800;text-transform:uppercase} .divider{margin:12px 0;border-top:1px solid #e5e7eb} .body{padding:8px 24px 24px;font-size:14px} .row{display:flex;align-items:center;justify-content:space-between;margin:6px 0} .label{color:#4b5563} .val{font-weight:600;color:#111} .status.valid{color:#16a34a;font-weight:700} .status.invalid{color:#dc2626;font-weight:700} </style></head><body><div class="wrap"><div class="card"><div class="head"><div class="check">✓</div><div class="title">Surat Sakit</div></div><div class="divider"></div><div class="body">' .
+                '<div class="row"><span class="label">KLINIK :</span><span class="val">' . e((string) ($instansi ?? '-')) . '</span></div>' .
+                '<div class="row"><span class="label">NAMA :</span><span class="val">' . e($mask($patient->nm_pasien ?? '')) . '</span></div>' .
+                '<div class="row"><span class="label">TANGGAL LAHIR :</span><span class="val">' . e($fmt($patient->tgl_lahir ?? '')) . '</span></div>' .
+                '<div class="row"><span class="label">ID MR :</span><span class="val">' . e($mr ?: '-') . '</span></div>' .
+                '<div class="row"><span class="label">TANGGAL SURAT :</span><span class="val">' . e($fmt($mulai)) . '</span></div>' .
+                '<div class="row"><span class="label">PENANGGUNG JAWAB :</span><span class="val">' . e((string) ($dokter->nm_dokter ?? '-')) . '</span></div>' .
+                '<div class="row"><span class="label">STATUS :</span><span class="' . ($status === 'Valid' ? 'status valid' : 'status invalid') . '">' . e($status) . '</span></div>' .
+                '<div class="divider"></div>' .
+                '<div style="margin:10px 0;color:#111">Dalam keadaan <span style="font-weight:700">SAKIT</span> dan memerlukan istirahat selama <span style="font-weight:700">' . e((string) $hari) . '</span> hari</div>' .
+                '<div class="row"><span class="label">Terhitung mulai tanggal :</span><span class="val">' . e($fmt($mulai)) . '</span></div>' .
+                '<div class="row"><span class="label">Sampai dengan tanggal :</span><span class="val">' . e($fmt($akhir)) . '</span></div>' .
+                '</div></div></div></body></html>';
+            return response($html)->header('Content-Type', 'text/html');
+        }
+        return $this->suratSakit($row->no_rawat);
+    }
+
+    public function verifySuratSakitByNomor(Request $request, $no_surat)
+    {
+        $no_surat = urldecode((string) $no_surat);
+        $no_rawat = null;
+        if (Schema::hasTable('suratsakitpihak2')) {
+            $row = DB::table('suratsakitpihak2')->where('no_surat', $no_surat)->first();
+            $no_rawat = (string) ($row->no_rawat ?? '');
+        }
+        if (! $no_rawat) {
+            return response()->json(['status' => 'Tidak Valid', 'payload' => null, 'match' => false], 404);
+        }
+        return $this->verifySuratSakit($request, $no_rawat);
+    }
+
+    public function storeValidasiTtd(Request $request)
+    {
+        if (! Schema::hasTable('validasi_ttd')) {
+            return response()->json(['ok' => false, 'message' => 'tabel validasi_ttd tidak tersedia'], 500);
+        }
+
+        $label = (string) ($request->input('label') ?: $request->input('type') ?: 'SKS');
+        $jenis = (string) ($request->input('jenis') ?: null);
+        $no_surat = (string) ($request->input('nomor') ?: $request->input('no_surat') ?: '');
+        $no_rawat = (string) ($request->input('no_rawat') ?: '');
+        $no_rkm_medis = (string) ($request->input('no_rkm_medis') ?: $request->input('mr') ?: '');
+        $statusStr = (string) ($request->input('status') ?: '0');
+        $status = in_array($statusStr, ['0','1']) ? $statusStr : (strtolower($statusStr) === 'valid' ? '1' : '0');
+        $payload = $request->input('payload');
+        $tanggalInput = (string) ($request->input('tanggal') ?: '');
+        $tanggal = $tanggalInput ?: now()->toDateString();
+        try { $tanggal = \Carbon\Carbon::parse($tanggal)->toDateString(); } catch (\Throwable $e) {}
+        $verifiedAt = now();
+
+        $cols = [];
+        try { $cols = Schema::getColumnListing('validasi_ttd'); } catch (\Throwable $e) {}
+
+        $row = [];
+        if (in_array('no_surat', $cols)) { $row['no_surat'] = $no_surat; }
+        if (in_array('no_rawat', $cols)) { $row['no_rawat'] = $no_rawat; }
+        if (in_array('no_rkm_medis', $cols)) { $row['no_rkm_medis'] = $no_rkm_medis; }
+        if (in_array('tanggal', $cols)) { $row['tanggal'] = $tanggal; }
+        if (in_array('status', $cols)) { $row['status'] = $status; }
+        if (in_array('label', $cols)) { $row['label'] = $label; }
+        if (in_array('jenis', $cols)) { $row['jenis'] = $jenis; }
+        if (in_array('payload_json', $cols)) { $row['payload_json'] = is_array($payload) ? json_encode($payload) : (is_string($payload) ? $payload : null); }
+        if (in_array('verified_at', $cols)) { $row['verified_at'] = $verifiedAt; }
+        if (in_array('created_at', $cols)) { $row['created_at'] = now(); }
+        if (in_array('updated_at', $cols)) { $row['updated_at'] = now(); }
+
+        if (empty($row)) {
+            return response()->json(['ok' => false, 'message' => 'kolom validasi_ttd tidak kompatibel'], 422);
+        }
+
+        try {
+            $key = [];
+            if (in_array('no_surat', $cols)) { $key['no_surat'] = $no_surat; }
+            if (! empty($key)) {
+                DB::table('validasi_ttd')->updateOrInsert($key, $row);
+            } else {
+                DB::table('validasi_ttd')->insert($row);
+            }
+        } catch (\Throwable $e) {
+            return response()->json(['ok' => false, 'message' => $e->getMessage()], 500);
+        }
+        try {
+            if ($label === 'SKS' && Schema::hasTable('suratsakitpihak2')) {
+                $instansi = null;
+                try {
+                    if (Schema::hasTable('setting')) {
+                        $q = DB::table('setting');
+                        if (Schema::hasColumn('setting', 'aktifkan')) { $q->where('aktifkan', 'Yes'); }
+                        $r = $q->orderBy('nama_instansi')->first();
+                        $instansi = $r->nama_instansi ?? null;
+                    }
+                } catch (\Throwable $e) {}
+
+                $reg = DB::table('reg_periksa')->where('no_rawat', $no_rawat)->first();
+                $mrDb = (string) ($reg->no_rkm_medis ?? $no_rkm_medis);
+                $pasien = $mrDb ? DB::table('pasien')->where('no_rkm_medis', $mrDb)->first() : null;
+                $nama2 = (string) ($pasien->nm_pasien ?? '');
+                $alamat = (string) ($pasien->alamat ?? '');
+                $jkRaw = (string) ($pasien->jk ?? '');
+                $jk = strtoupper($jkRaw) === 'P' ? 'Perempuan' : 'Laki-laki';
+                $tglLahirRaw = (string) ($pasien->tgl_lahir ?? '');
+                $tglLahirYmd = null;
+                try { if ($tglLahirRaw) { $tglLahirYmd = \Carbon\Carbon::parse($tglLahirRaw)->format('Y-m-d'); } } catch (\Throwable $e) {}
+                $instansiFinal = (string) (($payload['instansi'] ?? null) ?: ($instansi ?? ''));
+                $mulaiStr = (string) ($payload['mulai'] ?? $tanggal);
+                $akhirStr = (string) ($payload['akhir'] ?? $tanggal);
+                $mulaiYmd = $tanggal;
+                $akhirYmd = $tanggal;
+                try { $mulaiYmd = \Carbon\Carbon::parse($mulaiStr)->format('Y-m-d'); } catch (\Throwable $e) {}
+                try { $akhirYmd = \Carbon\Carbon::parse($akhirStr)->format('Y-m-d'); } catch (\Throwable $e) {}
+                $hari = null;
+                try { $hari = \Carbon\Carbon::parse($mulaiYmd)->diffInDays(\Carbon\Carbon::parse($akhirYmd)) + 1; } catch (\Throwable $e) {}
+                $hariStr = (string) (($payload['hari'] ?? null) ?: ($hari ?? 1));
+                $hubungan = 'Suami';
+                $pekerjaan = 'Karyawan Swasta';
+
+                $insert = [
+                    'no_surat' => $no_surat,
+                    'no_rawat' => $no_rawat,
+                    'tanggalawal' => $mulaiYmd,
+                    'tanggalakhir' => $akhirYmd,
+                    'lamasakit' => $hariStr,
+                    'nama2' => $nama2,
+                    'tgl_lahir' => (string) ($tglLahirYmd ?: $mulaiYmd),
+                    'umur' => '',
+                    'jk' => $jk,
+                    'alamat' => $alamat,
+                    'hubungan' => $hubungan,
+                    'pekerjaan' => $pekerjaan,
+                    'instansi' => $instansiFinal,
+                ];
+                if (Schema::hasColumn('suratsakitpihak2', 'payload_json')) { $insert['payload_json'] = json_encode($payload ?: []); }
+
+                $exists = DB::table('suratsakitpihak2')->where('no_surat', $no_surat)->exists();
+                if ($exists) {
+                    if (Schema::hasColumn('suratsakitpihak2', 'updated_at')) { $insert['updated_at'] = now(); }
+                } else {
+                    if (Schema::hasColumn('suratsakitpihak2', 'created_at')) { $insert['created_at'] = now(); }
+                    if (Schema::hasColumn('suratsakitpihak2', 'updated_at')) { $insert['updated_at'] = now(); }
+                }
+                DB::table('suratsakitpihak2')->updateOrInsert(['no_surat' => $no_surat], $insert);
+            }
+        } catch (\Throwable $e) {}
+
+        return response()->json(['ok' => true, 'data' => $row]);
+    }
+
+    public function describeValidasiTtd()
+    {
+        if (! Schema::hasTable('validasi_ttd')) {
+            return response()->json(['ok' => false, 'message' => 'tabel validasi_ttd tidak tersedia'], 404);
+        }
+        $columns = [];
+        try {
+            $cols = Schema::getColumnListing('validasi_ttd');
+            foreach ($cols as $c) {
+                $columns[] = ['name' => $c];
+            }
+        } catch (\Throwable $e) {}
+        return response()->json(['ok' => true, 'columns' => $columns]);
+    }
+
+    public function findValidasiTtd(Request $request)
+    {
+        if (! Schema::hasTable('validasi_ttd')) {
+            return response()->json(['ok' => false, 'row' => null], 404);
+        }
+        $label = (string) $request->query('label', '');
+        $no_rawat = (string) $request->query('no_rawat', '');
+        $no_rkm_medis = (string) $request->query('no_rkm_medis', '');
+        $tanggalInput = (string) $request->query('tanggal', '');
+        $tanggal = $tanggalInput ?: null;
+        try { if ($tanggal) { $tanggal = \Carbon\Carbon::parse($tanggal)->toDateString(); } } catch (\Throwable $e) {}
+
+        $q = DB::table('validasi_ttd');
+        if ($label !== '') { $q->where('label', $label); }
+        if ($no_rawat !== '') { $q->where('no_rawat', $no_rawat); }
+        if ($no_rkm_medis !== '') { $q->where('no_rkm_medis', $no_rkm_medis); }
+        if ($tanggal) { $q->where('tanggal', $tanggal); }
+        $row = $q->orderByDesc('updated_at')->orderByDesc('verified_at')->first();
+        return response()->json(['ok' => (bool) $row, 'row' => $row ?: null]);
     }
 }
