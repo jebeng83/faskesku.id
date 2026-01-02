@@ -3,7 +3,11 @@ import poli16996d from './poli'
 import dokter1a4744 from './dokter'
 import obatE6960e from './obat'
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1177
+=======
+* @see routes/web.php:1174
+>>>>>>> main
 * @route '/pcare/mapping/poli'
 */
 export const poli = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,7 +21,11 @@ poli.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1177
+=======
+* @see routes/web.php:1174
+>>>>>>> main
 * @route '/pcare/mapping/poli'
 */
 poli.url = (options?: RouteQueryOptions) => {
@@ -25,7 +33,11 @@ poli.url = (options?: RouteQueryOptions) => {
 }
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1177
+=======
+* @see routes/web.php:1174
+>>>>>>> main
 * @route '/pcare/mapping/poli'
 */
 poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +46,11 @@ poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1177
+=======
+* @see routes/web.php:1174
+>>>>>>> main
 * @route '/pcare/mapping/poli'
 */
 poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -43,7 +59,11 @@ poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1182
+=======
+* @see routes/web.php:1179
+>>>>>>> main
 * @route '/pcare/mapping/dokter'
 */
 export const dokter = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -57,7 +77,11 @@ dokter.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1182
+=======
+* @see routes/web.php:1179
+>>>>>>> main
 * @route '/pcare/mapping/dokter'
 */
 dokter.url = (options?: RouteQueryOptions) => {
@@ -65,7 +89,11 @@ dokter.url = (options?: RouteQueryOptions) => {
 }
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1182
+=======
+* @see routes/web.php:1179
+>>>>>>> main
 * @route '/pcare/mapping/dokter'
 */
 dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -74,7 +102,11 @@ dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1182
+=======
+* @see routes/web.php:1179
+>>>>>>> main
 * @route '/pcare/mapping/dokter'
 */
 dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -83,7 +115,11 @@ dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1187
+=======
+* @see routes/web.php:1184
+>>>>>>> main
 * @route '/pcare/mapping/obat'
 */
 export const obat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -97,7 +133,11 @@ obat.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1187
+=======
+* @see routes/web.php:1184
+>>>>>>> main
 * @route '/pcare/mapping/obat'
 */
 obat.url = (options?: RouteQueryOptions) => {
@@ -105,7 +145,11 @@ obat.url = (options?: RouteQueryOptions) => {
 }
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1187
+=======
+* @see routes/web.php:1184
+>>>>>>> main
 * @route '/pcare/mapping/obat'
 */
 obat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -114,7 +158,11 @@ obat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1187
+=======
+* @see routes/web.php:1184
+>>>>>>> main
 * @route '/pcare/mapping/obat'
 */
 obat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

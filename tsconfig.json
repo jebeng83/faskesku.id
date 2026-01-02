@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": false,
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "resources/js/routes/**/*.ts",
+    "resources/js/routes/**/*.tsx",
+    "resources/js/wayfinder.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "public",
+    "vendor",
+    "storage",
+    "resources/js/actions/**",
+    "resources/js/routes/farmasi/**"
+  ]
+}

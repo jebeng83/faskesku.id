@@ -46,6 +46,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
+<<<<<<< HEAD
 * @see \App\Http\Controllers\KunjunganController::stats
 * @see app/Http/Controllers/KunjunganController.php:285
 * @route '/laporan/stats'
@@ -90,6 +91,8 @@ stats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
+=======
+>>>>>>> main
 * @see routes/web.php:356
 * @route '/laporan/rl-kemenkes'
 */
@@ -171,7 +174,10 @@ bor.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 const laporan = {
     index: Object.assign(index, index),
+<<<<<<< HEAD
     stats: Object.assign(stats, stats),
+=======
+>>>>>>> main
     ralan: Object.assign(ralan, ralan),
     ranap: Object.assign(ranap, ranap),
     rlKemenkes: Object.assign(rlKemenkes, rlKemenkes),

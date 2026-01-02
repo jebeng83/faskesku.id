@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Link, usePage, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import MobileBottomNav from "@/Components/MobileBottomNav";
 import {
     Gauge,
     Wallet,
@@ -14,6 +13,7 @@ import {
     ChevronRight,
     Calendar,
     Home,
+    Scale,
 } from "lucide-react";
 
 // Sidebar khusus modul Keuangan/Akutansi, serasi dengan LanjutanRalanLayout & SidebarFarmasi
@@ -190,7 +190,7 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
         }
     };
 
-    const MobileBottomNav = React.memo(function MobileBottomNav() {
+    const KeuanganMobileBottomNav = React.memo(function KeuanganMobileBottomNav() {
         const navItems = [
             { href: "/akutansi/home", icon: Home },
             { href: "/akutansi/jurnal", icon: BookOpen },
@@ -539,7 +539,7 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
                     </div>
                 </div>
             </header>
-            <MobileBottomNav />
+            <KeuanganMobileBottomNav />
 
             {/* Main Content */}
             <main
@@ -555,7 +555,7 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
                     {children}
                 </div>
             </main>
-            <MobileBottomNav />
+            <KeuanganMobileBottomNav />
         </div>
     );
 }

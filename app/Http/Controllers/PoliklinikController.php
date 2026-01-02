@@ -38,13 +38,18 @@ class PoliklinikController extends Controller
         $start = max(0, (int) $request->query('start', 0));
         $limit = max(1, min(500, (int) $request->query('limit', 25)));
         $q = trim((string) $request->query('q', ''));
+        $status = $request->query('status');
 
-        $builder = Poliklinik::query()->select(['kd_poli', 'nm_poli']);
+        $builder = Poliklinik::query()->select(['kd_poli', 'nm_poli', 'status']);
         if ($q !== '') {
             $builder->where(function ($w) use ($q) {
                 $w->where('kd_poli', 'like', "%{$q}%")
                     ->orWhere('nm_poli', 'like', "%{$q}%");
             });
+        }
+
+        if ($status !== null && $status !== '') {
+            $builder->where('status', (string) $status);
         }
 
         $total = (clone $builder)->count();

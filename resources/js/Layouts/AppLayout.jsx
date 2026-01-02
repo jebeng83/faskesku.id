@@ -68,6 +68,51 @@ export default function AppLayout({
         } catch (_) {}
     }, [theme]);
 
+    useEffect(() => {
+        const limit = 30 * 60 * 1000;
+        let timeoutId;
+        let hasLoggedOut = false;
+
+        const logout = () => {
+            if (hasLoggedOut) return;
+            hasLoggedOut = true;
+            try {
+                const form = document.createElement("form");
+                form.method = "POST";
+                form.action = route("logout");
+                const csrfInput = document.createElement("input");
+                csrfInput.type = "hidden";
+                csrfInput.name = "_token";
+                csrfInput.value =
+                    document
+                        .querySelector('meta[name="csrf-token"]')
+                        ?.getAttribute("content") || "";
+                form.appendChild(csrfInput);
+                document.body.appendChild(form);
+                form.submit();
+            } catch (_) {}
+        };
+
+        const resetTimer = () => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(logout, limit);
+        };
+
+        const events = ["mousemove", "keydown", "click", "scroll", "touchstart"];
+        events.forEach((evt) => {
+            window.addEventListener(evt, resetTimer, { passive: true });
+        });
+
+        resetTimer();
+
+        return () => {
+            clearTimeout(timeoutId);
+            events.forEach((evt) => {
+                window.removeEventListener(evt, resetTimer);
+            });
+        };
+    }, []);
+
 	// Restore sidebar toggle state from localStorage
 	useEffect(() => {
 		try {

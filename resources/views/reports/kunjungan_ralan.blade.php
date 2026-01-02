@@ -39,6 +39,7 @@
                 <td style="width:50%; vertical-align:top; text-align:right; font-size:8px;">
                     <table style="float:right; border-collapse:collapse;">
                         <tr>
+<<<<<<< HEAD
                             <td style="padding-right:12px;">Kunjungan Lama : <strong>{{ number_format($summary['lama'] ?? 0) }}</strong></td>
                             <td>Laki-Laki : <strong>{{ number_format($summary['laki'] ?? 0) }}</strong></td>
                         </tr>
@@ -49,20 +50,38 @@
                         <tr>
                             <td colspan="2">Total Kunjungan : <strong>{{ number_format($summary['total'] ?? 0) }}</strong></td>
                         </tr>
+=======
+                            <td style="padding-right:12px;">Baru : <strong>{{ number_format($summary['baru'] ?? 0) }}</strong></td>
+                            <td>Total Kunjungan : <strong>{{ number_format($summary['total'] ?? 0) }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td style="padding-right:12px;">Lama : <strong>{{ number_format($summary['lama'] ?? 0) }}</strong></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td style="padding-right:12px;">Laki-Laki : <strong>{{ number_format($summary['laki'] ?? 0) }}</strong></td>
+                            <td>Perempuan : <strong>{{ number_format($summary['perempuan'] ?? 0) }}</strong></td>
+                        </tr>
+>>>>>>> main
                     </table>
                 </td>
             </tr>
         </table>
     </div>
 
+<<<<<<< HEAD
     <div class="summary">
         <!-- spacer kecil -->
     </div>
+=======
+    <div class="summary"></div>
+>>>>>>> main
 
     <table class="table">
         <thead>
             <tr>
                 <th class="nowrap" style="width: 3%">No</th>
+<<<<<<< HEAD
                 <th class="nowrap" style="width: 6%">No. RM</th>
                 <th class="nowrap" style="width: 5%">Baru</th>
                 <th class="nowrap" style="width: 15%">Pasien</th>
@@ -72,11 +91,26 @@
                 <th class="nowrap" style="width: 5%">Kode</th>
                 <th class="nowrap" style="width: 17%">Diagnosa</th>
                 <th class="nowrap" style="width: 18%">Dokter Jaga</th>
+=======
+                <th class="nowrap" style="width: 7%">Tgl Reg</th>
+                <th class="nowrap" style="width: 6%">No. RM</th>
+                <th class="nowrap" style="width: 12%">Poli</th>
+                <th class="nowrap" style="width: 14%">Pasien</th>
+                <th class="nowrap" style="width: 5%">Umur</th>
+                <th class="nowrap" style="width: 3%">L/P</th>
+                <th class="nowrap" style="width: 16%">Alamat</th>
+                <th class="nowrap" style="width: 8%">Cara Bayar</th>
+                <th class="nowrap" style="width: 13%">Dokter</th>
+                <th class="nowrap" style="width: 6%">Status</th>
+                <th class="nowrap" style="width: 4%">Kode</th>
+                <th class="nowrap" style="width: 13%">Diagnosa</th>
+>>>>>>> main
             </tr>
         </thead>
         <tbody>
             @php $i = 1; @endphp
             @foreach ($rows as $r)
+<<<<<<< HEAD
                 <tr>
                     <td class="text-center w-nowrap">{{ $i++ }}</td>
                     <td class="text-center nowrap">{{ $r->no_rkm_medis }}</td>
@@ -94,9 +128,44 @@
                     <td class="nowrap">{{ $r->kd_penyakit ?? '-' }}</td>
                     <td class="w-nowrap" title="{{ $diag }}">{{ $diagShort }}</td>
                     <td class="nowrap">{{ $r->nm_dokter }}</td>
+=======
+                @php
+                    $addr = (string) ($r->alamat ?? '');
+                    $addrShort = function_exists('mb_strimwidth') ? mb_strimwidth($addr, 0, 70, '…', 'UTF-8') : substr($addr, 0, 70);
+                    $diag = (string) ($r->nm_penyakit ?? '-');
+                    $diagShort = function_exists('mb_strimwidth') ? mb_strimwidth($diag, 0, 60, '…', 'UTF-8') : substr($diag, 0, 60);
+                    $poli = (string) ($r->nm_poli ?? '-');
+                    $poliShort = function_exists('mb_strimwidth') ? mb_strimwidth($poli, 0, 30, '…', 'UTF-8') : substr($poli, 0, 30);
+                    $dokter = (string) ($r->nm_dokter ?? '-');
+                    $dokterShort = function_exists('mb_strimwidth') ? mb_strimwidth($dokter, 0, 30, '…', 'UTF-8') : substr($dokter, 0, 30);
+                @endphp
+                <tr>
+                    <td class="text-center w-nowrap">{{ $i++ }}</td>
+                    <td class="text-center nowrap">
+                        @php
+                            $tgl = $r->tgl_registrasi ?? null;
+                            echo $tgl ? \Carbon\Carbon::parse($tgl)->format('d-m-Y') : '-';
+                        @endphp
+                    </td>
+                    <td class="text-center nowrap">{{ $r->no_rkm_medis }}</td>
+                    <td class="w-nowrap" title="{{ $r->nm_poli }}">{{ $poliShort }}</td>
+                    <td class="nowrap">{{ $r->nm_pasien }}</td>
+                    <td class="text-center nowrap">{{ $r->umur }}</td>
+                    <td class="text-center nowrap">{{ $r->jk }}</td>
+                    <td class="w-nowrap" title="{{ $addr }}">{{ $addrShort }}</td>
+                    <td class="nowrap">{{ $r->penjab }}</td>
+                    <td class="w-nowrap" title="{{ $r->nm_dokter }}">{{ $dokterShort }}</td>
+                    <td class="text-center nowrap">{{ $r->stts_daftar }}</td>
+                    <td class="nowrap">{{ $r->kd_penyakit ?? '-' }}</td>
+                    <td class="w-nowrap" title="{{ $diag }}">{{ $diagShort }}</td>
+>>>>>>> main
                 </tr>
             @endforeach
         </tbody>
     </table>
 </body>
 </html>
+<<<<<<< HEAD
+=======
+
+>>>>>>> main

@@ -750,6 +750,27 @@ export default function Create() {
                         <form
                             onSubmit={(e) => {
                                 e.preventDefault();
+                                const missing = [];
+                                if (!String(data.nm_pasien || "").trim()) missing.push("Nama Lengkap");
+                                if (!String(data.jk || "").trim()) missing.push("Jenis Kelamin");
+                                if (!String(data.tmp_lahir || "").trim()) missing.push("Tempat Lahir");
+                                if (!String(data.tgl_lahir || "").trim()) missing.push("Tanggal Lahir");
+                                if (!String(data.alamat || "").trim()) missing.push("Alamat");
+                                if (!String(data.no_tlp || "").trim()) missing.push("No. Telepon");
+                                if (!String(data.kode_wilayah || "").trim()) missing.push("Kelurahan/Desa");
+                                const pj = String(data.perusahaan_pasien ?? "");
+                                if (!pj || pj === "-" || pj === "0") missing.push("Perusahaan Pasien");
+                                if (!String(data.pnd ?? "").trim()) missing.push("Pendidikan");
+                                if (!String(data.suku_bangsa ?? "").trim()) missing.push("Suku Bangsa");
+                                if (!String(data.bahasa_pasien ?? "").trim()) missing.push("Bahasa Pasien");
+                                if (!String(data.cacat_fisik ?? "").trim()) missing.push("Cacat Fisik");
+                                if (missing.length) {
+                                    alert(
+                                        "Field wajib bertanda * belum diisi:\n- " +
+                                            missing.join("\n- ")
+                                    );
+                                    return;
+                                }
                                 post(route("patients.store"));
                             }}
                             className="space-y-6"

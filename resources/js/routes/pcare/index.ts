@@ -17,7 +17,11 @@ import resend from './resend'
 import massSend from './mass-send'
 import setting from './setting'
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1172
+=======
+* @see routes/web.php:1169
+>>>>>>> main
 * @route '/pcare'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +35,11 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1172
+=======
+* @see routes/web.php:1169
+>>>>>>> main
 * @route '/pcare'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -39,7 +47,11 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1172
+=======
+* @see routes/web.php:1169
+>>>>>>> main
 * @route '/pcare'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -48,7 +60,11 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1172
+=======
+* @see routes/web.php:1169
+>>>>>>> main
 * @route '/pcare'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -57,7 +73,11 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1191
+=======
+* @see routes/web.php:1188
+>>>>>>> main
 * @route '/pcare/monitoring'
 */
 export const monitoring = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -71,7 +91,11 @@ monitoring.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1191
+=======
+* @see routes/web.php:1188
+>>>>>>> main
 * @route '/pcare/monitoring'
 */
 monitoring.url = (options?: RouteQueryOptions) => {
@@ -79,7 +103,11 @@ monitoring.url = (options?: RouteQueryOptions) => {
 }
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1191
+=======
+* @see routes/web.php:1188
+>>>>>>> main
 * @route '/pcare/monitoring'
 */
 monitoring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -88,7 +116,11 @@ monitoring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1191
+=======
+* @see routes/web.php:1188
+>>>>>>> main
 * @route '/pcare/monitoring'
 */
 monitoring.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -352,5 +352,6 @@ kunjunganRanapPrint.head = (options?: RouteQueryOptions): RouteDefinition<'head'
 })
 
 const KunjunganController = { index, getStats, kunjunganRalanPage, kunjunganRalanData, kunjunganRalanPrint, kunjunganRanapPage, kunjunganRanapData, kunjunganRanapPrint }
+const KunjunganController = { index, kunjunganRalanPage, kunjunganRalanData, kunjunganRalanPrint, kunjunganRanapPage, kunjunganRanapData, kunjunganRanapPrint }
 
 export default KunjunganController

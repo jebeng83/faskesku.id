@@ -38,6 +38,12 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
   const [kelurahan, setKelurahan] = useState("");
 
   // Pagination State
+  const [excludeBatal, setExcludeBatal] = useState(true);
+  const [kabupaten, setKabupaten] = useState("");
+  const [kecamatan, setKecamatan] = useState("");
+  const [kelurahan, setKelurahan] = useState("");
+  const [keyword, setKeyword] = useState("");
+
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(50);
   const [pagination, setPagination] = useState({
@@ -77,6 +83,7 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
       if (penjab) params.set("penjab", penjab);
       if (status) params.set("status", status);
       if (excludeBatal) params.set("exclude_batal", String(excludeBatal));
+      if (excludeBatal) params.set("exclude_batal", "true");
       if (keyword) params.set("q", keyword);
       if (kabupaten) params.set("kabupaten", kabupaten);
       if (kecamatan) params.set("kecamatan", kecamatan);
@@ -112,6 +119,8 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    fetchData();
   }, [page]);
 
   useEffect(() => {
@@ -138,6 +147,7 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
     if (penjab) params.set("penjab", penjab);
     if (status) params.set("status", status);
     if (excludeBatal) params.set("exclude_batal", String(excludeBatal));
+    if (excludeBatal) params.set("exclude_batal", "true");
     if (keyword) params.set("q", keyword);
     if (kabupaten) params.set("kabupaten", kabupaten);
     if (kecamatan) params.set("kecamatan", kecamatan);
@@ -158,6 +168,11 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
     setKabupaten("");
     setKecamatan("");
     setKelurahan("");
+    setExcludeBatal(true);
+    setKabupaten("");
+    setKecamatan("");
+    setKelurahan("");
+    setKeyword("");
     if (page === 1) fetchData();
     else setPage(1);
   };
@@ -186,6 +201,14 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
               {/* Date Range */}
               <div>
                 <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Tanggal Mulai</label>
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
+
+          <div className="p-4 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  Tanggal Registrasi Mulai
+                </label>
                 <div className="relative mt-1">
                   <span className="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                     <Calendar className="h-4 w-4" />
@@ -195,11 +218,15 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
                     className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500"
+                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
               </div>
               <div>
                 <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Tanggal Selesai</label>
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  Tanggal Registrasi Selesai
+                </label>
                 <div className="relative mt-1">
                   <span className="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                     <Calendar className="h-4 w-4" />
@@ -216,6 +243,14 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
               {/* Main Filters */}
               <div>
                 <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Poli</label>
+                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  Poliklinik
+                </label>
                 <div className="relative mt-1">
                   <span className="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                     <Filter className="h-4 w-4" />
@@ -224,6 +259,7 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
                     value={poli}
                     onChange={(e) => setPoli(e.target.value)}
                     className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 appearance-none"
+                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 appearance-none"
                   >
                     <option value="">Semua Poli</option>
                     {listPoli.map((item) => (
@@ -236,6 +272,9 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
               </div>
               <div>
                 <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Dokter</label>
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  Dokter
+                </label>
                 <div className="relative mt-1">
                   <span className="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                     <Filter className="h-4 w-4" />
@@ -244,6 +283,7 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
                     value={dokter}
                     onChange={(e) => setDokter(e.target.value)}
                     className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 appearance-none"
+                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 appearance-none"
                   >
                     <option value="">Semua Dokter</option>
                     {listDokter.map((item) => (
@@ -258,6 +298,10 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
               {/* Secondary Filters */}
               <div>
                 <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Cara Bayar</label>
+              <div>
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  Cara Bayar
+                </label>
                 <div className="relative mt-1">
                   <span className="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                     <Filter className="h-4 w-4" />
@@ -266,6 +310,7 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
                     value={penjab}
                     onChange={(e) => setPenjab(e.target.value)}
                     className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 appearance-none"
+                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 appearance-none"
                   >
                     <option value="">Semua Cara Bayar</option>
                     {listPenjab.map((item) => (
@@ -278,11 +323,15 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
               </div>
               <div>
                 <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Status Daftar</label>
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  Status Kunjungan
+                </label>
                 <div className="mt-1">
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
                     className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500"
+                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
                   >
                     <option value="">Semua</option>
                     <option value="Baru">Baru</option>
@@ -292,6 +341,55 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
               </div>
               <div className="md:col-span-2">
                 <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Keyword</label>
+              <div>
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  Kecualikan Batal
+                </label>
+                <div className="mt-1 flex items-center gap-2">
+                  <input
+                    id="exclude-batal"
+                    type="checkbox"
+                    checked={excludeBatal}
+                    onChange={(e) => setExcludeBatal(e.target.checked)}
+                    className="h-4 w-4 text-emerald-600 border-gray-300 rounded"
+                  />
+                  <label htmlFor="exclude-batal" className="text-xs text-gray-700 dark:text-gray-300">
+                    Hanya tampilkan status selain batal
+                  </label>
+                </div>
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  Filter Wilayah
+                </label>
+                <div className="mt-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <input
+                    type="text"
+                    value={kabupaten}
+                    onChange={(e) => setKabupaten(e.target.value)}
+                    placeholder="Kabupaten"
+                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
+                  />
+                  <input
+                    type="text"
+                    value={kecamatan}
+                    onChange={(e) => setKecamatan(e.target.value)}
+                    placeholder="Kecamatan"
+                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
+                  />
+                  <input
+                    type="text"
+                    value={kelurahan}
+                    onChange={(e) => setKelurahan(e.target.value)}
+                    placeholder="Kelurahan"
+                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  Keyword
+                </label>
                 <div className="relative mt-1">
                   <span className="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                     <Search className="h-4 w-4" />
@@ -348,6 +446,12 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
             </div>
 
             {/* Action Buttons */}
+                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+            </div>
+
             <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
               <button
                 type="button"
@@ -369,6 +473,7 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
                 type="button"
                 onClick={handleApplyFilters}
                 className="inline-flex items-center gap-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 text-sm font-medium transition-colors shadow-sm"
+                className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-sm font-medium transition-colors shadow-sm"
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                 Terapkan Filter
@@ -481,6 +586,274 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
                     <td colSpan={13} className="px-4 py-12 text-center text-gray-500">
                       <div className="flex flex-col items-center justify-center gap-2">
                         <Loader2 className="h-6 w-6 animate-spin text-sky-500" />
+            <h2 className="font-semibold text-gray-900 dark:text-white">Data Kunjungan Ralan</h2>
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:block text-sm text-gray-500">
+                Total: <span className="font-semibold text-gray-900 dark:text-white">{pagination.total}</span> data
+              </div>
+              <div>
+                <select
+                  value={perPage}
+                  onChange={(e) => {
+                    setPerPage(parseInt(e.target.value, 10) || 50);
+                    setPage(1);
+                  }}
+                  className="rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-xs text-gray-700 dark:text-gray-200"
+                >
+                  <option value={25}>25 / halaman</option>
+                  <option value={50}>50 / halaman</option>
+                  <option value={100}>100 / halaman</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+              <thead className="bg-gray-50 dark:bg-gray-800/50">
+                <tr>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left whitespace-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => onSort("tgl_registrasi")}
+                      className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                    >
+                      <span>Tgl Reg</span>
+                      {sortBy === "tgl_registrasi" ? (
+                        sortDir === "asc" ? (
+                          <ArrowUp className="h-3 w-3" />
+                        ) : (
+                          <ArrowDown className="h-3 w-3" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="h-3 w-3" />
+                      )}
+                    </button>
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left whitespace-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => onSort("no_rawat")}
+                      className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                    >
+                      <span>No. Rawat</span>
+                      {sortBy === "no_rawat" ? (
+                        sortDir === "asc" ? (
+                          <ArrowUp className="h-3 w-3" />
+                        ) : (
+                          <ArrowDown className="h-3 w-3" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="h-3 w-3" />
+                      )}
+                    </button>
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left whitespace-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => onSort("nm_pasien")}
+                      className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                    >
+                      <span>Pasien</span>
+                      {sortBy === "nm_pasien" ? (
+                        sortDir === "asc" ? (
+                          <ArrowUp className="h-3 w-3" />
+                        ) : (
+                          <ArrowDown className="h-3 w-3" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="h-3 w-3" />
+                      )}
+                    </button>
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left whitespace-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => onSort("no_rkm_medis")}
+                      className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                    >
+                      <span>No. RM</span>
+                      {sortBy === "no_rkm_medis" ? (
+                        sortDir === "asc" ? (
+                          <ArrowUp className="h-3 w-3" />
+                        ) : (
+                          <ArrowDown className="h-3 w-3" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="h-3 w-3" />
+                      )}
+                    </button>
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left whitespace-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => onSort("jk")}
+                      className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                    >
+                      <span>JK</span>
+                      {sortBy === "jk" ? (
+                        sortDir === "asc" ? (
+                          <ArrowUp className="h-3 w-3" />
+                        ) : (
+                          <ArrowDown className="h-3 w-3" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="h-3 w-3" />
+                      )}
+                    </button>
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left whitespace-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => onSort("umur")}
+                      className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                    >
+                      <span>Umur</span>
+                      {sortBy === "umur" ? (
+                        sortDir === "asc" ? (
+                          <ArrowUp className="h-3 w-3" />
+                        ) : (
+                          <ArrowDown className="h-3 w-3" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="h-3 w-3" />
+                      )}
+                    </button>
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left whitespace-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => onSort("nm_poli")}
+                      className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                    >
+                      <span>Poli</span>
+                      {sortBy === "nm_poli" ? (
+                        sortDir === "asc" ? (
+                          <ArrowUp className="h-3 w-3" />
+                        ) : (
+                          <ArrowDown className="h-3 w-3" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="h-3 w-3" />
+                      )}
+                    </button>
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left whitespace-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => onSort("nm_dokter")}
+                      className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                    >
+                      <span>Dokter</span>
+                      {sortBy === "nm_dokter" ? (
+                        sortDir === "asc" ? (
+                          <ArrowUp className="h-3 w-3" />
+                        ) : (
+                          <ArrowDown className="h-3 w-3" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="h-3 w-3" />
+                      )}
+                    </button>
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left whitespace-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => onSort("penjab")}
+                      className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                    >
+                      <span>Cara Bayar</span>
+                      {sortBy === "penjab" ? (
+                        sortDir === "asc" ? (
+                          <ArrowUp className="h-3 w-3" />
+                        ) : (
+                          <ArrowDown className="h-3 w-3" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="h-3 w-3" />
+                      )}
+                    </button>
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left min-w-[200px]">
+                    <button
+                      type="button"
+                      onClick={() => onSort("alamat")}
+                      className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                    >
+                      <span>Alamat</span>
+                      {sortBy === "alamat" ? (
+                        sortDir === "asc" ? (
+                          <ArrowUp className="h-3 w-3" />
+                        ) : (
+                          <ArrowDown className="h-3 w-3" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="h-3 w-3" />
+                      )}
+                    </button>
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left whitespace-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => onSort("stts_daftar")}
+                      className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                    >
+                      <span>Status</span>
+                      {sortBy === "stts_daftar" ? (
+                        sortDir === "asc" ? (
+                          <ArrowUp className="h-3 w-3" />
+                        ) : (
+                          <ArrowDown className="h-3 w-3" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="h-3 w-3" />
+                      )}
+                    </button>
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left whitespace-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => onSort("kd_penyakit")}
+                      className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                    >
+                      <span>Kode Diagnosa</span>
+                      {sortBy === "kd_penyakit" ? (
+                        sortDir === "asc" ? (
+                          <ArrowUp className="h-3 w-3" />
+                        ) : (
+                          <ArrowDown className="h-3 w-3" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="h-3 w-3" />
+                      )}
+                    </button>
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-left min-w-[200px]">
+                    <button
+                      type="button"
+                      onClick={() => onSort("nm_penyakit")}
+                      className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                    >
+                      <span>Diagnosa</span>
+                      {sortBy === "nm_penyakit" ? (
+                        sortDir === "asc" ? (
+                          <ArrowUp className="h-3 w-3" />
+                        ) : (
+                          <ArrowDown className="h-3 w-3" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="h-3 w-3" />
+                      )}
+                    </button>
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800 bg-white dark:bg-gray-900">
+                {loading ? (
+                  <tr>
+                    <td colSpan={13} className="px-4 py-12 text-center text-gray-500">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <Loader2 className="h-6 w-6 animate-spin text-emerald-500" />
                         <p>Sedang memuat data...</p>
                       </div>
                     </td>
@@ -511,6 +884,57 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
                       <td className="px-4 py-3 text-sm text-gray-900 dark:text-white whitespace-nowrap font-mono">{row.kd_penyakit || "-"}</td>
                       <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
                         <span className="line-clamp-2" title={row.nm_penyakit}>{row.nm_penyakit || "-"}</span>
+                    <tr key={`${row.no_rawat || idx}`} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white whitespace-nowrap">
+                        {formatDateDMY(row.tgl_registrasi)}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white whitespace-nowrap font-medium">
+                        {row.no_rawat}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white whitespace-nowrap">
+                        {row.nm_pasien}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                        {row.no_rkm_medis}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white whitespace-nowrap">
+                        {row.jk}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white whitespace-nowrap">
+                        {row.umur}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white whitespace-nowrap">
+                        {row.nm_poli}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white whitespace-nowrap">
+                        {row.nm_dokter}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white whitespace-nowrap">
+                        {row.penjab}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                        <span className="line-clamp-2" title={row.alamat}>
+                          {row.alamat}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                            row.stts_daftar === "Baru"
+                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
+                              : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+                          }`}
+                        >
+                          {row.stts_daftar || "-"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white whitespace-nowrap font-mono">
+                        {row.kd_penyakit || "-"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                        <span className="line-clamp-2" title={row.nm_penyakit}>
+                          {row.nm_penyakit || "-"}
+                        </span>
                       </td>
                     </tr>
                   ))
@@ -532,12 +956,16 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
                 <div>
                   <p className="text-sm text-gray-700 dark:text-gray-300">
                     Menampilkan <span className="font-medium">{pagination.from}</span> sampai <span className="font-medium">{pagination.to}</span> dari <span className="font-medium">{pagination.total}</span> hasil
+                    Menampilkan <span className="font-medium">{pagination.from}</span> sampai{" "}
+                    <span className="font-medium">{pagination.to}</span> dari{" "}
+                    <span className="font-medium">{pagination.total}</span> hasil
                   </p>
                 </div>
                 <div>
                   <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                     <button
                       onClick={() => setPage(p => Math.max(1, p - 1))}
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={page === 1 || loading}
                       className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
@@ -549,6 +977,7 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
                     </span>
                     <button
                       onClick={() => setPage(p => Math.min(pagination.last_page, p + 1))}
+                      onClick={() => setPage((p) => Math.min(pagination.last_page, p + 1))}
                       disabled={page === pagination.last_page || loading}
                       className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
@@ -564,6 +993,12 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
                    onClick={() => setPage(p => Math.max(1, p - 1))}
                    disabled={page === 1 || loading}
                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+
+              <div className="flex items-center justify-between w-full sm:hidden">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1 || loading}
+                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                 >
                   Previous
                 </button>
@@ -574,6 +1009,12 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
                    onClick={() => setPage(p => Math.min(pagination.last_page, p + 1))}
                    disabled={page === pagination.last_page || loading}
                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                  {page} / {pagination.last_page}
+                </span>
+                <button
+                  onClick={() => setPage((p) => Math.min(pagination.last_page, p + 1))}
+                  disabled={page === pagination.last_page || loading}
+                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                 >
                   Next
                 </button>
@@ -585,3 +1026,4 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
     </SidebarLaporan>
   );
 }
+
