@@ -5,25 +5,25 @@ import SidebarRalan from '@/Layouts/SidebarRalan';
 import { todayDateString } from '@/tools/datetime';
 import QRCode from 'qrcode';
 
-export default function SuratSakit({ rawatJalan, patient, dokter, setting }) {
+export default function SuratSakit({ rawatJalan, patient, dokter, setting, suratSakitData, embedded = false, templateSelector }) {
     const { props } = usePage();
     const triggerPrint = !!props?.flash?.trigger_print;
 
     const [formData, setFormData] = useState({
-        no_surat: '',
+        no_surat: suratSakitData?.no_surat || '',
         no_rawat: rawatJalan?.no_rawat || '',
-        tanggalawal: todayDateString(),
-        tanggalakhir: '',
-        lamasakit: '',
-        nama2: '',
-        tgl_lahir: patient?.tgl_lahir || '',
-        umur: '',
-        jk: patient?.jk || '',
-        alamat: patient?.alamat || '',
-        hubungan: 'Suami',
-        pekerjaan: 'Karyawan Swasta',
-        instansi: '',
-        is_pihak_kedua: false,
+        tanggalawal: suratSakitData?.tanggalawal || todayDateString(),
+        tanggalakhir: suratSakitData?.tanggalakhir || '',
+        lamasakit: suratSakitData?.lamasakit || '',
+        nama2: suratSakitData?.nama2 || '',
+        tgl_lahir: suratSakitData?.tgl_lahir || patient?.tgl_lahir || '',
+        umur: suratSakitData?.umur || '',
+        jk: suratSakitData?.jk || patient?.jk || '',
+        alamat: suratSakitData?.alamat || patient?.alamat || '',
+        hubungan: suratSakitData?.hubungan || 'Suami',
+        pekerjaan: suratSakitData?.pekerjaan || 'Karyawan Swasta',
+        instansi: suratSakitData?.instansi || '',
+        is_pihak_kedua: suratSakitData?.is_pihak_kedua || false,
         diagnosa: '',
     });
 
@@ -75,6 +75,8 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting }) {
         setDuplicateWarning('');
 
         if (!formData.no_rawat || !formData.tanggalawal) return;
+
+        if (suratSakitData && suratSakitData.tanggalawal === formData.tanggalawal && suratSakitData.no_surat === formData.no_surat) return;
 
         const ac = new AbortController();
         const t = setTimeout(async () => {
@@ -301,9 +303,11 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting }) {
 
     const backToRalanUrl = route('rawat-jalan.index');
 
+    const Layout = embedded ? ({ children }) => <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">{children}</div> : SidebarRalan;
+
     return (
-        <SidebarRalan>
-            <Head title="Surat Sakit" />
+        <Layout>
+            {!embedded && <Head title="Surat Sakit" />}
             <style>{`
                 @page { 
                     size: A4 portrait; 
@@ -383,13 +387,15 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting }) {
                                     </svg>
                                     Cetak
                                 </button>
-                                <button
-                                    type="button"
-                                    onClick={() => router.get(backToRalanUrl)}
-                                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
-                                >
-                                    Kembali Rawat Jalan
-                                </button>
+                                {!embedded && (
+                                    <button
+                                        type="button"
+                                        onClick={() => router.get(backToRalanUrl)}
+                                        className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
+                                    >
+                                        Kembali Rawat Jalan
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -400,6 +406,11 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting }) {
                         <div className="lg:col-span-5 xl:col-span-4 print:hidden">
                             <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl sm:rounded-2xl border border-white/50 dark:border-gray-700/50 overflow-hidden">
                                 <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/20">
+                                    {templateSelector && (
+                                        <div className="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+                                            {templateSelector}
+                                        </div>
+                                    )}
                                     <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -811,6 +822,6 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting }) {
                     </div>
                 </div>
             </div>
-        </SidebarRalan>
+        </Layout>
     );
 }

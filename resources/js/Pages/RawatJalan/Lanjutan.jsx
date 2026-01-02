@@ -814,18 +814,11 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                             {suratMenuOpen && (
                                                 <div className="absolute z-50 mt-1 w-44 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg overflow-hidden">
                                                     <Link
-                                                        href={route("rawat-jalan.surat-sehat", currentNoRawat)}
+                                                        href={route("rawat-jalan.buat-surat", { no_rawat: currentNoRawat })}
                                                         onClick={() => setSuratMenuOpen(false)}
                                                         className="block w-full text-left px-3 py-2 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
                                                     >
-                                                        Surat Sehat
-                                                    </Link>
-                                                    <Link
-                                                        href={route("rawat-jalan.surat-sakit", currentNoRawat)}
-                                                        onClick={() => setSuratMenuOpen(false)}
-                                                        className="block w-full text-left px-3 py-2 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 border-t border-gray-100 dark:border-gray-800"
-                                                    >
-                                                        Surat Sakit
+                                                        Input Surat
                                                     </Link>
                                                 </div>
                                             )}

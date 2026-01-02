@@ -1203,6 +1203,58 @@ class RawatJalanController extends Controller
     }
 
     /**
+     * Show unified buat surat page
+     */
+    public function buatSurat($noRawat)
+    {
+        $rawatJalan = RawatJalan::where('no_rawat', $noRawat)
+            ->with(['patient', 'dokter'])
+            ->firstOrFail();
+
+        $patient = $rawatJalan->patient;
+        $dokter = $rawatJalan->dokter;
+
+        // Jika dokter tidak ditemukan, buat objek dokter kosong
+        if (! $dokter) {
+            $dokter = new \App\Models\Dokter;
+            $dokter->kd_dokter = '';
+            $dokter->nm_dokter = '';
+        }
+
+        $setting = $this->kopSuratSetting();
+
+        // Cek data surat sehat sebelumnya
+        $suratSehatData = DB::table('surat_keterangan_sehat')
+            ->where('no_rawat', $noRawat)
+            ->first();
+
+        // Cek data surat sakit sebelumnya
+        $suratSakitData = DB::table('suratsakit')
+            ->where('no_rawat', $noRawat)
+            ->first();
+
+        if (! $suratSakitData) {
+            $suratSakitData = DB::table('suratsakitpihak2')
+                ->where('no_rawat', $noRawat)
+                ->first();
+            if ($suratSakitData) {
+                $suratSakitData->is_pihak_kedua = true;
+            }
+        } else {
+            $suratSakitData->is_pihak_kedua = false;
+        }
+
+        return Inertia::render('RawatJalan/BuatSurat', [
+            'rawatJalan' => $rawatJalan,
+            'patient' => $patient,
+            'dokter' => $dokter,
+            'setting' => $setting,
+            'suratSehatData' => $suratSehatData,
+            'suratSakitData' => $suratSakitData,
+        ]);
+    }
+
+    /**
      * Show surat sehat form
      */
     public function suratSehat($noRawat)
@@ -1243,66 +1295,119 @@ class RawatJalanController extends Controller
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
         $tanggal = $request->input('tanggal');
+        $tab = $request->input('tab', 'sehat');
 
         // Set default tanggal ke hari ini jika tidak ada filter
         if (! $startDate && ! $endDate && ! $tanggal) {
             $tanggal = date('Y-m-d');
         }
 
-        $query = DB::table('surat_keterangan_sehat')
-            ->leftJoin('reg_periksa', 'surat_keterangan_sehat.no_rawat', '=', 'reg_periksa.no_rawat')
-            ->leftJoin('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
-            ->select([
-                'surat_keterangan_sehat.no_surat',
-                'surat_keterangan_sehat.no_rawat',
-                'surat_keterangan_sehat.tanggalsurat',
-                'surat_keterangan_sehat.keperluan',
-                'surat_keterangan_sehat.kesimpulan',
-                'surat_keterangan_sehat.berat',
-                'surat_keterangan_sehat.tinggi',
-                'surat_keterangan_sehat.tensi',
-                'surat_keterangan_sehat.suhu',
-                'surat_keterangan_sehat.butawarna',
-                'pasien.nm_pasien',
-                'pasien.no_rkm_medis',
-            ]);
+        $query = null;
+        $suratSehat = null;
+        $suratSakit = null;
 
-        if ($search !== '') {
-            $query->where(function ($q) use ($search) {
-                $q->where('surat_keterangan_sehat.no_surat', 'like', "%{$search}%")
-                    ->orWhere('surat_keterangan_sehat.no_rawat', 'like', "%{$search}%")
-                    ->orWhere('surat_keterangan_sehat.keperluan', 'like', "%{$search}%")
-                    ->orWhere('surat_keterangan_sehat.kesimpulan', 'like', "%{$search}%")
-                    ->orWhere('pasien.nm_pasien', 'like', "%{$search}%")
-                    ->orWhere('pasien.no_rkm_medis', 'like', "%{$search}%");
-            });
-        }
+        if ($tab === 'sakit') {
+            $query = DB::table('suratsakit')
+                ->leftJoin('reg_periksa', 'suratsakit.no_rawat', '=', 'reg_periksa.no_rawat')
+                ->leftJoin('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+                ->select([
+                    'suratsakit.no_surat',
+                    'suratsakit.no_rawat',
+                    'suratsakit.tanggalawal',
+                    'suratsakit.tanggalakhir',
+                    'suratsakit.lamasakit',
+                    'pasien.nm_pasien',
+                    'pasien.no_rkm_medis',
+                ]);
 
-        if ($startDate || $endDate) {
-            if ($startDate && $endDate) {
-                $query->whereBetween('surat_keterangan_sehat.tanggalsurat', [$startDate, $endDate]);
-            } elseif ($startDate) {
-                $query->whereDate('surat_keterangan_sehat.tanggalsurat', '>=', $startDate);
-            } elseif ($endDate) {
-                $query->whereDate('surat_keterangan_sehat.tanggalsurat', '<=', $endDate);
+            if ($search !== '') {
+                $query->where(function ($q) use ($search) {
+                    $q->where('suratsakit.no_surat', 'like', "%{$search}%")
+                        ->orWhere('suratsakit.no_rawat', 'like', "%{$search}%")
+                        ->orWhere('suratsakit.lamasakit', 'like', "%{$search}%")
+                        ->orWhere('pasien.nm_pasien', 'like', "%{$search}%")
+                        ->orWhere('pasien.no_rkm_medis', 'like', "%{$search}%");
+                });
             }
-        } elseif ($tanggal) {
-            $query->whereDate('surat_keterangan_sehat.tanggalsurat', $tanggal);
-        }
 
-        $suratSehat = $query
-            ->orderByDesc('surat_keterangan_sehat.tanggalsurat')
-            ->orderByDesc('surat_keterangan_sehat.no_surat')
-            ->paginate(15)
-            ->withQueryString();
+            if ($startDate || $endDate) {
+                if ($startDate && $endDate) {
+                    $query->whereBetween('tanggalawal', [$startDate, $endDate]);
+                } elseif ($startDate) {
+                    $query->whereDate('tanggalawal', '>=', $startDate);
+                } elseif ($endDate) {
+                    $query->whereDate('tanggalawal', '<=', $endDate);
+                }
+            } elseif ($tanggal) {
+                $query->whereDate('tanggalawal', $tanggal);
+            }
+
+            $suratSakit = $query
+                ->orderByDesc('tanggalawal')
+                ->orderByDesc('no_surat')
+                ->paginate(15)
+                ->withQueryString();
+
+        } else {
+            // Default: Surat Sehat
+            $query = DB::table('surat_keterangan_sehat')
+                ->leftJoin('reg_periksa', 'surat_keterangan_sehat.no_rawat', '=', 'reg_periksa.no_rawat')
+                ->leftJoin('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+                ->select([
+                    'surat_keterangan_sehat.no_surat',
+                    'surat_keterangan_sehat.no_rawat',
+                    'surat_keterangan_sehat.tanggalsurat',
+                    'surat_keterangan_sehat.keperluan',
+                    'surat_keterangan_sehat.kesimpulan',
+                    'surat_keterangan_sehat.berat',
+                    'surat_keterangan_sehat.tinggi',
+                    'surat_keterangan_sehat.tensi',
+                    'surat_keterangan_sehat.suhu',
+                    'surat_keterangan_sehat.butawarna',
+                    'pasien.nm_pasien',
+                    'pasien.no_rkm_medis',
+                ]);
+
+            if ($search !== '') {
+                $query->where(function ($q) use ($search) {
+                    $q->where('surat_keterangan_sehat.no_surat', 'like', "%{$search}%")
+                        ->orWhere('surat_keterangan_sehat.no_rawat', 'like', "%{$search}%")
+                        ->orWhere('surat_keterangan_sehat.keperluan', 'like', "%{$search}%")
+                        ->orWhere('surat_keterangan_sehat.kesimpulan', 'like', "%{$search}%")
+                        ->orWhere('pasien.nm_pasien', 'like', "%{$search}%")
+                        ->orWhere('pasien.no_rkm_medis', 'like', "%{$search}%");
+                });
+            }
+
+            if ($startDate || $endDate) {
+                if ($startDate && $endDate) {
+                    $query->whereBetween('surat_keterangan_sehat.tanggalsurat', [$startDate, $endDate]);
+                } elseif ($startDate) {
+                    $query->whereDate('surat_keterangan_sehat.tanggalsurat', '>=', $startDate);
+                } elseif ($endDate) {
+                    $query->whereDate('surat_keterangan_sehat.tanggalsurat', '<=', $endDate);
+                }
+            } elseif ($tanggal) {
+                $query->whereDate('surat_keterangan_sehat.tanggalsurat', $tanggal);
+            }
+
+            $suratSehat = $query
+                ->orderByDesc('surat_keterangan_sehat.tanggalsurat')
+                ->orderByDesc('surat_keterangan_sehat.no_surat')
+                ->paginate(15)
+                ->withQueryString();
+        }
 
         return Inertia::render('RawatJalan/components/SuratSehatList', [
             'suratSehat' => $suratSehat,
+            'suratSakit' => $suratSakit,
+            'tab' => $tab,
             'filters' => [
                 'search' => $search,
                 'start_date' => $startDate,
                 'end_date' => $endDate,
                 'tanggal' => $tanggal,
+                'tab' => $tab,
             ],
         ]);
     }
@@ -1647,11 +1752,15 @@ class RawatJalanController extends Controller
                 }
 
                 if ($existing) {
-                    $message = "Tidak bisa simpan. Surat sakit untuk No. Rawat {$validated['no_rawat']} pada tanggal {$existing->tanggalawal} sudah ada (No Surat: {$existing->no_surat}).";
+                    // Allow update if no_surat matches
+                    $incomingNoSurat = trim((string) ($validated['no_surat'] ?? ''));
+                    if ($existing->no_surat !== $incomingNoSurat) {
+                        $message = "Tidak bisa simpan. Surat sakit untuk No. Rawat {$validated['no_rawat']} pada tanggal {$existing->tanggalawal} sudah ada (No Surat: {$existing->no_surat}).";
 
-                    throw \Illuminate\Validation\ValidationException::withMessages([
-                        'tanggalawal' => $message,
-                    ]);
+                        throw \Illuminate\Validation\ValidationException::withMessages([
+                            'tanggalawal' => $message,
+                        ]);
+                    }
                 }
 
                 $incomingNoSurat = trim((string) ($validated['no_surat'] ?? ''));
@@ -1686,7 +1795,12 @@ class RawatJalanController extends Controller
                     ];
 
                     try {
-                        DB::table('suratsakitpihak2')->insert($row);
+                        DB::table('suratsakitpihak2')->updateOrInsert(
+                            ['no_surat' => $noSurat],
+                            $row
+                        );
+                        // Hapus dari tabel lain jika ada (karena pindah tipe)
+                        DB::table('suratsakit')->where('no_surat', $noSurat)->delete();
 
                         return;
                     } catch (\Illuminate\Database\QueryException $e) {
@@ -1735,11 +1849,15 @@ class RawatJalanController extends Controller
                 }
 
                 if ($existing) {
-                    $message = "Tidak bisa simpan. Surat sakit untuk No. Rawat {$validated['no_rawat']} pada tanggal {$existing->tanggalawal} sudah ada (No Surat: {$existing->no_surat}).";
+                    // Allow update if no_surat matches
+                    $incomingNoSurat = trim((string) ($validated['no_surat'] ?? ''));
+                    if ($existing->no_surat !== $incomingNoSurat) {
+                        $message = "Tidak bisa simpan. Surat sakit untuk No. Rawat {$validated['no_rawat']} pada tanggal {$existing->tanggalawal} sudah ada (No Surat: {$existing->no_surat}).";
 
-                    throw \Illuminate\Validation\ValidationException::withMessages([
-                        'tanggalawal' => $message,
-                    ]);
+                        throw \Illuminate\Validation\ValidationException::withMessages([
+                            'tanggalawal' => $message,
+                        ]);
+                    }
                 }
 
                 $incomingNoSurat = trim((string) ($validated['no_surat'] ?? ''));
@@ -1766,7 +1884,12 @@ class RawatJalanController extends Controller
                     ];
 
                     try {
-                        DB::table('suratsakit')->insert($row);
+                        DB::table('suratsakit')->updateOrInsert(
+                            ['no_surat' => $noSurat],
+                            $row
+                        );
+                        // Hapus dari tabel lain jika ada (karena pindah tipe)
+                        DB::table('suratsakitpihak2')->where('no_surat', $noSurat)->delete();
 
                         return;
                     } catch (\Illuminate\Database\QueryException $e) {

@@ -73,13 +73,8 @@ export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
           icon: <Hospital className="w-4 h-4" />,
         },
         {
-          label: 'Data Surat Sehat',
+          label: 'Surat - Surat',
           href: route('rawat-jalan.surat-sehat.index'),
-          icon: <Receipt className="w-4 h-4" />,
-        },
-        {
-          label: 'Data Surat Sakit',
-          href: route('rawat-jalan.surat-sakit.index'),
           icon: <Receipt className="w-4 h-4" />,
         },
         {

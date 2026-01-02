@@ -183,8 +183,8 @@ export default function SuratSakitList({ suratSakit, filters }) {
                                                 {row.no_rawat ? (
                                                     <Link
                                                         href={route(
-                                                            "rawat-jalan.surat-sakit",
-                                                            row.no_rawat
+                                                            "rawat-jalan.buat-surat",
+                                                            { no_rawat: row.no_rawat, template: 'sakit' }
                                                         )}
                                                         className="inline-flex items-center rounded-lg bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 text-xs font-semibold"
                                                     >

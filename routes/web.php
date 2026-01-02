@@ -818,6 +818,9 @@ Route::middleware('auth')->group(function () {
 
     // Surat Sehat dan Surat Sakit routes
     Route::get('rawat-jalan/surat-sehat', [RawatJalanController::class, 'indexSuratSehat'])->name('rawat-jalan.surat-sehat.index');
+    Route::get('rawat-jalan/buat-surat/{no_rawat}', [RawatJalanController::class, 'buatSurat'])
+        ->where('no_rawat', '.*')
+        ->name('rawat-jalan.buat-surat');
     Route::get('rawat-jalan/surat-sehat/check-duplicate', [RawatJalanController::class, 'checkSuratSehatDuplicate'])->name('rawat-jalan.surat-sehat.check-duplicate');
     Route::get('rawat-jalan/surat-sehat/{no_rawat}', [RawatJalanController::class, 'suratSehat'])
         ->where('no_rawat', '.*')

@@ -242,12 +242,8 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         return time.substring(0, 5);
     };
 
-    const handleSuratSehat = (noRawAt) => {
-        router.get(route('rawat-jalan.surat-sehat', noRawAt));
-    };
-
-    const handleSuratSakit = (noRawAt) => {
-        router.get(route('rawat-jalan.surat-sakit', noRawAt));
+    const handleBuatSurat = (noRawat) => {
+        router.get(route('rawat-jalan.buat-surat', { no_rawat: noRawat }));
     };
 
     const openMasukRanap = (item) => {
@@ -508,16 +504,10 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                                         Masuk Rawat Inap
                                                     </DropdownItem>
                                                     <DropdownItem
-                                                        onClick={() => handleSuratSehat(item.no_rawat)}
-                                                        icon={<DocumentCheckIcon className="w-4 h-4" />}
-                                                    >
-                                                        Surat Sehat
-                                                    </DropdownItem>
-                                                    <DropdownItem
-                                                        onClick={() => handleSuratSakit(item.no_rawat)}
+                                                        onClick={() => handleBuatSurat(item.no_rawat)}
                                                         icon={<DocumentTextIcon className="w-4 h-4" />}
                                                     >
-                                                        Surat Sakit
+                                                        Surat - Surat
                                                     </DropdownItem>
                                                 </SimpleDropdown>
                                                 {item.patient?.nm_pasien ? (

@@ -5,7 +5,7 @@ import SidebarRalan from '@/Layouts/SidebarRalan';
 import { todayDateString } from '@/tools/datetime';
 import QRCode from 'qrcode';
 
-export default function SuratSehat({ rawatJalan, patient, dokter, setting, suratSehatData }) {
+export default function SuratSehat({ rawatJalan, patient, dokter, setting, suratSehatData, embedded = false, templateSelector }) {
     const [formData, setFormData] = useState({
         no_surat: suratSehatData?.no_surat || '',
         no_rawat: rawatJalan?.no_rawat || '',
@@ -216,9 +216,11 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
 
     const backToRalanUrl = route('rawat-jalan.index');
 
+    const Layout = embedded ? ({ children }) => <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">{children}</div> : SidebarRalan;
+
     return (
-        <SidebarRalan>
-            <Head title="Surat Sehat" />
+        <Layout>
+            {!embedded && <Head title="Surat Sehat" />}
             <style>{`
                 @page { 
                     size: A4 portrait; 
@@ -295,13 +297,15 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                 </p>
                             </div>
                             <div className="flex gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => router.get(backToRalanUrl)}
-                                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
-                                >
-                                    Kembali Rawat Jalan
-                                </button>
+                                {!embedded && (
+                                    <button
+                                        type="button"
+                                        onClick={() => router.get(backToRalanUrl)}
+                                        className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
+                                    >
+                                        Kembali Rawat Jalan
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -312,6 +316,11 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                         {/* Form */}
                         <div className="lg:col-span-5 xl:col-span-4 print:hidden">
                             <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                                {templateSelector && (
+                                    <div className="px-4 pt-4">
+                                        {templateSelector}
+                                    </div>
+                                )}
                                 <form onSubmit={handleSubmit} className="p-4 space-y-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {/* Nomor Surat */}
@@ -659,6 +668,6 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                     </div>
                 </div>
             </div>
-        </SidebarRalan>
+        </Layout>
     );
 }
