@@ -1,8 +1,8 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\KunjunganController::page
-* @see app/Http/Controllers/KunjunganController.php:864
-* @route '/laporan/ranap/kunjungan'
+* @see app/Http/Controllers/KunjunganController.php:485
+* @route '/laporan/ralan/kunjungan'
 */
 export const page = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: page.url(options),
@@ -11,13 +11,13 @@ export const page = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 page.definition = {
     methods: ["get","head"],
-    url: '/laporan/ranap/kunjungan',
+    url: '/laporan/ralan/kunjungan',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\KunjunganController::page
-* @see app/Http/Controllers/KunjunganController.php:864
-* @route '/laporan/ranap/kunjungan'
+* @see app/Http/Controllers/KunjunganController.php:485
+* @route '/laporan/ralan/kunjungan'
 */
 page.url = (options?: RouteQueryOptions) => {
     return page.definition.url + queryParams(options)
@@ -25,8 +25,8 @@ page.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\KunjunganController::page
-* @see app/Http/Controllers/KunjunganController.php:864
-* @route '/laporan/ranap/kunjungan'
+* @see app/Http/Controllers/KunjunganController.php:485
+* @route '/laporan/ralan/kunjungan'
 */
 page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: page.url(options),
@@ -35,8 +35,8 @@ page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\KunjunganController::page
-* @see app/Http/Controllers/KunjunganController.php:864
-* @route '/laporan/ranap/kunjungan'
+* @see app/Http/Controllers/KunjunganController.php:485
+* @route '/laporan/ralan/kunjungan'
 */
 page.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: page.url(options),
@@ -45,8 +45,8 @@ page.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\KunjunganController::data
-* @see app/Http/Controllers/KunjunganController.php:877
-* @route '/laporan/ranap/kunjungan/data'
+* @see app/Http/Controllers/KunjunganController.php:498
+* @route '/laporan/ralan/kunjungan/data'
 */
 export const data = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: data.url(options),
@@ -55,13 +55,13 @@ export const data = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 data.definition = {
     methods: ["get","head"],
-    url: '/laporan/ranap/kunjungan/data',
+    url: '/laporan/ralan/kunjungan/data',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\KunjunganController::data
-* @see app/Http/Controllers/KunjunganController.php:877
-* @route '/laporan/ranap/kunjungan/data'
+* @see app/Http/Controllers/KunjunganController.php:498
+* @route '/laporan/ralan/kunjungan/data'
 */
 data.url = (options?: RouteQueryOptions) => {
     return data.definition.url + queryParams(options)
@@ -69,8 +69,8 @@ data.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\KunjunganController::data
-* @see app/Http/Controllers/KunjunganController.php:877
-* @route '/laporan/ranap/kunjungan/data'
+* @see app/Http/Controllers/KunjunganController.php:498
+* @route '/laporan/ralan/kunjungan/data'
 */
 data.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: data.url(options),
@@ -79,8 +79,8 @@ data.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\KunjunganController::data
-* @see app/Http/Controllers/KunjunganController.php:877
-* @route '/laporan/ranap/kunjungan/data'
+* @see app/Http/Controllers/KunjunganController.php:498
+* @route '/laporan/ralan/kunjungan/data'
 */
 data.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: data.url(options),
@@ -89,8 +89,8 @@ data.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\KunjunganController::print
-* @see app/Http/Controllers/KunjunganController.php:1043
-* @route '/laporan/ranap/kunjungan/print'
+* @see app/Http/Controllers/KunjunganController.php:664
+* @route '/laporan/ralan/kunjungan/print'
 */
 export const print = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: print.url(options),
@@ -99,13 +99,13 @@ export const print = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 print.definition = {
     methods: ["get","head"],
-    url: '/laporan/ranap/kunjungan/print',
+    url: '/laporan/ralan/kunjungan/print',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\KunjunganController::print
-* @see app/Http/Controllers/KunjunganController.php:1043
-* @route '/laporan/ranap/kunjungan/print'
+* @see app/Http/Controllers/KunjunganController.php:664
+* @route '/laporan/ralan/kunjungan/print'
 */
 print.url = (options?: RouteQueryOptions) => {
     return print.definition.url + queryParams(options)
@@ -113,8 +113,8 @@ print.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\KunjunganController::print
-* @see app/Http/Controllers/KunjunganController.php:1043
-* @route '/laporan/ranap/kunjungan/print'
+* @see app/Http/Controllers/KunjunganController.php:664
+* @route '/laporan/ralan/kunjungan/print'
 */
 print.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: print.url(options),
@@ -123,8 +123,8 @@ print.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\KunjunganController::print
-* @see app/Http/Controllers/KunjunganController.php:1043
-* @route '/laporan/ranap/kunjungan/print'
+* @see app/Http/Controllers/KunjunganController.php:664
+* @route '/laporan/ralan/kunjungan/print'
 */
 print.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: print.url(options),

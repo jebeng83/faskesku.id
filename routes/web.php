@@ -32,6 +32,7 @@ use App\Http\Controllers\Kepegawaian\SipPegawaiController;
 use App\Http\Controllers\Kepegawaian\SttsKerjaController;
 use App\Http\Controllers\Kepegawaian\SttsWpController;
 use App\Http\Controllers\LaboratoriumController;
+use App\Http\Controllers\KunjunganController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\Pasien\BahasaPasienController;
 use App\Http\Controllers\Pasien\CacatFisikController;
@@ -342,9 +343,11 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('Docs', ['section' => $section]);
     })->name('docs');
 
-    Route::get('/laporan', function () {
-        return Inertia::render('Laporan/Home');
-    })->name('laporan.index');
+    Route::get('/laporan', [KunjunganController::class, 'index'])->name('laporan.index');
+
+    Route::get('/laporan/ralan/kunjungan', [KunjunganController::class, 'kunjunganRalanPage'])->name('laporan.ralan.kunjungan.page');
+    Route::get('/laporan/ralan/kunjungan/data', [KunjunganController::class, 'kunjunganRalanData'])->name('laporan.ralan.kunjungan.data');
+    Route::get('/laporan/ralan/kunjungan/print', [KunjunganController::class, 'kunjunganRalanPrint'])->name('laporan.ralan.kunjungan.print');
 
     Route::get('/laporan/ranap/kunjungan', [KunjunganController::class, 'kunjunganRanapPage'])->name('laporan.ranap.kunjungan.page');
     Route::get('/laporan/ranap/kunjungan/data', [KunjunganController::class, 'kunjunganRanapData'])->name('laporan.ranap.kunjungan.data');
