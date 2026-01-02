@@ -2972,6 +2972,9 @@ export default function Registration({
                                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                     <thead className="bg-gray-50 dark:bg-gray-700">
                                         <tr>
+                                            <th className="px-3 py-2 text-center text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                                Aksi
+                                            </th>
                                             <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
                                                 No Reg
                                             </th>
@@ -3008,9 +3011,6 @@ export default function Registration({
                                             <th className="px-3 py-2 text-right text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
                                                 Biaya
                                             </th>
-                                            <th className="px-3 py-2 text-center text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
-                                                Aksi
-                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
@@ -3025,80 +3025,7 @@ export default function Registration({
                                                         : "")
                                                 }
                                             >
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
-                                                    {reg.no_reg}
-                                                </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
-                                                    <button
-                                                        type="button"
-                                                        title="Buka halaman Rawat Jalan / Lanjutan dan panggil antrean otomatis"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            // Otomatis panggil antrean (status=1/Hadir) ke Mobile JKN, lalu buka halaman Rawat Jalan
-                                                            handleCallAntreanAndOpenRawatJalan(reg);
-                                                        }}
-                                                        className="text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
-                                                    >
-                                                        {reg.no_rawat}
-                                                    </button>
-                                                </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
-                                                    {reg.pasien?.nm_pasien}
-                                                </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
-                                                    {reg.no_rkm_medis}
-                                                </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
-                                                    {reg.poliklinik?.nm_poli}
-                                                </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
-                                                    {reg.dokter?.nm_dokter}
-                                                </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
-                                                    {reg.penjab?.png_jawab}
-                                                </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm">
-                                                    <span
-                                                        className={
-                                                            "px-2 py-1 rounded-full text-xs " +
-                                                            (reg.stts ===
-                                                            "Belum"
-                                                                ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300"
-                                                                : reg.stts ===
-                                                                  "Batal"
-                                                                ? "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300"
-                                                                : "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300")
-                                                        }
-                                                    >
-                                                        {reg.stts}
-                                                    </span>
-                                                </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm">
-                                                    <span
-                                                        className={
-                                                            "px-2 py-1 rounded-full text-xs " +
-                                                            (reg.status_poli ===
-                                                            "Baru"
-                                                                ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300"
-                                                                : "bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300")
-                                                        }
-                                                    >
-                                                        {reg.status_poli}
-                                                    </span>
-                                                </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
-                                                    {reg.keputusan ?? "-"}
-                                                </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
-                                                    {reg.jam_reg?.slice(0, 5)}
-                                                </td>
-                                                <td className="px-3 py-2 text-right text-xs lg:text-sm text-gray-700 dark:text-gray-300">
-                                                    Rp{" "}
-                                                    {(
-                                                        reg.biaya_reg ?? 0
-                                                    ).toLocaleString("id-ID")}
-                                                </td>
-                                                <td className="px-3 py-2 text-center">
+                                                <td className="px-3 py-2 text-center overflow-visible">
                                                     <div className="relative action-dropdown">
                                                         <button
                                                             onClick={(e) => {
@@ -3127,7 +3054,7 @@ export default function Registration({
                                                             </svg>
                                                         </button>
                                                         {openDropdown === reg.no_rawat && (
-                                                            <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-10">
+                                                            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 w-52 bg-white dark:bg-gray-800 rounded-md shadow-xl border border-gray-200 dark:border-gray-700 z-[1000]">
                                                                 <div className="py-1">
                                                                     <button
                                                                         onClick={(e) => {
@@ -3227,6 +3154,80 @@ export default function Registration({
                                                             </div>
                                                         )}
                                                     </div>
+                                                </td>
+                                                
+                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                    {reg.no_reg}
+                                                </td>
+                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                    <button
+                                                        type="button"
+                                                        title="Buka halaman Rawat Jalan / Lanjutan dan panggil antrean otomatis"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            // Otomatis panggil antrean (status=1/Hadir) ke Mobile JKN, lalu buka halaman Rawat Jalan
+                                                            handleCallAntreanAndOpenRawatJalan(reg);
+                                                        }}
+                                                        className="text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+                                                    >
+                                                        {reg.no_rawat}
+                                                    </button>
+                                                </td>
+                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                    {reg.pasien?.nm_pasien}
+                                                </td>
+                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                    {reg.no_rkm_medis}
+                                                </td>
+                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                    {reg.poliklinik?.nm_poli}
+                                                </td>
+                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                    {reg.dokter?.nm_dokter}
+                                                </td>
+                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                    {reg.penjab?.png_jawab}
+                                                </td>
+                                                <td className="px-3 py-2 text-xs lg:text-sm">
+                                                    <span
+                                                        className={
+                                                            "px-2 py-1 rounded-full text-xs " +
+                                                            (reg.stts ===
+                                                            "Belum"
+                                                                ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300"
+                                                                : reg.stts ===
+                                                                  "Batal"
+                                                                ? "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300"
+                                                                : "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300")
+                                                        }
+                                                    >
+                                                        {reg.stts}
+                                                    </span>
+                                                </td>
+                                                <td className="px-3 py-2 text-xs lg:text-sm">
+                                                    <span
+                                                        className={
+                                                            "px-2 py-1 rounded-full text-xs " +
+                                                            (reg.status_poli ===
+                                                            "Baru"
+                                                                ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300"
+                                                                : "bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300")
+                                                        }
+                                                    >
+                                                        {reg.status_poli}
+                                                    </span>
+                                                </td>
+                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                    {reg.keputusan ?? "-"}
+                                                </td>
+                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                    {reg.jam_reg?.slice(0, 5)}
+                                                </td>
+                                                <td className="px-3 py-2 text-right text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                    Rp{" "}
+                                                    {(
+                                                        reg.biaya_reg ?? 0
+                                                    ).toLocaleString("id-ID")}
                                                 </td>
                                             </tr>
                                         ))}

@@ -5,6 +5,7 @@ import { setRawatJalanFilters, clearRawatJalanFilters } from '@/tools/rawatJalan
 import SidebarRalan from '@/Layouts/SidebarRalan';
 import { motion } from 'framer-motion';
 import { todayDateString, getAppTimeZone } from '@/tools/datetime';
+import axios from 'axios';
 import {
   PlusIcon,
   MagnifyingGlassIcon,
@@ -241,6 +242,44 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         router.get(route('rawat-jalan.surat-sakit', noRawAt));
     };
 
+    const toBase64Url = (obj) => {
+        try {
+            const b = btoa(JSON.stringify(obj));
+            return b.replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
+        } catch (_) { return ''; }
+    };
+
+    const isAllowedForAntrean = (row) => {
+        try {
+            const label = String(row?.nm_penjamin || row?.penjab?.png_jawab || row?.png_jawab || '')
+                .trim()
+                .toLowerCase()
+                .replace(/[^a-z0-9]/g, '');
+            if (!label) return false;
+            if (/pbi/.test(label)) return true;
+            if (/bpjs|bpj|jkn|kis/.test(label)) return true;
+            return false;
+        } catch (_) { return false; }
+    };
+
+    const handleClickPasien = async (e, item) => {
+        e.preventDefault();
+        try {
+            if (isAllowedForAntrean(item)) {
+                const payload = {
+                    no_rkm_medis: item.no_rkm_medis || '',
+                    kd_poli: item.kd_poli || item.poliklinik?.kd_poli || '',
+                    status: 1,
+                    tanggalperiksa: item.tgl_registrasi || '',
+                };
+                try { await axios.post('/api/mobilejkn/antrean/panggil', payload); } catch (_) {}
+            }
+        } catch (_) {}
+        const token = toBase64Url({ no_rawat: item.no_rawat, no_rkm_medis: item.no_rkm_medis || '' });
+        try { router.get(route('rawat-jalan.lanjutan'), { t: token }, { preserveScroll: true }); }
+        catch { router.get('/rawat-jalan/lanjutan', { t: token }, { preserveScroll: true }); }
+    };
+
     return (
         <SidebarRalan>
             <Head title="Data Rawat Jalan" />
@@ -462,6 +501,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                                                 .replace(/\+/g, '-')
                                                                 .replace(/\//g, '_'),
                                                         })}
+                                                        onClick={(e) => handleClickPasien(e, item)}
                                                         className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold hover:underline transition-colors duration-200"
                                                         title="Lihat detail pasien"
                                                     >
