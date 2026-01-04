@@ -726,7 +726,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                 <motion.button
                   type="button"
                   onClick={prev}
-                  className="h-10 w-10 rounded-full bg-neutral-900/70 border border-[oklch(84.1%_0.238_128.85)] text-[oklch(98.5%_0_0)] shadow-[0_0_10px_oklch(84.1%_0.238_128.85_/_0.45)] hover:bg-neutral-800"
+                  className="h-10 w-10 rounded-full bg-neutral-900/70 border border-[oklch(29.1%_0.149_302.717)] text-[oklch(98.5%_0_0)] shadow-[0_0_10px_oklch(84.1%_0.238_128.85_/_0.45)] hover:bg-neutral-800"
                   aria-label="Sebelumnya"
                   initial="rest"
                   animate="rest"
@@ -739,10 +739,10 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
               </div>
 
               <div className="col-span-8">
-                <div className="relative overflow-hidden rounded-xl bg-[oklch(14.5%_0_0_/_0.95)] text-[oklch(14.5%_0_0)] backdrop-blur-sm border border-[oklch(84.1%_0.238_128.85)] shadow-[0_0_20px_oklch(84.1%_0.238_128.85_/_0.25)] font-mono">
-                  <motion.div className="flex items-center justify-between px-4 py-3 border-b border-[oklch(84.1%_0.238_128.85_/_0.7)]" initial="initial" whileHover="hover" whileTap="tap">
+                <div className="relative overflow-hidden rounded-xl bg-[oklch(98.5%_0_0)] text-[oklch(14.5%_0_0)] backdrop-blur-sm border border-[oklch(29.1%_0.149_302.717)] shadow-[0_0_20px_oklch(84.1%_0.238_128.85_/_0.25)] font-mono">
+                  <motion.div className="flex items-center justify-between px-4 py-3 border-b border-[oklch(29.1%_0.149_302.717_/_0.7)] bg-[oklch(14.5%_0_0)] text-[oklch(98.5%_0_0)]" initial="initial" whileHover="hover" whileTap="tap">
                     <div className="flex items-center gap-2">
-                      <motion.div className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-[oklch(84.1%_0.238_128.85)] text-[oklch(14.5%_0_0)] shadow-[0_0_12px_oklch(84.1%_0.238_128.85_/_0.45)]" variants={headerItemVariants}>
+                      <motion.div className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-[oklch(84.1%_0.238_128.85)] text-[oklch(98.5%_0_0)] shadow-[0_0_12px_oklch(84.1%_0.238_128.85_/_0.45)]" variants={headerItemVariants}>
                         <span className="text-xs font-bold">IT</span>
                       </motion.div>
                       <motion.div className="text-sm font-semibold text-[oklch(98.5%_0_0)]" variants={headerItemVariants}>
@@ -765,7 +765,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                             }
                           }, 250);
                         }}
-                        className="p-1 rounded-md hover:bg-neutral-800 transition-colors border border-[oklch(84.1%_0.238_128.85)] text-[oklch(14.5%_0_0)] shadow-[0_0_10px_oklch(84.1%_0.238_128.85_/_0.45)]"
+                        className="p-1 rounded-md hover:bg-neutral-800 transition-colors border border-[oklch(29.1%_0.149_302.717)] text-[oklch(98.5%_0_0)] shadow-[0_0_10px_oklch(84.1%_0.238_128.85_/_0.45)]"
                         aria-label="Tutup"
                         title="Tutup"
                       >
@@ -785,12 +785,12 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                     </motion.div>
                   </motion.div>
 
-                  <div className="px-4 py-2 border-b border-[oklch(84.1%_0.238_128.85_/_0.35)] text-[oklch(98.5%_0_0)]">
+                  <div className="px-4 py-2 border-b border-[oklch(29.1%_0.149_302.717_/_0.35)] text-[oklch(98.5%_0_0)]">
                     <div className="flex items-center justify-end gap-2">
                       <button
                         type="button"
                         onClick={openCpptModal}
-                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-transparent text-[oklch(98.5%_0_0)] border border-[oklch(62%_0.30_29.5)]"
+                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-red-500 text-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717)]"
                         title="Tampilkan Riwayat SOAP"
                       >
                         CPPT
@@ -799,7 +799,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                         type="button"
                         onClick={handlePanggilPasien}
                         disabled={poliCalling}
-                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-transparent text-[oklch(98.5%_0_0)] border border-[oklch(62%_0.30_29.5)]"
+                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-red-500 text-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717)] disabled:opacity-60"
                         title="Panggil pasien"
                       >
                         {poliCalling ? 'Memanggil...' : 'Panggil'}
@@ -808,7 +808,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                         type="button"
                         onClick={handleUlangPanggilPasien}
                         disabled={poliRepeatCalling}
-                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-transparent text-[oklch(98.5%_0_0)] border border-[oklch(62%_0.30_29.5)]"
+                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-red-500 text-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717)] disabled:opacity-60"
                         title="Ulang panggil pasien"
                       >
                         {poliRepeatCalling ? 'Mengulang...' : 'Ulang panggil'}
@@ -822,7 +822,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                             setIndex(idx);
                           }
                         }}
-                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-transparent text-[oklch(98.5%_0_0)] border border-[oklch(62%_0.30_29.5)]"
+                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-red-500 text-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717)]"
                         aria-label="Buka Resep"
                         title="Buka Resep"
                       >
@@ -844,7 +844,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                             router.visit(url);
                           }, 200);
                         }}
-                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-transparent text-[oklch(98.5%_0_0)] border border-[oklch(62%_0.30_29.5)]"
+                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-red-500 text-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717)]"
                         aria-label="Buka Surat"
                         title="Buka Surat"
                       >
@@ -853,13 +853,13 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                     </div>
                   </div>
 
-                  <div className="px-4 py-2 border-b border-[oklch(84.1%_0.238_128.85_/_0.35)] text-[oklch(98.5%_0_0)]">
+                  <div className="px-4 py-2 border-b border-[oklch(29.1%_0.149_302.717_/_0.35)] text-[oklch(14.5%_0_0)]">
                     <div className="flex items-center justify-between">
                       <div className="text-[11px] font-medium mb-1">Identitas Pasien</div>
                       <button
                         type="button"
                         onClick={() => setIdentityOpen((v) => !v)}
-                        className="p-1 rounded-md hover:bg-neutral-800 transition-colors border border-[oklch(84.1%_0.238_128.85)] text-[oklch(98.5%_0_0)]"
+                        className="p-1 rounded-md hover:bg-neutral-800 transition-colors border border-[oklch(29.1%_0.149_302.717)] text-[oklch(14.5%_0_0)]"
                         aria-label={identityOpen ? "Collapse" : "Expand"}
                         title={identityOpen ? "Sembunyikan" : "Tampilkan"}
                       >
@@ -941,7 +941,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                 <motion.button
                   type="button"
                   onClick={next}
-                  className="h-10 w-10 rounded-full bg-neutral-900/70 border border-[oklch(84.1%_0.238_128.85)] text-[oklch(98.5%_0_0)] shadow-[0_0_10px_oklch(84.1%_0.238_128.85_/_0.45)] hover:bg-neutral-800"
+                  className="h-10 w-10 rounded-full bg-neutral-900/70 border border-[oklch(29.1%_0.149_302.717)] text-[oklch(98.5%_0_0)] shadow-[0_0_10px_oklch(84.1%_0.238_128.85_/_0.45)] hover:bg-neutral-800"
                   aria-label="Berikutnya"
                   initial="rest"
                   animate="rest"

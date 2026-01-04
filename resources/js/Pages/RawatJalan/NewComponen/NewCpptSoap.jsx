@@ -777,10 +777,10 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 bg-[oklch(14.5%_0_0)] text-[oklch(98.5%_0_0)] font-mono rounded-2xl border border-[oklch(84.1%_0.238_128.85_/_0.35)] shadow-[0_0_20px_oklch(84.1%_0.238_128.85_/_0.25)] overflow-hidden">
+    <form onSubmit={handleSubmit} className="space-y-3 bg-[oklch(98.5%_0_0)] text-[oklch(14.5%_0_0)] font-mono rounded-2xl border border-[oklch(29.1%_0.149_302.717_/_0.35)] shadow-[0_0_20px_oklch(84.1%_0.238_128.85_/_0.25)] overflow-hidden">
       
 
-      <div className="px-4 py-2.5 border-b border-[oklch(84.1%_0.238_128.85_/_0.35)]"></div>
+      <div className="px-4 py-2.5 border-b border-[oklch(29.1%_0.149_302.717_/_0.35)]"></div>
 
       <div className="p-3 space-y-3">
 
@@ -789,15 +789,15 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
             <div className="min-w-0 flex flex-row items-center gap-2">
               <label htmlFor="tgl_perawatan" className="text-[11px]">Tanggal</label>
               <input id="tgl_perawatan" name="tgl_perawatan" type="date" value={formData.tgl_perawatan} onChange={handleChange}
-                className="text-xs h-8 px-2 rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] placeholder-[oklch(84.1%_0.238_128.85_/_0.6)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
+                className="text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] placeholder-[oklch(84.1%_0.238_128.85_/_0.6)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
               <label htmlFor="jam_rawat" className="text-[11px]">Jam</label>
               <input id="jam_rawat" name="jam_rawat" type="time" value={formData.jam_rawat} onChange={handleChange}
-                className="text-xs h-8 px-2 rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] placeholder-[oklch(84.1%_0.238_128.85_/_0.6)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
+                className="text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] placeholder-[oklch(84.1%_0.238_128.85_/_0.6)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
             </div>
             <div className="min-w-0 flex flex-row items-center gap-2">
               <label className="text-[11px] font-semibold">Kesadaran</label>
               <select name="kesadaran" value={formData.kesadaran} onChange={handleChange}
-                className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]">
+                className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]">
                 {kesadaranOptions.map((opt) => (
                   <option key={opt} value={opt}>{opt}</option>
                 ))}
@@ -809,7 +809,7 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
                 <select
                   value={formData.nip}
                   onChange={(e) => setFormData((p) => ({ ...p, nip: e.target.value }))}
-                  className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]"
+                  className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]"
                 >
                   <option value="">{pegawaiDisplay || currentName || '— Pilih pegawai —'}</option>
                   {pegawaiOptions.map((opt) => (
@@ -822,7 +822,7 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
           <div className="min-w-0 flex flex-row items-center gap-2 flex-wrap">
             <label className="text-[11px] font-semibold">Alergi</label>
             <select value={alergiJenis} onChange={(e) => setAlergiJenis(e.target.value)}
-              className="w-32 text-xs h-8 px-2 rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]">
+              className="w-32 text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]">
               {jenisAlergiOptions.length > 0 ? (
                 jenisAlergiOptions.map((opt) => (
                   <option key={opt.code} value={opt.code}>{opt.label}</option>
@@ -834,7 +834,7 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
             <button
               type="button"
               onClick={() => setAlergiCrudOpen(true)}
-              className="inline-flex items-center justify-center h-8 w-8 rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] text-[oklch(84.1%_0.238_128.85)] hover:bg-[oklch(14.5%_0_0_/_0.9)]"
+              className="inline-flex items-center justify-center h-8 w-8 rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(45.2%_0.211_324.591)] text-[oklch(84.1%_0.238_128.85)] hover:bg-[oklch(14.5%_0_0_/_0.9)]"
               aria-label="Tambah Alergi"
             >
               <PlusIcon className="h-4 w-4" />
@@ -848,7 +848,7 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
                   const opt = alergiOptions.find((o) => o.value === v);
                   setFormData((p) => ({ ...p, alergi: opt ? opt.label : '' }));
                 }}
-                className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]"
+                className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]"
               >
                 <option value="">Tidak Ada</option>
                 {alergiOptions.map((opt) => (
@@ -866,20 +866,20 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
                 searchPlaceholder="Cari diagnosa..."
                 displayKey="label"
                 valueKey="key"
-                className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none !bg-[oklch(14.5%_0_0)] !text-[oklch(98.5%_0_0)] !border-[oklch(84.1%_0.238_128.85_/_0.35)] !focus:ring-[oklch(84.1%_0.238_128.85)] !focus:border-[oklch(84.1%_0.238_128.85)] shadow-[0_0_10px_oklch(84.1%_0.238_128.85_/_0.4)]"
-                dropdownClassName="bg-[oklch(14.5%_0_0)] border-[oklch(84.1%_0.238_128.85_/_0.5)] shadow-[0_0_14px_oklch(84.1%_0.238_128.85_/_0.5)]"
-                searchInputClassName="bg-[oklch(14.5%_0_0)] text-[oklch(98.5%_0_0)] placeholder-[oklch(84.1%_0.238_128.85_/_0.7)] border-[oklch(84.1%_0.238_128.85_/_0.5)] focus:ring-[oklch(84.1%_0.238_128.85)] focus:border-[oklch(84.1%_0.238_128.85)] drop-shadow-[0_0_6px_oklch(84.1%_0.238_128.85_/_0.6)]"
-                optionClassName="bg-[oklch(14.5%_0_0)] text-[oklch(98.5%_0_0)] drop-shadow-[0_0_4px_oklch(84.1%_0.238_128.85_/_0.5)]"
-                selectedOptionClassName="bg-[oklch(14.5%_0_0)] text-[oklch(98.5%_0_0)]"
-                optionHoverClassName="hover:bg-[oklch(14.5%_0_0)]"
-                selectedOptionHoverClassName="hover:bg-[oklch(14.5%_0_0)]"
-                displayClassName="text-[oklch(98.5%_0_0)] drop-shadow-[0_0_6px_oklch(84.1%_0.238_128.85_/_0.7)]"
+                className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none !bg-[oklch(98.5%_0_0)] !text-[oklch(14.5%_0_0)] !border-[oklch(29.1%_0.149_302.717_/_0.35)] !focus:ring-[oklch(84.1%_0.238_128.85)] !focus:border-[oklch(29.1%_0.149_302.717)] shadow-[0_0_10px_oklch(84.1%_0.238_128.85_/_0.4)]"
+                dropdownClassName="bg-[oklch(98.5%_0_0)] border-[oklch(29.1%_0.149_302.717_/_0.5)] shadow-[0_0_14px_oklch(84.1%_0.238_128.85_/_0.5)]"
+                searchInputClassName="bg-[oklch(98.5%_0_0)] text-[oklch(14.5%_0_0)] placeholder-[oklch(84.1%_0.238_128.85_/_0.7)] border-[oklch(45.2%_0.211_324.591_/_0.5)] focus:ring-[oklch(84.1%_0_238_128.85)] focus:border-[oklch(45.2%_0.211_324.591)] drop-shadow-[0_0_6px_oklch(84.1%_0.238_128.85_/_0.6)]"
+                optionClassName="bg-[oklch(98.5%_0_0)] text-[oklch(14.5%_0_0)] drop-shadow-[0_0_4px_oklch(84.1%_0.238_128.85_/_0.5)]"
+                selectedOptionClassName="bg-[oklch(98.5%_0_0)] text-[oklch(14.5%_0_0)]"
+                optionHoverClassName="hover:bg-[oklch(98.5%_0_0)]"
+                selectedOptionHoverClassName="hover:bg-[oklch(98.5%_0_0)]"
+                displayClassName="text-[oklch(14.5%_0_0)] drop-shadow-[0_0_6px_oklch(84.1%_0.238_128.85_/_0.7)]"
               />
             </div>
             <button
               type="button"
               onClick={clearTemplateFields}
-              className="inline-flex items-center w-auto p-1 text-[oklch(84.1%_0.238_128.85)] bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.35)] rounded-md hover:bg-[oklch(14.5%_0_0_/_0.9)] transition-colors"
+              className="inline-flex items-center w-auto p-1 text-[oklch(84.1%_0.238_128.85)] bg-[oklch(14.5%_0_0)] border border-[oklch(45.2%_0.211_324.591_/_0.35)] rounded-md hover:bg-[oklch(14.5%_0_0_/_0.9)] transition-colors"
               aria-label="Bersihkan Form"
               title="Bersihkan"
             >
@@ -891,47 +891,47 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
           <div>
             <label className="block text-[11px] mb-0.5">Suhu (°C)</label>
             <input name="suhu_tubuh" value={formData.suhu_tubuh || ''} onChange={handleChange}
-              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
+              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
           </div>
           <div>
             <label className="block text-[11px] mb-0.5">Tensi (mmHg)</label>
             <input name="tensi" value={formData.tensi || ''} onChange={handleChange}
-              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
+              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
           </div>
           <div>
             <label className="block text-[11px] mb-0.5">Nadi (/menit)</label>
             <input name="nadi" value={formData.nadi || ''} onChange={handleChange}
-              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
+              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
           </div>
           <div>
             <label className="block text-[11px] mb-0.5">Respirasi (/menit)</label>
             <input name="respirasi" value={formData.respirasi || ''} onChange={handleChange}
-              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
+              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
           </div>
           <div>
             <label className="block text-[11px] mb-0.5">SpO2 (%)</label>
             <input name="spo2" value={formData.spo2 || ''} onChange={handleChange}
-              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
+              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
           </div>
           <div>
             <label className="block text-[11px] mb-0.5">Tinggi (cm)</label>
             <input name="tinggi" value={formData.tinggi || ''} onChange={handleChange}
-              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
+              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
           </div>
           <div>
             <label className="block text-[11px] mb-0.5">Berat (kg)</label>
             <input name="berat" value={formData.berat || ''} onChange={handleChange}
-              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
+              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
           </div>
           <div>
             <label className="block text-[11px] mb-0.5">GCS</label>
             <input name="gcs" value={formData.gcs || ''} onChange={handleChange}
-              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
+              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
           </div>
           <div>
             <label className="block text-[11px] mb-0.5">Lingkar Perut (cm)</label>
             <input name="lingkar_perut" value={formData.lingkar_perut || ''} onChange={handleChange}
-              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
+              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
           </div>
         </div>
 
@@ -939,12 +939,12 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
           <div className="space-y-1">
             <label className="block text-[11px] font-semibold">Keluhan Utama (Subjektif)</label>
             <textarea name="keluhan" rows={4} value={formData.keluhan} onChange={handleChange}
-              className="w-full text-xs rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
+              className="w-full text-xs rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
           </div>
           <div className="space-y-1">
             <label className="block text-[11px] font-semibold">Pemeriksaan Fisik (Objektif)</label>
             <textarea name="pemeriksaan" rows={4} value={formData.pemeriksaan} onChange={handleChange}
-              className="w-full text-xs rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
+              className="w-full text-xs rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
           </div>
         </div>
 
@@ -952,14 +952,14 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
           <div className="space-y-1">
             <label className="block text-[11px] font-semibold">Penilaian (Assessment)</label>
             <textarea name="penilaian" rows={3} value={formData.penilaian} onChange={handleChange}
-              className="w-full text-xs rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
+              className="w-full text-xs rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
           </div>
           <div className="space-y-1">
             <div className="flex items-center justify-between">
               <label className="block text-[11px] font-semibold">Rencana Tindak Lanjut (Planning)</label>
             </div>
             <textarea name="rtl" rows={3} value={formData.rtl} onChange={handleChange}
-              className="w-full text-xs rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
+              className="w-full text-xs rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
           </div>
         </div>
 
@@ -967,17 +967,17 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
           <div className="space-y-1">
             <label className="block text-[11px] font-semibold">Instruksi Medis</label>
             <textarea name="instruksi" rows={2} value={formData.instruksi} onChange={handleChange}
-              className="w-full text-xs rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
+              className="w-full text-xs rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
           </div>
           <div className="space-y-1">
             <label className="block text-[11px] font-semibold">Evaluasi</label>
             <textarea name="evaluasi" rows={2} value={formData.evaluasi} onChange={handleChange}
-              className="w-full text-xs rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
+              className="w-full text-xs rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
           </div>
         </div>
 
         <div className="flex items-center justify-end gap-2 flex-wrap">
-          <button type="submit" className="px-4 py-2 rounded-lg bg-[oklch(84.1%_0.238_128.85)] text-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85)] shadow-[0_0_12px_oklch(84.1%_0.238_128.85_/_0.45)]">
+          <button type="submit" className="px-4 py-2 rounded-lg bg-[oklch(84.1%_0.238_128.85)] text-[oklch(14.5%_0_0)] border border-[oklch(45.2%_0.211_324.591)] shadow-[0_0_12px_oklch(84.1%_0.238_128.85_/_0.45)]">
             {editKey ? 'Update Pemeriksaan' : 'Simpan Pemeriksaan'}
           </button>
           {showBridging && (
@@ -990,7 +990,7 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
                   openBridgingModal();
                 }
               }}
-              className="inline-flex items-center px-4 py-2 rounded-lg bg-[oklch(84.1%_0.238_128.85)] text-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85)] shadow-[0_0_12px_oklch(84.1%_0.238_128.85_/_0.45)]"
+              className="inline-flex items-center px-4 py-2 rounded-lg bg-[oklch(84.1%_0.238_128.85)] text-[oklch(14.5%_0_0)] border border-[oklch(45.2%_0.211_324.591)] shadow-[0_0_12px_oklch(84.1%_0.238_128.85_/_0.45)]"
               title="Bridging PCare"
             >
               Bridging PCare
@@ -1119,15 +1119,15 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
                   try { win.document.write(html); win.document.close(); } catch (e) { setError('Gagal menulis konten cetak: ' + (e.message || e)); if (win && !win.closed) { win.close(); } }
                 } catch (e) { setError(`Gagal mencetak rujukan: ${e.message || e}`); }
               }}
-              className="inline-flex items-center px-4 py-2 rounded-lg bg-[oklch(84.1%_0.238_128.85)] text-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85)] shadow-[0_0_12px_oklch(84.1%_0.238_128.85_/_0.45)]"
+              className="inline-flex items-center px-4 py-2 rounded-lg bg-[oklch(84.1%_0.238_128.85)] text-[oklch(14.5%_0_0)] border border-[oklch(45.2%_0.211_324.591)] shadow-[0_0_12px_oklch(84.1%_0.238_128.85_/_0.45)]"
               title="Cetak Rujukan"
             >
               Cetak Rujukan
             </button>
           )}
         </div>
-        <div className="mt-3 rounded-2xl border border-[oklch(84.1%_0.238_128.85_/_0.35)] shadow-[0_0_14px_oklch(84.1%_0.238_128.85_/_0.25)] overflow-hidden">
-          <div className="px-4 py-2.5 border-b border-[oklch(84.1%_0.238_128.85_/_0.35)] text-sm font-semibold">Riwayat Pemeriksaan</div>
+        <div className="mt-3 rounded-2xl border border-[oklch(29.1%_0.149_302.717_/_0.35)] shadow-[0_0_14px_oklch(84.1%_0.238_128.85_/_0.25)] overflow-hidden">
+          <div className="px-4 py-2.5 border-b border-[oklch(29.1%_0.149_302.717_/_0.35)] text-sm font-semibold">Riwayat Pemeriksaan</div>
           <div className="p-3">
             {historyLoading && (
               <div className="text-[11px]">Memuat…</div>
@@ -1153,7 +1153,7 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
                     })
                     .slice(0, 10)
                     .map((row, idx) => (
-                      <div key={`${row?.no_rawat || ''}-${row?.tgl_perawatan || ''}-${row?.jam_rawat || ''}-${idx}`} className="rounded-md border border-[oklch(84.1%_0.238_128.85_/_0.3)]">
+                      <div key={`${row?.no_rawat || ''}-${row?.tgl_perawatan || ''}-${row?.jam_rawat || ''}-${idx}`} className="rounded-md border border-[oklch(29.1%_0.149_302.717_/_0.3)]">
                         <div className="px-3 py-2 text-[11px] flex items-center justify-between">
                           <div className="font-semibold">{row?.tgl_perawatan || '-'} {String(row?.jam_rawat || '').length === 5 ? row?.jam_rawat + ':00' : (row?.jam_rawat || '')}</div>
                           <div className="text-[10px] flex items-center gap-1">
@@ -1193,10 +1193,10 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
                                 setMessage(null);
                                 setError(null);
                               }}
-                              className="inline-flex items-center justify-center h-5 w-5 rounded-md border border-[oklch(89.7%_0.196_126.665)] text-[oklch(89.7%_0.196_126.665)] hover:bg-[oklch(89.7%_0.196_126.665_/_0.1)]"
+                              className="inline-flex items-center justify-center h-5 w-5 rounded-md border border-[oklch(45.2%_0.211_324.591)] text-[oklch(89.7%_0.196_126.665)] hover:bg-[oklch(89.7%_0.196_126.665_/_0.1)]"
                               title="Edit pemeriksaan"
                             >
-                              <Pencil className="w-3 h-3" />
+                              <Pencil className="w-3 h-3 text-red-500" />
                             </button>
                             <button
                               type="button"
@@ -1241,15 +1241,15 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
                                   setMessage(null);
                                 }
                               }}
-                              className="inline-flex items-center justify-center h-5 w-5 rounded-md border border-[oklch(89.7%_0.196_126.665)] text-[oklch(89.7%_0.196_126.665)] hover:bg-[oklch(89.7%_0.196_126.665_/_0.1)]"
+                              className="inline-flex items-center justify-center h-5 w-5 rounded-md border border-[oklch(45.2%_0.211_324.591)] text-[oklch(89.7%_0.196_126.665)] hover:bg-[oklch(89.7%_0.196_126.665_/_0.1)]"
                               title="Hapus pemeriksaan"
                             >
-                              <Trash2 className="w-3 h-3" />
+                              <Trash2 className="w-3 h-3 text-red-500" />
                             </button>
                           </div>
                         </div>
                         <div className="px-3 pb-2 text-[11px]">
-                          <div className="text-[oklch(98.5%_0_0)]">{(row?.keluhan || '').toString().slice(0, 160) || '-'}</div>
+                          <div className="text-[oklch(14.5%_0_0)]">{(row?.keluhan || '').toString().slice(0, 160) || '-'}</div>
                           <div className="mt-1 text-[10px]">{(row?.pemeriksaan || '').toString().slice(0, 200) || '-'}</div>
                           <div className="mt-2 hidden">
                             <button

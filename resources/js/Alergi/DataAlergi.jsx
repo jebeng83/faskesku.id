@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XMarkIcon, PlusIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
 
@@ -20,22 +21,14 @@ export default function DataAlergi({ open, onClose, jenis }) {
     setJenisLoading(true);
     setJenisError(null);
     try {
-      let res = await fetch(`/api/alergi/jenis?per_page=100`, { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
-      if (res.status === 419) {
-        await fetch('/sanctum/csrf-cookie', { credentials: 'same-origin' }).catch(() => {});
-        res = await fetch(`/api/alergi/jenis?per_page=100`, { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
-      }
-      if (res.status === 401) {
-        throw new Error('Unauthenticated. Silakan login kembali.');
-      }
-      const json = await res.json();
-      const data = Array.isArray(json?.data) ? json.data : [];
+      const res = await axios.get('/api/alergi/jenis', { params: { per_page: 100 } });
+      const data = Array.isArray(res?.data?.data) ? res.data.data : [];
       setJenisList(data);
       if (!selectedKodeJenis && data.length > 0) {
         setSelectedKodeJenis(String(data[0].kode_jenis));
       }
     } catch (e) {
-      setJenisError(e?.message || 'Gagal memuat jenis alergi');
+      setJenisError(e?.response?.data?.message || e?.message || 'Gagal memuat jenis alergi');
     } finally {
       setJenisLoading(false);
     }
@@ -46,20 +39,12 @@ export default function DataAlergi({ open, onClose, jenis }) {
     setError(null);
     try {
       const kode_jenis = selectedKodeJenis ?? (jenis ? String(jenis) : '');
-      const params = new URLSearchParams({ kode_jenis });
-      let res = await fetch(`/api/alergi?${params.toString()}`, { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
-      if (res.status === 419) {
-        await fetch('/sanctum/csrf-cookie', { credentials: 'same-origin' }).catch(() => {});
-        res = await fetch(`/api/alergi?${params.toString()}`, { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
-      }
-      if (res.status === 401) {
-        throw new Error('Unauthenticated. Silakan login kembali.');
-      }
-      const json = await res.json();
-      const data = Array.isArray(json?.data) ? json.data : [];
+      const res = await axios.get('/api/alergi', { params: { kode_jenis } });
+      const data = Array.isArray(res?.data?.data) ? res.data.data : [];
       setItems(data);
     } catch (e) {
-      setError(e?.message || 'Gagal memuat data');
+      const msg = e?.response?.data?.message || e?.message || 'Gagal memuat data';
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -87,17 +72,16 @@ export default function DataAlergi({ open, onClose, jenis }) {
     if (kd.length > 5) return setError('Kode maksimal 5 karakter');
     setSaving(true);
     try {
-      const res = await fetch('/api/alergi', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify({ kd_alergi: kd, nm_alergi: form.nm_alergi.trim(), kode_jenis: Number(selectedKodeJenis) }),
-      });
-      if (!res.ok) throw new Error('Gagal menyimpan');
+      try {
+        await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+        await new Promise(resolve => setTimeout(resolve, 300));
+      } catch (_) {}
+      await axios.post('/api/alergi', { kd_alergi: kd, nm_alergi: form.nm_alergi.trim(), kode_jenis: Number(selectedKodeJenis) });
       setForm({ kd_alergi: '', nm_alergi: '' });
       await load();
     } catch (e) {
-      setError(e?.message || 'Gagal menyimpan');
+      const msg = e?.response?.data?.message || e?.message || 'Gagal menyimpan';
+      setError(msg);
     } finally {
       setSaving(false);
     }
@@ -106,19 +90,15 @@ export default function DataAlergi({ open, onClose, jenis }) {
   const generateKodeAlergi = async () => {
     setSaving(true);
     try {
-      let res = await fetch('/api/alergi/next-code', { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
-      if (res.status === 419) {
-        await fetch('/sanctum/csrf-cookie', { credentials: 'same-origin' }).catch(() => {});
-        res = await fetch('/api/alergi/next-code', { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
-      }
-      if (!res.ok) throw new Error('Gagal generate kode');
-      const js = await res.json();
+      const res = await axios.get('/api/alergi/next-code');
+      const js = res?.data || {};
       const next = js?.next_code || js?.kode || '';
       if (next) {
         setForm((f) => ({ ...f, kd_alergi: String(next).toUpperCase().trim() }));
       }
     } catch (e) {
-      setError(e?.message || 'Gagal generate kode');
+      const msg = e?.response?.data?.message || e?.message || 'Gagal generate kode';
+      setError(msg);
     } finally {
       setSaving(false);
     }
@@ -127,17 +107,16 @@ export default function DataAlergi({ open, onClose, jenis }) {
   const updateItem = async (item) => {
     setSaving(true);
     try {
-      const res = await fetch(`/api/alergi/${encodeURIComponent(item.kd_alergi)}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify({ nm_alergi: String(item.nm_alergi || '').trim() }),
-      });
-      if (!res.ok) throw new Error('Gagal memperbarui');
+      try {
+        await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+        await new Promise(resolve => setTimeout(resolve, 300));
+      } catch (_) {}
+      await axios.put(`/api/alergi/${encodeURIComponent(item.kd_alergi)}`, { nm_alergi: String(item.nm_alergi || '').trim() });
       setEditing(null);
       await load();
     } catch (e) {
-      setError(e?.message || 'Gagal memperbarui');
+      const msg = e?.response?.data?.message || e?.message || 'Gagal memperbarui';
+      setError(msg);
     } finally {
       setSaving(false);
     }
@@ -146,11 +125,15 @@ export default function DataAlergi({ open, onClose, jenis }) {
   const deleteItem = async (id) => {
     setSaving(true);
     try {
-      const res = await fetch(`/api/alergi/${encodeURIComponent(id)}`, { method: 'DELETE', headers: { Accept: 'application/json' }, credentials: 'same-origin' });
-      if (!res.ok) throw new Error('Gagal menghapus');
+      try {
+        await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+        await new Promise(resolve => setTimeout(resolve, 300));
+      } catch (_) {}
+      await axios.delete(`/api/alergi/${encodeURIComponent(id)}`);
       await load();
     } catch (e) {
-      setError(e?.message || 'Gagal menghapus');
+      const msg = e?.response?.data?.message || e?.message || 'Gagal menghapus';
+      setError(msg);
     } finally {
       setSaving(false);
     }
@@ -161,17 +144,16 @@ export default function DataAlergi({ open, onClose, jenis }) {
     if (!nama) return;
     setSaving(true);
     try {
-      const res = await fetch('/api/alergi/jenis', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify({ nama_jenis: nama }),
-      });
-      if (!res.ok) throw new Error('Gagal menambah jenis');
+      try {
+        await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+        await new Promise(resolve => setTimeout(resolve, 300));
+      } catch (_) {}
+      await axios.post('/api/alergi/jenis', { nama_jenis: nama });
       setNewJenisName('');
       await loadJenis();
     } catch (e) {
-      setError(e?.message || 'Gagal menambah jenis');
+      const msg = e?.response?.data?.message || e?.message || 'Gagal menambah jenis';
+      setError(msg);
     } finally {
       setSaving(false);
     }
@@ -182,17 +164,16 @@ export default function DataAlergi({ open, onClose, jenis }) {
     if (!nama || !selectedKodeJenis) return;
     setSaving(true);
     try {
-      const res = await fetch(`/api/alergi/jenis/${encodeURIComponent(selectedKodeJenis)}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify({ nama_jenis: nama }),
-      });
-      if (!res.ok) throw new Error('Gagal memperbarui jenis');
+      try {
+        await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+        await new Promise(resolve => setTimeout(resolve, 300));
+      } catch (_) {}
+      await axios.put(`/api/alergi/jenis/${encodeURIComponent(selectedKodeJenis)}`, { nama_jenis: nama });
       setNewJenisName('');
       await loadJenis();
     } catch (e) {
-      setError(e?.message || 'Gagal memperbarui jenis');
+      const msg = e?.response?.data?.message || e?.message || 'Gagal memperbarui jenis';
+      setError(msg);
     } finally {
       setSaving(false);
     }
@@ -202,15 +183,21 @@ export default function DataAlergi({ open, onClose, jenis }) {
     if (!selectedKodeJenis) return;
     setSaving(true);
     try {
-      const res = await fetch(`/api/alergi/jenis/${encodeURIComponent(selectedKodeJenis)}`, { method: 'DELETE', headers: { Accept: 'application/json' }, credentials: 'same-origin' });
-      if (res.status === 409) {
-        const js = await res.json().catch(() => ({}));
-        throw new Error(js?.message || 'Jenis tidak dapat dihapus');
-      }
-      if (!res.ok) throw new Error('Gagal menghapus jenis');
+      try {
+        await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+        await new Promise(resolve => setTimeout(resolve, 300));
+      } catch (_) {}
+      await axios.delete(`/api/alergi/jenis/${encodeURIComponent(selectedKodeJenis)}`);
       await loadJenis();
     } catch (e) {
-      setError(e?.message || 'Gagal menghapus jenis');
+      if (e?.response?.status === 409) {
+        const js = e?.response?.data || {};
+        const msg409 = js?.message || 'Jenis tidak dapat dihapus';
+        setError(msg409);
+      } else {
+        const msg = e?.response?.data?.message || e?.message || 'Gagal menghapus jenis';
+        setError(msg);
+      }
     } finally {
       setSaving(false);
     }
@@ -299,11 +286,11 @@ export default function DataAlergi({ open, onClose, jenis }) {
                           <button onClick={() => updateItem(it)} disabled={saving} className="h-8 px-3 rounded-md bg-[oklch(84.1%_0.238_128.85)] text-[oklch(14.5%_0_0)] text-xs border border-[oklch(84.1%_0.238_128.85)]">Simpan</button>
                         ) : (
                           <button onClick={() => setEditing(it.kd_alergi)} className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-[oklch(84.1%_0.238_128.85_/_0.45)] text-[oklch(84.1%_0.238_128.85)] hover:bg-[oklch(14.5%_0_0_/_0.9)]">
-                            <PencilSquareIcon className="h-4 w-4" />
+                            <PencilSquareIcon className="h-4 w-4 text-red-500" />
                           </button>
                         )}
                         <button onClick={() => deleteItem(it.kd_alergi)} disabled={saving} className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-red-500 text-red-500 hover:bg-[oklch(14.5%_0_0_/_0.9)]">
-                          <TrashIcon className="h-4 w-4" />
+                          <TrashIcon className="h-4 w-4 text-red-500" />
                         </button>
                       </div>
                     ))

@@ -29,7 +29,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
   const [loadingDokterPJ, setLoadingDokterPJ] = useState(false)
   const [dokterPJError, setDokterPJError] = useState(null)
   const [riwayatResep, setRiwayatResep] = useState([])
-  const [showRiwayatResep, setShowRiwayatResep] = useState(false)
+  const [showRiwayatResep, setShowRiwayatResep] = useState(true)
   const [loadingRiwayat, setLoadingRiwayat] = useState(false)
   const [deletingResep, setDeletingResep] = useState(null)
   const [hasMoreResep, setHasMoreResep] = useState(false)
@@ -189,7 +189,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
     setLoadingRiwayat(true)
     try {
       const encodedNoRkmMedis = encodeURIComponent(noRkmMedis)
-      const response = await axios.get(`/api/resep/pasien/${encodedNoRkmMedis}`, { params: { limit: 5, offset: 0 }, withCredentials: true, headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" } })
+      const response = await axios.get(`/api/resep/pasien/${encodedNoRkmMedis}`, { params: { limit: 3, offset: 0 }, withCredentials: true, headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" } })
       if (response?.data?.success) {
         const resepData = response.data.data
         if (reset) setRiwayatResep(resepData)
@@ -215,7 +215,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
     setLoadingMore(true)
     try {
       const encodedNoRkmMedis = encodeURIComponent(noRkmMedis)
-      const response = await axios.get(`/api/resep/pasien/${encodedNoRkmMedis}`, { params: { limit: 5, offset: nextOffset } })
+      const response = await axios.get(`/api/resep/pasien/${encodedNoRkmMedis}`, { params: { limit: 3, offset: nextOffset } })
       if (response?.data?.success) {
         const newResepData = response.data.data
         setRiwayatResep((prev) => [...prev, ...newResepData])
@@ -427,35 +427,38 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
   }
 
   return (
-    <div className="space-y-4 text-[oklch(98.5%_0_0)]">
+    <div className="space-y-4 text-[oklch(14.5%_0_0)]">
 
 
-      <div className="flex border-b border-[oklch(84.1%_0.238_128.85_/_0.35)] gap-2">
+      <div className="flex border-b border-[oklch(28.3%_0.141_291.089_/_0.35)] gap-2">
         {[{ key: "resep", label: "Resep" }, { key: "resep-racikan", label: "Resep Racikan" }].map((tab) => (
-          <button key={tab.key} onClick={() => switchTab(tab.key)} className={`px-3 py-2 text-xs font-medium border-b-2 ${activeTab === tab.key ? "border-[oklch(84.1%_0.238_128.85)] text-[oklch(98.5%_0_0)]" : "border-transparent text-[oklch(98.5%_0_0_/_0.6)] hover:text-[oklch(98.5%_0_0)]"}`}>{tab.label}</button>
+          <button key={tab.key} onClick={() => switchTab(tab.key)} className={`px-3 py-2 text-xs font-medium border-b-2 ${activeTab === tab.key ? 'border-[oklch(28.3%_0.141_291.089)] text-[oklch(14.5%_0_0)]' : 'border-transparent text-[oklch(14.5%_0_0_/_0.7)] hover:text-[oklch(14.5%_0_0)]'}`}>{tab.label}</button>
         ))}
       </div>
 
       <AnimatePresence initial={false} mode="wait">
         {activeTab === "resep" && (
           <motion.form key="tab-resep" variants={pageVariants} custom={dir} initial="enter" animate="center" exit="exit" transition={contentSpring} onSubmit={handleSubmit} className="space-y-4">
-            <div className="relative overflow-hidden rounded-md bg-[oklch(14.5%_0_0_/_0.3)] border border-[oklch(84.1%_0.238_128.85_/_0.4)]">
+            <div className="relative overflow-hidden rounded-md bg-[oklch(14.5%_0_0_/_0.3)] border border-[oklch(28.3%_0.141_291.089_/_0.4)]">
               <div className="px-3 py-2">
                 <div className="flex items-center justify-between">
-                  <div className="text-xs font-medium">Dokter Penanggung Jawab</div>
+                  <div className="flex items-center gap-2">
+                    <div className="text-xs font-medium">Dokter Penanggung Jawab</div>
+                    {dokterPJ?.kd_dokter && <div className="text-[11px] opacity-70">Kode: {dokterPJ.kd_dokter}</div>}
+                  </div>
                   {loadingDokterPJ ? <span className="text-[10px] opacity-70">Memuat…</span> : dokterPJError ? <span className="text-[10px] text-red-400">{dokterPJError}</span> : null}
                 </div>
                 <div className="mt-1 mb-2">
                   <div className="flex items-center gap-2">
                     <div className="text-sm font-semibold shrink-0">{loadingDokterPJ ? "Memuat…" : dokterPJ?.nm_dokter || "-"}</div>
-                    <select value={selectedDokter} onChange={(e) => setSelectedDokter(e.target.value)} className="flex-1 min-w-0 px-3 py-2 rounded-md border border-[oklch(84.1%_0.238_128.85_/_0.35)] bg-transparent" required disabled={loadingDokter}>
+                    <select value={selectedDokter} onChange={(e) => setSelectedDokter(e.target.value)} className="flex-1 min-w-0 px-3 py-2 rounded-md border border-[oklch(28.3%_0.141_291.089_/_0.35)] bg-transparent" required disabled={loadingDokter}>
                       {loadingDokter ? <option value="">Memuat dokter…</option> : (<>
                         <option value="">Pilih Dokter</option>
                         {dokterOptions.map((d) => (<option key={d.kd_dokter} value={d.kd_dokter}>{d.nm_dokter}</option>))}
                       </>)}
                     </select>
                   </div>
-                  {dokterPJ?.kd_dokter && <div className="text-[11px] opacity-70">Kode: {dokterPJ.kd_dokter}</div>}
+                  
                 </div>
               </div>
             </div>
@@ -477,11 +480,11 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
               {items.map((item, index) => (
                 <div key={item.id} className="grid grid-cols-12 gap-2 items-start">
                   <div className="col-span-5 relative dropdown-container">
-                    <input type="text" value={item.namaObat} onChange={(e) => { updateItem(item.id, "namaObat", e.target.value); setSearchObat((prev) => ({ ...prev, [item.id]: e.target.value })); setShowDropdown((prev) => ({ ...prev, [item.id]: true })) }} onFocus={() => { setShowDropdown((prev) => ({ ...prev, [item.id]: true })); if (!searchObat[item.id] && kdPoli) fetchObat() }} className="w-full px-3 py-2 rounded-md border border-[oklch(84.1%_0.238_128.85_/_0.35)] bg-transparent" placeholder="Pilih Obat" required />
+                    <input type="text" value={item.namaObat} onChange={(e) => { updateItem(item.id, "namaObat", e.target.value); setSearchObat((prev) => ({ ...prev, [item.id]: e.target.value })); setShowDropdown((prev) => ({ ...prev, [item.id]: true })) }} onFocus={() => { setShowDropdown((prev) => ({ ...prev, [item.id]: true })); if (!searchObat[item.id] && kdPoli) fetchObat() }} className="w-full px-3 py-2 rounded-md border border-[oklch(28.3%_0.141_291.089_/_0.35)] bg-transparent" placeholder="Pilih Obat" required />
 
                     <AnimatePresence initial={false}>
                       {showDropdown[item.id] && (
-                        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }} transition={{ duration: 0.18 }} className="absolute z-20 w-full mt-1 bg-[oklch(14.5%_0_0)] text-[oklch(98.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.5)] rounded-md shadow-[0_0_20px_oklch(84.1%_0.238_128.85_/_0.25)] max-h-[70vh] overflow-y-auto">
+                        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }} transition={{ duration: 0.18 }} className="absolute z-20 w-full mt-1 bg-[oklch(98.5%_0_0)] text-[oklch(14.5%_0_0)] border border-[oklch(28.3%_0.141_291.089_/_0.5)] rounded-md shadow-[0_0_20px_oklch(84.1%_0.238_128.85_/_0.25)] max-h-[84vh] overflow-y-auto">
                           {loadingObat ? (
                             <div className="p-3 text-center text-[12px] opacity-70">Memuat…</div>
                           ) : (
@@ -494,7 +497,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: 4 }}
                                 transition={{ duration: 0.14 }}
-                                className="w-full text-left px-3 py-2 border-b border-[oklch(84.1%_0.238_128.85_/_0.25)]"
+                                className="w-full text-left px-3 py-2 border-b border-[oklch(28.3%_0.141_291.089_/_0.25)]"
                               >
                                 <div className="flex items-center justify-between gap-3">
                                   <div>
@@ -515,7 +518,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
                   </div>
 
                   <div className="col-span-2">
-                    <input type="number" min="1" value={item.jumlah || ""} onChange={(e) => { const jumlah = parseInt(e.target.value) || ""; updateItem(item.id, "jumlah", jumlah) }} className={`w-full px-3 py-2 rounded-md border ${item.jumlah > item.stokTersedia && item.stokTersedia > 0 ? "border-red-500 bg-red-50/20" : "border-[oklch(84.1%_0.238_128.85_/_0.35)] bg-transparent"}`} placeholder={index === 0 ? "Jml" : "Jumlah"} max={item.stokTersedia || undefined} required />
+                    <input type="number" min="1" value={item.jumlah || ""} onChange={(e) => { const jumlah = parseInt(e.target.value) || ""; updateItem(item.id, "jumlah", jumlah) }} className={`w-full px-3 py-2 rounded-md border ${item.jumlah > item.stokTersedia && item.stokTersedia > 0 ? 'border-red-500 bg-red-50/20' : 'border-[oklch(28.3%_0.141_291.089_/_0.35)] bg-transparent'}`} placeholder={index === 0 ? "Jml" : "Jumlah"} max={item.stokTersedia || undefined} required />
                   </div>
 
                   <div className="col-span-4 relative dropdown-container">
@@ -524,7 +527,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
                       value={item.aturanPakai}
                       onChange={(e) => { updateItem(item.id, "aturanPakai", e.target.value); setSearchAturan((prev) => ({ ...prev, [item.id]: e.target.value })); setShowDropdownAturan((prev) => ({ ...prev, [item.id]: true })) }}
                       onFocus={() => { setShowDropdownAturan((prev) => ({ ...prev, [item.id]: true })); if (!searchAturan[item.id]) fetchAturan() }}
-                      className="w-full px-3 pr-8 py-2 rounded-md border border-[oklch(84.1%_0.238_128.85_/_0.35)] bg-transparent"
+                      className="w-full px-3 pr-8 py-2 rounded-md border border-[oklch(28.3%_0.141_291.089_/_0.35)] bg-transparent"
                       placeholder="Aturan Pakai"
                       required
                     />
@@ -545,7 +548,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: 6 }}
                           transition={{ duration: 0.18 }}
-                          className="absolute z-20 w-full mt-1 bg-[oklch(14.5%_0_0)] text-[oklch(98.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.5)] rounded-md shadow-[0_0_20px_oklch(84.1%_0.238_128.85_/_0.25)] max-h-[70vh] overflow-y-auto"
+                          className="absolute z-20 w-full mt-1 bg-[oklch(98.5%_0_0)] text-[oklch(14.5%_0_0)] border border-[oklch(28.3%_0.141_291.089_/_0.5)] rounded-md shadow-[0_0_20px_oklch(84.1%_0.238_128.85_/_0.25)] max-h-[84vh] overflow-y-auto"
                         >
                           {loadingAturan ? (
                             <div className="p-3 text-center text-[12px] opacity-70">Memuat…</div>
@@ -561,7 +564,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: 4 }}
                                 transition={{ duration: 0.14 }}
-                                className="w-full text-left px-3 py-2 border-b border-[oklch(84.1%_0.238_128.85_/_0.25)]"
+                                className="w-full text-left px-3 py-2 border-b border-[oklch(28.3%_0.141_291.089_/_0.25)]"
                               >
                                 <div className="font-medium text-[12px]">{opt.aturan}</div>
                               </motion.button>
@@ -574,12 +577,12 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
 
                   <div className="col-span-1 flex justify-end gap-2">
                     {index === items.length - 1 && (
-                      <button type="button" onClick={addItem} className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-[oklch(84.1%_0.238_128.85)] hover:bg-neutral-800">
+                      <button type="button" onClick={addItem} className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-[oklch(28.3%_0.141_291.089)] hover:bg-neutral-800">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                       </button>
                     )}
                     {index > 0 && (
-                      <button type="button" onClick={() => removeItem(item.id)} className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-[oklch(84.1%_0.238_128.85)] hover:bg-neutral-800">
+                      <button type="button" onClick={() => removeItem(item.id)} className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-[oklch(28.3%_0.141_291.089)] hover:bg-neutral-800">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" /></svg>
                       </button>
                     )}
@@ -588,11 +591,11 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
               ))}
             </div>
 
-            <div className="flex w-full flex-col sm:flex-row items-end sm:justify-end gap-2 mt-3 pt-3 border-t border-[oklch(84.1%_0.238_128.85_/_0.35)]">
+            <div className="flex w-full flex-col sm:flex-row items-end sm:justify-end gap-2 mt-3 pt-3 border-t border-[oklch(28.3%_0.141_291.089_/_0.35)]">
               <button
                 type="button"
                 onClick={() => setShowRiwayatResep((v) => !v)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-[oklch(84.1%_0.238_128.85_/_0.4)]"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-[oklch(28.3%_0.141_291.089_/_0.4)]"
               >
                 {showRiwayatResep ? (
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
@@ -602,7 +605,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
                 {showRiwayatResep ? "Sembunyikan Riwayat Resep" : "Tampilkan Riwayat Resep"}
               </button>
 
-              <button type="submit" disabled={isSubmitting || items.length === 0} className="inline-flex items-center justify-center px-4 py-2 rounded-md border border-[oklch(84.1%_0.238_128.85)] hover:bg-neutral-800 disabled:opacity-50">
+              <button type="submit" disabled={isSubmitting || items.length === 0} className="inline-flex items-center justify-center px-4 py-2 rounded-md border border-[oklch(28.3%_0.141_291.089)] hover:bg-neutral-800 disabled:opacity-50">
                 {isSubmitting ? "Menyimpan…" : "Simpan"}
               </button>
             </div>
@@ -610,7 +613,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
         )}
 
         {activeTab === "resep-racikan" && (
-          <motion.div key="tab-racikan" variants={pageVariants} custom={dir} initial="enter" animate="center" exit="exit" transition={contentSpring} className="p-3 border border-[oklch(84.1%_0.238_128.85_/_0.4)] rounded-md">
+          <motion.div key="tab-racikan" variants={pageVariants} custom={dir} initial="enter" animate="center" exit="exit" transition={contentSpring} className="p-3 border border-[oklch(28.3%_0.141_291.089_/_0.4)] rounded-md">
             <div className="text-[12px] opacity-80">Formulir Resep Racikan akan ditampilkan di sini.</div>
           </motion.div>
         )}
@@ -620,7 +623,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
 
       <AnimatePresence initial={false}>
         {showRiwayatResep && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: 0.2 }} className="mt-3 border border-[oklch(84.1%_0.238_128.85_/_0.35)] rounded-md p-3">
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: 0.2 }} className="mt-3 border border-[oklch(28.3%_0.141_291.089_/_0.35)] rounded-md p-3">
             {loadingRiwayat ? (
               <div className="flex items-center justify-center py-6 text-[12px] opacity-70">Memuat riwayat resep…</div>
             ) : riwayatResep.length === 0 ? (
@@ -628,7 +631,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
             ) : (
               <div className="space-y-3">
                 {riwayatResep.map((resep, index) => (
-                  <div key={index} className="border border-[oklch(84.1%_0.238_128.85_/_0.35)] rounded-md p-3">
+                  <div key={index} className="border border-[oklch(28.3%_0.141_291.089_/_0.35)] rounded-md p-3">
                     <div className="flex justify-between items-start">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 flex-1">
                         <div>
@@ -645,15 +648,15 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
                         </div>
                       </div>
                       <div className="ml-4 flex gap-2">
-                        <button onClick={() => handleCopyResep(resep)} className="px-3 py-1 text-xs rounded-md border border-[oklch(84.1%_0.238_128.85)]">Copy</button>
-                        <button onClick={() => deleteResep(resep)} disabled={deletingResep === `${resep.tgl_peresepan}_${resep.jam_peresepan}`} className="px-3 py-1 text-xs rounded-md border border-[oklch(84.1%_0.238_128.85)] disabled:opacity-50">Hapus</button>
-                        <button onClick={() => handlePenyerahan(resep)} disabled={penyerahanLoading[resep.no_resep]} className="px-3 py-1 text-xs rounded-md border border-[oklch(84.1%_0.238_128.85)] disabled:opacity-50">Penyerahan</button>
+                        <button onClick={() => handleCopyResep(resep)} className="px-3 py-1 text-xs rounded-md border border-[oklch(28.3%_0.141_291.089)]">Copy</button>
+                        <button onClick={() => deleteResep(resep)} disabled={deletingResep === `${resep.tgl_peresepan}_${resep.jam_peresepan}`} className="px-3 py-1 text-xs rounded-md border border-[oklch(28.3%_0.141_291.089)] disabled:opacity-50">Hapus</button>
+                        <button onClick={() => handlePenyerahan(resep)} disabled={penyerahanLoading[resep.no_resep]} className="px-3 py-1 text-xs rounded-md border border-[oklch(28.3%_0.141_291.089)] disabled:opacity-50">Penyerahan</button>
                       </div>
                     </div>
 
                     {Array.isArray(resep.detail_obat) && resep.detail_obat.length > 0 && (
                       <div className="mt-3 overflow-x-auto">
-                        <table className="min-w-full border border-[oklch(84.1%_0.238_128.85_/_0.35)] text-[12px]">
+                        <table className="min-w-full border border-[oklch(28.3%_0.141_291.089_/_0.35)] text-[12px]">
                           <thead className="bg-[oklch(14.5%_0_0_/_0.25)]">
                             <tr>
                               <th className="px-3 py-2 text-left">Kode Obat</th>
@@ -664,7 +667,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
                           </thead>
                           <tbody>
                             {resep.detail_obat.map((obat, obatIndex) => (
-                              <tr key={obatIndex} className="border-t border-[oklch(84.1%_0.238_128.85_/_0.25)]">
+                              <tr key={obatIndex} className="border-t border-[oklch(28.3%_0.141_291.089_/_0.25)]">
                                 <td className="px-3 py-2">{obat.kode_brng}</td>
                                 <td className="px-3 py-2">{obat.nama_brng || obat.kode_brng}</td>
                                 <td className="px-3 py-2">{obat.aturan_pakai}</td>
@@ -680,7 +683,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
 
                 {hasMoreResep && (
                   <div className="text-center">
-                    <button onClick={loadMoreResep} disabled={loadingMore} className="px-4 py-2 rounded-md border border-[oklch(84.1%_0.238_128.85)] disabled:opacity-50">{loadingMore ? "Memuat…" : "Muat Lebih Banyak"}</button>
+                    <button onClick={loadMoreResep} disabled={loadingMore} className="px-4 py-2 rounded-md border border-[oklch(28.3%_0.141_291.089)] disabled:opacity-50">{loadingMore ? "Memuat…" : "Muat Lebih Banyak"}</button>
                   </div>
                 )}
               </div>
@@ -690,10 +693,10 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
       </AnimatePresence>
 
       {showSavedResep && savedResep && (
-        <div className="mt-4 border border-[oklch(84.1%_0.238_128.85_/_0.4)] rounded-md">
-          <div className="flex justify-between items-center px-3 py-2 border-b border-[oklch(84.1%_0.238_128.85_/_0.35)]">
+        <div className="mt-4 border border-[oklch(28.3%_0.141_291.089_/_0.4)] rounded-md">
+          <div className="flex justify-between items-center px-3 py-2 border-b border-[oklch(28.3%_0.141_291.089_/_0.35)]">
             <div className="text-sm font-semibold">Data Resep Tersimpan</div>
-            <button onClick={() => setShowSavedResep(false)} className="text-[oklch(98.5%_0_0_/_0.7)] hover:text-[oklch(98.5%_0_0)]">✕</button>
+            <button onClick={() => setShowSavedResep(false)} className="text-[oklch(14.5%_0_0_/_0.7)] hover:text-[oklch(14.5%_0_0)]">✕</button>
           </div>
           <div className="p-3">
             <div className="grid grid-cols-2 gap-2 text-[12px]">
@@ -706,39 +709,39 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
               <div className="col-span-2"><span className="opacity-70">Penyerahan:</span> {savedResep.tgl_penyerahan ? (<span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-500/20 text-green-200">{new Date(savedResep.tgl_penyerahan).toLocaleDateString("id-ID")} {savedResep.jam_penyerahan}</span>) : (<span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-500/20 text-yellow-200">Belum diserahkan</span>)}</div>
               {!savedResep.tgl_penyerahan && (
                 <div className="col-span-2 flex justify-end">
-                  <button onClick={() => handlePenyerahan(savedResep)} disabled={penyerahanLoading[savedResep.no_resep]} className="px-4 py-2 text-xs rounded-md border border-[oklch(84.1%_0.238_128.85)] disabled:opacity-50">{penyerahanLoading[savedResep.no_resep] ? "Memproses…" : "Penyerahan Obat"}</button>
+                  <button onClick={() => handlePenyerahan(savedResep)} disabled={penyerahanLoading[savedResep.no_resep]} className="px-4 py-2 text-xs rounded-md border border-[oklch(28.3%_0.141_291.089)] disabled:opacity-50">{penyerahanLoading[savedResep.no_resep] ? "Memproses…" : "Penyerahan Obat"}</button>
                 </div>
               )}
             </div>
 
             <div className="mt-3 overflow-x-auto">
-              <table className="min-w-full border border-[oklch(84.1%_0.238_128.85_/_0.35)] text-[12px]">
+              <table className="min-w-full border border-[oklch(28.3%_0.141_291.089_/_0.35)] text-[12px]">
                 <thead className="bg-[oklch(14.5%_0_0_/_0.25)]">
                   <tr>
-                    <th className="border border-[oklch(84.1%_0.238_128.85_/_0.2)] px-3 py-2 text-left">Kode Obat</th>
-                    <th className="border border-[oklch(84.1%_0.238_128.85_/_0.2)] px-3 py-2 text-left">Nama Obat</th>
-                    <th className="border border-[oklch(84.1%_0.238_128.85_/_0.2)] px-3 py-2 text-left">Aturan Pakai</th>
-                    <th className="border border-[oklch(84.1%_0.238_128.85_/_0.2)] px-3 py-2 text-center">Jumlah</th>
-                    <th className="border border-[oklch(84.1%_0.238_128.85_/_0.2)] px-3 py-2 text-right">Harga</th>
-                    <th className="border border-[oklch(84.1%_0.238_128.85_/_0.2)] px-3 py-2 text-right">Total</th>
+                    <th className="border border-[oklch(28.3%_0.141_291.089_/_0.2)] px-3 py-2 text-left">Kode Obat</th>
+                    <th className="border border-[oklch(28.3%_0.141_291.089_/_0.2)] px-3 py-2 text-left">Nama Obat</th>
+                    <th className="border border-[oklch(28.3%_0.141_291.089_/_0.2)] px-3 py-2 text-left">Aturan Pakai</th>
+                    <th className="border border-[oklch(28.3%_0.141_291.089_/_0.2)] px-3 py-2 text-center">Jumlah</th>
+                    <th className="border border-[oklch(28.3%_0.141_291.089_/_0.2)] px-3 py-2 text-right">Harga</th>
+                    <th className="border border-[oklch(28.3%_0.141_291.089_/_0.2)] px-3 py-2 text-right">Total</th>
                   </tr>
                 </thead>
                 <tbody>
                   {savedResep.detail_obat && savedResep.detail_obat.map((it, idx) => (
                     <tr key={idx} className="hover:bg-[oklch(14.5%_0_0_/_0.2)]">
-                      <td className="border border-[oklch(84.1%_0.238_128.85_/_0.15)] px-3 py-2">{it.kode_brng}</td>
-                      <td className="border border-[oklch(84.1%_0.238_128.85_/_0.15)] px-3 py-2">{it.nama_brng || "-"}</td>
-                      <td className="border border-[oklch(84.1%_0.238_128.85_/_0.15)] px-3 py-2">{it.aturan_pakai}</td>
-                      <td className="border border-[oklch(84.1%_0.238_128.85_/_0.15)] px-3 py-2 text-center">{it.jml} {it.satuan}</td>
-                      <td className="border border-[oklch(84.1%_0.238_128.85_/_0.15)] px-3 py-2 text-right">{new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(it.harga || 0)}</td>
-                      <td className="border border-[oklch(84.1%_0.238_128.85_/_0.15)] px-3 py-2 text-right">{new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format((it.jml || 0) * (it.harga || 0))}</td>
+                      <td className="border border-[oklch(28.3%_0.141_291.089_/_0.15)] px-3 py-2">{it.kode_brng}</td>
+                      <td className="border border-[oklch(28.3%_0.141_291.089_/_0.15)] px-3 py-2">{it.nama_brng || "-"}</td>
+                      <td className="border border-[oklch(28.3%_0.141_291.089_/_0.15)] px-3 py-2">{it.aturan_pakai}</td>
+                      <td className="border border-[oklch(28.3%_0.141_291.089_/_0.15)] px-3 py-2 text-center">{it.jml} {it.satuan}</td>
+                      <td className="border border-[oklch(28.3%_0.141_291.089_/_0.15)] px-3 py-2 text-right">{new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(it.harga || 0)}</td>
+                      <td className="border border-[oklch(28.3%_0.141_291.089_/_0.15)] px-3 py-2 text-right">{new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format((it.jml || 0) * (it.harga || 0))}</td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot className="bg-[oklch(14.5%_0_0_/_0.25)]">
                   <tr>
-                    <td colSpan="5" className="border border-[oklch(84.1%_0.238_128.85_/_0.2)] px-3 py-2 text-right font-semibold">Total Keseluruhan:</td>
-                    <td className="border border-[oklch(84.1%_0.238_128.85_/_0.2)] px-3 py-2 text-right font-semibold">{savedResep.detail_obat && new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(savedResep.detail_obat.reduce((total, it) => total + (it.jml || 0) * (it.harga || 0), 0))}</td>
+                    <td colSpan="5" className="border border-[oklch(28.3%_0.141_291.089_/_0.2)] px-3 py-2 text-right font-semibold">Total Keseluruhan:</td>
+                    <td className="border border-[oklch(28.3%_0.141_291.089_/_0.2)] px-3 py-2 text-right font-semibold">{savedResep.detail_obat && new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(savedResep.detail_obat.reduce((total, it) => total + (it.jml || 0) * (it.harga || 0), 0))}</td>
                   </tr>
                 </tfoot>
               </table>
@@ -750,12 +753,12 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
       <AnimatePresence initial={false}>
         {showMasterAturanModal && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="fixed inset-0 z-30 flex items-center justify-center bg-black/50">
-            <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.98, opacity: 0 }} transition={{ duration: 0.18 }} className="w-full max-w-sm bg-[oklch(14.5%_0_0)] text-[oklch(98.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] rounded-md p-3">
+            <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.98, opacity: 0 }} transition={{ duration: 0.18 }} className="w-full max-w-sm bg-[oklch(98.5%_0_0)] text-[oklch(14.5%_0_0)] border border-[oklch(28.3%_0.141_291.089_/_0.45)] rounded-md p-3">
               <div className="text-sm font-semibold mb-2">Tambah Master Aturan Pakai</div>
-              <input type="text" value={masterAturanInput} onChange={(e) => setMasterAturanInput(e.target.value)} className="w-full px-3 py-2 rounded-md border border-[oklch(84.1%_0.238_128.85_/_0.35)] bg-transparent" placeholder="Masukkan aturan pakai" />
+              <input type="text" value={masterAturanInput} onChange={(e) => setMasterAturanInput(e.target.value)} className="w-full px-3 py-2 rounded-md border border-[oklch(28.3%_0.141_291.089_/_0.35)] bg-transparent" placeholder="Masukkan aturan pakai" />
               <div className="mt-3 flex justify-end gap-2">
-                <button type="button" onClick={() => { setShowMasterAturanModal(false); setMasterAturanItemId(null) }} className="px-3 py-1.5 rounded-md border border-[oklch(84.1%_0.238_128.85)]">Batal</button>
-                <button type="button" onClick={saveMasterAturan} disabled={masterAturanSaving || (masterAturanInput || "").trim() === ""} className="px-3 py-1.5 rounded-md border border-[oklch(84.1%_0.238_128.85)] disabled:opacity-50">{masterAturanSaving ? "Menyimpan…" : "Simpan"}</button>
+                <button type="button" onClick={() => { setShowMasterAturanModal(false); setMasterAturanItemId(null) }} className="px-3 py-1.5 rounded-md border border-[oklch(28.3%_0.141_291.089)]">Batal</button>
+                <button type="button" onClick={saveMasterAturan} disabled={masterAturanSaving || (masterAturanInput || "").trim() === ""} className="px-3 py-1.5 rounded-md border border-[oklch(28.3%_0.141_291.089)] disabled:opacity-50">{masterAturanSaving ? "Menyimpan…" : "Simpan"}</button>
               </div>
             </motion.div>
           </motion.div>

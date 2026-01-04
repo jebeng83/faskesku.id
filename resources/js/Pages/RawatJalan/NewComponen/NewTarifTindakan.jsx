@@ -101,6 +101,12 @@ export default function NewTarifTindakan({ token, noRawat = '' }) {
     setFilteredPerawatan(jnsPerawatan.filter((it) => (it.nm_perawatan || '').toLowerCase().includes(q) || (it.kd_jenis_prw || '').toLowerCase().includes(q)))
   }, [searchTerm, jnsPerawatan])
 
+  useEffect(() => {
+    if (searchTerm && (!Array.isArray(jnsPerawatan) || jnsPerawatan.length === 0) && !loading) {
+      loadJnsPerawatan()
+    }
+  }, [searchTerm])
+
   const handleSubmitTindakan = async () => {
     if (!selectedTindakan || selectedTindakan.length === 0) {
       setAlertConfig({ type: 'warning', title: 'Peringatan', message: 'Pilih tindakan terlebih dahulu', autoClose: true })
@@ -184,10 +190,10 @@ export default function NewTarifTindakan({ token, noRawat = '' }) {
 
   return (
     <>
-      <div className="space-y-4 text-[oklch(98.5%_0_0)]">
-        <div className="flex border-b border-[oklch(84.1%_0.238_128.85_/_0.35)] gap-2">
+      <div className="space-y-4 text-[oklch(14.5%_0_0)]">
+        <div className="flex border-b border-[oklch(29.1%_0.149_302.717_/_0.35)] gap-2">
           {[{ key: 'dokter', label: 'Dokter' }, { key: 'perawat', label: 'Perawat' }, { key: 'dokter-perawat', label: 'Dokter + Perawat' }].map((tab) => (
-            <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`px-3 py-2 text-xs font-medium border-b-2 ${activeTab === tab.key ? 'border-[oklch(84.1%_0.238_128.85)] text-[oklch(98.5%_0_0)]' : 'border-transparent text-[oklch(98.5%_0_0_/_0.6)] hover:text-[oklch(98.5%_0_0)]'}`}>
+            <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`px-3 py-2 text-xs font-medium border-b-2 ${activeTab === tab.key ? 'border-[oklch(29.1%_0.149_302.717)] text-[oklch(14.5%_0_0)]' : 'border-transparent text-[oklch(14.5%_0_0_/_0.7)] hover:text-[oklch(14.5%_0_0)]'}`}>
               {tab.label}
             </button>
           ))}
@@ -198,7 +204,7 @@ export default function NewTarifTindakan({ token, noRawat = '' }) {
             <div className="flex gap-2">
               <div className="w-2/5">
                 <label className="text-xs">Pilih Dokter</label>
-                <select value={selectedDokter} onChange={(e) => setSelectedDokter(e.target.value)} className="w-full px-3 py-2 rounded-md border border-[oklch(84.1%_0.238_128.85_/_0.35)] bg-transparent">
+                <select value={selectedDokter} onChange={(e) => setSelectedDokter(e.target.value)} className="w-full px-3 py-2 rounded-md border border-[oklch(29.1%_0.149_302.717_/_0.35)] bg-transparent">
                   <option value="">Pilih dokter…</option>
                   {dokters.map((d) => (
                     <option key={d.kd_dokter} value={d.kd_dokter}>{d.nm_dokter}</option>
@@ -207,7 +213,14 @@ export default function NewTarifTindakan({ token, noRawat = '' }) {
               </div>
               <div className="w-3/5">
                 <label className="text-xs">Cari Tindakan</label>
-                <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full px-3 py-2 rounded-md border border-[oklch(84.1%_0.238_128.85_/_0.35)] bg-transparent" placeholder="Ketik nama/kode tindakan" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onFocus={() => { if (!loading && (!Array.isArray(jnsPerawatan) || jnsPerawatan.length === 0)) { loadJnsPerawatan(); } }}
+                  className="w-full px-3 py-2 rounded-md border border-[oklch(29.1%_0.149_302.717_/_0.35)] bg-transparent"
+                  placeholder="Ketik nama/kode tindakan"
+                />
               </div>
             </div>
           </div>
@@ -216,7 +229,7 @@ export default function NewTarifTindakan({ token, noRawat = '' }) {
         {(activeTab === 'perawat' || activeTab === 'dokter-perawat') && (
           <div className="space-y-2">
             <label className="text-xs">Pilih Petugas</label>
-            <select value={selectedPetugas} onChange={(e) => setSelectedPetugas(e.target.value)} className="w-full px-3 py-2 rounded-md border border-[oklch(84.1%_0.238_128.85_/_0.35)] bg-transparent">
+            <select value={selectedPetugas} onChange={(e) => setSelectedPetugas(e.target.value)} className="w-full px-3 py-2 rounded-md border border-[oklch(29.1%_0.149_302.717_/_0.35)] bg-transparent">
               <option value="">Pilih petugas…</option>
               {petugas.map((p) => (
                 <option key={p.nip} value={p.nip}>{p.nama}</option>
@@ -229,39 +242,21 @@ export default function NewTarifTindakan({ token, noRawat = '' }) {
           {!(activeTab === 'dokter' || activeTab === 'dokter-perawat') && (
             <>
               <label className="text-xs">Cari Tindakan</label>
-              <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full px-3 py-2 rounded-md border border-[oklch(84.1%_0.238_128.85_/_0.35)] bg-transparent" placeholder="Ketik nama/kode tindakan" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onFocus={() => { if (!loading && (!Array.isArray(jnsPerawatan) || jnsPerawatan.length === 0)) { loadJnsPerawatan(); } }}
+                className="w-full px-3 py-2 rounded-md border border-[oklch(29.1%_0.149_302.717_/_0.35)] bg-transparent"
+                placeholder="Ketik nama/kode tindakan"
+              />
             </>
           )}
-          <div className="max-h-48 overflow-y-auto border border-[oklch(84.1%_0.238_128.85_/_0.35)] rounded-md">
-            <AnimatePresence initial={false}>
-              {selectedTindakan.map((item) => (
-                <motion.div
-                  key={`selected-${item.kd_jenis_prw}`}
-                  layout
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={{ duration: 0.28, ease: 'easeOut' }}
-                  className="w-full px-3 py-2 text-left text-xs border-b border-[oklch(84.1%_0.238_128.85_/_0.25)] flex items-center gap-3 bg-[oklch(14.5%_0_0_/_0.4)]"
-                >
-                  <input type="checkbox" checked onChange={() => {
-                    setSelectedTindakan(selectedTindakan.filter((s) => s.kd_jenis_prw !== item.kd_jenis_prw))
-                  }} className="rounded border-[oklch(84.1%_0.238_128.85_/_0.35)]" />
-                  <div className="flex-1">
-                    <div className="font-semibold text-[12px]">{item.nm_perawatan}</div>
-                    <div className="text-[11px] opacity-70">{item.kd_jenis_prw}</div>
-                  </div>
-                  <div className="text-[12px] font-semibold">
-                    {formatCurrency(activeTab === 'dokter' ? parseFloat(item.total_byrdr) || 0 : activeTab === 'perawat' ? parseFloat(item.total_byrpr) || 0 : activeTab === 'dokter-perawat' ? parseFloat(item.total_byrdrpr) || 0 : 0)}
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-
-            <AnimatePresence initial={false}>
-              {filteredPerawatan.length > 0 ? (
-                filteredPerawatan.map((item) => (
-                  !selectedTindakan.some((s) => s.kd_jenis_prw === item.kd_jenis_prw) && (
+          {searchTerm && (
+            <div className="max-h-48 overflow-y-auto border border-[oklch(29.1%_0.149_302.717_/_0.35)] rounded-md">
+              <AnimatePresence initial={false}>
+                {filteredPerawatan.length > 0 ? (
+                  filteredPerawatan.map((item) => (
                     <motion.div
                       key={item.kd_jenis_prw}
                       layout
@@ -269,32 +264,35 @@ export default function NewTarifTindakan({ token, noRawat = '' }) {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 8 }}
                       transition={{ duration: 0.24, ease: 'easeOut' }}
-                      className="w-full px-3 py-2 text-left text-xs border-b border-[oklch(84.1%_0.238_128.85_/_0.25)] flex items-center gap-3"
+                      className="w-full px-3 py-2 text-left text-xs border-b border-[oklch(29.1%_0.149_302.717_/_0.25)] flex items-center gap-3"
                     >
                       <input type="checkbox" checked={selectedTindakan.some((s) => s.kd_jenis_prw === item.kd_jenis_prw)} onChange={(e) => {
                         if (e.target.checked) setSelectedTindakan([...selectedTindakan, item])
                         else setSelectedTindakan(selectedTindakan.filter((s) => s.kd_jenis_prw !== item.kd_jenis_prw))
-                      }} className="rounded border-[oklch(84.1%_0.238_128.85_/_0.35)]" />
+                      }} className="rounded border-[oklch(29.1%_0.149_302.717_/_0.35)]" />
                       <div className="flex-1">
                         <div className="font-semibold text-[12px]">{item.nm_perawatan}</div>
-                        <div className="text-[11px] opacity-70">{item.kd_jenis_prw}</div>
-                      </div>
-                      <div className="text-[12px] font-semibold">
-                        {formatCurrency(activeTab === 'dokter' ? parseFloat(item.total_byrdr) || 0 : activeTab === 'perawat' ? parseFloat(item.total_byrpr) || 0 : activeTab === 'dokter-perawat' ? parseFloat(item.total_byrdrpr) || 0 : 0)}
+                        <div className="text-[11px] opacity-70">{item.kd_jenis_prw} - {formatCurrency(activeTab === 'dokter' ? parseFloat(item.total_byrdr) || 0 : activeTab === 'perawat' ? parseFloat(item.total_byrpr) || 0 : activeTab === 'dokter-perawat' ? parseFloat(item.total_byrdrpr) || 0 : 0)}</div>
                       </div>
                     </motion.div>
-                  )
-                ))
-              ) : (
-                selectedTindakan.length === 0 && <div className="px-3 py-2 text-[11px] opacity-70">Tidak ada data</div>
-              )}
-            </AnimatePresence>
-          </div>
+                  ))
+                ) : (
+                  <div className="px-3 py-2 text-[11px] opacity-70">Tidak ada tindakan ditemukan</div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
         </div>
 
         <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <div className="text-[12px] font-medium">Tindakan Dipilih ({selectedTindakan.length})</div>
+            {selectedTindakan.length > 0 && (
+              <button onClick={() => setSelectedTindakan([])} className="text-[10px] text-red-500 hover:text-red-600">Hapus Semua</button>
+            )}
+          </div>
           {selectedTindakan.map((item) => (
-            <div key={item.kd_jenis_prw} className="flex justify-between items-center py-2 border-b border-[oklch(84.1%_0.238_128.85_/_0.25)]">
+            <div key={item.kd_jenis_prw} className="flex justify-between items-center py-2 border-b border-[oklch(29.1%_0.149_302.717_/_0.25)]">
               <div className="flex-1">
                 <div className="font-medium text-[12px]">{item.nm_perawatan}</div>
                 <div className="text-[11px] opacity-70">{item.kd_jenis_prw}</div>
@@ -303,7 +301,7 @@ export default function NewTarifTindakan({ token, noRawat = '' }) {
                 <span className="text-[12px] font-semibold">
                   {formatCurrency(activeTab === 'dokter' ? parseFloat(item.total_byrdr) || 0 : activeTab === 'perawat' ? parseFloat(item.total_byrpr) || 0 : activeTab === 'dokter-perawat' ? parseFloat(item.total_byrdrpr) || 0 : 0)}
                 </span>
-                <button onClick={() => setSelectedTindakan(selectedTindakan.filter((s) => s.kd_jenis_prw !== item.kd_jenis_prw))} className="text-[oklch(98.5%_0_0_/_0.6)] hover:text-[oklch(98.5%_0_0)]">
+                <button onClick={() => setSelectedTindakan(selectedTindakan.filter((s) => s.kd_jenis_prw !== item.kd_jenis_prw))} className="text-[oklch(14.5%_0_0_/_0.6)] hover:text-[oklch(14.5%_0_0)]">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
               </div>
@@ -311,7 +309,7 @@ export default function NewTarifTindakan({ token, noRawat = '' }) {
           ))}
         </div>
 
-        <div className="pt-2 border-t border-[oklch(84.1%_0.238_128.85_/_0.25)]">
+        <div className="pt-2 border-t border-[oklch(29.1%_0.149_302.717_/_0.25)]">
           <div className="flex justify-between items-center">
             <div className="text-[12px]">Total Biaya</div>
             <div className="text-sm font-bold">
@@ -325,7 +323,7 @@ export default function NewTarifTindakan({ token, noRawat = '' }) {
             </div>
           </div>
           <div className="mt-3 flex justify-end">
-            <button onClick={handleSubmitTindakan} disabled={loading || postingLoading} className="px-4 py-2 border border-[oklch(84.1%_0.238_128.85)] rounded-md hover:bg-neutral-800 disabled:opacity-50">
+            <button onClick={handleSubmitTindakan} disabled={loading || postingLoading} className="px-4 py-2 border border-[oklch(29.1%_0.149_302.717)] rounded-md bg-sky-500 hover:bg-blue-700 text-white disabled:opacity-50">
               {loading || postingLoading ? 'Menyimpan…' : `Simpan ${selectedTindakan.length} Tindakan`}
             </button>
           </div>
@@ -339,12 +337,12 @@ export default function NewTarifTindakan({ token, noRawat = '' }) {
                 const jenis = item.jenis_tindakan
                 const label = jenis === 'dokter' ? 'Dokter' : jenis === 'perawat' ? 'Perawat' : jenis === 'dokter_perawat' ? 'Dokter + Perawat' : ''
                 return (
-                  <div key={item.id || index} className="border border-[oklch(84.1%_0.238_128.85_/_0.35)] rounded-md p-3">
+                <div key={item.id || index} className="border border-[oklch(29.1%_0.149_302.717_/_0.35)] rounded-md p-3">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <div className="font-medium text-[12px]">{item.nm_perawatan}</div>
-                          <span className="px-2 py-0.5 text-[10px] rounded-full border border-[oklch(84.1%_0.238_128.85_/_0.35)]">{label}</span>
+                          <span className="px-2 py-0.5 text-[10px] rounded-full border border-[oklch(29.1%_0.149_302.717_/_0.35)]">{label}</span>
                         </div>
                         <div className="text-[11px] opacity-70">Kode: {item.kd_jenis_prw}</div>
                         <div className="text-[12px] font-medium">Tarif: {formatCurrency(item.biaya_rawat)}</div>
@@ -354,7 +352,7 @@ export default function NewTarifTindakan({ token, noRawat = '' }) {
                           {item.perawat && <div>{item.perawat.nama}</div>}
                         </div>
                       </div>
-                      <button onClick={() => handleDeleteTindakan(item)} className="text-[oklch(98.5%_0_0_/_0.6)] hover:text-[oklch(98.5%_0_0)]">
+                      <button onClick={() => handleDeleteTindakan(item)} className="text-[oklch(14.5%_0_0_/_0.6)] hover:text-[oklch(14.5%_0_0)]">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                       </button>
                     </div>

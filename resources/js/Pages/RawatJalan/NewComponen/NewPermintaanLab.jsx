@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
 import axios from "axios"
 import { todayDateString, nowDateTimeString } from "@/tools/datetime"
 import { createPageVariants, contentSpring } from "@/tools/motion"
+import { format, parseISO, isValid } from "date-fns"
 
 export default function NewPermintaanLab({ _token = "", _noRkmMedis = "", noRawat = "" }) {
   const [dir, setDir] = useState(1)
@@ -28,6 +29,9 @@ export default function NewPermintaanLab({ _token = "", _noRkmMedis = "", noRawa
   const [templatesData, setTemplatesData] = useState({})
   const [loadingTemplates, setLoadingTemplates] = useState({})
 
+  const [riwayat, setRiwayat] = useState([])
+  const [loadingRiwayat, setLoadingRiwayat] = useState(false)
+
   const [formData, setFormData] = useState({
     tgl_permintaan: todayDateString(),
     jam_permintaan: nowDateTimeString().split(" ")[1].substring(0, 5),
@@ -45,6 +49,12 @@ export default function NewPermintaanLab({ _token = "", _noRkmMedis = "", noRawa
   useEffect(() => {
     fetchDokter()
   }, [])
+
+  useEffect(() => {
+    if (noRawat) {
+      fetchRiwayat()
+    }
+  }, [noRawat])
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -96,6 +106,34 @@ export default function NewPermintaanLab({ _token = "", _noRkmMedis = "", noRawa
       }
     } finally {
       setLoadingDokter(false)
+    }
+  }
+
+  const fetchRiwayat = async () => {
+    setLoadingRiwayat(true)
+    try {
+      const { data } = await axios.get(`/api/permintaan-lab/riwayat/${encodeURIComponent(noRawat)}`, { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" } })
+      const rows = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : []
+      setRiwayat(rows)
+    } catch (_) {
+      setRiwayat([])
+    } finally {
+      setLoadingRiwayat(false)
+    }
+  }
+
+  const formatTanggal = (t) => {
+    if (!t) return "-"
+    try {
+      if (typeof t === "string") {
+        const s = t.includes(" ") ? t.replace(" ", "T") : t
+        const d = parseISO(s)
+        return isValid(d) ? format(d, "dd-MM-yyyy") : String(t)
+      }
+      const d = new Date(t)
+      return isValid(d) ? format(d, "dd-MM-yyyy") : String(t)
+    } catch (_) {
+      return String(t)
     }
   }
 
@@ -192,7 +230,7 @@ export default function NewPermintaanLab({ _token = "", _noRkmMedis = "", noRawa
     e.preventDefault()
     if (selectedTests.length === 0) return alert("Pilih minimal satu pemeriksaan laboratorium")
     if (!dokterPerujuk.kd_dokter || dokterPerujuk.kd_dokter === "-") return alert("Pilih dokter perujuk")
-    if (!String(formData.diagnosa_klinis || "").trim() || String(formData.diagnosa_klinis).trim() === "-") return alert("Diagnosa klinis wajib diisi")
+    if (!String(formData.diagnosa_klinis || "").trim()) return alert("Diagnosa klinis wajib diisi")
     for (const test of selectedTests) {
       const ids = selectedTemplates[test.kd_jenis_prw] || []
       if (ids.length === 0) return alert(`Pilih minimal satu template untuk pemeriksaan: ${test.nm_perawatan}`)
@@ -219,6 +257,7 @@ export default function NewPermintaanLab({ _token = "", _noRkmMedis = "", noRawa
               const msg = stageRes?.data?.message || "Staging jurnal gagal atau tidak seimbang. Posting dibatalkan."
               alert(`Permintaan laboratorium berhasil disimpan (No: ${noorder}), namun staging jurnal gagal: ${msg}`)
               setIsSubmitting(false)
+              await fetchRiwayat()
               return
             }
             try {
@@ -235,14 +274,17 @@ export default function NewPermintaanLab({ _token = "", _noRkmMedis = "", noRawa
               alert(`Permintaan laboratorium berhasil disimpan (No: ${noorder}), namun terjadi kesalahan saat posting jurnal: ${errMsg}`)
             } finally {
               setIsSubmitting(false)
+              await fetchRiwayat()
             }
           } catch (stageError) {
             const errMsg = stageError?.response?.data?.message || stageError?.message || "Gagal melakukan Staging jurnal."
             alert(`Permintaan laboratorium berhasil disimpan (No: ${noorder}), namun terjadi kesalahan saat staging jurnal: ${errMsg}`)
             setIsSubmitting(false)
+            await fetchRiwayat()
           }
         } else {
           alert("Permintaan laboratorium berhasil disimpan")
+          await fetchRiwayat()
         }
       } else {
         alert(resp?.data?.message || "Gagal menyimpan permintaan laboratorium")
@@ -261,32 +303,32 @@ export default function NewPermintaanLab({ _token = "", _noRkmMedis = "", noRawa
   }
 
   return (
-    <div className="space-y-4 text-[oklch(98.5%_0_0)]">
-      <div className="flex border-b border-[oklch(84.1%_0.238_128.85_/_0.35)] gap-2">
+    <div className="space-y-4 text-[oklch(14.5%_0_0)]">
+      <div className="flex border-b border-[oklch(28.3%_0.141_291.089_/_0.35)] gap-2">
         {[{ key: "PK", label: "Patologi Klinis" }, { key: "PA", label: "Patologi Anatomi" }, { key: "MB", label: "Mikrobiologi" }].map((tab) => (
-          <button key={tab.key} onClick={() => switchCategory(tab.key)} className={`px-3 py-2 text-xs font-medium border-b-2 ${activeCategory === tab.key ? "border-[oklch(84.1%_0.238_128.85)] text-[oklch(98.5%_0_0)]" : "border-transparent text-[oklch(98.5%_0_0_/_0.6)] hover:text-[oklch(98.5%_0_0)]"}`}>{tab.label}</button>
+          <button key={tab.key} onClick={() => switchCategory(tab.key)} className={`px-3 py-2 text-xs font-medium border-b-2 ${activeCategory === tab.key ? "border-[oklch(84.1%_0.238_128.85)] text-[oklch(14.5%_0_0)]" : "border-transparent text-[oklch(14.5%_0_0_/_0.7)] hover:text-[oklch(14.5%_0_0)]"}`}>{tab.label}</button>
         ))}
       </div>
 
       <AnimatePresence initial={false} mode="wait">
         <motion.form key={`cat-${activeCategory}`} variants={pageVariants} custom={dir} initial="enter" animate="center" exit="exit" transition={contentSpring} onSubmit={handleSubmit} className="space-y-4 transform-gpu will-change-transform will-change-opacity">
-          <div className="relative overflow-visible rounded-md bg-[oklch(14.5%_0_0_/_0.3)] border border-[oklch(84.1%_0.238_128.85_/_0.4)]">
+          <div className="relative overflow-visible rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(28.3%_0.141_291.089_/_0.4)]">
             <div className="px-3 py-2">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                 <div>
                   <div className="text-xs font-medium">Tanggal Permintaan</div>
-                  <input type="date" value={formData.tgl_permintaan} onChange={(e) => updateFormData("tgl_permintaan", e.target.value)} className="w-full px-3 py-2 rounded-md border border-[oklch(84.1%_0.238_128.85_/_0.35)] bg-transparent" required />
+                  <input type="date" value={formData.tgl_permintaan} onChange={(e) => updateFormData("tgl_permintaan", e.target.value)} className="w-full px-3 py-2 rounded-md border border-[oklch(29.1%_0.149_302.717_/_0.35)] bg-transparent" required />
                 </div>
                 <div>
                   <div className="text-xs font-medium">Jam Permintaan</div>
-                  <input type="time" value={formData.jam_permintaan} onChange={(e) => updateFormData("jam_permintaan", e.target.value)} className="w-full px-3 py-2 rounded-md border border-[oklch(84.1%_0.238_128.85_/_0.35)] bg-transparent" required />
+                  <input type="time" value={formData.jam_permintaan} onChange={(e) => updateFormData("jam_permintaan", e.target.value)} className="w-full px-3 py-2 rounded-md border border-[oklch(29.1%_0.149_302.717_/_0.35)] bg-transparent" required />
                 </div>
                 <div>
                   <div className="text-xs font-medium">Dokter Perujuk</div>
                   <div className="relative z-30" ref={dokterDropdownRef}>
-                    <input type="text" value={dokterSearch} onChange={(e) => { setDokterSearch(e.target.value); setIsDokterDropdownOpen(true) }} onFocus={() => setIsDokterDropdownOpen(true)} className="w-full px-3 py-2 rounded-md border border-[oklch(84.1%_0.238_128.85_/_0.35)] bg-transparent" placeholder="Cari dokter perujuk..." required />
+                    <input type="text" value={dokterSearch} onChange={(e) => { setDokterSearch(e.target.value); setIsDokterDropdownOpen(true) }} onFocus={() => setIsDokterDropdownOpen(true)} className="w-full px-3 py-2 rounded-md border border-[oklch(29.1%_0.149_302.717_/_0.35)] bg-transparent" placeholder="Cari dokter perujuk..." required />
                     {isDokterDropdownOpen && (
-                      <div className="absolute z-50 w-full mt-1 bg-[oklch(14.5%_0_0)] text-[oklch(98.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.5)] rounded-md shadow-[0_0_20px_oklch(84.1%_0.238_128.85_/_0.25)] max-h-[60vh] overflow-y-auto">
+                      <div className="absolute z-50 w-full mt-1 bg-[oklch(98.5%_0_0)] text-[oklch(14.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.5)] rounded-md shadow-[0_0_20px_oklch(84.1%_0.238_128.85_/_0.25)] max-h-[60vh] overflow-y-auto">
                         {loadingDokter ? (
                           <div className="p-3 text-center text-[12px] opacity-70">Memuat…</div>
                         ) : filteredDokterOptions.length > 0 ? (
@@ -308,11 +350,11 @@ export default function NewPermintaanLab({ _token = "", _noRkmMedis = "", noRawa
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
                 <div>
                   <div className="text-xs font-medium">Diagnosa Klinis</div>
-                  <input type="text" value={formData.diagnosa_klinis} onChange={(e) => updateFormData("diagnosa_klinis", e.target.value)} className="w-full px-3 py-2 rounded-md border border-[oklch(84.1%_0.238_128.85_/_0.35)] bg-transparent" placeholder="Masukkan diagnosa klinis" required />
+                  <input type="text" value={formData.diagnosa_klinis} onChange={(e) => updateFormData("diagnosa_klinis", e.target.value)} className="w-full px-3 py-2 rounded-md border border-[oklch(29.1%_0.149_302.717_/_0.35)] bg-transparent" placeholder="Masukkan diagnosa klinis" required />
                 </div>
                 <div>
                   <div className="text-xs font-medium">Informasi Tambahan</div>
-                  <input type="text" value={formData.informasi_tambahan} onChange={(e) => updateFormData("informasi_tambahan", e.target.value)} className="w-full px-3 py-2 rounded-md border border-[oklch(84.1%_0.238_128.85_/_0.35)] bg-transparent" placeholder="Informasi tambahan (opsional)" />
+                  <input type="text" value={formData.informasi_tambahan} onChange={(e) => updateFormData("informasi_tambahan", e.target.value)} className="w-full px-3 py-2 rounded-md border border-[oklch(29.1%_0.149_302.717_/_0.35)] bg-transparent" placeholder="Informasi tambahan (opsional)" />
                 </div>
               </div>
             </div>
@@ -320,15 +362,15 @@ export default function NewPermintaanLab({ _token = "", _noRkmMedis = "", noRawa
 
           <div className="space-y-2">
             <div className="text-sm font-semibold">Cari Pemeriksaan ({activeCategory})</div>
-            <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full px-3 py-2 rounded-md border border-[oklch(84.1%_0.238_128.85_/_0.35)] bg-transparent" placeholder="Cari nama pemeriksaan..." />
+            <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full px-3 py-2 rounded-md border border-[oklch(29.1%_0.149_302.717_/_0.35)] bg-transparent" placeholder="Cari nama pemeriksaan..." />
             {isLoading ? (
               <div className="p-3 text-center text-[12px] opacity-70">Memuat pemeriksaan…</div>
             ) : (
-              <div className="max-h-[60vh] overflow-y-auto border border-[oklch(84.1%_0.238_128.85_/_0.35)] rounded-md">
+              <div className="max-h-[60vh] overflow-y-auto border border-[oklch(28.3%_0.141_291.089_/_0.35)] rounded-md bg-[oklch(98.2%_0.018_155.826)]">
                 {displayedTests.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-2">
                     {displayedTests.map((test) => (
-                      <div key={test.kd_jenis_prw} className="p-3 rounded-md border border-[oklch(84.1%_0.238_128.85_/_0.25)]">
+                      <div key={test.kd_jenis_prw} className="p-3 rounded-md border border-[oklch(28.3%_0.141_291.089_/_0.25)]">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
                             <div className="text-sm font-medium">{test.nm_perawatan}</div>
@@ -336,7 +378,7 @@ export default function NewPermintaanLab({ _token = "", _noRkmMedis = "", noRawa
                           </div>
                           <div className="text-right">
                             <div className="text-[11px] text-green-400 font-medium">{test.total_byr_formatted || "Rp 0"}</div>
-                            <button type="button" onClick={() => addTest(test)} disabled={selectedTests.find((t) => t.kd_jenis_prw === test.kd_jenis_prw)} className="ml-3 mt-1 px-3 py-1.5 text-xs rounded-md border border-[oklch(84.1%_0.238_128.85)] disabled:opacity-50">
+                            <button type="button" onClick={() => addTest(test)} disabled={selectedTests.find((t) => t.kd_jenis_prw === test.kd_jenis_prw)} className="ml-3 mt-1 px-3 py-1.5 text-xs rounded-md border border-[oklch(28.3%_0.141_291.089)] bg-[oklch(88.5%_0.062_18.334)] disabled:opacity-50">
                               {selectedTests.find((t) => t.kd_jenis_prw === test.kd_jenis_prw) ? "Dipilih" : "Pilih"}
                             </button>
                           </div>
@@ -365,7 +407,7 @@ export default function NewPermintaanLab({ _token = "", _noRkmMedis = "", noRawa
                         <div className="flex items-center justify-between">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[oklch(84.1%_0.238_128.85_/_0.15)] text-[oklch(98.5%_0_0)] text-[11px] font-medium">{index + 1}</span>
+                              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[oklch(84.1%_0.238_128.85_/_0.15)] text-[oklch(14.5%_0_0)] text-[11px] font-medium">{index + 1}</span>
                               <div className="text-[12px] font-medium truncate">{test.nm_perawatan}</div>
                             </div>
                             <div className="text-[10px] opacity-70 ml-7 truncate">{test.kd_jenis_prw} • <span className="text-green-400 font-medium">Rp {(typeof test.total_byr === "number" ? test.total_byr : parseFloat(String(test.total_byr).replace(/[^\d.-]/g, "")) || 0).toLocaleString("id-ID")}</span></div>
@@ -386,7 +428,7 @@ export default function NewPermintaanLab({ _token = "", _noRkmMedis = "", noRawa
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[oklch(84.1%_0.238_128.85_/_0.15)] text-[oklch(98.5%_0_0)] text-[11px] font-medium">{index + 1}</span>
+                            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[oklch(84.1%_0.238_128.85_/_0.15)] text-[oklch(14.5%_0_0)] text-[11px] font-medium">{index + 1}</span>
                             <div className="text-sm font-medium">{test.nm_perawatan}</div>
                           </div>
                           <div className="text-[11px] opacity-70 ml-7">Kode: {test.kd_jenis_prw} • <span className="text-green-400 font-medium">Rp {(typeof test.total_byr === "number" ? test.total_byr : parseFloat(String(test.total_byr).replace(/[^\d.-]/g, "")) || 0).toLocaleString("id-ID")}</span></div>
@@ -411,7 +453,7 @@ export default function NewPermintaanLab({ _token = "", _noRkmMedis = "", noRawa
                             {templates.map((template) => {
                               const on = selectedIds.includes(template.id_template)
                               return (
-                                <label key={template.id_template} className={`flex items-start gap-2 p-2 rounded border ${on ? "bg-[oklch(14.5%_0_0_/_0.2)] border-[oklch(84.1%_0.238_128.85_/_0.3)]" : "bg-transparent border-[oklch(84.1%_0.238_128.85_/_0.25)]"}`}>
+                                <label key={template.id_template} className={`flex items-start gap-2 p-2 rounded border ${on ? "bg-[oklch(95%_0.15_95_/_0.35)] border-[oklch(84.1%_0.238_128.85_/_0.3)]" : "bg-transparent border-[oklch(84.1%_0.238_128.85_/_0.25)]"}`}>
                                   <input type="checkbox" checked={on} onChange={() => toggleTemplate(test.kd_jenis_prw, template.id_template)} className="mt-0.5 h-3.5 w-3.5" />
                                   <div className="flex-1 min-w-0">
                                     <div className="text-[12px] font-medium">{template.Pemeriksaan || "Nama tidak tersedia"}</div>
@@ -433,24 +475,59 @@ export default function NewPermintaanLab({ _token = "", _noRkmMedis = "", noRawa
                 })}
               </div>
             ) : (
-              <div className="text-center py-6 text-[12px] opacity-70 border border-dashed border-[oklch(84.1%_0.238_128.85_/_0.35)] rounded-md">Belum ada pemeriksaan yang dipilih</div>
+              <div className="text-center py-6 text-[12px] opacity-70 border border-dashed border-[oklch(28.3%_0.141_291.089_/_0.35)] rounded-md">Belum ada pemeriksaan yang dipilih</div>
             )}
             {selectedTests.length > 0 && (
-              <div className="flex justify-between items-center pt-3 border-t border-[oklch(84.1%_0.238_128.85_/_0.25)]">
+              <div className="flex justify-between items-center pt-3 border-t border-[oklch(29.1%_0.149_302.717_/_0.25)]">
                 <span className="text-[12px] font-medium">Total Biaya</span>
                 <span className="text-sm font-semibold">Rp {getTotalBiaya().toLocaleString("id-ID")}</span>
               </div>
             )}
           </div>
 
-          <div className="flex justify-between items-center pt-2 border-t border-[oklch(84.1%_0.238_128.85_/_0.25)]">
+          <div className="flex justify-between items-center pt-2 border-t border-[oklch(29.1%_0.149_302.717_/_0.25)]">
             <div className="text-[12px] opacity-70">Total: {selectedTests.length} pemeriksaan dipilih</div>
             <div className="flex gap-2">
-              <button type="submit" disabled={isSubmitting || selectedTests.length === 0} className="inline-flex items-center justify-center px-4 py-2 rounded-md border border-[oklch(84.1%_0.238_128.85)] hover:bg-neutral-800 disabled:opacity-50">{isSubmitting ? "Menyimpan…" : "Simpan Permintaan"}</button>
+              <button type="submit" disabled={isSubmitting || selectedTests.length === 0} className="inline-flex items-center justify-center px-4 py-2 rounded-md border border-[oklch(84.1%_0.238_128.85)] bg-[oklch(97.9%_0.021_166.113)] hover:bg-[oklch(91.7%_0.08_205.041)] disabled:opacity-50">{isSubmitting ? "Menyimpan…" : "Simpan Permintaan"}</button>
             </div>
           </div>
         </motion.form>
       </AnimatePresence>
+      <div className="space-y-2">
+        <div className="text-sm font-semibold">Riwayat Permintaan Laboratorium</div>
+        {loadingRiwayat ? (
+          <div className="p-3 text-center text-[12px] opacity-70">Memuat riwayat…</div>
+        ) : riwayat.length > 0 ? (
+          <div className="overflow-x-auto border border-[oklch(29.1%_0.149_302.717_/_0.35)] rounded-md bg-[oklch(98.5%_0_0)]">
+            <table className="w-full text-[12px]">
+              <thead>
+                <tr className="border-b border-[oklch(29.1%_0.149_302.717_/_0.25)]">
+                  <th className="px-3 py-2 text-left">No Order</th>
+                  <th className="px-3 py-2 text-left">Tanggal</th>
+                  <th className="px-3 py-2 text-left">Jam</th>
+                  <th className="px-3 py-2 text-left">Dokter</th>
+                  <th className="px-3 py-2 text-left">Status</th>
+                  <th className="px-3 py-2 text-left">Item</th>
+                </tr>
+              </thead>
+              <tbody>
+                {riwayat.slice(0, 3).map((p) => (
+                  <tr key={p.noorder} className="border-b border-[oklch(29.1%_0.149_302.717_/_0.15)]">
+                    <td className="px-3 py-2">{p.noorder}</td>
+                    <td className="px-3 py-2">{formatTanggal(p.tgl_permintaan)}</td>
+                    <td className="px-3 py-2">{String(p.jam_permintaan || "").slice(0,5)}</td>
+                    <td className="px-3 py-2">{p.dokter_perujuk || "-"}</td>
+                    <td className="px-3 py-2">{p.tgl_hasil ? "Hasil" : p.tgl_sampel ? "Sampel" : "Baru"}</td>
+                    <td className="px-3 py-2">{Array.isArray(p.detail_permintaan) ? p.detail_permintaan.length : Array.isArray(p.detailPermintaan) ? p.detailPermintaan.length : 0}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="p-3 text-center text-[12px] opacity-70 border border-dashed border-[oklch(29.1%_0.149_302.717_/_0.35)] rounded-md">Belum ada riwayat permintaan</div>
+        )}
+      </div>
     </div>
   )
 }
