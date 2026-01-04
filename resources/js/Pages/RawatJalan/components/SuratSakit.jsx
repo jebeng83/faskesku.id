@@ -5,7 +5,11 @@ import SidebarRalan from '@/Layouts/SidebarRalan';
 import { todayDateString } from '@/tools/datetime';
 import QRCode from 'qrcode';
 
+<<<<<<< HEAD
 export default function SuratSakit({ rawatJalan, patient, dokter, setting }) {
+=======
+export default function SuratSakit({ rawatJalan, patient, dokter, setting, suratSakitData, embedded = false, templateSelector, validationUrl }) {
+>>>>>>> c30c174a (qrcode validasi surat)
     const { props } = usePage();
     const triggerPrint = !!props?.flash?.trigger_print;
     
@@ -45,6 +49,7 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting }) {
     const [duplicateWarning, setDuplicateWarning] = useState('');
     const [duplicateExists, setDuplicateExists] = useState(false);
     const [qrDataUrl, setQrDataUrl] = useState('');
+    const [valQrDataUrl, setValQrDataUrl] = useState('');
 
     useEffect(() => {
         let active = true;
@@ -324,6 +329,19 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting }) {
             active = false;
         };
     }, [qrText]);
+
+    useEffect(() => {
+        let active = true;
+        const url = (validationUrl || '').toString();
+        if (!url) {
+            setValQrDataUrl('');
+            return;
+        }
+        QRCode.toDataURL(url, { width: 256, margin: 1, errorCorrectionLevel: 'M' })
+            .then((data) => { if (active) setValQrDataUrl(data); })
+            .catch(() => { if (active) setValQrDataUrl(''); });
+        return () => { active = false; };
+    }, [validationUrl]);
 
     const backToRalanUrl = route('rawat-jalan.index');
 
@@ -825,16 +843,18 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting }) {
                                             </div>
 
                                             <div className="mt-3 flex justify-between items-start print:mt-0">
-                                                {/* Consent/Patient Side */}
-                                                <div className="w-[86mm] text-center text-xs print:text-[10px]">
-                                                    <p className="leading-tight mb-12 print-text-black">
-                                                        Keterangan Diagnosa ini<br />
-                                                        telah disetujui untuk diberikan<br />
-                                                        kepada pihak berkepentingann
-                                                    </p>
-                                                    <p className="font-medium mt-4 print-text-black text-center underline">
-                                                        {formData.is_pihak_kedua ? safeText(formData.nama2) : safeText(patient?.nm_pasien)}
-                                                    </p>
+                                                {/* Validation Side */}
+                                                <div className="w-[86mm] text-xs print:text-[10px]">
+                                                    <div className="text-center">
+                                                        <div className="print-text-black">Validasi Dokumen</div>
+                                                        <div className="mt-1.5 w-24 h-24 print:w-20 print:h-20 bg-white flex items-center justify-center mx-auto">
+                                                            {valQrDataUrl ? (
+                                                                <img src={valQrDataUrl} alt="QR Validasi" className="w-full h-full object-contain" />
+                                                            ) : (
+                                                                <div className="text-xs text-gray-500 print-text-black">QR</div>
+                                                            )}
+                                                        </div>
+                                                    </div>
                                                 </div>
 
                                                 {/* Doctor Side */}

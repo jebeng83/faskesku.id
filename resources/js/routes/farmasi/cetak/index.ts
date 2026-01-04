@@ -1,6 +1,10 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1069
+=======
+* @see routes/web.php:1076
+>>>>>>> c30c174a (qrcode validasi surat)
 * @route '/farmasi/cetak/data-opname'
 */
 export const dataOpname = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +18,11 @@ dataOpname.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1069
+=======
+* @see routes/web.php:1076
+>>>>>>> c30c174a (qrcode validasi surat)
 * @route '/farmasi/cetak/data-opname'
 */
 dataOpname.url = (options?: RouteQueryOptions) => {
@@ -22,7 +30,11 @@ dataOpname.url = (options?: RouteQueryOptions) => {
 }
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1069
+=======
+* @see routes/web.php:1076
+>>>>>>> c30c174a (qrcode validasi surat)
 * @route '/farmasi/cetak/data-opname'
 */
 dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +43,11 @@ dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1069
+=======
+* @see routes/web.php:1076
+>>>>>>> c30c174a (qrcode validasi surat)
 * @route '/farmasi/cetak/data-opname'
 */
 dataOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

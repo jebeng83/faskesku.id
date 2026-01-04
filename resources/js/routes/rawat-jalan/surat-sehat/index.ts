@@ -2,10 +2,14 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1240
 =======
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1306
 >>>>>>> 28d88caf (surat sehat - sakit buttom)
+=======
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1328
+>>>>>>> c30c174a (qrcode validasi surat)
 * @route '/rawat-jalan/surat-sehat'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -21,10 +25,14 @@ index.definition = {
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1240
 =======
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1306
 >>>>>>> 28d88caf (surat sehat - sakit buttom)
+=======
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1328
+>>>>>>> c30c174a (qrcode validasi surat)
 * @route '/rawat-jalan/surat-sehat'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -34,10 +42,14 @@ index.url = (options?: RouteQueryOptions) => {
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1240
 =======
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1306
 >>>>>>> 28d88caf (surat sehat - sakit buttom)
+=======
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1328
+>>>>>>> c30c174a (qrcode validasi surat)
 * @route '/rawat-jalan/surat-sehat'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -48,10 +60,14 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1240
 =======
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1306
 >>>>>>> 28d88caf (surat sehat - sakit buttom)
+=======
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1328
+>>>>>>> c30c174a (qrcode validasi surat)
 * @route '/rawat-jalan/surat-sehat'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -62,10 +78,14 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::checkDuplicate
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1310
 =======
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1429
 >>>>>>> 28d88caf (surat sehat - sakit buttom)
+=======
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1451
+>>>>>>> c30c174a (qrcode validasi surat)
 * @route '/rawat-jalan/surat-sehat/check-duplicate'
 */
 export const checkDuplicate = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -81,10 +101,14 @@ checkDuplicate.definition = {
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::checkDuplicate
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1310
 =======
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1429
 >>>>>>> 28d88caf (surat sehat - sakit buttom)
+=======
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1451
+>>>>>>> c30c174a (qrcode validasi surat)
 * @route '/rawat-jalan/surat-sehat/check-duplicate'
 */
 checkDuplicate.url = (options?: RouteQueryOptions) => {
@@ -94,10 +118,14 @@ checkDuplicate.url = (options?: RouteQueryOptions) => {
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::checkDuplicate
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1310
 =======
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1429
 >>>>>>> 28d88caf (surat sehat - sakit buttom)
+=======
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1451
+>>>>>>> c30c174a (qrcode validasi surat)
 * @route '/rawat-jalan/surat-sehat/check-duplicate'
 */
 checkDuplicate.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -108,10 +136,14 @@ checkDuplicate.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::checkDuplicate
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1310
 =======
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1429
 >>>>>>> 28d88caf (surat sehat - sakit buttom)
+=======
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1451
+>>>>>>> c30c174a (qrcode validasi surat)
 * @route '/rawat-jalan/surat-sehat/check-duplicate'
 */
 checkDuplicate.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -122,10 +154,14 @@ checkDuplicate.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1370
 =======
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1489
 >>>>>>> 28d88caf (surat sehat - sakit buttom)
+=======
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1511
+>>>>>>> c30c174a (qrcode validasi surat)
 * @route '/rawat-jalan/surat-sehat'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -141,10 +177,14 @@ store.definition = {
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1370
 =======
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1489
 >>>>>>> 28d88caf (surat sehat - sakit buttom)
+=======
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1511
+>>>>>>> c30c174a (qrcode validasi surat)
 * @route '/rawat-jalan/surat-sehat'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -154,10 +194,14 @@ store.url = (options?: RouteQueryOptions) => {
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1370
 =======
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1489
 >>>>>>> 28d88caf (surat sehat - sakit buttom)
+=======
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1511
+>>>>>>> c30c174a (qrcode validasi surat)
 * @route '/rawat-jalan/surat-sehat'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

@@ -233,41 +233,45 @@ Route::get('/anjungan/cetak-label', function () {
     ]);
 })->name('anjungan.cetak-label');
 
-Route::get('/antrian/display', function () {
-    $setting = null;
-    if (Schema::hasTable('setting')) {
-        $fields = [];
-        foreach (['nama_instansi', 'alamat_instansi', 'kabupaten', 'propinsi', 'kontak', 'email', 'kode_ppk'] as $col) {
-            if (Schema::hasColumn('setting', $col)) {
-                $fields[] = $col;
+    Route::get('/antrian/display', function () {
+        $setting = null;
+        if (Schema::hasTable('setting')) {
+            $fields = [];
+            foreach (['nama_instansi', 'alamat_instansi', 'kabupaten', 'propinsi', 'kontak', 'email', 'kode_ppk'] as $col) {
+                if (Schema::hasColumn('setting', $col)) {
+                    $fields[] = $col;
+                }
             }
-        }
-        if (! empty($fields)) {
-            $query = DB::table('setting')->select($fields);
-            if (Schema::hasColumn('setting', 'aktifkan')) {
-                $query->where('aktifkan', 'Yes');
-            }
-            $row = $query->orderBy('nama_instansi')->first();
-            if ($row) {
-                $setting = [];
-                foreach ($fields as $f) {
-                    $v = $row->{$f} ?? null;
-                    if (is_string($v)) {
-                        $v = preg_replace('/[\x00-\x1F\x7F]/u', '', $v);
+            if (! empty($fields)) {
+                $query = DB::table('setting')->select($fields);
+                if (Schema::hasColumn('setting', 'aktifkan')) {
+                    $query->where('aktifkan', 'Yes');
+                }
+                $row = $query->orderBy('nama_instansi')->first();
+                if ($row) {
+                    $setting = [];
+                    foreach ($fields as $f) {
+                        $v = $row->{$f} ?? null;
+                        if (is_string($v)) {
+                            $v = preg_replace('/[\x00-\x1F\x7F]/u', '', $v);
+                        }
+                        $setting[$f] = $v;
                     }
-                    $setting[$f] = $v;
                 }
             }
         }
-    }
 
-    return Inertia::render('Antrian/DisplayLoket', [
-        'setting' => $setting,
-    ]);
-})->name('antrian.display');
+        return Inertia::render('Antrian/DisplayLoket', [
+            'setting' => $setting,
+        ]);
+    })->name('antrian.display');
 
-// API routes that don't require authentication
-Route::get('/api/lab-tests', [PermintaanLabController::class, 'getLabTests'])->name('api.lab-tests');
+    Route::get('/validasi/surat/{type}', [RawatJalanController::class, 'validasiSurat'])
+        ->name('validasi.surat')
+        ->middleware(['signed', 'throttle:30,1']);
+
+    // API routes that don't require authentication
+    Route::get('/api/lab-tests', [PermintaanLabController::class, 'getLabTests'])->name('api.lab-tests');
 
 // API routes that require authentication
 Route::middleware('auth')->prefix('api')->group(function () {
