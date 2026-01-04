@@ -842,7 +842,7 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting, surat
                                                 Demikian surat keterangan ini dibuat untuk dipergunakan seperlunya.
                                             </div>
 
-                                            <div className="mt-3 flex justify-between items-start print:mt-0">
+                                            <div className="mt-3 grid grid-cols-3 gap-6 items-start print:mt-0">
                                                 {/* Validation Side */}
                                                 <div className="w-[86mm] text-xs print:text-[10px]">
                                                     <div className="text-center">
@@ -853,6 +853,21 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting, surat
                                                             ) : (
                                                                 <div className="text-xs text-gray-500 print-text-black">QR</div>
                                                             )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Consent Middle */}
+                                                <div className="w-[86mm] text-xs print:text-[10px]">
+                                                    <div className="text-center">
+                                                        <div className="font-semibold print-text-black">Persetujuan Pasien</div>
+                                                        <div className="mt-0.5 text-[10px] leading-snug print-text-black">
+                                                            Saya menyetujui pemberian informasi diagnosa pada surat keterangan sakit ini.
+                                                        </div>
+                                                        <div className="mt-2 h-20 print:h-18 bg-white border border-gray-300 print:border-gray-800 rounded-md mx-auto"></div>
+                                                        <div className="mt-2 text-[10px] print-text-black">
+                                                            <div className="font-medium">{formData.is_pihak_kedua ? safeText(formData.nama2) : safeText(patient?.nm_pasien)}</div>
+                                                            <div>Tanggal: {formatShortDate(formData.tanggalawal)}</div>
                                                         </div>
                                                     </div>
                                                 </div>
