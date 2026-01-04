@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
-* @see routes/web.php:1284
+* @see routes/web.php:1289
 * @route '/pcare/referensi-mobilejkn/poli'
 */
 export const poli = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ poli.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1284
+* @see routes/web.php:1289
 * @route '/pcare/referensi-mobilejkn/poli'
 */
 poli.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ poli.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1284
+* @see routes/web.php:1289
 * @route '/pcare/referensi-mobilejkn/poli'
 */
 poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1284
+* @see routes/web.php:1289
 * @route '/pcare/referensi-mobilejkn/poli'
 */
 poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -40,7 +40,7 @@ poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1289
+* @see routes/web.php:1294
 * @route '/pcare/referensi-mobilejkn/dokter'
 */
 export const dokter = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -54,7 +54,7 @@ dokter.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1289
+* @see routes/web.php:1294
 * @route '/pcare/referensi-mobilejkn/dokter'
 */
 dokter.url = (options?: RouteQueryOptions) => {
@@ -62,7 +62,7 @@ dokter.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1289
+* @see routes/web.php:1294
 * @route '/pcare/referensi-mobilejkn/dokter'
 */
 dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -71,7 +71,7 @@ dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1289
+* @see routes/web.php:1294
 * @route '/pcare/referensi-mobilejkn/dokter'
 */
 dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
