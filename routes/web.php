@@ -618,9 +618,17 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
+    Route::get('/tools/scan-whatsapp-credentials', function () {
+        return Inertia::render('Tools/ScanWhatsAppCredentials');
+    })->name('tools.whatsapp.credentials.scan');
+
     Route::get('/docs/{section?}', function ($section = null) {
         return Inertia::render('Docs', ['section' => $section]);
     })->name('docs');
+
+    Route::get('/wa-gateway/kredensial', function () {
+        return Inertia::render('WaGateway/KredensialWaGateway');
+    })->name('wa-gateway.kredensial');
 
     // Akutansi: preview invoice berbasis billing/nota
     Route::get('/akutansi/invoice/{no_rawat}', [AkutansiController::class, 'invoice'])

@@ -8,6 +8,7 @@ import EmployeeController from './EmployeeController'
 import PermissionController from './PermissionController'
 import RegPeriksaController from './RegPeriksaController'
 import UserController from './UserController'
+import WhatsAppCredentialController from './WhatsAppCredentialController'
 import MenuSearchController from './MenuSearchController'
 
 const API = {
@@ -21,6 +22,7 @@ const API = {
     PermissionController: Object.assign(PermissionController, PermissionController),
     RegPeriksaController: Object.assign(RegPeriksaController, RegPeriksaController),
     UserController: Object.assign(UserController, UserController),
+    WhatsAppCredentialController: Object.assign(WhatsAppCredentialController, WhatsAppCredentialController),
     MenuSearchController: Object.assign(MenuSearchController, MenuSearchController),
 }
 

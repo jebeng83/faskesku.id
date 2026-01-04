@@ -42,6 +42,10 @@ use Illuminate\Http\Request;
 // Public endpoints (tidak memerlukan authentication)
 // Hanya endpoint referensi yang benar-benar tidak sensitif
 
+// WhatsApp Webhook endpoints
+Route::get('/webhooks/whatsapp', [\App\Http\Controllers\Webhook\WhatsAppWebhookController::class, 'verify'])->name('webhooks.whatsapp.verify');
+Route::post('/webhooks/whatsapp', [\App\Http\Controllers\Webhook\WhatsAppWebhookController::class, 'handle'])->name('webhooks.whatsapp.handle');
+
 // Wilayah routes (public karena digunakan untuk form dropdown) - Tanpa prefix 'public'
 Route::get('/wilayah/provinces', [WilayahController::class, 'provinces'])->name('api.public.wilayah.provinces');
 Route::get('/wilayah/regencies/{provinceCode}', [WilayahController::class, 'regencies'])->name('api.public.wilayah.regencies');
@@ -239,6 +243,29 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::delete('/resep/{no_resep}', [ResepController::class, 'destroy'])->name('api.resep.delete');
     Route::post('/resep/{no_resep}/validasi', [ResepController::class, 'validasi'])->where('no_resep', '.*')->name('api.resep.validasi');
     Route::post('/resep/{no_resep}/penyerahan', [ResepController::class, 'penyerahan'])->where('no_resep', '.*')->name('api.resep.penyerahan');
+
+    // WhatsApp outbound
+    Route::post('/whatsapp/send', function (Request $request) {
+        $to = (string) $request->input('to', '');
+        $text = (string) $request->input('text', '');
+        $key = (string) $request->input('idempotency_key', '');
+        $credentialId = $request->input('credential_id');
+        $phoneNumberId = $request->input('phone_number_id');
+        dispatch(new \App\Jobs\WhatsAppSendJob($to, $text, $key, $credentialId ? (int) $credentialId : null, $phoneNumberId ? (string) $phoneNumberId : null));
+        return response()->json(['ok' => true, 'status' => 'queued'], 202);
+    })->middleware('throttle:30,1')->name('api.whatsapp.send');
+
+    Route::post('/messages', [\App\Http\Controllers\WhatsApp\MessageController::class, 'store'])
+        ->middleware('throttle:30,1')
+        ->name('api.messages.store');
+
+    Route::prefix('whatsapp')->group(function () {
+        Route::get('/credentials', [\App\Http\Controllers\API\WhatsAppCredentialController::class, 'index'])->name('api.whatsapp.credentials.index');
+        Route::post('/credentials', [\App\Http\Controllers\API\WhatsAppCredentialController::class, 'store'])->name('api.whatsapp.credentials.store');
+        Route::get('/credentials/{credential}', [\App\Http\Controllers\API\WhatsAppCredentialController::class, 'show'])->name('api.whatsapp.credentials.show');
+        Route::put('/credentials/{credential}', [\App\Http\Controllers\API\WhatsAppCredentialController::class, 'update'])->name('api.whatsapp.credentials.update');
+        Route::delete('/credentials/{credential}', [\App\Http\Controllers\API\WhatsAppCredentialController::class, 'destroy'])->name('api.whatsapp.credentials.destroy');
+    });
 
     // API routes untuk diagnosa pasien (Rawat Jalan)
     Route::get('/rawat-jalan/diagnosa', [RawatJalanController::class, 'getDiagnosaPasien'])->name('api.rawat-jalan.diagnosa.index');

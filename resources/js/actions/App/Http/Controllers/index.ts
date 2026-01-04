@@ -1,3 +1,4 @@
+import Webhook from './Webhook'
 import API from './API'
 import RawatJalan from './RawatJalan'
 import Pcare from './Pcare'
@@ -5,6 +6,7 @@ import QueueController from './QueueController'
 import Antrian from './Antrian'
 import PermintaanLabController from './PermintaanLabController'
 import MenuController from './MenuController'
+import WhatsApp from './WhatsApp'
 import Alergi from './Alergi'
 import PermintaanRadiologiController from './PermintaanRadiologiController'
 import OpnameController from './OpnameController'
@@ -42,6 +44,7 @@ import TarifTindakanController from './TarifTindakanController'
 import PenjabController from './PenjabController'
 
 const Controllers = {
+    Webhook: Object.assign(Webhook, Webhook),
     API: Object.assign(API, API),
     RawatJalan: Object.assign(RawatJalan, RawatJalan),
     Pcare: Object.assign(Pcare, Pcare),
@@ -49,6 +52,7 @@ const Controllers = {
     Antrian: Object.assign(Antrian, Antrian),
     PermintaanLabController: Object.assign(PermintaanLabController, PermintaanLabController),
     MenuController: Object.assign(MenuController, MenuController),
+    WhatsApp: Object.assign(WhatsApp, WhatsApp),
     Alergi: Object.assign(Alergi, Alergi),
     PermintaanRadiologiController: Object.assign(PermintaanRadiologiController, PermintaanRadiologiController),
     OpnameController: Object.assign(OpnameController, OpnameController),

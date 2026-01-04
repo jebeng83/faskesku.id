@@ -449,12 +449,29 @@ const Footer = React.memo(function Footer() {
         }
     };
 
+    const resolveWaGatewayUrl = () => {
+        try {
+            return route('wa-gateway.kredensial');
+        } catch (_) {
+            return '/wa-gateway/kredensial';
+        }
+    };
+
+    const resolveScanWhatsAppUrl = () => {
+        try {
+            return route('tools.whatsapp.credentials.scan');
+        } catch (_) {
+            return '/tools/scan-whatsapp-credentials';
+        }
+    };
+
     const footerLinks = [
         { label: "Loket Antrian", href: resolveLoketUrl(), target: "_blank" },
         { label: "Display TV Loket", href: resolveDisplayUrl(), target: "_blank" },
         { label: "Display TV Poli", href: resolveDisplayPoliUrl(), target: "_blank" },
         { label: "APM", href: route("anjungan.pasien-mandiri") },
         { label: "Pendaftaran Pasien", href: "/registration/lanjutan" },
+        { label: "Scan QR Kredensial", href: resolveScanWhatsAppUrl() },
         { label: "Perpustakaan (Dokumen)", href: "/docs" },
         { label: "Berita Sistem", href: "/news" },
         { label: "Kehidupan Faskes", href: "/profile" },
@@ -467,6 +484,7 @@ const Footer = React.memo(function Footer() {
         { label: "Laboratorium", href: route("laboratorium.permintaan-lab.index") },
         { label: "Radiologi", href: "/radiologi" },
         { label: "Farmasi", href: "/farmasi" },
+        { label: "Wa Gateway", href: resolveWaGatewayUrl() },
     ];
 
     return (
