@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\QueueController::create
-* @see app/Http/Controllers/QueueController.php:13
+* @see app/Http/Controllers/QueueController.php:35
 * @route '/api/queue/tickets'
 */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\QueueController::create
-* @see app/Http/Controllers/QueueController.php:13
+* @see app/Http/Controllers/QueueController.php:35
 * @route '/api/queue/tickets'
 */
 create.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ create.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\QueueController::create
-* @see app/Http/Controllers/QueueController.php:13
+* @see app/Http/Controllers/QueueController.php:35
 * @route '/api/queue/tickets'
 */
 create.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ create.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\QueueController::current
-* @see app/Http/Controllers/QueueController.php:79
+* @see app/Http/Controllers/QueueController.php:162
 * @route '/api/queue/current'
 */
 export const current = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -50,7 +50,7 @@ current.definition = {
 
 /**
 * @see \App\Http\Controllers\QueueController::current
-* @see app/Http/Controllers/QueueController.php:79
+* @see app/Http/Controllers/QueueController.php:162
 * @route '/api/queue/current'
 */
 current.url = (options?: RouteQueryOptions) => {
@@ -59,7 +59,7 @@ current.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\QueueController::current
-* @see app/Http/Controllers/QueueController.php:79
+* @see app/Http/Controllers/QueueController.php:162
 * @route '/api/queue/current'
 */
 current.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -69,7 +69,7 @@ current.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\QueueController::current
-* @see app/Http/Controllers/QueueController.php:79
+* @see app/Http/Controllers/QueueController.php:162
 * @route '/api/queue/current'
 */
 current.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -79,7 +79,7 @@ current.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\QueueController::today
-* @see app/Http/Controllers/QueueController.php:114
+* @see app/Http/Controllers/QueueController.php:232
 * @route '/api/queue/today'
 */
 export const today = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ today.definition = {
 
 /**
 * @see \App\Http\Controllers\QueueController::today
-* @see app/Http/Controllers/QueueController.php:114
+* @see app/Http/Controllers/QueueController.php:232
 * @route '/api/queue/today'
 */
 today.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ today.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\QueueController::today
-* @see app/Http/Controllers/QueueController.php:114
+* @see app/Http/Controllers/QueueController.php:232
 * @route '/api/queue/today'
 */
 today.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -113,7 +113,7 @@ today.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\QueueController::today
-* @see app/Http/Controllers/QueueController.php:114
+* @see app/Http/Controllers/QueueController.php:232
 * @route '/api/queue/today'
 */
 today.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -123,7 +123,7 @@ today.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\QueueController::call
-* @see app/Http/Controllers/QueueController.php:146
+* @see app/Http/Controllers/QueueController.php:333
 * @route '/api/queue/call'
 */
 export const call = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -138,7 +138,7 @@ call.definition = {
 
 /**
 * @see \App\Http\Controllers\QueueController::call
-* @see app/Http/Controllers/QueueController.php:146
+* @see app/Http/Controllers/QueueController.php:333
 * @route '/api/queue/call'
 */
 call.url = (options?: RouteQueryOptions) => {
@@ -147,7 +147,7 @@ call.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\QueueController::call
-* @see app/Http/Controllers/QueueController.php:146
+* @see app/Http/Controllers/QueueController.php:333
 * @route '/api/queue/call'
 */
 call.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -157,7 +157,7 @@ call.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\QueueController::finish
-* @see app/Http/Controllers/QueueController.php:200
+* @see app/Http/Controllers/QueueController.php:430
 * @route '/api/queue/finish'
 */
 export const finish = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -172,7 +172,7 @@ finish.definition = {
 
 /**
 * @see \App\Http\Controllers\QueueController::finish
-* @see app/Http/Controllers/QueueController.php:200
+* @see app/Http/Controllers/QueueController.php:430
 * @route '/api/queue/finish'
 */
 finish.url = (options?: RouteQueryOptions) => {
@@ -181,7 +181,7 @@ finish.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\QueueController::finish
-* @see app/Http/Controllers/QueueController.php:200
+* @see app/Http/Controllers/QueueController.php:430
 * @route '/api/queue/finish'
 */
 finish.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -191,7 +191,7 @@ finish.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\QueueController::cancel
-* @see app/Http/Controllers/QueueController.php:250
+* @see app/Http/Controllers/QueueController.php:521
 * @route '/api/queue/cancel'
 */
 export const cancel = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -206,7 +206,7 @@ cancel.definition = {
 
 /**
 * @see \App\Http\Controllers\QueueController::cancel
-* @see app/Http/Controllers/QueueController.php:250
+* @see app/Http/Controllers/QueueController.php:521
 * @route '/api/queue/cancel'
 */
 cancel.url = (options?: RouteQueryOptions) => {
@@ -215,7 +215,7 @@ cancel.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\QueueController::cancel
-* @see app/Http/Controllers/QueueController.php:250
+* @see app/Http/Controllers/QueueController.php:521
 * @route '/api/queue/cancel'
 */
 cancel.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
