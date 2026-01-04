@@ -22,7 +22,6 @@ import konversiSatuan from './konversi-satuan'
 import jenisObat from './jenis-obat'
 /**
 * @see routes/web.php:974
-* @see routes/web.php:971
 * @route '/farmasi'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({

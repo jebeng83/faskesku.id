@@ -11,6 +11,150 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class KunjunganController extends Controller
 {
+    private function getVisitTrend($period = 'week')
+    {
+        $now = now();
+        $results = [];
+        
+        // 1. Determine Range & Granularity
+        if ($period === 'year') {
+            // Monthly Logic
+            $startDate = $now->copy()->startOfYear()->toDateString();
+            $endDate = $now->copy()->endOfYear()->toDateString();
+            $granularity = 'month';
+            
+            $current = $now->copy()->startOfYear();
+            $end = $now->copy()->endOfYear();
+            
+            while($current->lte($end)) {
+                $key = $current->format('Y-m');
+                $results[$key] = [
+                    'tanggal' => $key,
+                    'rawat_jalan' => 0,
+                    'rawat_inap' => 0,
+                    'igd' => 0
+                ];
+                $current->addMonth();
+            }
+        } else {
+            // Daily Logic (Week/Month)
+            $days = $period === 'month' ? 30 : 7;
+            $startDate = $now->copy()->subDays($days - 1)->toDateString();
+            $endDate = $now->toDateString();
+            $granularity = 'day';
+            
+            $current = $now->copy()->subDays($days - 1);
+            while($current->lte($now)) {
+                $key = $current->toDateString();
+                $results[$key] = [
+                    'tanggal' => $key,
+                    'rawat_jalan' => 0,
+                    'rawat_inap' => 0,
+                    'igd' => 0
+                ];
+                $current->addDay();
+            }
+        }
+
+        if (!Schema::hasTable('reg_periksa')) return [];
+
+        // 2. Fetch Flow Data (Ralan & IGD)
+        $flowQuery = DB::table('reg_periksa')
+            ->select(DB::raw("
+                DATE(tgl_registrasi) as tgl,
+                status_lanjut,
+                kd_poli
+            "))
+            ->whereBetween('tgl_registrasi', [$startDate, $endDate]);
+            
+        $flowRows = $flowQuery->get();
+
+        foreach ($flowRows as $row) {
+            $date = $row->tgl;
+            $key = $granularity === 'month' ? substr($date, 0, 7) : $date;
+            
+            if (!isset($results[$key])) continue;
+
+            $isIgd = ($row->kd_poli === 'IGDK');
+            
+            if ($isIgd) {
+                $results[$key]['igd']++;
+            } elseif ($row->status_lanjut === 'Ralan') {
+                $results[$key]['rawat_jalan']++;
+            }
+        }
+
+        // 3. Fetch Stock Data (Ranap - Occupancy/Active Patients)
+        if (Schema::hasTable('kamar_inap')) {
+            $ranapQuery = DB::table('kamar_inap')
+                ->select('tgl_masuk', 'tgl_keluar', 'stts_pulang')
+                ->where('tgl_masuk', '<=', $endDate)
+                ->where(function($q) use ($startDate) {
+                    $q->where('tgl_keluar', '>=', $startDate)
+                      ->orWhereNull('tgl_keluar')
+                      ->orWhere('tgl_keluar', '0000-00-00');
+                });
+            
+            $ranapRows = $ranapQuery->get();
+            
+            foreach ($results as $dateKey => &$data) {
+                // Determine the time window for this data point
+                if ($granularity === 'month') {
+                    $periodStart = $dateKey . '-01';
+                    $periodEnd = \Carbon\Carbon::parse($dateKey)->endOfMonth()->toDateString();
+                } else {
+                    $periodStart = $dateKey;
+                    $periodEnd = $dateKey;
+                }
+                
+                $count = 0;
+                foreach ($ranapRows as $row) {
+                    $in = $row->tgl_masuk;
+                    // If patient hasn't left, assume they are still there until today (or end of query period)
+                    $out = ($row->tgl_keluar && $row->tgl_keluar != '0000-00-00') ? $row->tgl_keluar : $endDate;
+                    
+                    // Check overlap: Patient interval [in, out] overlaps with Period [periodStart, periodEnd]
+                    // Overlap condition: in <= periodEnd AND out >= periodStart
+                    if ($in <= $periodEnd && $out >= $periodStart) {
+                         $count++;
+                    }
+                }
+                $data['rawat_inap'] = $count;
+            }
+        }
+
+        return array_values($results);
+    }
+
+    private function getPoliStats()
+    {
+        if (!Schema::hasTable('reg_periksa') || !Schema::hasTable('poliklinik')) return [];
+
+        return DB::table('reg_periksa as rp')
+            ->join('poliklinik as p', 'rp.kd_poli', '=', 'p.kd_poli')
+            ->select('p.nm_poli', DB::raw("COUNT(rp.no_rawat) as total_kunjungan"))
+            ->whereDate('rp.tgl_registrasi', now()->toDateString())
+            ->where('rp.kd_poli', '!=', 'IGDK')
+            ->where('rp.stts', '!=', 'Batal')
+            ->groupBy('p.kd_poli', 'p.nm_poli')
+            ->orderByDesc('total_kunjungan')
+            ->limit(10)
+            ->get();
+    }
+
+    private function getCaraBayarStats()
+    {
+        if (!Schema::hasTable('reg_periksa') || !Schema::hasTable('penjab')) return [];
+
+        return DB::table('reg_periksa as rp')
+            ->join('penjab as p', 'rp.kd_pj', '=', 'p.kd_pj')
+            ->select('p.png_jawab', DB::raw('COUNT(*) as total'))
+            ->whereDate('rp.tgl_registrasi', now()->toDateString())
+            ->groupBy('p.png_jawab')
+            ->orderByDesc('total')
+            ->get();
+    }
+
     private function getTrendData($type)
     {
         $year = 2025; // Hardcoded as per user request
@@ -278,6 +422,9 @@ class KunjunganController extends Controller
                 'igd' => $igd,
                 'tren_ralan' => $this->getTrendData('ralan'),
                 'tren_ranap' => $this->getTrendData('ranap'),
+                'visit_trend' => $this->getVisitTrend('week'), // Default to week
+                'poli_stats' => $this->getPoliStats(),
+                'cara_bayar_stats' => $this->getCaraBayarStats(),
             ],
         ]);
     }

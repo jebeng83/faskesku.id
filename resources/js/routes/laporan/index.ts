@@ -3,7 +3,7 @@ import ralan from './ralan'
 import ranap from './ranap'
 /**
 * @see \App\Http\Controllers\KunjunganController::index
-* @see app/Http/Controllers/KunjunganController.php:102
+* @see app/Http/Controllers/KunjunganController.php:246
 * @route '/laporan'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -18,7 +18,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\KunjunganController::index
-* @see app/Http/Controllers/KunjunganController.php:102
+* @see app/Http/Controllers/KunjunganController.php:246
 * @route '/laporan'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -27,7 +27,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\KunjunganController::index
-* @see app/Http/Controllers/KunjunganController.php:102
+* @see app/Http/Controllers/KunjunganController.php:246
 * @route '/laporan'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -37,7 +37,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\KunjunganController::index
-* @see app/Http/Controllers/KunjunganController.php:102
+* @see app/Http/Controllers/KunjunganController.php:246
 * @route '/laporan'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -47,7 +47,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\KunjunganController::stats
-* @see app/Http/Controllers/KunjunganController.php:285
+* @see app/Http/Controllers/KunjunganController.php:432
 * @route '/laporan/stats'
 */
 export const stats = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -62,7 +62,7 @@ stats.definition = {
 
 /**
 * @see \App\Http\Controllers\KunjunganController::stats
-* @see app/Http/Controllers/KunjunganController.php:285
+* @see app/Http/Controllers/KunjunganController.php:432
 * @route '/laporan/stats'
 */
 stats.url = (options?: RouteQueryOptions) => {
@@ -71,7 +71,7 @@ stats.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\KunjunganController::stats
-* @see app/Http/Controllers/KunjunganController.php:285
+* @see app/Http/Controllers/KunjunganController.php:432
 * @route '/laporan/stats'
 */
 stats.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -81,7 +81,7 @@ stats.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\KunjunganController::stats
-* @see app/Http/Controllers/KunjunganController.php:285
+* @see app/Http/Controllers/KunjunganController.php:432
 * @route '/laporan/stats'
 */
 stats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
