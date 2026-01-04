@@ -5,6 +5,7 @@ import raw from './raw'
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1192
 =======
 * @see routes/web.php:1199
@@ -12,6 +13,9 @@ import raw from './raw'
 =======
 * @see routes/web.php:1204
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1209
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/monitoring-status'
 */
 export const status = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -27,6 +31,7 @@ status.definition = {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1192
 =======
 * @see routes/web.php:1199
@@ -34,6 +39,9 @@ status.definition = {
 =======
 * @see routes/web.php:1204
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1209
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/monitoring-status'
 */
 status.url = (options?: RouteQueryOptions) => {
@@ -43,6 +51,7 @@ status.url = (options?: RouteQueryOptions) => {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1192
 =======
 * @see routes/web.php:1199
@@ -50,6 +59,9 @@ status.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1204
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1209
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/monitoring-status'
 */
 status.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,6 +72,7 @@ status.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1192
 =======
 * @see routes/web.php:1199
@@ -67,6 +80,9 @@ status.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1204
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1209
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/monitoring-status'
 */
 status.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

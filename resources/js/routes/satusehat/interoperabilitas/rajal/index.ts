@@ -2,6 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1505
 =======
 * @see routes/web.php:1512
@@ -9,6 +10,9 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 =======
 * @see routes/web.php:1517
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1522
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/satusehat/interoperabilitas/rajal/encounter'
 */
 export const encounter = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -24,6 +28,7 @@ encounter.definition = {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1505
 =======
 * @see routes/web.php:1512
@@ -31,6 +36,9 @@ encounter.definition = {
 =======
 * @see routes/web.php:1517
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1522
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/satusehat/interoperabilitas/rajal/encounter'
 */
 encounter.url = (options?: RouteQueryOptions) => {
@@ -40,6 +48,7 @@ encounter.url = (options?: RouteQueryOptions) => {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1505
 =======
 * @see routes/web.php:1512
@@ -47,6 +56,9 @@ encounter.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1517
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1522
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/satusehat/interoperabilitas/rajal/encounter'
 */
 encounter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -57,6 +69,7 @@ encounter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1505
 =======
 * @see routes/web.php:1512
@@ -64,6 +77,9 @@ encounter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1517
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1522
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/satusehat/interoperabilitas/rajal/encounter'
 */
 encounter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

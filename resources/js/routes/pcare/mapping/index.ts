@@ -5,6 +5,7 @@ import obatE6960e from './obat'
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1174
 =======
 * @see routes/web.php:1181
@@ -12,6 +13,9 @@ import obatE6960e from './obat'
 =======
 * @see routes/web.php:1186
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1191
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/mapping/poli'
 */
 export const poli = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -27,6 +31,7 @@ poli.definition = {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1174
 =======
 * @see routes/web.php:1181
@@ -34,6 +39,9 @@ poli.definition = {
 =======
 * @see routes/web.php:1186
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1191
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/mapping/poli'
 */
 poli.url = (options?: RouteQueryOptions) => {
@@ -43,6 +51,7 @@ poli.url = (options?: RouteQueryOptions) => {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1174
 =======
 * @see routes/web.php:1181
@@ -50,6 +59,9 @@ poli.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1186
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1191
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/mapping/poli'
 */
 poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,6 +72,7 @@ poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1174
 =======
 * @see routes/web.php:1181
@@ -67,6 +80,9 @@ poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1186
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1191
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/mapping/poli'
 */
 poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -77,6 +93,7 @@ poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1179
 =======
 * @see routes/web.php:1186
@@ -84,6 +101,9 @@ poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 =======
 * @see routes/web.php:1191
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1196
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/mapping/dokter'
 */
 export const dokter = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -99,6 +119,7 @@ dokter.definition = {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1179
 =======
 * @see routes/web.php:1186
@@ -106,6 +127,9 @@ dokter.definition = {
 =======
 * @see routes/web.php:1191
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1196
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/mapping/dokter'
 */
 dokter.url = (options?: RouteQueryOptions) => {
@@ -115,6 +139,7 @@ dokter.url = (options?: RouteQueryOptions) => {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1179
 =======
 * @see routes/web.php:1186
@@ -122,6 +147,9 @@ dokter.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1191
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1196
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/mapping/dokter'
 */
 dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -132,6 +160,7 @@ dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1179
 =======
 * @see routes/web.php:1186
@@ -139,6 +168,9 @@ dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1191
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1196
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/mapping/dokter'
 */
 dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -149,6 +181,7 @@ dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1184
 =======
 * @see routes/web.php:1191
@@ -156,6 +189,9 @@ dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 =======
 * @see routes/web.php:1196
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1201
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/mapping/obat'
 */
 export const obat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -171,6 +207,7 @@ obat.definition = {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1184
 =======
 * @see routes/web.php:1191
@@ -178,6 +215,9 @@ obat.definition = {
 =======
 * @see routes/web.php:1196
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1201
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/mapping/obat'
 */
 obat.url = (options?: RouteQueryOptions) => {
@@ -187,6 +227,7 @@ obat.url = (options?: RouteQueryOptions) => {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1184
 =======
 * @see routes/web.php:1191
@@ -194,6 +235,9 @@ obat.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1196
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1201
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/mapping/obat'
 */
 obat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -204,6 +248,7 @@ obat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1184
 =======
 * @see routes/web.php:1191
@@ -211,6 +256,9 @@ obat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1196
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1201
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/mapping/obat'
 */
 obat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

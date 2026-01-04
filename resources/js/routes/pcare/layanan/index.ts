@@ -2,6 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1282
 =======
 * @see routes/web.php:1289
@@ -9,6 +10,9 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 =======
 * @see routes/web.php:1294
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1299
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/data-peserta-by-nik'
 */
 export const cekPesertaNik = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -24,6 +28,7 @@ cekPesertaNik.definition = {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1282
 =======
 * @see routes/web.php:1289
@@ -31,6 +36,9 @@ cekPesertaNik.definition = {
 =======
 * @see routes/web.php:1294
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1299
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/data-peserta-by-nik'
 */
 cekPesertaNik.url = (options?: RouteQueryOptions) => {
@@ -40,6 +48,7 @@ cekPesertaNik.url = (options?: RouteQueryOptions) => {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1282
 =======
 * @see routes/web.php:1289
@@ -47,6 +56,9 @@ cekPesertaNik.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1294
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1299
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/data-peserta-by-nik'
 */
 cekPesertaNik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -57,6 +69,7 @@ cekPesertaNik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1282
 =======
 * @see routes/web.php:1289
@@ -64,6 +77,9 @@ cekPesertaNik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1294
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1299
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/data-peserta-by-nik'
 */
 cekPesertaNik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -74,6 +90,7 @@ cekPesertaNik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1287
 =======
 * @see routes/web.php:1294
@@ -81,6 +98,9 @@ cekPesertaNik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 =======
 * @see routes/web.php:1299
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1304
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/layanan'
 */
 export const pcare = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -96,6 +116,7 @@ pcare.definition = {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1287
 =======
 * @see routes/web.php:1294
@@ -103,6 +124,9 @@ pcare.definition = {
 =======
 * @see routes/web.php:1299
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1304
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/layanan'
 */
 pcare.url = (options?: RouteQueryOptions) => {
@@ -112,6 +136,7 @@ pcare.url = (options?: RouteQueryOptions) => {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1287
 =======
 * @see routes/web.php:1294
@@ -119,6 +144,9 @@ pcare.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1299
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1304
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/layanan'
 */
 pcare.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -129,6 +157,7 @@ pcare.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1287
 =======
 * @see routes/web.php:1294
@@ -136,6 +165,9 @@ pcare.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1299
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1304
+>>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
 * @route '/pcare/layanan'
 */
 pcare.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
