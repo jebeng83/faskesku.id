@@ -5,7 +5,7 @@ import SidebarRalan from '@/Layouts/SidebarRalan';
 import { todayDateString } from '@/tools/datetime';
 import QRCode from 'qrcode';
 
-export default function SuratSehat({ rawatJalan, patient, dokter, setting, suratSehatData, embedded = false, templateSelector }) {
+export default function SuratSehat({ rawatJalan, patient, dokter, setting, suratSehatData, embedded = false, templateSelector, validationUrl }) {
     const [formData, setFormData] = useState({
         no_surat: suratSehatData?.no_surat || '',
         no_rawat: rawatJalan?.no_rawat || '',
@@ -24,6 +24,7 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
     const [duplicateWarning, setDuplicateWarning] = useState('');
     const [duplicateExists, setDuplicateExists] = useState(false);
     const [ttdQrDataUrl, setTtdQrDataUrl] = useState('');
+    const [valQrDataUrl, setValQrDataUrl] = useState('');
 
     // Check for print mode from URL
     const [isPrintMode, setIsPrintMode] = useState(false);
@@ -232,6 +233,19 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
             active = false;
         };
     }, [ttdQrText]);
+    
+    useEffect(() => {
+        let active = true;
+        const url = (validationUrl || '').toString();
+        if (!url) {
+            setValQrDataUrl('');
+            return;
+        }
+        QRCode.toDataURL(url, { width: 256, margin: 1, errorCorrectionLevel: 'M' })
+            .then((data) => { if (active) setValQrDataUrl(data); })
+            .catch(() => { if (active) setValQrDataUrl(''); });
+        return () => { active = false; };
+    }, [validationUrl]);
 
     const backToRalanUrl = route('rawat-jalan.index');
 
@@ -675,7 +689,19 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                                 Demikian surat keterangan ini dibuat untuk dipergunakan seperlunya.
                                             </div>
 
-                                            <div className="mt-3 flex justify-end print:mt-0">
+                                            <div className="mt-3 grid grid-cols-2 gap-6 print:mt-0">
+                                                <div className="w-[86mm] text-xs print:text-[10px]">
+                                                    <div className="text-center">
+                                                        <div className="print-text-black">Validasi Dokumen</div>
+                                                        <div className="mt-1.5 w-24 h-24 print:w-20 print:h-20 bg-white flex items-center justify-center mx-auto">
+                                                            {valQrDataUrl ? (
+                                                                <img src={valQrDataUrl} alt="QR Validasi" className="w-full h-full object-contain" />
+                                                            ) : (
+                                                                <div className="text-xs text-gray-500 print-text-black">QR</div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
                                                 <div className="w-[86mm] text-xs print:text-[10px]">
                                                     <div className="text-center">
                                                         <div className="print-text-black">{(setting?.kabupaten || 'Madiun')}, {formatShortDate(formData.tanggalsurat)}</div>

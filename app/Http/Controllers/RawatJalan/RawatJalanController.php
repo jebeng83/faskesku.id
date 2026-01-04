@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 
 class RawatJalanController extends Controller
@@ -1258,6 +1259,20 @@ class RawatJalanController extends Controller
             session()->flash('trigger_print', true);
         }
 
+        $template = strtolower((string) $request->query('template', 'sehat'));
+        $validationUrl = null;
+        if ($template === 'sehat') {
+            $noSurat = $suratSehatData->no_surat ?? $targetNoSurat;
+            if ($noSurat) {
+                $validationUrl = URL::signedRoute('validasi.surat', ['type' => 'sehat', 'no_surat' => $noSurat]);
+            }
+        } else {
+            $noSurat = $suratSakitData->no_surat ?? $targetNoSurat;
+            if ($noSurat) {
+                $validationUrl = URL::signedRoute('validasi.surat', ['type' => 'sakit', 'no_surat' => $noSurat]);
+            }
+        }
+
         return Inertia::render('RawatJalan/BuatSurat', [
             'rawatJalan' => $rawatJalan,
             'patient' => $patient,
@@ -1265,6 +1280,7 @@ class RawatJalanController extends Controller
             'setting' => $setting,
             'suratSehatData' => $suratSehatData,
             'suratSakitData' => $suratSakitData,
+            'validationUrl' => $validationUrl,
         ]);
     }
 
@@ -1294,12 +1310,18 @@ class RawatJalanController extends Controller
             ->where('no_rawat', $noRawat)
             ->first();
 
+        $validationUrl = null;
+        if ($existing && ! empty($existing->no_surat)) {
+            $validationUrl = URL::signedRoute('validasi.surat', ['type' => 'sehat', 'no_surat' => $existing->no_surat]);
+        }
+
         return Inertia::render('RawatJalan/components/SuratSehat', [
             'rawatJalan' => $rawatJalan,
             'patient' => $patient,
             'dokter' => $dokter,
             'setting' => $setting,
-            'suratSehatData' => $existing, // Data surat sehat yang sudah ada (jika ada)
+            'suratSehatData' => $existing,
+            'validationUrl' => $validationUrl,
         ]);
     }
 
@@ -1606,11 +1628,18 @@ class RawatJalanController extends Controller
 
         $setting = $this->kopSuratSetting();
 
+        $existingNoSurat = DB::table('suratsakit')->where('no_rawat', $noRawat)->orderByDesc('tanggalawal')->orderByDesc('no_surat')->value('no_surat');
+        if (! $existingNoSurat) {
+            $existingNoSurat = DB::table('suratsakitpihak2')->where('no_rawat', $noRawat)->orderByDesc('tanggalawal')->orderByDesc('no_surat')->value('no_surat');
+        }
+        $validationUrl = $existingNoSurat ? URL::signedRoute('validasi.surat', ['type' => 'sakit', 'no_surat' => $existingNoSurat]) : null;
+
         return Inertia::render('RawatJalan/components/SuratSakit', [
             'rawatJalan' => $rawatJalan,
             'patient' => $patient,
             'dokter' => $dokter,
             'setting' => $setting,
+            'validationUrl' => $validationUrl,
         ]);
     }
 
@@ -2053,5 +2082,133 @@ class RawatJalanController extends Controller
             ->route('rawat-jalan.surat-sakit', $request->input('no_rawat'))
             ->with('success', 'Surat sakit berhasil diperbarui.')
             ->with('trigger_print', true);
+    }
+
+    public function validasiSurat(Request $request, string $type)
+    {
+        $type = strtolower($type);
+        $noSurat = (string) $request->query('no_surat', '');
+        if ($noSurat === '') {
+            abort(404);
+        }
+
+        $sanitize = function ($v) {
+            $s = (string) ($v ?? '');
+            return htmlspecialchars($s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        };
+
+        $row = null;
+        if ($type === 'sehat') {
+            $row = DB::table('surat_keterangan_sehat')
+                ->join('reg_periksa', 'surat_keterangan_sehat.no_rawat', '=', 'reg_periksa.no_rawat')
+                ->leftJoin('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+                ->leftJoin('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
+                ->where('surat_keterangan_sehat.no_surat', $noSurat)
+                ->first([
+                    'surat_keterangan_sehat.no_surat',
+                    'surat_keterangan_sehat.tanggalsurat',
+                    'surat_keterangan_sehat.keperluan',
+                    'surat_keterangan_sehat.kesimpulan',
+                    'surat_keterangan_sehat.berat',
+                    'surat_keterangan_sehat.tinggi',
+                    'surat_keterangan_sehat.tensi',
+                    'surat_keterangan_sehat.suhu',
+                    'surat_keterangan_sehat.butawarna',
+                    'reg_periksa.no_rawat',
+                    'pasien.nm_pasien',
+                    'pasien.no_rkm_medis',
+                    'pasien.tgl_lahir',
+                    'pasien.jk',
+                    'dokter.nm_dokter',
+                ]);
+        } elseif ($type === 'sakit') {
+            $row = DB::table('suratsakit')
+                ->join('reg_periksa', 'suratsakit.no_rawat', '=', 'reg_periksa.no_rawat')
+                ->leftJoin('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+                ->leftJoin('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
+                ->where('suratsakit.no_surat', $noSurat)
+                ->first([
+                    'suratsakit.no_surat',
+                    'suratsakit.tanggalawal',
+                    'suratsakit.tanggalakhir',
+                    'suratsakit.lamasakit',
+                    'reg_periksa.no_rawat',
+                    'pasien.nm_pasien',
+                    'pasien.no_rkm_medis',
+                    'pasien.tgl_lahir',
+                    'pasien.jk',
+                    'dokter.nm_dokter',
+                ]);
+        } else {
+            abort(404);
+        }
+
+        $isValid = (bool) $row;
+
+        $title = $isValid
+            ? 'Validasi Surat: VALID'
+            : 'Validasi Surat: TIDAK DITEMUKAN';
+
+        $instansi = $this->kopSuratSetting();
+        $html = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+            . '<title>'.$title.'</title>'
+            . '<meta name="theme-color" content="#0ea5e9">'
+            . '<style>'
+            . ':root{--bg:#f8fafc;--card:#ffffff;--text:#0f172a;--muted:#64748b;--border:#e2e8f0;--ring:#0ea5e9;--valid-bg:#dcfce7;--valid-fg:#166534;--invalid-bg:#fee2e2;--invalid-fg:#7f1d1d}'
+            . 'html,body{height:100%}'
+            . 'body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:linear-gradient(135deg,#f0f9ff 0%,#f8fafc 60%);color:var(--text);margin:0}'
+            . '.wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}'
+            . '.card{width:100%;max-width:920px;background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:0 12px 30px rgba(2,6,23,.06)}'
+            . '.header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;gap:16px;align-items:center;justify-content:space-between;background:linear-gradient(180deg,#f8fafc 0%,#ffffff 100%);border-top-left-radius:18px;border-top-right-radius:18px}'
+            . '.title{font-size:18px;font-weight:800;letter-spacing:.2px}'
+            . '.subtitle{font-size:12px;color:var(--muted)}'
+            . '.instansi{font-size:11px;color:var(--muted)}'
+            . '.badge{font-weight:800;border-radius:999px;padding:8px 12px;font-size:12px;display:inline-flex;align-items:center;gap:8px;border:1px solid transparent}'
+            . '.badge.valid{background:var(--valid-bg);color:var(--valid-fg);border-color:#bbf7d0}'
+            . '.badge.invalid{background:var(--invalid-bg);color:var(--invalid-fg);border-color:#fecaca}'
+            . '.content{padding:22px}'
+            . '.section{display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:12px}'
+            . '@media(min-width:640px){.section{grid-template-columns:repeat(2,1fr)}}'
+            . '.item{border:1px solid var(--border);border-radius:12px;padding:14px;background:#fcfcfc}'
+            . '.label{color:var(--muted);font-size:12px;margin:0 0 6px 0}'
+            . '.value{font-weight:800;font-size:14px;word-break:break-word}'
+            . '.footer{padding:16px 22px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;border-bottom-left-radius:18px;border-bottom-right-radius:18px;background:#fafafa}'
+            . '.brand{font-weight:700;color:#0ea5e9}'
+            . '</style></head><body>'
+            . '<div class="wrap"><div class="card">'
+            . '<div class="header"><div><div class="title">Validasi Surat</div><div class="subtitle">Jenis: '.strtoupper($sanitize($type)).'</div><div class="instansi">'.($instansi->nama_instansi ?? '').'</div></div>'
+            . '<div class="badge '.($isValid ? 'valid' : 'invalid').'">'.($isValid ? 'VALID' : 'TIDAK DITEMUKAN').'</div></div>'
+            . '<div class="content">';
+
+        if ($isValid) {
+            $html .= '<div class="section">'
+                . '<div class="item"><div class="label">No. Surat</div><div class="value">'.$sanitize($row->no_surat).'</div></div>'
+                . '<div class="item"><div class="label">No. Rawat</div><div class="value">'.$sanitize($row->no_rawat ?? '').'</div></div>'
+                . '<div class="item"><div class="label">Nama Pasien</div><div class="value">'.$sanitize($row->nm_pasien ?? '').'</div></div>'
+                . '<div class="item"><div class="label">No. RM</div><div class="value">'.$sanitize($row->no_rkm_medis ?? '').'</div></div>';
+            if ($type === 'sehat') {
+                $html .= '<div class="item"><div class="label">Tanggal Surat</div><div class="value">'.$sanitize($row->tanggalsurat ?? '').'</div></div>'
+                    . '<div class="item"><div class="label">Keperluan</div><div class="value">'.$sanitize($row->keperluan ?? '').'</div></div>'
+                    . '<div class="item"><div class="label">Kesimpulan</div><div class="value">'.$sanitize($row->kesimpulan ?? '').'</div></div>';
+            } else {
+                $html .= '<div class="item"><div class="label">Mulai Sakit</div><div class="value">'.$sanitize($row->tanggalawal ?? '').'</div></div>'
+                    . '<div class="item"><div class="label">Akhir Sakit</div><div class="value">'.$sanitize($row->tanggalakhir ?? '').'</div></div>'
+                    . '<div class="item"><div class="label">Lama Sakit</div><div class="value">'.$sanitize($row->lamasakit ?? '').' hari</div></div>';
+            }
+            $html .= '<div class="item"><div class="label">Dokter Pemeriksa</div><div class="value">'.$sanitize($row->nm_dokter ?? '').'</div></div>'
+                . '</div>';
+        } else {
+            $html .= '<div class="item"><div class="label">Status</div><div class="value">Data surat dengan nomor '.$sanitize($noSurat).' tidak ditemukan atau link tidak valid.</div></div>';
+        }
+
+        $html .= '</div><div class="footer"><div>© '.date('Y').' <span class="brand">Faskesku</span></div><div>'.($instansi->kabupaten ?? '').'</div></div></div></div></body></html>';
+
+        return response($html, $isValid ? 200 : 404)->withHeaders([
+            'Content-Security-Policy' => "default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'self'; frame-ancestors 'none'",
+            'X-Frame-Options' => 'DENY',
+            'X-Content-Type-Options' => 'nosniff',
+            'Referrer-Policy' => 'no-referrer',
+            'Cache-Control' => 'no-store, private',
+        ]);
     }
 }

@@ -5,7 +5,7 @@ import SidebarRalan from '@/Layouts/SidebarRalan';
 import SuratSehat from './components/SuratSehat';
 import SuratSakit from './components/SuratSakit';
 
-export default function BuatSurat({ rawatJalan, patient, dokter, setting, suratSehatData, suratSakitData }) {
+export default function BuatSurat({ rawatJalan, patient, dokter, setting, suratSehatData, suratSakitData, validationUrl }) {
     const [selectedTemplate, setSelectedTemplate] = useState(() => {
         const params = new URLSearchParams(window.location.search);
         return params.get('template') === 'sakit' ? 'sakit' : 'sehat';
@@ -85,6 +85,7 @@ export default function BuatSurat({ rawatJalan, patient, dokter, setting, suratS
                             suratSehatData={suratSehatData}
                             embedded={true}
                             templateSelector={templateSelector}
+                            validationUrl={validationUrl}
                         />
                     )}
                     
@@ -97,6 +98,7 @@ export default function BuatSurat({ rawatJalan, patient, dokter, setting, suratS
                             suratSakitData={suratSakitData}
                             embedded={true}
                             templateSelector={templateSelector}
+                            validationUrl={validationUrl}
                         />
                     )}
                 </div>
