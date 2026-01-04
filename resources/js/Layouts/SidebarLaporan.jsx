@@ -11,6 +11,7 @@ import {
     Bed,
     Users,
     ClipboardList,
+    Activity,
 } from "lucide-react";
 import MobileBottomNav from "@/Components/MobileBottomNav";
 
@@ -98,6 +99,11 @@ export default function SidebarLaporan({ title = "Laporan", children }) {
                         href: "/laporan/ralan/kunjungan",
                         icon: <Users className="w-4 h-4" />,
                     },
+                    {
+                        label: "Frekuensi Penyakit Ralan",
+                        href: route("laporan.ralan.frekuensi-penyakit"),
+                        icon: <Activity className="w-4 h-4" />,
+                    },
                 ],
             },
             {
@@ -171,7 +177,7 @@ export default function SidebarLaporan({ title = "Laporan", children }) {
     return (
         <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
             <aside
-                className={`fixed top-0 left-0 h-full bg-gradient-to-b from-blue-600 via-blue-700 to-blue-800 dark:from-blue-900 dark:via-blue-950 dark:to-black shadow-2xl border-r border-blue-500/20 dark:border-blue-800 z-40 transition-all duration-300 ${
+                className={`fixed top-0 left-0 h-full bg-gradient-to-b from-blue-600 via-blue-700 to-blue-800 dark:from-blue-900 dark:via-blue-950 dark:to-black shadow-2xl border-r border-blue-500/20 dark:border-blue-800 z-40 transition-all duration-300 print:hidden ${
                     isSidebarOpen
                         ? "w-64 translate-x-0"
                         : isSidebarCollapsed

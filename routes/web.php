@@ -353,6 +353,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/laporan/ralan/kunjungan/data', [KunjunganController::class, 'kunjunganRalanData'])->name('laporan.ralan.kunjungan.data');
     Route::get('/laporan/ralan/kunjungan/print', [KunjunganController::class, 'kunjunganRalanPrint'])->name('laporan.ralan.kunjungan.print');
 
+    // Frekuensi Penyakit Ralan
+    Route::get('/laporan/ralan/frekuensi-penyakit', [App\Http\Controllers\FrekuensiPenyakitRalanController::class, 'index'])->name('laporan.ralan.frekuensi-penyakit');
+    Route::get('/laporan/ralan/frekuensi-penyakit/data', [App\Http\Controllers\FrekuensiPenyakitRalanController::class, 'data'])->name('laporan.ralan.frekuensi-penyakit.data');
+    Route::get('/laporan/ralan/frekuensi-penyakit/print', [App\Http\Controllers\FrekuensiPenyakitRalanController::class, 'print'])->name('laporan.ralan.frekuensi-penyakit.print');
+
     Route::get('/laporan/ranap/kunjungan', [KunjunganController::class, 'kunjunganRanapPage'])->name('laporan.ranap.kunjungan.page');
     Route::get('/laporan/ranap/kunjungan/data', [KunjunganController::class, 'kunjunganRanapData'])->name('laporan.ranap.kunjungan.data');
     Route::get('/laporan/ranap/kunjungan/print', [KunjunganController::class, 'kunjunganRanapPrint'])->name('laporan.ranap.kunjungan.print');
