@@ -3,7 +3,7 @@ import ralan from './ralan'
 import ranap from './ranap'
 /**
 * @see \App\Http\Controllers\KunjunganController::index
-* @see app/Http/Controllers/KunjunganController.php:102
+* @see app/Http/Controllers/KunjunganController.php:246
 * @route '/laporan'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -18,7 +18,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\KunjunganController::index
-* @see app/Http/Controllers/KunjunganController.php:102
+* @see app/Http/Controllers/KunjunganController.php:246
 * @route '/laporan'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -27,7 +27,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\KunjunganController::index
-* @see app/Http/Controllers/KunjunganController.php:102
+* @see app/Http/Controllers/KunjunganController.php:246
 * @route '/laporan'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -37,7 +37,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\KunjunganController::index
-* @see app/Http/Controllers/KunjunganController.php:102
+* @see app/Http/Controllers/KunjunganController.php:246
 * @route '/laporan'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
