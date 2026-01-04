@@ -113,8 +113,8 @@ function ChartPoliMonthly({ data }) {
 
     let resizeObserver = null;
 
-    if (typeof window !== "undefined" && "ResizeObserver" in window) {
-      resizeObserver = new window.ResizeObserver(updateWidth);
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(updateWidth);
       resizeObserver.observe(el);
     } else {
       window.addEventListener("resize", updateWidth);

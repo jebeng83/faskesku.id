@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import { Stethoscope, Hospital, Gauge, HeartPulse, ChevronDown, ChevronRight, Receipt } from 'lucide-react';
+import { Stethoscope, Hospital, Gauge, HeartPulse, ChevronDown, ChevronRight, Receipt, FileText } from 'lucide-react';
 import MobileBottomNav from "@/Components/MobileBottomNav";
 
 // Sidebar khusus modul Rawat Jalan dengan pola tampilan seperti LanjutanRalanLayout
@@ -73,14 +73,14 @@ export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
           icon: <Hospital className="w-4 h-4" />,
         },
         {
-          label: 'Surat - Surat',
-          href: route('rawat-jalan.surat-sehat.index'),
-          icon: <Receipt className="w-4 h-4" />,
-        },
-        {
           label: 'Satu Sehat',
           href: route('satusehat.interoperabilitas.rajal.encounter'),
           icon: <HeartPulse className="w-4 h-4" />,
+        },
+        {
+          label: 'Data Surat',
+          href: route('rawat-jalan.surat-sehat.index'),
+          icon: <FileText className="w-4 h-4" />,
         },
       ],
     },

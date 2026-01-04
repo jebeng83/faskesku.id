@@ -8,7 +8,6 @@ import SearchableSelect from "@/Components/SearchableSelect";
 import PenjabCreateModal from "@/Components/PenjabCreateModal";
 import WilayahSearchableSelect from "@/Components/WilayahSearchableSelect";
 import AddressDisplay from "@/Components/AddressDisplay";
-import Alert from "@/Components/Alert";
 import {
     UserPlusIcon,
     IdentificationIcon,
@@ -46,13 +45,6 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
     const cacatFisikForm = useForm({ nama_cacat: "" });
     const [pekerjaanOption, setPekerjaanOption] = useState("");
     const [pekerjaanOther, setPekerjaanOther] = useState("");
-    const [showAlert, setShowAlert] = useState(false);
-    const [alertConfig, setAlertConfig] = useState({
-        type: "success",
-        title: "",
-        message: "",
-        autoClose: false,
-    });
 
     const { data, setData, post, processing, errors, reset, transform } =
         useForm({
@@ -339,13 +331,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
 
     const handleCheckBpjsByNik = async () => {
         if (!data.no_ktp || data.no_ktp.length < 16) {
-            setAlertConfig({
-                type: "error",
-                title: "Validasi",
-                message: "NIK harus 16 digit",
-                autoClose: false,
-            });
-            setShowAlert(true);
+            alert("NIK harus 16 digit");
             return;
         }
         try {
@@ -371,47 +357,22 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                             ? peserta.golDarah
                             : prev.gol_darah,
                 }));
-                setAlertConfig({
-                    type: "success",
-                    title: "Data BPJS",
-                    message: "Data ditemukan di BPJS",
-                    autoClose: true,
-                    autoCloseDelay: 1500,
-                });
-                setShowAlert(true);
+                alert("Data ditemukan di BPJS");
             } else {
-                setAlertConfig({
-                    type: "info",
-                    title: "BPJS",
-                    message: "Data tidak ditemukan di BPJS",
-                    autoClose: true,
-                    autoCloseDelay: 1500,
-                });
-                setShowAlert(true);
+                alert("Data tidak ditemukan di BPJS");
             }
         } catch (error) {
             console.error("Error checking BPJS by NIK:", error);
-            setAlertConfig({
-                type: "error",
-                title: "Gagal cek BPJS",
-                message:
-                    "Gagal cek BPJS: " +
-                    (error.response?.data?.metaData?.message || error.message),
-                autoClose: false,
-            });
-            setShowAlert(true);
+            alert(
+                "Gagal cek BPJS: " +
+                    (error.response?.data?.metaData?.message || error.message)
+            );
         }
     };
 
     const handleCheckBpjsByNoKartu = async () => {
         if (!data.no_peserta) {
-            setAlertConfig({
-                type: "error",
-                title: "Validasi",
-                message: "Nomor peserta harus diisi",
-                autoClose: false,
-            });
-            setShowAlert(true);
+            alert("Nomor peserta harus diisi");
             return;
         }
         try {
@@ -437,35 +398,16 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                             ? peserta.golDarah
                             : prev.gol_darah,
                 }));
-                setAlertConfig({
-                    type: "success",
-                    title: "Data BPJS",
-                    message: "Data ditemukan di BPJS",
-                    autoClose: true,
-                    autoCloseDelay: 1500,
-                });
-                setShowAlert(true);
+                alert("Data ditemukan di BPJS");
             } else {
-                setAlertConfig({
-                    type: "info",
-                    title: "BPJS",
-                    message: "Data tidak ditemukan di BPJS",
-                    autoClose: true,
-                    autoCloseDelay: 1500,
-                });
-                setShowAlert(true);
+                alert("Data tidak ditemukan di BPJS");
             }
         } catch (error) {
             console.error("Error checking BPJS by No Kartu:", error);
-            setAlertConfig({
-                type: "error",
-                title: "Gagal cek BPJS",
-                message:
-                    "Gagal cek BPJS: " +
-                    (error.response?.data?.metaData?.message || error.message),
-                autoClose: false,
-            });
-            setShowAlert(true);
+            alert(
+                "Gagal cek BPJS: " +
+                    (error.response?.data?.metaData?.message || error.message)
+            );
         }
     };
 
@@ -652,6 +594,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
             setSelectedWilayah(null);
         }
     };
+
     const submitPatient = ({ forceNoRM } = {}) => {
         const shouldAutoGenerateNoRM = !isNoRMTouched && !forceNoRM;
         transform((payload) => ({
@@ -662,6 +605,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                   ? ""
                   : payload.no_rkm_medis,
         }));
+
         post(route("patients.store"), {
             onSuccess: (page) => {
                 const newPatient = page.props.flash?.new_patient;
@@ -709,13 +653,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                 } else {
                     errorMessage += String(errors);
                 }
-                setAlertConfig({
-                    type: "error",
-                    title: "Kesalahan",
-                    message: errorMessage,
-                    autoClose: false,
-                });
-                setShowAlert(true);
+                alert(errorMessage);
             },
             onFinish: () => {
                 transform((payload) => payload);
@@ -725,30 +663,6 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const missing = [];
-        if (!String(data.nm_pasien || "").trim()) missing.push("Nama Lengkap");
-        if (!String(data.jk || "").trim()) missing.push("Jenis Kelamin");
-        if (!String(data.tmp_lahir || "").trim()) missing.push("Tempat Lahir");
-        if (!String(data.tgl_lahir || "").trim()) missing.push("Tanggal Lahir");
-        if (!String(data.alamat || "").trim()) missing.push("Alamat");
-        if (!String(data.kode_wilayah || "").trim()) missing.push("Kelurahan/Desa");
-        if (!String(data.no_tlp || "").trim()) missing.push("No. Telepon");
-        const pj = String(data.perusahaan_pasien ?? "");
-        if (!pj || pj === "-" || pj === "0") missing.push("Perusahaan Pasien");
-        if (!String(data.suku_bangsa ?? "").trim()) missing.push("Suku Bangsa");
-        if (!String(data.bahasa_pasien ?? "").trim()) missing.push("Bahasa Pasien");
-        if (missing.length) {
-            setAlertConfig({
-                type: "warning",
-                title: "Lengkapi Data",
-                message:
-                    "Field wajib bertanda * belum diisi:\n- " +
-                    missing.join("\n- "),
-                autoClose: false,
-            });
-            setShowAlert(true);
-            return;
-        }
         submitPatient();
     };
 
@@ -891,7 +805,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
 
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                    Nama Lengkap <span className="text-red-600 dark:text-red-400">*</span>
+                                                    Nama Lengkap *
                                                 </label>
                                                 <input
                                                     type="text"
@@ -1045,9 +959,9 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                             />
 
                                             <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Jenis Kelamin <span className="text-red-600 dark:text-red-400">*</span>
-                                            </label>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Jenis Kelamin *
+                                                </label>
                                                 <select
                                                     name="jk"
                                                     value={data.jk}
@@ -1074,9 +988,9 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                             </div>
 
                                             <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Tempat Lahir <span className="text-red-600 dark:text-red-400">*</span>
-                                            </label>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Tempat Lahir *
+                                                </label>
                                                 <input
                                                     type="text"
                                                     name="tmp_lahir"
@@ -1102,9 +1016,9 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                             </div>
 
                                             <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Tanggal Lahir <span className="text-red-600 dark:text-red-400">*</span>
-                                            </label>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Tanggal Lahir *
+                                                </label>
                                                 <input
                                                     type="date"
                                                     name="tgl_lahir"
@@ -1147,7 +1061,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="md:col-span-2">
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                    Alamat <span className="text-red-600 dark:text-red-400">*</span>
+                                                    Alamat *
                                                 </label>
                                                 <textarea
                                                     name="alamat"
@@ -1198,7 +1112,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
 
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                    No. Telepon <span className="text-red-600 dark:text-red-400">*</span>
+                                                    No. Telepon *
                                                 </label>
                                                 <input
                                                     type="text"
@@ -1271,7 +1185,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                 <div>
                                                     <div className="flex items-center justify-between mb-2">
                                                         <span className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                            Bahasa Pasien <span className="text-red-600 dark:text-red-400">*</span>
+                                                            Bahasa Pasien
                                                         </span>
                                                         <button
                                                             type="button"
@@ -1321,7 +1235,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                 <div>
                                                     <div className="flex items-center justify-between mb-2">
                                                         <span className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                            Suku Bangsa <span className="text-red-600 dark:text-red-400">*</span>
+                                                            Suku Bangsa
                                                         </span>
                                                         <button
                                                             type="button"
@@ -1369,7 +1283,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                 <div>
                                                     <div className="flex items-center justify-between mb-2">
                                                         <span className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                            Perusahaan Pasien <span className="text-red-600 dark:text-red-400">*</span>
+                                                            Perusahaan Pasien *
                                                         </span>
                                                         <button
                                                             type="button"
@@ -1977,16 +1891,6 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                     </motion.div>
                 )}
             </AnimatePresence>
-
-            <Alert
-                isOpen={showAlert}
-                type={alertConfig.type}
-                title={alertConfig.title}
-                message={alertConfig.message}
-                autoClose={alertConfig.autoClose}
-                autoCloseDelay={alertConfig.autoCloseDelay}
-                onClose={() => setShowAlert(false)}
-            />
 
             {/* Penjab Create Modal */}
             <PenjabCreateModal
