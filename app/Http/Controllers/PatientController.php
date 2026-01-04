@@ -36,7 +36,7 @@ class PatientController extends Controller
         // Pagination
         $patients = $query->with(['kelurahan', 'kecamatan', 'kabupaten', 'penjab'])
             ->orderBy('no_rkm_medis', 'desc')
-            ->paginate(10)
+            ->paginate(20)
             ->withQueryString();
 
         $dokters = Dokter::select('kd_dokter', 'nm_dokter')->get();
