@@ -32,25 +32,45 @@ export default function SuaraDisplay() {
   const [submitting, setSubmitting] = useState(false);
   const [list, setList] = useState([]);
   const audioRef = useRef(null);
+  const selectedBaseRef = useRef(null);
 
   const getApiBaseCandidates = () => {
-    const c = [];
+    const list = [];
+    // Prioritaskan origin saat ini terlebih dahulu
+    try { list.push(window.location.origin); } catch {}
+    // Kemudian env backend jika ada
     try {
       const envUrl = import.meta?.env?.VITE_BACKEND_URL;
-      if (envUrl) c.push(envUrl);
+      if (envUrl) list.push(envUrl);
     } catch {}
-    c.push("http://127.0.0.1:8080");
-    c.push("http://localhost:8080");
-    c.push("http://127.0.0.1:8000");
-    c.push("http://localhost:8000");
-    c.push(window.location.origin);
-    return c;
+    // Lalu port Laravel default (8000), terakhir 8080
+    list.push("http://127.0.0.1:8000");
+    list.push("http://localhost:8000");
+    list.push("http://127.0.0.1:8080");
+    list.push("http://localhost:8080");
+    // Dedup sederhana
+    return Array.from(new Set(list.filter(Boolean)));
   };
 
   const loadList = async () => {
     const bases = getApiBaseCandidates();
+    const pickBase = async () => {
+      // Coba HEAD ping cepat untuk memilih base yang tersedia tanpa error
+      for (const base of bases) {
+        try {
+          const url = new URL('/api/poli-voice-mapping', base).href;
+          await axios.head(url, { timeout: 800, withCredentials: false, validateStatus: (s) => s === 200 });
+          return base;
+        } catch {}
+      }
+      return bases[0];
+    };
+    if (!selectedBaseRef.current) {
+      selectedBaseRef.current = await pickBase();
+    }
     let lastErr = null;
-    for (const base of bases) {
+    const order = [selectedBaseRef.current, ...bases.filter((b) => b !== selectedBaseRef.current)];
+    for (const base of order) {
       try {
         const url = new URL('/api/poli-voice-mapping', base).href;
         const res = await axios.get(url, { headers: { Accept: "application/json" }, withCredentials: false });
@@ -88,23 +108,13 @@ export default function SuaraDisplay() {
       fd.append("nm_poli", nmPoliDisplay);
       fd.append("file", fileObj);
 
-      const bases = (() => {
-        const arr = [];
-        try {
-          const v = import.meta?.env?.VITE_BACKEND_URL;
-          if (v) arr.push(v);
-        } catch {}
-        arr.push(window.location.origin);
-        arr.push("http://127.0.0.1:8080");
-        arr.push("http://localhost:8080");
-        arr.push("http://127.0.0.1:8000");
-        arr.push("http://localhost:8000");
-        return arr;
-      })();
+      const bases = getApiBaseCandidates();
+      const base = selectedBaseRef.current || bases[0];
+      const order = [base, ...bases.filter((b) => b !== base)];
 
       let done = false;
       let lastErr = null;
-      for (const base of bases) {
+      for (const base of order) {
         try {
           const postUrl = new URL('/api/poli-voice-mapping', base).href;
           await axios.post(postUrl, fd, {
