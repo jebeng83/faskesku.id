@@ -100,5 +100,17 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
+
+        try {
+            $connections = (array) config('database.connections', []);
+            foreach ($connections as $name => $cfg) {
+                if (($cfg['driver'] ?? null) === 'mysql') {
+                    $conn = DB::connection($name);
+                    $conn->setSchemaGrammar(new \App\Database\Schema\Grammars\MySqlGrammar($conn));
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Failed to override MySQL schema grammar: '.$e->getMessage());
+        }
     }
 }
