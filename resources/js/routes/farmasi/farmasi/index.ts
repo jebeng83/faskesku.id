@@ -2,10 +2,14 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 import cetak from './cetak'
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1066
 =======
 * @see routes/web.php:1073
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1078
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/farmasi/farmasi/data-opname'
 */
 export const dataOpname = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -20,10 +24,14 @@ dataOpname.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1066
 =======
 * @see routes/web.php:1073
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1078
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/farmasi/farmasi/data-opname'
 */
 dataOpname.url = (options?: RouteQueryOptions) => {
@@ -32,10 +40,14 @@ dataOpname.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1066
 =======
 * @see routes/web.php:1073
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1078
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/farmasi/farmasi/data-opname'
 */
 dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -45,10 +57,14 @@ dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1066
 =======
 * @see routes/web.php:1073
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1078
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/farmasi/farmasi/data-opname'
 */
 dataOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -4,10 +4,14 @@ import attempts from './attempts'
 import raw from './raw'
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1192
 =======
 * @see routes/web.php:1199
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1204
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/pcare/monitoring-status'
 */
 export const status = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -22,10 +26,14 @@ status.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1192
 =======
 * @see routes/web.php:1199
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1204
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/pcare/monitoring-status'
 */
 status.url = (options?: RouteQueryOptions) => {
@@ -34,10 +42,14 @@ status.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1192
 =======
 * @see routes/web.php:1199
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1204
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/pcare/monitoring-status'
 */
 status.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -47,10 +59,14 @@ status.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1192
 =======
 * @see routes/web.php:1199
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1204
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/pcare/monitoring-status'
 */
 status.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

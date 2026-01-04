@@ -1,10 +1,14 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1505
 =======
 * @see routes/web.php:1512
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1517
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/satusehat/interoperabilitas/rajal/encounter'
 */
 export const encounter = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -19,10 +23,14 @@ encounter.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1505
 =======
 * @see routes/web.php:1512
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1517
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/satusehat/interoperabilitas/rajal/encounter'
 */
 encounter.url = (options?: RouteQueryOptions) => {
@@ -31,10 +39,14 @@ encounter.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1505
 =======
 * @see routes/web.php:1512
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1517
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/satusehat/interoperabilitas/rajal/encounter'
 */
 encounter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -44,10 +56,14 @@ encounter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1505
 =======
 * @see routes/web.php:1512
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1517
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/satusehat/interoperabilitas/rajal/encounter'
 */
 encounter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

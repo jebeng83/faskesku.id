@@ -3,10 +3,14 @@ import prerequisites from './prerequisites'
 import interoperabilitas from './interoperabilitas'
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1481
 =======
 * @see routes/web.php:1488
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1493
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/satusehat'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -21,10 +25,14 @@ index.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1481
 =======
 * @see routes/web.php:1488
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1493
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/satusehat'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -33,10 +41,14 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1481
 =======
 * @see routes/web.php:1488
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1493
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/satusehat'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -46,10 +58,14 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1481
 =======
 * @see routes/web.php:1488
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1493
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/satusehat'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

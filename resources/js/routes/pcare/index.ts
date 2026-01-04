@@ -18,10 +18,14 @@ import massSend from './mass-send'
 import setting from './setting'
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1169
 =======
 * @see routes/web.php:1176
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1181
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/pcare'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -36,10 +40,14 @@ index.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1169
 =======
 * @see routes/web.php:1176
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1181
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/pcare'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -48,10 +56,14 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1169
 =======
 * @see routes/web.php:1176
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1181
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/pcare'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -61,10 +73,14 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1169
 =======
 * @see routes/web.php:1176
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1181
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/pcare'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -74,10 +90,14 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1188
 =======
 * @see routes/web.php:1195
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1200
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/pcare/monitoring'
 */
 export const monitoring = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -92,10 +112,14 @@ monitoring.definition = {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1188
 =======
 * @see routes/web.php:1195
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1200
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/pcare/monitoring'
 */
 monitoring.url = (options?: RouteQueryOptions) => {
@@ -104,10 +128,14 @@ monitoring.url = (options?: RouteQueryOptions) => {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1188
 =======
 * @see routes/web.php:1195
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1200
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/pcare/monitoring'
 */
 monitoring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -117,10 +145,14 @@ monitoring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1188
 =======
 * @see routes/web.php:1195
 >>>>>>> c30c174a (qrcode validasi surat)
+=======
+* @see routes/web.php:1200
+>>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
 * @route '/pcare/monitoring'
 */
 monitoring.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
