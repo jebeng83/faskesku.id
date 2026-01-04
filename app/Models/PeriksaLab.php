@@ -66,13 +66,8 @@ class PeriksaLab extends Model
     // Relasi dengan DetailPeriksaLab
     public function detailPemeriksaan()
     {
-        // Gunakan nilai instance untuk filter saat load pada satu model instance,
-        // dan longgarkan filter ke tanggal saja untuk menghindari mismatch jam.
-        return $this->hasMany(DetailPeriksaLab::class, 'no_rawat', 'no_rawat')
-            ->where('kd_jenis_prw', $this->kd_jenis_prw)
-            ->when(! is_null($this->tgl_periksa), function ($q) {
-                $q->whereDate('tgl_periksa', \Carbon\Carbon::parse($this->tgl_periksa)->toDateString());
-            });
+        // Relasi dasar tanpa filter instance property untuk menghindari masalah saat eager loading
+        return $this->hasMany(DetailPeriksaLab::class, 'no_rawat', 'no_rawat');
     }
 
     // Relasi dengan Patient melalui RegPeriksa

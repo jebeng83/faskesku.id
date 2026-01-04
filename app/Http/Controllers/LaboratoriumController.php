@@ -19,40 +19,12 @@ class LaboratoriumController extends Controller
 {
     /**
      * Display a listing of the resource.
+     * Redirect ke permintaan lab karena view Laboratorium/Index.jsx mengharapkan permintaanLab
      */
     public function index(Request $request)
     {
-        $query = PeriksaLab::with(['regPeriksa.patient', 'jenisPerawatan', 'petugas'])
-            ->orderBy('tgl_periksa', 'desc');
-
-        // Filter berdasarkan status
-        if ($request->filled('status')) {
-            $query->byStatus($request->status);
-        }
-
-        // Filter berdasarkan tanggal
-        if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->byDateRange($request->start_date, $request->end_date);
-        }
-
-        // Pencarian
-        if ($request->filled('search')) {
-            $query->search($request->search);
-        }
-
-        $periksaLab = $query->paginate(15)->withQueryString();
-
-        $statusOptions = [
-            'Menunggu' => 'Menunggu',
-            'Proses' => 'Proses',
-            'Selesai' => 'Selesai',
-        ];
-
-        return Inertia::render('Laboratorium/Index', [
-            'periksaLab' => $periksaLab,
-            'statusOptions' => $statusOptions,
-            'filters' => $request->only(['status', 'start_date', 'end_date', 'search']),
-        ]);
+        // Redirect ke route permintaan lab yang benar
+        return redirect()->route('laboratorium.permintaan-lab.index', $request->query());
     }
 
     /**

@@ -76,27 +76,8 @@ function Field({ label, children, icon: Icon }) {
 }
 
 function useDateRangeDefaults() {
-    // Gunakan timezone aplikasi (Asia/Jakarta) untuk konsistensi
-    const today = todayDateString(); // Tanggal hari ini dengan timezone Asia/Jakarta
-
-    // Hitung tanggal 7 hari yang lalu dengan timezone yang sama
-    const tz = getAppTimeZone();
-    const todayDate = new Date();
-    const sevenDaysAgoDate = new Date();
-    sevenDaysAgoDate.setDate(todayDate.getDate() - 7);
-
-    // Format tanggal 7 hari yang lalu dengan timezone aplikasi
-    let sevenDaysAgo;
-    try {
-        sevenDaysAgo = sevenDaysAgoDate.toLocaleDateString("en-CA", {
-            timeZone: tz,
-        });
-    } catch {
-        // Fallback ke ISO jika parsing gagal
-        sevenDaysAgo = sevenDaysAgoDate.toISOString().slice(0, 10);
-    }
-
-    return { start: sevenDaysAgo, end: today };
+    const today = todayDateString();
+    return { start: today, end: today };
 }
 
 export default function KasirRalanPage() {

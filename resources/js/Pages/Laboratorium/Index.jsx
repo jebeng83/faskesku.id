@@ -52,7 +52,7 @@ const itemVariants = {
 
 
 
-export default function Index({ permintaanLab, dokters = [], filters = {}, flash, errors: pageErrors }) {
+export default function Index({ permintaanLab = null, dokters = [], filters = {}, flash, errors: pageErrors }) {
     const { auth } = usePage().props;
     const page = usePage();
     
@@ -64,9 +64,10 @@ export default function Index({ permintaanLab, dokters = [], filters = {}, flash
     const [dokter, setDokter] = useState(filters.dokter || "");
     const [startDate, setStartDate] = useState(defaultStartDate);
     const [endDate, setEndDate] = useState(defaultEndDate);
+    const [isSearching, setIsSearching] = useState(false);
     
     // Tab state - default berdasarkan filter status dari server, atau 'ralan' jika tidak ada
-    const [activeTab, setActiveTab] = useState(filters.status || "ralan"); // 'ralan' atau 'ranap'
+    const [activeTab, setActiveTab] = useState((filters.status || "ralan").toLowerCase()); // 'ralan' atau 'ranap'
     const [activeSubTab, setActiveSubTab] = useState("permintaan"); // 'permintaan' atau 'item'
     
     // Alert state
@@ -153,20 +154,17 @@ export default function Index({ permintaanLab, dokters = [], filters = {}, flash
     // Filter data berdasarkan tab aktif
     // Note: permintaanLab adalah paginated response dari Laravel, jadi menggunakan .data
     const filteredData = useMemo(() => {
-        if (!permintaanLab?.data) return [];
+        const source = Array.isArray(permintaanLab?.data)
+            ? permintaanLab.data
+            : Array.isArray(permintaanLab)
+                ? permintaanLab
+                : [];
+        let filtered = [...source];
         
-        let filtered = [...permintaanLab.data];
-        
-        // Filter berdasarkan tab (ralan/ranap) - tab aktif mengoverride filter status
-        // Jika tab aktif, filter berdasarkan tab, bukan berdasarkan filter status
         filtered = filtered.filter((item) => {
-            if (activeTab === "ralan") {
-                return item.status === "ralan";
-            } else if (activeTab === "ranap") {
-                return item.status === "ranap";
-            }
-            // Jika tidak ada tab aktif, return semua
-            return true;
+            const rawSt = item?.status ?? item?.status_raw ?? "";
+            const st = String(rawSt).toLowerCase();
+            return activeTab === "ralan" ? st === "ralan" : activeTab === "ranap" ? st === "ranap" : true;
         });
         
         return filtered;
@@ -202,9 +200,8 @@ export default function Index({ permintaanLab, dokters = [], filters = {}, flash
     }, [filteredData, activeSubTab]);
 
     const handleSearch = () => {
-        // Saat search, gunakan status dari tab aktif
         const statusToUse = activeTab === "ralan" || activeTab === "ranap" ? activeTab : "";
-        
+        setIsSearching(true);
         router.get(
             route("laboratorium.permintaan-lab.index"),
             {
@@ -217,6 +214,7 @@ export default function Index({ permintaanLab, dokters = [], filters = {}, flash
             {
                 preserveState: true,
                 replace: true,
+                onFinish: () => setIsSearching(false),
             }
         );
     };
@@ -676,10 +674,10 @@ export default function Index({ permintaanLab, dokters = [], filters = {}, flash
             render: (item) => (
                 <div>
                     <div className="font-medium text-gray-900 dark:text-white">
-                        {item.reg_periksa?.patient?.nm_pasien || "-"}
+                        {item.reg_periksa?.patient?.nm_pasien || item.regPeriksa?.patient?.nm_pasien || "-"}
                     </div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {item.reg_periksa?.patient?.no_rkm_medis || "-"}
+                        {item.reg_periksa?.patient?.no_rkm_medis || item.regPeriksa?.patient?.no_rkm_medis || "-"}
                     </div>
                 </div>
             ),
@@ -908,7 +906,10 @@ export default function Index({ permintaanLab, dokters = [], filters = {}, flash
     ];
 
     const currentColumns = activeSubTab === "item" ? itemColumns : permintaanColumns;
-    const currentData = activeSubTab === "item" ? itemPermintaanData : filteredData;
+    // Pastikan currentData selalu array untuk menghindari error
+    const currentData = Array.isArray(activeSubTab === "item" ? itemPermintaanData : filteredData) 
+        ? (activeSubTab === "item" ? itemPermintaanData : filteredData)
+        : [];
 
     return (
         <SidebarLaboratorium title="Permintaan Laboratorium">
@@ -977,7 +978,7 @@ export default function Index({ permintaanLab, dokters = [], filters = {}, flash
                                             type="text"
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
-                                            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                                             placeholder="Cari pasien, no rawat, noorder..."
                                             className="w-full pl-11 pr-4 py-2.5 border border-gray-300/50 dark:border-gray-600/50 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:bg-gray-700/80 dark:text-white backdrop-blur-sm transition-all duration-200"
                                         />
@@ -1030,9 +1031,10 @@ export default function Index({ permintaanLab, dokters = [], filters = {}, flash
                                 <div className="flex items-end gap-3">
                                     <motion.button
                                         onClick={handleSearch}
+                                        disabled={isSearching}
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
-                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 text-white font-semibold rounded-lg"
+                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 text-white font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         <Search className="w-4 h-4" />
                                         Cari
@@ -1054,7 +1056,7 @@ export default function Index({ permintaanLab, dokters = [], filters = {}, flash
                             variants={itemVariants}
                             className="border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm"
                         >
-                            <nav className="flex -mb-px px-6">
+                            <nav className="flex -mb-px px-6 flex-nowrap overflow-x-auto whitespace-nowrap">
                                 <motion.button
                                     onClick={() => {
                                         setActiveTab("ralan");
@@ -1125,15 +1127,6 @@ export default function Index({ permintaanLab, dokters = [], filters = {}, flash
                                         />
                                     )}
                                 </motion.button>
-                            </nav>
-                        </motion.div>
-
-                        {/* Sub-tab Navigation */}
-                        <motion.div
-                            variants={itemVariants}
-                            className="border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-gray-50/50 to-gray-100/50 dark:from-gray-700/30 dark:to-gray-800/30 backdrop-blur-sm"
-                        >
-                            <nav className="flex -mb-px px-6">
                                 <motion.button
                                     onClick={() => setActiveSubTab("permintaan")}
                                     whileHover={{ y: -1 }}
@@ -1200,10 +1193,10 @@ export default function Index({ permintaanLab, dokters = [], filters = {}, flash
                                 className="px-8 pb-8"
                             >
                                 <Pagination
-                                    links={permintaanLab.links}
-                                    from={permintaanLab.from}
-                                    to={permintaanLab.to}
-                                    total={permintaanLab.total}
+                                    links={permintaanLab?.links || []}
+                                    from={permintaanLab?.from || 0}
+                                    to={permintaanLab?.to || 0}
+                                    total={permintaanLab?.total || 0}
                                 />
                             </motion.div>
                         )}

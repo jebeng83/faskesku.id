@@ -75,7 +75,7 @@ const quickLinks = [
     {
         title: "Laboratorium",
         description: "Kelola pemeriksaan laboratorium & data hasil",
-        href: route("laboratorium.index"),
+        href: route("laboratorium.permintaan-lab.index"),
     },
     {
         title: "Pembayaran",
@@ -252,7 +252,7 @@ const TopNavbar = React.memo(function TopNavbar() {
                             </span>
                         </Link>
                         <Link
-                            href={route("laboratorium.index")}
+                            href={route("laboratorium.permintaan-lab.index")}
                             className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
                         >
                             <FlaskConical className="w-4 h-4 transition-transform group-hover:scale-110" />
@@ -329,7 +329,7 @@ const MobileBottomNav = React.memo(function MobileBottomNav() {
     const navItems = [
         { href: route("registration.index"), label: "Pendaftaran", icon: UserPlus },
         { href: route("rawat-jalan.index"), label: "Rawat Jalan", icon: Stethoscope },
-        { href: route("laboratorium.index"), label: "Laborat", icon: FlaskConical },
+        { href: route("laboratorium.permintaan-lab.index"), label: "Laborat", icon: FlaskConical },
         { href: route("farmasi.permintaan-resep"), label: "Farmasi", icon: Pill },
         { href: route("akutansi.kasir-ralan.page"), label: "Kasir", icon: CreditCard },
     ];
@@ -464,7 +464,7 @@ const Footer = React.memo(function Footer() {
     const unitLinks = [
         { label: "SATUSEHAT Monitoring", href: "/satusehat/monitoring" },
         { label: "Penjaminan Mutu (Audit)", href: "/permissions" },
-        { label: "Laboratorium", href: route("laboratorium.index") },
+        { label: "Laboratorium", href: route("laboratorium.permintaan-lab.index") },
         { label: "Radiologi", href: "/radiologi" },
         { label: "Farmasi", href: "/farmasi" },
     ];
@@ -834,7 +834,7 @@ export default function Dashboard() {
             "rawat-jalan": "rawat-jalan.index",
             "rawat inap": "rawat-inap.index",
             "rawat-inap": "rawat-inap.index",
-            laboratorium: "laboratorium.index",
+            laboratorium: "laboratorium.permintaan-lab.index",
             radiologi: "radiologi.index",
             igd: "igd.index",
             farmasi: "farmasi.index",
@@ -886,7 +886,7 @@ export default function Dashboard() {
             {
                 key: "lab",
                 label: "Laboratorium",
-                href: safeRoute("laboratorium.index"),
+                href: safeRoute("laboratorium.permintaan-lab.index"),
                 icon: <FlaskConical className="w-5 h-5" />,
             },
             {
