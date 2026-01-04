@@ -8,6 +8,19 @@ import QRCode from 'qrcode';
 export default function SuratSakit({ rawatJalan, patient, dokter, setting, suratSakitData, embedded = false, templateSelector }) {
     const { props } = usePage();
     const triggerPrint = !!props?.flash?.trigger_print;
+    
+    // Check for print mode from URL
+    const [isPrintMode, setIsPrintMode] = useState(false);
+    
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('mode') === 'print') {
+            setIsPrintMode(true);
+            setTimeout(() => {
+                window.print();
+            }, 800);
+        }
+    }, []);
 
     const [formData, setFormData] = useState({
         no_surat: suratSakitData?.no_surat || '',
@@ -37,6 +50,11 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting, surat
         let active = true;
 
         if (!formData.tanggalawal) return;
+
+        // Skip if editing existing data and date hasn't changed
+        if (suratSakitData && suratSakitData.tanggalawal === formData.tanggalawal) {
+            return;
+        }
 
         const ac = new AbortController();
         const t = setTimeout(async () => {
@@ -76,7 +94,10 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting, surat
 
         if (!formData.no_rawat || !formData.tanggalawal) return;
 
-        if (suratSakitData && suratSakitData.tanggalawal === formData.tanggalawal && suratSakitData.no_surat === formData.no_surat) return;
+        // If editing existing data, skip duplicate check if no_surat matches
+        if (suratSakitData && suratSakitData.no_surat === formData.no_surat) {
+            return;
+        }
 
         const ac = new AbortController();
         const t = setTimeout(async () => {
@@ -378,15 +399,6 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting, surat
                                 </p>
                             </div>
                             <div className="flex gap-3">
-                                <button
-                                    onClick={handlePrint}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                                        <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6v-8z" />
-                                    </svg>
-                                    Cetak
-                                </button>
                                 {!embedded && (
                                     <button
                                         type="button"
@@ -403,8 +415,9 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting, surat
 
                 <div className="relative overflow-hidden rounded-2xl border border-gray-200/60 dark:border-gray-700/60 bg-gradient-to-br from-blue-50/80 via-white/70 to-indigo-50/80 dark:from-gray-900/70 dark:via-gray-900/60 dark:to-gray-800/70 p-4 lg:p-5 print:border-0 print:bg-transparent print:p-0 print:rounded-none">
                     <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-6 print:block">
-                        <div className="lg:col-span-5 xl:col-span-4 print:hidden">
-                            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl sm:rounded-2xl border border-white/50 dark:border-gray-700/50 overflow-hidden">
+                        {!isPrintMode && (
+                            <div className="lg:col-span-5 xl:col-span-4 print:hidden">
+                                <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl sm:rounded-2xl border border-white/50 dark:border-gray-700/50 overflow-hidden">
                                 <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/20">
                                     {templateSelector && (
                                         <div className="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
@@ -655,7 +668,17 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting, surat
                                     </div>
 
                                     {/* Action Button */}
-                                    <div className="flex justify-end pt-2">
+                                    <div className="flex justify-end pt-2 gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={handlePrint}
+                                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors text-sm font-semibold"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                                                <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6v-8z" />
+                                            </svg>
+                                            Cetak
+                                        </button>
                                         <button
                                             type="submit"
                                             disabled={isLoading || duplicateExists || !formData.no_surat}
@@ -674,7 +697,7 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting, surat
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
                                                         <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                     </svg>
-                                                    Simpan & Cetak
+                                                    {suratSakitData ? 'Update & Cetak' : 'Simpan & Cetak'}
                                                 </>
                                             )}
                                         </button>
@@ -682,9 +705,10 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting, surat
                                 </form>
                             </div>
                         </div>
+                        )}
 
                         {/* Print Preview */}
-                        <div className="lg:col-span-7 xl:col-span-8">
+                        <div className={`lg:col-span-7 xl:col-span-8 ${isPrintMode ? 'lg:col-span-12 flex justify-center' : ''}`}>
                             <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg print:shadow-none lg:sticky lg:top-20">
                                 <div className="p-4 sm:p-6 print:p-0">
                                     <div className="mx-auto w-full bg-white text-gray-900 rounded-xl border border-gray-200 shadow-sm print:shadow-none print:border-0 print:rounded-none print-container print:p-3">

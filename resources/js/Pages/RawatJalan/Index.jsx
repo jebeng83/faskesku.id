@@ -478,14 +478,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                                         Masuk Rawat Inap
                                                     </DropdownItem>
                                                     <DropdownItem
-                                                        onClick={() => handleBuatSurat(item.no_rawat)}
-                                                        onClick={() => handleSuratSehat(item.no_rawat)}
-                                                        icon={<DocumentCheckIcon className="w-4 h-4" />}
-                                                    >
-                                                        Surat Sehat
-                                                    </DropdownItem>
-                                                    <DropdownItem
-                                                        onClick={() => handleSuratSakit(item.no_rawat)}
+                                                        onClick={() => router.get(route('rawat-jalan.surat-sehat.index'), { search: item.no_rawat })}
                                                         icon={<DocumentTextIcon className="w-4 h-4" />}
                                                     >
                                                         Surat - Surat

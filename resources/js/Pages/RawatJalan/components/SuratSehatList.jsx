@@ -53,17 +53,12 @@ export default function SuratSehatList({ suratSehat, suratSakit, tab = 'sehat', 
     const handleTabChange = (newTab) => {
         if (newTab === currentTab) return;
         setCurrentTab(newTab);
-        setSearch(""); // Reset search on tab change? Usually good UX
-        // Direct navigation to reset state cleanly
-        router.get(
-            route("rawat-jalan.surat-sehat.index"),
-            {
-                tab: newTab,
-                start_date: startDate,
-                end_date: endDate
-            },
-            { preserveState: true, preserveScroll: true, replace: true }
-        );
+        setSearch("");
+        
+        // Ensure dates are set to default if empty when switching tabs
+        const defaultDate = new Date().toISOString().split('T')[0];
+        if (!startDate) setStartDate(defaultDate);
+        if (!endDate) setEndDate(defaultDate);
     };
 
     const clearFilters = () => {
@@ -157,7 +152,7 @@ export default function SuratSehatList({ suratSehat, suratSakit, tab = 'sehat', 
                                             <Link
                                                 href={route(
                                                     "rawat-jalan.buat-surat",
-                                                    { no_rawat: row.no_rawat, template: 'sehat' }
+                                                    { no_rawat: row.no_rawat, template: 'sehat', mode: 'print' }
                                                 )}
                                                 className="inline-flex items-center gap-1 rounded-lg bg-green-600 hover:bg-green-700 text-white px-2.5 py-1.5 text-xs font-semibold transition-colors"
                                                 title="Cetak Surat"
@@ -262,7 +257,7 @@ export default function SuratSehatList({ suratSehat, suratSakit, tab = 'sehat', 
                                             <Link
                                                 href={route(
                                                     "rawat-jalan.buat-surat",
-                                                    { no_rawat: row.no_rawat, template: 'sakit' }
+                                                    { no_rawat: row.no_rawat, template: 'sakit', mode: 'print' }
                                                 )}
                                                 className="inline-flex items-center gap-1 rounded-lg bg-green-600 hover:bg-green-700 text-white px-2.5 py-1.5 text-xs font-semibold transition-colors"
                                                 title="Cetak Surat"
@@ -309,6 +304,15 @@ export default function SuratSehatList({ suratSehat, suratSakit, tab = 'sehat', 
                         </p>
                     </div>
                     <div className="flex gap-2">
+                        {search && (
+                            <Link
+                                href={route("rawat-jalan.buat-surat", { no_rawat: search, template: currentTab })}
+                                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 text-sm font-medium transition-colors"
+                            >
+                                <PlusIcon className="w-4 h-4" />
+                                Buat Surat
+                            </Link>
+                        )}
                         <Link
                             href={route("rawat-jalan.index")}
                             className="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"

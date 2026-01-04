@@ -25,8 +25,27 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
     const [duplicateExists, setDuplicateExists] = useState(false);
     const [ttdQrDataUrl, setTtdQrDataUrl] = useState('');
 
+    // Check for print mode from URL
+    const [isPrintMode, setIsPrintMode] = useState(false);
+    
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('mode') === 'print') {
+            setIsPrintMode(true);
+            setTimeout(() => {
+                window.print();
+            }, 800);
+        }
+    }, []);
+
     useEffect(() => {
         if (formData.no_surat) return;
+        
+        // Skip auto-generate if editing existing data (should have no_surat)
+        if (suratSehatData?.no_surat) {
+             setFormData(prev => ({ ...prev, no_surat: suratSehatData.no_surat }));
+             return;
+        }
 
         // Generate nomor surat otomatis
         const today = new Date();
@@ -58,9 +77,9 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
         if (!formData.no_rawat || !formData.tanggalsurat) return;
 
         // Skip duplicate check if we are editing the same record properties
-        if (suratSehatData &&
-            formData.no_surat === suratSehatData.no_surat &&
-            formData.tanggalsurat === suratSehatData.tanggalsurat) {
+        // Or if no_surat matches existing record
+        if (suratSehatData && 
+            (formData.no_surat === suratSehatData.no_surat)) {
             return;
         }
 
@@ -314,6 +333,7 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                 <div className="relative overflow-hidden rounded-2xl border border-gray-200/60 dark:border-gray-700/60 bg-gradient-to-br from-blue-50/80 via-white/70 to-indigo-50/80 dark:from-gray-900/70 dark:via-gray-900/60 dark:to-gray-800/70 p-4 lg:p-5 print:border-0 print:bg-transparent print:p-0 print:rounded-none">
                     <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-6 print:block">
                         {/* Form */}
+                        {!isPrintMode && (
                         <div className="lg:col-span-5 xl:col-span-4 print:hidden">
                             <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                                 {templateSelector && (
@@ -513,11 +533,21 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                     </div>
 
                                     {/* Submit Button */}
-                                    <div className="flex justify-end">
+                                    <div className="flex justify-end pt-2 gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={handlePrint}
+                                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors text-sm font-semibold"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                                                <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6v-8z" />
+                                            </svg>
+                                            Cetak
+                                        </button>
                                         <button
                                             type="submit"
                                             disabled={isLoading || duplicateExists}
-                                            className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors text-sm"
+                                            className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors text-sm font-semibold"
                                         >
                                             {isLoading ? (
                                                 <>
@@ -532,7 +562,7 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
                                                         <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                     </svg>
-                                                    {suratSehatData ? 'Ubah & Cetak' : 'Simpan & Cetak'}
+                                                    {suratSehatData ? 'Update & Cetak' : 'Simpan & Cetak'}
                                                 </>
                                             )}
                                         </button>
@@ -540,9 +570,10 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                 </form>
                             </div>
                         </div>
+                        )}
 
                         {/* Print Preview */}
-                        <div className="lg:col-span-7 xl:col-span-8">
+                        <div className={`lg:col-span-7 xl:col-span-8 ${isPrintMode ? 'lg:col-span-12 flex justify-center' : ''}`}>
                             <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg print:shadow-none lg:sticky lg:top-20">
                                 <div className="p-4 sm:p-6 print:p-0">
                                     <div className="mx-auto w-full bg-white text-gray-900 rounded-xl border border-gray-200 shadow-sm print:shadow-none print:border-0 print:rounded-none print-container print:p-3">
