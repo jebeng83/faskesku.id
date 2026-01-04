@@ -1,11 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 import cetak from './cetak'
 /**
-<<<<<<< HEAD
 * @see routes/web.php:1069
-=======
-* @see routes/web.php:1066
->>>>>>> main
 * @route '/farmasi/farmasi/data-opname'
 */
 export const dataOpname = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -19,11 +15,7 @@ dataOpname.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
 * @see routes/web.php:1069
-=======
-* @see routes/web.php:1066
->>>>>>> main
 * @route '/farmasi/farmasi/data-opname'
 */
 dataOpname.url = (options?: RouteQueryOptions) => {
@@ -31,11 +23,7 @@ dataOpname.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
 * @see routes/web.php:1069
-=======
-* @see routes/web.php:1066
->>>>>>> main
 * @route '/farmasi/farmasi/data-opname'
 */
 dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -44,11 +32,7 @@ dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
 * @see routes/web.php:1069
-=======
-* @see routes/web.php:1066
->>>>>>> main
 * @route '/farmasi/farmasi/data-opname'
 */
 dataOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

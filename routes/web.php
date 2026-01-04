@@ -33,7 +33,6 @@ use App\Http\Controllers\Kepegawaian\SipPegawaiController;
 use App\Http\Controllers\Kepegawaian\SttsKerjaController;
 use App\Http\Controllers\Kepegawaian\SttsWpController;
 use App\Http\Controllers\LaboratoriumController;
-use App\Http\Controllers\KunjunganController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\Pasien\BahasaPasienController;
 use App\Http\Controllers\Pasien\CacatFisikController;
@@ -345,11 +344,7 @@ Route::middleware('auth')->group(function () {
     })->name('docs');
 
     Route::get('/laporan', [KunjunganController::class, 'index'])->name('laporan.index');
-<<<<<<< HEAD
     Route::get('/laporan/stats', [KunjunganController::class, 'getStats'])->name('laporan.stats');
-=======
-
->>>>>>> main
     Route::get('/laporan/ralan/kunjungan', [KunjunganController::class, 'kunjunganRalanPage'])->name('laporan.ralan.kunjungan.page');
     Route::get('/laporan/ralan/kunjungan/data', [KunjunganController::class, 'kunjunganRalanData'])->name('laporan.ralan.kunjungan.data');
     Route::get('/laporan/ralan/kunjungan/print', [KunjunganController::class, 'kunjunganRalanPrint'])->name('laporan.ralan.kunjungan.print');
