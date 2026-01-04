@@ -3,7 +3,7 @@ import { Head, Link, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import SidebarRalan from "@/Layouts/SidebarRalan";
 import Pagination from "@/Components/Pagination";
-import { PencilSquareIcon, PrinterIcon } from "@heroicons/react/24/outline";
+import { PencilSquareIcon, PrinterIcon, PlusIcon } from "@heroicons/react/24/outline";
 
 export default function SuratSehatList({ suratSehat, filters }) {
 
