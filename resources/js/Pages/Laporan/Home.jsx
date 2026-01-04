@@ -1,9 +1,10 @@
-import React, { useDeferredValue, useMemo, useState } from "react";
+import React, { useDeferredValue, useMemo, useState, useRef, useEffect } from "react";
 import { Head, Link } from "@inertiajs/react";
 import SidebarLaporan from "@/Layouts/SidebarLaporan";
+import DropdownMenu, { DropdownItem } from "@/Components/DropdownMenu";
 import { route } from "ziggy-js";
 import { motion, useReducedMotion } from "framer-motion";
-import { BarChart2, Activity, FileText, ClipboardList, Search, X } from "lucide-react";
+import { BarChart2, Activity, FileText, ClipboardList, Search, X, TrendingUp, TrendingDown, MoreVertical, Stethoscope, Bed } from "lucide-react";
 
 const containerVariants = {
     hidden: { opacity: 0, y: 6 },
@@ -210,7 +211,6 @@ export default function LaporanHome({ summary }) {
               animate: "visible",
           };
 
-    const formatNumber = (n) => new Intl.NumberFormat("id-ID").format(Number(n || 0));
     const formatPct = (n) => {
         const v = Number(n || 0);
         const sign = v > 0 ? "+" : "";

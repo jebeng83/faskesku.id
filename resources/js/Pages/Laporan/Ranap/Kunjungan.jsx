@@ -479,7 +479,7 @@ export default function KunjunganRanap({ listBangsal = [], listDokter = [], list
                   </tr>
                 ) : data.length > 0 ? (
                   data.map((row, idx) => (
-                  <tr key={`${row.no_rawat || idx}`} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                  <tr key={`${row.no_rawat}-${idx}`} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-white whitespace-nowrap">{filterBy === "masuk" ? formatDateDMY(row.tgl_masuk) : formatDateDMY(row.tgl_keluar)}</td>
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-white whitespace-nowrap font-medium">{row.no_rawat}</td>
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-white whitespace-nowrap">{row.nm_pasien}</td>
