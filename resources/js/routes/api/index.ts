@@ -5,7 +5,6 @@ import pcare from './pcare'
 import rawatJalan from './rawat-jalan'
 import queue from './queue'
 import poli from './poli'
-import wagateway from './wagateway'
 import employees from './employees'
 import penjab from './penjab'
 import pasien from './pasien'
@@ -219,7 +218,6 @@ const api = {
     rawatJalan: Object.assign(rawatJalan, rawatJalan),
     queue: Object.assign(queue, queue),
     poli: Object.assign(poli, poli),
-    wagateway: Object.assign(wagateway, wagateway),
     employees: Object.assign(employees, employees),
     penjab: Object.assign(penjab, penjab),
     pasien: Object.assign(pasien, pasien),
