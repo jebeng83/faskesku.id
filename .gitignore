@@ -16,6 +16,8 @@
 /public/build
 /public/hot
 /public/storage
+public/wagateway/
+public/wa-gateway-main/
 /storage/*.key
 /storage/pail
 /vendor
