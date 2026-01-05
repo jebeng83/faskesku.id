@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { overlayTransition, contentSpring, transformOriginForDir, createPageVariants, hoverTapVariants, headerItemVariants } from "@/tools/motion";
 import { Head, router } from "@inertiajs/react";
@@ -8,8 +8,10 @@ import NewCpptSoap from "./NewComponen/NewCpptSoap";
 import NewTarifTindakan from "./NewComponen/NewTarifTindakan";
 import NewResep from "./NewComponen/NewResep";
 import NewPermintaanLab from "./NewComponen/NewPermintaanLab";
+import NewDiagnosa from "./NewComponen/NewDiagnosa";
 import axios from "axios";
 import SearchableSelect from "@/Components/SearchableSelect";
+import { setRawatJalanFilters } from "@/tools/rawatJalanFilters";
 
 export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "", kdPoli = "" }) {
   const [isOpen, setIsOpen] = useState(true);
@@ -29,6 +31,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
   const [poliRepeatCalling, setPoliRepeatCalling] = useState(false);
   const [doctorCode, setDoctorCode] = useState("");
   const [bridgingOpen, setBridgingOpen] = useState(false);
+  const cpptReqIdRef = useRef(0);
   
   const [pcarePendaftaran, setPcarePendaftaran] = useState(null);
   const [isUnauthorized, setIsUnauthorized] = useState(false);
@@ -194,6 +197,14 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
     });
 
     arr.push({
+      key: "diagnosa",
+      title: "Diagnosa (ICD)",
+      render: () => (
+        <NewDiagnosa noRawat={noRawat} />
+      ),
+    });
+
+    arr.push({
       key: "resep",
       title: "Resep Obat",
       render: () => (
@@ -244,6 +255,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
     setCpptModalOpen(true);
     setCpptModalLoading(true);
     setCpptModalError("");
+    const reqId = (cpptReqIdRef.current += 1);
     try {
       const qs = token ? `t=${encodeURIComponent(token)}` : `no_rkm_medis=${encodeURIComponent(noRkmMedis)}`;
       const res = await fetch(`/rawat-jalan/riwayat?${qs}`, { headers: { Accept: "application/json" } });
@@ -269,9 +281,13 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
           }
         })
       );
-      setCpptModalItems(results);
+      if (cpptReqIdRef.current === reqId && cpptModalOpen) {
+        setCpptModalItems(results);
+      }
     } catch (e) {
-      setCpptModalError(String(e?.message || e));
+      if (cpptReqIdRef.current === reqId && cpptModalOpen) {
+        setCpptModalError(String(e?.message || e));
+      }
     } finally {
       setCpptModalLoading(false);
     }
@@ -289,45 +305,68 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
       const json = await res.json();
       const data = json && json.data ? json.data : null;
       setPcarePendaftaran(data);
-      try {
-        const rujukRes = await fetch(`/api/pcare/rujuk-subspesialis/rawat/${encodeURIComponent(noRawat)}`, {
-          headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
-          credentials: "include",
-        });
-        const rujukJson = await rujukRes.json();
-        const rujukData = rujukJson.data || null;
-        if (rujukRes.ok && rujukData) {
-          
+      const shouldFetchRujuk = (rujukanManual === true) || (kunjunganPreview && String(kunjunganPreview.kdStatusPulang || '') === '4');
+      if (shouldFetchRujuk) {
+        try {
+          const rujukRes = await fetch(`/api/pcare/rujuk-subspesialis/rawat/${encodeURIComponent(noRawat)}`, {
+            headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+            credentials: "include",
+          });
+          if (rujukRes.ok) {
+            const rujukJson = await rujukRes.json();
+            const rujukData = rujukJson.data || null;
+            if (rujukData) {
+              // no-op: data tersedia bila memang ada rujukan
+            }
+          }
+        } catch {}
+      }
+      const needPoli = poliOptions.length === 0;
+      const needDokter = dokterOptions.length === 0;
+      const needSpesialis = spesialisOptions.length === 0;
+      const needSarana = saranaOptions.length === 0;
+      const tasks = [];
+      const params200 = new URLSearchParams({ start: 0, limit: 200 });
+      if (needPoli) tasks.push(fetch(`/api/pcare/poli?${params200.toString()}`, { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }, credentials: "include" }));
+      if (needDokter) tasks.push(fetch(`/api/pcare/dokter?${params200.toString()}`, { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }, credentials: "include" }));
+      if (needSpesialis) tasks.push(fetch(`/api/pcare/spesialis`, { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }, credentials: "include" }));
+      if (needSarana) tasks.push(fetch(`/api/pcare/spesialis/sarana`, { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }, credentials: "include" }));
+      if (tasks.length > 0) {
+        try {
+          const results = await Promise.all(tasks);
+          let idx = 0;
+          if (needPoli) {
+            const r = results[idx++];
+            const j = await r.json();
+            const list = j?.response?.list || j?.list || j?.data || [];
+            setPoliOptions(list.map((row) => ({ value: row?.kdPoli || row?.kode || "", label: row?.nmPoli || row?.nama || "" })));
+          }
+          if (needDokter) {
+            const r = results[idx++];
+            const j = await r.json();
+            const list = j?.response?.list || j?.list || j?.data || [];
+            setDokterOptions(list.map((row) => ({ value: row?.kdDokter || row?.kdProvider || row?.kdDok || row?.kode || "", label: row?.nmDokter || row?.nmProvider || row?.nama || "" })));
+          }
+          if (needSpesialis) {
+            const r = results[idx++];
+            const j = await r.json();
+            const list = j?.response?.list || [];
+            setSpesialisOptions(list.map((row) => ({ value: row.kdSpesialis, label: `${row.kdSpesialis || ""} — ${row.nmSpesialis || ""}` })));
+          }
+          if (needSarana) {
+            const r = results[idx++];
+            const j = await r.json();
+            const list = j?.response?.list || [];
+            setSaranaOptions(list.map((row) => ({ value: row.kdSarana, label: `${row.kdSarana || ""} — ${row.nmSarana || ""}` })));
+            setRujukForm((p) => ({ ...p, kdSarana: p.kdSarana || "1" }));
+          }
+        } catch {
+          if (needPoli) setPoliOptions([]);
+          if (needDokter) setDokterOptions([]);
+          if (needSpesialis) setSpesialisOptions([]);
+          if (needSarana) setSaranaOptions([]);
         }
-      } catch {}
-      try {
-        const params = new URLSearchParams({ start: 0, limit: 200 });
-        const poRes = await fetch(`/api/pcare/poli?${params.toString()}`, { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }, credentials: "include" });
-        const poJson = await poRes.json();
-        const poList = poJson?.response?.list || poJson?.list || poJson?.data || [];
-        setPoliOptions(poList.map((row) => ({ value: row?.kdPoli || row?.kode || "", label: row?.nmPoli || row?.nama || "" })));
-      } catch { setPoliOptions([]); }
-      try {
-        const params = new URLSearchParams({ start: 0, limit: 200 });
-        const dkRes = await fetch(`/api/pcare/dokter?${params.toString()}`, { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }, credentials: "include" });
-        const dkJson = await dkRes.json();
-        const dkList = dkJson?.response?.list || dkJson?.list || dkJson?.data || [];
-        setDokterOptions(dkList.map((row) => ({ value: row?.kdDokter || row?.kdProvider || row?.kdDok || row?.kode || "", label: row?.nmDokter || row?.nmProvider || row?.nama || "" })));
-      } catch { setDokterOptions([]); }
-      setProviderOptions([]);
-  try {
-    const spRes = await fetch(`/api/pcare/spesialis`, { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }, credentials: "include" });
-    const spJson = await spRes.json();
-    const spList = spJson?.response?.list || [];
-    setSpesialisOptions(spList.map((row) => ({ value: row.kdSpesialis, label: `${row.kdSpesialis || ""} — ${row.nmSpesialis || ""}` })));
-  } catch { setSpesialisOptions([]); }
-  try {
-    const saRes = await fetch(`/api/pcare/spesialis/sarana`, { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }, credentials: "include" });
-    const saJson = await saRes.json();
-    const saList = saJson?.response?.list || [];
-    setSaranaOptions(saList.map((row) => ({ value: row.kdSarana, label: `${row.kdSarana || ""} — ${row.nmSarana || ""}` })));
-    setRujukForm((p) => ({ ...p, kdSarana: p.kdSarana || "1" }));
-  } catch { setSaranaOptions([]); }
+      }
     } catch (_e) {
     }
   };
@@ -692,7 +731,20 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
         setIsOpen(false);
         setTimeout(() => {
           try {
-            router.visit(route("rawat-jalan.index"));
+            try { setRawatJalanFilters({ kd_dokter: doctorCode || "", kd_poli: poliCode || "" }); } catch (_) {}
+            let basePath = "/rawat-jalan";
+            try { basePath = route("rawat-jalan.index", {}, false) || "/rawat-jalan"; } catch (_) {}
+            try {
+              const u = new URL(basePath, window.location.origin);
+              if (doctorCode) u.searchParams.set("kd_dokter", doctorCode);
+              if (poliCode) u.searchParams.set("kd_poli", poliCode);
+              router.visit(u.pathname + u.search + u.hash);
+            } catch (_) {
+              const qs = [];
+              if (doctorCode) qs.push(`kd_dokter=${encodeURIComponent(doctorCode)}`);
+              if (poliCode) qs.push(`kd_poli=${encodeURIComponent(poliCode)}`);
+              router.visit(basePath + (qs.length ? `?${qs.join("&")}` : ""));
+            }
           } catch {
             router.visit("/rawat-jalan");
           }
@@ -759,7 +811,20 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                           setIsOpen(false);
                           setTimeout(() => {
                             try {
-                              router.visit(route('rawat-jalan.index'));
+                              try { setRawatJalanFilters({ kd_dokter: doctorCode || '', kd_poli: poliCode || '' }); } catch (_) {}
+                              let basePath = '/rawat-jalan';
+                              try { basePath = route('rawat-jalan.index', {}, false) || '/rawat-jalan'; } catch (_) {}
+                              try {
+                                const u = new URL(basePath, window.location.origin);
+                                if (doctorCode) u.searchParams.set('kd_dokter', doctorCode);
+                                if (poliCode) u.searchParams.set('kd_poli', poliCode);
+                                router.visit(u.pathname + u.search + u.hash);
+                              } catch (_) {
+                                const qs = [];
+                                if (doctorCode) qs.push(`kd_dokter=${encodeURIComponent(doctorCode)}`);
+                                if (poliCode) qs.push(`kd_poli=${encodeURIComponent(poliCode)}`);
+                                router.visit(basePath + (qs.length ? `?${qs.join('&')}` : ''));
+                              }
                             } catch {
                               router.visit('/rawat-jalan');
                             }

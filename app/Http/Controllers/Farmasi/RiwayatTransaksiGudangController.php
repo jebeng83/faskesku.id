@@ -16,19 +16,19 @@ class RiwayatTransaksiGudangController extends Controller
 
     public function data(Request $request)
     {
-        $perPage = (int) ($request->get('perPage', 25));
-        $page = (int) ($request->get('page', 1));
-        $from = $request->get('from');
-        $to = $request->get('to');
-        $q = $request->get('q');
-        $kode = $request->get('kode_brng');
-        $bangsal = $request->get('kd_bangsal');
-        $namaBrng = $request->get('nama_brng');
-        $nmBangsal = $request->get('nm_bangsal');
-        $jenis = $request->get('jenis_transaksi');
-        $sumber = $request->get('sumber_transaksi');
-        $noBatch = $request->get('no_batch');
-        $noFaktur = $request->get('no_faktur');
+        $perPage = (int) ($request->query('perPage', 25));
+        $page = (int) ($request->query('page', 1));
+        $from = $request->query('from');
+        $to = $request->query('to');
+        $q = $request->query('q');
+        $kode = $request->query('kode_brng');
+        $bangsal = $request->query('kd_bangsal');
+        $namaBrng = $request->query('nama_brng');
+        $nmBangsal = $request->query('nm_bangsal');
+        $jenis = $request->query('jenis_transaksi');
+        $sumber = $request->query('sumber_transaksi');
+        $noBatch = $request->query('no_batch');
+        $noFaktur = $request->query('no_faktur');
 
         $query = DB::table('riwayat_transaksi_gudangbarang')
             ->leftJoin('databarang', 'riwayat_transaksi_gudangbarang.kode_brng', '=', 'databarang.kode_brng')
@@ -117,4 +117,3 @@ class RiwayatTransaksiGudangController extends Controller
         ]);
     }
 }
-

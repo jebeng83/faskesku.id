@@ -548,6 +548,9 @@ const SearchableSelect = ({
     const [remoteOptions, setRemoteOptions] = useState([]);
     const [remoteLoading, setRemoteLoading] = useState(false);
     const [remoteError, setRemoteError] = useState("");
+    const abortRef = useRef(null);
+    const cacheRef = useRef(new Map());
+    const reqIdRef = useRef(0);
 
     const useRemote = !!source && !!REFERENSI_CONFIG[source];
     const cfg = useRemote ? REFERENSI_CONFIG[source] : null;
@@ -668,19 +671,38 @@ const SearchableSelect = ({
                     (params.q ?? "").length >= minChars;
                 if (canLoadInitial) {
                     (async () => {
+                        const url = cfg.buildUrl(params);
+                        const cached = cacheRef.current.get(url);
+                        if (cached) {
+                            setRemoteOptions(Array.isArray(cached) ? cached : []);
+                            setRemoteLoading(false);
+                            setRemoteError("");
+                            return;
+                        }
                         try {
+                            if (abortRef.current) {
+                                try { abortRef.current.abort(); } catch {}
+                            }
+                            const controller = new AbortController();
+                            abortRef.current = controller;
+                            reqIdRef.current += 1;
                             setRemoteLoading(true);
                             setRemoteError("");
-                            const url = cfg.buildUrl(params);
                             const res = await fetch(url, {
-                                headers: { Accept: "application/json" },
+                                headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
                                 credentials: "include",
+                                signal: controller.signal,
                             });
                             const json = await res.json();
                             const opts = cfg.parse(json);
-                            setRemoteOptions(Array.isArray(opts) ? opts : []);
+                            const arr = Array.isArray(opts) ? opts : [];
+                            setRemoteOptions(arr);
+                            cacheRef.current.set(url, arr);
                         } catch (_e) {
-                            setRemoteError(_e?.message || "Gagal memuat data");
+                            if (_e?.name === "AbortError") {
+                            } else {
+                                setRemoteError(_e?.message || "Gagal memuat data");
+                            }
                         } finally {
                             setRemoteLoading(false);
                         }
@@ -696,6 +718,10 @@ const SearchableSelect = ({
         return () => {
             window.removeEventListener("scroll", updatePosition, true);
             window.removeEventListener("resize", updatePosition);
+            if (abortRef.current) {
+                try { abortRef.current.abort(); } catch {}
+                abortRef.current = null;
+            }
             if (!isOpen && portalElRef.current) {
                 try {
                     document.body.removeChild(portalElRef.current);
@@ -711,13 +737,11 @@ const SearchableSelect = ({
         if (!isOpen) return; // hanya fetch saat dropdown terbuka
         const handle = setTimeout(async () => {
             try {
-                setRemoteLoading(true);
                 setRemoteError("");
                 const minChars = cfg?.minChars ?? 0;
                 if (minChars > 0 && (searchTerm ?? "").length < minChars) {
                     setRemoteOptions([]);
                     setRemoteLoading(false);
-                    setRemoteError("");
                     return;
                 }
                 const params = {
@@ -726,15 +750,34 @@ const SearchableSelect = ({
                     q: searchTerm,
                 };
                 const url = cfg.buildUrl(params);
+                const cached = cacheRef.current.get(url);
+                if (cached) {
+                    setRemoteOptions(Array.isArray(cached) ? cached : []);
+                    setRemoteLoading(false);
+                    return;
+                }
+                if (abortRef.current) {
+                    try { abortRef.current.abort(); } catch {}
+                }
+                const controller = new AbortController();
+                abortRef.current = controller;
+                reqIdRef.current += 1;
+                setRemoteLoading(true);
                 const res = await fetch(url, {
-                    headers: { Accept: "application/json" },
+                    headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
                     credentials: "include",
+                    signal: controller.signal,
                 });
                 const json = await res.json();
                 const opts = cfg.parse(json);
-                setRemoteOptions(Array.isArray(opts) ? opts : []);
+                const arr = Array.isArray(opts) ? opts : [];
+                setRemoteOptions(arr);
+                cacheRef.current.set(url, arr);
             } catch (_e) {
-                setRemoteError(_e?.message || "Gagal memuat data");
+                if (_e?.name === "AbortError") {
+                } else {
+                    setRemoteError(_e?.message || "Gagal memuat data");
+                }
             } finally {
                 setRemoteLoading(false);
             }

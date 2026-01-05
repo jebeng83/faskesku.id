@@ -33,7 +33,11 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Ensure method spoofing is enabled
         $middleware->validateCsrfTokens(except: [
-            //
+            '/api/wagateway/start',
+            '/api/wagateway/qr',
+            '/api/wagateway/restart',
+            '/api/wagateway/send',
+            '/api/whatsapp/send',
         ]);
 
         $middleware->alias([

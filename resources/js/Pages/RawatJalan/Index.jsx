@@ -7,7 +7,6 @@ import { motion } from 'framer-motion';
 import { todayDateString, getAppTimeZone } from '@/tools/datetime';
 import axios from 'axios';
 import {
-  PlusIcon,
   MagnifyingGlassIcon,
   DocumentTextIcon,
   DocumentCheckIcon,
@@ -177,22 +176,26 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         document.body.style.userSelect = 'none';
     };
 
+    const debounceRef = useRef(null);
     const handleFilterChange = (key, value) => {
         const newParams = { ...searchParams, [key]: value };
         setSearchParams(newParams);
 
-        // Persist pilihan Dokter/Poli via helper agar konsisten di seluruh aplikasi
         if (key === 'kd_dokter' || key === 'kd_poli') {
             setRawatJalanFilters({
                 kd_dokter: (key === 'kd_dokter' ? value : newParams.kd_dokter) || '',
                 kd_poli: (key === 'kd_poli' ? value : newParams.kd_poli) || '',
             });
+            router.get(route('rawat-jalan.index'), newParams, { preserveState: true, replace: true });
+            return;
         }
-        
-        router.get(route('rawat-jalan.index'), newParams, {
-            preserveState: true,
-            replace: true
-        });
+
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
+        }
+        debounceRef.current = setTimeout(() => {
+            router.get(route('rawat-jalan.index'), newParams, { preserveState: true, replace: true });
+        }, 350);
     };
 
     const resetFilters = () => {
@@ -705,13 +708,6 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                             <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">
                                 Belum ada data rawat jalan yang sesuai dengan filter yang dipilih. Silakan ubah filter atau tambah data baru.
                             </p>
-                            <Link
-                                href={route('rawat-jalan.create')}
-                                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-xl inline-flex items-center gap-3 transition-all duration-300 shadow-lg hover:shadow-xl font-medium transform hover:scale-105"
-                            >
-                                <PlusIcon className="w-5 h-5" />
-                                Tambah Data Rawat Jalan Pertama
-                            </Link>
                         </div>
                     </motion.div>
                 )}

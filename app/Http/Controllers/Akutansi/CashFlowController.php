@@ -26,8 +26,8 @@ class CashFlowController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $from = (string) $request->get('from', '');
-        $to = (string) $request->get('to', '');
+        $from = (string) $request->query('from', '');
+        $to = (string) $request->query('to', '');
 
         $fromDate = $from !== '' ? $from : date('Y-m-d');
         $toDate = $to !== '' ? $to : date('Y-m-d');

@@ -37,6 +37,7 @@ use App\Http\Controllers\RawatJalan\ResepController;
 use App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController;
 use App\Http\Controllers\SatuSehat\SatuSehatController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 
 // Public endpoints (tidak memerlukan authentication)
@@ -131,6 +132,367 @@ Route::prefix('queue')->group(function () {
 // Poli voice mapping (public) - tidak membutuhkan CSRF stateful
 Route::get('/poli-voice-mapping', [\App\Http\Controllers\Antrian\PoliVoiceController::class, 'index'])->name('api.poli.voice.mapping.index');
 Route::post('/poli-voice-mapping', [\App\Http\Controllers\Antrian\PoliVoiceController::class, 'store'])->name('api.poli.voice.mapping.store');
+
+Route::prefix('wagateway')->group(function () {
+    Route::match(['post','get'], '/start', function () {
+        try {
+            $base = env('WAGATEWAY_BASE', 'http://127.0.0.1:8100');
+            $uptimeUrl = rtrim($base, '/') . '/uptime';
+            $ping = Http::withOptions(['http_errors' => false])->timeout(3)->get($uptimeUrl);
+            if ($ping->successful()) {
+                return response()->json(['ok' => true, 'status' => 'already_running'], 200);
+            }
+            $script = base_path('public/wagateway/node_mrlee/start-server.sh');
+            if (!file_exists($script)) {
+                return response()->json(['ok' => false, 'error' => 'Start script not found'], 500);
+            }
+            $p = new \Symfony\Component\Process\Process(['bash', $script, '--background']);
+            $p->setTimeout(15);
+            $p->run();
+            $resp = Http::withOptions(['http_errors' => false])->timeout(5)->retry(5, 500)->get($uptimeUrl);
+            return response()->json([
+                'ok' => $resp->successful(),
+                'status' => $resp->successful() ? 'started' : 'failed',
+                'status_code' => $resp->status(),
+            ], $resp->successful() ? 200 : 500);
+        } catch (\Throwable $e) {
+            return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
+        }
+    })->name('api.wagateway.start');
+
+    Route::match(['post','get'], '/restart', function () {
+        try {
+            $base = env('WAGATEWAY_BASE', 'http://127.0.0.1:8100');
+            $url = rtrim($base, '/') . '/restart-client';
+            $resp = Http::withOptions(['http_errors' => false])->timeout(10)->retry(2, 500)->get($url);
+            $raw = null;
+            try { $raw = $resp->json(); } catch (\Throwable $e) { $raw = json_decode($resp->body(), true); }
+            $data = is_array($raw) ? $raw : [];
+            return response()->json([
+                'ok' => $resp->successful(),
+                'status_code' => $resp->status(),
+                'data' => $data,
+            ], $resp->status() ?: 200);
+        } catch (\Throwable $e) {
+            return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
+        }
+    })->name('api.wagateway.restart');
+    Route::match(['post','get'], '/stop', function () {
+        try {
+            $base = env('WAGATEWAY_BASE', 'http://127.0.0.1:8100');
+            $url = rtrim($base, '/') . '/StopWAG';
+            $resp = Http::withOptions(['http_errors' => false])->timeout(8)->retry(2, 500)->post($url);
+            $raw = null;
+            try { $raw = $resp->json(); } catch (\Throwable $parseErr) { $raw = json_decode($resp->body(), true); }
+            $data = is_array($raw) ? $raw : [];
+            return response()->json([
+                'ok' => $resp->successful(),
+                'status_code' => $resp->status(),
+                'data' => $data,
+            ], $resp->status() ?: 200);
+        } catch (\Throwable $e) {
+            return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
+        }
+    })->name('api.wagateway.stop');
+    Route::get('/status', function () {
+        try {
+            $base = env('WAGATEWAY_BASE', 'http://127.0.0.1:8100');
+            $url = rtrim($base, '/') . '/status';
+            $resp = Http::withOptions(['http_errors' => false])->timeout(8)->retry(2, 500)->get($url);
+            $raw = null;
+            try { $raw = $resp->json(); } catch (\Throwable $parseErr) { $raw = json_decode($resp->body(), true); }
+            $data = is_array($raw) ? $raw : [];
+            $flatAuth = $data['whatsapp_authenticated'] ?? ($data['authenticated'] ?? null);
+            $flatReady = $data['whatsapp_ready'] ?? false; // Get ready status
+            $flatQrStatus = $data['qr_code_status'] ?? ($data['qrStatus'] ?? null);
+            return response()->json([
+                'ok' => $resp->successful(),
+                'status_code' => $resp->status(),
+                'whatsapp_authenticated' => $flatAuth,
+                'whatsapp_ready' => $flatReady, // Include ready status
+                'qr_code_status' => $flatQrStatus,
+                'data' => $data,
+            ], $resp->status() ?: 200);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'ok' => false,
+                'error' => $e->getMessage(),
+                'hint' => 'Pastikan Node gateway berjalan dan dapat diakses. Atur WAGATEWAY_BASE jika tidak di 127.0.0.1:8100.',
+            ], 500);
+        }
+    })->name('api.wagateway.status');
+
+    Route::post('/qr', function () {
+        try {
+            $base = env('WAGATEWAY_BASE', 'http://127.0.0.1:8100');
+            $url = rtrim($base, '/') . '/WA-QrCode';
+            $resp = Http::withOptions(['http_errors' => false])->timeout(10)->retry(3, 1000)->post($url);
+            $status = $resp->status();
+            $raw = null;
+            try { $raw = $resp->json(); } catch (\Throwable $parseErr) { $raw = json_decode($resp->body(), true); }
+            $data = is_array($raw) ? $raw : [];
+            $flatQr = $data['qrBarCode'] ?? ($data['qr'] ?? null);
+            $payload = [
+                'ok' => $resp->successful(),
+                'status_code' => $status,
+                'qrBarCode' => $flatQr,
+                'data' => $data,
+            ];
+            if ($status === 422) {
+                $payload['message'] = $data['message'] ?? 'QR Not Ready';
+                // Normalisasi agar frontend tidak menganggap ini error transport
+                return response()->json($payload, 200);
+            }
+            return response()->json($payload, $status ?: 200);
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            $r = $e->response ?? null;
+            $status = $r ? $r->status() : 500;
+            $raw = null;
+            try { $raw = $r ? $r->json() : null; } catch (\Throwable $parseErr) { $raw = $r ? json_decode($r->body(), true) : null; }
+            $data = is_array($raw) ? $raw : [];
+            $flatQr = $data['qrBarCode'] ?? ($data['qr'] ?? null);
+            $payload = [
+                'ok' => false,
+                'status_code' => $status,
+                'qrBarCode' => $flatQr,
+                'data' => $data,
+                'message' => $data['message'] ?? 'Gateway error',
+            ];
+            if ($status === 422) {
+                return response()->json($payload, 200);
+            }
+            return response()->json($payload, 500);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'ok' => false,
+                'error' => $e->getMessage(),
+                'hint' => 'Pastikan Node gateway berjalan dan dapat diakses. Atur WAGATEWAY_BASE jika tidak di 127.0.0.1:8100.',
+            ], 500);
+        }
+    })->name('api.wagateway.qr');
+
+    Route::post('/send', function (Request $request) {
+        $to = (string) $request->input('to', '');
+        $text = (string) $request->input('text', '');
+        try {
+            $base = env('WAGATEWAY_BASE', 'http://127.0.0.1:8100');
+            $statusUrl = rtrim($base, '/') . '/status';
+            $statusResp = null;
+            $gatewayReachable = false;
+            try {
+                $statusResp = Http::withOptions(['http_errors' => false])->timeout(3)->get($statusUrl);
+                $gatewayReachable = $statusResp !== null;
+            } catch (\Throwable $e) {
+                $statusResp = null;
+                $gatewayReachable = false;
+            }
+            
+            if (!$gatewayReachable || !$statusResp || !$statusResp->successful()) {
+                return response()->json([
+                    'ok' => false,
+                    'error' => 'Node gateway tidak dapat diakses. Pastikan server Node gateway berjalan di ' . $base,
+                    'status_code' => $statusResp ? $statusResp->status() : 0,
+                    'hint' => 'Jalankan Node gateway dengan: node public/wagateway/node_mrlee/appJM.js atau gunakan script start-server.sh',
+                ], 200);
+            }
+
+            $auth = false;
+            $rawS = null;
+            try { 
+                $rawS = $statusResp->json(); 
+            } catch (\Throwable $parseErr) { 
+                $rawS = json_decode($statusResp->body(), true); 
+            }
+            $dataS = is_array($rawS) ? $rawS : [];
+            $auth = (bool) ($dataS['whatsapp_authenticated'] ?? false);
+            $isReady = (bool) ($dataS['whatsapp_ready'] ?? false);
+            $clientState = $dataS['client_state'] ?? null;
+            $qrStatus = $dataS['qr_code_status'] ?? '';
+
+            if (!$auth) {
+                return response()->json([
+                    'ok' => false,
+                    'error' => 'WhatsApp belum terautentikasi. Silakan scan QR code terlebih dahulu.',
+                    'status_code' => 200,
+                    'data' => $dataS,
+                ], 200);
+            }
+
+            // Check if client is truly ready (not just authenticated)
+            // Client must be both authenticated AND ready
+            if (!$isReady) {
+                return response()->json([
+                    'ok' => false,
+                    'error' => 'Client WhatsApp belum benar-benar ready. Tunggu beberapa saat setelah authenticated.',
+                    'status_code' => 200,
+                    'data' => $dataS,
+                    'hint' => 'Client sudah authenticated tapi belum ready. Tunggu 5-10 detik atau klik tombol "Restart" untuk memulai ulang client WhatsApp.',
+                ], 200);
+            }
+
+            // Additional check: If client_state is null or 'not_initialized', client might not be ready
+            $clientInfo = $dataS['client_state'] ?? null;
+            $hasClientInfo = is_array($clientInfo) || (is_object($clientInfo) && !empty((array)$clientInfo));
+            
+            if ($clientState === 'not_initialized' || $clientState === null || (!$hasClientInfo && $auth)) {
+                return response()->json([
+                    'ok' => false,
+                    'error' => 'Client WhatsApp belum siap. Silakan restart Node gateway.',
+                    'status_code' => 200,
+                    'data' => $dataS,
+                    'hint' => 'Client belum terinisialisasi dengan benar. Klik tombol "Restart" untuk memulai ulang client WhatsApp.',
+                ], 200);
+            }
+
+            // If QR status is still "not ready" but authenticated, might be in transition
+            if ($qrStatus === 'not ready' && $auth) {
+                // Wait a bit and check again
+                sleep(1);
+                try {
+                    $statusResp2 = Http::withOptions(['http_errors' => false])->timeout(3)->get($statusUrl);
+                    $rawS2 = null;
+                    try { 
+                        $rawS2 = $statusResp2->json(); 
+                    } catch (\Throwable $parseErr) { 
+                        $rawS2 = json_decode($statusResp2->body(), true); 
+                    }
+                    $dataS2 = is_array($rawS2) ? $rawS2 : [];
+                    $clientState2 = $dataS2['client_state'] ?? null;
+                    if ($clientState2 === 'not_initialized' || $clientState2 === null) {
+                        return response()->json([
+                            'ok' => false,
+                            'error' => 'Client WhatsApp belum siap. Silakan restart Node gateway.',
+                            'status_code' => 200,
+                            'data' => $dataS2,
+                            'hint' => 'Client belum terinisialisasi dengan benar. Klik tombol "Restart" untuk memulai ulang client WhatsApp.',
+                        ], 200);
+                    }
+                } catch (\Throwable $e) {
+                    // Continue anyway
+                }
+            }
+
+            $primaryUrl = rtrim($base, '/') . '/send-message';
+            $resp = Http::withOptions(['http_errors' => false])->timeout(8)->post($primaryUrl, [
+                'number' => $to,
+                'message' => $text,
+            ]);
+            $raw = null;
+            try { 
+                $raw = $resp->json(); 
+            } catch (\Throwable $parseErr) { 
+                $raw = json_decode($resp->body(), true); 
+            }
+            $data = is_array($raw) ? $raw : [];
+            $ok = $resp->successful() && (($data['status'] ?? false) === true);
+            
+            if (! $ok) {
+                // Try fallback to force endpoint
+                $forceUrl = rtrim($base, '/') . '/send-message-force';
+                $resp2 = Http::withOptions(['http_errors' => false])->timeout(8)->post($forceUrl, [
+                    'number' => $to,
+                    'message' => $text,
+                ]);
+                $raw2 = null;
+                try { 
+                    $raw2 = $resp2->json(); 
+                } catch (\Throwable $parseErr) { 
+                    $raw2 = json_decode($resp2->body(), true); 
+                }
+                $data2 = is_array($raw2) ? $raw2 : [];
+                $ok2 = $resp2->successful() && (($data2['status'] ?? false) === true);
+                
+                if (!$ok2) {
+                    // Get error message from multiple possible locations
+                    // Check data2 first (from force endpoint), then data (from primary endpoint)
+                    $errorMsg = null;
+                    if (!empty($data2['message'])) {
+                        $errorMsg = $data2['message'];
+                    } elseif (!empty($data['message'])) {
+                        $errorMsg = $data['message'];
+                    } elseif (!empty($data2['response']['error'])) {
+                        $errorMsg = $data2['response']['error'];
+                    } elseif (!empty($data['response']['error'])) {
+                        $errorMsg = $data['response']['error'];
+                    } else {
+                        $errorMsg = 'Gagal mengirim pesan ke Node gateway';
+                    }
+                    
+                    $errorDetail = $data2['response']['error'] ?? $data['response']['error'] ?? null;
+                    $errorStack = $data2['response']['stack'] ?? $data['response']['stack'] ?? null;
+                    
+                    // Check for specific error types
+                    $hint = '';
+                    
+                    // Check for "Bukan nomor WA" error
+                    if (stripos($errorMsg, 'Bukan nomor WA') !== false || stripos($errorMsg, 'not a valid') !== false) {
+                        $hint = "Nomor {$to} tidak terdaftar di WhatsApp atau tidak valid.\n\n" .
+                                "Kemungkinan penyebab:\n" .
+                                "1. Nomor tidak terdaftar di WhatsApp\n" .
+                                "2. Format nomor salah (pastikan tanpa +, spasi, atau karakter khusus)\n" .
+                                "3. Nomor belum pernah dikontak sebelumnya\n\n" .
+                                "Format nomor yang benar: 6285229977208 (tanpa +, spasi, atau tanda hubung)\n" .
+                                "Pastikan nomor sudah terdaftar di WhatsApp dan sudah pernah dikontak sebelumnya.";
+                    }
+                    // Check for Puppeteer/client errors
+                    elseif ($errorDetail || $errorStack || stripos($errorMsg, 'Evaluation failed') !== false || stripos($errorMsg, 'getChat') !== false || stripos($errorMsg, 'Cannot read properties') !== false) {
+                        $errorText = ($errorDetail ?? '') . ' ' . ($errorStack ?? '') . ' ' . ($errorMsg ?? '');
+                        if (stripos($errorText, 'getChat') !== false || 
+                            stripos($errorText, 'Cannot read properties') !== false ||
+                            stripos($errorText, 'undefined') !== false ||
+                            stripos($errorText, 'puppeteer') !== false ||
+                            stripos($errorText, 'Evaluation failed') !== false) {
+                            $hint = "Client WhatsApp belum siap atau session terputus.\n\n" .
+                                    "Langkah perbaikan:\n" .
+                                    "1. Restart Node gateway:\n" .
+                                    "   - Stop server Node gateway (Ctrl+C di terminal Node gateway)\n" .
+                                    "   - Jalankan lagi: node public/wagateway/node_mrlee/appJM.js\n" .
+                                    "2. Tunggu sampai status menunjukkan 'whatsapp_ready: true'\n" .
+                                    "3. Coba kirim pesan lagi\n\n" .
+                                    "Catatan: Setelah restart, tunggu 10-15 detik sampai client benar-benar ready.";
+                        }
+                    }
+                    // Check for client not ready
+                    elseif (stripos($errorMsg, 'Client Not Ready') !== false) {
+                        $hint = 'Client WhatsApp belum siap. Tunggu beberapa saat atau restart Node gateway.';
+                    }
+                    
+                    if (!$hint) {
+                        $hint = 'Pastikan Node gateway berjalan dan WhatsApp sudah terautentikasi dan ready.';
+                    }
+                    
+                    return response()->json([
+                        'ok' => false,
+                        'error' => $errorMsg ?: 'Gagal mengirim pesan ke Node gateway',
+                        'error_detail' => $errorDetail,
+                        'status_code' => $resp2->status() ?: $resp->status(),
+                        'data' => $data2 ?: $data,
+                        'hint' => $hint,
+                        'number_sent' => $to, // Include the number that was sent for debugging
+                    ], 200);
+                }
+                
+                return response()->json([
+                    'ok' => true,
+                    'status_code' => $resp2->status(),
+                    'data' => $data2,
+                ], 200);
+            }
+            
+            return response()->json([
+                'ok' => true,
+                'status_code' => $resp->status(),
+                'data' => $data,
+            ], 200);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'ok' => false,
+                'error' => $e->getMessage(),
+                'hint' => 'Pastikan Node gateway berjalan dan dapat diakses di ' . (env('WAGATEWAY_BASE', 'http://127.0.0.1:8100')),
+            ], 200);
+        }
+    })->name('api.wagateway.send');
+});
 
 // Protected API endpoints (require authentication)
 // Use web session guard to fully support Inertia.js SPA with same-origin cookies
@@ -266,6 +628,8 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::put('/credentials/{credential}', [\App\Http\Controllers\API\WhatsAppCredentialController::class, 'update'])->name('api.whatsapp.credentials.update');
         Route::delete('/credentials/{credential}', [\App\Http\Controllers\API\WhatsAppCredentialController::class, 'destroy'])->name('api.whatsapp.credentials.destroy');
     });
+
+    
 
     // API routes untuk diagnosa pasien (Rawat Jalan)
     Route::get('/rawat-jalan/diagnosa', [RawatJalanController::class, 'getDiagnosaPasien'])->name('api.rawat-jalan.diagnosa.index');

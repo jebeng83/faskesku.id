@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 import credentials from './credentials'
 /**
-* @see routes/api.php:248
+* @see routes/api.php:610
 * @route '/api/whatsapp/send'
 */
 export const send = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -15,7 +15,7 @@ send.definition = {
 } satisfies RouteDefinition<["post"]>
 
 /**
-* @see routes/api.php:248
+* @see routes/api.php:610
 * @route '/api/whatsapp/send'
 */
 send.url = (options?: RouteQueryOptions) => {
@@ -23,7 +23,7 @@ send.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/api.php:248
+* @see routes/api.php:610
 * @route '/api/whatsapp/send'
 */
 send.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

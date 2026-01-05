@@ -624,8 +624,8 @@ class ResepController extends Controller
             $decodedNoRkmMedis = urldecode($noRkmMedis);
 
             // Ambil parameter pagination dari request
-            $limit = request()->get('limit', 5); // Default 5 untuk loading awal
-            $offset = request()->get('offset', 0);
+            $limit = request()->query('limit', 5);
+            $offset = request()->query('offset', 0);
 
             // Pertama, ambil semua no_rawat berdasarkan no_rkm_medis dari reg_periksa
             $noRawatArray = DB::table('reg_periksa')
@@ -973,19 +973,19 @@ class ResepController extends Controller
                 'status_perawatan' => 'nullable|in:Belum,Sudah,Belum Terlayani,Sudah Terlayani,Semua',
             ]);
 
-            $jenis = $request->get('jenis', 'ralan');
-            $startDate = $request->get('start_date');
-            $endDate = $request->get('end_date');
-            $limit = (int) ($request->get('limit', 20));
-            $page = (int) ($request->get('page', 1));
+            $jenis = $request->query('jenis', 'ralan');
+            $startDate = $request->query('start_date');
+            $endDate = $request->query('end_date');
+            $limit = (int) ($request->query('limit', 20));
+            $page = (int) ($request->query('page', 1));
             $offset = ($page - 1) * $limit;
-            $dokterName = trim((string) $request->get('dokter', ''));
-            $poliOrBangsalName = trim((string) $request->get('poli', ''));
-            $bangsalName = trim((string) $request->get('bangsal', ''));
-            $q = trim((string) $request->get('q', ''));
-            $kdBangsal = trim((string) $request->get('kd_bangsal', ''));
-            $kdDepo = trim((string) $request->get('kd_depo', ''));
-            $statusPerawatanFilter = $request->get('status_perawatan'); // Belum / Sudah / (variasi label)
+            $dokterName = trim((string) $request->query('dokter', ''));
+            $poliOrBangsalName = trim((string) $request->query('poli', ''));
+            $bangsalName = trim((string) $request->query('bangsal', ''));
+            $q = trim((string) $request->query('q', ''));
+            $kdBangsal = trim((string) $request->query('kd_bangsal', ''));
+            $kdDepo = trim((string) $request->query('kd_depo', ''));
+            $statusPerawatanFilter = $request->query('status_perawatan');
             if ($statusPerawatanFilter === 'Belum Terlayani') {
                 $statusPerawatanFilter = 'Belum';
             } elseif ($statusPerawatanFilter === 'Sudah Terlayani') {
@@ -1128,8 +1128,8 @@ class ResepController extends Controller
     public function masterAturanPakai(Request $request): JsonResponse
     {
         try {
-            $search = trim((string) $request->get('search', ''));
-            $limit = (int) ($request->get('limit', 20));
+            $search = trim((string) $request->query('search', ''));
+            $limit = (int) ($request->query('limit', 20));
 
             $q = DB::table('master_aturan_pakai')->select('aturan');
             if ($search !== '') {

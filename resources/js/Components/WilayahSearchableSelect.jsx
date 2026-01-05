@@ -28,6 +28,9 @@ export default function WilayahSearchableSelect({
 	const buttonRef = useRef(null);
 	const inputRef = useRef(null);
 	const searchTimeoutRef = useRef(null);
+    const abortInitRef = useRef(null);
+    const abortSearchRef = useRef(null);
+    const cacheRef = useRef(new Map());
 
 	// Load initial data
 	useEffect(() => {
@@ -103,7 +106,19 @@ export default function WilayahSearchableSelect({
 					return;
 			}
 
-			const response = await window.axios.get(url);
+            const cached = cacheRef.current.get(url);
+            if (cached) {
+                setOptions(cached);
+                setFilteredOptions(cached);
+                setLoading(false);
+                return;
+            }
+            if (abortInitRef.current) {
+                try { abortInitRef.current.abort(); } catch {}
+            }
+            const controller = new AbortController();
+            abortInitRef.current = controller;
+            const response = await window.axios.get(url, { signal: controller.signal });
 
 			if (response.data && response.data.success) {
                 const data = response.data.data.map((item) => ({
@@ -113,9 +128,13 @@ export default function WilayahSearchableSelect({
                 }));
                 setOptions(data);
                 setFilteredOptions(data);
+                cacheRef.current.set(url, data);
             }
 		} catch (error) {
-			console.error(`Error loading ${level}:`, error);
+            if (error?.name === "CanceledError" || error?.code === "ERR_CANCELED") {
+                return;
+            }
+            console.error(`Error loading ${level}:`, error);
 		} finally {
 			setLoading(false);
 		}
@@ -149,19 +168,32 @@ export default function WilayahSearchableSelect({
 					)}&level=${level}`;
 				}
 
-				const response = await window.axios.get(url, {
-                    headers: { Accept: "application/json" },
-                });
+                const cached = cacheRef.current.get(url);
+                if (cached) {
+                    setFilteredOptions(cached);
+                    setSearchLoading(false);
+                    return;
+                }
+                if (abortSearchRef.current) {
+                    try { abortSearchRef.current.abort(); } catch {}
+                }
+                const controller = new AbortController();
+                abortSearchRef.current = controller;
+                const response = await window.axios.get(url, { signal: controller.signal, headers: { Accept: "application/json" } });
 				if (response.data && response.data.success) {
 					const data = response.data.data.map((item) => ({
 						value: item.code,
 						label: item.name,
 						fullAddress: item.full_address,
 					}));
-					setFilteredOptions(data);
+                    setFilteredOptions(data);
+                    cacheRef.current.set(url, data);
 				}
 			} catch (error) {
-				console.error("Error searching wilayah:", error);
+                if (error?.name === "CanceledError" || error?.code === "ERR_CANCELED") {
+                    return;
+                }
+                console.error("Error searching wilayah:", error);
 			} finally {
 				setSearchLoading(false);
 			}

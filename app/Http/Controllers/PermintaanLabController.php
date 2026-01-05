@@ -49,8 +49,8 @@ class PermintaanLabController extends Controller
 
         // Filter berdasarkan rentang tanggal (start_date, end_date)
         if ($request->filled('start_date') || $request->filled('end_date')) {
-            $start = $request->get('start_date');
-            $end = $request->get('end_date');
+            $start = $request->query('start_date');
+            $end = $request->query('end_date');
             if ($start && $end) {
                 $query->whereBetween('tgl_permintaan', [$start, $end]);
             } elseif ($start) {
@@ -1254,8 +1254,8 @@ class PermintaanLabController extends Controller
     public function getLabTests(Request $request): JsonResponse
     {
         try {
-            $search = $request->get('search', '');
-            $kelas = $request->get('kelas', '');
+            $search = $request->query('search', '');
+            $kelas = $request->query('kelas', '');
 
             $query = JnsPerawatanLab::where('status', '1');
 
@@ -1290,7 +1290,7 @@ class PermintaanLabController extends Controller
     public function getTemplates(Request $request, $kdJenisPrw = null): JsonResponse
     {
         try {
-            $kdJenisPrw = $kdJenisPrw ?? $request->get('kd_jenis_prw');
+            $kdJenisPrw = $kdJenisPrw ?? $request->query('kd_jenis_prw');
 
             if (! $kdJenisPrw) {
                 return response()->json([

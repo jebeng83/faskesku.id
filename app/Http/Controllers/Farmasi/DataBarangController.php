@@ -12,8 +12,8 @@ class DataBarangController extends Controller
 {
     public function index(Request $request)
     {
-        $q = (string) $request->get('q', '');
-        $perPage = (int) $request->get('perPage', 10);
+        $q = (string) $request->query('q', '');
+        $perPage = (int) $request->query('perPage', 10);
 
         $itemsQuery = DB::table('databarang')
             ->select([

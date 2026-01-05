@@ -1396,53 +1396,36 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [noRawat]);
 
-    // Cek data rujukan subspesialis dari tabel pcare_rujuk_subspesialis
     useEffect(() => {
         const checkRujukanSubspesialis = async () => {
-            if (!noRawat) {
-                console.log('[CpptSoap] checkRujukanSubspesialis: noRawat kosong');
-                setRujukanBerhasil(false);
-                return;
-            }
-            console.log('[CpptSoap] checkRujukanSubspesialis: checking for noRawat:', noRawat);
+            if (!noRawat) { setRujukanBerhasil(false); return; }
+            const shouldCheck = rujukanActive || rujukanBerhasil;
+            if (!shouldCheck) { setRujukanBerhasil(false); setPcareRujukanSubspesialis(null); return; }
             try {
                 const url = `/api/pcare/rujuk-subspesialis/rawat/${encodeURIComponent(noRawat)}`;
-                console.log('[CpptSoap] Fetching URL:', url);
-                const res = await fetch(url, {
-                    headers: { 'Accept': 'application/json' }
-                });
-                console.log('[CpptSoap] Response status:', res.status, res.ok);
-                const json = await res.json();
-                console.log('[CpptSoap] Response JSON:', json);
-                const data = json.data || null;
-                console.log('[CpptSoap] Extracted data:', data ? 'exists' : 'null');
-                
-                // Tampilkan tombol Cetak Rujukan jika ada data di tabel
-                // Jika response OK dan ada data, tampilkan tombol
-                if (res.ok && data) {
-                    console.log('[CpptSoap] Setting rujukanBerhasil = true');
-                    setRujukanBerhasil(true);
-                    setPcareRujukanSubspesialis(data);
-                    // Simpan noKunjungan untuk cetak rujukan
-                    if (data.noKunjungan) {
-                        setLastNoKunjungan(data.noKunjungan);
+                const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                if (res.ok) {
+                    const json = await res.json();
+                    const data = json.data || null;
+                    if (data) {
+                        setRujukanBerhasil(true);
+                        setPcareRujukanSubspesialis(data);
+                        if (data.noKunjungan) { setLastNoKunjungan(data.noKunjungan); }
+                    } else {
+                        setRujukanBerhasil(false);
+                        setPcareRujukanSubspesialis(null);
                     }
                 } else {
-                    console.log('[CpptSoap] Setting rujukanBerhasil = false (res.ok:', res.ok, ', data:', !!data, ')');
-                    // Jika response tidak OK atau tidak ada data, set false
                     setRujukanBerhasil(false);
                     setPcareRujukanSubspesialis(null);
                 }
-            } catch (e) {
-                // Jika error, set false
-                console.error('[CpptSoap] Error checking rujukan subspesialis:', e);
+            } catch {
                 setRujukanBerhasil(false);
                 setPcareRujukanSubspesialis(null);
             }
         };
         checkRujukanSubspesialis();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [noRawat]);
+    }, [noRawat, rujukanActive, rujukanBerhasil]);
 
     // Monitor perubahan state rujukanBerhasil untuk debugging
     useEffect(() => {

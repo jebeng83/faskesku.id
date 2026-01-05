@@ -153,8 +153,8 @@ class WilayahController extends Controller
      */
     public function allVillages(Request $request): JsonResponse
     {
-        $filter = $request->get('filter');
-        $limit = $request->get('limit', 100);
+        $filter = $request->query('filter');
+        $limit = $request->query('limit', 100);
 
         try {
             $villages = Wilayah::getAllVillages($filter, $limit);
@@ -185,8 +185,8 @@ class WilayahController extends Controller
      */
     public function search(Request $request): JsonResponse
     {
-        $query = $request->get('q');
-        $level = $request->get('level'); // province, regency, district, village
+        $query = $request->query('q');
+        $level = $request->query('level');
 
         // Allow empty query for village level to get all villages
         if (! $query && $level !== 'village') {

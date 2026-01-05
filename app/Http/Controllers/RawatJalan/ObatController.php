@@ -17,9 +17,9 @@ class ObatController extends Controller
     public function getObatByPoli(Request $request): JsonResponse
     {
         try {
-            $kdPoli = $request->get('kd_poli');
-            $search = $request->get('search', '');
-            $limit = $request->get('limit', 50);
+            $kdPoli = $request->query('kd_poli');
+            $search = $request->query('search', '');
+            $limit = $request->query('limit', 50);
 
             if (! $kdPoli) {
                 return response()->json([
@@ -97,7 +97,7 @@ class ObatController extends Controller
     public function getDetailObat(Request $request, $kodeBarang): JsonResponse
     {
         try {
-            $kdPoli = $request->get('kd_poli');
+            $kdPoli = $request->query('kd_poli');
 
             if (! $kdPoli) {
                 return response()->json([

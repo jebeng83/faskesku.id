@@ -12,8 +12,8 @@ class DataSuplierController extends Controller
 {
     public function index(Request $request)
     {
-        $q = trim((string) $request->get('q', ''));
-        $perPage = (int) ($request->get('perPage', 10));
+        $q = trim((string) $request->query('q', ''));
+        $perPage = (int) ($request->query('perPage', 10));
 
         $query = DB::table('datasuplier');
 

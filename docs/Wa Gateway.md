@@ -384,3 +384,9 @@ Catatan Asumsi: dokumen ini menyelaraskan fitur umum WA Gateway berdasarkan prak
 ### Operasional & Monitoring
 - Mode 2: pantau log aplikasi desktop, ping DB, status WebView2, dan backlog `wa_outbox`.
 - Mode 1: pantau webhook delivery, error rate, dan retry queue di worker.
+
+
+- Klik Start → tombol berubah “Memulai...” lalu muncul “Start: started” atau “already_running”, dan Status tetap “not ready” sampai QR tersedia.
+- Klik Ambil Status → tombol berubah “Mengambil...”, status memuat ulang.
+- Klik Ambil QR → tombol berubah “Mengambil...”, jika QR belum tersedia, tampil teks “not ready”; jika tersedia, gambar QR muncul.
+- Setelah scan QR di WhatsApp ponsel, klik Ambil Status untuk melihat “Authenticated”.
