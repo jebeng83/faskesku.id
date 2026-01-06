@@ -323,7 +323,7 @@ export default function NewTarifTindakan({ token, noRawat = '' }) {
             </div>
           </div>
           <div className="mt-3 flex justify-end">
-            <button onClick={handleSubmitTindakan} disabled={loading || postingLoading} className="px-4 py-2 border border-[oklch(29.1%_0.149_302.717)] rounded-md bg-sky-500 hover:bg-blue-700 text-white disabled:opacity-50">
+            <button onClick={handleSubmitTindakan} disabled={loading || postingLoading} className="px-3 py-1.5 text-sm border border-[oklch(29.1%_0.149_302.717)] rounded-md bg-black hover:bg-neutral-800 text-white disabled:opacity-50">
               {loading || postingLoading ? 'Menyimpan…' : `Simpan ${selectedTindakan.length} Tindakan`}
             </button>
           </div>

@@ -6,6 +6,7 @@ import QueueController from './QueueController'
 import Antrian from './Antrian'
 import PermintaanLabController from './PermintaanLabController'
 import MenuController from './MenuController'
+import Odontogram from './Odontogram'
 import WhatsApp from './WhatsApp'
 import Alergi from './Alergi'
 import PermintaanRadiologiController from './PermintaanRadiologiController'
@@ -52,6 +53,7 @@ const Controllers = {
     Antrian: Object.assign(Antrian, Antrian),
     PermintaanLabController: Object.assign(PermintaanLabController, PermintaanLabController),
     MenuController: Object.assign(MenuController, MenuController),
+    Odontogram: Object.assign(Odontogram, Odontogram),
     WhatsApp: Object.assign(WhatsApp, WhatsApp),
     Alergi: Object.assign(Alergi, Alergi),
     PermintaanRadiologiController: Object.assign(PermintaanRadiologiController, PermintaanRadiologiController),

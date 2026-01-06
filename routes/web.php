@@ -1055,6 +1055,7 @@ Route::middleware('auth')->group(function () {
             'noRawat' => request()->query('no_rawat'),
             'noRkmMedis' => request()->query('no_rkm_medis'),
             'kdPoli' => request()->query('kd_poli'),
+            'tab' => request()->query('tab'),
         ]);
     })->name('rawat-jalan.canvas');
     Route::get('rawat-jalan/canvas-surat', function () {

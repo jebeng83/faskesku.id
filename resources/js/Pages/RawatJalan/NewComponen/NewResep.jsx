@@ -595,7 +595,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
               <button
                 type="button"
                 onClick={() => setShowRiwayatResep((v) => !v)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-[oklch(28.3%_0.141_291.089_/_0.4)]"
+                className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-md bg-black hover:bg-neutral-800 text-white border border-[oklch(28.3%_0.141_291.089_/_0.4)]"
               >
                 {showRiwayatResep ? (
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
@@ -605,7 +605,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
                 {showRiwayatResep ? "Sembunyikan Riwayat Resep" : "Tampilkan Riwayat Resep"}
               </button>
 
-              <button type="submit" disabled={isSubmitting || items.length === 0} className="inline-flex items-center justify-center px-4 py-2 rounded-md border border-[oklch(28.3%_0.141_291.089)] hover:bg-neutral-800 disabled:opacity-50">
+              <button type="submit" disabled={isSubmitting || items.length === 0} className="inline-flex items-center justify-center px-3 py-1.5 text-sm rounded-md border border-[oklch(28.3%_0.141_291.089)] bg-black hover:bg-neutral-800 text-white disabled:opacity-50">
                 {isSubmitting ? "Menyimpan…" : "Simpan"}
               </button>
             </div>
@@ -683,7 +683,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
 
                 {hasMoreResep && (
                   <div className="text-center">
-                    <button onClick={loadMoreResep} disabled={loadingMore} className="px-4 py-2 rounded-md border border-[oklch(28.3%_0.141_291.089)] disabled:opacity-50">{loadingMore ? "Memuat…" : "Muat Lebih Banyak"}</button>
+                    <button onClick={loadMoreResep} disabled={loadingMore} className="px-3 py-1.5 text-sm rounded-md border border-[oklch(28.3%_0.141_291.089)] disabled:opacity-50">{loadingMore ? "Memuat…" : "Muat Lebih Banyak"}</button>
                   </div>
                 )}
               </div>

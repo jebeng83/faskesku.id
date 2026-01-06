@@ -485,12 +485,12 @@ export default function NewPermintaanLab({ _token = "", _noRkmMedis = "", noRawa
             )}
           </div>
 
-          <div className="flex justify-between items-center pt-2 border-t border-[oklch(29.1%_0.149_302.717_/_0.25)]">
-            <div className="text-[12px] opacity-70">Total: {selectedTests.length} pemeriksaan dipilih</div>
-            <div className="flex gap-2">
-              <button type="submit" disabled={isSubmitting || selectedTests.length === 0} className="inline-flex items-center justify-center px-4 py-2 rounded-md border border-[oklch(84.1%_0.238_128.85)] bg-[oklch(97.9%_0.021_166.113)] hover:bg-[oklch(91.7%_0.08_205.041)] disabled:opacity-50">{isSubmitting ? "Menyimpan…" : "Simpan Permintaan"}</button>
+            <div className="flex justify-between items-center pt-2 border-t border-[oklch(29.1%_0.149_302.717_/_0.25)]">
+              <div className="text-[12px] opacity-70">Total: {selectedTests.length} pemeriksaan dipilih</div>
+              <div className="flex gap-2">
+              <button type="submit" disabled={isSubmitting || selectedTests.length === 0} className="inline-flex items-center justify-center px-3 py-1.5 text-sm rounded-md border border-[oklch(84.1%_0.238_128.85)] bg-black hover:bg-neutral-800 text-white disabled:opacity-50">{isSubmitting ? "Menyimpan…" : "Simpan Permintaan"}</button>
+              </div>
             </div>
-          </div>
         </motion.form>
       </AnimatePresence>
       <div className="space-y-2">

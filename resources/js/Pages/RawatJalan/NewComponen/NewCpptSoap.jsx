@@ -977,7 +977,7 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
         </div>
 
         <div className="flex items-center justify-end gap-2 flex-wrap">
-          <button type="submit" className="px-4 py-2 rounded-lg bg-[oklch(84.1%_0.238_128.85)] text-[oklch(14.5%_0_0)] border border-[oklch(45.2%_0.211_324.591)] shadow-[0_0_12px_oklch(84.1%_0.238_128.85_/_0.45)]">
+          <button type="submit" className="inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-black hover:bg-neutral-800 text-white border border-[oklch(45.2%_0.211_324.591)]">
             {editKey ? 'Update Pemeriksaan' : 'Simpan Pemeriksaan'}
           </button>
           {showBridging && (
@@ -990,7 +990,7 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
                   openBridgingModal();
                 }
               }}
-              className="inline-flex items-center px-4 py-2 rounded-lg bg-[oklch(84.1%_0.238_128.85)] text-[oklch(14.5%_0_0)] border border-[oklch(45.2%_0.211_324.591)] shadow-[0_0_12px_oklch(84.1%_0.238_128.85_/_0.45)]"
+              className="inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-black hover:bg-neutral-800 text-white border border-[oklch(45.2%_0.211_324.591)]"
               title="Bridging PCare"
             >
               Bridging PCare
@@ -1119,7 +1119,7 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
                   try { win.document.write(html); win.document.close(); } catch (e) { setError('Gagal menulis konten cetak: ' + (e.message || e)); if (win && !win.closed) { win.close(); } }
                 } catch (e) { setError(`Gagal mencetak rujukan: ${e.message || e}`); }
               }}
-              className="inline-flex items-center px-4 py-2 rounded-lg bg-[oklch(84.1%_0.238_128.85)] text-[oklch(14.5%_0_0)] border border-[oklch(45.2%_0.211_324.591)] shadow-[0_0_12px_oklch(84.1%_0.238_128.85_/_0.45)]"
+              className="inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-black hover:bg-neutral-800 text-white border border-[oklch(45.2%_0.211_324.591)]"
               title="Cetak Rujukan"
             >
               Cetak Rujukan

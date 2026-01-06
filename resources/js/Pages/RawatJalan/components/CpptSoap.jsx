@@ -1705,7 +1705,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                             Batal
                         </button>
                     )}
-                    <button type="submit" className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 text-white font-semibold px-6 py-2.5 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed" disabled={isSubmitting}>
+                    <button type="submit" className="flex items-center justify-center gap-2 bg-black hover:bg-neutral-800 transition-colors text-white font-semibold px-3 py-1.5 text-sm rounded-md disabled:opacity-60 disabled:cursor-not-allowed" disabled={isSubmitting}>
                         {isSubmitting ? (
                             <>
                                 <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -1727,7 +1727,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                         <button
                             type="button"
                             onClick={openBridgingModal}
-                            className="flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 transition-all duration-300 text-white font-semibold px-4 py-2.5 rounded-lg"
+                            className="flex items-center justify-center gap-2 bg-black hover:bg-neutral-800 transition-colors text-white font-semibold px-3 py-1.5 text-sm rounded-md"
                             title="Bridging PCare"
                         >
                             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2305,7 +2305,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                     alert('Terjadi kesalahan saat mencetak rujukan: ' + (e.message || e));
                                 }
                             }}
-                            className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2.5 rounded-md text-sm font-medium transition-colors flex items-center justify-center"
+                            className="bg-black hover:bg-neutral-800 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center justify-center"
                             title="Cetak Rujukan"
                         >
                             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

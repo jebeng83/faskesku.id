@@ -36,6 +36,7 @@ use App\Http\Controllers\RawatJalan\RawatJalanController;
 use App\Http\Controllers\RawatJalan\ResepController;
 use App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController;
 use App\Http\Controllers\SatuSehat\SatuSehatController;
+use App\Http\Controllers\Odontogram\OdontogramController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
@@ -245,6 +246,26 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::delete('/resep/{no_resep}', [ResepController::class, 'destroy'])->name('api.resep.delete');
     Route::post('/resep/{no_resep}/validasi', [ResepController::class, 'validasi'])->where('no_resep', '.*')->name('api.resep.validasi');
     Route::post('/resep/{no_resep}/penyerahan', [ResepController::class, 'penyerahan'])->where('no_resep', '.*')->name('api.resep.penyerahan');
+
+    Route::prefix('odontogram')->group(function () {
+        Route::get('/pasien/{no_rkm_medis}', [OdontogramController::class, 'byPatient'])
+            ->where('no_rkm_medis', '.*')
+            ->name('api.odontogram.by-pasien');
+        Route::get('/rawat/{no_rawat}', [OdontogramController::class, 'byVisit'])
+            ->where('no_rawat', '.*')
+            ->name('api.odontogram.by-rawat');
+        Route::get('/kondisi', [OdontogramController::class, 'kondisi'])
+            ->name('api.odontogram.kondisi');
+        Route::post('/rawat/{no_rawat}', [OdontogramController::class, 'storeByVisit'])
+            ->where('no_rawat', '.*')
+            ->name('api.odontogram.store-by-rawat');
+        Route::post('/medis/{no_rkm_medis}', [OdontogramController::class, 'storeByPatient'])
+            ->where('no_rkm_medis', '.*')
+            ->name('api.odontogram.store-by-medis');
+        Route::delete('/medis/{no_rkm_medis}/{tanggal}/{elemen_gigi}', [OdontogramController::class, 'destroyByPatient'])
+            ->where('no_rkm_medis', '.*')
+            ->name('api.odontogram.destroy-by-medis');
+    });
 
     // WhatsApp outbound
     Route::post('/whatsapp/send', function (Request $request) {

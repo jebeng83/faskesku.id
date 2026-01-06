@@ -13,6 +13,7 @@ import regPeriksaD17f92 from './reg-periksa'
 import users from './users'
 import menus from './menus'
 import obat from './obat'
+import odontogram from './odontogram'
 import whatsapp from './whatsapp'
 import messages from './messages'
 import dokter from './dokter'
@@ -226,6 +227,7 @@ const api = {
     users: Object.assign(users, users),
     menus: Object.assign(menus, menus),
     obat: Object.assign(obat, obat),
+    odontogram: Object.assign(odontogram, odontogram),
     whatsapp: Object.assign(whatsapp, whatsapp),
     messages: Object.assign(messages, messages),
     dokter: Object.assign(dokter, dokter),

@@ -9,11 +9,12 @@ import NewTarifTindakan from "./NewComponen/NewTarifTindakan";
 import NewResep from "./NewComponen/NewResep";
 import NewPermintaanLab from "./NewComponen/NewPermintaanLab";
 import NewDiagnosa from "./NewComponen/NewDiagnosa";
+import OdontogramForm from "../Odontogram/odontogram";
 import axios from "axios";
 import SearchableSelect from "@/Components/SearchableSelect";
 import { setRawatJalanFilters } from "@/tools/rawatJalanFilters";
 
-export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "", kdPoli = "" }) {
+export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "", kdPoli = "", tab = "" }) {
   const [isOpen, setIsOpen] = useState(true);
   const [index, setIndex] = useState(0);
   const [dir, setDir] = useState(1);
@@ -205,6 +206,14 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
     });
 
     arr.push({
+      key: "odontogram",
+      title: "Odontogram",
+      render: () => (
+        <OdontogramForm noRawat={noRawat} />
+      ),
+    });
+
+    arr.push({
       key: "resep",
       title: "Resep Obat",
       render: () => (
@@ -222,6 +231,23 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
 
     return arr;
   }, [token, noRkmMedis, noRawat, kdPoli, poliCode]);
+
+  useEffect(() => {
+    const t = typeof tab === "string" ? tab.trim() : "";
+    if (!t) {
+      try {
+        const u = new URL(window.location.href);
+        const q = u.searchParams.get("tab") || u.searchParams.get("page") || "";
+        if (q) {
+          const idx = pages.findIndex((p) => p.key === q);
+          if (idx >= 0) setIndex(idx);
+        }
+      } catch {}
+      return;
+    }
+    const idx = pages.findIndex((p) => p.key === t);
+    if (idx >= 0) setIndex(idx);
+  }, [tab, pages]);
 
   const prev = () =>
     setIndex((i) => {
@@ -855,7 +881,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                       <button
                         type="button"
                         onClick={openCpptModal}
-                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-red-500 text-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717)]"
+                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-black text-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717)]"
                         title="Tampilkan Riwayat SOAP"
                       >
                         CPPT
@@ -864,7 +890,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                         type="button"
                         onClick={handlePanggilPasien}
                         disabled={poliCalling}
-                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-red-500 text-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717)] disabled:opacity-60"
+                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-black text-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717)] disabled:opacity-60"
                         title="Panggil pasien"
                       >
                         {poliCalling ? 'Memanggil...' : 'Panggil'}
@@ -873,7 +899,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                         type="button"
                         onClick={handleUlangPanggilPasien}
                         disabled={poliRepeatCalling}
-                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-red-500 text-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717)] disabled:opacity-60"
+                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-black text-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717)] disabled:opacity-60"
                         title="Ulang panggil pasien"
                       >
                         {poliRepeatCalling ? 'Mengulang...' : 'Ulang panggil'}
@@ -887,7 +913,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                             setIndex(idx);
                           }
                         }}
-                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-red-500 text-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717)]"
+                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-black text-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717)]"
                         aria-label="Buka Resep"
                         title="Buka Resep"
                       >
@@ -909,7 +935,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                             router.visit(url);
                           }, 200);
                         }}
-                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-red-500 text-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717)]"
+                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-black text-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717)]"
                         aria-label="Buka Surat"
                         title="Buka Surat"
                       >
