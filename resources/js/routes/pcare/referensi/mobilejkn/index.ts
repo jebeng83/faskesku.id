@@ -1,6 +1,10 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1290
+=======
+* @see routes/web.php:1517
+>>>>>>> d469a398 (Odontogram)
 * @route '/pcare/referensi-mobilejkn/poli'
 */
 export const poli = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +18,11 @@ poli.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1290
+=======
+* @see routes/web.php:1517
+>>>>>>> d469a398 (Odontogram)
 * @route '/pcare/referensi-mobilejkn/poli'
 */
 poli.url = (options?: RouteQueryOptions) => {
@@ -22,7 +30,11 @@ poli.url = (options?: RouteQueryOptions) => {
 }
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1290
+=======
+* @see routes/web.php:1517
+>>>>>>> d469a398 (Odontogram)
 * @route '/pcare/referensi-mobilejkn/poli'
 */
 poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +43,11 @@ poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1290
+=======
+* @see routes/web.php:1517
+>>>>>>> d469a398 (Odontogram)
 * @route '/pcare/referensi-mobilejkn/poli'
 */
 poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -40,7 +56,11 @@ poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1295
+=======
+* @see routes/web.php:1522
+>>>>>>> d469a398 (Odontogram)
 * @route '/pcare/referensi-mobilejkn/dokter'
 */
 export const dokter = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -54,7 +74,11 @@ dokter.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1295
+=======
+* @see routes/web.php:1522
+>>>>>>> d469a398 (Odontogram)
 * @route '/pcare/referensi-mobilejkn/dokter'
 */
 dokter.url = (options?: RouteQueryOptions) => {
@@ -62,7 +86,11 @@ dokter.url = (options?: RouteQueryOptions) => {
 }
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1295
+=======
+* @see routes/web.php:1522
+>>>>>>> d469a398 (Odontogram)
 * @route '/pcare/referensi-mobilejkn/dokter'
 */
 dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -71,7 +99,11 @@ dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1295
+=======
+* @see routes/web.php:1522
+>>>>>>> d469a398 (Odontogram)
 * @route '/pcare/referensi-mobilejkn/dokter'
 */
 dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -35,6 +35,7 @@ use App\Http\Controllers\RawatJalan\RawatJalanController;
 use App\Http\Controllers\RawatJalan\ResepController;
 use App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController;
 use App\Http\Controllers\SatuSehat\SatuSehatController;
+use App\Http\Controllers\Odontogram\OdontogramController;
 use Illuminate\Support\Facades\Route;
 
 // Public endpoints (tidak memerlukan authentication)
@@ -225,6 +226,60 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/resep/{no_resep}/validasi', [ResepController::class, 'validasi'])->where('no_resep', '.*')->name('api.resep.validasi');
     Route::post('/resep/{no_resep}/penyerahan', [ResepController::class, 'penyerahan'])->where('no_resep', '.*')->name('api.resep.penyerahan');
 
+<<<<<<< HEAD
+=======
+    Route::prefix('odontogram')->group(function () {
+        Route::get('/pasien/{no_rkm_medis}', [OdontogramController::class, 'byPatient'])
+            ->where('no_rkm_medis', '.*')
+            ->name('api.odontogram.by-pasien');
+        Route::get('/rawat/{no_rawat}', [OdontogramController::class, 'byVisit'])
+            ->where('no_rawat', '.*')
+            ->name('api.odontogram.by-rawat');
+        Route::get('/kondisi', [OdontogramController::class, 'kondisi'])
+            ->name('api.odontogram.kondisi');
+        Route::post('/rawat/{no_rawat}', [OdontogramController::class, 'storeByVisit'])
+            ->where('no_rawat', '.*')
+            ->name('api.odontogram.store-by-rawat');
+        Route::post('/medis/{no_rkm_medis}', [OdontogramController::class, 'storeByPatient'])
+            ->where('no_rkm_medis', '.*')
+            ->name('api.odontogram.store-by-medis');
+        Route::delete('/medis/{no_rkm_medis}/{tanggal}/{elemen_gigi}', [OdontogramController::class, 'destroyByPatient'])
+            ->where('no_rkm_medis', '.*')
+            ->name('api.odontogram.destroy-by-medis');
+    });
+
+    // WhatsApp outbound
+    Route::post('/whatsapp/send', function (Request $request) {
+        $to = (string) $request->input('to', '');
+        $text = (string) $request->input('text', '');
+        $key = (string) $request->input('idempotency_key', '');
+        if ($key !== '') {
+            $cacheKey = 'wa:idempotency:' . $key;
+            if (! Cache::add($cacheKey, 1, now()->addDay())) {
+                return response()->json(['ok' => false, 'status' => 'duplicate'], 409);
+            }
+        }
+        $credentialId = $request->input('credential_id');
+        $phoneNumberId = $request->input('phone_number_id');
+        dispatch(new \App\Jobs\WhatsAppSendJob($to, $text, $key, $credentialId ? (int) $credentialId : null, $phoneNumberId ? (string) $phoneNumberId : null));
+        return response()->json(['ok' => true, 'status' => 'queued'], 202);
+    })->middleware('throttle:30,1')->name('api.whatsapp.send');
+
+    Route::post('/messages', [\App\Http\Controllers\WhatsApp\MessageController::class, 'store'])
+        ->middleware('throttle:30,1')
+        ->name('api.messages.store');
+
+    Route::prefix('whatsapp')->group(function () {
+        Route::get('/credentials', [\App\Http\Controllers\API\WhatsAppCredentialController::class, 'index'])->name('api.whatsapp.credentials.index');
+        Route::post('/credentials', [\App\Http\Controllers\API\WhatsAppCredentialController::class, 'store'])->name('api.whatsapp.credentials.store');
+        Route::get('/credentials/{credential}', [\App\Http\Controllers\API\WhatsAppCredentialController::class, 'show'])->name('api.whatsapp.credentials.show');
+        Route::put('/credentials/{credential}', [\App\Http\Controllers\API\WhatsAppCredentialController::class, 'update'])->name('api.whatsapp.credentials.update');
+        Route::delete('/credentials/{credential}', [\App\Http\Controllers\API\WhatsAppCredentialController::class, 'destroy'])->name('api.whatsapp.credentials.destroy');
+    });
+
+    
+
+>>>>>>> d469a398 (Odontogram)
     // API routes untuk diagnosa pasien (Rawat Jalan)
     Route::get('/rawat-jalan/diagnosa', [RawatJalanController::class, 'getDiagnosaPasien'])->name('api.rawat-jalan.diagnosa.index');
     Route::post('/rawat-jalan/diagnosa', [RawatJalanController::class, 'storeDiagnosaPasien'])->name('api.rawat-jalan.diagnosa.store');

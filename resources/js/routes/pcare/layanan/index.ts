@@ -1,6 +1,10 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1300
+=======
+* @see routes/web.php:1527
+>>>>>>> d469a398 (Odontogram)
 * @route '/pcare/data-peserta-by-nik'
 */
 export const cekPesertaNik = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +18,11 @@ cekPesertaNik.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1300
+=======
+* @see routes/web.php:1527
+>>>>>>> d469a398 (Odontogram)
 * @route '/pcare/data-peserta-by-nik'
 */
 cekPesertaNik.url = (options?: RouteQueryOptions) => {
@@ -22,7 +30,11 @@ cekPesertaNik.url = (options?: RouteQueryOptions) => {
 }
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1300
+=======
+* @see routes/web.php:1527
+>>>>>>> d469a398 (Odontogram)
 * @route '/pcare/data-peserta-by-nik'
 */
 cekPesertaNik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +43,11 @@ cekPesertaNik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1300
+=======
+* @see routes/web.php:1527
+>>>>>>> d469a398 (Odontogram)
 * @route '/pcare/data-peserta-by-nik'
 */
 cekPesertaNik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -40,7 +56,11 @@ cekPesertaNik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 })
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1305
+=======
+* @see routes/web.php:1532
+>>>>>>> d469a398 (Odontogram)
 * @route '/pcare/layanan'
 */
 export const pcare = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -54,7 +74,11 @@ pcare.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1305
+=======
+* @see routes/web.php:1532
+>>>>>>> d469a398 (Odontogram)
 * @route '/pcare/layanan'
 */
 pcare.url = (options?: RouteQueryOptions) => {
@@ -62,7 +86,11 @@ pcare.url = (options?: RouteQueryOptions) => {
 }
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1305
+=======
+* @see routes/web.php:1532
+>>>>>>> d469a398 (Odontogram)
 * @route '/pcare/layanan'
 */
 pcare.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -71,7 +99,11 @@ pcare.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
+<<<<<<< HEAD
 * @see routes/web.php:1305
+=======
+* @see routes/web.php:1532
+>>>>>>> d469a398 (Odontogram)
 * @route '/pcare/layanan'
 */
 pcare.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -1,6 +1,10 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
+<<<<<<< HEAD
 * @see routes/api.php:66
+=======
+* @see routes/api.php:85
+>>>>>>> d469a398 (Odontogram)
 * @route '/api/public/sip-pegawai/expiring'
 */
 export const expiring = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +18,11 @@ expiring.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
+<<<<<<< HEAD
 * @see routes/api.php:66
+=======
+* @see routes/api.php:85
+>>>>>>> d469a398 (Odontogram)
 * @route '/api/public/sip-pegawai/expiring'
 */
 expiring.url = (options?: RouteQueryOptions) => {
@@ -22,7 +30,11 @@ expiring.url = (options?: RouteQueryOptions) => {
 }
 
 /**
+<<<<<<< HEAD
 * @see routes/api.php:66
+=======
+* @see routes/api.php:85
+>>>>>>> d469a398 (Odontogram)
 * @route '/api/public/sip-pegawai/expiring'
 */
 expiring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +43,11 @@ expiring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
+<<<<<<< HEAD
 * @see routes/api.php:66
+=======
+* @see routes/api.php:85
+>>>>>>> d469a398 (Odontogram)
 * @route '/api/public/sip-pegawai/expiring'
 */
 expiring.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

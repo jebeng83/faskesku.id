@@ -48,6 +48,89 @@ lanjutan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
+<<<<<<< HEAD
+=======
+* @see routes/web.php:1052
+* @route '/rawat-jalan/canvas'
+*/
+export const canvas = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: canvas.url(options),
+    method: 'get',
+})
+
+canvas.definition = {
+    methods: ["get","head"],
+    url: '/rawat-jalan/canvas',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:1052
+* @route '/rawat-jalan/canvas'
+*/
+canvas.url = (options?: RouteQueryOptions) => {
+    return canvas.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:1052
+* @route '/rawat-jalan/canvas'
+*/
+canvas.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: canvas.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:1052
+* @route '/rawat-jalan/canvas'
+*/
+canvas.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: canvas.url(options),
+    method: 'head',
+})
+
+/**
+* @see routes/web.php:1061
+* @route '/rawat-jalan/canvas-surat'
+*/
+export const canvasSurat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: canvasSurat.url(options),
+    method: 'get',
+})
+
+canvasSurat.definition = {
+    methods: ["get","head"],
+    url: '/rawat-jalan/canvas-surat',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:1061
+* @route '/rawat-jalan/canvas-surat'
+*/
+canvasSurat.url = (options?: RouteQueryOptions) => {
+    return canvasSurat.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:1061
+* @route '/rawat-jalan/canvas-surat'
+*/
+canvasSurat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: canvasSurat.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:1061
+* @route '/rawat-jalan/canvas-surat'
+*/
+canvasSurat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: canvasSurat.url(options),
+    method: 'head',
+})
+
+/**
+>>>>>>> d469a398 (Odontogram)
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::index
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:72
 * @route '/rawat-jalan'
